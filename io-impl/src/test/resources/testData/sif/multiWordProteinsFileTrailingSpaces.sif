@@ -1,0 +1,30 @@
+LPS 	interactsWith 	TLR4
+LPS 	interactsWith 	MD-2
+LPS 	interactsWith 	TLR4
+ADOH 	interactsWith 	LPS
+TLR4 	interactsWith 	MyD88
+TLR4 	interactsWith 	IRAK Complex
+TLR4 	interactsWith 	TIRAP
+TRAF6 	interactsWith 	IRAK Complex
+Uev1a/UBc13 Ubiquitin-conjugating Complex 	interactsWith 	TRAF6
+TRAF6 	interactsWith 	TAK1
+A20 	interactsWith 	TRAF6
+TAK1 	interactsWith 	IKK-beta
+IKK-beta 	interactsWith 	I-kappa-B-alpha
+I-kappa-B-alpha 	interactsWith 	p50
+I-kappa-B-alpha 	interactsWith 	p65
+SCF Ubiquitin Ligase 	interactsWith 	I-kappa-B-alpha
+26S ubiquitin dependent proteasome 	interactsWith 	I-kappa-B-alpha
+TLR4 	interactsWith 	TRIF
+TRIF 	interactsWith 	IRF3
+IRAK4 	interactsWith 	MyD88
+IRAK4 	interactsWith 	IRAK1
+IRAK1 	interactsWith 	MyD88
+IRAK1 	interactsWith 	TRAF6
+TRAF6 	interactsWith 	CD40
+TRAF6 	interactsWith 	RANK
+TRAF6 	interactsWith 	IRAK1
+TRAF6 	interactsWith 	IRAK2
+TRAF6 	interactsWith 	IRAKM
+TRAF6 	interactsWith 	RIP2 	ABCDE oopah 	HJKOL coltrane
+

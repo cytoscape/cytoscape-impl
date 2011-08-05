@@ -1,0 +1,6 @@
+Name,Species,Value
+Homer,Human,1.0
+Marge,Human,2.0
+Santa's Little Helper,Dog,4.0
+Kang,Alien,5.0
+

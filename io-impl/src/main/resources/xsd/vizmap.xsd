@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+	<xs:element name="vizmap">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" ref="visualStyle" />
+			</xs:sequence>
+			<xs:attribute name="id" use="required" type="xs:NCName" />
+			<xs:attribute name="documentVersion" use="optional" default="3.0" type="xs:normalizedString"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="visualStyle">
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="network" minOccurs="1" maxOccurs="1" />
+				<xs:element ref="node" minOccurs="1" maxOccurs="1" />
+				<xs:element ref="edge" minOccurs="1" maxOccurs="1" />
+			</xs:all>
+			<xs:attribute name="name" use="required" type="xs:NCName" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="network">
+		<xs:complexType>
+			<xs:sequence>
+                <xs:element ref="dependency" maxOccurs="unbounded" />
+				<xs:element ref="visualProperty" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="node">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="dependency" maxOccurs="unbounded" />
+				<xs:element ref="visualProperty" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="edge">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="dependency" maxOccurs="unbounded" />
+				<xs:element ref="visualProperty" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="dependency">
+		<xs:complexType>
+			<xs:attribute name="value" type="xs:boolean" />
+			<xs:attribute name="name" use="required" type="xs:NCName" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="visualProperty">
+		<xs:complexType>
+			<xs:choice minOccurs="0">
+				<xs:element ref="continuousMapping" />
+				<xs:element ref="discreteMapping" />
+				<xs:element ref="passthroughMapping" />
+			</xs:choice>
+			<xs:attribute name="default" type="xs:string" />
+			<xs:attribute name="name" use="required" type="xs:NCName" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="continuousMapping">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="continuousMappingPoint" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute name="attributeName" use="required" type="xs:normalizedString" />
+			<xs:attribute name="attributeType" use="required" type="attributeType" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="continuousMappingPoint">
+		<xs:complexType>
+			<xs:attribute name="attrValue" use="required" type="xs:decimal" />
+			<xs:attribute name="equalValue" use="required" type="xs:string" />
+			<xs:attribute name="greaterValue" use="required" type="xs:string" />
+			<xs:attribute name="lesserValue" use="required" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="discreteMapping">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="discreteMappingEntry" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute name="attributeName" use="required" type="xs:normalizedString" />
+			<xs:attribute name="attributeType" use="required" type="attributeType" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="discreteMappingEntry">
+		<xs:complexType>
+			<xs:attribute name="attributeValue" use="required" type="xs:string" />
+			<xs:attribute name="value" use="required" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="passthroughMapping">
+		<xs:complexType>
+			<xs:attribute name="attributeName" use="required" type="xs:normalizedString" />
+			<xs:attribute name="attributeType" use="required" type="attributeType" />
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="attributeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="string" />
+			<xs:enumeration value="boolean" />
+			<xs:enumeration value="integer" />
+			<xs:enumeration value="float" />
+			<xs:enumeration value="list" />
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

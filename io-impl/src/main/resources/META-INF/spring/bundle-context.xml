@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.5.xsd
+            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="true">
+
+	<context:annotation-config />
+
+	<!-- File Filters -->
+
+	<bean id="expressionFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>pvals</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/plain</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Cytoscape Expression Matrix (.pvals) File" />
+		<constructor-arg type="org.cytoscape.io.DataCategory" value="TABLE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="cysFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>cys</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>application/zip</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Cytoscape Session (.cys) File" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="SESSION" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="pngFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>png</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>image/png</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Portable Network Graphics (PNG) File" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="IMAGE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="jpegFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>jpg</value>
+				<value>jpeg</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>image/jpeg</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="JPEG Image File" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="IMAGE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="pdfFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>pdf</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>image/pdf</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="PDF File" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="IMAGE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="psFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>ps</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>image/ps</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Post Script (PS) File" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="IMAGE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="svgFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>svg</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>image/svg</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Scalable Vector Graphics (SVG) File" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="IMAGE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="textTableFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/plain</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Any text file" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="TABLE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="attrsFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>attrs</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/plain</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Any text file" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="TABLE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="sifFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>sif</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/sif</value>
+				<!-- content types should be exact - don't add possible matches! <value>text/plain</value> -->
+			</set>
+		</constructor-arg>
+		<constructor-arg value="SIF files" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="NETWORK" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="xgmmlFilter" class="org.cytoscape.io.internal.read.xgmml.XGMMLFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>xgmml</value>
+				<value>xml</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/xgmml</value>
+				<value>text/xgmml+xml</value>
+				<!-- content types should be exact - don't add possible matches! <value>text/plain</value>
+					<value>text/xml</value> <value>application/xml</value> -->
+			</set>
+		</constructor-arg>
+		<constructor-arg value="XGMML files" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="NETWORK" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="gmlFilter" class="org.cytoscape.io.internal.read.gml.GMLFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>gml</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/gml</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="GML files" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="NETWORK" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="cysessionFilter"
+		class="org.cytoscape.io.internal.read.cysession.CysessionFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>xml</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<!-- content types should be exact - don't add possible matches! <value>text/xml</value>
+					<value>application/xml</value> -->
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Cysession XML files" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="PROPERTIES" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="bookmarksFilter"
+		class="org.cytoscape.io.internal.read.bookmarks.BookmarkFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>xml</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<!-- content types should be exact - don't add possible matches! <value>text/xml</value>
+					<value>application/xml</value> -->
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Bookmark XML files" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="PROPERTIES" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="propertiesFilter"
+		class="org.cytoscape.io.internal.read.properties.PropertiesFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>props</value>
+				<value>properties</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<!-- content types should be exact - don't add possible matches! <value>text/plain</value> -->
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Java Properties files" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="PROPERTIES" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="csvFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>csv</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/plain</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="CSV file" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="TABLE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="sessionTableFilter" class="org.cytoscape.io.BasicCyFileFilter">
+		<constructor-arg index="0">
+			<set>
+				<value>cytable</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<set>
+				<value>text/plain</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg value="Session table file" />
+		<constructor-arg type="org.cytoscape.io.DataCategory"
+			value="TABLE" />
+		<constructor-arg type="org.cytoscape.io.util.StreamUtil">
+			<ref bean="streamUtil" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="vizmapXMLFilter"
+        class="org.cytoscape.io.internal.read.vizmap.VizmapXMLFileFilter">
+        <constructor-arg index="0">
+            <set>
+              <value>xml</value>
+            </set>
+        </constructor-arg>
+        <constructor-arg index="1">
+          <set>
+            <!-- content types should be exact - don't add possible matches! <value>text/plain</value> -->
+          </set>
+        </constructor-arg>
+        <constructor-arg value="Vizmap XML files" />
+        <constructor-arg type="org.cytoscape.io.DataCategory"
+			 value="VIZMAP" />
+        <constructor-arg type="org.cytoscape.io.util.StreamUtil">
+          <ref bean="streamUtil" />
+        </constructor-arg>
+	</bean>
+
+	<bean id="vizmapPropertiesFilter"
+              class="org.cytoscape.io.internal.read.vizmap.VizmapPropertiesFileFilter">
+          <constructor-arg index="0">
+            <set>
+              <value>props</value>
+              <value>properties</value>
+            </set>
+          </constructor-arg>
+          <constructor-arg index="1">
+            <set>
+              <!-- content types should be exact - don't add possible matches! <value>text/plain</value> -->
+            </set>
+          </constructor-arg>
+          <constructor-arg value="Vizmap Java Properties files" />
+          <constructor-arg type="org.cytoscape.io.DataCategory"
+			   value="VIZMAP" />
+          <constructor-arg type="org.cytoscape.io.util.StreamUtil">
+            <ref bean="streamUtil" />
+          </constructor-arg>
+	</bean>
+
+	<!-- Utility for Stream/Proxy management -->
+
+	<bean id="readUtil" class="org.cytoscape.io.internal.util.ReadUtils">
+		<constructor-arg ref="streamUtil" />
+	</bean>
+
+	<bean id="streamUtil" class="org.cytoscape.io.internal.util.StreamUtilImpl" />
+
+	<!-- Reader Factories -->
+
+	<bean id="expressionReaderFactory"
+		class="org.cytoscape.io.internal.read.expression.ExpressionReaderFactory">
+		<constructor-arg ref="expressionFilter" />
+		<constructor-arg ref="cyTableFactoryServiceRef" />
+	</bean>
+
+	<bean id="attrsDataReaderFactory"
+		class="org.cytoscape.io.internal.read.datatable.CyAttributesReaderFactory">
+		<constructor-arg ref="attrsFilter" />
+		<constructor-arg ref="cyTableFactoryServiceRef" />
+		<constructor-arg ref="cyApplicationManagerServiceRef" />
+		<constructor-arg ref="cyNetworkManagerServiceRef" />
+	</bean>
+
+	<bean id="sifNetworkViewReaderFactory"
+		class="org.cytoscape.io.internal.read.sif.SIFNetworkReaderFactory">
+		<constructor-arg ref="sifFilter" />
+		<constructor-arg ref="cyLayoutsServiceRef" />
+		<constructor-arg ref="cyNetworkViewFactoryServiceRef" />
+		<constructor-arg ref="cyNetworkFactoryServiceRef" />
+		<constructor-arg ref="cyEventHelperRef" />
+	</bean>
+
+	<bean id="gmlNetworkViewReaderFactory"
+		class="org.cytoscape.io.internal.read.gml.GMLNetworkReaderFactory">
+		<constructor-arg ref="gmlFilter" />
+		<constructor-arg ref="cyNetworkViewFactoryServiceRef" />
+		<constructor-arg ref="cyNetworkFactoryServiceRef" />
+		<constructor-arg ref="renderingEngineManagerServiceRef" />
+		<constructor-arg ref="unrecognizedVisualPropertyManager" />
+	</bean>
+
+	<bean id="xgmmlNetworkViewReaderFactory"
+        class="org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReaderFactory">
+        <constructor-arg ref="xgmmlFilter" />
+        <constructor-arg ref="cyNetworkViewFactoryServiceRef" />
+        <constructor-arg ref="cyNetworkFactoryServiceRef" />
+        <constructor-arg ref="renderingEngineManagerServiceRef" />
+        <constructor-arg ref="readDataManager" />
+        <constructor-arg ref="xgmmlParser" />
+        <constructor-arg ref="unrecognizedVisualPropertyManager" />
+    </bean>
+
+    <bean id="sessionReaderFactory"
+        class="org.cytoscape.io.internal.read.session.SessionReaderFactoryImpl">
+        <constructor-arg ref="cysFilter" />
+        <constructor-arg ref="cyNetworkReaderManager" />
+        <constructor-arg ref="cyPropertyReaderManager" />
+        <constructor-arg ref="vizmapReaderManager" />
+        <constructor-arg ref="sessionTableReaderFactory" />
+        <constructor-arg ref="cyTableManagerServiceRef"/>
+    </bean>
+
+    <bean id="cysessionReaderFactory"
+        class="org.cytoscape.io.internal.read.cysession.CysessionReaderFactory">
+        <constructor-arg ref="cysessionFilter" />
+    </bean>
+
+    <bean id="bookmarkReaderFactory"
+        class="org.cytoscape.io.internal.read.bookmarks.BookmarkReaderFactory">
+        <constructor-arg ref="bookmarksFilter" />
+    </bean>
+
+    <bean id="propertiesReaderFactory"
+        class="org.cytoscape.io.internal.read.properties.PropertiesReaderFactory">
+        <constructor-arg ref="propertiesFilter" />
+    </bean>
+
+    <bean id="vizmapXMLReaderFactory"
+        class="org.cytoscape.io.internal.read.vizmap.VizmapXMLReaderFactory">
+        <constructor-arg ref="vizmapXMLFilter" />
+        <constructor-arg ref="visualStyleSerializer" />
+    </bean>
+
+    <bean id="vizmapPropertiesReaderFactory"
+        class="org.cytoscape.io.internal.read.vizmap.VizmapPropertiesReaderFactory">
+        <constructor-arg ref="vizmapPropertiesFilter" />
+        <constructor-arg ref="visualStyleSerializer" />
+    </bean>
+
+	<!-- Writer Factories -->
+
+	<!-- Image Export -->
+	<bean id="pngWriterFactory"
+		class="org.cytoscape.io.internal.write.graphics.BitmapWriterFactory">
+		<constructor-arg ref="pngFilter" />
+	</bean>
+	<bean id="jpegWriterFactory"
+		class="org.cytoscape.io.internal.write.graphics.BitmapWriterFactory">
+		<constructor-arg ref="jpegFilter" />
+	</bean>
+	<bean id="pdfWriterFactory"
+		class="org.cytoscape.io.internal.write.graphics.PDFWriterFactory">
+		<constructor-arg ref="pdfFilter" />
+	</bean>
+	<bean id="psWriterFactory"
+		class="org.cytoscape.io.internal.write.graphics.PSWriterFactory">
+		<constructor-arg ref="psFilter" />
+	</bean>
+	<bean id="svgWriterFactory"
+		class="org.cytoscape.io.internal.write.graphics.SVGWriterFactory">
+		<constructor-arg ref="svgFilter" />
+	</bean>
+
+
+	<!-- Network Writers -->
+	<bean id="sifNetworkViewWriterFactory"
+		class="org.cytoscape.io.internal.write.sif.SifNetworkWriterFactory">
+		<constructor-arg ref="sifFilter" />
+	</bean>
+
+	<bean id="xgmmlNetworkViewWriterFactory"
+		class="org.cytoscape.io.internal.write.xgmml.XGMMLNetworkViewWriterFactory">
+		<constructor-arg ref="xgmmlFilter" />
+		<constructor-arg ref="renderingEngineManagerServiceRef" />
+		<constructor-arg ref="unrecognizedVisualPropertyManager" />
+	</bean>
+
+	<bean id="cysessionWriterFactory"
+		class="org.cytoscape.io.internal.write.cysession.CysessionWriterFactoryImpl">
+		<constructor-arg ref="cysessionFilter" />
+	</bean>
+
+	<bean id="bookmarksWriterFactory"
+		class="org.cytoscape.io.internal.write.bookmarks.BookmarksWriterFactoryImpl">
+		<constructor-arg ref="bookmarksFilter" />
+	</bean>
+
+	<bean id="propertiesWriterFactory"
+		class="org.cytoscape.io.internal.write.properties.PropertiesWriterFactoryImpl">
+		<constructor-arg ref="propertiesFilter" />
+	</bean>
+
+	<bean id="csvTableWriterFactory"
+		class="org.cytoscape.io.internal.write.datatable.csv.CSVTableWriterFactory">
+		<constructor-arg ref="csvFilter" />
+		<constructor-arg value="false" type="boolean" />
+		<constructor-arg value="false" type="boolean" />
+	</bean>
+
+	<bean id="sessionTableWriterFactory"
+		class="org.cytoscape.io.internal.write.datatable.csv.CSVTableWriterFactory">
+		<constructor-arg ref="sessionTableFilter" />
+		<constructor-arg value="true" type="boolean" />
+		<constructor-arg value="true" type="boolean" />
+	</bean>
+
+	<bean id="vizmapWriterFactory"
+        class="org.cytoscape.io.internal.write.vizmap.VizmapWriterFactoryImpl">
+        <constructor-arg ref="vizmapXMLFilter" />
+        <constructor-arg ref="visualStyleSerializer" />
+    </bean>
+
+    <bean id="sessionWriterFactory"
+        class="org.cytoscape.io.internal.write.session.SessionWriterFactoryImpl">
+        <constructor-arg ref="cysFilter" />
+        <constructor-arg ref="xgmmlFilter" />
+        <constructor-arg ref="bookmarksFilter" />
+        <constructor-arg ref="cysessionFilter" />
+        <constructor-arg ref="propertiesFilter" />
+        <constructor-arg ref="sessionTableFilter" />
+        <constructor-arg ref="vizmapXMLFilter" />
+        <constructor-arg ref="networkViewWriterManager" />
+        <constructor-arg ref="propertyWriterManager" />
+        <constructor-arg ref="tableWriterManager" />
+        <constructor-arg ref="vizmapWriterManager" />
+    </bean>
+
+	<!-- Utilities for XGMML Reader -->
+
+	<bean id="objectTypeMap" class="org.cytoscape.io.internal.read.xgmml.ObjectTypeMap" />
+
+	<bean id="readDataManager"
+		class="org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager">
+		<constructor-arg ref="equationCompilerServiceRef" />
+	</bean>
+
+	<bean id="attributeValueUtil"
+		class="org.cytoscape.io.internal.read.xgmml.handler.AttributeValueUtil">
+		<constructor-arg ref="objectTypeMap" />
+		<constructor-arg ref="readDataManager" />
+	</bean>
+
+	<bean id="handlerFactory" class="org.cytoscape.io.internal.read.xgmml.HandlerFactory">
+		<constructor-arg ref="readDataManager" />
+		<constructor-arg ref="attributeValueUtil" />
+	</bean>
+
+	<bean id="xgmmlParser" class="org.cytoscape.io.internal.read.xgmml.XGMMLParser">
+		<constructor-arg ref="handlerFactory" />
+		<constructor-arg ref="readDataManager" />
+	</bean>
+
+	<bean id="unrecognizedVisualPropertyManager" class="org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager">
+        <constructor-arg ref="cyTableFactoryServiceRef"/>
+        <constructor-arg ref="cyTableManagerServiceRef"/>
+	</bean>
+
+	<bean id="sessionTableReaderFactory" class="org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory">
+		<constructor-arg ref="sessionTableFilter"/>
+		<constructor-arg value="true"/>
+		<constructor-arg value="true"/>
+		<constructor-arg ref="cyTableFactoryServiceRef"/>
+		<constructor-arg ref="compilerServiceRef"/>
+	</bean>
+
+	<!-- All Reader Managers -->
+
+	<bean id="cyNetworkReaderManager"
+		class="org.cytoscape.io.internal.read.CyNetworkReaderManagerImpl" />
+
+	<bean id="cyDataTableReaderManager" class="org.cytoscape.io.internal.read.CyTableReaderManagerImpl" />
+
+	<bean id="cySessionReaderManager"
+		class="org.cytoscape.io.internal.read.CySessionReaderManagerImpl" />
+
+	<bean id="vizmapReaderManager"
+        class="org.cytoscape.io.internal.read.VizmapReaderManagerImpl" />
+
+	<bean id="cyPropertyReaderManager"
+		class="org.cytoscape.io.internal.read.CyPropertyReaderManagerImpl" />
+
+	<!-- All Writer Managers -->
+
+	<bean id="viewWriterManager"
+		class="org.cytoscape.io.internal.write.PresentationWriterManagerImpl" />
+
+	<bean id="networkViewWriterManager"
+		class="org.cytoscape.io.internal.write.CyNetworkViewWriterManagerImpl" />
+
+	<bean id="sessionWriterManager"
+		class="org.cytoscape.io.internal.write.SessionWriterManagerImpl" />
+
+	<bean id="propertyWriterManager"
+		class="org.cytoscape.io.internal.write.PropertyWriterManagerImpl" />
+
+	<bean id="tableWriterManager"
+		class="org.cytoscape.io.internal.write.CyTableWriterManagerImpl" />
+
+	<bean id="vizmapWriterManager"
+		class="org.cytoscape.io.internal.write.VizmapWriterManagerImpl" />
+
+	<!-- Other beans -->
+
+	<bean id="calculatorConverterFactory"
+	class="org.cytoscape.io.internal.util.vizmap.CalculatorConverterFactory" />
+
+	<bean id="visualStyleSerializer"
+		class="org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer">
+		<constructor-arg ref="calculatorConverterFactory" />
+		<constructor-arg ref="visualStyleFactoryServiceRef" />
+		<constructor-arg ref="visualMappingManagerServiceRef" />
+		<constructor-arg ref="renderingEngineManagerServiceRef" />
+		<constructor-arg ref="discreteMappingFactoryServiceRef" />
+		<constructor-arg ref="continuousMappingFactoryServiceRef" />
+		<constructor-arg ref="passthroughMappingFactoryServiceRef" />
+	</bean>
+
+	<!-- For recent session files -->
+	<bean id="recentlyOpenedTracker" class="org.cytoscape.io.internal.util.RecentlyOpenedTrackerImpl" scope="singleton">
+		<constructor-arg value="tracker.recent.sessions" />
+	</bean>
+
+</beans>

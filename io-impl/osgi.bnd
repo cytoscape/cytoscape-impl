@@ -1,0 +1,6 @@
+#-----------------------------------------------------------------
+# Use this file to add customized Bnd instructions for the bundle
+#-----------------------------------------------------------------
+
+Import-Package: *
+Private-Package: org.cytoscape.io.internal, org.cytoscape.io.internal.*

@@ -1,0 +1,140 @@
+/*
+ Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
+
+ The Cytoscape Consortium is:
+ - Institute for Systems Biology
+ - University of California San Diego
+ - Memorial Sloan-Kettering Cancer Center
+ - Institut Pasteur
+ - Agilent Technologies
+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 2.1 of the License, or
+ any later version.
+
+ This library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
+ MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
+ documentation provided hereunder is on an "as is" basis, and the
+ Institute for Systems Biology and the Whitehead Institute
+ have no obligations to provide maintenance, support,
+ updates, enhancements or modifications.  In no event shall the
+ Institute for Systems Biology and the Whitehead Institute
+ be liable to any party for direct, indirect, special,
+ incidental or consequential damages, including lost profits, arising
+ out of the use of this software and its documentation, even if the
+ Institute for Systems Biology and the Whitehead Institute
+ have been advised of the possibility of such damage.  See
+ the GNU Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this library; if not, write to the Free Software Foundation,
+ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
+package cytoscape.data.writers;
+
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyDataTable;
+import org.cytoscape.attributes.MultiHashMap;
+import org.cytoscape.attributes.MultiHashMapDefinition;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+
+/**
+ * CyAttributeWriter extracted from AttributeSaverDialog.
+ *
+ */
+public class CyAttributesWriter {
+	/**
+	 *
+	 */
+	public static String newline = System.getProperty("line.separator");
+	private final CyDataTable cyAttributes;
+	private final String attributeName;
+	private Writer fileWriter;
+
+	/**
+	 * Creates a new CyAttributesWriter2 object.
+	 *
+	 * @param attributes  DOCUMENT ME!
+	 * @param attributeName  DOCUMENT ME!
+	 * @param fileWriter  DOCUMENT ME!
+	 */
+	public CyAttributesWriter(final CyDataTable attributes, final String attributeName,
+	                           final Writer fileWriter) {
+		this.cyAttributes = attributes;
+		this.attributeName = attributeName;
+		this.fileWriter = fileWriter;
+	}
+
+	/**
+	 * Write out the state for the given attributes
+	 *
+	 * @param selectedRows
+	 *
+	 * @return number of files successfully saved, the better way to do this
+	 *         would just be to throw the error and display a specific message
+	 *         for each failure, but oh well.
+	 * @throws IOException
+	 *
+	 */
+	public void writeAttributes() throws IOException {
+
+		final String className = cyAttributes.getColumnTypeMap().get(attributeName).getName();
+
+		fileWriter.write(attributeName + " (class=" + className + ")" + newline);
+
+		
+
+		final MultiHashMap attributeMap = cyAttributes.getMultiHashMap();
+
+		if (attributeMap != null) {
+			final Iterator<String> keys = cyAttributes.getMultiHashMap().getObjectKeys(attributeName);
+
+			String key;
+			Object value;
+			Iterator objIt;
+			StringBuilder result = new StringBuilder();
+
+			while (keys.hasNext()) {
+				key = keys.next();
+
+				if (cyAttributes.getType(attributeName) == CyAttributes.TYPE_SIMPLE_LIST)
+					value = cyAttributes.getListAttribute(key, attributeName);
+				else
+					value = cyAttributes.getAttribute(key, attributeName);
+					
+
+				if (value != null) {
+					if (value instanceof List) {
+						result.append(key + " = ");
+
+						if (((Collection) value).size() > 0) {
+							objIt = ((Collection) value).iterator();
+							result.append("(" + objIt.next());
+
+							while (objIt.hasNext())
+								result.append("::" + objIt.next());
+
+							result.append(")" + newline);
+							fileWriter.write(result.toString());
+							result = new StringBuilder();
+						}
+					} else
+						fileWriter.write(key + " = " + value + newline);
+				}
+			}
+
+			fileWriter.flush();
+		}
+
+		fileWriter.close();
+		fileWriter = null;
+	}
+}
