@@ -1,0 +1,119 @@
+format-version: 1.2
+date: 16:03:2011 16:47
+auto-generated-by: OBO-Edit 2.0
+ontology: go
+synonymtypedef: systematic_synonym "Systematic synonym" EXACT
+subsetdef: goslim_candida "Candida GO slim"
+subsetdef: goslim_generic "Generic GO slim"
+subsetdef: goslim_goa "GOA and proteome slim"
+subsetdef: goslim_pir "PIR GO slim"
+subsetdef: goslim_plant "Plant GO slim"
+subsetdef: goslim_pombe "Fission yeast GO slim"
+subsetdef: goslim_yeast "Yeast GO slim"
+subsetdef: gosubset_prok "Prokaryotic GO subset"
+subsetdef: high_level_annotation_qc "High-level terms not to be used for direct annotation"
+subsetdef: unvetted "unvetted"
+remark: cvs version: $Revision: 1.823 $
+
+[Term]
+id: GO:0000746
+name: conjugation
+namespace: biological_process
+def: "The union or introduction of genetic information from compatible mating types that results in a genetically different individual. Conjugation requires direct cellular contact between the organisms." [GOC:elh]
+subset: goslim_candida
+subset: goslim_pir
+subset: goslim_yeast
+subset: gosubset_prok
+xref: Wikipedia:Conjugation
+is_a: GO:0008150 ! biological_process
+
+[Term]
+id: GO:0000910
+name: cytokinesis
+namespace: biological_process
+alt_id: GO:0007104
+alt_id: GO:0016288
+def: "A cellular process resulting in the division of the cytoplasm of a cell and its separation into two daughter cells. Cytokinesis usually occurs after growth, replication, and segregation of cellular components." [GOC:ai]
+comment: Note that most eukaryotic gene products involved in canonical cytokinesis during the cell cycle can be annotated to 'cell cycle cytokinesis ; GO:0033205' or its descendants. See also 'cell division ; GO:0051301'. Note that cytokinesis excludes nuclear division; in prokaryotes, there is little difference between cytokinesis and cell division.
+subset: goslim_candida
+subset: goslim_pombe
+subset: goslim_yeast
+subset: gosubset_prok
+xref: Reactome:1253275 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1280211 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1326787 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1352890 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1373096 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1393112 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1417598 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1450689 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1471153 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1483156 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1521110 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:1532602 ! Mitotic Telophase /Cytokinesis
+xref: Reactome:68884 ! Mitotic Telophase /Cytokinesis
+xref: Wikipedia:Cytokinesis
+relationship: part_of GO:0008150 ! biological_process
+is_a: GO:0008150 ! biological_process
+
+[Term]
+id: GO:0003674
+name: molecular_function
+namespace: molecular_function
+alt_id: GO:0005554
+def: "Elemental activities, such as catalysis or binding, describing the actions of a gene product at the molecular level. A given gene product may exhibit one or more molecular functions." [GOC:go_curators]
+comment: Note that, in addition to forming the root of the molecular function ontology, this term is recommended for use for the annotation of gene products whose molecular function is unknown. Note that when this term is used for annotation, it indicates that no information was available about the molecular function of the gene product annotated as of the date the annotation was made; the evidence code ND, no data, is used to indicate this.
+subset: goslim_candida
+subset: goslim_goa
+subset: goslim_pir
+subset: goslim_plant
+subset: goslim_yeast
+subset: gosubset_prok
+synonym: "molecular function" EXACT []
+synonym: "molecular function unknown" NARROW []
+
+[Term]
+id: GO:0003677
+name: DNA binding
+namespace: molecular_function
+def: "Any molecular function by which a gene product interacts selectively with DNA (deoxyribonucleic acid)." [GOC:dph, GOC:jl, GOC:tb]
+subset: goslim_candida
+subset: goslim_plant
+subset: goslim_yeast
+subset: gosubset_prok
+synonym: "microtubule/chromatin interaction" RELATED []
+synonym: "plasmid binding" NARROW []
+is_a: GO:0003674 ! molecular_function
+
+
+[Typedef]
+id: has_part
+name: has_part
+namespace: gene_ontology
+xref: OBO_REL:has_part
+is_transitive: true
+created_by: midori
+creation_date: 2009-07-30T12:00:35Z
+
+[Typedef]
+id: negatively_regulates
+name: negatively_regulates
+namespace: gene_ontology
+
+[Typedef]
+id: part_of
+name: part_of
+namespace: gene_ontology
+xref: OBO_REL:part_of
+is_transitive: true
+
+[Typedef]
+id: positively_regulates
+name: positively_regulates
+namespace: gene_ontology
+
+[Typedef]
+id: regulates
+name: regulates
+namespace: gene_ontology
+
