@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+	<!-- 
+	This simply constructs an object (or bean) called "sampleTaskFactory"
+	of type org.example.internal.SampleTaskFactory.  The name "sampleTaskFactory"
+	is used to identify this particular object in this and the 
+	bundle-context-osgi.xml file.
+	-->
+	<bean id="enhancedSearchPlugin"
+		class="org.cytoscape.search.internal.EnhancedSearchPlugin">
+		<constructor-arg ref="cytoscapeDesktopService" />
+		<constructor-arg ref="cyApplicationManagerRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="guiTaskManagerServiceRef" />
+		<constructor-arg ref="cyEventHelperServiceRef" />
+		<constructor-arg ref="cyNetworkViewManagerServiceRef" />
+	</bean>
+</beans>
