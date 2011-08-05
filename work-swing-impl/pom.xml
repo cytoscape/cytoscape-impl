@@ -2,15 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.cytoscape</groupId>
-		<artifactId>parent</artifactId>
-		<version>3.0.0-alpha8-SNAPSHOT</version>
-		<relativePath>../parent</relativePath>
+		<artifactId>impl-parent</artifactId>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.cytoscape</groupId>
 	<artifactId>work-swing-impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0-alpha4-SNAPSHOT</version>
 	<name>work-swing-impl-parent</name>
 
 	<modules>
@@ -18,11 +16,6 @@
 		<module>it</module>
 	</modules>
 
-	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/work-swing-impl/trunk</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/work-swing-impl/trunk</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/work-swing-impl/trunk</url>
-	</scm>
 
     <build>
         <plugins>
@@ -76,73 +69,61 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-spring-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>property-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
  		<dependency>
  			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
  			<scope>provided</scope>
  		</dependency>
  		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
  			<scope>provided</scope>
  		</dependency>
  		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

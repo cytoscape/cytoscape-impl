@@ -39,7 +39,7 @@
 		<module>manual-layout-impl</module>
 		<module>model-impl</module>
 		<module>network-analyzer-impl</module>
-		<module>network-merge-impl</module>
+		<!-- <module>network-merge-impl</module> -->
 		<module>plugin-impl</module>
 		<module>presentation-impl</module>
 		<module>property-impl</module>
@@ -59,6 +59,10 @@
 		<module>work-headless-impl</module>
 		<module>work-swing-impl</module>
 	</modules>
+
+	<properties>
+		<cytoscape.api.version>3.0.0-alpha6-SNAPSHOT</cytoscape.api.version>
+	</properties>
 
 	<dependencyManagement>
 		<dependencies>

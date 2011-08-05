@@ -2,13 +2,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.cytoscape</groupId>
-    <artifactId>parent</artifactId>
-    <version>3.0.0-alpha8-SNAPSHOT</version>
-		<relativePath>../parent</relativePath>
+    <artifactId>impl-parent</artifactId>
+    <version>3.0.0-alpha6-SNAPSHOT</version>
   </parent>
 
   <artifactId>network-merge-impl</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <name>Advanced Network Merge</name>
@@ -80,32 +78,26 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>		
 	</dependencies>
 

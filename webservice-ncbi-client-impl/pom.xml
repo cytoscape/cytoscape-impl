@@ -4,10 +4,9 @@
 
 
 	<parent>
-		<artifactId>parent</artifactId>
+		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-alpha8-SNAPSHOT</version>
-		<relativePath>../parent</relativePath>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -18,17 +17,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>webservice-ncbi-client-impl</artifactId>
-	<version>3.0.0-alpha3-SNAPSHOT</version>
 
 	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
 
 	<packaging>bundle</packaging>
 
-	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/webservice-ncbi-client-impl/trunk</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/webservice-ncbi-client-impl/trunk</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/webservice-ncbi-client-impl/trunk</url>
-	</scm>
 
 	<repositories>
 		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->

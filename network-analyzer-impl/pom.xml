@@ -2,13 +2,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.cytoscape</groupId>
-		<artifactId>parent</artifactId>
-		<version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+		<artifactId>impl-parent</artifactId>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>network-analyzer-impl</artifactId>
-	<version>3.0.0-alpha3-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<name>NetworkAnalyzer</name>
 
@@ -17,11 +15,6 @@
 		<bundle.namespace>de.mpg.mpi_inf.bioinf.netanalyzer</bundle.namespace>
 	</properties>
 
-    <scm>
-        <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/network-analyzer-impl/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/network-analyzer-impl/trunk</developerConnection>
-        <url>http://chianti.ucsd.edu/svn/core3/network-analyzer-impl/trunk</url>
-    </scm>
 
 	<build>
 		<plugins>

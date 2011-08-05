@@ -2,10 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
-		<artifactId>parent</artifactId>
+		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -16,17 +15,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>editor-impl</artifactId>
-	<version>3.0.0-alpha3-SNAPSHOT</version>
 
 	<name>${bundle.symbolicName}</name>
 
 	<packaging>bundle</packaging>
 
-    <scm>
-        <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/editor-impl/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/editor-impl/trunk</developerConnection>
-        <url>http://chianti.ucsd.edu/svn/core3/editor-impl/trunk</url>
-    </scm>
 
 	<build>
 		<resources>

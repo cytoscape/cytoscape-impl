@@ -2,9 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
 		<groupId>org.cytoscape</groupId>
-		<artifactId>parent</artifactId>
-		<version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+		<artifactId>impl-parent</artifactId>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 	<properties>
 		<bundle.symbolicName>org.cytoscape.sbml-impl</bundle.symbolicName>
@@ -13,24 +12,16 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>sbml-impl</artifactId>
-	<version>3.0.0-alpha1</version>
 	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
 	<packaging>bundle</packaging>
-    <scm>
-        <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/sbml-impl/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/sbml-impl/trunk</developerConnection>
-        <url>http://chianti.ucsd.edu/svn/core3/sbml-impl/trunk</url>
-    </scm>
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha4</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -71,19 +62,17 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>test-support</artifactId>
-			<version>3.0.0-alpha2</version>
+			<version>3.0.0-alpha3-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.8.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

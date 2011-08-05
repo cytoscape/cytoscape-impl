@@ -5,9 +5,8 @@
 
 	<parent>
 		<groupId>org.cytoscape</groupId>
-		<artifactId>parent</artifactId>
-		<version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+		<artifactId>impl-parent</artifactId>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<properties>

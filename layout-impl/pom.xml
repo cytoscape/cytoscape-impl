@@ -3,9 +3,8 @@
 
   <parent>
     <groupId>org.cytoscape</groupId>
-    <artifactId>parent</artifactId>
-    <version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+    <artifactId>impl-parent</artifactId>
+    <version>3.0.0-alpha6-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -16,15 +15,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cytoscape</groupId>
   <artifactId>layout-impl</artifactId>
-  <version>3.0.0-alpha2-SNAPSHOT</version>
 
   <name>${bundle.symbolicName}</name>
 
-    <scm>
-        <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/layout-impl/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/layout-impl/trunk</developerConnection>
-        <url>http://chianti.ucsd.edu/svn/core3/layout-impl/trunk</url>
-    </scm>
 
   <packaging>bundle</packaging>
 

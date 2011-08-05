@@ -4,10 +4,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<parent>
-		<artifactId>parent</artifactId>
+		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
 		<version>3.0.0-alpha6-SNAPSHOT</version>
-		<relativePath>../parent</relativePath>
 	</parent>
 
 	<properties>
@@ -24,11 +23,6 @@
 
 	<packaging>bundle</packaging>
 
-	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/equations-impl/trunk</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/equations-impl/trunk</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/equations-impl/trunk</url>
-	</scm>
 
 
 

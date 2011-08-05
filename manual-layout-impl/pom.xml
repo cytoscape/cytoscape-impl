@@ -2,26 +2,19 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.cytoscape</groupId>
-    <artifactId>parent</artifactId>
-    <version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+    <artifactId>impl-parent</artifactId>
+    <version>3.0.0-alpha6-SNAPSHOT</version>
   </parent>
 
   <artifactId>manual-layout-impl</artifactId>
   <packaging>bundle</packaging>
   <name>Manual Layout</name>
-  <version>3.0.0-alpha3-SNAPSHOT</version>
 
   <properties>
     <bundle.symbolicName>org.cytoscape.manual-layout-impl</bundle.symbolicName>
     <bundle.namespace>org.cytoscape.view.manual.internal</bundle.namespace>
   </properties>
 
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/manual-layout-impl/trunk</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/manual-layout-impl/trunk</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/manual-layout-impl/trunk</url>
-  </scm>
 
 
 	<repositories>

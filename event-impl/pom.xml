@@ -2,15 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.cytoscape</groupId>
-		<artifactId>parent</artifactId>
-		<version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+		<artifactId>impl-parent</artifactId>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.cytoscape</groupId>
 	<artifactId>event-impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0-alpha4-SNAPSHOT</version>
 	<name>event-impl-parent</name>
 
 	<modules>
@@ -18,11 +16,6 @@
 		<module>it</module>
 	</modules>
 
-	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/event-impl/trunk</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/event-impl/trunk</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/event-impl/trunk</url>
-	</scm>
 
     <build>
         <plugins>

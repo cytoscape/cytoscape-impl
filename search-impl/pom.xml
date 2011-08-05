@@ -2,16 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
-		<artifactId>parent</artifactId>
+		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
     <groupId>org.cytoscape</groupId>
     <artifactId>search-impl</artifactId>
-	<version>3.0.0-alpha3-SNAPSHOT</version>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.search-impl</bundle.symbolicName>
@@ -22,11 +20,6 @@
 
 	<packaging>bundle</packaging>
 
-    <scm>
-        <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/search-impl/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/search-impl/trunk</developerConnection>
-        <url>http://chianti.ucsd.edu/svn/core3/search-impl/trunk</url>
-    </scm>
 
 	<build>
 		<!-- Cytoscape requires Java 1.6 -->

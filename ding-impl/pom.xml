@@ -6,16 +6,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>parent</artifactId>
+		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-alpha8-SNAPSHOT</version>
-		<relativePath>../parent</relativePath>
+		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.cytoscape</groupId>
 	<artifactId>ding-impl</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0-alpha3-SNAPSHOT</version>
 	<name>Ding Implementation Parent Pom</name>
 
 	<modules>
@@ -25,26 +23,5 @@
 		<module>ding-presentation-impl</module>
 		<module>ding-customgraphics-manager-impl</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>${mockito.version}</version> 
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-    <scm>
-        <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/ding-impl/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/ding-impl/trunk</developerConnection>
-        <url>http://chianti.ucsd.edu/svn/core3/ding-impl/trunk</url>
-    </scm>
 
 </project> 

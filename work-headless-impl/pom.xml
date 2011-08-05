@@ -2,10 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <parent>
-    <artifactId>parent</artifactId>
+    <artifactId>impl-parent</artifactId>
     <groupId>org.cytoscape</groupId>
-    <version>3.0.0-alpha7</version>
-		<relativePath>../parent</relativePath>
+    <version>3.0.0-alpha6-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -16,7 +15,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cytoscape</groupId>
   <artifactId>work-headless-impl</artifactId>
-  <version>1.0-SNAPSHOT</version>
 
   <name>${bundle.symbolicName}</name>
 
