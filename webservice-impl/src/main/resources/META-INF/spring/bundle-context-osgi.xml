@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+
+	<!-- Import Application Manager -->
+	<osgi:reference id="cyApplicationManagerServiceRef"
+		interface="org.cytoscape.session.CyApplicationManager" />
+
+	<!-- Import ref to desktop application -->
+	<osgi:reference id="cySwingApplicationServiceRef"
+		interface="org.cytoscape.application.swing.CySwingApplication" />
+
+	<osgi:reference id="taskManagerServiceRef"
+		interface="org.cytoscape.work.swing.GUITaskManager" />
+
+
+	<!-- Export actions -->
+	<osgi:service id="showNetworkImportDialogActionService"
+		ref="showNetworkImportDialogAction" interface="org.cytoscape.application.swing.CyAction" />
+
+
+	<!-- Import client list -->
+	<osgi:set id="networkImportClientSet"
+		cardinality="0..N">
+		<osgi:interfaces>
+			<value>org.cytoscape.io.webservice.NetworkImportWebServiceClient</value>
+			<value>org.cytoscape.io.webservice.WebServiceClient</value>
+			<value>org.cytoscape.io.webservice.SearchWebServiceClient</value>
+		</osgi:interfaces>
+		<osgi:listener bind-method="addNetworkImportClient"
+			unbind-method="removeNetworkImportClient" ref="unifiedNetworkImportDialog" />
+	</osgi:set>
+
+</beans>
