@@ -1,0 +1,715 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+	<!-- collect necessary services -->
+	<osgi:reference id="cyEventHelperRef" interface="org.cytoscape.event.CyEventHelper" />
+	
+	<osgi:reference id="recentlyOpenedTrackerServiceRef" interface="org.cytoscape.io.util.RecentlyOpenedTracker" />
+
+	<osgi:reference id="cyNetworkNamingServiceRef"
+		interface="org.cytoscape.session.CyNetworkNaming" />
+
+	<osgi:reference id="undoSupportServiceRef" interface="org.cytoscape.work.undo.UndoSupport" />
+
+	<osgi:reference id="cyNetworkViewFactoryServiceRef"
+		interface="org.cytoscape.view.model.CyNetworkViewFactory" />
+
+	<osgi:reference id="cyNetworkFactoryServiceRef"
+		interface="org.cytoscape.model.CyNetworkFactory" />
+
+	<osgi:reference id="cyRootNetworkFactoryServiceRef"
+		interface="org.cytoscape.model.subnetwork.CyRootNetworkFactory" />
+
+	<osgi:reference id="cyNetworkReaderManagerServiceRef"
+		interface="org.cytoscape.io.read.CyNetworkReaderManager" />
+
+	<osgi:reference id="cyDataTableReaderManagerServiceRef"
+		interface="org.cytoscape.io.read.CyTableReaderManager" />
+		
+	<osgi:reference id="vizmapReaderManagerServiceRef"
+		interface="org.cytoscape.io.read.VizmapReaderManager" />
+
+	<osgi:reference id="visualMappingManagerServiceRef"
+		interface="org.cytoscape.view.vizmap.VisualMappingManager" />
+
+	<osgi:reference id="visualStyleFactoryServiceRef"
+		interface="org.cytoscape.view.vizmap.VisualStyleFactory" />
+
+	<osgi:reference id="streamUtilRef" interface="org.cytoscape.io.util.StreamUtil" />
+
+	<osgi:reference id="taskManagerServiceRef" interface="org.cytoscape.work.TaskManager" />
+
+	<osgi:reference id="viewWriterManagerServiceRef"
+		interface="org.cytoscape.io.write.PresentationWriterManager" />
+
+	<osgi:reference id="networkViewWriterManagerServiceRef"
+		interface="org.cytoscape.io.write.CyNetworkViewWriterManager" />
+		
+	<osgi:reference id="vizmapWriterManagerServiceRef"
+		interface="org.cytoscape.io.write.VizmapWriterManager" />
+
+	<osgi:reference id="sessionWriterManagerServiceRef"
+		interface="org.cytoscape.io.write.CySessionWriterManager" />
+
+	<osgi:reference id="sessionReaderManagerServiceRef"
+		interface="org.cytoscape.io.read.CySessionReaderManager" />
+
+	<osgi:reference id="cyNetworkManagerServiceRef"
+		interface="org.cytoscape.model.CyNetworkManager" />
+
+	<osgi:reference id="cyNetworkViewManagerServiceRef"
+		interface="org.cytoscape.view.model.CyNetworkViewManager" />
+
+	<osgi:reference id="cyApplicationManagerServiceRef"
+		interface="org.cytoscape.session.CyApplicationManager" />
+
+	<osgi:reference id="cySessionManagerServiceRef"
+		interface="org.cytoscape.session.CySessionManager" />
+
+	<osgi:reference id="cyPropertyServiceRef" interface="org.cytoscape.property.CyProperty"
+		filter="(cyPropertyName=coreSettings)" />
+
+	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
+
+	<osgi:reference id="renderingEngineManagerServiceRef"
+		interface="org.cytoscape.view.presentation.RenderingEngineManager" />
+
+	<osgi:reference id="cyLayoutsServiceRef" 
+		interface="org.cytoscape.view.layout.CyLayoutAlgorithmManager" />
+
+	<osgi:reference id="cyTableWriterManagerRef" 
+		interface="org.cytoscape.io.write.CyTableWriterManager" />
+	
+	<!-- now register our services -->
+	<osgi:service id="undoActionService" ref="undoAction"
+		interface="org.cytoscape.application.swing.CyAction" />
+	<osgi:service id="redoActionService" ref="redoAction"
+		interface="org.cytoscape.application.swing.CyAction" />
+
+	<osgi:service id="loadNetworkFileTaskFactoryService" ref="loadNetworkFileTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="File..." />
+			<entry key="preferredMenu" value="File.Import.Network" />
+			<entry key="menuGravity" value="1.0" />
+			<entry key="command" value="load" />
+			<entry key="commandNamespace" value="network" />
+			<entry key="accelerator" value="cmd l" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="loadNetworkURLTaskFactoryService" ref="loadNetworkURLTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="URL..." />
+			<entry key="preferredMenu" value="File.Import.Network" />
+			<entry key="menuGravity" value="2.0" />
+			<entry key="accelerator" value="cmd shift l" />
+		</osgi:service-properties>
+	</osgi:service>
+	
+	<osgi:service id="loadVizmapFileTaskFactoryService" ref="loadVizmapFileTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Vizmap File..." />
+			<entry key="preferredMenu" value="File.Import" />
+			<entry key="menuGravity" value="3.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="loadAttrsFileTaskFactoryService" ref="loadAttrsFileTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="File..." />
+			<entry key="preferredMenu" value="File.Import.Table" />
+			<entry key="menuGravity" value="1.1" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="loadAttrsURLTaskFactoryService" ref="loadAttrsURLTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="URL..." />
+			<entry key="preferredMenu" value="File.Import.Table" />
+			<entry key="menuGravity" value="1.2" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="proxySettingsTaskFactoryService" ref="proxySettingsTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Proxy Settings..." />
+			<entry key="preferredMenu" value="Edit.Preferences" />
+			<entry key="menuGravity" value="1.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<!-- selection -->
+	<osgi:service id="deleteSelectedNodesAndEdgesTaskFactoryService"
+		ref="deleteSelectedNodesAndEdgesTaskFactory" interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Delete Selected Nodes and Edges..." />
+			<entry key="preferredMenu" value="Edit" />
+			<entry key="enableFor" value="selectedNodesOrEdges" />
+			<entry key="menuGravity" value="5.0" />
+			<entry key="command" value="delete selected nodes and edges" />
+			<entry key="commandNamespace" value="network" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="selectAllTaskFactoryService" ref="selectAllTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Select all nodes and edges" />
+			<entry key="preferredMenu" value="Select" />
+			<entry key="accelerator" value="cmd alt a" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="5.0" />
+			<entry key="command" value="select all nodes" />
+			<entry key="commandNamespace" value="network" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="selectAllEdgesTaskFactoryService" ref="selectAllEdgesTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Select all edges" />
+			<entry key="preferredMenu" value="Select.Edges" />
+			<entry key="accelerator" value="cmd alt a" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="4.0" />
+			<entry key="command" value="select all edges" />
+			<entry key="commandNamespace" value="network" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="selectAllNodesTaskFactoryService" ref="selectAllNodesTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Select all nodes" />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="accelerator" value="cmd a" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="4.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+
+	<osgi:service id="selectAdjacentEdgesTaskFactoryService"
+		ref="selectAdjacentEdgesTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Select adjacent edges" />
+			<entry key="preferredMenu" value="Select.Edges" />
+			<entry key="accelerator" value="alt e" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="6.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="selectConnectedNodesTaskFactoryService"
+		ref="selectConnectedNodesTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Nodes connected by selected edges" />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="accelerator" value="cmd 7" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="7.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="selectFirstNeighborsTaskFactoryService"
+		ref="selectFirstNeighborsTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="First neighbors of selected nodes" />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="accelerator" value="cmd 6" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="6.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+
+	<osgi:service id="deselectAllTaskFactoryService" ref="deselectAllTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Deselect all nodes and edges" />
+			<entry key="preferredMenu" value="Select" />
+			<entry key="accelerator" value="cmd shift alt a" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="5.1" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="deselectAllEdgesTaskFactoryService" ref="deselectAllEdgesTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Deselect all edges" />
+			<entry key="preferredMenu" value="Select.Edges" />
+			<entry key="accelerator" value="alt shift a" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="5.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="deselectAllNodesTaskFactoryService" ref="deselectAllNodesTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Deselect all nodes" />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="accelerator" value="cmd shift a" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="5.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="invertSelectedEdgesTaskFactoryService"
+		ref="invertSelectedEdgesTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Invert edge selection" />
+			<entry key="preferredMenu" value="Select.Edges" />
+			<entry key="accelerator" value="alt i" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="1.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="invertSelectedNodesTaskFactoryService"
+		ref="invertSelectedNodesTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Invert node selection" />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="accelerator" value="cmd i" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="1.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="selectFromFileListTaskFactoryService"
+		ref="selectFromFileListTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="From ID List file..." />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="accelerator" value="cmd i" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="8.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+
+	<osgi:service id="selectFirstNeighborsNodeViewTaskFactoryService"
+		ref="selectFirstNeighborsNodeViewTaskFactory" interface="org.cytoscape.task.NodeViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Select First Neighbors" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<!-- show/hide -->
+	<osgi:service id="hideSelectedTaskFactoryService" ref="hideSelectedTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Hide selected nodes and edges" />
+			<entry key="preferredMenu" value="Select" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="3.1" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="hideSelectedNodesTaskFactoryService"
+		ref="hideSelectedNodesTaskFactory" interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Hide selected nodes" />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="2.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="hideSelectedEdgesTaskFactoryService"
+		ref="hideSelectedEdgesTaskFactory" interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Hide selected edges" />
+			<entry key="preferredMenu" value="Select.Edges" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="2.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="unHideAllTaskFactoryService" ref="unHideAllTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Show all nodes and edges" />
+			<entry key="preferredMenu" value="Select" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="3.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="unHideAllNodesTaskFactoryService" ref="unHideAllNodesTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Show all nodes" />
+			<entry key="preferredMenu" value="Select.Nodes" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="3.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="unHideAllEdgesTaskFactoryService" ref="unHideAllEdgesTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Show all edges" />
+			<entry key="preferredMenu" value="Select.Edges" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="3.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="newEmptyNetworkTaskFactoryService" ref="newEmptyNetworkTaskFactory">
+		<osgi:interfaces>
+			<value>org.cytoscape.work.TaskFactory</value>
+			<value>org.cytoscape.task.creation.NewEmptyNetworkViewFactory</value>
+		</osgi:interfaces>
+		<osgi:service-properties>
+			<entry key="title" value="Empty Network" />
+			<entry key="preferredMenu" value="File.New.Network" />
+			<entry key="menuGravity" value="4.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="newNetworkSelectedNodesEdgesTaskFactoryService"
+		ref="newNetworkSelectedNodesEdgesTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="From selected nodes, selected edges" />
+			<entry key="preferredMenu" value="File.New.Network" />
+			<entry key="enableFor" value="selectedNodesOrEdges" />
+			<entry key="accelerator" value="cmd shift n" />
+			<entry key="menuGravity" value="2.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="newNetworkSelectedNodesOnlyTaskFactoryService"
+		ref="newNetworkSelectedNodesOnlyTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="From selected nodes, all edges" />
+			<entry key="preferredMenu" value="File.New.Network" />
+			<entry key="enableFor" value="selectedNodesOrEdges" />
+			<entry key="accelerator" value="cmd n" />
+			<entry key="inToolBar" value="true" />
+			<entry key="toolBarGravity" value="9.1" />
+			<entry key="iconName" value="/images/new-network-from-selected-nodes-32.png" />
+			<entry key="menuGravity" value="1.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="cloneNetworkTaskFactoryService" ref="cloneNetworkTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Clone Current Network" />
+			<entry key="preferredMenu" value="File.New.Network" />
+			<entry key="enableFor" value="network" />
+			<entry key="menuGravity" value="3.0" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<!-- destruction -->
+	<osgi:service id="destroyNetworkTaskFactoryService" ref="destroyNetworkTaskFactory"
+		interface="org.cytoscape.task.NetworkCollectionTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Destroy Network" />
+			<entry key="preferredMenu" value="Edit" />
+			<entry key="enableFor" value="network" />
+			<entry key="accelerator" value="cmd shift w" />
+			<entry key="scope" value="limited" />
+			<entry key="menuGravity" value="3.2" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="destroyNetworkViewTaskFactoryService"
+		ref="destroyNetworkViewTaskFactory" interface="org.cytoscape.task.NetworkViewCollectionTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Destroy View" />
+			<entry key="preferredMenu" value="Edit" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="accelerator" value="cmd w" />
+			<entry key="scope" value="limited" />
+			<entry key="menuGravity" value="3.1" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<!-- zoom AND CHANGED THE INTERFACE -->
+	<osgi:service id="zoomInTaskFactoryService" ref="zoomInTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="tooltip" value="Zoom In" />
+			<entry key="title" value="Zoom In" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="inToolBar" value="true" />
+			<entry key="toolBarGravity" value="3.1" />
+			<entry key="iconName" value="/images/ximian/stock_zoom-in.png" />
+			<entry key="accelerator" value="cmd equals" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="zoomOutTaskFactoryService" ref="zoomOutTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="tooltip" value="Zoom Out" />
+			<entry key="title" value="Zoom Out" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="inToolBar" value="true" />
+			<entry key="toolBarGravity" value="3.2" />
+			<entry key="iconName" value="/images/ximian/stock_zoom-out.png" />
+			<entry key="accelerator" value="cmd minus" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="fitSelectedTaskFactoryService" ref="fitSelectedTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="tooltip" value="Zoom selected region" />
+			<entry key="title" value="Fit Selected" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="inToolBar" value="true" />
+			<entry key="toolBarGravity" value="3.4" />
+			<entry key="iconName" value="/images/ximian/stock_zoom-object.png" />
+			<entry key="accelerator" value="cmd shift f" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="fitContentTaskFactoryService" ref="fitContentTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="tooltip" value="Zoom out to display all of current Network" />
+			<entry key="title" value="Fit Content" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="inToolBar" value="true" />
+			<entry key="toolBarGravity" value="3.3" />
+			<entry key="iconName" value="/images/ximian/stock_zoom-1.png" />
+			<entry key="accelerator" value="cmd f" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="editNetworkTitleTaskFactoryService" ref="editNetworkTitleTaskFactory"
+		interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Network Title..." />
+			<entry key="preferredMenu" value="Edit" />
+			<entry key="enableFor" value="network" />
+			<entry key="scope" value="limited" />
+			<entry key="menuGravity" value="5.5" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="createNetworkViewTaskFactoryService"
+		ref="createNetworkViewTaskFactory" interface="org.cytoscape.task.NetworkTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Create View" />
+			<entry key="preferredMenu" value="Edit" />
+			<entry key="menuGravity" value="3.0" />
+			<entry key="enableFor" value="networkWithoutView" />
+			<entry key="scope" value="limited" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="exportNetworkImageTaskFactoryService"
+		ref="exportNetworkImageTaskFactory" interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Graphics" />
+			<entry key="preferredMenu" value="File.Export.Network View" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="inToolBar" value="true" />
+			<entry key="toolBarGravity" value="5.0" />
+			<entry key="iconName" value="/images/ximian/tango-32-camera-photo.png" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="exportNetworkViewTaskFactoryService"
+		ref="exportNetworkViewTaskFactory" interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="File" />
+			<entry key="preferredMenu" value="File.Export.Network View" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="5.1" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="exportNodeTableTaskFactoryService" ref="exportNodeTableTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="File..." />
+			<entry key="preferredMenu" value="File.Export.Node Attributes" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="1.0" />
+		</osgi:service-properties>
+	</osgi:service>
+	
+	<osgi:service id="exportEdgeTableTaskFactoryService" ref="exportEdgeTableTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="File..." />
+			<entry key="preferredMenu" value="File.Export.Edge Attributes" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="1.1" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="exportCurrentTableTaskFactoryService" ref="exportCurrentTableTaskFactory"
+		interface="org.cytoscape.task.TableTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="File..." />
+			<entry key="preferredMenu" value="File.Export.Table" />
+			<entry key="enableFor" value="table" />
+			<entry key="menuGravity" value="1.2" />
+		</osgi:service-properties>
+	</osgi:service>
+	
+	<osgi:service id="exportVizmapTaskFactoryService" ref="exportVizmapTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="File..." />
+			<entry key="preferredMenu" value="File.Export.Vizmap" />
+			<entry key="enableFor" value="vizmap" />
+			<entry key="menuGravity" value="1.1" />
+		</osgi:service-properties>
+	</osgi:service>
+	
+	<!-- consider removing -->
+	<!-- useful for command line, but not otherwise <osgi:service id="setCurrentNetworkTaskFactoryService" 
+		ref="setCurrentNetworkTaskFactory" interface="org.cytoscape.work.TaskFactory"/> -->
+
+	<!-- session -->
+	<osgi:service id="newSessionTaskFactoryService" ref="newSessionTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Session" />
+			<entry key="preferredMenu" value="File.New" />
+			<entry key="menuGravity" value="1.1" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="openSessionTaskFactoryService" ref="openSessionTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Open" />
+			<entry key="preferredMenu" value="File" />
+			<entry key="menuGravity" value="1.0" />
+			<entry key="inToolBar" value="true" />
+			<entry key="iconName" value="/images/ximian/stock_open.png" />
+			<entry key="toolBarGravity" value="1.0" />
+			<entry key="accelerator" value="cmd o" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="saveSessionTaskFactoryService" ref="saveSessionTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Save" />
+			<entry key="preferredMenu" value="File" />
+			<entry key="menuGravity" value="3.0" />
+			<entry key="inToolBar" value="true" />
+			<entry key="iconName" value="/images/ximian/stock_save.png" />
+			<entry key="toolBarGravity" value="1.1" />
+			<entry key="accelerator" value="cmd s" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="saveSessionAsTaskFactoryService" ref="saveSessionAsTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Save As" />
+			<entry key="preferredMenu" value="File" />
+			<entry key="menuGravity" value="3.1" />
+			<entry key="accelerator" value="cmd shift s" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="applyPreferredLayoutTaskFactoryService"
+		ref="applyPreferredLayoutTaskFactory" interface="org.cytoscape.task.NetworkViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Apply Preferred Layout" />
+			<entry key="preferredMenu" value="Layout" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="inToolBar" value="true" />
+			<entry key="toolBarGravity" value="9.0" />
+			<entry key="menuGravity" value="5.0" />
+			<entry key="iconName" value="/images/apply-force-directed-layout-32.png" />
+			<entry key="accelerator" value="fn5" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="deleteColumnTaskFactoryService" ref="deleteColumnTaskFactory"
+		interface="org.cytoscape.task.TableColumnTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Delete column" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="renameColumnTaskFactoryService" ref="renameColumnTaskFactory"
+		interface="org.cytoscape.task.TableColumnTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Rename column" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="copyValueToEntireColumnTaskFactoryService"
+		ref="copyValueToEntireColumnTaskFactory" interface="org.cytoscape.task.TableCellTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Copy to entire column" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="deleteTableTaskFactoryService" ref="deleteTableTaskFactory"
+		interface="org.cytoscape.task.TableTaskFactory">
+	</osgi:service>
+
+
+	<!-- QuickStart and other wizards -->
+	<osgi:service id="quickStartTaskFactoryService" ref="quickStartTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="QuickStart" />
+			<entry key="scope" value="startup" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="quickStartTaskFactoryService2" ref="quickStartTaskFactory2"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="id" value="QuickStart2" />
+			<entry key="scope" value="startup" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="bioGridPreprocessorService" ref="bioGridPreprocessor"
+		auto-export="interfaces" />
+
+	<osgi:set id="processorSetRef"
+		interface="org.cytoscape.task.internal.quickstart.datasource.InteractionFilePreprocessor"
+		cardinality="0..N">
+		<osgi:listener bind-method="addProcessor" unbind-method="removeProcessor"
+			ref="importTaskUtil" />
+		<osgi:listener bind-method="addProcessor" unbind-method="removeProcessor"
+			ref="subnetworkBuilderUtil" />
+	</osgi:set>
+	
+	<!-- For visual style builder -->
+	<osgi:set id="mappingFunctionFactorySet"
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addFactory"
+			unbind-method="removeFactory" ref="subnetworkBuilderUtil" />
+	</osgi:set>
+	
+	<osgi:service id="connectSelectedNodesTaskFactoryService" ref="connectSelectedNodesTaskFactory"
+		interface="org.cytoscape.work.TaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Connect Selected Nodes" />
+			<entry key="enableFor" value="network" />
+			<entry key="preferredMenu" value="Edit" />
+			<entry key="toolBarGravity" value="2.5" />
+		</osgi:service-properties>
+	</osgi:service>
+
+</beans>
