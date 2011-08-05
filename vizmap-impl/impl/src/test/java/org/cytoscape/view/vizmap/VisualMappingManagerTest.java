@@ -1,0 +1,34 @@
+package org.cytoscape.view.vizmap;
+
+
+import static org.mockito.Mockito.*;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.property.NullVisualProperty;
+import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
+import org.cytoscape.view.vizmap.internal.VisualMappingManagerImpl;
+import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
+import org.junit.After;
+import org.junit.Before;
+
+public class VisualMappingManagerTest extends AbstractVisualMappingManagerTest {
+	
+	@Before
+	public void setUp() throws Exception {
+		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		final VisualStyleFactory factory = mock(VisualStyleFactory.class);
+		final VisualStyle dummyDefaultStyle = mock(VisualStyle.class);
+		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
+		when(factory.getInstance(VisualMappingManagerImpl.DEFAULT_STYLE_NAME)).thenReturn(dummyDefaultStyle);
+		
+		vmm = new VisualMappingManagerImpl(eventHelper, factory, lexManager);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+	
+	
+
+}

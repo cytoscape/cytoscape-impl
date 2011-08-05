@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+
+	<!-- Export VMM as an OSGi Service -->
+	<osgi:service id="visualMappingManagerService" ref="visualMappingManager"
+		interface="org.cytoscape.view.vizmap.VisualMappingManager">
+	</osgi:service>
+
+	<!-- Export Visual Style Factory as an OSGi Service -->
+	<osgi:service id="visualStyleFactoryService" ref="visualStyleFactory"
+		interface="org.cytoscape.view.vizmap.VisualStyleFactory">
+	</osgi:service>
+
+	<!-- Individual Service -->
+	<osgi:service id="discreteMappingFactoryService" ref="discreteMappingFactory"
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory">
+		<osgi:service-properties>
+			<entry key="service.type" value="factory" />
+			<entry key="mapping.type" value="discrete" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="continuousMappingFactoryService" ref="continuousMappingFactory"
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory">
+		<osgi:service-properties>
+			<entry key="service.type" value="factory" />
+			<entry key="mapping.type" value="continuous" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="passthroughMappingFactoryService" ref="passthroughMappingFactory"
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory">
+		<osgi:service-properties>
+			<entry key="service.type" value="factory" />
+			<entry key="mapping.type" value="passthrough" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<!-- Import Services -->
+	<osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper" />
+
+	<osgi:reference id="renderingEngineManagerServiceRef"
+		interface="org.cytoscape.view.presentation.RenderingEngineManager" />
+
+	<osgi:set id="renderingEngineFactorySet"
+		interface="org.cytoscape.view.presentation.RenderingEngineFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addRenderingEngineFactory"
+			unbind-method="removeRenderingEngineFactory" ref="visualLexiconManager" />
+	</osgi:set>
+
+</beans>
