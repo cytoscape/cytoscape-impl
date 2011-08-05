@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+	
+	<!-- Export Service Listeners -->
+	<osgi:service id="selectedVisualStyleManagerService" ref="selectedVisualStyleManager" auto-export="interfaces" />
+	
+	<osgi:service id="attributeSetManagerService" ref="attributeSetManager" auto-export="interfaces" />
+	
+	<!--  The main pane is a service -->
+	<osgi:service id="vizMapperGUIService" ref="vizMapperMainPanel"
+		auto-export="interfaces" />
+		
+	<osgi:service id="defaultViewEditorService" ref="defViewEditor"
+		auto-export="interfaces" />
+
+
+	<osgi:service id="nodeEditorService" ref="nodeAttributeComboBoxEditor" auto-export="interfaces" />
+	<osgi:service id="edgeEditorService" ref="edgeAttributeComboBoxEditor" auto-export="interfaces" />
+	<osgi:service id="networkEditorService" ref="networkAttributeComboBoxEditor" auto-export="interfaces" />
+
+	<!-- Value Editors -->
+	<osgi:service id="colorEditorService" ref="colorEditor"
+		auto-export="interfaces" />
+	<osgi:service id="fontEditorService" ref="fontEditor"
+		auto-export="interfaces" />
+	<osgi:service id="doubleValueEditorService" ref="doubleValueEditor"
+		auto-export="interfaces" />
+	<osgi:service id="integerValueEditorService" ref="integerValueEditor"
+		auto-export="interfaces" />
+	<osgi:service id="floatValueEditorService" ref="floatValueEditor"
+		auto-export="interfaces" />
+	<osgi:service id="stringValueEditorService" ref="stringValueEditor"
+		auto-export="interfaces" />
+		
+	<osgi:service id="colorPropertyEditorService" ref="colorPropertyEditor" auto-export="interfaces" />
+	<osgi:service id="doublePropertyEditorService" ref="doublePropertyEditor" auto-export="interfaces" />
+	<osgi:service id="floatPropertyEditorService" ref="floatPropertyEditor" auto-export="interfaces" />
+	<osgi:service id="integerPropertyEditorService" ref="integerPropertyEditor" auto-export="interfaces" />
+
+	<!-- Export as Editor Manager -->
+	
+	<osgi:service id="editorManagerService" ref="editorManager"
+		auto-export="interfaces" />
+
+
+	<osgi:reference id="taskManagerServiceRef" interface="org.cytoscape.work.swing.GUITaskManager" />
+	
+	<osgi:reference id="visualStyleFactoryServiceRef"
+		interface="org.cytoscape.view.vizmap.VisualStyleFactory" />
+
+	<!-- For now, use DING rendering engine only. -->
+	<osgi:reference id="dingVisualLexiconServiceRef"
+		interface="org.cytoscape.view.model.VisualLexicon" filter="(id=ding)" />
+
+	<osgi:reference id="dingRenderingEngineFactoryServiceRef"
+		interface="org.cytoscape.view.presentation.RenderingEngineFactory"
+		filter="(id=ding)" />
+
+	<!-- Visual Mapping Manager Service -->
+	<osgi:reference id="vmmServiceRef"
+		interface="org.cytoscape.view.vizmap.VisualMappingManager" />
+
+	<!-- Network Manager -->
+	<osgi:reference id="cyNetworkManagerServiceRef"
+		interface="org.cytoscape.model.CyNetworkManager" />
+
+	<!-- Application Manager -->
+	<osgi:reference id="cyApplicationManagerServiceRef"
+		interface="org.cytoscape.session.CyApplicationManager" />
+
+	<!-- Presentation Factory -->
+	<osgi:reference id="presentationFactoryServiceRef"
+		interface="org.cytoscape.view.presentation.RenderingEngineFactory" />
+
+	<!-- Reference to the network factory service -->
+	<osgi:reference id="cyNetworkFactoryServiceRef"
+		interface="org.cytoscape.model.CyNetworkFactory">
+	</osgi:reference>
+
+	<osgi:reference id="graphViewFactoryServiceRef"
+		interface="org.cytoscape.view.model.CyNetworkViewFactory">
+	</osgi:reference>
+
+	<!-- Event helper -->
+	<osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper" />
+
+	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
+
+	<!-- passthrough mapping factory -->
+	<osgi:reference id="passthroughMappingFactoryRef" 
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory" 
+		filter="(mapping.type=passthrough)"/>
+
+	<!-- Pull-down menu items -->
+
+	<osgi:service id="createNewVisualStyleTaskFactoryService"
+		ref="createNewVisualStyleTaskFactory" auto-export="interfaces">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.taskFactory" />
+			<entry key="menu" value="main" />
+			<entry key="title" value="Create New Visual Style" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="removeVisualStyleTaskFactoryService"
+		ref="removeVisualStyleTaskFactory" auto-export="interfaces">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.taskFactory" />
+			<entry key="menu" value="main" />
+			<entry key="title" value="Remove Visual Style" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="renameVisualStyleTaskFactoryService"
+		ref="renameVisualStyleTaskFactory" auto-export="interfaces">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.taskFactory" />
+			<entry key="menu" value="main" />
+			<entry key="title" value="Rename Visual Style" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="copyVisualStyleTaskFactoryService"
+		ref="copyVisualStyleTaskFactory" auto-export="interfaces">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.taskFactory" />
+			<entry key="menu" value="main" />
+			<entry key="title" value="Copy Visual Style" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="createLegendTaskFactoryService"
+		ref="createLegendTaskFactory" auto-export="interfaces">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.taskFactory" />
+			<entry key="menu" value="main" />
+			<entry key="title" value="Create Legend" />
+		</osgi:service-properties>
+	</osgi:service>
+	
+	<!-- Context Menu Items -->
+	<osgi:service id="deleteMappingFunctionTaskFactoryService"
+		ref="deleteMappingFunctionTaskFactory" auto-export="interfaces">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.taskFactory" />
+			<entry key="menu" value="context" />
+			<entry key="title" value="Delete Selected Mapping" />
+		</osgi:service-properties>
+	</osgi:service>
+	
+	
+
+
+	<!-- Mapping generator services -->
+	<osgi:service id="rainbowGeneratorService" ref="rainbowGenerator"
+		interface="org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.contextMenu" />
+			<entry key="menu" value="context" />
+			<entry key="title" value="Rainbow" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="rainbowOscGeneratorService" ref="rainbowOscGenerator"
+		interface="org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.contextMenu" />
+			<entry key="menu" value="context" />
+			<entry key="title" value="Rainbow OSC" />
+		</osgi:service-properties>
+	</osgi:service>
+	<osgi:service id="randomColorGeneratorService" ref="randomColorGenerator"
+		interface="org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator">
+		<osgi:service-properties>
+			<entry key="service.type" value="vizmapUI.contextMenu" />
+			<entry key="menu" value="context" />
+			<entry key="title" value="Random" />
+		</osgi:service-properties>
+	</osgi:service>
+
+
+	<osgi:set id="vizMapperActionServiceRef"
+		interface="org.cytoscape.view.vizmap.gui.action.VizMapUIAction"
+		cardinality="0..N">
+		<osgi:listener bind-method="onBind" unbind-method="onUnbind"
+			ref="menuManager" />
+	</osgi:set>
+
+
+	<!-- visual property editor services <osgi:service id="continuousColorService" 
+		ref="continuousColor" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> <osgi:service id="continuousContinuousService" ref="continuousContinuous" 
+		interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" /> <osgi:service 
+		id="continuousDiscreteService" ref="continuousDiscrete" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> <osgi:service id="discreteArrowShapeService" ref="discreteArrowShape" 
+		interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" /> <osgi:service 
+		id="discreteColorService" ref="discreteColor" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> <osgi:service id="discreteFontService" ref="discreteFont" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> <osgi:service id="discreteLabelPositionService" ref="discreteLabelPosition" 
+		interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" /> <osgi:service 
+		id="discreteLineStyleService" ref="discreteLineStyle" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> <osgi:service id="discreteNodeShapeService" ref="discreteNodeShape" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> <osgi:service id="discreteNumberService" ref="discreteNumber" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> <osgi:service id="discreteStringService" ref="discreteString" interface="org.cytoscape.view.vizmap.gui.editor.EditorManager" 
+		/> -->
+
+
+
+	<osgi:set id="mappingFunctionFactorySet"
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addFactory"
+			unbind-method="removeFactory" ref="mappingFunctionFactoryManager" />
+
+	</osgi:set>
+
+
+	<!-- Export value editors as services -->
+	<osgi:set id="valueEditorSet"
+		interface="org.cytoscape.view.vizmap.gui.editor.ValueEditor"
+		cardinality="0..N">
+		<osgi:listener bind-method="addValueEditor"
+			unbind-method="removeValueEditor" ref="editorManager" />
+
+	</osgi:set>
+	
+	<osgi:set id="visualPropertyEditorSet"
+		interface="org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor"
+		cardinality="0..N">
+		<osgi:listener bind-method="addVisualPropertyEditor"
+			unbind-method="removeVisualPropertyEditor" ref="editorManager" />
+
+	</osgi:set>
+
+	<osgi:set id="taskFactorySet"
+		interface="org.cytoscape.work.TaskFactory"
+		cardinality="0..N" filter="(service.type=vizmapUI.taskFactory)" >
+		<osgi:listener bind-method="addTaskFactory"
+			unbind-method="removeTaskFactory" ref="menuManager" />
+	</osgi:set>
+	
+	<osgi:set id="mappingGeneratorSet"
+		interface="org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator"
+		cardinality="0..N"  >
+		<osgi:listener bind-method="addMappingGenerator"
+			unbind-method="removeMappingGenerator" ref="menuManager" />
+	</osgi:set>
+	
+	
+
+	<!-- Default dependencies -->
+	<osgi:service id="nodeSizeDepService" ref="nodeSizeDep" auto-export="interfaces" />
+	
+	<osgi:set id="vpDependencySet"
+		interface="org.cytoscape.view.vizmap.gui.VisualPropertyDependency"
+		cardinality="0..N"  >
+		<osgi:listener bind-method="addDependency"
+			unbind-method="removeDependency" ref="vpDependencyManager" />
+	</osgi:set>
+	
+	<osgi:set id="renderingEngineFactorySet"
+		interface="org.cytoscape.view.presentation.RenderingEngineFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addRenderingEngineFactory"
+			unbind-method="removeRenderingEngineFactory" ref="editorManager" />
+	</osgi:set>
+	
+	
+	<!-- For Bypass context menu -->
+	<osgi:reference id="cyServiceRegistrarServiceRef" 
+		interface="org.cytoscape.service.util.CyServiceRegistrar"/>
+	
+	<osgi:set id="renderingEngineFactorySetForBypass"
+		interface="org.cytoscape.view.presentation.RenderingEngineFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addBypass"
+			unbind-method="removeBypass" ref="bypassManager" />
+	</osgi:set>	
+	
+	
+	<osgi:reference id="vizmapReaderManagerServiceRef"
+		interface="org.cytoscape.io.read.VizmapReaderManager" />
+
+</beans>
