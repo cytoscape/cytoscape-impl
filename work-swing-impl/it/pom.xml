@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<artifactId>work-swing-impl-parent</artifactId>
+		<groupId>org.cytoscape</groupId>
+		<version>3.0.0-alpha4-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<bundle.symbolicName>org.cytoscape.work-swing-impl-it</bundle.symbolicName>
+		<bundle.namespace>org.cytoscape.work</bundle.namespace>
+	</properties>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.cytoscape</groupId>
+	<artifactId>work-swing-impl-it</artifactId>
+
+	<name>${bundle.symbolicName}</name>
+
+	<packaging>jar</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.ops4j.pax.exam</groupId>
+				<artifactId>maven-paxexam-plugin</artifactId>
+				<version>${maven-paxexam-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>generate-config</id>
+						<goals>
+							<goal>generate-config</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<options>
+						<platform>felix</platform>
+						<version>${felix.version}</version>
+						<profiles>spring/${spring.version},spring.dm/${spring.osgi.version}</profiles>
+					</options>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+				<configuration>
+					<redirectTestOutputToFile>true</redirectTestOutputToFile>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<!--
+	This is where any additional implementation dependencies necessary for
+	running the integration tests should reside, NOT in the top level pom.xml.
+	-->
+	<dependencies>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-swing-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>integration-test-support</artifactId>
+			<version>3.0.0-alpha5-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>3.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ops4j.pax.exam</groupId>
+			<artifactId>pax-exam</artifactId>
+			<version>${pax.exam.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ops4j.pax.exam</groupId>
+			<artifactId>pax-exam-junit</artifactId>
+			<version>${pax.exam.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ops4j.pax.exam</groupId>
+			<artifactId>pax-exam-container-default</artifactId>
+			<version>${pax.exam.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

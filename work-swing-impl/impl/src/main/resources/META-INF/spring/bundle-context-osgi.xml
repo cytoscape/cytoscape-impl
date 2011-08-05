@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd                                                                                                                         
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+        default-lazy-init="false">
+
+	<!-- Services imported by this bundle -->
+	<osgi:reference id="fileUtilRef" interface="org.cytoscape.util.swing.FileUtil" />
+
+	<!-- Services provided by this bundle -->
+
+	<osgi:service id="undoSupportService" ref="undoSupport"
+		interface="org.cytoscape.work.undo.UndoSupport">
+	</osgi:service>
+
+	<osgi:reference id="bookmarkServiceRef" interface="org.cytoscape.property.CyProperty"
+		filter="(cyPropertyName=bookmarks)" />
+		
+	<osgi:reference id="bookmarksUtilServiceRef"
+		interface="org.cytoscape.property.bookmark.BookmarksUtil" />
+		
+	<osgi:service id="guiTunableInterceptorService" ref="guiTunableInterceptor">
+		<osgi:interfaces>
+			<value>org.cytoscape.work.swing.GUITunableInterceptor</value>
+			<value>org.cytoscape.work.TunableInterceptor</value>
+		</osgi:interfaces>
+	</osgi:service>
+
+	<osgi:service id="taskManagerService" ref="swingTaskManager">
+		<osgi:interfaces>
+			<value>org.cytoscape.work.swing.GUITaskManager</value>
+			<value>org.cytoscape.work.TaskManager</value>
+		</osgi:interfaces>
+	</osgi:service>
+
+	<osgi:service id="integerHandlerFactoryService" ref="integerHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>	
+	<osgi:service id="floatHandlerFactoryService" ref="floatHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>	
+	<osgi:service id="doubleHandlerFactoryService" ref="doubleHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>		
+	<osgi:service id="longHandlerFactoryService" ref="longHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>	
+	<osgi:service id="booleanHandlerFactoryService" ref="booleanHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>			
+	<osgi:service id="stringHandlerFactoryService" ref="stringHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>				
+	<osgi:service id="boundedIntegerHandlerFactoryService" ref="boundedIntegerHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>
+	<osgi:service id="boundedFloatHandlerFactoryService" ref="boundedFloatHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>	
+	<osgi:service id="boundedDoubleHandlerFactoryService" ref="boundedDoubleHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>	
+	<osgi:service id="boundedLongHandlerFactoryService" ref="boundedLongHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>			
+	<osgi:service id="listSingleSelectionHandlerFactoryService" ref="listSingleSelectionHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>	
+	<osgi:service id="listMultipleSelectionHandlerFactoryService" ref="listMultipleSelectionHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>		
+	<osgi:service id="fileHandlerFactoryService" ref="fileHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>	
+	<osgi:service id="urlHandlerFactoryService" ref="urlHandlerFactory"
+		interface="org.cytoscape.work.swing.GUITunableHandlerFactory">
+	</osgi:service>		
+	
+
+
+	<osgi:set id="supportedFileTypes" 
+	    interface="org.cytoscape.io.read.InputStreamTaskFactory"
+	    cardinality="0..N">
+		<osgi:listener bind-method="addInputStreamTaskFactory"
+		               unbind-method="removeInputStreamTaskFactory" 
+		               ref="supportedFileTypesManager" />
+	</osgi:set>
+
+	<osgi:set id="supportedFileTypes2" 
+	    interface="org.cytoscape.io.write.CyWriterFactory"
+	    cardinality="0..N">
+		<osgi:listener bind-method="addCyWriterTaskFactory"
+		               unbind-method="removeCyWriterTaskFactory" 
+		               ref="supportedFileTypesManager" />
+	</osgi:set>
+	
+	<osgi:set id="externalTunableInterceptors" 
+	    interface="org.cytoscape.work.TunableInterceptor"
+	    cardinality="0..N">
+		<osgi:listener bind-method="addTunableInterceptor"
+		               unbind-method="removeTunableInterceptor" 
+		               ref="swingTaskManager" />
+	</osgi:set>
+	
+	<osgi:set id="tunableHandlerFactories" 
+	    interface="org.cytoscape.work.swing.GUITunableHandlerFactory"
+	    cardinality="0..N">
+		<osgi:listener bind-method="addTunableHandlerFactory"
+		               unbind-method="removeTunableHandlerFactory" 
+		               ref="guiTunableInterceptor" />
+	</osgi:set>
+</beans>

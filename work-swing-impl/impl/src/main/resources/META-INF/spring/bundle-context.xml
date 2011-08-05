@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	    xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-2.5.xsd
+    http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<!-- regular spring configuration file defining the beans for this bundle. 
+		We've kept the osgi definitions in a separate configuration file so that 
+		this file can easily be used for integration testing outside of an OSGi environment -->
+
+	<context:annotation-config />
+
+	<bean id="undoSupport" class="org.cytoscape.work.internal.UndoSupportImpl" />
+
+	<bean id="swingTaskManager" class="org.cytoscape.work.internal.task.SwingTaskManager">
+		 <constructor-arg ref="guiTunableInterceptor" />
+	</bean>
+
+	<bean id="guiTunableInterceptor"
+		class="org.cytoscape.work.internal.tunables.GUITunableInterceptorImpl">
+	</bean>
+	
+	<bean id="supportedFileTypesManager" class="org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager" />
+	
+	<bean id="booleanHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.BooleanHandler" />
+		<constructor-arg>
+			<list>
+				<value>java.lang.Boolean</value>
+				<util:constant static-field="java.lang.Boolean.TYPE"/>
+			</list>
+		</constructor-arg>
+	</bean>
+	<bean id="integerHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.IntegerHandler" />
+		<constructor-arg>
+			<list>
+				<value>java.lang.Integer</value>
+				<util:constant static-field="java.lang.Integer.TYPE"/>
+			</list>
+		</constructor-arg>
+	</bean>
+	<bean id="floatHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.FloatHandler" />
+		<constructor-arg>
+			<list>
+				<value>java.lang.Float</value>
+				<util:constant static-field="java.lang.Float.TYPE"/>
+			</list>
+		</constructor-arg>
+	</bean>
+	<bean id="doubleHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.DoubleHandler" />
+		<constructor-arg>
+			<list>
+				<value>java.lang.Double</value>
+				<util:constant static-field="java.lang.Double.TYPE"/>
+			</list>
+		</constructor-arg>
+	</bean>	
+	<bean id="longHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.LongHandler" />
+		<constructor-arg>
+			<list>
+				<value>java.lang.Long</value>
+				<util:constant static-field="java.lang.Long.TYPE"/>
+			</list>
+		</constructor-arg>
+	</bean>		
+	<bean id="stringHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.StringHandler" />
+		<constructor-arg value="java.lang.String" />
+	</bean>		
+	<bean id="boundedIntegerHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.BoundedHandler" />
+		<constructor-arg value="org.cytoscape.work.util.BoundedInteger" />
+	</bean>	
+	<bean id="boundedFloatHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.BoundedHandler" />
+		<constructor-arg value="org.cytoscape.work.util.BoundedFloat" />
+	</bean>	
+	<bean id="boundedDoubleHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.BoundedHandler" />
+		<constructor-arg value="org.cytoscape.work.util.BoundedDouble" />
+	</bean>	
+	<bean id="boundedLongHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.BoundedHandler" />
+		<constructor-arg value="org.cytoscape.work.util.BoundedLong" />
+	</bean>			
+	<bean id="listSingleSelectionHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.ListSingleHandler" />
+		<constructor-arg value="org.cytoscape.work.util.ListSingleSelection" />
+	</bean>	
+	<bean id="listMultipleSelectionHandlerFactory" class="org.cytoscape.work.swing.BasicGUITunableHandlerFactory">
+		<constructor-arg value="org.cytoscape.work.internal.tunables.ListMultipleHandler" />
+		<constructor-arg value="org.cytoscape.work.util.ListMultipleSelection" />
+	</bean>		
+	<bean id="urlHandlerFactory" class="org.cytoscape.work.internal.tunables.URLHandlerFactory">
+		<constructor-arg ref="bookmarkServiceRef" />
+		<constructor-arg ref="bookmarksUtilServiceRef" />
+	</bean>	
+	<bean id="fileHandlerFactory" class="org.cytoscape.work.internal.tunables.FileHandlerFactory">
+		<constructor-arg ref="fileUtilRef"/>
+		<constructor-arg ref="supportedFileTypesManager" />
+	</bean>		
+</beans>
