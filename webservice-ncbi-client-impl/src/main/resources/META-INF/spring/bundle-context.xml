@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util-2.5.xsd
+    http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.5.xsd
+            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+
+	<context:annotation-config />
+
+	<!-- Network import client -->
+	<bean id="ncbiClient" class="org.cytoscape.webservice.ncbi.NCBIWebServiceClient">
+		<constructor-arg index="0"
+			value="http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl" />
+		<constructor-arg index="1" value="NCBI Network Import Client" />
+		<constructor-arg index="2"
+			value="REST version of NCBI Web Service Client." />
+		<constructor-arg index="3" ref="cyNetworkFactoryServiceRef" />
+		<constructor-arg index="4" ref="cyDataTableFactoryServiceRef" />
+		<constructor-arg index="5" ref="cyNetworkManagerServiceRef" />
+	</bean>
+
+
+	<bean id="ncbiTableImportClient" class="org.cytoscape.webservice.ncbi.NCBITableImportClient">
+		<constructor-arg index="0"
+			value="http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl" />
+		<constructor-arg index="1" value="NCBI Table Import Client" />
+		<constructor-arg index="2"
+			value="REST version of NCBI Web Service Client for importing tables." />
+		<constructor-arg index="3" ref="cyDataTableFactoryServiceRef" />
+		<constructor-arg index="4" ref="cyNetworkManagerServiceRef" />
+		<constructor-arg index="5" ref="cyApplicationManagerServiceRef" />
+	</bean>
+
+	<!-- Table Import Action -->
+	<bean id="ncbiTableImportAction" class="org.cytoscape.webservice.ncbi.NCBITableImportAction">
+		<constructor-arg ref="ncbiTableImportClient" />
+		<constructor-arg ref="taskManagerServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkManagerServiceRef" />
+		<constructor-arg ref="cyApplicationManagerRef" />
+	</bean>
+</beans>
