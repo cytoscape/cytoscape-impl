@@ -1,0 +1,3 @@
+The icon user-trash.png is from the Tango Icon Library
+(http://tango.freedesktop.org/Tango_Icon_Library), which is
+public domain.

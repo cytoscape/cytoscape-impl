@@ -1,0 +1,51 @@
+Cytoscape is a collaboration 
+between the Institute for 
+Systems Biology, University of 
+California San Diego, Memorial
+Sloan-Kettering Cancer Center,
+Institut Pasteur, and Agilent 
+Technologies.
+
+For more information, please see:
+http://www.cytoscape.org
+
+Cytosape Developers, past and present,
+in alphabetical order: 
+
+Annette Adler
+Nada Amin
+Mark Anderson
+Iliana Avila-Campillo
+Gary Bader
+Hamid Bolouri
+Ethan Cerami
+Rowan Christmas
+Melissa Cline
+Mike Creech
+Paul Edlefsen
+Stephanie Fan
+Trey Ideker
+Liz Kain
+Larissa Kamenkovich
+Ryan Kelley
+Sarah Killcoyne
+Brad Kohlenberg
+Allan Kuchinsky
+Nerius Landys
+Willem Ligtenberg
+Samad Lotia
+Andrew Markiel
+James McIninch
+Keiichiro Ono
+Owen Ozier
+David Reiss
+Chris Sander
+Paul Shannon
+Robert Sheridan
+Benno Shwikowski
+Mike Smoot
+James Taylor
+Aditya Vailaya
+Jonathan Wang
+Chris Workman
+

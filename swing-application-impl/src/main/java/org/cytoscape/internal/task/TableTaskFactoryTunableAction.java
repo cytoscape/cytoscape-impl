@@ -1,0 +1,24 @@
+package org.cytoscape.internal.task;
+
+import java.awt.event.ActionEvent;
+import java.util.Map;
+
+import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.work.TaskManager;
+
+public class TableTaskFactoryTunableAction extends TaskFactoryTunableAction<TableTaskFactory>{
+	
+	public TableTaskFactoryTunableAction(
+			TaskManager manager,
+			TableTaskFactory factory, @SuppressWarnings("rawtypes") Map serviceProps,
+			final CyApplicationManager applicationManager) {
+		super(manager, factory, serviceProps, applicationManager);
+	}
+
+	public void actionPerformed(ActionEvent a) {
+		factory.setTable(applicationManager.getCurrentTable());
+		super.actionPerformed(a);
+	}
+
+}
