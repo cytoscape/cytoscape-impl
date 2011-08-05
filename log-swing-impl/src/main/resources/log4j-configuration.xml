@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <appender name="userLog" class="org.cytoscape.log.internal.UserLogAppender">
+  </appender>
+
+  <appender name="developerLog" class="org.cytoscape.log.internal.DeveloperLogAppender">
+  </appender>
+
+  <root>
+    <priority value="debug"/>
+    <appender-ref ref="developerLog"/>
+  </root>
+
+  <logger name="org.cytoscape.userlog" additivity="false">
+    <level value="info"/>
+    <appender-ref ref="userLog"/>
+  </logger>
+</log4j:configuration>

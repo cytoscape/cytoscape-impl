@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.5.xsd
+            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd" default-lazy-init="false">
+
+	<context:annotation-config />
+
+	<bean id="logViewerConfiguration" class="org.apache.commons.collections.map.DefaultedMap" factory-method="decorate">
+		<constructor-arg>
+			<map>
+				<entry key="baseHTMLPath" value="/consoledialogbase.html" />
+				<entry key="colorParityTrue" value="ffffff" />
+				<entry key="colorParityFalse" value="eeeeee" />
+				<entry><key><value>entryTemplate</value></key><value>
+					<![CDATA[
+					<html>
+					<body bgcolor="#%s">
+					<table border=0 width="100%%" cellspacing=5>
+						<tr>
+							<td width="0%%"><img src="%s"></td>
+							<td><h3>%s</h3></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td><font size="-2" color="#555555">%s</font></td>
+						</tr>
+					</table>
+					</body>
+					</html>
+					]]>
+					</value></entry>
+				<entry key="DEBUG" value="console-debug.png" />
+				<entry key="ERROR" value="console-error.png" />
+				<entry key="FATAL" value="console-error.png" />
+				<entry key="INFO" value="console-info.png" />
+				<entry key="TRACE" value="console-debug.png" />
+				<entry key="WARN" value="console-warning.png" />
+			</map>
+		</constructor-arg>
+		<constructor-arg value="console-info.png" />
+	</bean>
+
+	<bean id="statusBarConfiguration" class="org.apache.commons.collections.map.DefaultedMap" factory-method="decorate">
+		<constructor-arg>
+			<map>
+				<entry key="DEBUG" value="/petit-debug.png" />
+				<entry key="ERROR" value="/petit-error.png" />
+				<entry key="FATAL" value="/petit-error.png" />
+				<entry key="INFO" value="/petit-info.png" />
+				<entry key="TRACE" value="/petit-debug.png" />
+				<entry key="WARN" value="/petit-warning.png" />
+			</map>
+		</constructor-arg>
+		<constructor-arg value="/petit-info.png" />
+	</bean>
+
+	<bean id="threadFactory" class="org.cytoscape.log.internal.LowPriorityDaemonThreadFactory" />
+
+	<bean id="executorService" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool">
+		<constructor-arg ref="threadFactory" />
+	</bean>
+
+	<bean id="simpleQueue" class="java.util.concurrent.LinkedBlockingQueue" />
+	<bean id="advancedQueue" class="java.util.concurrent.LinkedBlockingQueue" />
+	<bean id="statusBarQueue" class="java.util.concurrent.LinkedBlockingQueue" />
+
+	<bean id="advancedAppender" class="org.cytoscape.log.internal.AdvancedQueueAppender">
+		<constructor-arg ref="advancedQueue" />
+	</bean>
+
+	<bean id="simpleAppender" class="org.cytoscape.log.internal.SimpleQueueAppender">
+		<constructor-arg ref="simpleQueue" />
+	</bean>
+
+	<bean id="statusBarAppender" class="org.cytoscape.log.internal.StatusBarQueueAppender">
+		<constructor-arg ref="statusBarQueue" />
+	</bean>
+
+	<bean id="cytoStatusBar" class="org.cytoscape.log.internal.CytoStatusBar">
+		<constructor-arg ref="cySwingApplicationRef"/>
+		<constructor-arg type="java.lang.String" value="/user-trash.png" />
+	</bean>
+
+
+	<bean id="statusBarUpdater" class="org.cytoscape.log.internal.StatusBarUpdater" factory-method="executeStatusBarUpdater">
+		<constructor-arg ref="executorService" />
+		<constructor-arg ref="cytoStatusBar" />
+		<constructor-arg ref="statusBarQueue" />
+		<constructor-arg ref="statusBarConfiguration" />
+	</bean>
+
+	<bean id="consoleTaskFactory" class="org.cytoscape.log.internal.ConsoleTaskFactory">
+		<constructor-arg ref="simpleQueue" />
+		<constructor-arg ref="advancedQueue" />
+		<constructor-arg ref="executorService" />
+		<constructor-arg ref="cytoStatusBar" />
+		<constructor-arg ref="cySwingApplicationRef" />
+		<constructor-arg ref="taskManagerRef" />
+		<constructor-arg ref="logViewerConfiguration" />
+		<constructor-arg ref="logViewerConfiguration" />
+	</bean>
+
+</beans>
