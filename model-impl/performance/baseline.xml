@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<baseline>
+	<replace>
+		<groupId>org.cytoscape</groupId>
+		<artifactId>model-impl</artifactId>
+		<version>3.0.0-alpha2</version>
+	</replace>
+	<replace>
+		<groupId>org.cytoscape</groupId>
+		<artifactId>model-api</artifactId>
+		<version>3.0.0-alpha2</version>
+	</replace>
+</baseline>
