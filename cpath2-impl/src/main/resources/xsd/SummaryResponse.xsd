@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:include schemaLocation="RecordBase.xsd"/>
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            Pathway Commons Web API:  Summary Response.
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <xsd:element name="summary_response" type="SummaryResponseType"/>
+    <xsd:element name="error" type="ErrorType"/>
+
+    <xsd:complexType name="SummaryResponseType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Encapsulates summaries of BioPAX Records.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+                <xsd:element name="record" type="BasicRecordType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+ </xsd:schema>

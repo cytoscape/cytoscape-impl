@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:complexType name="BasicRecordType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Summarizes a single BioPAX Record.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">
+                        Record name.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">
+                        Record description.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="entity_type" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">
+                        BioPAX Record type.  For example:  pathway, biochemicalReaction, or physicalEntity.  
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="data_source" type="DataSourceType"/>
+        </xsd:sequence>
+        <xsd:attribute name="primary_id" type="xsd:long">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">
+                    Internal ID.  Use this ID to request additional information regarding the record.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="ExtendedRecordType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Extended BioPAX Record Type.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="BasicRecordType">
+                <xsd:sequence>
+                    <xsd:element name="synonym" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="xref" type="XRefType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="excerpt" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="organism" type="OrganismType"/>
+                    <xsd:element name="pathway_list" type="PathwayListType"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="DataSourceType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Encapsulates data source information.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute name="primary_id" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">
+                    Internal ID. 
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>        
+    </xsd:complexType> 
+
+    <xsd:complexType name="OrganismType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Encapsulates organism data.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="common_name" type="xsd:string"/>
+            <xsd:element name="species_name" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute name="ncbi_organism_id" type="xsd:integer"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="XRefType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Encapsulates an XREF.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="db" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="url" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>        
+    </xsd:complexType>
+
+
+    <xsd:complexType name="ErrorType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Encapsulates error information.s
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="error_code" type="xsd:integer"/>
+            <xsd:element name="error_msg" type="xsd:integer"/>
+            <xsd:element name="error_details" type="xsd:integer"/>
+        </xsd:sequence>
+    </xsd:complexType>
+  
+    <xsd:complexType name="PathwayListType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Encapsulates lists of pathways.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="pathway" type="PathwayType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>        
+    </xsd:complexType>
+    
+    <xsd:complexType name="PathwayType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Encapsulates pathway data.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="data_source" type="DataSourceType"/>
+        </xsd:sequence>        
+        <xsd:attribute name="primary_id" type="xsd:long"/>
+    </xsd:complexType>
+    
+</xsd:schema>

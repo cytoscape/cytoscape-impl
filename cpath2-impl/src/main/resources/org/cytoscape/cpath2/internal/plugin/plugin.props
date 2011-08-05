@@ -1,0 +1,43 @@
+# This props file should be filled out and included in the plugin jar file.  This props file will be used
+# to put information into the Plugin Manager about the plugin
+
+# The plugin name that will be displayed to users, white space within name is not allowed
+pluginName=PathwayCommons
+
+# Description used to give users information about the plugin such as what it does.
+# Html tags are encouraged for formatting purposes.
+pluginDescription=Provides connectivity to the Pathway Commons repository (http://www.pathwaycommons.org).
+
+# Plugin version number, this must be two numbers separated by a decimal.  Ex. 0.2, 14.03
+pluginVersion=2.1
+
+# Compatible Cytoscape version. If there are more than one version, seperate by ",".
+cytoscapeVersion=2.7,2.8
+
+# Category, use one of the categories listed on the http://cytoscape.org/plugins2.php site
+pluginCategory=Core
+
+# URL to a website that gives more information about your plugin, Ex. http://my-lab-site.org
+projectURL=http://www.pathwaycommons.org
+
+# List of authors.  Note each author and institution pair are separated by a : (colon)
+# each additional author institution pair must be separated from other pairs by a ; (semicolon)
+pluginAuthorsIntsitutions=Ethan Cerami, Benjamin Gross and Chris Sander:Memorial Sloan-Kettering Cancer Center;Igor Rodchenkov and Gary Bader:University of Toronto 
+
+# Date this plugin/plugin version was released
+releaseDate=January 29, 2010
+
+cpath2.organism0=Human:9606
+cpath2.organism1=Fruit Fly:7227
+cpath2.organism2=Mouse:10090
+cpath2.organism3=Rat:10116
+cpath2.organism4=C. elegans:6239
+cpath2.organism5=S. cerevisiae:4932
+
+# Change these properties if you want to point the plugin to a different cPath server.
+#cpath2.server_name=Mouse Interaction Database
+#cpath2.server_url=http://awabi.cbio.mskcc.org/pc-demo/webservice.do
+#cpath2.server_url=http://awabi.cbio.mskcc.org/pc/webservice.do
+#cpath2.server_url=http://localhost:8080/cpath/webservice.do
+cpath2.server_url=http://www.pathwaycommons.org/pc/webservice.do
+#cpath2.server_blurb=The Mouse Interaction Database is... blah, blah, blah....

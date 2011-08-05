@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+
+	<!-- Import services -->
+	<osgi:reference id="cySwingApplicationRef"
+		interface="org.cytoscape.application.swing.CySwingApplication" />
+	
+	<osgi:reference id="taskManagerRef"
+		interface="org.cytoscape.work.TaskManager" />
+	
+	<osgi:reference id="openBrowserRef"
+		interface="org.cytoscape.util.swing.OpenBrowser" />
+		
+	<osgi:reference id="cyNetworkManagerRef"
+		interface="org.cytoscape.model.CyNetworkManager" />
+
+	<osgi:reference id="cyApplicationManagerRef"
+		interface="org.cytoscape.session.CyApplicationManager" />
+
+	<osgi:reference id="cyNetworkViewManagerRef"
+		interface="org.cytoscape.view.model.CyNetworkViewManager" />
+
+	<osgi:reference id="cyNetworkViewReaderManagerRef"
+		interface="org.cytoscape.io.read.CyNetworkReaderManager" />
+
+	<osgi:reference id="cyNetworkNamingRef"
+		interface="org.cytoscape.session.CyNetworkNaming" />
+
+	<osgi:reference id="cyNetworkFactoryRef"
+		interface="org.cytoscape.model.CyNetworkFactory" />
+
+	<osgi:reference id="cyLayoutsRef"
+		interface="org.cytoscape.view.layout.CyLayoutAlgorithmManager" />
+		
+	<osgi:reference id="undoSupportRef"
+		interface="org.cytoscape.work.undo.UndoSupport" />
+
+	<osgi:reference id="bioPaxContainerRef"
+		interface="org.cytoscape.biopax.BioPaxContainer" />
+	
+	<osgi:reference id="mapBioPaxToCytoscapeFactoryRef"
+		interface="org.cytoscape.biopax.MapBioPaxToCytoscapeFactory" />
+
+	<osgi:reference id="networkListenerRef"
+		interface="org.cytoscape.biopax.NetworkListener" />
+
+	<osgi:reference id="visualMappingManagerRef"
+		interface="org.cytoscape.view.vizmap.VisualMappingManager"/>
+	
+	<osgi:reference id="visualStyleFactoryRef"
+		interface="org.cytoscape.view.vizmap.VisualStyleFactory"/>
+
+	<osgi:reference id="discreteMappingFactoryRef"
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory"
+		filter="(mapping.type=discrete)"/>
+		
+	<osgi:reference id="passthroughMappingFactoryRef"
+		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory"
+		filter="(mapping.type=passthrough)"/>
+
+	<osgi:service ref="cPathWebService" auto-export="interfaces" />
+</beans>

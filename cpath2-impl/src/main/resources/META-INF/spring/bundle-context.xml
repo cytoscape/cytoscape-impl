@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.5.xsd
+            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="true">
+
+	<context:annotation-config />
+
+	<bean id="cPath2Factory" class="org.cytoscape.cpath2.internal.CPath2Factory">
+		<constructor-arg ref="cySwingApplicationRef" />
+		<constructor-arg ref="taskManagerRef" />
+		<constructor-arg ref="openBrowserRef" />
+		<constructor-arg ref="cyNetworkManagerRef" />
+		<constructor-arg ref="cyApplicationManagerRef" />
+		<constructor-arg ref="cyNetworkViewManagerRef" />
+		<constructor-arg ref="cyNetworkViewReaderManagerRef" />
+		<constructor-arg ref="cyNetworkNamingRef" />
+		<constructor-arg ref="cyNetworkFactoryRef" />
+		<constructor-arg ref="cyLayoutsRef" />
+		<constructor-arg ref="undoSupportRef" />
+		<constructor-arg ref="bioPaxContainerRef" />
+		<constructor-arg ref="mapBioPaxToCytoscapeFactoryRef" />
+		<constructor-arg ref="networkListenerRef" />
+		<constructor-arg ref="binarySifVisualStyleUtil" />
+		<constructor-arg ref="visualMappingManagerRef" />
+	</bean>
+	
+	<bean id="cPathWebService" class="org.cytoscape.cpath2.internal.web_service.CytoscapeCPathWebService">
+		<constructor-arg ref="cPath2Factory" />
+	</bean>
+	
+	<bean id="binarySifVisualStyleUtil" class="org.cytoscape.cpath2.internal.cytoscape.BinarySifVisualStyleUtil">
+		<constructor-arg ref="visualStyleFactoryRef" />
+		<constructor-arg ref="visualMappingManagerRef" />
+		<constructor-arg ref="discreteMappingFactoryRef" />
+		<constructor-arg ref="passthroughMappingFactoryRef" />
+	</bean>
+</beans>
