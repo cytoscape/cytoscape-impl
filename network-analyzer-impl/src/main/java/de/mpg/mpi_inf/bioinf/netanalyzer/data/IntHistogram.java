@@ -1,0 +1,186 @@
+/*
+ * Copyright (c) 2006, 2007, 2008, 2010, Max Planck Institute for Informatics, Saarbruecken, Germany.
+ *
+ * This file is part of NetworkAnalyzer.
+ * 
+ * NetworkAnalyzer is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ * 
+ * NetworkAnalyzer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with NetworkAnalyzer. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
+package de.mpg.mpi_inf.bioinf.netanalyzer.data;
+
+import java.io.FileWriter;
+import java.io.IOException;
+
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.LineReader;
+
+/**
+ * Complex parameter that stores histograms of integer values only.
+ * <p>
+ * An integer histogram shows the number of observations on integer values. Formally, this type of histogram
+ * is characterized by:<br/>
+ * <ul>
+ * <li>every bin is in the form <code>[i; j)</code> where <code>i</code> and <code>j</code> are
+ * integers and <code>i &lt; j</code>.</li>
+ * <li>the value of every bin is an integer.</li>
+ * </ul>
+ * </p>
+ * 
+ * @author Yassen Assenov
+ */
+public class IntHistogram implements ComplexParam {
+
+	/**
+	 * Initializes a new instance of <code>IntHistogram</code> by loading it from the given stream.
+	 * 
+	 * @param aArgs One-element array representing the argument passed to this type. This argument must be the
+	 *        <code>String</code> representation of an integer and it specifies the number of bins in this
+	 *        histogram.
+	 * @param aReader Reader from a text stream. The reader must be open and positioned in the stream such
+	 *        that the data for the histogram follows.
+	 * 
+	 * @throws IOException If I/O error occurs while reading from <code>aReader</code>.
+	 * 
+	 * @see #load(String[], LineReader)
+	 * @see ComplexParam#load(String[], LineReader)
+	 */
+	public IntHistogram(String[] aArgs, LineReader aReader) throws IOException {
+		load(aArgs, aReader);
+	}
+
+	/**
+	 * Initializes a new instance of <code>IntHistogram</code> as a subset of the given histogram.
+	 * 
+	 * @param aBins Bins of the source histogram.
+	 * @param aFromIndex Index of first bin to be included in the histogram.
+	 * @param aToIndex Index of last bin to be included in the histogram.
+	 * @throws ArrayIndexOutOfBoundsException If one of the following is <code>true</code>:
+	 *         <ul>
+	 *         <li><code>aBins.length</code> &lt; <code>2</code></li>
+	 *         <li><code>aBins[0].length</code> &ne; <code>aBins[1].length</code></li>
+	 *         <li><code>aFromIndex</code> &notin; [<code>0</code>; <code>aBins[0].length</code>)</li>
+	 *         <li><code>aToIndex</code> &notin; [<code>0</code>; <code>aBins[0].length</code>)</li>
+	 *         <li><code>aFromIndex</code> &gt; <code>aToIndex</code></li>
+	 *         </ul>
+	 */
+	public IntHistogram(int[][] aBins, int aFromIndex, int aToIndex) {
+		if (aBins[0].length != aBins[1].length || aFromIndex > aToIndex) {
+			throw new ArrayIndexOutOfBoundsException();
+		}
+		final int binCount = aToIndex - aFromIndex + 1;
+		bins = new int[2][binCount];
+		for (int i = 0; i < binCount; ++i) {
+			bins[0][i] = aBins[0][i + aFromIndex];
+			bins[1][i] = aBins[1][i + aFromIndex];
+		}
+	}
+
+	/**
+	 * Initializes a new instance of <code>IntHistogram</code> based on the given observations.
+	 * 
+	 * @param aData Array of observations. The <code>i</code>-th element of this array contains the number
+	 *        of observations for <code>[i; i + 1)</code>.
+	 * @param aFromIndex Index of the array to be considered a starting index.
+	 * @param aToIndex Index of the array to be considered last index; the observation at
+	 *        <code>aToIndex</code> (the value of <code>aData[aToIndex]</code>) is also included in the
+	 *        histogram.
+	 * @throws ArrayIndexOutOfBoundsException If one of the following is <code>true</code>:
+	 *         <ul>
+	 *         <li><code>aFromIndex</code> &notin; [<code>0</code>; <code>aData.length</code>)</li>
+	 *         <li><code>aToIndex</code> &notin; [<code>0</code>; <code>aData.length</code>)</li>
+	 *         <li><code>aFromIndex</code> &gt; <code>aToIndex</code></li>
+	 *         </ul>
+	 */
+	public IntHistogram(int[] aData, int aFromIndex, int aToIndex) {
+		if (aFromIndex > aToIndex) {
+			throw new ArrayIndexOutOfBoundsException();
+		}
+		final int binCount = aToIndex - aFromIndex + 1;
+		bins = new int[2][binCount];
+		for (int i = 0; i < binCount; ++i) {
+			bins[0][i] = i + aFromIndex;
+			bins[1][i] = aData[i + aFromIndex];
+		}
+	}
+
+	/**
+	 * Gets the number of bins in this histogram.
+	 * 
+	 * @return Number of bins in this histogram.
+	 */
+	public int getBinCount() {
+		return bins[0].length;
+	}
+
+	/**
+	 * Gets the range of observation values for this histogram.
+	 * 
+	 * @return Array of two elements - the minimum and the maximum value of observations. This is the left end
+	 *         of the interval for the first bin and the right end of the interval for last bin, as described
+	 *         in the description of this class.
+	 */
+	public int[] getObservedRange() {
+		return new int[] { bins[0][0], bins[0][bins[0].length - 1] };
+	}
+
+	/**
+	 * Gets the bins of this histogram.
+	 * 
+	 * @return Bins of this histogram in the form of a table of two rows.
+	 */
+	public int[][] getBins() {
+		return bins;
+	}
+
+	/**
+	 * Loads the data of the histogram from the given stream.
+	 * 
+	 * @param aArgs One-element array representing the argument passed to this type. This argument must be the
+	 *        <code>String</code> representation of an integer and it specifies the number of bins in this
+	 *        histogram.
+	 * @param aReader Reader from a text stream. The reader must be open and positioned in the stream such
+	 *        that the data for the histogram follows.
+	 * 
+	 * @throws IOException If I/O error occurs.
+	 * @throws NumberFormatException If the stream contains invalid data.
+	 * @throws NullPointerException If at least one of the parameters is <code>null</code>.
+	 * @throws ArrayIndexOutOfBoundsException If an empty array is specified for <code>aArgs</code>.
+	 */
+	public void load(String[] aArgs, LineReader aReader) throws IOException {
+		final int binCount = Integer.parseInt(aArgs[0]);
+		bins = new int[2][binCount];
+		for (int i = 0; i < binCount; ++i) {
+			String[] values = aReader.readLine().split(SEPREGEX);
+			bins[0][i] = Integer.parseInt(values[0]);
+			bins[1][i] = Integer.parseInt(values[1]);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam#save(java.io.FileWriter)
+	 */
+	public void save(FileWriter aWriter, boolean aSaveArgs) throws IOException {
+		final int binCount = bins[0].length;
+		if (aSaveArgs) {
+			aWriter.write(String.valueOf(binCount) + "\n");
+		}
+		for (int i = 0; i < binCount; ++i) {
+			aWriter.write(String.valueOf(bins[0][i]) + SEP + String.valueOf(bins[1][i]) + "\n");
+		}
+	}
+
+	/**
+	 * Histogram values in the form of a table of 2 rows.
+	 */
+	private int[][] bins;
+}

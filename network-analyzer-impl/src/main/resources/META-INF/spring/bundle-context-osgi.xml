@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+	<osgi:reference id="cyApplicationManagerServiceRef" 
+		interface="org.cytoscape.session.CyApplicationManager"/>
+
+	<osgi:reference id="cySwingApplicationServiceRef"
+		interface="org.cytoscape.application.swing.CySwingApplication" />
+
+	<osgi:reference id="cyNetworkManagerServiceRef" 
+		interface="org.cytoscape.model.CyNetworkManager"/>
+	                
+	<osgi:reference id="cyNetworkViewReaderManagerServiceRef" 
+		interface="org.cytoscape.io.read.CyNetworkReaderManager"/>
+
+	<osgi:service id="analyzeNetworkActionService" ref="analyzeNetworkAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="analyzeSubsetActionService" ref="analyzeSubsetAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="batchAnalysisActionService" ref="batchAnalysisAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="loadNetstatsActionService" ref="loadNetstatsAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="plotParameterActionService" ref="plotParameterAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="mapParameterActionService" ref="mapParameterAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="settingsActionService" ref="settingsAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="compareActionService" ref="compareAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="connComponentActionService" ref="connComponentAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="remDupEdgesActionService" ref="remDupEdgesAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="removeSelfLoopsActionService" ref="removeSelfLoopsAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+	<osgi:service id="aboutActionService" ref="aboutAction" 
+		interface="org.cytoscape.application.swing.CyAction"/>
+
+</beans>

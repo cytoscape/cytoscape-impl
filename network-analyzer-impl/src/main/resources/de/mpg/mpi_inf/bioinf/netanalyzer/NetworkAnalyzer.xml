@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<networkanalyzersettings ver="3.0">
+	<plugin>
+		<agreed>false</agreed>
+		<expandable>false</expandable>
+		<nodeattributes>true</nodeattributes>
+		<edgeattributes>true</edgeattributes>
+		<background>-3355393</background>
+		<brightcolor>-16711936</brightcolor>
+		<middlecolor>-256</middlecolor>
+		<darkcolor>-65536</darkcolor>
+		<helpurl>http://med.bioinf.mpi-inf.mpg.de/netanalyzer/help/3.0/</helpurl>
+		<helpfitting>index.html</helpfitting>
+		<helpinterpret>index.html#interpret</helpinterpret>
+		<helpparams>index.html</helpparams>
+		<helpremduplicates>index.html#remduplicates</helpremduplicates>
+		<helpremselfloops>index.html#remselfloops</helpremselfloops>
+		<helpsettings>index.html#settings</helpsettings>
+	</plugin>
+	<complexparam name="degreeDist" type="IntHistogram">
+		<usescatter>true</usescatter>
+		<general>
+			<title>Node Degree Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Degree</catlabel>
+			<rangelabel>Number of nodes</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0"/>
+			<lograngeaxis>true</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>true</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>
+		</axes>
+		<bars>
+			<barcolor>0</barcolor>
+		</bars>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minobslabel>Minimum degree to display</minobslabel>
+			<maxobslabel>Maximum degree to display</maxobslabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="cksDist" type="Points2D">
+		<general>
+			<title>Avg. Clustering Coefficient Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of neighbors</catlabel>
+			<rangelabel>Avg. clustering coefficient</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0" max="1"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="topCoefs" type="Points2D">
+		<general>
+			<title>Topological Coefficients</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of neighbors</catlabel>
+			<rangelabel>Topol. coefficients</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0" max="1"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intdomainaxis>true</intdomainaxis>	
+			<intrangeaxis>false</intrangeaxis>
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="splDist" type="LongHistogram">
+		<usescatter>false</usescatter>
+		<general>
+			<title>Shortest Path Length Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Path length</catlabel>
+			<rangelabel>Frequency</rangelabel>
+			<domrange min="1"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>false</logdomainaxis>
+			<intrangeaxis>true</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<bars>
+			<barcolor>0</barcolor>
+		</bars>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled square</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minobslabel>Minimum path length to display</minobslabel>
+			<maxobslabel>Maximum path length to display</maxobslabel>
+		</filter>
+	</complexparam>
+	<complexparam name="commNeighbors" type="LongHistogram">
+		<usescatter>false</usescatter>
+		<general>
+			<title>Shared Neighbors Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of shared neighbors</catlabel>
+			<rangelabel>Frequency</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>false</logdomainaxis>
+			<intrangeaxis>true</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<bars>
+			<barcolor>0</barcolor>
+		</bars>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minobslabel>Minimum number of shared partners to display</minobslabel>
+			<maxobslabel>Maximum number of shared partners to display</maxobslabel>
+		</filter>
+	</complexparam>
+	<complexparam name="neighborConn" type="Points2D">
+		<general>
+			<title>Neighborhood Connectivity Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of neighbors</catlabel>
+			<rangelabel>Avg. neighborhood connectivity</rangelabel>
+			<domrange min="1"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="nodeBetween" type="Points2D">
+		<general>
+			<title>Betweenness Centrality</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of neighbors</catlabel>
+			<rangelabel>Betweenness centrality</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0" max="1"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>false</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>0</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="closenessCent" type="Points2D">
+		<general>
+			<title>Closeness Centrality</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of neighbors</catlabel>
+			<rangelabel>Closeness centrality</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0" max="1"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>0</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="stressDist" type="Points2D">
+		<general>
+			<title>Stress Centrality Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Stress centrality</catlabel>
+			<rangelabel>Number of nodes</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0"/>
+			<lograngeaxis>true</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>true</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum stress to display</minxlabel>
+			<maxxlabel>Maximum stress to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="allNeighborConn" type="Points2D">
+		<general>
+			<title>Neighborhood Connectivity (in and out)</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of neighbors</catlabel>
+			<rangelabel>Avg. connectivity</rangelabel>
+			<domrange min="1"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="inNeighborConn" type="Points2D">
+		<general>
+			<title>Neighborhood Connectivity (only in)</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of in-neighbors</catlabel>
+			<rangelabel>Avg. out-connectivity</rangelabel>
+			<domrange min="1"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of in-neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of in-neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="outNeighborConn" type="Points2D">
+		<general>
+			<title>Neighborhood Connectivity (only out)</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Number of out-neighbors</catlabel>
+			<rangelabel>Avg. in-connectivity</rangelabel>
+			<domrange min="1"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>true</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum number of out-neighbors to display</minxlabel>
+			<maxxlabel>Maximum number of out-neighbors to display</maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="inDegreeDist" type="IntHistogram">
+		<usescatter>false</usescatter>
+		<general>
+			<title>In-Degree Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>In-degree</catlabel>
+			<rangelabel>Number of nodes</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>false</logdomainaxis>
+			<intrangeaxis>true</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<bars>
+			<barcolor>0</barcolor>
+		</bars>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minobslabel>Minimum in-degree to display</minobslabel>
+			<maxobslabel>Maximum in-degree to display</maxobslabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="outDegreeDist" type="IntHistogram">
+		<usescatter>false</usescatter>
+		<general>
+			<title>Out-Degree Distribution</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Out-degree</catlabel>
+			<rangelabel>Number of nodes</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>false</logdomainaxis>
+			<intrangeaxis>true</intrangeaxis>
+			<intdomainaxis>true</intdomainaxis>	
+		</axes>
+		<bars>
+			<barcolor>0</barcolor>
+		</bars>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minobslabel>Minimum out-degree to display</minobslabel>
+			<maxobslabel>Maximum out-degree to display</maxobslabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+			<LeastSquaresPowerLawDecorator/>
+		</decorators>
+	</complexparam>
+	<complexparam name="userDefined" type="Points2D">
+		<general>
+			<title>User defined plot</title>
+			<background>-1</background>
+		</general>
+		<axes>
+			<catlabel>Attribute 1</catlabel>
+			<rangelabel>Attribute 2</rangelabel>
+			<domrange min="0"/>
+			<ranrange min="0"/>
+			<lograngeaxis>false</lograngeaxis>
+			<logdomainaxis>false</logdomainaxis>
+			<intrangeaxis>false</intrangeaxis>
+			<intdomainaxis>false</intdomainaxis>	
+		</axes>
+		<scatter>
+			<pointcolor>0</pointcolor>
+			<pointshape>filled circle</pointshape>
+		</scatter>
+		<grid>
+			<horizontal>true</horizontal>
+			<vertical>false</vertical>
+			<cgridlines>-6710887</cgridlines>
+		</grid>
+		<filter>
+			<minxlabel>Minimum </minxlabel>
+			<maxxlabel>Maximum </maxxlabel>
+		</filter>
+		<decorators>
+			<LeastSquaresLineDecorator/>
+		</decorators>
+	</complexparam>
+</networkanalyzersettings>
