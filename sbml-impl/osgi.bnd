@@ -1,0 +1,7 @@
+#-----------------------------------------------------------------
+# Use this file to add customized Bnd instructions for the bundle
+#-----------------------------------------------------------------
+
+Spring-Context: META-INF/spring/*.xml
+Private-Package: ${bundle.namespace}.internal.*
+Export-Package: !${bundle.namespace}.internal.*,${bundle.namespace}.*;version="${pom.version}"
