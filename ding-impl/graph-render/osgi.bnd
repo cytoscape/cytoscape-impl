@@ -1,0 +1,7 @@
+#-----------------------------------------------------------------
+# Use this file to add customized Bnd instructions for the bundle
+#-----------------------------------------------------------------
+
+
+Spring-Context: META-INF/spring/*.xml
+Export-Package: ${bundle.namespace}.immed, ${bundle.namespace}.immed.nodeshape, ${bundle.namespace}.immed.arrow, ${bundle.namespace}.export, ${bundle.namespace}.stateful

@@ -1,0 +1,160 @@
+/*
+ Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
+
+ The Cytoscape Consortium is:
+ - Institute for Systems Biology
+ - University of California San Diego
+ - Memorial Sloan-Kettering Cancer Center
+ - Institut Pasteur
+ - Agilent Technologies
+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 2.1 of the License, or
+ any later version.
+
+ This library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
+ MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
+ documentation provided hereunder is on an "as is" basis, and the
+ Institute for Systems Biology and the Whitehead Institute
+ have no obligations to provide maintenance, support,
+ updates, enhancements or modifications.  In no event shall the
+ Institute for Systems Biology and the Whitehead Institute
+ be liable to any party for direct, indirect, special,
+ incidental or consequential damages, including lost profits, arising
+ out of the use of this software and its documentation, even if the
+ Institute for Systems Biology and the Whitehead Institute
+ have been advised of the possibility of such damage.  See
+ the GNU Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this library; if not, write to the Free Software Foundation,
+ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ */
+package org.cytoscape.ding.icon;
+
+import java.awt.Color;
+
+import javax.swing.ImageIcon;
+
+/**
+ * 
+ * Icon created from Shape object passed from rendering engine.<br>
+ * 
+ * This icon is scalable (vector image).
+ * 
+ * Actual paint method is defined in child classes.
+ * 
+ * This is an immutable object.
+ * 
+ */
+public abstract class VisualPropertyIcon<T> extends ImageIcon {
+
+	private static final long serialVersionUID = 3318566366920258692L;
+
+	// Default Icon color
+	public static final Color DEFAULT_ICON_COLOR = Color.DARK_GRAY;
+
+	// Default icon size
+	public static final int DEFAULT_ICON_SIZE = 32;
+
+	final protected int height;
+	final protected int width;
+
+	final protected Color color;
+	final protected T value;
+	final protected String name;
+
+	protected int leftPad = 0;
+	protected int bottomPad = 0;
+
+	/**
+	 * Constructor with full parameter set.
+	 * 
+	 * @param shape
+	 * @param width
+	 * @param height
+	 * @param name
+	 * @param color
+	 */
+	public VisualPropertyIcon(final T value, final int width,
+			final int height, final String name) {
+
+		// Validate parameters
+		if (value == null)
+			throw new NullPointerException("Value parameter is null.");
+		if (name == null)
+			throw new NullPointerException("Name parameter is null.");
+		if (width <= 0 || height <= 0)
+			throw new IllegalArgumentException(
+					"Width and height should be positive integers: (w, h) = ("
+							+ width + ", " + height + ")");
+
+		this.value = value;
+		this.width = width;
+		this.height = height;
+		this.name = name;
+
+		this.color = DEFAULT_ICON_COLOR;
+	}
+
+	
+	public T getValue() {
+		return value;
+	}
+
+	/**
+	 * Get height of icon. This implements Icon interface.
+	 */
+	@Override
+	public int getIconHeight() {
+		return height;
+	}
+
+	/**
+	 * Get width of icon. This implements Icon interface.
+	 */
+	@Override
+	public int getIconWidth() {
+		return width;
+	}
+
+	/**
+	 * Get human-readable name of this icon.
+	 * 
+	 * @return
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Get color of icon
+	 * 
+	 * @return Icon color.
+	 */
+	public Color getColor() {
+		return color;
+	}
+
+	/**
+	 * Insert space on the left.
+	 * 
+	 * @param pad
+	 *            DOCUMENT ME!
+	 */
+	public void setLeftPadding(int pad) {
+		this.leftPad = pad;
+	}
+
+	/**
+	 * DOCUMENT ME!
+	 * 
+	 * @param pad
+	 *            DOCUMENT ME!
+	 */
+	public void setBottomPadding(int pad) {
+		this.bottomPad = pad;
+	}
+}

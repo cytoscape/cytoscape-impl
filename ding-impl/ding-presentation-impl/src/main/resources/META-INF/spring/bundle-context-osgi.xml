@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+
+	<osgi:reference id="applicationManagerManagerServiceRef"
+		interface="org.cytoscape.session.CyApplicationManager">
+	</osgi:reference>
+
+	<osgi:reference id="customGraphicsManagerServiceRef"
+		interface="org.cytoscape.ding.customgraphics.CustomGraphicsManager">
+	</osgi:reference>
+
+	<osgi:reference id="renderingEngineManagerServiceRef"
+		interface="org.cytoscape.view.presentation.RenderingEngineManager">
+	</osgi:reference>
+
+	<osgi:reference id="cyRootNetworkFactoryServiceRef"
+		interface="org.cytoscape.model.subnetwork.CyRootNetworkFactory">
+	</osgi:reference>
+
+	<osgi:reference id="undoSupportServiceRef" interface="org.cytoscape.work.undo.UndoSupport">
+	</osgi:reference>
+
+	<osgi:reference id="cyDataTableFactoryServiceRef"
+		interface="org.cytoscape.model.CyTableFactory">
+	</osgi:reference>
+
+	<osgi:reference id="spacialIndex2DFactoryServiceRef"
+		interface="org.cytoscape.spacial.SpacialIndex2DFactory">
+	</osgi:reference>
+
+	<osgi:reference id="taskManagerServiceRef" interface="org.cytoscape.work.TaskManager">
+	</osgi:reference>
+
+	<osgi:reference id="cyServiceRegistrarRef"
+		interface="org.cytoscape.service.util.CyServiceRegistrar">
+	</osgi:reference>
+
+	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager">
+	</osgi:reference>
+
+	<osgi:reference id="cyNetworkManagerServiceRef"
+		interface="org.cytoscape.model.CyNetworkManager">
+	</osgi:reference>
+
+
+	<osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper">
+	</osgi:reference>
+
+	<!-- Individual Service -->
+	<osgi:service id="dingRenderingEngineFactoryService" ref="dingRenderingEngineFactory">
+		<osgi:interfaces>
+			<value>org.cytoscape.view.presentation.RenderingEngineFactory</value>
+			<value>org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener</value>
+		</osgi:interfaces>
+		<osgi:service-properties>
+			<entry key="serviceType" value="presentationFactory" />
+			<entry key="id" value="ding" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="dingNavigationRenderingEngineFactoryService"
+		ref="dingNavigationRenderingEngineFactory">
+		<osgi:interfaces>
+			<value>org.cytoscape.view.presentation.RenderingEngineFactory</value>
+			<value>org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener</value>
+		</osgi:interfaces>
+		<osgi:service-properties>
+			<entry key="serviceType" value="presentationFactory" />
+			<entry key="id" value="dingNavigation" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="addEdgeNodeViewTaskFactoryService" ref="addEdgeNodeViewTaskFactory"
+		interface="org.cytoscape.dnd.DropNodeViewTaskFactory">
+		<osgi:service-properties>
+			<entry key="title" value="Create Edge" />
+			<entry key="preferredAction" value="Edge" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<!-- Visual Lexicon for Ding -->
+	<osgi:service id="dVisualLexiconService" ref="dVisualLexicon"
+		interface="org.cytoscape.view.model.VisualLexicon">
+		<osgi:service-properties>
+			<entry key="serviceType" value="visualLexicon" />
+			<entry key="id" value="ding" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:set id="nodeViewTaskFactorySet" interface="org.cytoscape.task.NodeViewTaskFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addNodeViewTaskFactory"
+			unbind-method="removeNodeViewTaskFactory" ref="dingRenderingEngineFactory" />
+	</osgi:set>
+
+	<osgi:set id="edgeViewTaskFactorySet" interface="org.cytoscape.task.EdgeViewTaskFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addEdgeViewTaskFactory"
+			unbind-method="removeEdgeViewTaskFactory" ref="dingRenderingEngineFactory" />
+	</osgi:set>
+
+	<osgi:set id="emptySpaceTaskFactorySet" interface="org.cytoscape.task.NetworkViewTaskFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addNetworkViewTaskFactory"
+			unbind-method="removeNetworkViewTaskFactory" ref="dingRenderingEngineFactory" />
+	</osgi:set>
+
+	<osgi:set id="dropNodeViewTaskFactorySet" interface="org.cytoscape.dnd.DropNodeViewTaskFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addDropNodeViewTaskFactory"
+			unbind-method="removeDropNodeViewTaskFactory" ref="dingRenderingEngineFactory" />
+	</osgi:set>
+
+	<osgi:set id="dropEmptySpaceTaskFactorySet" interface="org.cytoscape.dnd.DropNetworkViewTaskFactory"
+		cardinality="0..N">
+		<osgi:listener bind-method="addDropNetworkViewTaskFactory"
+			unbind-method="removeDropNetworkViewTaskFactory" ref="dingRenderingEngineFactory" />
+	</osgi:set>
+
+	<osgi:service id="objectPositionValueEditorService" ref="objectPositionValueEditor"
+		auto-export="interfaces" />
+	<osgi:service id="objectPositionPropertyEditorService"
+		ref="objectPositionEditor" auto-export="interfaces" />
+
+	<osgi:service id="edgeColor2arrowColorDependencyService"
+		ref="edgeColor2arrowColorDependency" auto-export="interfaces" />
+	<osgi:service id="nodeCustomGraphicsSizeDependencyService"
+		ref="nodeCustomGraphicsSizeDependency" auto-export="interfaces" />
+
+
+	<osgi:reference id="cyPropertyServiceRef" interface="org.cytoscape.property.CyProperty"
+		filter="(cyPropertyName=coreSettings)" />
+		
+	<osgi:service id="showGraphicsDetailTaskFactoryService" ref="showGraphicsDetailTaskFactory" auto-export="interfaces">
+		<osgi:service-properties>
+			<entry key="title" value="Switch Graphics Details" />
+			<entry key="preferredMenu" value="View" />
+			<entry key="enableFor" value="networkAndView" />
+			<entry key="menuGravity" value="5.0" />
+			<entry key="accelerator" value="fn1" />
+		</osgi:service-properties>
+	</osgi:service>
+</beans>
