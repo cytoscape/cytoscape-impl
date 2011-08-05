@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+
+	<!-- Export linkout property as CyProperty Service -->
+	<osgi:service id="linkoutPropertiesService" ref="linkoutProps"
+		interface="org.cytoscape.property.CyProperty">
+		<osgi:service-properties>
+			<entry key="serviceType" value="property" />
+			<entry key="cyPropertyName" value="linkout" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<osgi:reference id="openBrowserServiceRef" 
+		interface="org.cytoscape.util.swing.OpenBrowser"/>
+		
+	<osgi:reference id="cyServiceRegistrarServiceRef" 
+		interface="org.cytoscape.service.util.CyServiceRegistrar"/>	
+
+</beans>
