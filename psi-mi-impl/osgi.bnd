@@ -1,0 +1,4 @@
+Spring-Context: META-INF/spring/*.xml
+Private-Package: ${bundle.namespace}.internal.*
+Export-Package: !${bundle.namespace}.internal.*,${bundle.namespace}.*;version="${pom.version}"
+Import-Package: com.sun.xml.internal.bind,*
