@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<parent>
+		<groupId>org.cytoscape</groupId>
+		<artifactId>parent</artifactId>
+		<version>3.0.0-alpha7</version>
+		<relativePath>../parent</relativePath>
+	</parent>
+
+	<properties>
+		<bundle.symbolicName>org.cytoscape.layout-jgraph-impl</bundle.symbolicName>
+		<bundle.namespace>csplugins.layout</bundle.namespace>
+	</properties>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.cytoscape</groupId>
+	<artifactId>layout-jgraph-impl</artifactId>
+	<version>1.0-SNAPSHOT</version>
+
+	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+
+	<packaging>bundle</packaging>
+
+
+	<repositories>
+		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
+		<repository>
+			<id>cytoscape_snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<name>Cytoscape Snapshots</name>
+			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
+		<repository>
+			<id>cytoscape_releases</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Cytoscape Releases</name>
+			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
+		</repository>
+	</repositories>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.ops4j</groupId>
+				<artifactId>maven-pax-plugin</artifactId>
+				<version>${maven-pax-plugin.version}</version>
+				<!-- | enable improved OSGi compilation support for the bundle life-cycle. 
+					| to switch back to the standard bundle life-cycle, move this setting | down 
+					to the maven-bundle-plugin section -->
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${maven-bundle-plugin.version}</version>
+				<!-- | the following instructions build a simple set of public/private 
+					classes into an OSGi bundle -->
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<_include>-osgi.bnd</_include>
+					</instructions>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-api</artifactId>
+			<version>3.0.0-alpha4-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>layout-api</artifactId>
+			<version>3.0.0-alpha3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>org.jgraph.jgraph</artifactId>
+			<version>5.10.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>org.jgraph.layouts</artifactId>
+			<version>5.10.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>org.jgraph.jgraphpad</artifactId>
+			<version>5.10.0.2</version>
+		</dependency>
+	</dependencies>
+
+</project>

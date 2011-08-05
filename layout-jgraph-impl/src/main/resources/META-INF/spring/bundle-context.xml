@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:lang="http://www.springframework.org/schema/lang" xmlns:osgi="http://www.springframework.org/schema/osgi"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.5.xsd
+            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
+    http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util.xsd"
+    default-lazy-init="false">
+
+    <context:annotation-config />
+
+	<bean id="jGraphAnnealingLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.ANNEALING"/>
+		</constructor-arg>
+	</bean>
+
+	<bean id="jGraphMoenLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.MOEN"/>
+		</constructor-arg>
+	</bean>
+	<bean id="jGraphCircleGraphLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.CIRCLE_GRAPH"/>
+		</constructor-arg>
+	</bean>
+	<bean id="jGraphRadialTreeLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.RADIAL_TREE"/>
+		</constructor-arg>
+	</bean>
+	<bean id="jGraphGEMLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.GEM"/>
+		</constructor-arg>
+	</bean>
+	<bean id="jGraphSpringEmbeddedLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.SPRING_EMBEDDED"/>
+		</constructor-arg>
+	</bean>
+	<bean id="jGraphSugiyamaLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.SUGIYAMA"/>
+		</constructor-arg>
+	</bean>
+	<bean id="jGraphTreeLayout" class="csplugins.layout.JGraphLayoutWrapper">
+		<constructor-arg ref="undoSupportServiceRef"/>
+		<constructor-arg type="int">
+		  <util:constant static-field="csplugins.layout.JGraphLayoutWrapper.TREE"/>
+		</constructor-arg>
+	</bean>
+</beans>
