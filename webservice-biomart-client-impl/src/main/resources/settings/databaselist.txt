@@ -1,0 +1,9 @@
+ENSEMBL 46 GENES (SANGER)	http://www.biomart.org/biomart/martservice?type=datasets&mart=ensembl
+VEGA 21  (SANGER)	http://www.biomart.org/biomart/martservice?type=datasets&mart=vega
+UNIPROT PROTOTYPE (EBI)	http://www.biomart.org/biomart/martservice?type=datasets&mart=uniprot
+MSD PROTOTYPE (EBI)	http://www.biomart.org/biomart/martservice?type=datasets&mart=msd
+GRAMENE (CSHL)	http://www.biomart.org/biomart/martservice?type=datasets&mart=ENSEMBL_MART_ENSEMBL
+RGD GENES (MCW)	http://rote.hmgc.mcw.edu:9999/biomart/martservice?type=datasets&mart=rgd__mart
+PANCREATIC EXPRESSION DATABASE (INSTITUTE OF CANCER)	http://www.biomart.org/biomart/martservice?type=datasets&mart=Pancreatic_Expression
+WORMBASE (CSHL)	http://www.wormbase.org/biomart/martservice?type=datasets&mart=wormbase176
+REACTOME	http://banon.cshl.edu:5555/biomart/martservice?type=datasets&mart=REACTOME

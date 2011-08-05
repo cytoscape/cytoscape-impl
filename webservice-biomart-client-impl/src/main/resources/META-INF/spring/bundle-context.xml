@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.5.xsd
+            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+	<import resource="bundle-context-osgi.xml" />
+
+	<context:annotation-config />
+
+	<!-- REST version of BioMart web service client -->
+	<bean id="biomartRestClient"
+		class="org.cytoscape.io.webservice.biomart.rest.BiomartRestClient">
+		<constructor-arg value="http://www.biomart.org/biomart/martservice" />
+	</bean>
+
+	<!-- Wrapper for the REST client -->
+	<bean id="biomartClient" class="org.cytoscape.io.webservice.biomart.BiomartClient">
+		<constructor-arg index="0" value="BioMart Client" />
+		<constructor-arg index="1"
+			value="REST version of BioMart Web Service Client." />
+		<constructor-arg ref="biomartRestClient" />
+		<constructor-arg ref="cyTableFactoryServiceRef" />
+		<constructor-arg ref="cyNetworkManagerServiceRef" />
+		<constructor-arg ref="cyApplicationManagerServiceRef" />
+		<constructor-arg ref="cySwingApplicationServiceRef" />
+	</bean>
+
+	<bean id="biomartAttrMappingPanel"
+		class="org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel">
+		<constructor-arg ref="biomartClient" />
+		<constructor-arg ref="taskManagerServiceRef" />
+		<constructor-arg ref="cyApplicationManagerServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkManagerServiceRef" />
+	</bean>
+
+	<!-- Task to create menu item -->
+	<bean id="showBiomartGUIAction"
+		class="org.cytoscape.io.webservice.biomart.task.ShowBiomartGUIAction">
+		<constructor-arg ref="biomartAttrMappingPanel" />
+		<constructor-arg ref="biomartClient" />
+		<constructor-arg ref="taskManagerServiceRef" />
+		<constructor-arg ref="cyApplicationManagerServiceRef" />
+		<constructor-arg ref="cySwingApplicationServiceRef" />
+	</bean>
+</beans>

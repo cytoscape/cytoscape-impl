@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+	<osgi:reference id="cySwingApplicationServiceRef"
+		interface="org.cytoscape.application.swing.CySwingApplication" />
+
+	<osgi:reference id="taskManagerServiceRef"
+		interface="org.cytoscape.work.swing.GUITaskManager" />
+
+	<!-- Network Manager -->
+	<osgi:reference id="cyNetworkManagerServiceRef"
+		interface="org.cytoscape.model.CyNetworkManager" />
+
+	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
+
+	<!-- Application Manager -->
+	<osgi:reference id="cyApplicationManagerServiceRef"
+		interface="org.cytoscape.session.CyApplicationManager" />
+
+	<osgi:reference id="cyTableFactoryServiceRef" interface="org.cytoscape.model.CyTableFactory" />
+
+	<osgi:service id="showBiomartGUIActionService" ref="showBiomartGUIAction"
+		interface="org.cytoscape.application.swing.CyAction" />
+		
+		
+	<!-- This is necessary to listening to Column events. -->
+	<osgi:service id="biomartAttrMappingPanelService" ref="biomartAttrMappingPanel" auto-export="interfaces" />
+
+</beans>
