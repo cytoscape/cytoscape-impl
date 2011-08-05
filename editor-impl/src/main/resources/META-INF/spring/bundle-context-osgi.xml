@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+	<osgi:reference id="cySwingApplicationServiceRef" 
+	                interface="org.cytoscape.application.swing.CySwingApplication"/>
+
+	<osgi:reference id="cyNetworkManagerServiceRef" 
+	                interface="org.cytoscape.model.CyNetworkManager"/>
+
+	<osgi:reference id="newEmptyNetworkViewFactoryServiceRef" 
+	                interface="org.cytoscape.task.creation.NewEmptyNetworkViewFactory"/>
+	                
+	<osgi:reference id="cyEventHelperServiceRef" 
+	                interface="org.cytoscape.event.CyEventHelper"/>
+
+	<osgi:service id="editorCytoPanelComponentService" ref="editorCytoPanelComponent"
+		interface="org.cytoscape.application.swing.CytoPanelComponent"/>
+
+	<osgi:service id="sifInterpreterTaskFactoryService" ref="sifInterpreterTaskFactory"
+		interface="org.cytoscape.task.NetworkViewTaskFactory">
+        <osgi:service-properties>
+           <entry key="title" value="SIF Interpreter" />
+           <entry key="preferredMenu" value="Plugins" />
+           <entry key="preferredAction" value="OPEN" />
+           <entry key="menuGravity" value="5.0f" />
+           <entry key="enableFor" value="networkAndView" />
+        </osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="dropNetworkViewTaskFactoryService" ref="dropNetworkViewTaskFactory"
+		interface="org.cytoscape.dnd.DropNetworkViewTaskFactory">
+        <osgi:service-properties>
+           <entry key="title" value="Create Node" />
+           <entry key="preferredAction" value="Node" />
+        </osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="dropNodeViewTaskFactoryService" ref="dropNodeViewTaskFactory"
+		interface="org.cytoscape.dnd.DropNodeViewTaskFactory">
+        <osgi:service-properties>
+           <entry key="title" value="Create Nested Network" />
+           <entry key="preferredAction" value="Network" />
+        </osgi:service-properties>
+	</osgi:service>
+
+	<osgi:service id="currentNetworkViewListenerService" ref="currentNetworkViewListener"
+		interface="org.cytoscape.session.events.SetCurrentNetworkViewListener">
+	</osgi:service>
+
+	<osgi:service id="editorPanelSelectedListenerService" ref="editorPanelSelectedListener"
+		interface="org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener">
+	</osgi:service>
+</beans>
