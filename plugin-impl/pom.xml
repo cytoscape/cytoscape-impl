@@ -50,17 +50,12 @@
 				<groupId>org.ops4j</groupId>
 				<artifactId>maven-pax-plugin</artifactId>
 				<version>${maven-pax-plugin.version}</version>
-				<!-- | enable improved OSGi compilation support for the bundle life-cycle. 
-					| to switch back to the standard bundle life-cycle, move this setting | down 
-					to the maven-bundle-plugin section -->
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>${maven-bundle-plugin.version}</version>
-				<!-- | the following instructions build a simple set of public/private 
-					classes into an OSGi bundle -->
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
@@ -73,7 +68,6 @@
 	</build>
 
 	<repositories>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
@@ -85,7 +79,6 @@
 			<name>Cytoscape Snapshots</name>
 			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
 		</repository>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
 		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>
@@ -118,14 +111,12 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>plugin-api</artifactId>
-			<version>3.0.0-alpha3</version>
 		</dependency>
 
 		<!-- dependencies needed for plugin manager -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha3</version>
 		</dependency>
 
 		<dependency>
@@ -149,73 +140,61 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-spring-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-api</artifactId>
-			<version>3.0.0-alpha1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-gui-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>webservice-api</artifactId>
-			<version>3.0.0-alpha2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>dnd-api</artifactId>
-			<version>3.0.0-alpha1</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>plugin-api</artifactId>
-			<version>3.0.0-alpha3</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.8.1</version>
 			<scope>test</scope>
 		</dependency>
 

@@ -12,15 +12,10 @@
 	<packaging>pom</packaging>
 	<name>vizmap-impl-parent</name>
 	
-	<properties>
-		<vizmap-api.version>3.0.0-alpha6-SNAPSHOT</vizmap-api.version>
-	</properties>
-
 	<modules>
 		<module>impl</module>
 		<module>it</module>
 	</modules>
-
 
 	<repositories>
 		<repository>
@@ -71,70 +66,53 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-api</artifactId>
-			<version>${vizmap-api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
         <dependency>
             <groupId>org.cytoscape</groupId>
             <artifactId>test-support</artifactId>
-            <version>3.0.0-alpha3-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-api</artifactId>
-			<version>${vizmap-api.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>property-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>test-support</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

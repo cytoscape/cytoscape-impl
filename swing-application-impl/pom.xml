@@ -47,7 +47,6 @@
 	</build>
 
 	<repositories>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
@@ -59,7 +58,6 @@
 			<name>Cytoscape Snapshots</name>
 			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
 		</repository>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
 		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>
@@ -78,52 +76,42 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>property-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
-			<version>3.0.0-alpha2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
         <dependency>
             <groupId>cytoscape-sun</groupId>

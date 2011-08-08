@@ -441,14 +441,14 @@ public abstract class CyNetworkUtils {
 							if (aIgnoreDir == false && e.isDirected()) {
 								if (source == n1) {
 									if (dir12Edge != null) {
-										aNetwork.removeEdge(e);
+										aNetwork.removeEdges(Collections.singletonList(e));
 										removedCount++;
 									} else {
 										dir12Edge = e;
 									}
 									numDir12++;
 								} else if (dir21Edge != null) {
-									aNetwork.removeEdge(e);
+									aNetwork.removeEdges(Collections.singletonList(e));
 									removedCount++;
 									numDir21++;
 								} else {
@@ -456,7 +456,7 @@ public abstract class CyNetworkUtils {
 									numDir21++;
 								}
 							} else if (undirEdge != null) {
-								aNetwork.removeEdge(e);
+								aNetwork.removeEdges(Collections.singletonList(e));
 								removedCount++;
 								numUndir++;
 							} else {
@@ -502,12 +502,14 @@ public abstract class CyNetworkUtils {
 	 */
 	public static int removeSelfLoops(CyNetwork aNetwork) {
 		int removedCount = 0;
+		List<CyEdge> toRemove = new ArrayList<CyEdge>();
 		for ( CyEdge e : aNetwork.getEdgeList()) {
 			if (e.getSource() == e.getTarget()) {
-				aNetwork.removeEdge(e);
+				toRemove.add(e);
 				removedCount++;
 			}
 		}
+		aNetwork.removeEdges(toRemove);
 		return removedCount;
 	}
 }

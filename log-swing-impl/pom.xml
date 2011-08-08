@@ -22,19 +22,6 @@
 
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>.</directory>
-				<includes>
-					<include>plugin.xml</include>
-					<include>plugin.properties</include>
-					<include>icons/**</include>
-				</includes>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -83,7 +70,6 @@
 			<name>Cytoscape Snapshots</name>
 			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
 		</repository>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
 		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>
@@ -101,21 +87,17 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.0.0-alpha1</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-service</artifactId>
 			<version>1.5.2</version>
 			<scope>compile</scope>
-		</dependency>
-		
-		<!-- for testing -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

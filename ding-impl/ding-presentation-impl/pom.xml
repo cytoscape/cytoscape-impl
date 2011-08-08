@@ -74,7 +74,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -84,30 +83,25 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-gui-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 
@@ -135,13 +129,11 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>dnd-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Testing -->
@@ -158,7 +150,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

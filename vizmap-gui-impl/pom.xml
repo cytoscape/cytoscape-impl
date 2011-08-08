@@ -22,7 +22,6 @@
 
 
     <repositories>
-        <!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
         <repository>
             <id>cytoscape_snapshots</id>
             <snapshots>
@@ -34,7 +33,6 @@
             <name>Cytoscape Snapshots</name>
             <url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
         </repository>
-        <!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
         <repository>
             <id>cytoscape_releases</id>
             <snapshots>
@@ -49,13 +47,6 @@
     </repositories>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-			<!-- | example additional resource entries, useful when building Eclipse 
-				RCP applications -->
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -69,17 +60,12 @@
 				<groupId>org.ops4j</groupId>
 				<artifactId>maven-pax-plugin</artifactId>
 				<version>${maven-pax-plugin.version}</version>
-				<!-- | enable improved OSGi compilation support for the bundle life-cycle. 
-					| to switch back to the standard bundle life-cycle, move this setting | down 
-					to the maven-bundle-plugin section -->
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>${maven-bundle-plugin.version}</version>
-				<!-- | the following instructions build a simple set of public/private 
-					classes into an OSGi bundle -->
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
@@ -97,40 +83,33 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-gui-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Wrapped 3rd party libraries -->

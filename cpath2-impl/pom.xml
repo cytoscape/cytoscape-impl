@@ -18,54 +18,45 @@
         <dependency>
             <groupId>org.cytoscape</groupId>
             <artifactId>model-api</artifactId>
-            <version>3.0.0-alpha4</version>
         </dependency>
         <dependency>
             <groupId>org.cytoscape</groupId>
             <artifactId>io-api</artifactId>
-            <version>3.0.0-alpha3</version>
         </dependency>
         <dependency>
             <groupId>org.cytoscape</groupId>
             <artifactId>webservice-api</artifactId>
-            <version>3.0.0-alpha2</version>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>viewmodel-api</artifactId>
-        	<version>3.0.0-alpha4</version>
         	<scope>compile</scope>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>layout-api</artifactId>
-        	<version>3.0.0-alpha2</version>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>presentation-api</artifactId>
-        	<version>3.0.0-alpha4-SNAPSHOT</version>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>swing-util-api</artifactId>
-        	<version>3.0.0-alpha3-SNAPSHOT</version>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>swing-application-api</artifactId>
-        	<version>3.0.0-alpha2</version>
         </dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>biopax-impl</artifactId>
-			<version>3.0.0-alpha2-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
@@ -83,21 +74,11 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>test-support</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
-            <version>1.8.1</version>
             <scope>test</scope>
         </dependency>
 	</dependencies>

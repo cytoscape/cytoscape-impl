@@ -53,17 +53,12 @@
 				<groupId>org.ops4j</groupId>
 				<artifactId>maven-pax-plugin</artifactId>
 				<version>${maven-pax-plugin.version}</version>
-				<!-- | enable improved OSGi compilation support for the bundle life-cycle. 
-					| to switch back to the standard bundle life-cycle, move this setting | down 
-					to the maven-bundle-plugin section -->
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>${maven-bundle-plugin.version}</version>
-				<!-- | the following instructions build a simple set of public/private 
-					classes into an OSGi bundle -->
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
@@ -80,22 +75,18 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>property-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.0.0-alpha3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>

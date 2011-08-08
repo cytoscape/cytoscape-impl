@@ -21,7 +21,6 @@
 
 
 	<build>
-		<!-- Cytoscape requires Java 1.6 -->
 		<plugins>
 			<plugin>
 				<groupId>org.ops4j</groupId>
@@ -29,7 +28,6 @@
 				<version>${maven-pax-plugin.version}</version>
 				<extensions>true</extensions>
 			</plugin>
-			<!-- Generates the OSGi metadata based on the osgi.bnd file. -->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -45,7 +43,6 @@
 		</plugins>
 	</build>
 
-	<!-- Links to the Cytoscape Maven repositories. -->
 	<repositories>
 		<repository>
 			<id>cytoscape_snapshots</id>
@@ -81,7 +78,6 @@
 			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/thirdparty/</url>
 		</repository>
 		
-		<!-- For Apache poi -->
 		<repository>
   			<id>com.springsource.repository.bundles.release</id>
     		<name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
@@ -95,7 +91,6 @@
 		</repository>		
 	</repositories>
 
-	<!-- Dependencies needed to compile this project. -->
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -191,7 +186,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>test-support</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

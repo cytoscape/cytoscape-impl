@@ -143,13 +143,12 @@ public abstract class NetworkAnalyzer {
 			removedEdges = new HashSet<CyEdge>();
 			for ( CyEdge edge : network.getEdgeList() ) {
 				if (!edge.isDirected()) {
-
 					if (edge.getSource() == edge.getTarget()) {
-						network.removeEdge(edge);
 						removedEdges.add(edge);
 					}
 				}
 			}
+			network.removeEdges(removedEdges);
 			// Update edge count
 			stats.set("edgeCount", new Integer(network.getEdgeCount()));
 		}

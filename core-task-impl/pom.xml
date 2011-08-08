@@ -91,53 +91,43 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>property-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 
@@ -145,33 +135,28 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.8.5</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>test-support</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.0.0-alpha5-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -179,7 +164,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
-			<version>3.0.0-alpha6-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

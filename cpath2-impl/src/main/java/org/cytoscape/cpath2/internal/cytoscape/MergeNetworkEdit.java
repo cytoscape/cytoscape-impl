@@ -109,18 +109,8 @@ public class MergeNetworkEdit extends CyAbstractEdit {
     public void undo() {
         super.undo();
 
-        // iterate through nodes and hide each one
-        for (CyNode cyNode : cyNodes.keySet()) {
-        	cyNetwork.removeNode(cyNode);
-        }
-
-        // iteracte through edges and hide each one
-        for (CyEdge cyEdge : cyEdges) {
-            cyNetwork.removeEdge(cyEdge);
-        }
-
-        // fire Cytoscape.NETWORK_MODIFIED
-//        Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, cyNetwork);
+		cyNetwork.removeNodes(cyNodes.keySet());
+		cyNetwork.removeEdges(cyEdges);
     }
 
     /**

@@ -24,7 +24,6 @@
 
 
 	<repositories>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
@@ -36,7 +35,6 @@
 			<name>Cytoscape Snapshots</name>
 			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
 		</repository>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
 		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>
@@ -51,11 +49,6 @@
 	</repositories>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -106,38 +99,32 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>webservice-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.0.0-alpha4-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.8.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>test-support</artifactId>
-			<version>3.0.0-alpha2</version>
 			<scope>test</scope>
 		</dependency>
 

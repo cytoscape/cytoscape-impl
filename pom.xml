@@ -56,12 +56,13 @@
 		<module>webservice-biomart-client-impl</module>
 		<module>webservice-impl</module>
 		<module>webservice-ncbi-client-impl</module>
-		<module>work-headless-impl</module>
+		<!-- <module>work-headless-impl</module> -->
 		<module>work-swing-impl</module>
 	</modules>
 
 	<properties>
 		<cytoscape.api.version>3.0.0-alpha6-SNAPSHOT</cytoscape.api.version>
+		<cytoscape.support.version>3.0.0-alpha6-SNAPSHOT</cytoscape.support.version>
 	</properties>
 
 	<dependencyManagement>
@@ -181,7 +182,72 @@
 				<artifactId>work-swing-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>core-task-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>event-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>io-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>model-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>plugin-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>presentation-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>session-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>viewmodel-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>vizmap-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>test-support</artifactId>
+				<version>${cytoscape.support.version}</version> 
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<scm>
+		<connection>${scm.connection.root}/impl/trunk</connection>
+		<developerConnection>${scm.dev.connection.root}/impl/trunk</developerConnection>
+		<url>${scm.url.root}/impl/trunk</url>
+	</scm>
 
 </project> 

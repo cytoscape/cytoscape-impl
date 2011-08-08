@@ -67,7 +67,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>test-support</artifactId>
-			<version>3.0.0-alpha3-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -79,7 +78,6 @@
 	
 
 	<repositories>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
@@ -91,7 +89,6 @@
 			<name>Cytoscape Snapshots</name>
 			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
 		</repository>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
 		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>
