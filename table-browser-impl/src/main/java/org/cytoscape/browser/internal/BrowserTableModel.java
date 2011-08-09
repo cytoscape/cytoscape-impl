@@ -298,7 +298,8 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		final String newColumnName = e.getNewColumnName();
 		renameColumnName(e.getOldColumnName(), newColumnName);
 		final int column = mapColumnNameToColumnIndex(newColumnName);
-		table.getColumnModel().getColumn(column).setHeaderValue(newColumnName);
+		if (column != -1)
+			table.getColumnModel().getColumn(column).setHeaderValue(newColumnName);
 	}
 
 	@Override
@@ -308,7 +309,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	}
 
 	@Override
-	public void handleEvent(RowsSetEvent e) {
+	public void handleEvent(final RowsSetEvent e) {
 		if (tableHasBooleanSelected) {
 			selectedRows = null;
 			boolean foundANonSelectedColumnName = false;
@@ -325,8 +326,9 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			}
 		}
 
-		for (final RowSetRecord rowSet : e.getPayloadCollection())
-			handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
+				for (final RowSetRecord rowSet : e.getPayloadCollection())
+					handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(),
+					                     rowSet.getValue(), rowSet.getRawValue());
 	}
 
 	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
@@ -387,7 +389,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			++index;
 		}
 
-		throw new IllegalStateException("We should *never* get here!");
+		return -1;
 	}
 
 	private String mapColumnIndexToColumnName(final int index) {
