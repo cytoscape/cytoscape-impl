@@ -236,11 +236,6 @@
 				<version>${cytoscape.api.version}</version> 
 				<type>test-jar</type>
 			</dependency>
-			<dependency>
-				<groupId>org.cytoscape</groupId>
-				<artifactId>test-support</artifactId>
-				<version>${cytoscape.support.version}</version> 
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
