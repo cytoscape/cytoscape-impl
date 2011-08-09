@@ -1,5 +1,5 @@
 
-package org.cytoscape.test.support;
+package org.cytoscape.model;
 
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
