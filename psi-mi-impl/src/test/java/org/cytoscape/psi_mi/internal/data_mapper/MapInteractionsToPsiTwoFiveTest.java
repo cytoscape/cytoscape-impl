@@ -65,7 +65,7 @@ import org.cytoscape.psi_mi.internal.schema.mi25.NamesType;
 import org.cytoscape.psi_mi.internal.schema.mi25.ParticipantType;
 import org.cytoscape.psi_mi.internal.schema.mi25.XrefType;
 import org.cytoscape.psi_mi.internal.util.ContentReader;
-import org.cytoscape.test.support.NetworkTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -66,7 +66,7 @@ import org.cytoscape.psi_mi.internal.schema.mi1.ProteinParticipantType;
 import org.cytoscape.psi_mi.internal.schema.mi1.RefType;
 import org.cytoscape.psi_mi.internal.schema.mi1.XrefType;
 import org.cytoscape.psi_mi.internal.util.ContentReader;
-import org.cytoscape.test.support.NetworkTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
 import org.junit.Before;
 import org.junit.Test;
 

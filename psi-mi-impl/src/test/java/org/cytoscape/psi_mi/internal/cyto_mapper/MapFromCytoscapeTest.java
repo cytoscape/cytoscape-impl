@@ -47,7 +47,7 @@ import org.cytoscape.psi_mi.internal.model.ExternalReference;
 import org.cytoscape.psi_mi.internal.model.Interaction;
 import org.cytoscape.psi_mi.internal.model.Interactor;
 import org.cytoscape.psi_mi.internal.util.ContentReader;
-import org.cytoscape.test.support.NetworkTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
 import org.junit.Before;
 import org.junit.Test;
 

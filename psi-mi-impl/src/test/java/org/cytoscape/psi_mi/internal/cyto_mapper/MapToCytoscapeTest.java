@@ -55,7 +55,7 @@ import org.cytoscape.psi_mi.internal.model.vocab.InteractionVocab;
 import org.cytoscape.psi_mi.internal.model.vocab.InteractorVocab;
 import org.cytoscape.psi_mi.internal.util.AttributeUtil;
 import org.cytoscape.psi_mi.internal.util.ContentReader;
-import org.cytoscape.test.support.NetworkTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
 import org.junit.Before;
 import org.junit.Test;
 
