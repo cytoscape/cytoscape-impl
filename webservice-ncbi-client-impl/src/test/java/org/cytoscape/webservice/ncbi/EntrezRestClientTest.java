@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.test.support.NetworkTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.webservice.ncbi.rest.EntrezRestClient;
 import org.junit.Before;
 import org.junit.Test;
