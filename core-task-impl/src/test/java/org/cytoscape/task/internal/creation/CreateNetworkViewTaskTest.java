@@ -11,8 +11,8 @@ import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.test.support.NetworkTestSupport;
-import org.cytoscape.test.support.NetworkViewTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;

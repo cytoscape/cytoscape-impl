@@ -13,7 +13,7 @@ import java.util.List;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.AbstractCyWriterTest;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.test.support.NetworkViewTestSupport;
+import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.junit.Before;
 import org.junit.Test;

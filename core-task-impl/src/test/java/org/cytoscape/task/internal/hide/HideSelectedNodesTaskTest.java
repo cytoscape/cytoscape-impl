@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNetworkViewTaskTest;
-import org.cytoscape.test.support.NetworkViewTestSupport;
+import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;

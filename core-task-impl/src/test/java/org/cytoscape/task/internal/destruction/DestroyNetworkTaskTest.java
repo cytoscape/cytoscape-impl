@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.test.support.NetworkTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

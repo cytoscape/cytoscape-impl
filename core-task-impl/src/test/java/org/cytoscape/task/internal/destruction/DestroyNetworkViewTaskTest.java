@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.test.support.NetworkViewTestSupport;
+import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.junit.After;
