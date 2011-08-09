@@ -1,4 +1,4 @@
-package org.cytoscape.test.support;
+package org.cytoscape.model;
 
 import org.cytoscape.model.AbstractCyNetworkTest;
 
