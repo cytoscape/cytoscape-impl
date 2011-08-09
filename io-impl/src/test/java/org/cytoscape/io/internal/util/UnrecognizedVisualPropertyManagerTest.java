@@ -15,7 +15,7 @@ import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTable.SavePolicy;
-import org.cytoscape.test.support.DataTableTestSupport;
+import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.junit.Before;
@@ -30,8 +30,8 @@ public class UnrecognizedVisualPropertyManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		DataTableTestSupport tblTestSupport = new DataTableTestSupport();
-		tableFactory = tblTestSupport.getDataTableFactory();
+		TableTestSupport tblTestSupport = new TableTestSupport();
+		tableFactory = tblTestSupport.getTableFactory();
 		CyTableManager tableMgr = mock(CyTableManager.class);
 		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);
 

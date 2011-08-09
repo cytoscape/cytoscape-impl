@@ -13,7 +13,7 @@ import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.test.support.DataTableTestSupport;
+import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -38,8 +38,8 @@ public class GMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 		// FIXME
 		//when(lexicon.getVisualProperties(any(String.class))).thenReturn(new LinkedList<VisualProperty<?>>());
 		
-		DataTableTestSupport tblTestSupport = new DataTableTestSupport();
-		CyTableFactory tableFactory = tblTestSupport.getDataTableFactory();
+		TableTestSupport tblTestSupport = new TableTestSupport();
+		CyTableFactory tableFactory = tblTestSupport.getTableFactory();
 		CyTableManager tableMgr= mock(CyTableManager.class);
 		
 		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);

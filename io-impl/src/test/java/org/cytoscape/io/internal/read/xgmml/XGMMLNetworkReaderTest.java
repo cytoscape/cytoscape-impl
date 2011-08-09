@@ -18,7 +18,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.test.support.DataTableTestSupport;
+import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -56,8 +56,8 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 		networkViewFactory = mock(CyNetworkViewFactory.class);
 		networkFactory = mock(CyNetworkFactory.class);
 		
-		DataTableTestSupport tblTestSupport = new DataTableTestSupport();
-		tableFactory = tblTestSupport.getDataTableFactory();
+		TableTestSupport tblTestSupport = new TableTestSupport();
+		tableFactory = tblTestSupport.getTableFactory();
 
 		ByteArrayInputStream is = new ByteArrayInputStream("".getBytes("UTF-8")); // TODO: use XGMML string or load from file
 

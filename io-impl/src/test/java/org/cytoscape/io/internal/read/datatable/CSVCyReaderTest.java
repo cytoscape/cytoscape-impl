@@ -14,7 +14,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.test.support.DataTableTestSupport;
+import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,8 +29,8 @@ public class CSVCyReaderTest {
 
 	@Before
 	public void setUp() {
-		DataTableTestSupport tableTestSupport = new DataTableTestSupport();
-		tableFactory = tableTestSupport.getDataTableFactory();
+		TableTestSupport tableTestSupport = new TableTestSupport();
+		tableFactory = tableTestSupport.getTableFactory();
 		MockitoAnnotations.initMocks(this);
 	}
 
