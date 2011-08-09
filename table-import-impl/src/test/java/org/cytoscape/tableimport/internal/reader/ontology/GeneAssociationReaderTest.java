@@ -14,9 +14,9 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.session.CyApplicationManager;
-import org.cytoscape.test.support.DataTableTestSupport;
-import org.cytoscape.test.support.NetworkTestSupport;
-import org.cytoscape.test.support.NetworkViewTestSupport;
+import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
@@ -40,11 +40,11 @@ public class GeneAssociationReaderTest {
 
 		NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 		NetworkTestSupport netSupport = new NetworkTestSupport();
-		DataTableTestSupport tableSupport = new DataTableTestSupport();
+		TableTestSupport tableSupport = new TableTestSupport();
 
 		CyNetworkViewFactory cyNetworkViewFactory = viewSupport.getNetworkViewFactory();
 		CyNetworkFactory cyNetworkFactory = netSupport.getNetworkFactory();
-		tableFactory = tableSupport.getDataTableFactory();
+		tableFactory = tableSupport.getTableFactory();
 		dag = cyNetworkFactory.getInstance();
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		tm = mock(TaskMonitor.class);
