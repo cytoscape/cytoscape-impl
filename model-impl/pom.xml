@@ -6,7 +6,6 @@
 		<version>3.0.0-alpha6-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.cytoscape</groupId>
 	<artifactId>model-impl-parent</artifactId>
 	<packaging>pom</packaging>
 	<name>model-impl-parent</name>
