@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>integration-test-support</artifactId>
-			<version>3.0.0-alpha4</version>
+			<version>${cytoscape.support.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-impl</artifactId>
-			<version>3.0.0-alpha3</version>
+			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

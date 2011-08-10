@@ -1,6 +1,5 @@
 package org.cytoscape.event; 
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.runner.RunWith;

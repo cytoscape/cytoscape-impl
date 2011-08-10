@@ -66,26 +66,29 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>integration-test-support</artifactId>
-			<version>3.0.0-alpha3</version>
+			<version>${cytoscape.support.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>3.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ops4j.pax.exam</groupId>
 			<artifactId>pax-exam</artifactId>
 			<version>${pax.exam.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ops4j.pax.exam</groupId>
 			<artifactId>pax-exam-junit</artifactId>
 			<version>${pax.exam.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ops4j.pax.exam</groupId>
 			<artifactId>pax-exam-container-default</artifactId>
 			<version>${pax.exam.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
