@@ -1,7 +1,5 @@
-<project 
-	xmlns="http://maven.apache.org/POM/4.0.0" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -57,7 +55,8 @@
 		<module>webservice-ncbi-client-impl</module>
 		<!-- <module>work-headless-impl</module> -->
 		<module>work-swing-impl</module>
-	</modules>
+		<module>application-impl</module>
+  </modules>
 
 	<properties>
 		<cytoscape.api.version>3.0.0-alpha6-SNAPSHOT</cytoscape.api.version>
@@ -75,6 +74,11 @@
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-all</artifactId>
 				<version>${mockito.version}</version> 
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>application-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
@@ -275,7 +279,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -286,4 +290,4 @@
 		</pluginManagement>
 	</build>
 
-</project> 
+</project>
