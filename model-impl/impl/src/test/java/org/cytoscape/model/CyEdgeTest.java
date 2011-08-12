@@ -28,8 +28,6 @@
 package org.cytoscape.model;
 
 
-import org.cytoscape.model.CyNetwork;
-
 import org.junit.After;
 import org.junit.Before;
 
@@ -38,6 +36,7 @@ public class CyEdgeTest extends AbstractCyEdgeTest {
 	@Before
 	public void setUp() {
 		net = TestCyNetworkFactory.getInstance();
+		defaultSetUp();
 	}
 
 	@After
