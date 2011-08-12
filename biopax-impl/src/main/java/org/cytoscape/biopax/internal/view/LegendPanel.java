@@ -11,9 +11,9 @@ import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.biopax.internal.util.WebFileConnect;
-import org.cytoscape.session.CyApplicationManager;
 
 /**
  * Displays the Default Visual Style Legend for the BioPAX Mapper.

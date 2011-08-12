@@ -4,7 +4,7 @@ package org.cytoscape.command.internal;
 
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.work.TunableInterceptor;
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 
 class NTFExecutor extends TFExecutor {

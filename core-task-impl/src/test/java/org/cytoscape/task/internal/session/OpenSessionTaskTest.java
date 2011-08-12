@@ -6,10 +6,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;

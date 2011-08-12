@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.IdentDescriptor;
@@ -53,7 +54,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.AddedNodesEvent;
-import org.cytoscape.session.CyApplicationManager;
 import org.junit.Before;
 import org.junit.Test;
 

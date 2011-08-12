@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.swing.JOptionPane;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.model.CyNetworkManager;
@@ -18,7 +19,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.task.MapNetworkAttrTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;

@@ -30,9 +30,9 @@
 package org.cytoscape.internal.layout.ui;
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.swing.GUITaskManager;
 

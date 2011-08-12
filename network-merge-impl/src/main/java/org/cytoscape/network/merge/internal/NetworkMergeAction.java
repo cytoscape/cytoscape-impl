@@ -39,7 +39,7 @@ package org.cytoscape.network.merge.internal;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.network.merge.internal.ui.NetworkMergeFrame;
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 
 import java.awt.event.ActionEvent;
 

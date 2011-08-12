@@ -6,6 +6,7 @@
 	default-lazy-init="false">
 
 	<!-- Import OSGi services -->
+	<osgi:reference id="cytoscapeShutdownServiceRef" interface="org.cytoscape.application.CytoscapeShutdown" />
 
 	<osgi:reference id="streamUtilServiceRef" interface="org.cytoscape.io.util.StreamUtil" />
 	
@@ -15,7 +16,7 @@
 		interface="org.cytoscape.property.CyProperty" filter="(cyPropertyName=coreSettings)" />
 
 	<osgi:reference id="cyApplicationManagerServiceRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 		
 	<osgi:reference id="cySessionManagerServiceRef"
 		interface="org.cytoscape.session.CySessionManager" />
@@ -291,14 +292,7 @@
 
 	<!-- Finally, Export Cytoscape Desktop itself as a service. Other desktop 
 		components (like VizMapper GUI) can use it through DI -->
-	<osgi:service id="cytoscapeDesktopService" ref="cytoscapeDesktop">
-		<osgi:interfaces>
-			<value>org.cytoscape.application.swing.events.CytoscapeStartListener</value>
-			<value>org.cytoscape.session.events.SessionAboutToBeSavedListener</value>
-			<value>org.cytoscape.session.events.SessionLoadedListener</value>
-			<value>org.cytoscape.application.swing.CySwingApplication</value>
-		</osgi:interfaces>
-	</osgi:service>
+	<osgi:service id="cytoscapeDesktopService" ref="cytoscapeDesktop" auto-export="interfaces" />
 
 	<osgi:service id="networkPanelService" ref="networkPanel" auto-export="interfaces" />
 	
@@ -307,7 +301,7 @@
 	<osgi:service id="birdsEyeViewHandlerService" ref="birdsEyeViewHandler" auto-export="interfaces" />
 
 	<osgi:service id="undoMonitorSetCurrentNetworkViewListenerService"
-		ref="undoMonitor" interface="org.cytoscape.session.events.SetCurrentNetworkViewListener" />
+		ref="undoMonitor" interface="org.cytoscape.application.events.SetCurrentNetworkViewListener" />
 
 	<osgi:service id="rowViewTrackerService" ref="rowViewTracker" auto-export="interfaces"/>
 	
@@ -316,19 +310,13 @@
 	<osgi:service id="selectNodeViewUpdaterService" ref="selecteNodeViewUpdater" auto-export="interfaces"/>
 
 	<osgi:service id="sessionShutdownHandlerService" ref="sessionShutdownHandler"
-		interface="org.cytoscape.application.swing.events.CytoscapeShutdownListener" />
-
-	<osgi:service id="cytoscapeShutdownService" ref="cytoscapeShutdown"
-		interface="org.cytoscape.application.swing.CytoscapeShutdown" />
-
-	<osgi:service id="cytoscapeVersionService" ref="cytoscapeVersion"
-		interface="org.cytoscape.application.swing.CytoscapeVersion" />
+		interface="org.cytoscape.application.events.CytoscapeShutdownListener" />
 
 	<osgi:service id="toolBarEnableUpdaterService" ref="toolBarEnableUpdater"
 		auto-export="interfaces" />
 
 	<osgi:service id="configDirPropertyWriterService" ref="configDirPropertyWriter"
-		interface="org.cytoscape.application.swing.events.CytoscapeShutdownListener" />
+		interface="org.cytoscape.application.events.CytoscapeShutdownListener" />
 
 	<osgi:set id="propertySet" interface="org.cytoscape.property.CyProperty"
 		cardinality="0..N">

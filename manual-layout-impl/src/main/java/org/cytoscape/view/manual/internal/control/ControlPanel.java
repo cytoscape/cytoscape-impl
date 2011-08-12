@@ -46,7 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 import java.awt.GridLayout;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 
 /**
  *

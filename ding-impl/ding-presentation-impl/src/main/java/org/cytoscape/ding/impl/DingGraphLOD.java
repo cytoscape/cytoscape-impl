@@ -4,10 +4,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 /**

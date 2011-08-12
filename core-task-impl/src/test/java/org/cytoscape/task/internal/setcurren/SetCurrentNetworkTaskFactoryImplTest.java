@@ -3,7 +3,8 @@ package org.cytoscape.task.internal.setcurren;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
-import org.cytoscape.session.CyApplicationManager;
+
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;

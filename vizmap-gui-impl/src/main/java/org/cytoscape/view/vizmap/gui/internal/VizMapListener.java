@@ -39,7 +39,7 @@ package org.cytoscape.view.vizmap.gui.internal;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
 

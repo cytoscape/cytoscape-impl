@@ -43,7 +43,7 @@ import java.util.Properties;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;

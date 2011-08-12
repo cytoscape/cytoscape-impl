@@ -48,7 +48,7 @@
 	</osgi:service>
 
 	<osgi:service id="currentNetworkViewListenerService" ref="currentNetworkViewListener"
-		interface="org.cytoscape.session.events.SetCurrentNetworkViewListener">
+		interface="org.cytoscape.application.events.SetCurrentNetworkViewListener">
 	</osgi:service>
 
 	<osgi:service id="editorPanelSelectedListenerService" ref="editorPanelSelectedListener"

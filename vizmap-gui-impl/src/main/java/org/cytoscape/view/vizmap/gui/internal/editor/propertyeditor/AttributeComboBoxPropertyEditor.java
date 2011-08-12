@@ -12,11 +12,11 @@ import javax.swing.JComboBox;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.session.CyApplicationManager;
-import org.cytoscape.session.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.session.events.SetCurrentNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSet;

@@ -1,9 +1,10 @@
 package org.cytoscape.task.internal.setcurren;
 
 import static org.mockito.Mockito.*;
+
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.task.internal.setcurrent.SetCurrentNetworkTask;
 import org.junit.Test;

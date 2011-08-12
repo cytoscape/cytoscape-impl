@@ -1,7 +1,7 @@
 package org.cytoscape.editor.internal;
 
-import org.cytoscape.session.events.SetCurrentNetworkViewListener;
-import org.cytoscape.session.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;

@@ -3,9 +3,9 @@ package org.cytoscape.webservice.internal.task;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.webservice.internal.ui.UnifiedNetworkImportDialog;
 
 /**

@@ -6,7 +6,7 @@
 	default-lazy-init="false">
 
 	<osgi:reference id="cyApplicationManagerServiceRef" 
-		interface="org.cytoscape.session.CyApplicationManager"/>
+		interface="org.cytoscape.application.CyApplicationManager"/>
 
 	<osgi:reference id="cySwingApplicationServiceRef"
 		interface="org.cytoscape.application.swing.CySwingApplication" />

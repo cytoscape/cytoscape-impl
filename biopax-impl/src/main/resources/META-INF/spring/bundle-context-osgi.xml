@@ -17,7 +17,7 @@
 		interface="org.cytoscape.util.swing.OpenBrowser" />
 		
 	<osgi:reference id="cyApplicationManagerRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 
 	<osgi:reference id="cyNetworkViewManagerRef"
 		interface="org.cytoscape.view.model.CyNetworkViewManager" />

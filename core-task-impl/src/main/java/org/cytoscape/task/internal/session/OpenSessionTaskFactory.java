@@ -29,9 +29,9 @@
  */
 package org.cytoscape.task.internal.session;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;

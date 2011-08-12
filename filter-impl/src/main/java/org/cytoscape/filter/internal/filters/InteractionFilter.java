@@ -36,8 +36,8 @@
 
 package org.cytoscape.filter.internal.filters;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.CyApplicationManager;
 
 
 public class InteractionFilter extends CompositeFilter {

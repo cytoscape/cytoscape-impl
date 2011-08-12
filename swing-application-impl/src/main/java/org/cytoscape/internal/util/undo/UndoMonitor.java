@@ -38,9 +38,9 @@ package org.cytoscape.internal.util.undo;
 
 import java.util.Properties;
 
-import org.cytoscape.session.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.session.events.SetCurrentNetworkViewListener;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.property.CyProperty;
 
 /**

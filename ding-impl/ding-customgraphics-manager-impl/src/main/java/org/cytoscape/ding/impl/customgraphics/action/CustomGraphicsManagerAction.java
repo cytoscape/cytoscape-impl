@@ -2,10 +2,10 @@ package org.cytoscape.ding.impl.customgraphics.action;
 
 import java.awt.event.ActionEvent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.customgraphics.ui.CustomGraphicsManagerDialog;
-import org.cytoscape.session.CyApplicationManager;
 
 public class CustomGraphicsManagerAction extends AbstractCyAction {
 

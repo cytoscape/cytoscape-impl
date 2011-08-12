@@ -33,9 +33,9 @@ import java.util.Set;
 
 import javax.swing.JCheckBox;
 
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.events.SetCurrentNetworkEvent;
-import org.cytoscape.session.events.SetCurrentNetworkListener;
 
 
 public class CheckBoxTracker implements /*SelectEventListener,*/ SetCurrentNetworkListener {

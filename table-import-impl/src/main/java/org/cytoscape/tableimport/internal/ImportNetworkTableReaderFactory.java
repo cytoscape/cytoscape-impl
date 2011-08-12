@@ -3,7 +3,6 @@ package org.cytoscape.tableimport.internal;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
@@ -12,6 +11,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.CyNetworkReaderManager;

@@ -2,12 +2,12 @@ package org.cytoscape.tableimport.internal;
 
 import java.io.InputStream;
 
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.model.CyNetworkManager;

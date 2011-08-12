@@ -39,8 +39,8 @@ import java.beans.PropertyChangeEvent;
 
 import javax.swing.ImageIcon;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;

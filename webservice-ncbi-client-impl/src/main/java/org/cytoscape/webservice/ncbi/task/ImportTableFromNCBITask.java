@@ -2,11 +2,11 @@ package org.cytoscape.webservice.ncbi.task;
 
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.task.MapNetworkAttrTask;
 import org.cytoscape.webservice.ncbi.rest.EntrezRestClient;
 import org.cytoscape.webservice.ncbi.ui.AnnotationCategory;

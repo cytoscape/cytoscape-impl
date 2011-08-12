@@ -39,8 +39,8 @@ import javax.swing.event.MenuEvent;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.KeyStroke;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.undo.UndoSupport;
 
 import org.slf4j.Logger;

@@ -39,6 +39,7 @@ import java.util.Set;
 
 import javax.naming.ConfigurationException;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
@@ -48,7 +49,6 @@ import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.TaskIterator;
 
 /**

@@ -23,15 +23,6 @@
 
 	<context:annotation-config />
 
-	<!-- Cytoscape Version -->
-	<bean name="cytoscapeVersion" class="org.cytoscape.internal.CyVersion">
-		<constructor-arg ref="cytoscapePropertiesServiceRef" />
-	</bean>
-
-	<!-- shutdown support -->
-	<bean name="cytoscapeShutdown" class="org.cytoscape.internal.ShutdownHandler">
-		<constructor-arg ref="cyEventHelperServiceRef" />
-	</bean>
 	<bean name="configDirPropertyWriter" class="org.cytoscape.internal.shutdown.ConfigDirPropertyWriter">
 		<constructor-arg ref="taskManagerServiceRef" />
 		<constructor-arg ref="propertyWriterManagerRef" />
@@ -104,7 +95,7 @@
 		<constructor-arg ref="cytoscapeMenus" />
 		<constructor-arg ref="networkViewManager" />
 		<constructor-arg ref="networkPanel" />
-		<constructor-arg ref="cytoscapeShutdown" />
+		<constructor-arg ref="cytoscapeShutdownServiceRef" />
 		<constructor-arg ref="cyEventHelperServiceRef" />
 		<constructor-arg ref="cyServiceRegistrarServiceRef" />
 		<constructor-arg ref="guiTaskManagerServiceRef" />
@@ -123,7 +114,7 @@
 
 	<bean id="exitAction" class="org.cytoscape.internal.actions.ExitAction">
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
-		<constructor-arg ref="cytoscapeShutdown" />
+		<constructor-arg ref="cytoscapeShutdownServiceRef" />
 	</bean>
 	<bean id="preferenceAction" class="org.cytoscape.internal.actions.PreferenceAction">
 		<constructor-arg ref="cytoscapeDesktop" />

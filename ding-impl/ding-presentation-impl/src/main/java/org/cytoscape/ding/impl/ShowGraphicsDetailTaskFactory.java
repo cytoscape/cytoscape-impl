@@ -2,8 +2,8 @@ package org.cytoscape.ding.impl;
 
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 

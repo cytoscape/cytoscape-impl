@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyNetworkReaderManager;
@@ -23,7 +24,6 @@ import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.plugin.CyPluginAdapterTest;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;

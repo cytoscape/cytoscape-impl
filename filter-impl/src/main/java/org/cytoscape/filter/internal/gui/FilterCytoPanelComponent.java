@@ -5,12 +5,12 @@ import java.util.Vector;
 
 import javax.swing.Icon;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.view.FilterMainPanel;
-import org.cytoscape.session.CyApplicationManager;
 
 public class FilterCytoPanelComponent implements CytoPanelComponent {
 

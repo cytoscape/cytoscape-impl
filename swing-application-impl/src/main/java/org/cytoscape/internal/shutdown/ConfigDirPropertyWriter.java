@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.application.swing.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.swing.events.CytoscapeShutdownListener;
+import org.cytoscape.application.events.CytoscapeShutdownEvent;
+import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyPropertyWriterManager;

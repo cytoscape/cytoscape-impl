@@ -4,12 +4,12 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JOptionPane;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.biomart.BiomartClient;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.GUITaskManager;
 import org.slf4j.Logger;

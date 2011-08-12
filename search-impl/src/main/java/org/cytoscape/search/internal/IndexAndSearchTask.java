@@ -33,11 +33,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.store.RAMDirectory;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;

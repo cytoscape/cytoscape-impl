@@ -26,7 +26,7 @@
 		filter="(cyPropertyName=coreSettings)" />
 
 	<osgi:reference id="cyApplicationManagerServiceRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 
 	<osgi:reference id="cyNetworkManagerServiceRef"
 		interface="org.cytoscape.model.CyNetworkManager" />

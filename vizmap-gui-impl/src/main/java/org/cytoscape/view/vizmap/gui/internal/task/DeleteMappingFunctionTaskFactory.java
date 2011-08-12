@@ -1,6 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;

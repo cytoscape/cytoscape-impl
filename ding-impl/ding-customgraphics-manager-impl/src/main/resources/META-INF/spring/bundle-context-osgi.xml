@@ -10,7 +10,7 @@
 	<osgi:reference id="coreCyPropertyServiceRef"
 		interface="org.cytoscape.property.CyProperty"  filter="(cyPropertyName=coreSettings)"/>
 		
-	<osgi:reference id="cyApplicationManagerServiceRef" interface="org.cytoscape.session.CyApplicationManager" />
+	<osgi:reference id="cyApplicationManagerServiceRef" interface="org.cytoscape.application.CyApplicationManager" />
 	
 	
 	<!-- Export Custom Graphics Manager as a service.  Other bundles should access CG through this sevice. -->

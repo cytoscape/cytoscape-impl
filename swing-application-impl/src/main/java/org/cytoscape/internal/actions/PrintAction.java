@@ -52,10 +52,10 @@ import java.util.Set;
 import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 

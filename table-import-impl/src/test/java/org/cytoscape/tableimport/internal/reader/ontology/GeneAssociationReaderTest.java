@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -13,7 +14,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.NetworkViewTestSupport;

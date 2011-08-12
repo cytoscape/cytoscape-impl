@@ -38,7 +38,7 @@ package org.cytoscape.view.manual.internal.control.view;
 
 import org.cytoscape.view.manual.internal.control.actions.align.*;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 
 import java.awt.*;
 

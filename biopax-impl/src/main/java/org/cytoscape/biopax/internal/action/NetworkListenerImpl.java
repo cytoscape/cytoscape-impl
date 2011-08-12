@@ -34,6 +34,8 @@ package org.cytoscape.biopax.internal.action;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.biopax.BioPaxContainer;
 import org.cytoscape.biopax.MapBioPaxToCytoscape;
 import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
@@ -43,8 +45,6 @@ import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.session.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.session.events.SetCurrentNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;

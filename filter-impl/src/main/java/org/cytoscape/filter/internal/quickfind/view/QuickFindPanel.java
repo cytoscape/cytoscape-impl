@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.filter.internal.prefuse.data.query.NumberRangeModel;
 import org.cytoscape.filter.internal.prefuse.util.ui.JRangeSlider;
@@ -64,7 +65,6 @@ import org.cytoscape.filter.internal.widgets.autocomplete.index.TextIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.view.ComboBoxFactory;
 import org.cytoscape.filter.internal.widgets.autocomplete.view.TextIndexComboBox;
 import org.cytoscape.filter.internal.widgets.slider.JRangeSliderExtended;
-import org.cytoscape.session.CyApplicationManager;
 
 
 

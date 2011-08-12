@@ -25,11 +25,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CyApplicationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

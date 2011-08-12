@@ -7,7 +7,7 @@
 
 
 	<osgi:reference id="applicationManagerManagerServiceRef"
-		interface="org.cytoscape.session.CyApplicationManager">
+		interface="org.cytoscape.application.CyApplicationManager">
 	</osgi:reference>
 
 	<osgi:reference id="customGraphicsManagerServiceRef"

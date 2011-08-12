@@ -45,9 +45,9 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.KeyStroke;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CytoscapeShutdown;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CytoscapeShutdown;
-import org.cytoscape.session.CyApplicationManager;
 
 /**
  *

@@ -53,13 +53,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.FilterPlugin;
 import org.cytoscape.filter.internal.filters.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
-import org.cytoscape.session.CyApplicationManager;
 
 
 

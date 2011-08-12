@@ -29,13 +29,15 @@
  */
 package org.cytoscape.internal.view;
 
+import org.cytoscape.application.CytoscapeShutdown;
+import org.cytoscape.application.events.CytoscapeStartEvent;
+import org.cytoscape.application.events.CytoscapeStartListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.application.swing.CytoscapeShutdown;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.session.Cysession;
@@ -77,8 +79,6 @@ import java.util.Map;
 import java.util.Properties;
 import org.cytoscape.work.swing.GUITaskManager;
 import org.cytoscape.application.swing.ToolBarComponent;
-import org.cytoscape.application.swing.events.CytoscapeStartListener;
-import org.cytoscape.application.swing.events.CytoscapeStartEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,8 +1,8 @@
 package org.cytoscape.task.internal.setcurrent;
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 

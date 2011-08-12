@@ -44,10 +44,10 @@ package org.cytoscape.plugin.internal.action;
 
 import java.awt.event.ActionEvent;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoscapeVersion;
 import org.cytoscape.plugin.CyPluginAdapter;
 import org.cytoscape.plugin.internal.ui.PluginManageDialog;
 import org.cytoscape.property.CyProperty;

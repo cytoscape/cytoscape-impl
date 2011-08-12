@@ -40,7 +40,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.application.swing.CytoscapeVersion;
+import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.property.CyProperty;
 
 /** 

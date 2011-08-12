@@ -9,9 +9,9 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.PresentationWriterManager;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.task.internal.export.ViewWriter;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;

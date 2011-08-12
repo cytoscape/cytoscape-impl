@@ -10,7 +10,7 @@
 		interface="org.cytoscape.application.swing.CySwingApplication" />
 
 	<osgi:reference id="cyApplicationManagerServiceRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 
 	<osgi:service id="controlPanelActionService" ref="controlPanelAction" auto-export="interfaces" />
 

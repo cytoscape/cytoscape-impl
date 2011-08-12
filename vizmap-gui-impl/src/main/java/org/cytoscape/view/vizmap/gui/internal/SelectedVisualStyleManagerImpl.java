@@ -1,8 +1,8 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
+import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
+import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.events.SetCurrentRenderingEngineEvent;
-import org.cytoscape.session.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingManager;

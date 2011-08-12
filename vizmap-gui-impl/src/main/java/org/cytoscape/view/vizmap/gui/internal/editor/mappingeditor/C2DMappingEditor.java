@@ -43,8 +43,8 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;

@@ -1,7 +1,7 @@
 package org.cytoscape.internal;
 
-import org.cytoscape.application.swing.events.CytoscapeStartEvent;
-import org.cytoscape.application.swing.events.CytoscapeStartListener;
+import org.cytoscape.application.events.CytoscapeStartEvent;
+import org.cytoscape.application.events.CytoscapeStartListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.GUITaskManager;

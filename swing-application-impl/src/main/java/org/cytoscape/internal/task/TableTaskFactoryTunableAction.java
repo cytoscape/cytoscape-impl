@@ -3,7 +3,7 @@ package org.cytoscape.internal.task;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.TaskManager;
 

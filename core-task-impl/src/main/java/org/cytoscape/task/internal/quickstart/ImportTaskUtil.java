@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.io.util.StreamUtil;
@@ -12,7 +13,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.loaddatatable.LoadAttributesURLTask;
 import org.cytoscape.task.internal.loadnetwork.LoadNetworkFileTask;

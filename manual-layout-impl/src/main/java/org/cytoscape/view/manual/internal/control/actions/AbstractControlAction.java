@@ -39,11 +39,11 @@ import java.awt.event.ActionEvent;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
-import org.cytoscape.session.CyApplicationManager;
 
 
 public abstract class AbstractControlAction extends AbstractAction {

@@ -4,11 +4,11 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.presentation.RenderingEngine;

@@ -8,7 +8,7 @@
 
 	<!-- Import Application Manager -->
 	<osgi:reference id="cyApplicationManagerServiceRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 
 	<!-- Import ref to desktop application -->
 	<osgi:reference id="cySwingApplicationServiceRef"

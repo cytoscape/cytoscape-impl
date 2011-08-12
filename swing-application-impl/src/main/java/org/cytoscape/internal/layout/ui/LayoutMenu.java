@@ -36,8 +36,8 @@
 */
 package org.cytoscape.internal.layout.ui;
 
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableUtil;

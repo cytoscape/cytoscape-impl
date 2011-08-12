@@ -7,7 +7,7 @@
 
 	<!-- imports -->
 	<osgi:reference id="compilerServiceRef" interface="org.cytoscape.equations.EqnCompiler" />
-	<osgi:reference id="applicationManagerServiceRef" interface="org.cytoscape.session.CyApplicationManager" />
+	<osgi:reference id="applicationManagerServiceRef" interface="org.cytoscape.application.CyApplicationManager" />
 
 
 	<!-- listeners -->

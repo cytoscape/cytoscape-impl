@@ -39,8 +39,8 @@ package org.cytoscape.view.manual.internal.common;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.session.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.session.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkView;
 
 /**

@@ -1,43 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
                       http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
-    default-lazy-init="false">
+	default-lazy-init="false">
 
-    <!-- Export Services -->
-    <osgi:service id="cyApplicationManagerService" ref="cyApplicationManager">
-		<osgi:interfaces>
-			<value>org.cytoscape.session.CyApplicationManager</value>
-			<value>org.cytoscape.model.events.NetworkAboutToBeDestroyedListener</value>
-			<value>org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener</value>
-		</osgi:interfaces>
-    </osgi:service>
 
-    <osgi:service id="cyNetworkNamingService" ref="cyNetworkNaming"
-        interface="org.cytoscape.session.CyNetworkNaming">
-    </osgi:service>
 
-    <osgi:service id="cySessionManagerService" ref="cySessionManager">
+	<osgi:service id="cyNetworkNamingService" ref="cyNetworkNaming"
+		interface="org.cytoscape.session.CyNetworkNaming">
+	</osgi:service>
+
+	<osgi:service id="cySessionManagerService" ref="cySessionManager">
 		<osgi:interfaces>
 			<value>org.cytoscape.session.CySessionManager</value>
 		</osgi:interfaces>
-    </osgi:service>
+	</osgi:service>
 
-    <!-- Import Services -->
-    <osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper" />
+	<!-- Import Services -->
+	<osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper" />
 
-    <osgi:reference id="cyNetworkManagerServiceRef" interface="org.cytoscape.model.CyNetworkManager" />
+	<osgi:reference id="cyNetworkManagerServiceRef"
+		interface="org.cytoscape.model.CyNetworkManager" />
 
-    <osgi:reference id="cyNetworkViewManagerServiceRef" interface="org.cytoscape.view.model.CyNetworkViewManager" />
+	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
 
-    <osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
-    
-    <osgi:reference id="visualMappingManagerServiceRef" interface="org.cytoscape.view.vizmap.VisualMappingManager" />
-    
-    
-	<osgi:set id="cyPropertySet" interface="org.cytoscape.property.CyProperty" cardinality="0..N">
-		<osgi:listener bind-method="addCyProperty" unbind-method="removeCyProperty" ref="cySessionManager" />
+	<osgi:reference id="visualMappingManagerServiceRef"
+		interface="org.cytoscape.view.vizmap.VisualMappingManager" />
+
+	<osgi:reference id="cyNetworkViewManagerServiceRef"
+		interface="org.cytoscape.view.model.CyNetworkViewManager" />
+
+
+	<osgi:set id="cyPropertySet" interface="org.cytoscape.property.CyProperty"
+		cardinality="0..N">
+		<osgi:listener bind-method="addCyProperty"
+			unbind-method="removeCyProperty" ref="cySessionManager" />
 	</osgi:set>
-	
+
 </beans>

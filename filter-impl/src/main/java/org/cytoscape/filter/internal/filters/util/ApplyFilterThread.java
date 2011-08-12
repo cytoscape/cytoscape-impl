@@ -39,6 +39,7 @@ package org.cytoscape.filter.internal.filters.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.internal.filters.AtomicFilter;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.NumericFilter;
@@ -47,7 +48,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;
 
 import ViolinStrings.Strings;

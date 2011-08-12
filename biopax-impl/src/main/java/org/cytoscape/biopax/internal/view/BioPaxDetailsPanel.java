@@ -55,13 +55,13 @@ import javax.swing.text.html.StyleSheet;
 
 import org.biopax.paxtools.model.level2.physicalEntity;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.biopax.internal.MapBioPaxToCytoscapeImpl;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.session.CyApplicationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

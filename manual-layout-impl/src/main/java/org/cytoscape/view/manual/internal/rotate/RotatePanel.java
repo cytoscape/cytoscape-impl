@@ -46,7 +46,7 @@ import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphL
 import org.cytoscape.view.manual.internal.common.*;
 import org.cytoscape.view.model.CyNetworkView;
 
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 
 
 /**

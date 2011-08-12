@@ -19,9 +19,9 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
 
 import java.awt.event.ActionEvent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.session.CyApplicationManager;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AboutDialog;

@@ -10,7 +10,7 @@
 
 
 	<osgi:reference id="cyApplicationManagerRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 
 	<osgi:reference id="cyNetworkFactoryServiceRef"
 		interface="org.cytoscape.model.CyNetworkFactory" />
@@ -24,7 +24,7 @@
 	
 	<!-- Application Manager -->
 	<osgi:reference id="cyApplicationManagerServiceRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 
 	<!-- Export Network Import Client -->
 	<osgi:service id="ncbiClientService" ref="ncbiClient"

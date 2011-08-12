@@ -49,6 +49,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.EdgeInteractionFilter;
@@ -57,7 +58,6 @@ import org.cytoscape.filter.internal.filters.InteractionFilter;
 import org.cytoscape.filter.internal.filters.NodeInteractionFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
-import org.cytoscape.session.CyApplicationManager;
 
 
 public class InteractionFilterPanel extends JPanel implements ItemListener{

@@ -1,10 +1,10 @@
 package org.cytoscape.biopax.internal;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.biopax.internal.action.ExportAsBioPAXTaskFactory;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskManager;

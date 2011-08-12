@@ -6,8 +6,8 @@ import java.beans.PropertyEditor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;

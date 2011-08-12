@@ -12,7 +12,6 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>swing-application-impl</artifactId>
 	<name>Cytoscape Swing Application Impl</name>
 	<packaging>bundle</packaging>
@@ -68,6 +67,10 @@
 
 
 	<dependencies>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>

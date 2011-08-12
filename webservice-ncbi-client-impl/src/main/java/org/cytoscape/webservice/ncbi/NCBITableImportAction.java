@@ -3,10 +3,10 @@ package org.cytoscape.webservice.ncbi;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.webservice.ncbi.ui.NCBIGeneDialog;
 import org.cytoscape.work.TaskManager;
 

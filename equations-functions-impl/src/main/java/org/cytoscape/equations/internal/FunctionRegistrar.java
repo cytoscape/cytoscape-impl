@@ -1,10 +1,10 @@
 package org.cytoscape.equations.internal;
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.internal.functions.*;
-import org.cytoscape.session.CyApplicationManager;
 
 
 public class FunctionRegistrar {

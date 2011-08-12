@@ -49,15 +49,15 @@ import javax.swing.JTable;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
+import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.session.CyApplicationManager;
-import org.cytoscape.session.events.SetCurrentRenderingEngineEvent;
-import org.cytoscape.session.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;

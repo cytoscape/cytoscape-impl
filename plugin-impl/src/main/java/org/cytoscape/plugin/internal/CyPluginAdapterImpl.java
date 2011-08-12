@@ -3,6 +3,7 @@ package org.cytoscape.plugin.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
@@ -37,7 +38,6 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.task.NetworkTaskFactory;

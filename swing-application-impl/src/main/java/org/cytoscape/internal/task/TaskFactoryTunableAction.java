@@ -32,8 +32,8 @@ package org.cytoscape.internal.task;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;

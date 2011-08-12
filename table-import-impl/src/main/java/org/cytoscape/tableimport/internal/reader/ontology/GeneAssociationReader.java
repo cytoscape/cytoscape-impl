@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -25,7 +26,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.tableimport.internal.util.OntologyUtil;
 import org.cytoscape.task.MapNetworkAttrTask;

@@ -10,8 +10,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.cytoscape.application.swing.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.swing.events.CytoscapeShutdownListener;
+import org.cytoscape.application.events.CytoscapeShutdownEvent;
+import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;

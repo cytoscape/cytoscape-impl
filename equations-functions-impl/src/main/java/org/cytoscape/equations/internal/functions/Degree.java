@@ -36,12 +36,12 @@ import java.util.List;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
 import org.cytoscape.equations.internal.SUIDToNodeMapper;
-import org.cytoscape.session.CyApplicationManager;
 
 
 public class Degree extends AbstractFunction {

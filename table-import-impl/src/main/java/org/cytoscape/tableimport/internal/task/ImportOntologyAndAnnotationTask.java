@@ -2,12 +2,12 @@ package org.cytoscape.tableimport.internal.task;
 
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationReader;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;

@@ -14,7 +14,7 @@
 
 	<osgi:reference id="deleteTableTaskFactoryService" interface="org.cytoscape.task.TableTaskFactory" />
 	<osgi:reference id="guiTaskManagerServiceRef" interface="org.cytoscape.work.swing.GUITaskManager" />
-	<osgi:reference id="cyApplicationManagerServiceRef" interface="org.cytoscape.session.CyApplicationManager" />
+	<osgi:reference id="cyApplicationManagerServiceRef" interface="org.cytoscape.application.CyApplicationManager" />
         
 	<!-- listeners -->
 	<osgi:service id="tableBrowserCytoPanelComponentService" ref="tableBrowser" auto-export="interfaces"/>

@@ -6,7 +6,7 @@
 	default-lazy-init="false">
 
     <osgi:reference id="cyApplicationManagerServiceRef"
-	        interface="org.cytoscape.session.CyApplicationManager" />
+	        interface="org.cytoscape.application.CyApplicationManager" />
 
 	<osgi:service id="commandExecutorTaskFactoryService" ref="commandExecutorTaskFactory"
 		interface="org.cytoscape.work.TaskFactory">

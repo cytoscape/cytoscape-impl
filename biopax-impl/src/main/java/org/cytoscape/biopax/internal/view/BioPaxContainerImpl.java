@@ -43,6 +43,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biopax.BioPaxContainer;
@@ -50,7 +51,6 @@ import org.cytoscape.biopax.internal.MapBioPaxToCytoscapeImpl;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
 

@@ -19,7 +19,7 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
 
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.CyApplicationManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 

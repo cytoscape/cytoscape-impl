@@ -16,12 +16,6 @@
 
     <context:annotation-config />
 
-    <bean id="cyApplicationManager" class="org.cytoscape.session.internal.CyApplicationManagerImpl">
-        <constructor-arg ref="cyEventHelperServiceRef" />
-        <constructor-arg ref="cyNetworkManagerServiceRef" />
-        <constructor-arg ref="cyNetworkViewManagerServiceRef" />
-    </bean>
-
     <bean id="cyNetworkNaming" class="org.cytoscape.session.internal.CyNetworkNamingImpl">
         <constructor-arg ref="cyNetworkManagerServiceRef" />
     </bean>

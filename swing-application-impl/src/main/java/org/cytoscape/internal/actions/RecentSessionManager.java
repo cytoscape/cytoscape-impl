@@ -9,15 +9,15 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.CytoscapeShutdownEvent;
+import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.swing.events.CytoscapeShutdownListener;
 import org.cytoscape.internal.task.OpenRecentSessionTaskFactory;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyApplicationManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;

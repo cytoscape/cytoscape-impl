@@ -48,10 +48,10 @@ import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
+import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.CyApplicationManager;
-import org.cytoscape.session.events.SetCurrentRenderingEngineEvent;
-import org.cytoscape.session.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;

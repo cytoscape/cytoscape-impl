@@ -12,7 +12,7 @@
 		 first letter and with "Ref" as a suffix. 
 	 -->
 	<osgi:reference id="cyApplicationManagerRef"
-		interface="org.cytoscape.session.CyApplicationManager">
+		interface="org.cytoscape.application.CyApplicationManager">
 	</osgi:reference>
 
 	<osgi:reference id="cyEventHelperRef"
@@ -131,7 +131,7 @@
 	</osgi:reference>
 
 	<osgi:reference id="cytoscapeVersionService"
-		interface="org.cytoscape.application.swing.CytoscapeVersion" />
+		interface="org.cytoscape.application.CytoscapeVersion" />
 
 	<osgi:reference id="bookmarkServiceRef" 
 		interface="org.cytoscape.property.CyProperty"

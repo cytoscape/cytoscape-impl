@@ -2,9 +2,9 @@ package org.cytoscape.plugin.internal;
 
 import java.util.Map;
 
+import org.cytoscape.application.events.CytoscapeStartEvent;
 import org.cytoscape.application.swing.CySwingApplication; 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.application.swing.events.CytoscapeStartEvent;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.GUITaskManager;
 /**

@@ -19,7 +19,7 @@
 
 	<!-- Application Manager -->
 	<osgi:reference id="cyApplicationManagerServiceRef"
-		interface="org.cytoscape.session.CyApplicationManager" />
+		interface="org.cytoscape.application.CyApplicationManager" />
 
 	<osgi:reference id="cyTableFactoryServiceRef" interface="org.cytoscape.model.CyTableFactory" />
 

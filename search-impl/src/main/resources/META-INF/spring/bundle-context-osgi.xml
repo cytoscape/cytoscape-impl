@@ -14,7 +14,7 @@
 		interface="org.cytoscape.application.swing.CySwingApplication" />
 
 	<osgi:reference id="cyApplicationManagerRef"
-		interface="org.cytoscape.session.CyApplicationManager">
+		interface="org.cytoscape.application.CyApplicationManager">
 	</osgi:reference>
 
 	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />

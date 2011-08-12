@@ -39,10 +39,10 @@ package org.cytoscape.filter.internal.filters;
 import java.util.BitSet;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.session.CyApplicationManager;
 
 
 public class NodeInteractionFilter extends InteractionFilter {

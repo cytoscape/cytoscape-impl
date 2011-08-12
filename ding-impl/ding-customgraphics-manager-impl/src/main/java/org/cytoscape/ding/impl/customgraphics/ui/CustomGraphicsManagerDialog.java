@@ -14,11 +14,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.LayoutStyle;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.CustomGraphicsManagerImpl;
 import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.session.CyApplicationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
