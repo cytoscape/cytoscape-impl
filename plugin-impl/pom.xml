@@ -107,6 +107,10 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>plugin-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
+		</dependency>
 
 		<!-- dependencies needed for plugin manager -->
 		<dependency>

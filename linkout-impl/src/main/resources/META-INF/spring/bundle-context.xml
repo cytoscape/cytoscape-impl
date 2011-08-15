@@ -39,6 +39,7 @@
 		<constructor-arg ref="linkoutProps" />
 		<constructor-arg ref="cyServiceRegistrarServiceRef" />
 		<constructor-arg ref="openBrowserServiceRef" />
+		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
 	</bean>
 
 </beans>

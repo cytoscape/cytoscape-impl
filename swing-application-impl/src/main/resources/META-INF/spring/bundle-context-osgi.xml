@@ -7,6 +7,8 @@
 
 	<!-- Import OSGi services -->
 	<osgi:reference id="cytoscapeShutdownServiceRef" interface="org.cytoscape.application.CytoscapeShutdown" />
+	<osgi:reference id="cyApplicationConfigurationServiceRef" interface="org.cytoscape.application.CyApplicationConfiguration" />
+	
 
 	<osgi:reference id="streamUtilServiceRef" interface="org.cytoscape.io.util.StreamUtil" />
 	

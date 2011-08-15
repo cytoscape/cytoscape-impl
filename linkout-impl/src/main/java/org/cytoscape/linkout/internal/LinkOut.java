@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -65,18 +66,16 @@ public class LinkOut {
 	CyServiceRegistrar registrar;
 	OpenBrowser browser;
 
-	// null constractor
-	/**
-	 * Creates a new LinkOut object.
-	 */
-	public LinkOut() {
-	}
+	private final File propertyFile;
 
-	public LinkOut(CyProperty<Properties> props, CyServiceRegistrar registrar,
-			OpenBrowser browser) {
+	public LinkOut(CyProperty<Properties> props, CyServiceRegistrar registrar, OpenBrowser browser,
+			final CyApplicationConfiguration config) {
 		this.props = props.getProperties();
 		this.registrar = registrar;
 		this.browser = browser;
+		
+		propertyFile = new File(config.getSettingLocation(), File.separator + "linkout.props");
+		
 		readProperties();
 		// now link through properties
 		addLinksFromProperties();
@@ -96,16 +95,13 @@ public class LinkOut {
 	 */
 
 	private void readProperties() {
-		final String inputFileName =
-			System.getProperty("user.home") + "/" + CyProperty.DEFAULT_CONFIG_DIR + "/linkout.props";
-
+		
 		try {
-			final File inputFile = new File(inputFileName);
-			if (inputFile.canRead())
-				props.load(new FileInputStream(inputFile));
+			if (propertyFile.canRead())
+				props.load(new FileInputStream(propertyFile));
 		} catch (Exception e) {
 			System.err.println("Couldn't load linkout props from \""
-					   + inputFileName + "\"!");
+					   + propertyFile.getAbsolutePath() + "\"!");
 		}
 	}
 

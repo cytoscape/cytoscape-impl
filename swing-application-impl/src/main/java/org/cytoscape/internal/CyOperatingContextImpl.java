@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.property.CyProperty;
 
 import org.slf4j.Logger;
@@ -53,12 +54,16 @@ public class CyOperatingContextImpl {
 	private static final Logger logger = LoggerFactory.getLogger(CyOperatingContextImpl.class);
 
 	private CyProperty<Properties> props;
+	private final CyApplicationConfiguration config;
 
-	public CyOperatingContextImpl(CyProperty<Properties> props) {
+	public CyOperatingContextImpl(CyProperty<Properties> props, final CyApplicationConfiguration config) {
 		if ( props == null )
 			throw new NullPointerException("Cytoscape Properties is null");
+		if(config == null)
+			throw new NullPointerException("Application Config is missing.");
 
 		this.props = props;
+		this.config = config;
 
 		loadLocalProps();
 	}
@@ -70,7 +75,7 @@ public class CyOperatingContextImpl {
 			if (vmp != null)
 				props.getProperties().load(new FileInputStream(vmp));
 			else
-				logger.warn("couldn't read " + PROPS + " from " + CyProperty.DEFAULT_CONFIG_DIR);
+				logger.warn("couldn't read " + PROPS + " from " + config.getSettingLocation());
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -85,32 +90,13 @@ public class CyOperatingContextImpl {
 		return props.getProperties();
 	}
 
-	/**
-	 * Returns a {@link File} pointing to the config directory.
-	 */
-	public File getConfigDirectory() {
-		try {
-			String dirName = props.getProperties().getProperty("alternative.config.dir", System.getProperty("user.home"));
-			File parent_dir = new File(dirName, CyProperty.DEFAULT_CONFIG_DIR);
-
-			if (parent_dir.mkdir())
-				logger.warn("Parent_Dir: " + parent_dir + " created.");
-
-			return parent_dir;
-		} catch (Exception e) {
-			logger.warn("error getting config directory");
-		}
-
-		return null;
-	}
 
 	/**
 	 * Returns the specified file if it's found in the config directory. 
 	 */
 	public File getConfigFile(String file_name) {
 		try {
-			File parent_dir = getConfigDirectory();
-			File file = new File(parent_dir, file_name);
+			File file = new File(config.getSettingLocation(), file_name);
 
 			if (file.createNewFile())
 				logger.warn("Config file: " + file + " created.");

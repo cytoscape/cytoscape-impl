@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 
@@ -23,9 +24,8 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	private final String trackerFileName;
 	private final LinkedList<URL> trackerURLs;
 	
-	// TODO: Where should we manage this property directory?
-	private final String PROP_DIR = USER_HOME_DIR + System.getProperty("file.separator") + CyProperty.DEFAULT_CONFIG_DIR;
-
+	private final File propDir;
+	
 	/**
 	 * Creates a "recently opened" file tracker.
 	 * 
@@ -33,11 +33,12 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	 *            the name of the file in the Cytoscape config directory to read
 	 *            saved file names from.
 	 */
-	public RecentlyOpenedTrackerImpl(final String trackerFileName) throws IOException {
+	public RecentlyOpenedTrackerImpl(final String trackerFileName, final CyApplicationConfiguration config) throws IOException {
 		this.trackerFileName = trackerFileName;
+		this.propDir = config.getSettingLocation();
 		trackerURLs = new LinkedList<URL>();
 
-		final File input = new File(PROP_DIR, trackerFileName);
+		final File input = new File(propDir, trackerFileName);
 		if (!input.exists())
 			input.createNewFile();
 
@@ -75,7 +76,7 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	 */
 	@Override
 	public void writeOut() throws FileNotFoundException {
-		final PrintWriter writer = new PrintWriter(new File(PROP_DIR, trackerFileName));
+		final PrintWriter writer = new PrintWriter(new File(propDir, trackerFileName));
 		for (final URL trackerURL : trackerURLs)
 			writer.println(trackerURL.toString());
 		writer.close();

@@ -39,5 +39,7 @@
 	<bean name="cytoscapeShutdown" class="org.cytoscape.application.internal.ShutdownHandler">
 		<constructor-arg ref="cyEventHelperServiceRef" />
 	</bean>
+	
+	<bean id="cyApplicationConfiguration" class="org.cytoscape.application.internal.CyApplicationConfigurationImpl" />
 
 </beans>

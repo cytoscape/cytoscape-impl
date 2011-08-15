@@ -10,6 +10,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CytoscapeShutdownEvent;
 import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -48,7 +49,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 * Creates an image pool object and restore existing images from user
 	 * resource directory.
 	 */
-	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final TaskManager taskManager) {
+	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final TaskManager taskManager, final CyApplicationConfiguration config) {
 		
 		this.taskManager = taskManager;
 		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
@@ -61,12 +62,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		if(props == null)
 			throw new NullPointerException("Property is missing.");
 		
-		String configDirectory = props.getProperty(CyProperty.DEFAULT_CONFIG_DIR);
-		if(configDirectory == null || configDirectory.trim().length() == 0)
-			configDirectory = System.getProperty("user.home");
-		
-		final File configFileLocation = new File(configDirectory, CyProperty.DEFAULT_CONFIG_DIR);
-		this.imageHomeDirectory = new File(configFileLocation, IMAGE_DIR_NAME);
+		this.imageHomeDirectory = new File(config.getSettingLocation(), IMAGE_DIR_NAME);
 		
 		logger.debug("\n!!!!!!!!!!!!!!!!! Cytoscape image directory: " + imageHomeDirectory.toString());
 

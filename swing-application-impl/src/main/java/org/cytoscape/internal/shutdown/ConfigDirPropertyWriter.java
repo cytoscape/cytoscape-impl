@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CytoscapeShutdownEvent;
 import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.property.CyProperty;
@@ -20,12 +21,14 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 	private final TaskManager taskManager;
 	private final CyPropertyWriterManager propertyWriterManager;
 	private final Map<CyProperty, Map> configDirProperties;
+	private final CyApplicationConfiguration config;
 
 	ConfigDirPropertyWriter(final TaskManager taskManager,
-				final CyPropertyWriterManager propertyWriterManager)
+				final CyPropertyWriterManager propertyWriterManager, final CyApplicationConfiguration config)
 	{
 		this.taskManager = taskManager;
 		this.propertyWriterManager = propertyWriterManager;
+		this.config = config;
 		configDirProperties = new HashMap<CyProperty, Map>();
 	}
 
@@ -41,11 +44,8 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 			throw new IllegalStateException("could not find a properties CyFileFilter!");
 
 		for (final Map.Entry<CyProperty, Map> keyAndValue : configDirProperties.entrySet()) {
-			final String propertyName = (String)keyAndValue.getValue().get("cyPropertyName");
-			final String outputFileName =
-				System.getProperty("user.home") + "/" + CyProperty.DEFAULT_CONFIG_DIR
-				+ "/" + propertyName + ".props";
-			final File outputFile = new File(outputFileName);
+			final String propertyName = (String)keyAndValue.getValue().get("cyPropertyName");				
+			final File outputFile = new File(config.getSettingLocation(), propertyName + ".props");
 			final PropertyWriterFactory taskFactory =
 				new PropertyWriterFactory(propertyWriterManager, keyAndValue.getKey(),
 							  matchingFileFilter, outputFile);

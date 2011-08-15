@@ -663,6 +663,7 @@
 	<!-- For recent session files -->
 	<bean id="recentlyOpenedTracker" class="org.cytoscape.io.internal.util.RecentlyOpenedTrackerImpl" scope="singleton">
 		<constructor-arg value="tracker.recent.sessions" />
+		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
 	</bean>
 
 </beans>

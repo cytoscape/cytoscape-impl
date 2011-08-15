@@ -358,6 +358,7 @@
 	<bean id="importDefaultVizmapTaskFactory" class="org.cytoscape.view.vizmap.gui.internal.task.ImportDefaultVizmapTaskFactory">
 		<constructor-arg ref="vizmapReaderManagerServiceRef"/>
 		<constructor-arg ref="vmmServiceRef"/>
+		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
 	</bean>
 	
 	

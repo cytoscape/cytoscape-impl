@@ -13,6 +13,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.property.CyProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,6 @@ public abstract class AbstractFilePreprocessor implements InteractionFilePreproc
 	private static final Logger logger = LoggerFactory.getLogger(AbstractFilePreprocessor.class);
 	
 	private static final String INTERACTION_DIR_NAME = "interactions";
-	private static final String DEF_USER_DIR = System.getProperty("user.home");
 	
 	protected final Map<String, URL> sourceMap;
 	protected LineProcessor processor;
@@ -30,7 +30,7 @@ public abstract class AbstractFilePreprocessor implements InteractionFilePreproc
 	protected final File dataFileDirectory;
 
 	
-	public AbstractFilePreprocessor(final CyProperty<Properties> properties) {
+	public AbstractFilePreprocessor(final CyProperty<Properties> properties, final CyApplicationConfiguration config) {
 		if (properties == null)
 			throw new NullPointerException("Property service is null.");
 
@@ -39,12 +39,7 @@ public abstract class AbstractFilePreprocessor implements InteractionFilePreproc
 		if (props == null)
 			throw new NullPointerException("Property is missing.");
 
-		String configDirectory = props.getProperty(CyProperty.DEFAULT_CONFIG_DIR);
-		if (configDirectory == null || configDirectory.trim().length() == 0)
-			configDirectory = DEF_USER_DIR;
-
-		final File configFileLocation = new File(configDirectory, CyProperty.DEFAULT_CONFIG_DIR);
-		this.dataFileDirectory = new File(configFileLocation, INTERACTION_DIR_NAME);
+		this.dataFileDirectory = new File(config.getSettingLocation(), INTERACTION_DIR_NAME);
 		if (!dataFileDirectory.exists())
 			dataFileDirectory.mkdir();
 		

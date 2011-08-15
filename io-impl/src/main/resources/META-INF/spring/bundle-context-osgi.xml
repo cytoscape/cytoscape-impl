@@ -8,6 +8,7 @@
 
 	<!-- Import services -->
 	<osgi:reference id="compilerServiceRef" interface="org.cytoscape.equations.EquationCompiler" />
+	<osgi:reference id="cyApplicationConfigurationServiceRef" interface="org.cytoscape.application.CyApplicationConfiguration" />
 
 	<osgi:reference id="cyEventHelperRef" interface="org.cytoscape.event.CyEventHelper" />
 	

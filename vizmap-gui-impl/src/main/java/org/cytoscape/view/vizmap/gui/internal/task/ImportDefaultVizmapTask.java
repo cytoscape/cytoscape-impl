@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.property.CyProperty;
@@ -17,25 +18,21 @@ import org.slf4j.LoggerFactory;
 public class ImportDefaultVizmapTask extends AbstractTask {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ImportDefaultVizmapTask.class);
-	
-	private static final String SEPARATOR = File.separator;
-	private static final String USER_HOME = System.getProperty("user.home");
-	private static final String CONFIG_DIR = USER_HOME + SEPARATOR + CyProperty.DEFAULT_CONFIG_DIR;
 	private static final String PRESET_VIZMAP_FILE = "default_vizmap.xml";
 
 	private final VisualMappingManager vmm;
 	private final VizmapReaderManager vizmapReaderMgr;
+	
+	private final File vizmapFile;
 
-	public ImportDefaultVizmapTask(final VizmapReaderManager vizmapReaderMgr, final VisualMappingManager vmm) {
+	public ImportDefaultVizmapTask(final VizmapReaderManager vizmapReaderMgr, final VisualMappingManager vmm, final CyApplicationConfiguration config) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmm = vmm;
+		this.vizmapFile = new File(config.getSettingLocation(), PRESET_VIZMAP_FILE);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {	
-		// First, try user's .cytoscape directory
-		File vizmapFile = new File(CONFIG_DIR + SEPARATOR + PRESET_VIZMAP_FILE);
-		
+	public void run(final TaskMonitor taskMonitor) throws Exception {			
 		final VizmapReader reader;
 		
 		if(vizmapFile.exists() == false) {

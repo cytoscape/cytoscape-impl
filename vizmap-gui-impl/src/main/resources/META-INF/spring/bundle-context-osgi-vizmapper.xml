@@ -47,6 +47,8 @@
 		auto-export="interfaces" />
 
 
+	<osgi:reference id="cyApplicationConfigurationServiceRef" interface="org.cytoscape.application.CyApplicationConfiguration" />
+
 	<osgi:reference id="taskManagerServiceRef" interface="org.cytoscape.work.swing.GUITaskManager" />
 	
 	<osgi:reference id="visualStyleFactoryServiceRef"

@@ -19,4 +19,7 @@
 	
 	<osgi:service id="customGraphicsManagerActionService" ref="customGraphicsManagerAction"
 		interface="org.cytoscape.application.swing.CyAction" />
+		
+	<osgi:reference id="cyApplicationConfigurationServiceRef" interface="org.cytoscape.application.CyApplicationConfiguration" />
+	
 </beans>

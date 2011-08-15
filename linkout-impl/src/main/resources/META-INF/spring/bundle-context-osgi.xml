@@ -19,6 +19,8 @@
 		interface="org.cytoscape.util.swing.OpenBrowser"/>
 		
 	<osgi:reference id="cyServiceRegistrarServiceRef" 
-		interface="org.cytoscape.service.util.CyServiceRegistrar"/>	
+		interface="org.cytoscape.service.util.CyServiceRegistrar"/>
+	
+	<osgi:reference id="cyApplicationConfigurationServiceRef" interface="org.cytoscape.application.CyApplicationConfiguration" />
 
 </beans>

@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.property.CyProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,8 @@ public class BioGridPreprocessor extends AbstractFilePreprocessor {
 
 	private boolean isLatest;
 
-	public BioGridPreprocessor(final CyProperty<Properties> properties) {
-		super(properties);
+	public BioGridPreprocessor(final CyProperty<Properties> properties, final CyApplicationConfiguration config) {
+		super(properties, config);
 		
 		this.isLatest = false;
 

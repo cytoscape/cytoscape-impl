@@ -43,26 +43,30 @@
 package org.cytoscape.plugin.internal.action;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.plugin.CyPluginAdapter;
+import org.cytoscape.plugin.internal.DownloadableInfo;
+import org.cytoscape.plugin.internal.ManagerException;
+import org.cytoscape.plugin.internal.ManagerUtil;
+import org.cytoscape.plugin.internal.PluginInquireAction;
+import org.cytoscape.plugin.internal.PluginManager;
+import org.cytoscape.plugin.internal.PluginManagerInquireTask;
+import org.cytoscape.plugin.internal.PluginManagerInquireTaskFactory;
+import org.cytoscape.plugin.internal.PluginStatus;
 import org.cytoscape.plugin.internal.ui.PluginManageDialog;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.work.swing.GUITaskManager;
-//import java.util.Properties;
-import org.cytoscape.plugin.internal.*;
-//import org.cytoscape.plugin.internal.ui.*;
-import org.cytoscape.work.TaskFactory;
-
-import java.util.List;
-import java.util.Map;
 import org.cytoscape.work.Task;
-import java.util.Properties;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.GUITaskManager;
 
 /**
  *
@@ -77,7 +81,6 @@ public class PluginManagerAction extends AbstractCyAction {
 	private TaskFactory pluginLoaderTaskFactory;
 
 	public static String cyConfigVerDir;
-	public static String cyConfigDir = CyProperty.DEFAULT_CONFIG_DIR; //".cytoscape";
 	public static String DefaultPluginUrl = null;
 	
 	/**
@@ -85,7 +88,7 @@ public class PluginManagerAction extends AbstractCyAction {
 	 */
 	public PluginManagerAction(CySwingApplication desktop, CyApplicationManager appMgr, CytoscapeVersion version,
 			CyProperty<Bookmarks> bookmarksProp, BookmarksUtil bookmarksUtil, GUITaskManager guiTaskManagerServiceRef
-			, CyProperty cytoscapePropertiesServiceRef, CyPluginAdapter adapter, TaskFactory pluginLoaderTaskFactory) {
+			, CyProperty<Properties> cytoscapePropertiesServiceRef, CyPluginAdapter adapter, TaskFactory pluginLoaderTaskFactory) {
 				
 		super("Plugin Manager", appMgr);
 
@@ -100,7 +103,7 @@ public class PluginManagerAction extends AbstractCyAction {
 		// Note: We need pass cyConfigDir = ".cytoscape" and cyConfigVerDir to PluginManager.java
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
 				
-		DefaultPluginUrl = ((Properties)cytoscapePropertiesServiceRef.getProperties()).getProperty("defaultPluginDownloadUrl");
+		DefaultPluginUrl = cytoscapePropertiesServiceRef.getProperties().getProperty("defaultPluginDownloadUrl");
 		
 		// initialize version
 		org.cytoscape.plugin.internal.util.CytoscapeVersion.version = version.getVersion();

@@ -17,6 +17,7 @@
 
 	<osgi:service id="cytoscapeShutdownService" ref="cytoscapeShutdown" auto-export="interfaces" />
 	<osgi:service id="cytoscapeVersionService" ref="cytoscapeVersion" auto-export="interfaces" />
+	<osgi:service id="cyApplicationConfigurationService" ref="cyApplicationConfiguration" auto-export="interfaces" />
 
 	<osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper" />
 	<osgi:reference id="cyNetworkManagerServiceRef"

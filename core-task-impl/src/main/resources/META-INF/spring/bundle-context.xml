@@ -426,6 +426,7 @@
 	<bean id="bioGridPreprocessor"
 		class="org.cytoscape.task.internal.quickstart.datasource.BioGridPreprocessor">
 		<constructor-arg ref="cyPropertyServiceRef" />
+		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
 	</bean>
 
 

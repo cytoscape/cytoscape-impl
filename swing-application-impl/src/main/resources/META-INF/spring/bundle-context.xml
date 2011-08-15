@@ -26,12 +26,14 @@
 	<bean name="configDirPropertyWriter" class="org.cytoscape.internal.shutdown.ConfigDirPropertyWriter">
 		<constructor-arg ref="taskManagerServiceRef" />
 		<constructor-arg ref="propertyWriterManagerRef" />
+		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
 	</bean>
 
 	<!-- Various Utilities -->
 
 	<bean name="cyOperatingContext" class="org.cytoscape.internal.CyOperatingContextImpl">
 		<constructor-arg ref="cytoscapePropertiesServiceRef" />
+		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
 	</bean>
 	
 	<bean name="cyHelpBroker" class="org.cytoscape.internal.view.CyHelpBrokerImpl">

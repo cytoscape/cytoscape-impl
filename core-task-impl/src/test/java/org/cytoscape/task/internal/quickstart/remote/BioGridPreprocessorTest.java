@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.internal.quickstart.datasource.BioGridPreprocessor;
 import org.junit.After;
@@ -17,6 +18,9 @@ public class BioGridPreprocessorTest {
 
 	@Mock
 	CyProperty<Properties> properties;
+	
+	@Mock
+	CyApplicationConfiguration config;
 
 	@Before
 	public void setUp() throws Exception {
@@ -33,7 +37,7 @@ public class BioGridPreprocessorTest {
 	@Test
 	public void bioGridPreprocessorTest() throws Exception {
 		final File file = new File("src/test/resources/BIOGRID-ORGANISM-3.1.74.mitab.zip");
-		final BioGridPreprocessor processor = new BioGridPreprocessor(properties);
+		final BioGridPreprocessor processor = new BioGridPreprocessor(properties, config);
 
 		processor.setSource(file.toURI().toURL());
 		processor.processFile();

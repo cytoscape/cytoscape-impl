@@ -36,6 +36,7 @@
 
 package org.cytoscape.plugin.internal;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.plugin.CyPlugin;
 import org.cytoscape.plugin.CyPluginAdapter;
 import org.cytoscape.plugin.internal.action.PluginManagerAction;
@@ -178,7 +179,7 @@ public class PluginManager {
 	 */
 	public static PluginManager getPluginManager() {
 		if (pluginMgr == null) {
-			pluginMgr = new PluginManager(null);
+			pluginMgr = new PluginManager(null, null);
 		}
 		return pluginMgr;
 	}
@@ -228,9 +229,9 @@ public class PluginManager {
 	 * @param Tracker
 	 * @return
 	 */
-	protected static PluginManager getPluginManager(PluginTracker Tracker) {
+	protected static PluginManager getPluginManager(PluginTracker Tracker, final CyApplicationConfiguration config) {
 		if (pluginMgr == null) {
-			pluginMgr = new PluginManager(Tracker);
+			pluginMgr = new PluginManager(Tracker, config);
 		}
 		return pluginMgr;
 	}
@@ -248,8 +249,13 @@ public class PluginManager {
 		}
 	}
 
+	
+	private PluginManager() {
+		
+	}
+	
 	// create plugin manager
-	private PluginManager(PluginTracker tracker) {
+	private PluginManager(PluginTracker tracker, final CyApplicationConfiguration config) {
 
 		CytoscapeVersion cytoscapeVersion = new CytoscapeVersion();
 		
@@ -261,12 +267,11 @@ public class PluginManager {
 		setWebstart();
 		String trackerFileName = "track_plugins.xml";
 
-		String cyConfigDir = PluginManagerAction.cyConfigDir; 
 		String cyConfigVerDir = PluginManagerAction.cyConfigVerDir;
 		
 		if (tempDir == null) {
 			if (usingWebstartManager()) {
-				tempDir = new File(cyConfigDir,
+				tempDir = new File(config.getSettingLocation(),
 						"webstart" + File.separator
 								+ (new CytoscapeVersion()).getMajorVersion()
 								+ File.separator + "plugins");
