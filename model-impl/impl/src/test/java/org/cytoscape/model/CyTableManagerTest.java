@@ -37,6 +37,7 @@ import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.internal.ArrayGraph;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
@@ -80,9 +81,9 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 	public void tableWithVirtColumnDeletionTest() {
 		CyEventHelper eventHelper = new DummyCyEventHelper();
 		final Interpreter interpreter = new InterpreterImpl();
-		CyTable table = new CyTableImpl("homer", "SUID", Long.class, true, true, SavePolicy.SESSION_FILE,
+		CyTable table = new CyTableImpl("homer", Identifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
 						eventHelper, interpreter);
-		CyTable table2 = new CyTableImpl("marge", "SUID", Long.class, true, true, SavePolicy.SESSION_FILE,
+		CyTable table2 = new CyTableImpl("marge", Identifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
 						 eventHelper, interpreter);
 
 		table.createColumn("x", Long.class, false);

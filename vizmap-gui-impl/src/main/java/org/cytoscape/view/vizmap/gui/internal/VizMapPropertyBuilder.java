@@ -49,6 +49,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.Identifiable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -242,7 +243,7 @@ public class VizMapPropertyBuilder {
 
 					id = go.getCyRow().get(CyTableEntry.NAME, String.class);
 
-					if (attrName.equals("SUID"))
+					if (attrName.equals(Identifiable.SUID))
 						value = go.getSUID();
 					else if (attrClass.isAssignableFrom(List.class))
 						value = go.getCyRow().getList(attrName, column.getListElementType());

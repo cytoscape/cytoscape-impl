@@ -44,6 +44,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -106,10 +107,10 @@ public class ArrayGraph implements CyRootNetwork {
 
 		netAttrMgr = new HashMap<String, CyTable>();
 		netAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-			       tableFactory.createTable(suid + " network", "SUID", Long.class,
+			       tableFactory.createTable(suid + " network", Identifiable.SUID, Long.class,
 							publicTables, false));
 		netAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-			       tableFactory.createTable(suid + " network", "SUID", Long.class, false,
+			       tableFactory.createTable(suid + " network", Identifiable.SUID, Long.class, false,
 							false));
 
 		netAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class,
@@ -119,10 +120,10 @@ public class ArrayGraph implements CyRootNetwork {
 
 		nodeAttrMgr = new HashMap<String, CyTable>();
 		nodeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-				tableFactory.createTable(suid + " node", "SUID", Long.class,
+				tableFactory.createTable(suid + " node", Identifiable.SUID, Long.class,
 							 publicTables, false));
 		nodeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-				tableFactory.createTable(suid + " node", "SUID", Long.class,
+				tableFactory.createTable(suid + " node", Identifiable.SUID, Long.class,
 							 false, false));
 
 		nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
@@ -132,10 +133,10 @@ public class ArrayGraph implements CyRootNetwork {
 
 		edgeAttrMgr = new HashMap<String, CyTable>();
 		edgeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-				tableFactory.createTable(suid + " edge", "SUID", Long.class,
+				tableFactory.createTable(suid + " edge", Identifiable.SUID, Long.class,
 							 publicTables, false));
 		edgeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-				tableFactory.createTable(suid + " edge", "SUID", Long.class,
+				tableFactory.createTable(suid + " edge", Identifiable.SUID, Long.class,
 							 false, false));
 
 		edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,

@@ -11,6 +11,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.view.model.CyNetworkView;
@@ -23,8 +24,8 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 	public static final String RENDERER_TABLE_TITLE = "UnrecognizedRenderer";
 	public static final String VISUAL_PROPERTY_TABLE_TITLE = "UnrecognizedVisualProperties";
 
-	private static final String RENDERER_TABLE_PK = "SUID";
-	private static final String VISUAL_PROPERTY_TABLE_PK = "SUID";
+	private static final String RENDERER_TABLE_PK = Identifiable.SUID;
+	private static final String VISUAL_PROPERTY_TABLE_PK = Identifiable.SUID;
 
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableMgr;

@@ -89,6 +89,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
@@ -430,11 +431,11 @@ public class DGraphView implements RenderingEngine<CyNetwork>, GraphView,
 		this.dropEmptySpaceTFs = dropEmptySpaceTFs;
 		this.manager = manager;
 
-		final CyTable nodeCAM = dataFactory.createTable("node view", "SUID", Long.class, false, false);
+		final CyTable nodeCAM = dataFactory.createTable("node view", Identifiable.SUID, Long.class, false, false);
 		nodeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.getTableMap(CyNode.class, networkModel).put("VIEW", nodeCAM);
 
-		final CyTable edgeCAM = dataFactory.createTable("edge view", "SUID", Long.class, false, false);
+		final CyTable edgeCAM = dataFactory.createTable("edge view", Identifiable.SUID, Long.class, false, false);
 		edgeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.getTableMap(CyEdge.class, networkModel).put("VIEW", edgeCAM);
 
