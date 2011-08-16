@@ -165,7 +165,7 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 		}
 
 		// create the task thread
-		final Runnable tasks = new TaskThread(first, taskMonitor, taskIterator); 
+		final Runnable tasks = new TaskThread(first, taskMonitor, taskIterator, factory); 
 
 		// submit the task thread for execution
 		final Future<?> executorFuture = taskExecutorService.submit(tasks);
@@ -190,18 +190,20 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 	}
 
 	private class TaskThread implements Runnable {
-		
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
 		private final Task first;
+		private final TaskFactory factory;
 
-		TaskThread(final Task first, final SwingTaskMonitor tm, final TaskIterator ti) {
+		TaskThread(final Task first, final SwingTaskMonitor tm, final TaskIterator ti, final TaskFactory factory) {
 			this.first = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
+			this.factory = factory;
 		}
 		
 		public void run() {
+			final long startTime = System.currentTimeMillis();
 			try {
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
@@ -227,12 +229,17 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 			} catch (Exception exception) {
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
+			} finally {
+				final long endTime = System.currentTimeMillis();
+System.err.println("+++ Factory " + factory + ": " + (endTime-startTime) + "ms");
 			}
 
 			// clean up the task monitor
 			if (taskMonitor.isOpened() && !taskMonitor.isShowingException())
 				taskMonitor.close();
 
+final long endTime2 = System.currentTimeMillis();
+System.err.println("+++ Factory " + factory + ": " + (endTime2-startTime) + "ms (2)");
 		}
 	}
 

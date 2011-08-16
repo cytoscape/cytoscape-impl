@@ -16,12 +16,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+import org.cytoscape.di.util.DIUtil;
+import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.internal.tunables.utils.CollapsablePanel;
 import org.cytoscape.work.internal.tunables.utils.XorPanel;
-import org.cytoscape.work.spring.SpringTunableInterceptor;
 import org.cytoscape.work.swing.GUITunableHandler;
 import org.cytoscape.work.swing.GUITunableInterceptor;
 import org.cytoscape.work.swing.TunableDialog;
@@ -50,9 +51,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class GUITunableInterceptorImpl extends SpringTunableInterceptor<GUITunableHandler> implements GUITunableInterceptor<GUITunableHandler> {
-	
-	
+public class GUITunableInterceptorImpl extends AbstractTunableInterceptor<GUITunableHandler> implements GUITunableInterceptor<GUITunableHandler> {
 	private Map<List<GUITunableHandler>, JPanel> panelMap;
 	private boolean newValuesSet;
 	
@@ -93,7 +92,7 @@ public class GUITunableInterceptorImpl extends SpringTunableInterceptor<GUITunab
 	
 	/** {@inheritDoc} */
 	final public JPanel getUI(final Object... proxyObjs) {
-		this.objectsWithTunables = convertSpringProxyObjs(proxyObjs);
+		this.objectsWithTunables = DIUtil.stripProxies(proxyObjs);
 		handlers = new ArrayList<GUITunableHandler>();
 		return constructUI();
 	}
@@ -118,16 +117,25 @@ public class GUITunableInterceptorImpl extends SpringTunableInterceptor<GUITunab
 
 	/** {@inheritDoc} */
 	final public boolean hasTunables(final Object o) {
-		return super.hasTunables(convertSpringProxyObj(o));
+		return super.hasTunables(DIUtil.stripProxy(o));
 	}
 
+        /**                                                                                                                          
+         * This method calls {@link AbstractTunableInterceptor.loadTunables} with the                                                
+         * unwrapped object instead of the Spring proxy object, which is provided as                                                 
+         * an argument.                                                                                                              
+         * @param obj The Spring proxy object from which we'd like the raw object.                                                   
+         */
+        final public void loadTunables(final Object obj) {
+		super.loadTunables(DIUtil.stripProxy(obj));
+        }
 	
+
 	/** This implements the final action in execUI() and executes the UI.
 	 *  @param optionPanel  the panel containing the various UI elements corresponding to individual tunables
 	 *  @param proxyObjs    represents the objects annotated with tunables
 	 */
 	private boolean displayGUI(final JPanel optionPanel, Object... proxyObjs) {
-		
 		tunnableDialog = new TunableDialog(parent);
 		tunnableDialog.setLocationRelativeTo(parent);
 		tunnableDialog.setTitle("Set Parameters");
@@ -429,7 +437,7 @@ public class GUITunableInterceptorImpl extends SpringTunableInterceptor<GUITunab
 	 * @return success or not of the <code>TunableValidator</code> validate method
 	 */
 	final public boolean validateAndWriteBackTunables(Object... proxyObjs) {
-		final Object objectsWithTunables[] = convertSpringProxyObjs(proxyObjs);
+		final Object objectsWithTunables[] = DIUtil.stripProxies(proxyObjs);
 
 		// Update handler list:
 		if (handlers == null)

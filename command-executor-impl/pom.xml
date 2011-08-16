@@ -19,32 +19,32 @@
 
 	<packaging>bundle</packaging>
 
-    <repositories>
-        <!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
-        <repository>
-            <id>cytoscape_snapshots</id>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <name>Cytoscape Snapshots</name>
-            <url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
-        <repository>
-            <id>cytoscape_releases</id>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <name>Cytoscape Releases</name>
-            <url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
-        </repository>
-    </repositories>
+	<repositories>
+        	<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
+		<repository>
+			<id>cytoscape_snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<name>Cytoscape Snapshots</name>
+			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
+		<repository>
+			<id>cytoscape_releases</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Cytoscape Releases</name>
+			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>
@@ -66,6 +66,17 @@
 	</build>
 
 	<dependencies>
+                <dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>di-util-api</artifactId>
+                        <scope>provided</scope>
+                </dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
@@ -74,10 +85,5 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>work-spring-api</artifactId>
-		</dependency>
 	</dependencies>
-
 </project>

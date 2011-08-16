@@ -1,13 +1,5 @@
-
 /*
- Copyright (c) 2008, The Cytoscape Consortium (www.cytoscape.org)
-
- The Cytoscape Consortium is:
- - Institute for Systems Biology
- - University of California San Diego
- - Memorial Sloan-Kettering Cancer Center
- - Institut Pasteur
- - Agilent Technologies
+ Copyright (c) 2008, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -38,6 +30,7 @@ package org.cytoscape.model.internal;
 
 import org.cytoscape.event.CyEventHelper;
 
+import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyEdge;
@@ -59,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
  * An implementation of CySubNetwork that is largely a passthrough to
  * {@link ArrayGraph}.
@@ -74,11 +68,11 @@ class ArraySubGraph implements CySubNetwork {
 	private Set<CyNode> nodeSet;
 	private Set<CyEdge> edgeSet;
 
-	ArraySubGraph(final ArrayGraph par, final int inId, final CyEventHelper eh) {
-		assert(par!=null);
+	ArraySubGraph(final ArrayGraph par, final int inId, final CyEventHelper eventHelper) {
+		assert(par != null);
 		parent = par;
 		internalId = inId;
-		eventHelper = eh;
+		this.eventHelper = DIUtil.stripProxy(eventHelper);
 
 		internalSUID = SUIDFactory.getNextSUID();
 		

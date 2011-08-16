@@ -1,5 +1,5 @@
-
 package org.cytoscape.plugin.internal;
+
 
 import java.util.Properties;
 
@@ -60,7 +60,6 @@ import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.util.ContinuousMappingGenerator;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.spring.SpringTunableInterceptor;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.GUITaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -138,7 +137,6 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	private StreamUtil streamUtil;
 	private CyNetworkViewWriterFactory cyNetworkViewWriterFactory;
 	private AbstractGUITunableHandler abstractGUITunableHandler;
-	private SpringTunableInterceptor springTunableInterceptor;
 	private AbstractLayoutAlgorithm abstractLayout;
 	private AbstractFunction abstractFunction;
 	private AbstractVisualPropertyDependency abstractVisualPropertyDependency;

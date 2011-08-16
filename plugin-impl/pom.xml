@@ -101,7 +101,6 @@
 	</repositories>
 
 	<dependencies>
-
 		<!-- dependencies needed to implement this code -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -144,11 +143,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>work-spring-api</artifactId>
 		</dependency>
 
 		<dependency>
