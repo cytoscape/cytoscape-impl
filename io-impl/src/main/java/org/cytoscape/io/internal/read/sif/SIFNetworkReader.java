@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2006, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -24,8 +24,9 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
+*/
 package org.cytoscape.io.internal.read.sif;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
@@ -101,34 +103,35 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		final CyTable edgeTable = network.getDefaultEdgeTable();
 
-			// Generate bundled event to avoid too many events problem.
+		// Generate bundled event to avoid too many events problem.
 
-			final String firstLine = br.readLine();
-			if (firstLine.contains(TAB))
-				delimiter = TAB;
-			createEdge(new Interaction(firstLine.trim(), delimiter), network, nMap);
+		final String firstLine = br.readLine();
+		if (firstLine.contains(TAB))
+			delimiter = TAB;
+		final Pattern delimiterPattern = Pattern.compile(delimiter);
+		createEdge(new Interaction(firstLine.trim(), delimiterPattern), network, nMap);
 
-			while ((line = br.readLine()) != null) {
-				if (cancelled) {
-					// Cancel called. Clean up the garbage.
-					nMap.clear();
-					nMap = null;
-					network = null;
-					br.close();
-					return;
-				}
-
-				if (line.trim().length() <= 0)
-					continue;
-
-				try {
-					final Interaction itr = new Interaction(line, delimiter);
-					createEdge(itr, network, nMap);
-				} catch (Exception e) {
-					// Simply ignore invalid lines.
-					continue;
-				}
+		while ((line = br.readLine()) != null) {
+			if (cancelled) {
+				// Cancel called. Clean up the garbage.
+				nMap.clear();
+				nMap = null;
+				network = null;
+				br.close();
+				return;
 			}
+
+			if (line.trim().length() <= 0)
+				continue;
+
+			try {
+				final Interaction itr = new Interaction(line, delimiterPattern);
+				createEdge(itr, network, nMap);
+			} catch (Exception e) {
+				// Simply ignore invalid lines.
+				continue;
+			}
+		}
 
 		br.close();
 		tm.setStatusMessage("Network data loaded from data source.\nCreating Cytoscape network...");
