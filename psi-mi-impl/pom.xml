@@ -15,32 +15,43 @@
   <name>${bundle.symbolicName} [${bundle.namespace}]</name>
   <packaging>bundle</packaging>
 
-	<repositories>
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
-		</repository>
-	</repositories>
+  <repositories>
+    <repository>
+      <id>cytoscape_snapshots</id>
+      <snapshots>
+	<enabled>true</enabled>
+      </snapshots>
+      <releases>
+	<enabled>false</enabled>
+      </releases>
+      <name>Cytoscape Snapshots</name>
+      <url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
+    </repository>
+    <repository>
+      <id>cytoscape_releases</id>
+      <snapshots>
+	<enabled>false</enabled>
+      </snapshots>
+      <releases>
+	<enabled>true</enabled>
+      </releases>
+      <name>Cytoscape Releases</name>
+      <url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
+    </repository>
+  </repositories>
 
   <dependencies>
+    <dependency>
+      <groupId>org.cytoscape</groupId>
+      <artifactId>di-util-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -116,33 +127,33 @@
 	  <execution>
 	    <id>mi1</id>
 	    <goals>
-	    	<goal>generate</goal>
+	      <goal>generate</goal>
 	    </goals>
 	    <configuration>
 	      <schemaDirectory>src/main/xsd</schemaDirectory>
 	      <schemaIncludes>
 	        <include>MIF1.xsd</include>
 	      </schemaIncludes>
-          <generatePackage>${bundle.namespace}.internal.schema.mi1</generatePackage>
-          <verbose>true</verbose>
-          <removeOldOutput>false</removeOldOutput>
-          <forceRegenerate>true</forceRegenerate>
+              <generatePackage>${bundle.namespace}.internal.schema.mi1</generatePackage>
+              <verbose>true</verbose>
+              <removeOldOutput>false</removeOldOutput>
+              <forceRegenerate>true</forceRegenerate>
 	    </configuration>
 	  </execution>
 	  <execution>
 	    <id>mi25</id>
 	    <goals>
-	    	<goal>generate</goal>
+	      <goal>generate</goal>
 	    </goals>
 	    <configuration>
 	      <schemaDirectory>src/main/xsd</schemaDirectory>
 	      <schemaIncludes>
 	        <include>MIF25.xsd</include>
 	      </schemaIncludes>
-          <generatePackage>${bundle.namespace}.internal.schema.mi25</generatePackage>
-          <verbose>true</verbose>
-          <removeOldOutput>false</removeOldOutput>
-          <forceRegenerate>true</forceRegenerate>
+              <generatePackage>${bundle.namespace}.internal.schema.mi25</generatePackage>
+              <verbose>true</verbose>
+              <removeOldOutput>false</removeOldOutput>
+              <forceRegenerate>true</forceRegenerate>
 	    </configuration>
 	  </execution>
 	</executions>
