@@ -443,7 +443,7 @@ public final class CyTableImpl implements CyTable {
 			if (row != null)
 				return row;
 
-			row = new InternalRow(key, this);
+			row = new InternalRow(key);
 			rows.put(key, row);
 		}
 
@@ -943,11 +943,9 @@ public final class CyTableImpl implements CyTable {
 	
 	private final class InternalRow implements CyRow {
 		private final Object key;
-		private final CyTable table;
 
-		InternalRow(Object key, CyTable table) {
+		InternalRow(final Object key) {
 			this.key = key;
-			this.table = table;
 		}
 
 		@Override
@@ -997,7 +995,7 @@ public final class CyTableImpl implements CyTable {
 
 		@Override
 		public CyTable getTable() {
-			return table;
+			return CyTableImpl.this;
 		}
 
 		@Override
