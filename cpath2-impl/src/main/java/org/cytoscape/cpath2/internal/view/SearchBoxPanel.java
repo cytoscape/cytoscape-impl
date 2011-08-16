@@ -120,10 +120,9 @@ public class SearchBoxPanel extends JPanel {
      */
     private JComboBox createOrganismComboBox() {
         //  Organism List is currently hard-coded.
-        Vector organismList = new Vector();
+        Vector<Organism> organismList = new Vector<Organism>();
         organismList.add(new Organism("All Organisms", -1));
-        CPathProperties props = CPathProperties.getInstance();
-        organismList.addAll(props.getOrganismList());
+        organismList.addAll(CPathProperties.getInstance().getOrganismList());
         DefaultComboBoxModel organismComboBoxModel = new DefaultComboBoxModel(organismList);
         JComboBox organismComboBox = new JComboBox(organismComboBoxModel);
         organismComboBox.setToolTipText("Select Organism");

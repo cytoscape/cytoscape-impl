@@ -37,11 +37,6 @@ public class CPathProperties {
     public static final String ICON_FILE_NAME = new String ("cpath2.icon_file_name");
 
     /**
-     * Property:  Organism.
-     */
-    public static final String ORGANISM_PREFIX = new String ("cpath2.organism");
-
-    /**
      * Download Networks in Full BioPAX Mode.
      */
     public final static int DOWNLOAD_FULL_BIOPAX = 1;
@@ -109,23 +104,12 @@ public class CPathProperties {
                 "involving proteins, DNA, RNA, small molecules and complexes.";
         }
 
-        int index = 0;
-        String orgField = pluginProperties.getProperty(ORGANISM_PREFIX + index);
-        while (orgField != null) {
-            String parts[] = orgField.split(":");
-            Organism organism = new Organism();
-            if (parts != null && parts.length == 2) {
-                organism.setSpeciesName(parts[0]);
-                try {
-                    organism.setNcbiTaxonomyId(Integer.parseInt(parts[1]));
-                    organismList.add(organism);
-                } catch(NumberFormatException e) {
-                }
-            }
-            index++;
-            orgField = pluginProperties.getProperty(ORGANISM_PREFIX + index);
-        }
-
+          organismList.add(new Organism("Human", 9606));
+          organismList.add(new Organism("Fruit Fly", 7227));
+          organismList.add(new Organism("Mouse", 10090));
+          organismList.add(new Organism("Rat", 10116));
+          organismList.add(new Organism("C. elegans", 6239));
+          organismList.add(new Organism("S. cerevisiae", 4932));
     }
 
     /**
