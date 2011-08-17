@@ -17,6 +17,8 @@ import org.mockito.MockitoAnnotations;
 
 
 public class BioGridPreprocessorTest {
+	
+	private static final String OUTPUT_DIR = "target/testoutput";
 
 	@Mock
 	CyProperty<Properties> properties;
@@ -29,10 +31,10 @@ public class BioGridPreprocessorTest {
 		MockitoAnnotations.initMocks(this);
 
 		when(properties.getProperties()).thenReturn(new Properties());
-		final File sampleDirectory = new File("target/testoutput");
-		boolean success = sampleDirectory.mkdir();
+		final File sampleDirectory = new File(OUTPUT_DIR);
+		if(sampleDirectory.isDirectory() == false)
+			assertTrue(sampleDirectory.mkdir());
 		
-		assertTrue(success);
 		when(config.getSettingLocation()).thenReturn(sampleDirectory);
 	}
 
@@ -48,6 +50,13 @@ public class BioGridPreprocessorTest {
 		processor.setSource(file.toURI().toURL());
 		processor.processFile();
 		
+		File testDir = new File(OUTPUT_DIR, "interactions");
+		assertTrue(testDir.exists());
+		File[] fileList = testDir.listFiles();
+		assertNotNull(fileList);
+		
+		// 23 species specific files should be created.
+		assertEquals(23, fileList.length);
 	}
 
 }
