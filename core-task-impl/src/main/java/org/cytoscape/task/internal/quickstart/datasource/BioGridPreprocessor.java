@@ -52,6 +52,9 @@ public class BioGridPreprocessor extends AbstractFilePreprocessor {
 
 	private boolean isUpToDate() throws IOException {
 		final File[] files = this.dataFileDirectory.listFiles();
+		if(files == null)
+			return false;
+		
 		boolean up2date = false;
 
 		for (File file : files) {

@@ -40,7 +40,7 @@ public abstract class AbstractFilePreprocessor implements InteractionFilePreproc
 			throw new NullPointerException("Property is missing.");
 
 		this.dataFileDirectory = new File(config.getSettingLocation(), INTERACTION_DIR_NAME);
-		if (!dataFileDirectory.exists())
+		if (dataFileDirectory.exists() == false)
 			dataFileDirectory.mkdir();
 		
 		this.sourceMap = new HashMap<String, URL>();

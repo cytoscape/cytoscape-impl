@@ -1,5 +1,6 @@
 package org.cytoscape.task.internal.quickstart.remote;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+
 public class BioGridPreprocessorTest {
 
 	@Mock
@@ -27,7 +29,11 @@ public class BioGridPreprocessorTest {
 		MockitoAnnotations.initMocks(this);
 
 		when(properties.getProperties()).thenReturn(new Properties());
-
+		final File sampleDirectory = new File("target/testoutput");
+		boolean success = sampleDirectory.mkdir();
+		
+		assertTrue(success);
+		when(config.getSettingLocation()).thenReturn(sampleDirectory);
 	}
 
 	@After
@@ -41,6 +47,7 @@ public class BioGridPreprocessorTest {
 
 		processor.setSource(file.toURI().toURL());
 		processor.processFile();
+		
 	}
 
 }
