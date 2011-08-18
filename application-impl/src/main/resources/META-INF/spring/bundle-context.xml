@@ -31,8 +31,8 @@
 	</bean>
 
 	<!-- Cytoscape Version -->
-	<bean name="cytoscapeVersion" class="org.cytoscape.application.internal.CyVersion">
-		<constructor-arg ref="cytoscapePropertiesServiceRef" />
+	<bean name="cytoscapeVersion" class="org.cytoscape.application.internal.CyVersion" depends-on="cyApplicationCoreProperty">
+		<constructor-arg ref="cyApplicationCoreProperty" />
 	</bean>
 	
 	<!-- shutdown support -->
@@ -42,4 +42,7 @@
 	
 	<bean id="cyApplicationConfiguration" class="org.cytoscape.application.internal.CyApplicationConfigurationImpl" />
 
+	<bean id="cyApplicationCoreProperty" class="org.cytoscape.application.internal.CyApplicationCoreProperty">
+		<constructor-arg ref="cyApplicationConfiguration" />
+	</bean>
 </beans>

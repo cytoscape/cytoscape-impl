@@ -8,7 +8,7 @@
 	<osgi:reference id="guiTaskManagerServiceRef" interface="org.cytoscape.work.swing.GUITaskManager" />
 		
 	<osgi:reference id="coreCyPropertyServiceRef"
-		interface="org.cytoscape.property.CyProperty"  filter="(cyPropertyName=coreSettings)"/>
+		interface="org.cytoscape.property.CyProperty"  filter="(cyPropertyName=cytoscape.props)"/>
 		
 	<osgi:reference id="cyApplicationManagerServiceRef" interface="org.cytoscape.application.CyApplicationManager" />
 	

@@ -13,11 +13,7 @@
 			<value>org.cytoscape.model.events.NetworkAboutToBeDestroyedListener</value>
 			<value>org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener</value>
 		</osgi:interfaces>
-	</osgi:service>
-
-	<osgi:service id="cytoscapeShutdownService" ref="cytoscapeShutdown" auto-export="interfaces" />
-	<osgi:service id="cytoscapeVersionService" ref="cytoscapeVersion" auto-export="interfaces" />
-	<osgi:service id="cyApplicationConfigurationService" ref="cyApplicationConfiguration" auto-export="interfaces" />
+	</osgi:service>	
 
 	<osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper" />
 	<osgi:reference id="cyNetworkManagerServiceRef"
@@ -25,7 +21,15 @@
 	<osgi:reference id="cyNetworkViewManagerServiceRef"
 		interface="org.cytoscape.view.model.CyNetworkViewManager" />
 
-	<osgi:reference id="cytoscapePropertiesServiceRef"
-		interface="org.cytoscape.property.CyProperty" filter="(cyPropertyName=coreSettings)" />
+	<osgi:service id="cytoscapeShutdownService" ref="cytoscapeShutdown" auto-export="interfaces" />
+	<osgi:service id="cytoscapeVersionService" ref="cytoscapeVersion" auto-export="interfaces" />
+	<osgi:service id="cyApplicationConfigurationService" ref="cyApplicationConfiguration" auto-export="interfaces" />
+	
+	<osgi:service id="cyApplicationCorePropertyService" ref="cyApplicationCoreProperty" auto-export="interfaces" >
+		<osgi:service-properties>
+			<entry key="serviceType" value="property" />
+			<entry key="cyPropertyName" value="cytoscape.props" />
+		</osgi:service-properties>
+	</osgi:service>
 
 </beans>

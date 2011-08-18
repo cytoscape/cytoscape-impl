@@ -28,23 +28,19 @@
 package org.cytoscape.io.internal.write.properties;
 
 
-import java.util.Properties;
 import java.io.OutputStream;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import java.util.Properties;
 
 import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 
 public class PropertiesWriterImpl extends AbstractTask implements CyWriter {
 	private final OutputStream outputStream;
 	private final Properties properties;
 
-	public PropertiesWriterImpl(final OutputStream outputStream, Object props) {
+	public PropertiesWriterImpl(final OutputStream outputStream, final Object props) {
 		this.outputStream = outputStream;
 		if (props instanceof Properties)
 			properties = (Properties)props;
@@ -54,6 +50,7 @@ public class PropertiesWriterImpl extends AbstractTask implements CyWriter {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		properties.store(outputStream,"Written by: Cytoscape's PropertiesWriterImpl");
+		properties.store(outputStream, "Written by: Cytoscape's PropertiesWriterImpl");
+		this.outputStream.close();		
 	}
 }

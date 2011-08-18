@@ -15,7 +15,8 @@ import java.io.File;
  * the specified image file using the specified RenderingEngine.
  */
 public final class PropertyWriter extends AbstractCyWriter<CyPropertyWriterManager> {
-	private final CyProperty property;
+	
+	private final CyProperty<?> property;
 	private final String fileFilterDescription;
 
 	/**
@@ -25,7 +26,7 @@ public final class PropertyWriter extends AbstractCyWriter<CyPropertyWriterManag
 	 * @param outputFile     Where to write the serialised data to.
 	 */
 	public PropertyWriter(final CyPropertyWriterManager writerManager,
-			      final CyFileFilter fileFilter, final CyProperty property,
+			      final CyFileFilter fileFilter, final CyProperty<?> property,
 			      final File outputFile)
 	{
 		super(writerManager);

@@ -25,7 +25,7 @@ public class ServiceConfigurationTest extends ServiceTestSupport {
 	@Before
 	public void setup() {
 		Properties coreP = new Properties();
-		coreP.setProperty("cyPropertyName","coreSettings");
+		coreP.setProperty("cyPropertyName","cytoscape.props");
 
 		Properties p = new Properties();
 		p.setProperty("cyPropertyName","bookmarks");

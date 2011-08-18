@@ -3,17 +3,14 @@ package org.cytoscape.internal.shutdown;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CytoscapeShutdownEvent;
 import org.cytoscape.application.events.CytoscapeShutdownListener;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyPropertyWriterManager;
-import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.TaskManager;
 
 
@@ -33,6 +30,7 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 	}
 
 	public void handleEvent(final CytoscapeShutdownEvent event) {
+		
 		CyFileFilter matchingFileFilter = null;
 		for (final CyFileFilter fileFilter : propertyWriterManager.getAvailableWriterFilters()) {
 			if (fileFilter.getExtensions().contains("props")) {
@@ -42,20 +40,29 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 		}
 		if (matchingFileFilter == null)
 			throw new IllegalStateException("could not find a properties CyFileFilter!");
-
+		
 		for (final Map.Entry<CyProperty, Map> keyAndValue : configDirProperties.entrySet()) {
-			final String propertyName = (String)keyAndValue.getValue().get("cyPropertyName");				
-			final File outputFile = new File(config.getSettingLocation(), propertyName + ".props");
+			final String propertyName = (String)keyAndValue.getValue().get("cyPropertyName");
+			final String propertyFileName;
+			if(propertyName.endsWith(".props"))
+				propertyFileName = propertyName;
+			else
+				propertyFileName = propertyName + ".props";
+			
+			
+			final File outputFile = new File(config.getSettingLocation(), propertyFileName);
+			
 			final PropertyWriterFactory taskFactory =
 				new PropertyWriterFactory(propertyWriterManager, keyAndValue.getKey(),
 							  matchingFileFilter, outputFile);
 			taskManager.execute(taskFactory);
 		}
+		
 	}
 
 	public void addCyProperty(final CyProperty newCyProperty, final Map properties) {
 		if (newCyProperty.getSavePolicy() == CyProperty.SavePolicy.CONFIG_DIR
-		    || newCyProperty.getSavePolicy() == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR)
+				|| newCyProperty.getSavePolicy() == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR)
 			configDirProperties.put(newCyProperty, properties);
 	}
 

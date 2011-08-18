@@ -28,7 +28,7 @@
  
 	<osgi:reference id="cytoscapePropertiesServiceRef" 
 		interface="org.cytoscape.property.CyProperty"
-		filter="(cyPropertyName=coreSettings)" />
+		filter="(cyPropertyName=cytoscape.props)" />
 
 	<osgi:reference id="fileUtilService" interface="org.cytoscape.util.swing.FileUtil" />
 	<osgi:reference id="openBrowserService" interface="org.cytoscape.util.swing.OpenBrowser" />		

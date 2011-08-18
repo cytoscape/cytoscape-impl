@@ -72,6 +72,7 @@ import org.cytoscape.application.swing.events.PreferencesUpdatedEvent;
 import org.cytoscape.event.CyEventHelper;
 
 import org.cytoscape.internal.CyOperatingContextImpl;
+import org.cytoscape.property.BasicCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -148,7 +149,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 
 		this.cmbPropCategories.setModel(cmbModel);
 		
-		String key = "coreSettings";
+		String key = BasicCyProperty.CORE_PROPRERTY_NAME;
 		
 		int index =0;
 		for (int i=0; i<keys.length; i++){

@@ -16,7 +16,7 @@ public final class PropertyWriterManagerImpl extends AbstractWriterManager<CyPro
 	implements CyPropertyWriterManager
 {
 	public PropertyWriterManagerImpl() {
-		super(DataCategory.PROPERTIES);
+		super(DataCategory.PROPERTIES);		
 	}
 
 	public CyWriter getWriter(Object property, CyFileFilter filter, File outFile) throws Exception {

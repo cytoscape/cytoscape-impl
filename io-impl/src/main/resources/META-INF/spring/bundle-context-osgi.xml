@@ -24,7 +24,7 @@
 		interface="org.cytoscape.model.CyTableFactory" />
 
 	<osgi:reference id="cyPropertyServiceRef" interface="org.cytoscape.property.CyProperty"
-		filter="(cyPropertyName=coreSettings)" />
+		filter="(cyPropertyName=cytoscape.props)" />
 
 	<osgi:reference id="cyApplicationManagerServiceRef"
 		interface="org.cytoscape.application.CyApplicationManager" />
