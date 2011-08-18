@@ -37,6 +37,16 @@ public class CyApplicationCoreProperty implements CyProperty<Properties>, Sessio
 				is = new FileInputStream(propFile);
 				props = new Properties();
 				props.load(is);
+				if(props.size() == 0) {
+					// Need to load default
+					is = this.getClass().getClassLoader().getResourceAsStream(DEF_PROP_FILE_NAME);
+					props = new Properties();
+					try {
+						props.load(is);
+					} catch (IOException e1) {
+						logger.warn("Could not read core property.  Use empty one.", e1);
+					}
+				}
 				logger.info("PropFile is: " + propFile.getAbsolutePath());
 			} else {
 				logger.warn("Could not read properties from config directry - trying to load default properties.");
