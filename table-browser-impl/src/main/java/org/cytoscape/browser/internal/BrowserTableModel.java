@@ -310,6 +310,9 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
+		if (e.getSource() != dataTable)
+			return;
+
 		if (tableHasBooleanSelected) {
 			selectedRows = null;
 			boolean foundANonSelectedColumnName = false;
@@ -326,9 +329,9 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			}
 		}
 
-				for (final RowSetRecord rowSet : e.getPayloadCollection())
-					handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(),
-					                     rowSet.getValue(), rowSet.getRawValue());
+		for (final RowSetRecord rowSet : e.getPayloadCollection())
+			handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(),
+			                     rowSet.getValue(), rowSet.getRawValue());
 	}
 
 	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
