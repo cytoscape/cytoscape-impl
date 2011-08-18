@@ -10,6 +10,9 @@
 		interface="org.cytoscape.event.CyEventHelper" />
 	<osgi:reference id="InterpreterRef"
 		interface="org.cytoscape.equations.Interpreter" />
+	<osgi:reference id="cyServiceRegistrarServiceRef"
+		interface="org.cytoscape.service.util.CyServiceRegistrar" />
+
 
 	<!-- Individual Service -->
 	<osgi:service id="cyNetworkFactoryService"

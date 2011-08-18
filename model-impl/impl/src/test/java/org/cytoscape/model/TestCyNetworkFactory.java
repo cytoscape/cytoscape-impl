@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2008, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -35,10 +35,12 @@ import org.cytoscape.model.internal.ArrayGraph;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import static org.mockito.Mockito.*;
 
 
 public class TestCyNetworkFactory {
@@ -56,7 +58,9 @@ public class TestCyNetworkFactory {
 		DummyCyEventHelper deh = new DummyCyEventHelper();
 		CyTableManagerImpl tm = new CyTableManagerImpl(deh);
 		Interpreter interp = new InterpreterImpl();
-		ArrayGraph ar = new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, tm, interp), true);
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		ArrayGraph ar =
+			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, tm, interp), serviceRegistrar, true);
 		return ar; 
 	}
 
@@ -64,7 +68,9 @@ public class TestCyNetworkFactory {
 		DummyCyEventHelper deh = new DummyCyEventHelper();
 		CyTableManagerImpl tm = new CyTableManagerImpl(deh);
 		Interpreter interp = new InterpreterImpl();
-		ArrayGraph ar = new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, tm, interp), false);
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		ArrayGraph ar =
+			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, tm, interp), serviceRegistrar, false);
 		return ar; 
 	}
 	

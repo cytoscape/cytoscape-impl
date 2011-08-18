@@ -41,6 +41,8 @@ import org.cytoscape.model.events.AddedNodesEvent;
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveNodesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedEdgesEvent;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -57,7 +59,7 @@ import java.util.Set;
  * An implementation of CySubNetwork that is largely a passthrough to
  * {@link ArrayGraph}.
  */
-class ArraySubGraph implements CySubNetwork {
+class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	private final int internalId;
 	private final long internalSUID;
 	private final CyEventHelper eventHelper;
@@ -67,6 +69,7 @@ class ArraySubGraph implements CySubNetwork {
 	private NodePointer inFirstNode;
 	private Set<CyNode> nodeSet;
 	private Set<CyEdge> edgeSet;
+	private boolean fireAddedNodesAndEdgesEvents;
 
 	ArraySubGraph(final ArrayGraph par, final int inId, final CyEventHelper eventHelper) {
 		assert(par != null);
@@ -75,12 +78,13 @@ class ArraySubGraph implements CySubNetwork {
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
 
 		internalSUID = SUIDFactory.getNextSUID();
-		
+
 		nodeSet = new HashSet<CyNode>();
 		edgeSet = new HashSet<CyEdge>();
 
-		internalNodeCount = 0; 
-		internalEdgeCount = 0; 
+		internalNodeCount = 0;
+		internalEdgeCount = 0;
+		fireAddedNodesAndEdgesEvents = false;
 	}
 
 	private void updateNode(final CyNode n) {
@@ -121,14 +125,16 @@ class ArraySubGraph implements CySubNetwork {
 	 * {@inheritDoc}
 	 */
 	public CyNode addNode() {
-		final CyNode ret; 
+		final CyNode ret;
 		synchronized (this) {
 			ret = parent.nodeAdd();
 			updateNode(ret);
 			internalNodeCount++;
 			nodeSet.add(ret);
 		}
-		eventHelper.addEventPayload((CyNetwork)this, ret, AddedNodesEvent.class);
+
+		if (fireAddedNodesAndEdgesEvents)
+			eventHelper.addEventPayload((CyNetwork)this, ret, AddedNodesEvent.class);
 
 		return ret;
 	}
@@ -138,14 +144,16 @@ class ArraySubGraph implements CySubNetwork {
 	 */
 	public CyEdge addEdge(final CyNode source, final CyNode target, final boolean isDirected) {
 		// important that it's edgeAdd and not addEdge
-		final CyEdge ret; 
+		final CyEdge ret;
 		synchronized (this) {
-			ret = parent.edgeAdd(source, target, isDirected, this); 
+			ret = parent.edgeAdd(source, target, isDirected, this);
 			updateEdge(ret);
 			internalEdgeCount++;
 			edgeSet.add(ret);
 		}
-		eventHelper.addEventPayload((CyNetwork)this, ret, AddedEdgesEvent.class);
+
+		if (fireAddedNodesAndEdgesEvents)
+			eventHelper.addEventPayload((CyNetwork)this, ret, AddedEdgesEvent.class);
 
 		return ret;
 	}
@@ -212,7 +220,7 @@ class ArraySubGraph implements CySubNetwork {
 		// make sure the subnetwork still contains the node
 		if ( nodeSet.contains(n) )
 			return n;
-		else	
+		else
 			return null;
 	}
 
@@ -228,7 +236,7 @@ class ArraySubGraph implements CySubNetwork {
 		// make sure the subnetwork still contains the edge
 		if ( edgeSet.contains(e) )
 			return e;
-		else	
+		else
 			return null;
 	}
 
@@ -274,15 +282,15 @@ class ArraySubGraph implements CySubNetwork {
 	public boolean addNode(final CyNode node) {
 		if (node == null)
 			throw new NullPointerException("node is null");
-		
+
 		synchronized (this) {
 			if (containsNode(node))
-				return false;	
+				return false;
 
 			if (!parent.containsNode(node))
 				throw new IllegalArgumentException("node is not contained in parent network!");
 
-			// add node 
+			// add node
 			internalNodeCount++;
 			nodeSet.add(node);
 			updateNode(node);
@@ -295,7 +303,7 @@ class ArraySubGraph implements CySubNetwork {
 	public boolean addEdge(final CyEdge edge) {
 		if (edge == null)
 			throw new NullPointerException("edge is null");
-		
+
 		synchronized (this) {
 			if (containsEdge(edge))
 				return false;
@@ -303,14 +311,14 @@ class ArraySubGraph implements CySubNetwork {
 			if (!parent.containsEdge(edge))
 				throw new IllegalArgumentException("edge is not contained in parent network!");
 
-			// This will: 
+			// This will:
 			// -- add the node if it doesn't already exist
-			// -- do nothing if the node does exist 
+			// -- do nothing if the node does exist
 			// -- throw an exception if the node isn't part of the root network
 			addNode(edge.getSource());
 			addNode(edge.getTarget());
 
-			// add edge 
+			// add edge
 			internalEdgeCount++;
 			edgeSet.add(edge);
 			updateEdge(edge);
@@ -334,21 +342,21 @@ class ArraySubGraph implements CySubNetwork {
 
 		synchronized (this) {
 			for (CyNode n : nodes) {
-				
+
 				if (!containsNode(n))
 					return false;
-	
+
 				// remove adjacent edges
 				removeEdgesInternal(getAdjacentEdgeList(n, CyEdge.Type.ANY));
-		
+
 				final NodePointer node = parent.getNodePointer(n);
 				inFirstNode = node.remove(inFirstNode,internalId);
-	
+
 				internalNodeCount--;
 				nodeSet.remove(n);
 			}
 		}
-		
+
 		eventHelper.fireEvent(new RemovedNodesEvent(this));
 
 		return true;
@@ -381,40 +389,46 @@ class ArraySubGraph implements CySubNetwork {
 		for (CyEdge edge : edges) {
 			if (!containsEdge(edge))
 				return false;
-	
+
 			final EdgePointer e = parent.getEdgePointer(edge);
-	
+
 			e.remove(internalId);
-	
+
 			internalEdgeCount--;
 			edgeSet.remove(edge);
 		}
 		return true;
 	}
 
-    /**
-     * Tests object for equality with this object.
-     * @param o The object to test for equality.
-     * @return True if the object is an ArrayGraph and the SUID matches, false otherwise.
-     */
-    @Override
-    public boolean equals(final Object o) {
-        if (!(o instanceof ArraySubGraph))
-            return false;
+	@Override
+	public void handleEvent(final NetworkAddedEvent e) {
+		if (e.getNetwork() == this)
+			fireAddedNodesAndEdgesEvents = true;
+	}
 
-        final ArraySubGraph ag = (ArraySubGraph) o;
+	/**
+	 * Tests object for equality with this object.
+	 * @param o The object to test for equality.
+	 * @return True if the object is an ArrayGraph and the SUID matches, false otherwise.
+	 */
+	@Override
+	public boolean equals(final Object o) {
+		if (!(o instanceof ArraySubGraph))
+			return false;
 
-        return ag.internalSUID == this.internalSUID;
-    }
+		final ArraySubGraph ag = (ArraySubGraph) o;
 
-    /**
-     * Returns a hashcode for this object. 
-     * @return A mangled version of the SUID. 
-     */
-    @Override
-    public int hashCode() {
-        return (int) (internalSUID ^ (internalSUID >>> 32));
-    }
+		return ag.internalSUID == this.internalSUID;
+	}
+
+	/**
+	 * Returns a hashcode for this object.
+	 * @return A mangled version of the SUID.
+	 */
+	@Override
+	public int hashCode() {
+		return (int) (internalSUID ^ (internalSUID >>> 32));
+	}
 
 	public CyTable getDefaultNetworkTable() {
 		return parent.getDefaultNetworkTable();

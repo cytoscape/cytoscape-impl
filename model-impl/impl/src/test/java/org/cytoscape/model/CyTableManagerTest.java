@@ -43,6 +43,9 @@ import org.cytoscape.model.internal.ArrayGraph;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
+import static org.mockito.Mockito.*;
 
 
 public class CyTableManagerTest extends AbstractCyTableManagerTest {
@@ -55,9 +58,10 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		mgrImpl = new CyTableManagerImpl(eh);
 		mgr = mgrImpl;
 		final Interpreter interpreter = new InterpreterImpl();
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		goodNetwork =
 			new ArrayGraph(eh, mgrImpl,
-				       new CyTableFactoryImpl(eh, mgrImpl, interpreter), true).getBaseNetwork();
+				       new CyTableFactoryImpl(eh, mgrImpl, interpreter), serviceRegistrar, true).getBaseNetwork();
 	}
 
 	@After

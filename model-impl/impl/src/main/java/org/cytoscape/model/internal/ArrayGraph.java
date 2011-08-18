@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2008, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -46,12 +47,13 @@ import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 
 
 /**
-A linked list implmentation of CyNetwork and CyRootNetwork.
+A linked list implementation of CyNetwork and CyRootNetwork.
 The fundamental idea here is instead of having NodePointer (and EdgePointer) contain
 single references to other NodePointers, it instead contains arrays of references to NodePointers.  
 The arrays are indexed by an internal subnetwork id where the root network has an id of 0.
@@ -86,17 +88,19 @@ public class ArrayGraph implements CyRootNetwork {
 	private final CyEventHelper eventHelper;
 	private final List<CySubNetwork> subNetworks;
 	private final CySubNetwork base;
-
 	private final CyTableManagerImpl tableMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Creates a new ArrayGraph object.
 	 * @param eh The CyEventHelper used for firing events.
 	 */
 	public ArrayGraph(final CyEventHelper eh, final CyTableManagerImpl tableMgr,
-			  final CyTableFactory tableFactory, final boolean publicTables)
+			  final CyTableFactory tableFactory,
+	                  final CyServiceRegistrar serviceRegistrar, final boolean publicTables)
 	{
 		this.tableMgr = tableMgr;
+		this.serviceRegistrar = serviceRegistrar;
 		suid = SUIDFactory.getNextSUID();
 		numSubNetworks = 0;
 		nodeCount = 0;
@@ -854,6 +858,7 @@ public class ArrayGraph implements CyRootNetwork {
 	public synchronized CySubNetwork addSubNetwork() {
 		final int newId = ++numSubNetworks;
 		final ArraySubGraph sub = new ArraySubGraph(this,newId,eventHelper);
+		serviceRegistrar.registerAllServices(sub, new Properties());
 		subNetworks.add(sub);
 		tableMgr.setTableMap(CyNetwork.class, sub, netAttrMgr);
 		tableMgr.setTableMap(CyNode.class, sub, nodeAttrMgr);

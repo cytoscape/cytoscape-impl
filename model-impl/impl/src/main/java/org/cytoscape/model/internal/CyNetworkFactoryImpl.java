@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2008, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -33,6 +33,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	private final CyEventHelper help;
 	private final CyTableManagerImpl mgr;
 	private final CyTableFactory tableFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Creates a new CyNetworkFactoryImpl object.
@@ -50,20 +53,25 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 * @param help An instance of CyEventHelper. 
 	 */
 	public CyNetworkFactoryImpl(final CyEventHelper help, final CyTableManagerImpl mgr,
-				    final CyTableFactory tableFactory)
+				    final CyTableFactory tableFactory,
+				    final CyServiceRegistrar serviceRegistrar)
 	{
 		if (help == null)
-			throw new NullPointerException("CyEventHelper is null");
+			throw new NullPointerException("CyEventHelper is null!");
 
 		if (mgr == null)
-			throw new NullPointerException("CyTableManager is null");
+			throw new NullPointerException("CyTableManager is null!");
 
 		if (tableFactory == null)
-			throw new NullPointerException("CyTableFactory is null");
+			throw new NullPointerException("CyTableFactory is null!");
 
-		this.help = help;
-		this.mgr = mgr;
-		this.tableFactory = tableFactory;
+		if (serviceRegistrar == null)
+			throw new NullPointerException("CyServiceRegistrar is null!");
+
+		this.help             = help;
+		this.mgr              = mgr;
+		this.tableFactory     = tableFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
@@ -71,7 +79,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 */
 	@Override
 	public CyNetwork getInstance() {
-		ArrayGraph net = new ArrayGraph(help, mgr, tableFactory, true);
+		ArrayGraph net = new ArrayGraph(help, mgr, tableFactory, serviceRegistrar, true);
 		logger.info("CyNetwork w/ public tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ public tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
 		return net.getBaseNetwork(); 
@@ -82,7 +90,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 */
 	@Override
 	public CyNetwork getInstanceWithPrivateTables() {
-		ArrayGraph net = new ArrayGraph(help, mgr, tableFactory, false);
+		ArrayGraph net = new ArrayGraph(help, mgr, tableFactory, serviceRegistrar, false);
 		logger.info("CyNetwork w/ private tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ private tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
 		return net.getBaseNetwork(); 

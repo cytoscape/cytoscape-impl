@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2008, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -30,7 +30,6 @@ package org.cytoscape.model.subnetwork;
 
 import java.util.Map;
 
-
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.ArrayGraph;
@@ -39,8 +38,12 @@ import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.AbstractCyTableManagerTest;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 import org.junit.Test;
+
+import static org.mockito.Mockito.*;
+
 
 /**
  * The purpose of this test is to validate that everything that holds true
@@ -53,9 +56,10 @@ public class CySubNetworkCyTableManagerTest extends AbstractCyTableManagerTest {
 		CyTableManagerImpl mgrImpl = new CyTableManagerImpl(eh);
 		mgr = mgrImpl; 
 		final Interpreter interpreter = new InterpreterImpl();
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		ArrayGraph baseNet =
 			new ArrayGraph(eh, mgrImpl,
-				       new CyTableFactoryImpl(eh, mgrImpl, interpreter), true);
+				       new CyTableFactoryImpl(eh, mgrImpl, interpreter), serviceRegistrar, true);
 		// This is a different subnetwork and not "baseNetwork" in ArrayGraph.
 		goodNetwork = baseNet.addSubNetwork(); 
 	}
