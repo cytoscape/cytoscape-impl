@@ -1,13 +1,5 @@
-
 /*
- Copyright (c) 2008, The Cytoscape Consortium (www.cytoscape.org)
-
- The Cytoscape Consortium is:
- - Institute for Systems Biology
- - University of California San Diego
- - Memorial Sloan-Kettering Cancer Center
- - Institut Pasteur
- - Agilent Technologies
+ Copyright (c) 2008, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -33,8 +25,8 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
 package org.cytoscape.model.internal;
+
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyRow;
@@ -53,16 +45,11 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	CyTableEntryImpl(final Map<String, CyTable> attrMgr) {
 		suid = SUIDFactory.getNextSUID();
 		this.attrMgr = attrMgr;
-		getCyRow().set("name","");
-		getCyRow().set("selected",Boolean.FALSE);
+		getCyRow().set(CyTableEntry.NAME, "");
+		getCyRow().set(CyNetwork.SELECTED, Boolean.FALSE);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public long getSUID() {
+	final public long getSUID() {
 		return suid;
 	}
 
@@ -73,12 +60,11 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public CyRow getCyRow(String namespace) {
+	final public CyRow getCyRow(final String namespace) {
 		if (namespace == null)
 			throw new NullPointerException("namespace is null");
 
-		CyTable mgr = attrMgr.get(namespace);
-
+		final CyTable mgr = attrMgr.get(namespace);
 		if (mgr == null)
 			throw new NullPointerException("attribute manager is null for namespace: " + namespace);
 
@@ -90,7 +76,12 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public CyRow getCyRow() {
-		return getCyRow(CyNetwork.DEFAULT_ATTRS);
+	final public CyRow getCyRow() {
+		final CyTable mgr = attrMgr.get(CyNetwork.DEFAULT_ATTRS);
+		if (mgr == null)
+			throw new NullPointerException("attribute manager is null for namespace: "
+			                               + CyNetwork.DEFAULT_ATTRS);
+
+		return mgr.getRow(suid);
 	}
 }
