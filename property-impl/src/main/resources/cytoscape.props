@@ -1,8 +1,6 @@
 #Cytoscape Property File
 #Wed Apr 06 15:28:22 PDT 2005
 secondaryViewThreshold=30000
-defaultSpeciesName=Saccharomyces cerevisiae
-bioDataServer=PleaseSpecify
 viewThreshold=4000
 defaultVisualStyle=default
 canonicalizeNames=true
