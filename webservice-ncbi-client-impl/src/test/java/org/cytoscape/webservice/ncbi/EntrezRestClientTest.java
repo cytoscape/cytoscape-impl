@@ -2,25 +2,27 @@ package org.cytoscape.webservice.ncbi;
 
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.webservice.ncbi.rest.EntrezRestClient;
 import org.junit.Before;
 import org.junit.Test;
 
-public class EntrezRestClientTest {
 
-	
+public class EntrezRestClientTest {
 	private EntrezRestClient client;
 	
 	@Before
 	public void setUp() throws Exception {
 		NetworkTestSupport support = new NetworkTestSupport();
-		client = new EntrezRestClient(support.getNetworkFactory(), null);
+		client = new EntrezRestClient(support.getNetworkFactory(), null,
+					      mock(CyTableManager.class));
 	}
 	
 	@Test
