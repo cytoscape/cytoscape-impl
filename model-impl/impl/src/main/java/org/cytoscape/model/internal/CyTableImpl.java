@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2008, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -51,11 +51,14 @@ import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.events.TableAddedListener;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public final class CyTableImpl implements CyTable {
+public final class CyTableImpl implements CyTable, TableAddedListener {
 	private static final Logger logger = LoggerFactory.getLogger(CyTableImpl.class);
 
 	private Set<String> currentlyActiveAttributes;
@@ -88,13 +91,14 @@ public final class CyTableImpl implements CyTable {
 	private int virtualColumnReferenceCount;
 
 	private SavePolicy savePolicy;
+	private boolean fireEvents;
 	
 	/**
 	 * Creates a new CyTableImpl object.
 	 */
 	public CyTableImpl(final String title, final String primaryKey, Class<?> primaryKeyType,
-			   final boolean pub, final boolean isMutable, SavePolicy savePolicy, final CyEventHelper eventHelper,
-			   final Interpreter interpreter)
+			   final boolean pub, final boolean isMutable, SavePolicy savePolicy,
+	                   final CyEventHelper eventHelper, final Interpreter interpreter)
 	{
 		this.title = title;
 		this.primaryKey = primaryKey;
@@ -104,11 +108,12 @@ public final class CyTableImpl implements CyTable {
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
 		this.interpreter = interpreter;
 		this.savePolicy = savePolicy;
+		this.fireEvents = !pub;
 
 		currentlyActiveAttributes = new HashSet<String>();
 		attributes = new HashMap<String, Map<Object, Object>>();
 		reverse =  new HashMap<String, Map<Object, Set<Object>>>();
-		rows = new HashMap<Object, CyRow>();
+		rows = new HashMap<Object, CyRow>(10000, 0.5f);
 		types = new HashMap<String, CyColumn>();
 
 		VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, true);
@@ -447,7 +452,8 @@ public final class CyTableImpl implements CyTable {
 			rows.put(key, row);
 		}
 
-		eventHelper.addEventPayload((CyTable)this, (Object)key, RowsCreatedEvent.class);
+		if (fireEvents)
+			eventHelper.addEventPayload((CyTable)this, (Object)key, RowsCreatedEvent.class);
 		return row;
 	}
 
@@ -572,7 +578,10 @@ public final class CyTableImpl implements CyTable {
 			}
 		}
 
-		eventHelper.addEventPayload((CyTable)this, new RowSetRecord(getRow(key),columnName,newValue, newRawValue), RowsSetEvent.class);
+		if (fireEvents)
+			eventHelper.addEventPayload((CyTable)this,
+			                            new RowSetRecord(getRow(key), columnName, newValue, newRawValue),
+			                            RowsSetEvent.class);
 
 	}
 
@@ -642,7 +651,10 @@ public final class CyTableImpl implements CyTable {
 			}
 		}
 
-		eventHelper.addEventPayload((CyTable)this, new RowSetRecord(getRow(key),columnName,newValue, value), RowsSetEvent.class);
+		if (fireEvents)
+			eventHelper.addEventPayload((CyTable)this,
+			                            new RowSetRecord(getRow(key),columnName,newValue, value),
+			                            RowsSetEvent.class);
 	}
 
 	synchronized private void unSetX(final Object key, final String columnName) {
@@ -665,7 +677,11 @@ public final class CyTableImpl implements CyTable {
 				keyToValueMap.remove(key);
 			}
 		}
-		eventHelper.addEventPayload((CyTable)this, new RowSetRecord(getRow(key),columnName,null,null), RowsSetEvent.class);
+
+		if (fireEvents)
+			eventHelper.addEventPayload((CyTable)this,
+			                            new RowSetRecord(getRow(key), columnName, null, null),
+			                            RowsSetEvent.class);
 	}
 
 	private void removeFromReverseMap(final String columnName, final Object key, final Object value) {
@@ -939,6 +955,12 @@ public final class CyTableImpl implements CyTable {
 	@Override
 	public void setSavePolicy(SavePolicy policy) {
 		savePolicy = policy;
+	}
+
+	@Override
+	public void handleEvent(final TableAddedEvent e) {
+		if (e.getTable() == this)
+			fireEvents = true;
 	}
 	
 	private final class InternalRow implements CyRow {

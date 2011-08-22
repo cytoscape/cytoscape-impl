@@ -406,6 +406,7 @@
 		class="org.cytoscape.io.internal.read.expression.ExpressionReaderFactory">
 		<constructor-arg ref="expressionFilter" />
 		<constructor-arg ref="cyTableFactoryServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
 	</bean>
 
 	<bean id="attrsDataReaderFactory"
@@ -414,6 +415,7 @@
 		<constructor-arg ref="cyTableFactoryServiceRef" />
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
 		<constructor-arg ref="cyNetworkManagerServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
 	</bean>
 
 	<bean id="sifNetworkViewReaderFactory"
@@ -606,6 +608,7 @@
 		<constructor-arg value="true"/>
 		<constructor-arg ref="cyTableFactoryServiceRef"/>
 		<constructor-arg ref="compilerServiceRef"/>
+		<constructor-arg ref="cyTableManagerServiceRef"/>
 	</bean>
 
 	<!-- All Reader Managers -->

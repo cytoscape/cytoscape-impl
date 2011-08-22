@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2006, 2007, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2006, 2007, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -77,9 +77,8 @@ class QuickFindImpl implements QuickFind {
 	 */
 	public synchronized void addNetwork(CyNetwork network, TaskMonitor taskMonitor) {
 		// check args - short circuit if necessary
-		if (network.getNodeCount() == 0) {
+		if (network.getNodeCount() == 0)
 			return;
-		}
 
 		//  Use default index specified by network, if available.
 		//  Otherwise, index by UNIQUE_IDENTIFIER.
@@ -87,9 +86,8 @@ class QuickFindImpl implements QuickFind {
 
 		CyTable nodeTable = null;
 		CyNode node = network.getNodeList().iterator().next();
-		if (node != null) {
+		if (node != null)
 			nodeTable = node.getCyRow().getTable();
-		}
 		
 		if (controllingAttribute == null) {
 			//  Small hack to index BioPAX Networks by default with node_label.
@@ -100,14 +98,12 @@ class QuickFindImpl implements QuickFind {
 				controllingAttribute = QuickFind.UNIQUE_IDENTIFIER;
 		}
 
-		if (controllingAttribute.equalsIgnoreCase(QuickFind.UNIQUE_IDENTIFIER)||
-		    controllingAttribute.equalsIgnoreCase(QuickFind.INDEX_ALL_ATTRIBUTES)||
-		    controllingAttribute.equalsIgnoreCase("biopax.node_label")){
-			// do nothing
-		}
-		else if (isNullAttribute(nodeTable, controllingAttribute)){
+		if (controllingAttribute.equalsIgnoreCase(QuickFind.UNIQUE_IDENTIFIER)
+		    || controllingAttribute.equalsIgnoreCase(QuickFind.INDEX_ALL_ATTRIBUTES)
+		    || controllingAttribute.equalsIgnoreCase("biopax.node_label"))
+			/* Do nothing! */;
+		else if (isNullAttribute(nodeTable, controllingAttribute))
 			return;
-		}
 
 		//  Determine maxProgress
 		currentProgress = 0;
@@ -202,8 +198,8 @@ class QuickFindImpl implements QuickFind {
 	 */
 	public synchronized GenericIndex reindexNetwork(CyNetwork cyNetwork, int indexType,
 	                                                String controllingAttribute,
-	                                                TaskMonitor taskMonitor) {
-        
+	                                                TaskMonitor taskMonitor)
+	{
 		// If all the values for the controllingAttribute are NULL, return null
 		CyTable table;
 		if (indexType == QuickFind.INDEX_NODES) {

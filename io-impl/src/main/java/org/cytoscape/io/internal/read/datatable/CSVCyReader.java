@@ -18,6 +18,7 @@ import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskMonitor;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -31,19 +32,21 @@ public class CSVCyReader implements CyTableReader {
 	private final boolean handleEquations;
 	private final CyTableFactory tableFactory;
 	private final EquationCompiler compiler;
+	private final CyTableManager tableManager;
 
 	private boolean isCanceled;
 	private CyTable table;
 
 	public CSVCyReader(final InputStream stream, final boolean readSchema,
 			   final boolean handleEquations, final CyTableFactory tableFactory,
-			   final EquationCompiler compiler)
+			   final EquationCompiler compiler, final CyTableManager tableManager)
 	{
 		this.stream          = stream;
 		this.readSchema      = readSchema;
 		this.handleEquations = handleEquations;
 		this.tableFactory    = tableFactory;
 		this.compiler        = compiler;
+		this.tableManager    = tableManager;
 	}
 
 	@Override
@@ -56,6 +59,7 @@ public class CSVCyReader implements CyTableReader {
 		CSVReader reader = new CSVReader(new InputStreamReader(stream));
 		TableInfo info = readHeader(reader);
 		table = createTable(reader, info);
+		tableManager.addTable(table);
 	}
 
 	CyTable createTable(CSVReader reader, TableInfo info) throws IOException, SecurityException {

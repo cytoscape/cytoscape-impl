@@ -1,5 +1,6 @@
 package org.cytoscape.io.internal.util;
 
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collection;
@@ -19,8 +20,8 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 
-public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDestroyedListener {
 
+public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDestroyedListener {
 	public static final String RENDERER_TABLE_TITLE = "UnrecognizedRenderer";
 	public static final String VISUAL_PROPERTY_TABLE_TITLE = "UnrecognizedVisualProperties";
 
@@ -154,10 +155,9 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 		 * - "target_type"(String): One of "network", "node", "edge"
 		 */
 		CyTable rendererTbl = tableFactory.createTable(RENDERER_TABLE_TITLE + netViewId,
-													   RENDERER_TABLE_PK,
-													   Long.class,
-													   false,
-													   true);
+		                                               RENDERER_TABLE_PK, Long.class, false,
+		                                               true);
+		tableMgr.addTable(rendererTbl);
 		rendererTbl.setSavePolicy(SavePolicy.DO_NOT_SAVE);
 		rendererTbl.createColumn("att_name", String.class, false);
 		rendererTbl.createColumn("target_type", String.class, false);
@@ -171,10 +171,9 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 		 * - "att_id" (Long): The "att_name_vc" virtual column join key
 		 */
 		CyTable vpTbl = tableFactory.createTable(VISUAL_PROPERTY_TABLE_TITLE + netViewId,
-												 VISUAL_PROPERTY_TABLE_PK,
-												 Long.class,
-												 false,
-												 true);
+		                                         VISUAL_PROPERTY_TABLE_PK, Long.class, false,
+		                                         true);
+		tableMgr.addTable(vpTbl);
 		vpTbl.setSavePolicy(SavePolicy.DO_NOT_SAVE);
 		vpTbl.createColumn("att_id", Long.class, false);
 		vpTbl.createColumn("att_value", String.class, false);

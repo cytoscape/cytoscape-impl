@@ -1,13 +1,5 @@
-
 /*
- Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
-
- The Cytoscape Consortium is:
- - Institute for Systems Biology
- - University of California San Diego
- - Memorial Sloan-Kettering Cancer Center
- - Institut Pasteur
- - Agilent Technologies
+ Copyright (c) 2006, 2007, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -33,8 +25,8 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
 package org.cytoscape.filter.internal.quickfind.plugin;
+
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -500,7 +492,7 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 		}
 		
 		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
-        if (cyNetwork.getNodeList() != null) {
+		if (cyNetwork.getNodeList() != null) {
 			// this network may not have been added to quick find - 
 			// this can happen if an empty network was added
 			if (quickFind.getIndex(cyNetwork) == null) {
@@ -512,16 +504,16 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 					};
 				thread.start();
 			}
-            //  Only re-index if network has fewer than REINDEX_THRESHOLD nodes
-            //  I put this in to prevent quick find from auto re-indexing
-            //  very large networks.  
-            else if (cyNetwork.getNodeCount() < QuickFindPlugIn.REINDEX_THRESHOLD) {
-                //  Run Indexer in separate background daemon thread.
-                Thread thread = new Thread() {
-                    public void run() {
-                        GenericIndex index = quickFind.getIndex(cyNetwork);
-                        quickFind.reindexNetwork(cyNetwork, index.getIndexType(),
-                                index.getControllingAttribute(), new TaskMonitorBase());
+			//  Only re-index if network has fewer than REINDEX_THRESHOLD nodes
+			//  I put this in to prevent quick find from auto re-indexing
+			//  very large networks.  
+			else if (cyNetwork.getNodeCount() < QuickFindPlugIn.REINDEX_THRESHOLD) {
+				//  Run Indexer in separate background daemon thread.
+				Thread thread = new Thread() {
+						public void run() {
+							GenericIndex index = quickFind.getIndex(cyNetwork);
+							quickFind.reindexNetwork(cyNetwork, index.getIndexType(),
+										 index.getControllingAttribute(), new TaskMonitorBase());
                     }
                 };
                 thread.start();

@@ -58,10 +58,10 @@ public class CyTableTest extends AbstractCyTableTest {
 	public void setUp() {
 		eventHelper = new DummyCyEventHelper();
 		final Interpreter interpreter = new InterpreterImpl();
-		table = new CyTableImpl("homer", Identifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
+		table = new CyTableImpl("homer", Identifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					eventHelper, interpreter);
 		attrs = table.getRow(1L);
-		table2 = new CyTableImpl("marge", Identifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
+		table2 = new CyTableImpl("marge", Identifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					 eventHelper, interpreter);
 	}
 

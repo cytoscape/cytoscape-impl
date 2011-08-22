@@ -1,5 +1,6 @@
 package org.cytoscape.tableimport.internal;
 
+
 import java.io.InputStream;
 import javax.swing.JPanel;
 import org.cytoscape.event.CyEventHelper;
@@ -8,6 +9,7 @@ import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.ui.ImportAttributeTableTask;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.view.model.CyNetworkView;
@@ -17,21 +19,23 @@ import org.cytoscape.work.ProvidesGUI;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
+
 public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetworkReader {
-
 	private ImportTablePanel importTablePanel;
-
 	private final InputStream is;
 	private final String fileType;
 	private CyNetwork[] networks;
 	private final String inputName;
+	private final CyTableManager tableManager;
 
-	public ImportNetworkTableReaderTask(final InputStream is, final String fileType, final String inputName) { 
+	public ImportNetworkTableReaderTask(final InputStream is, final String fileType,
+					    final String inputName, final CyTableManager tableManager)
+	{
+		this.is           = is;
+		this.fileType     = fileType;
+		this.inputName    = inputName;
+		this.tableManager = tableManager;
 
-		this.is = is;
-		this.fileType = fileType;
-		this.inputName = inputName;		
-		
 		this.importTablePanel = null;
 	}
 
@@ -39,8 +43,10 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	public JPanel getGUI() {
 		if (importTablePanel == null) {
 			try {
-				this.importTablePanel = 
-					new ImportTablePanel(ImportTablePanel.NETWORK_IMPORT, is, fileType, inputName,null, null, null, null, null, null);
+				importTablePanel =
+					new ImportTablePanel(ImportTablePanel.NETWORK_IMPORT, is,
+					                     fileType, inputName,null, null, null,
+					                     null, null, null, tableManager);
 			} catch (Exception e) {
 				throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 			}
@@ -60,7 +66,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 		this.importTablePanel.importTable();
 
 		//monitor.setStatusMessage("Mapping data table to local ones...");
-				
+
 		this.insertTasksAfterCurrentTask(importTablePanel.getLoadTask());
 
 		monitor.setProgress(1.0);

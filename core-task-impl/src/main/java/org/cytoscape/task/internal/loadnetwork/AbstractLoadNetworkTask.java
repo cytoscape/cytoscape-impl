@@ -81,14 +81,17 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 		if (viewReader == null)
 			throw new IllegalArgumentException("Could not read file: Network View Reader is null.");
 
+if (taskMonitor != null) {
 		taskMonitor.setStatusMessage("Reading in Network Data...");
 		taskMonitor.setProgress(0.0);
 		taskMonitor.setStatusMessage("Creating Cytoscape Network...");
+}
 
 		System.out.println("inserting generate network task");
 		insertTasksAfterCurrentTask(viewReader, new GenerateNetworkViewsTask(name, viewReader, networkManager,
 				networkViewManager, namingUtil, viewThreshold));
 		System.out.println("finished inserting generate network task");
+if (taskMonitor != null)
 		taskMonitor.setProgress(1.0);
 	}
 
@@ -126,7 +129,7 @@ class GenerateNetworkViewsTask extends AbstractTask {
 	}
 
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-
+if (taskMonitor!=null)
 		taskMonitor.setProgress(0.0);
 				
 		final CyNetwork[] networks = viewReader.getCyNetworks();
@@ -169,6 +172,7 @@ class GenerateNetworkViewsTask extends AbstractTask {
 					+ "  If you wish to view this network, use " + "\"Create View\" from the \"Edit\" menu.");
 		}
 
+if(taskMonitor!=null)
 		taskMonitor.setStatusMessage(sb.toString());
 	}
 }

@@ -1,5 +1,6 @@
 package org.cytoscape.tableimport.internal.reader.ontology;
 
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
@@ -14,6 +15,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.NetworkViewTestSupport;
@@ -23,21 +25,18 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class GeneAssociationReaderTest {
 
+public class GeneAssociationReaderTest {
 	private static final String GA_YEAST = "gene_association.sgd";
 
 	private CyTableFactory tableFactory;
 	private CyApplicationManager appManager;
 	private CyNetworkManager networkManager;
-
 	private CyNetwork dag;
-	
 	private TaskMonitor tm;
 
 	@Before
 	public void setUp() throws Exception {
-
 		NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 		NetworkTestSupport netSupport = new NetworkTestSupport();
 		TableTestSupport tableSupport = new TableTestSupport();
@@ -50,15 +49,13 @@ public class GeneAssociationReaderTest {
 		tm = mock(TaskMonitor.class);
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	}
-
 	@Test
 	public void gaReaderTest() throws Exception {
 		File file = new File("./src/test/resources/" + GA_YEAST);
-		GeneAssociationReader reader = new GeneAssociationReader(tableFactory, "dummy dag", file
-				.toURI().toURL().openStream(), "yeast GA");
+		GeneAssociationReader reader =
+			new GeneAssociationReader(tableFactory, "dummy dag",
+			                          file.toURI().toURL().openStream(), "yeast GA",
+			                          mock(CyTableManager.class));
 
 		
 		System.out.print("Start read: ");

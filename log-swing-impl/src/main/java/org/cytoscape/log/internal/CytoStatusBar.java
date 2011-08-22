@@ -13,9 +13,9 @@ import org.cytoscape.application.swing.CySwingApplication;
 class CytoStatusBar extends JPanel {
 	JPanel		panel;
 	JButton		statusMessage;
-	JProgressBar	memoryAvailable;
+//	JProgressBar	memoryAvailable;
 	JButton		performGC;
-	Timer		updateUITimer;
+//	Timer		updateUITimer;
 
 	long		timeSinceLastMessage = 0;
 	String		lastMessage = null;
@@ -42,11 +42,13 @@ class CytoStatusBar extends JPanel {
 		statusMessage.setHorizontalTextPosition(SwingConstants.RIGHT);
 		statusMessage.setHorizontalAlignment(SwingConstants.LEFT);
 
+/*
 		memoryAvailable = new JProgressBar();
 		memoryAvailable.setToolTipText("Amount of memory available to Cytoscape");
 		memoryAvailable.setStringPainted(true);
 		setFontSize(memoryAvailable, 8);
 		updateMemoryAvailable();
+*/
 
 		performGC = new JButton(new ImageIcon(getClass().getResource(trashIconPath)));
 		performGC.setToolTipText("Try to get more memory by performing garbage collection");
@@ -54,8 +56,8 @@ class CytoStatusBar extends JPanel {
 		performGC.setContentAreaFilled(false);
 		performGC.addActionListener(new PerformGCAction());
 
-		updateUITimer = new Timer(uiUpdateDelay, new UpdateUIAction());
-		updateUITimer.start();
+//		updateUITimer = new Timer(uiUpdateDelay, new UpdateUIAction());
+//		updateUITimer.start();
 
 		// status
 		JPanel panel1 = new JPanel(new GridBagLayout());
@@ -67,7 +69,7 @@ class CytoStatusBar extends JPanel {
 		JPanel panel2 = new JPanel(new GridBagLayout());
 		panel2.setBorder(new EtchedBorder());
 		JPanel panel3 = new JPanel(new GridBagLayout());
-		panel3.add(memoryAvailable, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+//		panel3.add(memoryAvailable, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		panel3.add(performGC, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		panel2.add(panel3, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		panel.add(panel2, new GridBagConstraints(1, 0, 1, 1, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 1, 2, 2), 0, 0));
@@ -148,6 +150,7 @@ class CytoStatusBar extends JPanel {
 		}
 	}
 
+/*
 	void updateMemoryAvailable() {
 		long free = Runtime.getRuntime().freeMemory();
 		long total = Runtime.getRuntime().totalMemory();
@@ -155,11 +158,11 @@ class CytoStatusBar extends JPanel {
 		memoryAvailable.setValue((int) (free * 100 / total));
 		memoryAvailable.setString(formatMemory(free, total));
 	}
-
+*/
 	class UpdateUIAction implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			updateStatusMessage();
-			updateMemoryAvailable();
+//			updateMemoryAvailable();
 		}
 	}
 }

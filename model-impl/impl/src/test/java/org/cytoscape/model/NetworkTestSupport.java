@@ -25,8 +25,9 @@ public class NetworkTestSupport {
 	public NetworkTestSupport() {
 		eventHelper = new DummyCyEventHelper();
 		tableMgr = mock(CyTableManagerImpl.class); 
-		CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper,tableMgr, mock(Interpreter.class));
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		final CyTableFactoryImpl tableFactory =
+			new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
 		networkFactory =
 			new CyNetworkFactoryImpl(eventHelper, tableMgr, tableFactory,
 			                         serviceRegistrar);

@@ -46,6 +46,7 @@ final class DeleteTableEdit extends CyAbstractEdit {
 						 table.getPrimaryKey().getType(), /* public = */ false,
 						 /* isMutable = */ true);
 		table.swap(newTable);
+		tableManager.addTable(table);
 		table = newTable;
 	}
 }

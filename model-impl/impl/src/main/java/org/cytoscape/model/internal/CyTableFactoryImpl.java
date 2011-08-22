@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2008, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -32,12 +32,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 /**
@@ -47,23 +49,23 @@ import org.cytoscape.event.CyEventHelper;
  */
 public class CyTableFactoryImpl implements CyTableFactory {
 	private final CyEventHelper help;
-	private final CyTableManagerImpl tm;
 	private final Interpreter interpreter;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CyTableFactoryImpl(final CyEventHelper help, final CyTableManagerImpl tm,
-				  final Interpreter interpreter)
+	public CyTableFactoryImpl(final CyEventHelper help, final Interpreter interpreter,
+	                          final CyServiceRegistrar serviceRegistrar)
 	{
-		this.help = help;
-		this.tm = tm;
-		this.interpreter = interpreter;
+		this.help             = help;
+		this.interpreter      = interpreter;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public CyTable createTable(final String name, final String primaryKey, final Class<?> primaryKeyType,
 				   final boolean pub, final boolean isMutable)
 	{
-		CyTable table = new CyTableImpl(name, primaryKey, primaryKeyType, pub, isMutable,
-						SavePolicy.SESSION_FILE, help, interpreter);
-		tm.addTable(table);
+		final CyTable table = new CyTableImpl(name, primaryKey, primaryKeyType, pub, isMutable,
+		                                      SavePolicy.SESSION_FILE, help, interpreter);
+		serviceRegistrar.registerAllServices(table, new Properties());
 		return table;
 	}
 }

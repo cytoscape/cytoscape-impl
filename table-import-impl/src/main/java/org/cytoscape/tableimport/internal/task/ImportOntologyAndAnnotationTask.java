@@ -1,5 +1,6 @@
 package org.cytoscape.tableimport.internal.task;
 
+
 import java.io.InputStream;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -8,6 +9,7 @@ import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationReader;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
@@ -15,21 +17,25 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class ImportOntologyAndAnnotationTask extends AbstractTask {
-	
 	private static final Logger logger = LoggerFactory.getLogger(ImportOntologyAndAnnotationTask.class);
 	
 	private final InputStreamTaskFactory factory;
 	private final CyNetworkManager manager;
 	private final String ontologyDagName;
-	final CyTableFactory tableFactory;
-	
+	private final CyTableFactory tableFactory;
 	private final InputStream gaStream;
-	
 	private final String gaTableName;
+	private final CyTableManager tableManager;
 	
-	ImportOntologyAndAnnotationTask(final CyNetworkManager manager, final InputStreamTaskFactory factory, InputStream is, String ontologyDagName,
-			final CyTableFactory tableFactory, final InputStream gaStream, final String tableName) {
+	ImportOntologyAndAnnotationTask(final CyNetworkManager manager,
+	                                final InputStreamTaskFactory factory, final InputStream is,
+	                                final String ontologyDagName,
+	                                final CyTableFactory tableFactory,
+	                                final InputStream gaStream, final String tableName,
+	                                final CyTableManager tableManager)
+	{
 		this.factory = factory;
 		this.manager = manager;
 		this.ontologyDagName = ontologyDagName;
@@ -37,6 +43,7 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 		
 		this.gaStream = gaStream;
 		this.gaTableName = tableName;
+		this.tableManager = tableManager;
 		
 		this.factory.setInputStream(is, ontologyDagName);
 	}
@@ -46,7 +53,9 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 		logger.debug("Start");
 		Task loadOBOTask = factory.getTaskIterator().next();
 		
-		final GeneAssociationReader gaReader = new GeneAssociationReader(tableFactory, ontologyDagName, gaStream, gaTableName);
+		final GeneAssociationReader gaReader =
+			new GeneAssociationReader(tableFactory, ontologyDagName, gaStream,
+			                          gaTableName, tableManager);
 		
 		insertTasksAfterCurrentTask(new MapGeneAssociationTask(gaReader, manager));
 		insertTasksAfterCurrentTask(gaReader);

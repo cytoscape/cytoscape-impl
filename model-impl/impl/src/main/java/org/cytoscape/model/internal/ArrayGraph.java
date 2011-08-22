@@ -75,7 +75,6 @@ public class ArrayGraph implements CyRootNetwork {
 	private static final int ROOT = 0;
 
 	private final long suid;
-
 	private int numSubNetworks;
 	private int nodeCount;
 	private int edgeCount;
@@ -158,6 +157,16 @@ public class ArrayGraph implements CyRootNetwork {
 		tableMgr.setTableMap(CyNetwork.class, base, netAttrMgr);
 		tableMgr.setTableMap(CyNode.class, base, nodeAttrMgr);
 		tableMgr.setTableMap(CyEdge.class, base, edgeAttrMgr);
+	}
+
+	/** Registers the network, node, and edge tables with the table mananger. */
+	void registerAllTables() {
+		for (final CyTable table : netAttrMgr.values())
+			tableMgr.addTable(table);
+		for (final CyTable table : nodeAttrMgr.values())
+			tableMgr.addTable(table);
+		for (final CyTable table : edgeAttrMgr.values())
+			tableMgr.addTable(table);
 	}
 
 	/**

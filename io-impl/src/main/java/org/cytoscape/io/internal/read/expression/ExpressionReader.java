@@ -47,6 +47,7 @@ import org.cytoscape.io.internal.read.AbstractTableReader;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.work.TaskMonitor;
@@ -156,10 +157,14 @@ public class ExpressionReader extends AbstractTableReader {
 	Vector<Vector<mRNAMeasurement>> allMeasurements;
 	private boolean isCancelled;
 	private CyTable table;
+	private final CyTableManager tableManager;
 
-	public ExpressionReader(final InputStream stream, final CyTableFactory tableFactory) {
+	public ExpressionReader(final InputStream stream, final CyTableFactory tableFactory,
+	                        final CyTableManager tableManager)
+	{
 		super(stream, tableFactory);
 		
+		this.tableManager = tableManager;
 		isCancelled = false;
 		table = null;
 		numGenes = 0;
@@ -729,6 +734,8 @@ public class ExpressionReader extends AbstractTableReader {
 				}
 			}
 		}
+
+		tableManager.addTable(table);
 	}
 
 	@Override

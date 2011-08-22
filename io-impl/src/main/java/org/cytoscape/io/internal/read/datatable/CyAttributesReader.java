@@ -1,5 +1,6 @@
 package org.cytoscape.io.internal.read.datatable;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,16 +20,18 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.MapNetworkAttrTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CyAttributesReader extends AbstractTask implements CyTableReader {
 
+public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private static final Logger logger = LoggerFactory.getLogger(CyAttributesReader.class);
 
 	private static final byte TYPE_BOOLEAN = 1;
@@ -61,17 +64,19 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private InputStream inputStream;
 
 	private CyTable[] cyTables;
-	private CyApplicationManager appMgr;
-	private CyNetworkManager netMgr;
+	private final CyApplicationManager appMgr;
+	private final CyNetworkManager netMgr;
+	private final CyTableManager tableManager;
 
-	@Tunable(description = "Map data table to:")
+	@Tunable(description = "Map table to:")
 	public final ListSingleSelection<TableType> dataTypeOptions;
 
 	private static int nextTableNumber = 1;
 
-	public CyAttributesReader(InputStream inputStream, CyTableFactory tableFactory,
-			CyApplicationManager appMgr, CyNetworkManager netMgr) {
-
+	public CyAttributesReader(final InputStream inputStream, final CyTableFactory tableFactory,
+				  final CyApplicationManager appMgr, final CyNetworkManager netMgr,
+				  final CyTableManager tableManager)
+	{
 		lineNum = 0;
 		doDecoding = Boolean.valueOf(System.getProperty(DECODE_PROPERTY, "true"));
 
@@ -79,9 +84,10 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 		this.appMgr = appMgr;
 		this.netMgr = netMgr;
 		this.inputStream = inputStream;
+		this.tableManager = tableManager;
 
 		final List<TableType> options = new ArrayList<TableType>();
-		if ( netMgr.getNetworkSet().size() > 0 ) {
+		if (netMgr.getNetworkSet().size() > 0 ) {
 			for(TableType type: TableType.values())
 				options.add(type);
 		} else
@@ -99,6 +105,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 
 		try {
 			loadAttributesInternal(table);
+			tableManager.addTable(table);
 		} finally {
 			if (inputStream != null) {
 				inputStream.close();

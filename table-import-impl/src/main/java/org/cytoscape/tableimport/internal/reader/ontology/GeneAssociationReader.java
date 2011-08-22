@@ -26,6 +26,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.tableimport.internal.util.OntologyUtil;
 import org.cytoscape.task.MapNetworkAttrTask;
@@ -101,19 +102,22 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private final String ontologyDagName;
 	private List<String> termIDList;
+	private final CyTableManager tableManager;
 
 	/**
 	 * Package protected because only in unit testing do we need to specify the
 	 * taxon resource file. Normal operation should use one of the other
 	 * constructors.
 	 */
-	public GeneAssociationReader(final CyTableFactory tableFactory, final String ontologyDagName, final InputStream is,
-			final String tableName) throws IOException {
-
+	public GeneAssociationReader(final CyTableFactory tableFactory, final String ontologyDagName,
+	                             final InputStream is, final String tableName,
+	                             final CyTableManager tableManager) throws IOException
+	{
 		logger.debug("DAG Manager key = " + ontologyDagName);
 		this.ontologyDagName = ontologyDagName;
 		this.tableFactory = tableFactory;
 		this.is = is;
+		this.tableManager = tableManager;
 
 		this.tableName = tableName;
 
@@ -258,6 +262,8 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 		tables = new CyTable[1];
 		tables[0] = table;
+
+		tableManager.addTable(table);
 
 		// Map terms to existing networks
 		// if (netMgr.getNetworkSet().size() > 0)

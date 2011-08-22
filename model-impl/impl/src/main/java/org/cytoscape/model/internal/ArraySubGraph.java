@@ -402,8 +402,10 @@ class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 	@Override
 	public void handleEvent(final NetworkAddedEvent e) {
-		if (e.getNetwork() == this)
+		if (e.getNetwork() == this) {
+			parent.registerAllTables();
 			fireAddedNodesAndEdgesEvents = true;
+		}
 	}
 
 	/**

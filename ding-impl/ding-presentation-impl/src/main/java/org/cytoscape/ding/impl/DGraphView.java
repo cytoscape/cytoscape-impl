@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2006, 2007, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2006, 2007, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -432,10 +432,12 @@ public class DGraphView implements RenderingEngine<CyNetwork>, GraphView,
 		this.manager = manager;
 
 		final CyTable nodeCAM = dataFactory.createTable("node view", Identifiable.SUID, Long.class, false, false);
+		tableMgr.addTable(nodeCAM);
 		nodeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.getTableMap(CyNode.class, networkModel).put("VIEW", nodeCAM);
 
 		final CyTable edgeCAM = dataFactory.createTable("edge view", Identifiable.SUID, Long.class, false, false);
+		tableMgr.addTable(edgeCAM);
 		edgeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.getTableMap(CyEdge.class, networkModel).put("VIEW", edgeCAM);
 

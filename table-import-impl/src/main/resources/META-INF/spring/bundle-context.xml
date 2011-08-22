@@ -123,6 +123,7 @@
 		<constructor-arg ref="oboReaderFactory" />
 		<constructor-arg ref="cyNetworkManagerServiceRef" />
 		<constructor-arg ref="cyDataTableFactoryServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
 	</bean>
 
 	<bean id="networkTableFilter_txt" class="org.cytoscape.io.BasicCyFileFilter">
@@ -177,6 +178,7 @@
 		<constructor-arg value=".txt" />
 		<constructor-arg ref="cyNetworkNamingServiceRef" />
 		<constructor-arg ref="cyNetworkViewManagerServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
 	</bean>
 
 	<bean id="importNetworkTableReaderFactory_xls"
@@ -193,6 +195,6 @@
 		<constructor-arg value=".xls" />
 		<constructor-arg ref="cyNetworkNamingServiceRef" />
 		<constructor-arg ref="cyNetworkViewManagerServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
 	</bean>
-
 </beans>

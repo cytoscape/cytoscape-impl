@@ -1,12 +1,5 @@
 /*
- Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
-
- The Cytoscape Consortium is:
- - Institute for Systems Biology
- - University of California San Diego
- - Memorial Sloan-Kettering Cancer Center
- - Institut Pasteur
- - Agilent Technologies
+ Copyright (c) 2006, 2007, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -31,8 +24,9 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
+*/
 package org.cytoscape.io.webservice.biomart;
+
 
 import java.util.HashSet;
 import java.util.Set;
@@ -49,27 +43,23 @@ import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskIterator;
+
 
 /**
  * Biomart Web Service Client.
  * 
  */
-public class BiomartClient extends AbstractWebServiceClient implements
-		TableImportWebServiceClient {
-
+public class BiomartClient extends AbstractWebServiceClient implements TableImportWebServiceClient {
 	private final CyTableFactory tableFactory;
-
 	private final BiomartRestClient restClient;
-
 	private BiomartAttrMappingPanel gui;
-
 	private ImportTableTask importTask;
-
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;
-	
 	private final CySwingApplication app;
+	private final CyTableManager tableManager;
 
 	/**
 	 * Creates a new Biomart Client object.
@@ -78,18 +68,19 @@ public class BiomartClient extends AbstractWebServiceClient implements
 	 * @throws ConfigurationException
 	 */
 	public BiomartClient(final String displayName, final String description,
-			final BiomartRestClient restClient,
-			final CyTableFactory tableFactory,
-			final CyNetworkManager networkManager,
-			final CyApplicationManager applicationManager, final CySwingApplication app) {
+	                     final BiomartRestClient restClient, final CyTableFactory tableFactory,
+	                     final CyNetworkManager networkManager,
+	                     final CyApplicationManager applicationManager,
+	                     final CySwingApplication app, final CyTableManager tableManager)
+	{
 		super(restClient.getBaseURL(), displayName, description);
 
-		this.tableFactory = tableFactory;
-		this.restClient = restClient;
-
-		this.networkManager = networkManager;
+		this.tableFactory       = tableFactory;
+		this.restClient         = restClient;
+		this.networkManager     = networkManager;
 		this.applicationManager = applicationManager;
-		this.app = app;
+		this.app                = app;
+		this.tableManager       = tableManager;
 
 		// TODO: set optional parameters (Tunables?)
 	}
@@ -119,7 +110,8 @@ public class BiomartClient extends AbstractWebServiceClient implements
 
 		final BiomartQuery query = this.gui.getTableImportQuery();
 
-		importTask = new ImportTableTask(restClient, query, tableFactory, networkManager, applicationManager, app.getJFrame());
+		importTask = new ImportTableTask(restClient, query, tableFactory, networkManager,
+		                                 applicationManager, app.getJFrame(), tableManager);
 
 		return new TaskIterator(importTask);
 	}

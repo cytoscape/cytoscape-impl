@@ -60,7 +60,8 @@ public class TestCyNetworkFactory {
 		Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		ArrayGraph ar =
-			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, tm, interp), serviceRegistrar, true);
+			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
+			               serviceRegistrar, true);
 		return ar; 
 	}
 
@@ -70,7 +71,8 @@ public class TestCyNetworkFactory {
 		Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		ArrayGraph ar =
-			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, tm, interp), serviceRegistrar, false);
+			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
+			               serviceRegistrar, false);
 		return ar; 
 	}
 	

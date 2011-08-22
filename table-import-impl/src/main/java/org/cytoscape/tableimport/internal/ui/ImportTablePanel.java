@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2006, 2007, 2009, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2006, 2007, 2009, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -105,6 +105,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -129,6 +130,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * MainUI for Table Import.
  *
@@ -136,7 +138,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ImportTablePanel extends JPanel implements PropertyChangeListener, TableModelListener {
-
 	private static final long serialVersionUID = 7356378931577386260L;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportTablePanel.class);
@@ -220,32 +221,38 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 	private CyProperty<Bookmarks> bookmarksProp;
 	private BookmarksUtil bkUtil;
-
 	private final InputStreamTaskFactory factory;
 	private final TaskManager taskManager;
-
 	private final CyNetworkManager manager;
-
 	private final CyTableFactory tableFactory;
+	private final CyTableManager tableManager;
 
-	public ImportTablePanel(int dialogType, final InputStream is, String fileType, String inputName,
-			final CyProperty<Bookmarks> bookmarksProp, final BookmarksUtil bkUtil, final TaskManager taskManager,
-			final InputStreamTaskFactory factory, final CyNetworkManager manager, final CyTableFactory tableFactory)
-	    throws JAXBException, IOException {
-
-		this(dialogType, is, fileType, bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory);
+	public ImportTablePanel(final int dialogType, final InputStream is, final String fileType,
+	                        final String inputName, final CyProperty<Bookmarks> bookmarksProp,
+	                        final BookmarksUtil bkUtil, final TaskManager taskManager,
+	                        final InputStreamTaskFactory factory, final CyNetworkManager manager,
+	                        final CyTableFactory tableFactory, final CyTableManager tableManager)
+	    throws JAXBException, IOException
+	{
+		this(dialogType, is, fileType, bookmarksProp, bkUtil, taskManager, factory, manager,
+		     tableFactory, tableManager);
 		this.inputName = inputName;
 	}
 
-	public ImportTablePanel(int dialogType, final InputStream is, String fileType,
-			final CyProperty<Bookmarks> bookmarksProp, final BookmarksUtil bkUtil, final TaskManager taskManager,
-			final InputStreamTaskFactory factory, final CyNetworkManager manager, final CyTableFactory tableFactory)
-	    throws JAXBException, IOException {
-
-		this.taskManager = taskManager;
-		this.factory = factory;
-		this.manager = manager;
-		this.tableFactory = tableFactory;
+	public ImportTablePanel(final int dialogType, final InputStream is, final String fileType,
+				final CyProperty<Bookmarks> bookmarksProp,
+				final BookmarksUtil bkUtil, final TaskManager taskManager,
+				final InputStreamTaskFactory factory, final CyNetworkManager manager,
+				final CyTableFactory tableFactory, final CyTableManager tableManager)
+	    throws JAXBException, IOException
+	{
+		this.bookmarksProp = null;
+		this.bkUtil        = null;
+		this.taskManager   = taskManager;
+		this.factory       = factory;
+		this.manager       = manager;
+		this.tableFactory  = tableFactory;
+		this.tableManager  = tableManager;
 
 		if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
 			if (bookmarksProp == null)
@@ -648,7 +655,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 
 		if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
-			panelBuilder = new OntologyPanelBuilder(this, bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory);
+			panelBuilder = new OntologyPanelBuilder(this, bookmarksProp, bkUtil,
+			                                        taskManager, factory, manager,
+			                                        tableFactory, tableManager);
 			panelBuilder.buildPanel();
 		}
 
@@ -2523,7 +2532,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private void loadAnnotation(TextTableReader reader, String source) {
 
 		// Create loadAnnotation Task
-		final ImportAttributeTableTaskFactory factory = new ImportAttributeTableTaskFactory(reader);
+		final ImportAttributeTableTaskFactory factory =
+			new ImportAttributeTableTaskFactory(reader, tableManager);
 		this.loadTask = factory.getTaskIterator().next();
 		//ImportAttributeTableTaskFactory taskFactory = new ImportAttributeTableTaskFactory(task);
 		//CytoscapeServices.guiTaskManagerServiceRef.execute(taskFactory);

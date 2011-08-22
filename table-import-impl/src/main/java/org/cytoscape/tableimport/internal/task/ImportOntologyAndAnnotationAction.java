@@ -16,6 +16,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -24,8 +25,8 @@ import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 
+public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	private static final long serialVersionUID = 3000065764000826333L;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportOntologyAndAnnotationAction.class);
@@ -37,39 +38,44 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 
 	private final InputStreamTaskFactory factory;
 	private final TaskManager taskManager;
-	
 	private final CyNetworkManager manager;
 	private final CyTableFactory tableFactory;
+	private final CyTableManager tableManager;
 
 	public ImportOntologyAndAnnotationAction(final CyApplicationManager appManager,
-			final CyProperty<Bookmarks> bookmarksProp, final BookmarksUtil bkUtil, final TaskManager taskManager,
-			final InputStreamTaskFactory factory, final CyNetworkManager manager, final CyTableFactory tableFactory) {
+	                                         final CyProperty<Bookmarks> bookmarksProp,
+	                                         final BookmarksUtil bkUtil,
+	                                         final TaskManager taskManager,
+	                                         final InputStreamTaskFactory factory,
+	                                         final CyNetworkManager manager,
+	                                         final CyTableFactory tableFactory,
+	                                         final CyTableManager tableManager)
+	{
 		super("Import Ontology and Annotation...", appManager);
 		setPreferredMenu("File.Import");
 
 		this.bookmarksProp = bookmarksProp;
-		this.bkUtil = bkUtil;
-		
-		this.taskManager = taskManager;
-		this.factory = factory;
-		
-		this.manager = manager;
-		
+		this.bkUtil        = bkUtil;
+
+		this.taskManager  = taskManager;
+		this.factory      = factory;
+		this.manager      = manager;
 		this.tableFactory = tableFactory;
+		this.tableManager = tableManager;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-
 		final JDialog dialog = layout();
 
 		try {
-			ontologyPanel = new ImportTablePanel(ImportTablePanel.ONTOLOGY_AND_ANNOTATION_IMPORT, null, null,
-					bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory);
+			ontologyPanel =
+				new ImportTablePanel(ImportTablePanel.ONTOLOGY_AND_ANNOTATION_IMPORT,
+				                     null, null, bookmarksProp, bkUtil, taskManager,
+				                     factory, manager, tableFactory, tableManager);
 			dialog.add(ontologyPanel, BorderLayout.CENTER);
 			dialog.pack();
 			dialog.setLocationRelativeTo(null);
-
 		} catch (JAXBException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -24,8 +24,9 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
+*/
 package org.cytoscape.model.internal;
+
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,157 +50,157 @@ import org.cytoscape.model.events.TableDeletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * An interface describing a factory used for managing {@link CyTable} objects.
  * This class will be provided as a service through Spring/OSGi.
  */
 public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener {
-    
-    private static final Logger logger = LoggerFactory.getLogger(CyTableManagerImpl.class);
-    
-    private final CyEventHelper eventHelper;
-    private final Map<Class<?>, Map<CyNetwork, Map<String, CyTable>>> networkTableMap;
-    private final Map<Long, CyTable> tables;
+	private static final Logger logger = LoggerFactory.getLogger(CyTableManagerImpl.class);
 
-    public CyTableManagerImpl(final CyEventHelper eventHelper) {
-	this.eventHelper = eventHelper;
+	private final CyEventHelper eventHelper;
+	private final Map<Class<?>, Map<CyNetwork, Map<String, CyTable>>> networkTableMap;
+	private final Map<Long, CyTable> tables;
 
-	networkTableMap = new HashMap<Class<?>, Map<CyNetwork, Map<String, CyTable>>>();
-	networkTableMap.put(CyNetwork.class, new HashMap<CyNetwork, Map<String, CyTable>>());
-	networkTableMap.put(CyNode.class, new HashMap<CyNetwork, Map<String, CyTable>>());
-	networkTableMap.put(CyEdge.class, new HashMap<CyNetwork, Map<String, CyTable>>());
+	public CyTableManagerImpl(final CyEventHelper eventHelper) {
+		this.eventHelper = eventHelper;
 
-	tables = new HashMap<Long, CyTable>();
-    }
+		networkTableMap = new HashMap<Class<?>, Map<CyNetwork, Map<String, CyTable>>>();
+		networkTableMap.put(CyNetwork.class, new HashMap<CyNetwork, Map<String, CyTable>>());
+		networkTableMap.put(CyNode.class, new HashMap<CyNetwork, Map<String, CyTable>>());
+		networkTableMap.put(CyEdge.class, new HashMap<CyNetwork, Map<String, CyTable>>());
 
-    @Override
-    public synchronized void reset() {
-	networkTableMap.clear();
-	tables.clear();
-    }
+		tables = new HashMap<Long, CyTable>();
+	}
 
-    @Override
-    public synchronized Map<String, CyTable> getTableMap(final Class<?> graphObjectType, final CyNetwork network) {
-	if (network == null || graphObjectType == null)
-	    return null;
+	@Override
+		public synchronized void reset() {
+			networkTableMap.clear();
+			tables.clear();
+		}
 
-	Map<CyNetwork, Map<String, CyTable>> tmap = networkTableMap.get(graphObjectType);
+	@Override
+		public synchronized Map<String, CyTable> getTableMap(final Class<?> graphObjectType, final CyNetwork network) {
+			if (network == null || graphObjectType == null)
+				return null;
 
-	if (tmap == null)
-	    throw new IllegalArgumentException("no data tables of type: " + graphObjectType + " exist");
+			Map<CyNetwork, Map<String, CyTable>> tmap = networkTableMap.get(graphObjectType);
 
-	return networkTableMap.get(graphObjectType).get(network);
-    }
+			if (tmap == null)
+				throw new IllegalArgumentException("no data tables of type: " + graphObjectType + " exist");
 
-    public synchronized void setTableMap(final Class<?> graphObjectType, final CyNetwork network,
-	    final Map<String, CyTable> tm) {
-	if (network == null)
-	    throw new NullPointerException("CyNetwork is null");
-	if (graphObjectType == null)
-	    throw new NullPointerException("Type is null");
+			return networkTableMap.get(graphObjectType).get(network);
+		}
 
-	if (!networkTableMap.containsKey(graphObjectType))
-	    networkTableMap.put(graphObjectType, new HashMap<CyNetwork, Map<String, CyTable>>());
+	public synchronized void setTableMap(final Class<?> graphObjectType, final CyNetwork network,
+					     final Map<String, CyTable> tm) {
+		if (network == null)
+			throw new NullPointerException("CyNetwork is null");
+		if (graphObjectType == null)
+			throw new NullPointerException("Type is null");
 
-	Map<CyNetwork, Map<String, CyTable>> tmap = networkTableMap.get(graphObjectType);
+		if (!networkTableMap.containsKey(graphObjectType))
+			networkTableMap.put(graphObjectType, new HashMap<CyNetwork, Map<String, CyTable>>());
 
-	if (tm == null)
-	    tmap.remove(network);
-	else
-	    tmap.put(network, tm);
-    }
+		Map<CyNetwork, Map<String, CyTable>> tmap = networkTableMap.get(graphObjectType);
 
+		if (tm == null)
+			tmap.remove(network);
+		else
+			tmap.put(network, tm);
+	}
 
+	@Override
 	public synchronized void addTable(final CyTable t) {
 		if (t == null)
 			throw new NullPointerException("added table is null");
-		
+
 		tables.put(t.getSUID(), t);
 		eventHelper.fireEvent(new TableAddedEvent(this, t));
 	}
 
 
-    @Override
-    public synchronized Set<CyTableMetadata> getAllTables(final boolean includePrivate) {
-	Set<CyTableMetadata> res = new HashSet<CyTableMetadata>();
+	@Override
+	public synchronized Set<CyTableMetadata> getAllTables(final boolean includePrivate) {
+		Set<CyTableMetadata> res = new HashSet<CyTableMetadata>();
 
-	for (Long key : tables.keySet()) {
-	    if (includePrivate || tables.get(key).isPublic())
-		res.add(createMetadata(tables.get(key)));
-	}
-	return res;
-    }
-
-    private CyTableMetadata createMetadata(CyTable cyTable) {
-	Class<?> entryType = null;
-	String entryNamespace = null;
-	Set<CyNetwork> networks = new HashSet<CyNetwork>();
-	for (Entry<Class<?>, Map<CyNetwork, Map<String, CyTable>>> mapEntry : networkTableMap.entrySet()) {
-	    Class<?> type = mapEntry.getKey();
-	    Map<CyNetwork, Map<String, CyTable>> networkMap = mapEntry.getValue();
-	    for (Entry<CyNetwork, Map<String, CyTable>> entry : networkMap.entrySet()) {
-		CyNetwork network = entry.getKey();
-		for (Entry<String, CyTable> tableEntry : entry.getValue().entrySet()) {
-		    String namespace = tableEntry.getKey();
-		    CyTable table = tableEntry.getValue();
-		    if (table.getSUID() == cyTable.getSUID()) {
-		    	entryType = type;
-		    	entryNamespace = namespace;
-		    	networks.add(network);
-		    }
+		for (Long key : tables.keySet()) {
+			if (includePrivate || tables.get(key).isPublic())
+				res.add(createMetadata(tables.get(key)));
 		}
-	    }
+		return res;
 	}
-	if (networks.size() > 0) {
-	    return new CyTableMetadataImpl(entryType, cyTable, networks, entryNamespace);
+
+	private CyTableMetadata createMetadata(CyTable cyTable) {
+		Class<?> entryType = null;
+		String entryNamespace = null;
+		Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		for (Entry<Class<?>, Map<CyNetwork, Map<String, CyTable>>> mapEntry : networkTableMap.entrySet()) {
+			Class<?> type = mapEntry.getKey();
+			Map<CyNetwork, Map<String, CyTable>> networkMap = mapEntry.getValue();
+			for (Entry<CyNetwork, Map<String, CyTable>> entry : networkMap.entrySet()) {
+				CyNetwork network = entry.getKey();
+				for (Entry<String, CyTable> tableEntry : entry.getValue().entrySet()) {
+					String namespace = tableEntry.getKey();
+					CyTable table = tableEntry.getValue();
+					if (table.getSUID() == cyTable.getSUID()) {
+						entryType = type;
+						entryNamespace = namespace;
+						networks.add(network);
+					}
+				}
+			}
+		}
+		if (networks.size() > 0)
+			return new CyTableMetadataImpl(entryType, cyTable, networks, entryNamespace);
+
+		return new CyTableMetadataImpl(null, cyTable, networks, null);
 	}
-	return new CyTableMetadataImpl(null, cyTable, networks, null);
-    }
 
 	@Override
-    public synchronized CyTable getTable(final long suid) {
-	return tables.get(suid);
-    }
-
-    void deleteTableInternal(final long suid, boolean force) {
-	CyTableImpl table;
-	synchronized (this) {
-	    table = (CyTableImpl) tables.get(suid);
-	    if (table == null)
-		return;
+	public synchronized CyTable getTable(final long suid) {
+		return tables.get(suid);
 	}
 
-	eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
+	void deleteTableInternal(final long suid, boolean force) {
+		CyTableImpl table;
+		synchronized (this) {
+			table = (CyTableImpl) tables.get(suid);
+			if (table == null)
+				return;
+		}
 
-	synchronized (this) {
-	    table = (CyTableImpl) tables.get(suid);
-	    if (table == null)
-		return;
+		eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 
-	    if (!force && table.getMutability() != Mutability.MUTABLE)
-		throw new IllegalArgumentException("can't delete an immutable table!");
+		synchronized (this) {
+			table = (CyTableImpl) tables.get(suid);
+			if (table == null)
+				return;
 
-	    table.removeAllVirtColumns();
-	    tables.remove(suid);
+			if (!force && table.getMutability() != Mutability.MUTABLE)
+				throw new IllegalArgumentException("can't delete an immutable table!");
+
+			table.removeAllVirtColumns();
+			tables.remove(suid);
+		}
+		eventHelper.fireEvent(new TableDeletedEvent(this));
+
+		logger.debug("CyTable removed: table ID = " + table.getSUID());
+		table = null;
 	}
-	eventHelper.fireEvent(new TableDeletedEvent(this));
-	
-	logger.debug("CyTable removed: table ID = " + table.getSUID());
-	table = null;
-    }
 
-    @Override
-    public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-	CyNetwork network = e.getNetwork();
-	for (Class<?> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
-	    for (CyTable table : getTableMap(type, network).values()) {
-		deleteTableInternal(table.getSUID(), true);
-	    }
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
+		CyNetwork network = e.getNetwork();
+		for (Class<?> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
+			for (CyTable table : getTableMap(type, network).values()) {
+				deleteTableInternal(table.getSUID(), true);
+			}
+		}
 	}
-    }
 
-    @Override
+	@Override
 	public void deleteTable(long suid) {
-	deleteTableInternal(suid, false);
-    }
+		deleteTableInternal(suid, false);
+	}
 }

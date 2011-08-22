@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2006, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -33,6 +33,7 @@ import java.io.InputStream;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 
 
 public abstract class AbstractTableReaderFactory implements InputStreamTaskFactory {
@@ -41,20 +42,28 @@ public abstract class AbstractTableReaderFactory implements InputStreamTaskFacto
 	protected InputStream inputStream;
 	protected String inputName;
 	protected final CyTableFactory tableFactory;
+	protected final CyTableManager tableManager;
 
-	public AbstractTableReaderFactory(CyFileFilter filter, CyTableFactory tableFactory) {
+	public AbstractTableReaderFactory(final CyFileFilter filter,
+	                                  final CyTableFactory tableFactory,
+	                                  final CyTableManager tableManager)
+	{
 		if (filter == null)
-			throw new NullPointerException("filter is null");
+			throw new NullPointerException("filter is null!");
 		this.filter = filter;
 
 		if (tableFactory == null)
-			throw new NullPointerException("tableFactory is null");
+			throw new NullPointerException("tableFactory is null!");
 		this.tableFactory = tableFactory;
+
+		if (tableManager == null)
+			throw new NullPointerException("tableManager is null!");
+		this.tableManager = tableManager;
 	}
 
 	public void setInputStream(InputStream is, String in) {
 		if (is == null)
-			throw new NullPointerException("Input stream is null");
+			throw new NullPointerException("Input stream is null!");
 		inputStream = is;
 		inputName = in;
 	}

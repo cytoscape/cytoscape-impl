@@ -61,7 +61,8 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		goodNetwork =
 			new ArrayGraph(eh, mgrImpl,
-				       new CyTableFactoryImpl(eh, mgrImpl, interpreter), serviceRegistrar, true).getBaseNetwork();
+			               new CyTableFactoryImpl(eh, interpreter, serviceRegistrar),
+			               serviceRegistrar, true).getBaseNetwork();
 	}
 
 	@After
@@ -69,16 +70,17 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		mgr = null;
 		goodNetwork = null;
 	}
-
+ 
 	@Test
 	public void immutableTableTest() {
+		mgr.addTable(goodNetwork.getDefaultNodeTable());
 		boolean exceptionWasThrown = false;
 		try {
 			mgr.deleteTable(goodNetwork.getDefaultNodeTable().getSUID());
 		} catch (IllegalArgumentException e) {
 			exceptionWasThrown = true;
 		}
-		assertTrue(exceptionWasThrown);
+		assertTrue(exceptionWasThrown);	
 	}
 
 	@Test

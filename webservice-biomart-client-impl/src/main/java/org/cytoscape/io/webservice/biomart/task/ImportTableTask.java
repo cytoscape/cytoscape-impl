@@ -19,6 +19,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.MapNetworkAttrTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -29,7 +30,6 @@ import org.cytoscape.work.TaskMonitor;
  * 
  */
 public class ImportTableTask extends AbstractTask {
-
 	private final BiomartRestClient client;
 	private final BiomartQuery query;
 
@@ -39,21 +39,22 @@ public class ImportTableTask extends AbstractTask {
 
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;
-
 	private final Window parent;
+	private final CyTableManager tableManager;
 
-	public ImportTableTask(final BiomartRestClient client,
-			final BiomartQuery query, final CyTableFactory tableFactory,
-			final CyNetworkManager networkManager,
-			final CyApplicationManager applicationManager, final Window parent) {
-
-		this.client = client;
-		this.query = query;
-		this.tableFactory = tableFactory;
-		this.parent = parent;
-
-		this.networkManager = networkManager;
+	public ImportTableTask(final BiomartRestClient client, final BiomartQuery query,
+			       final CyTableFactory tableFactory,
+			       final CyNetworkManager networkManager,
+			       final CyApplicationManager applicationManager, final Window parent,
+			       final CyTableManager tableManager)
+	{
+		this.client             = client;
+		this.query              = query;
+		this.tableFactory       = tableFactory;
+		this.parent             = parent;
+		this.networkManager     = networkManager;
 		this.applicationManager = applicationManager;
+		this.tableManager       = tableManager;
 
 		this.tables = new HashSet<CyTable>();
 	}
@@ -85,9 +86,7 @@ public class ImportTableTask extends AbstractTask {
 		this.insertTasksAfterCurrentTask(localMappingTask, messageTask);
 	}
 
-	private CyTable createGlobalTable(BufferedReader reader, String key)
-			throws IOException {
-
+	private CyTable createGlobalTable(BufferedReader reader, String key) throws IOException {
 		// Read result from reader
 		String line = reader.readLine();
 		//System.out.println("Table Header: " + line);
@@ -212,6 +211,8 @@ public class ImportTableTask extends AbstractTask {
 		// }
 		// System.out.println();
 		// }
+
+		tableManager.addTable(globalTable);
 
 		return globalTable;
 	}

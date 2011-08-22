@@ -1,13 +1,5 @@
-
 /*
- Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
-
- The Cytoscape Consortium is:
- - Institute for Systems Biology
- - University of California San Diego
- - Memorial Sloan-Kettering Cancer Center
- - Institut Pasteur
- - Agilent Technologies
+ Copyright (c) 2006, 2007, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -33,14 +25,13 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
 package org.cytoscape.filter.internal.quickfind.util;
+
 
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
-
 
 
 /**

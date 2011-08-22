@@ -7,6 +7,7 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -17,22 +18,24 @@ public class CSVCyReaderFactory implements InputStreamTaskFactory {
 	private final boolean handleEquations;
 	private final CyTableFactory tableFactory;
 	private final EquationCompiler compiler;
+	private final CyTableManager tableManager;
 
 	public CSVCyReaderFactory(final CyFileFilter filter, final boolean readSchema,
 				  final boolean handleEquations, final CyTableFactory tableFactory,
-				  final EquationCompiler compiler)
+				  final EquationCompiler compiler, final CyTableManager tableManager)
 	{
 		this.filter          = filter;
 		this.readSchema      = readSchema;
 		this.handleEquations = handleEquations;
 		this.tableFactory    = tableFactory;
 		this.compiler        = compiler;
+		this.tableManager    = tableManager;
 	}
 	
 	@Override
 	public TaskIterator getTaskIterator() {
 		return new TaskIterator(new CSVCyReader(stream, readSchema, handleEquations,
-							tableFactory, compiler));
+							tableFactory, compiler, tableManager));
 	}
 
 	@Override

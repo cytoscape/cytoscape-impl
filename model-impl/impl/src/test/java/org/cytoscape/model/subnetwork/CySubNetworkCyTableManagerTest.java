@@ -59,7 +59,8 @@ public class CySubNetworkCyTableManagerTest extends AbstractCyTableManagerTest {
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		ArrayGraph baseNet =
 			new ArrayGraph(eh, mgrImpl,
-				       new CyTableFactoryImpl(eh, mgrImpl, interpreter), serviceRegistrar, true);
+			               new CyTableFactoryImpl(eh, interpreter, serviceRegistrar),
+			               serviceRegistrar, true);
 		// This is a different subnetwork and not "baseNetwork" in ArrayGraph.
 		goodNetwork = baseNet.addSubNetwork(); 
 	}

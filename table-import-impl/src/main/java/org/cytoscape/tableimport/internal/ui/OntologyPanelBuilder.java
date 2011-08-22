@@ -1,5 +1,6 @@
 package org.cytoscape.tableimport.internal.ui;
 
+
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYNONYM;
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.TAXON;
 import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogColorTheme.ONTOLOGY_COLOR;
@@ -29,6 +30,7 @@ import javax.xml.bind.JAXBException;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Attribute;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -38,20 +40,19 @@ import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationTaskFactory;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.work.TaskManager;
+
 import org.jdesktop.layout.GroupLayout;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OntologyPanelBuilder {
 
+public class OntologyPanelBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(OntologyPanelBuilder.class);
-	
 	private static final String GENE_ASSOCIATION = "gene_association";
 	private static final String DEF_ANNOTATION_ITEM = "Please select an annotation data source...";
-
 	private static final Dimension MIN_SIZE = new Dimension(800, 600);
-
-	private String annotationHtml = "<html><body bgcolor=\"white\"><p><strong><font size=\"+1\" face=\"serif\"><u>%DataSourceName%</u></font></strong></p><br>"
+	private static final String annotationHtml = "<html><body bgcolor=\"white\"><p><strong><font size=\"+1\" face=\"serif\"><u>%DataSourceName%</u></font></strong></p><br>"
 			+ "<p><em>Annotation File URL</em>: <br><font color=\"blue\">%SourceURL%</font></p><br>"
 			+ "<p><em>Data Format</em>: <font color=\"green\">%Format%</font></p><br>"
 			+ "<p><em>Other Information</em>:<br>"
@@ -61,35 +62,37 @@ public class OntologyPanelBuilder {
 	/*
 	 * HTML strings for tool tip text
 	 */
-	private String ontologyHtml = "<html><body bgcolor=\"white\"><p><strong><font size=\"+1\" face=\"serif\"><u>%DataSourceName%</u></font></strong></p><br>"
+	private static final String ontologyHtml = "<html><body bgcolor=\"white\"><p><strong><font size=\"+1\" face=\"serif\"><u>%DataSourceName%</u></font></strong></p><br>"
 			+ "<p><em>Data Source URL</em>: <br><font color=\"blue\">%SourceURL%</font></p><br><p><em>Description</em>:<br>"
 			+ "<table width=\"300\" border=\"0\" cellspacing=\"3\" cellpadding=\"3\"><tr>"
 			+ "<td rowspan=\"1\" colspan=\"1\">%Description%</td></tr></table></p></body></html>";
 
 	private final ImportTablePanel panel;
-
 	private final CyProperty<Bookmarks> bookmarksProp;
 	private final BookmarksUtil bkUtil;
-	
 	private final InputStreamTaskFactory factory;
 	private final TaskManager taskManager;
-	
+
 	private final CyNetworkManager manager;
 	private final CyTableFactory tableFactory;
+	private final CyTableManager tableManager;
 
-	OntologyPanelBuilder(final ImportTablePanel panel, final CyProperty<Bookmarks> bookmarksProp, final BookmarksUtil bkUtil,
-			final TaskManager taskManager, final InputStreamTaskFactory factory, final CyNetworkManager manager, final CyTableFactory tableFactory) {
-		this.panel = panel;
+	OntologyPanelBuilder(final ImportTablePanel panel, final CyProperty<Bookmarks> bookmarksProp,
+	                     final BookmarksUtil bkUtil, final TaskManager taskManager,
+	                     final InputStreamTaskFactory factory, final CyNetworkManager manager,
+	                     final CyTableFactory tableFactory, final CyTableManager tableManager)
+	{
+		this.panel         = panel;
 		this.bookmarksProp = bookmarksProp;
-		this.bkUtil = bkUtil;
-		this.taskManager = taskManager;
-		this.factory = factory;
-		this.manager = manager;
-		this.tableFactory = tableFactory;
+		this.bkUtil        = bkUtil;
+		this.taskManager   = taskManager;
+		this.factory       = factory;
+		this.manager       = manager;
+		this.tableFactory  = tableFactory;
+		this.tableManager  = tableManager;
 	}
 
 	protected void buildPanel() {
-
 		panel.titleIconLabel1.setIcon(REMOTE_SOURCE_ICON_LARGE.getIcon());
 
 		panel.ontologyLabel.setFont(LABEL_FONT.getFont());
@@ -460,16 +463,16 @@ public class OntologyPanelBuilder {
 								.add(panel.ontologyTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 										GroupLayout.PREFERRED_SIZE).add(panel.arrowButton2))
 						.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-		
+
 		// Disable unnecessary components
 		panel.advancedOptionCheckBox.setEnabled(false);
 		panel.textImportCheckBox.setEnabled(false);
 		panel.importAllCheckBox.setSelected(true);
 		panel.importAllCheckBox.setEnabled(false);
 	}
-	
+
 	private void ontologyInAnnotationComboBoxActionPerformed(ActionEvent evt) {
-		
+
 		final int ontologyCol = panel.ontologyInAnnotationComboBox.getSelectedIndex();
 		final List<Integer> gaAlias = new ArrayList<Integer>();
 		gaAlias.add(DB_OBJECT_SYNONYM.getPosition());
@@ -490,7 +493,7 @@ public class OntologyPanelBuilder {
 
 		panel.previewPanel.repaint();
 	}
-	
+
 	/**
 	 * Create task for annotation reader and run it.
 	 *
@@ -516,16 +519,16 @@ public class OntologyPanelBuilder {
 		*/
 	}
 
-	
 	/**
 	 * Create task for ontology reader and run the task.<br>
 	 *
 	 * @param dataSource
 	 * @param ontologyName
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	private void loadOntology(final String dataSource, final String ontologyName, final String annotationSource)
-			throws IOException {
+	private void loadOntology(final String dataSource, final String ontologyName,
+	                          final String annotationSource) throws IOException
+	{
 		logger.debug("Target OBO URL = " + dataSource);
 		logger.debug("Gene Association URL = " + annotationSource);
 		logger.debug("Ontology DAG Name ===== " + ontologyName);
@@ -533,21 +536,23 @@ public class OntologyPanelBuilder {
 		final URL annotationSourceUrl = new URL(annotationSource);
 
 		final GZIPInputStream gzipGAStream = new GZIPInputStream(annotationSourceUrl.openStream());
-		ImportOntologyAndAnnotationTaskFactory taskFactory = new ImportOntologyAndAnnotationTaskFactory(manager,
-				factory, url.openStream(), ontologyName, tableFactory, gzipGAStream,
-				annotationSource);
+		ImportOntologyAndAnnotationTaskFactory taskFactory =
+			new ImportOntologyAndAnnotationTaskFactory(manager, factory,
+			                                           url.openStream(), ontologyName,
+			                                           tableFactory, gzipGAStream,
+			                                           annotationSource, tableManager);
 		taskManager.execute(taskFactory);
 	}
-	
+
 	protected void importOntologyAndAnnotation() throws IOException {
-		
+
 		logger.debug("Start loading Ontology and Annotation.");
-		
+
 		final String selectedOntologyName = panel.ontologyComboBox.getSelectedItem().toString();
 		final String ontologySourceLocation = panel.ontologyUrlMap.get(selectedOntologyName);
-		
+
 		final String annotationSource = panel.annotationUrlMap.get(panel.annotationComboBox.getSelectedItem());
-		
+
 
 		// If selected ontology is not loaded, load it first.
 		//TODO: add manager
