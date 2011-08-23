@@ -88,18 +88,12 @@
 	
 	<!-- define services that application provides -->
 
-	<!-- <osgi:service id="proxyHandlerService" ref="proxyHandler"> -->
-	<!-- <osgi:interfaces> -->
-	<!-- <value>cytoscape.util.ProxyHandler</value> -->
-	<!-- <value>cytoscape.events.PreferencesUpdatedListener -->
-	<!-- </value> -->
-	<!-- </osgi:interfaces> -->
-	<!-- </osgi:service> -->
-
-
+	<osgi:service id="undoActionService" ref="undoAction"
+		interface="org.cytoscape.application.swing.CyAction" />
+	<osgi:service id="redoActionService" ref="redoAction"
+		interface="org.cytoscape.application.swing.CyAction" />
 	<osgi:reference id="openBrowserServiceRef"
 		interface="org.cytoscape.util.swing.OpenBrowser" />
-
 	<osgi:service id="printActionService" ref="printAction"
 		interface="org.cytoscape.application.swing.CyAction" />
 	<osgi:service id="exitActionService" ref="exitAction"

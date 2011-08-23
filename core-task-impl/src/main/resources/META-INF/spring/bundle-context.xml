@@ -23,16 +23,6 @@
 
 	<context:annotation-config />
 
-	<bean id="undoAction" class="org.cytoscape.task.internal.undo.UndoAction">
-		<constructor-arg ref="undoSupportServiceRef" />
-		<constructor-arg ref="cyApplicationManagerServiceRef" />
-	</bean>
-
-	<bean id="redoAction" class="org.cytoscape.task.internal.undo.RedoAction">
-		<constructor-arg ref="undoSupportServiceRef" />
-		<constructor-arg ref="cyApplicationManagerServiceRef" />
-	</bean>
-
 	<bean id="loadAttrsFileTaskFactory"
 		class="org.cytoscape.task.internal.loaddatatable.LoadAttributesFileTaskFactoryImpl">
 		<constructor-arg ref="cyDataTableReaderManagerServiceRef" />

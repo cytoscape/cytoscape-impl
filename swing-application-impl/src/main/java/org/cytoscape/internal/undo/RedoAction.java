@@ -1,5 +1,5 @@
 /*
-  File: UndoAction.java
+  File: RedoAction.java
 
   Copyright (c) 2006, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -27,7 +27,7 @@
   along with this library; if not, write to the Free Software Foundation,
   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-package org.cytoscape.task.internal.undo;
+package org.cytoscape.internal.undo;
 
 
 import java.awt.Toolkit;
@@ -35,9 +35,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.Action;
-import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
 import javax.swing.undo.CannotUndoException;
+import javax.swing.KeyStroke;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -48,55 +48,52 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * An action that calls undo for the most recent edit in the
- * undoable edit stack.
+ * An action that calls redo for the most recent edit in the
+ * undoable edit stack.  
  */
-public class UndoAction extends AbstractCyAction {
-	private final static long serialVersionUID = 1202339875212525L;
+public class RedoAction extends AbstractCyAction {
+	private final static long serialVersionUID = 1202339875203626L;
 
-	private final static Logger logger = LoggerFactory.getLogger(UndoAction.class);
-
-	private UndoSupport undo;
+	private final UndoSupport undo;
+	private static final Logger logger = LoggerFactory.getLogger(RedoAction.class);
 
 	/**
-	 * Constructs the action.
+	 * Constructs the action. 
 	 */
-	public UndoAction(UndoSupport undo,CyApplicationManager appMgr) {
-		super("Undo",appMgr);
-		setAcceleratorKeyStroke(
-			KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit()
-				.getMenuShortcutKeyMask()));
+	public RedoAction(UndoSupport undo, CyApplicationManager appMgr ) {
+		super("Redo",appMgr);
+		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		setPreferredMenu("Edit");
 		setEnabled(true);
-		setMenuGravity(1.0f);
+		setMenuGravity(1.1f);
 		this.undo = undo;
 	}
 
 	/**
-	 * Tries to run undo() on the top edit of the edit stack.
+	 * Tries to run redo() on the top edit of the edit stack. 
 	 * @param e The action event that triggers this method call.
 	 */
 	public void actionPerformed(ActionEvent e) {
 		try {
-			if ( undo.getUndoManager().canUndo() )
-				undo.getUndoManager().undo();
+			if ( undo.getUndoManager().canRedo() )
+				undo.getUndoManager().redo();
 		} catch (CannotUndoException ex) {
-			logger.warn("Unable to undo: " + ex);
+			logger.warn("Unable to redo: " + ex);
 			ex.printStackTrace();
 		}
 	}
 
 	/**
-	 * Called when the menu that contains this action is clicked on.
+	 * Called when the menu that contains this action is clicked on. 
 	 * @param e The menu event that triggers this method call.
 	 */
 	public void menuSelected(MenuEvent e) {
-		if (undo.getUndoManager().canUndo()) {
+		if (undo.getUndoManager().canRedo()) {
 			setEnabled(true);
-			putValue(Action.NAME, undo.getUndoManager().getUndoPresentationName());
+			putValue(Action.NAME, undo.getUndoManager().getRedoPresentationName());
 		} else {
 			setEnabled(false);
-			putValue(Action.NAME, "Undo");
+			putValue(Action.NAME, "Redo");
 		}
 	}
 }

@@ -86,10 +86,6 @@
 		interface="org.cytoscape.io.write.CyTableWriterManager" />
 	
 	<!-- now register our services -->
-	<osgi:service id="undoActionService" ref="undoAction"
-		interface="org.cytoscape.application.swing.CyAction" />
-	<osgi:service id="redoActionService" ref="redoAction"
-		interface="org.cytoscape.application.swing.CyAction" />
 
 	<osgi:service id="loadNetworkFileTaskFactoryService" ref="loadNetworkFileTaskFactory"
 		interface="org.cytoscape.work.TaskFactory">

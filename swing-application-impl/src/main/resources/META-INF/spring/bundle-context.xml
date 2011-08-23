@@ -23,6 +23,16 @@
 
 	<context:annotation-config />
 
+	<bean id="undoAction" class="org.cytoscape.internal.undo.UndoAction">
+		<constructor-arg ref="undoSupportServiceRef" />
+		<constructor-arg ref="cyApplicationManagerServiceRef" />
+	</bean>
+
+	<bean id="redoAction" class="org.cytoscape.internal.undo.RedoAction">
+		<constructor-arg ref="undoSupportServiceRef" />
+		<constructor-arg ref="cyApplicationManagerServiceRef" />
+	</bean>
+
 	<bean name="configDirPropertyWriter" class="org.cytoscape.internal.shutdown.ConfigDirPropertyWriter">
 		<constructor-arg ref="taskManagerServiceRef" />
 		<constructor-arg ref="propertyWriterManagerRef" />
