@@ -54,12 +54,12 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Reader for graphs in the interactions file format. Given the filename,
  * provides the graph and attributes objects constructed from the file.
  */
 public class SIFNetworkReader extends AbstractNetworkReader {
-
 	private static final Logger logger = LoggerFactory.getLogger(SIFNetworkReader.class);
 
 	private static final String DEF_DELIMITER = "\\s+";
@@ -97,7 +97,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 
 		String line;
 		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-		Map<String, CyNode> nMap = new HashMap<String, CyNode>();
+		Map<String, CyNode> nMap = new HashMap<String, CyNode>(10000);
 
 		CyNetwork network = cyNetworkFactory.getInstance();
 		final CyTable nodeTable = network.getDefaultNodeTable();
