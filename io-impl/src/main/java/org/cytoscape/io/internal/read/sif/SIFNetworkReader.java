@@ -93,10 +93,11 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 
 	private void readInput(TaskMonitor tm) throws IOException {
 		this.parentTaskMonitor = tm;
-		tm.setProgress(0.0);
+//		tm.setProgress(0.0);
 
 		String line;
-		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+		final BufferedReader br =
+			new BufferedReader(new InputStreamReader(inputStream), 128*1024);
 		Map<String, CyNode> nMap = new HashMap<String, CyNode>(10000);
 
 		CyNetwork network = cyNetworkFactory.getInstance();
@@ -134,14 +135,14 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		}
 
 		br.close();
-		tm.setStatusMessage("Network data loaded from data source.\nCreating Cytoscape network...");
+//		tm.setStatusMessage("Network data loaded from data source.\nCreating Cytoscape network...");
 
 		nMap.clear();
 		nMap = null;
 
 		this.cyNetworks = new CyNetwork[] {network};
 		
-		tm.setProgress(1.0);
+//		tm.setProgress(1.0);
 
 		logger.debug("SIF file loaded: ID = " + network.getSUID());
 	}
