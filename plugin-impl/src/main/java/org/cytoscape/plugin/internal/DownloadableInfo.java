@@ -38,8 +38,8 @@ package org.cytoscape.plugin.internal;
 import java.net.URL;
 import java.io.IOException;
 
+import org.cytoscape.plugin.internal.action.PluginManagerAction;
 import org.cytoscape.plugin.internal.util.URLUtil;
-import org.cytoscape.plugin.internal.util.CytoscapeVersion;
 
 import static org.cytoscape.plugin.internal.PluginVersionUtils.versionOk;
 import static org.cytoscape.plugin.internal.PluginVersionUtils.getNewerVersion;
@@ -400,7 +400,7 @@ public abstract class DownloadableInfo {
   	if (pluginVersion == null )
 		return false;
 
-    String[] cyVersion = new CytoscapeVersion().getFullVersion().split(versionSplit);
+    String[] cyVersion = PluginManagerAction.cyVersion.getVersion().split(versionSplit);
     String[] plVersion = pluginVersion.split(versionSplit);
 
 	if ( cyVersion.length < plVersion.length )
@@ -438,9 +438,8 @@ public abstract class DownloadableInfo {
 	  }
 	  
 	boolean compatible = false;
-    CytoscapeVersion cv = new CytoscapeVersion();
     for (String pluginVersion: compatibleCyVersions) {
-      String[] cyVersion = cv.getFullVersion().split(versionSplit);
+      String[] cyVersion = PluginManagerAction.cyVersion.getVersion().split(versionSplit);
       String[] plVersion = pluginVersion.split(versionSplit);
       if ( PluginVersionUtils.isVersion(pluginVersion, PluginVersionUtils.MINOR) ) {
           cyVersion = new String[]{cyVersion[0], cyVersion[1]};
@@ -527,7 +526,7 @@ public abstract class DownloadableInfo {
 					+ getCytoscapeVersions().toString() + "<br>";
 			Html += "<font color='red'><i>" + toString()
 					+ " is not verfied to work in the current version ("
-					+ CytoscapeVersion.version
+					+ PluginManagerAction.cyVersion.getVersion()
 					+ ") of Cytoscape.</i></font>";
 		}
 		Html += "<p>";

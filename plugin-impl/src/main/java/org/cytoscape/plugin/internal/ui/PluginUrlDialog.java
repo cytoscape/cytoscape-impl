@@ -27,6 +27,7 @@ import org.cytoscape.work.TaskManager;
 //import org.cytoscape.util.BookmarksUtil;
 
 import org.cytoscape.plugin.internal.CytoscapePlugin;
+import org.cytoscape.plugin.internal.action.PluginManagerAction;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.WindowConstants;
-import org.cytoscape.plugin.internal.util.CytoscapeVersion;
+
 
 /**
  * @author skillcoy
@@ -395,7 +396,7 @@ public class PluginUrlDialog extends JDialog {
 
 				if (NewPlugins.size() <= 0) {
 					dialog.setError("No plugins compatible with "
-							+ new CytoscapeVersion().getFullVersion()
+							+ PluginManagerAction.cyVersion.getVersion()
 							+ " available from this site.");
 				} else {
 					dialog.setMessage("");

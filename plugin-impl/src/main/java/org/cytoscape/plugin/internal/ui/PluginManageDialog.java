@@ -29,7 +29,7 @@
 package org.cytoscape.plugin.internal.ui;
 
 import org.cytoscape.plugin.internal.action.PluginManagerAction;
-import org.cytoscape.plugin.internal.util.CytoscapeVersion;
+
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -296,7 +296,7 @@ public class PluginManageDialog extends javax.swing.JDialog implements
 
 				if (NewPlugins.size() <= 0) {
 					dialog.setError("No plugins compatible with "
-							+ new CytoscapeVersion().getFullVersion()
+							+ PluginManagerAction.cyVersion.getVersion()
 							+ " available from this site.");
 				} else {
 					dialog.setMessage("");
@@ -1571,15 +1571,15 @@ public class PluginManageDialog extends javax.swing.JDialog implements
         List<DownloadableInfo> Plugins = new java.util.ArrayList<DownloadableInfo>();
 
 		PluginInfo infoC = new PluginInfo("1", "A Plugin");
-		infoC.addCytoscapeVersion(CytoscapeVersion.version);
+		infoC.addCytoscapeVersion(PluginManagerAction.cyVersion.getVersion());
 		Plugins.add(infoC);
 
 		infoC = new PluginInfo("2", "B Plugin");
-		infoC.addCytoscapeVersion(CytoscapeVersion.version);
+		infoC.addCytoscapeVersion(PluginManagerAction.cyVersion.getVersion());
 		Plugins.add(infoC);
 
 		infoC = new PluginInfo("3", "C");
-		infoC.addCytoscapeVersion(CytoscapeVersion.version);
+		infoC.addCytoscapeVersion(PluginManagerAction.cyVersion.getVersion());
 		Plugins.add(infoC);
 
 		pd.addCategory(Category.NONE.toString(), Plugins,

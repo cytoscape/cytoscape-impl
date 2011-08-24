@@ -140,6 +140,8 @@
 	<osgi:reference id="bookmarksUtilServiceRef"
 		interface="org.cytoscape.property.bookmark.BookmarksUtil" />
 
+	<osgi:reference id="cyApplicationConfigurationServiceRef" interface="org.cytoscape.application.CyApplicationConfiguration" />
+
 
     <osgi:service id="pluginLoaderTaskFactoryService" ref="pluginLoaderTaskFactory"
 	        interface="org.cytoscape.work.TaskFactory">

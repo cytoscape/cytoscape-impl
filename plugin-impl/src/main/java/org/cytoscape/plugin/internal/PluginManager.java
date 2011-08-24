@@ -69,7 +69,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.cytoscape.plugin.internal.util.CytoscapeVersion;
 
 /**
  * @author skillcoy
@@ -256,10 +255,8 @@ public class PluginManager {
 	
 	// create plugin manager
 	private PluginManager(PluginTracker tracker, final CyApplicationConfiguration config) {
-
-		CytoscapeVersion cytoscapeVersion = new CytoscapeVersion();
 		
-		cyVersion = cytoscapeVersion.getMajorVersion();
+		cyVersion = new Integer(PluginManagerAction.cyVersion.getMajorVersion()).toString();
 		
 		// XXX is this needed anymore?
 		loadingErrors = new HashSet<Throwable>();
@@ -273,7 +270,7 @@ public class PluginManager {
 			if (usingWebstartManager()) {
 				tempDir = new File(config.getSettingLocation(),
 						"webstart" + File.separator
-								+ (new CytoscapeVersion()).getMajorVersion()
+								+ PluginManagerAction.cyVersion.getMajorVersion()
 								+ File.separator + "plugins");
 				removeWebstartInstalls();
 				trackerFileName = "track_webstart_plugins.xml";

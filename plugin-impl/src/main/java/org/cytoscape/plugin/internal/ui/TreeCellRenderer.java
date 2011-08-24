@@ -6,7 +6,7 @@ package org.cytoscape.plugin.internal.ui;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.cytoscape.plugin.internal.DownloadableInfo;
-import org.cytoscape.plugin.internal.util.CytoscapeVersion;
+import org.cytoscape.plugin.internal.action.PluginManagerAction;
 
 /**
  * @author skillcoy
@@ -38,7 +38,7 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer {
 			} else if (leaf && !isOutdated(value)) {
 				setIcon(okIcon);
 				setToolTipText("Verified to work in "
-						+ CytoscapeVersion.version);
+						+ PluginManagerAction.cyVersion.getVersion());
 			} else {
 				setToolTipText(null); // no tool tip
 			}

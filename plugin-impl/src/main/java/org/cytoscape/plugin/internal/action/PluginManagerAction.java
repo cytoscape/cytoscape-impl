@@ -43,10 +43,12 @@
 package org.cytoscape.plugin.internal.action;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -82,13 +84,15 @@ public class PluginManagerAction extends AbstractCyAction {
 
 	public static String cyConfigVerDir;
 	public static String DefaultPluginUrl = null;
+	public static CytoscapeVersion cyVersion;
 	
 	/**
 	 * Creates a new BookmarkAction object.
 	 */
 	public PluginManagerAction(CySwingApplication desktop, CyApplicationManager appMgr, CytoscapeVersion version,
 			CyProperty<Bookmarks> bookmarksProp, BookmarksUtil bookmarksUtil, GUITaskManager guiTaskManagerServiceRef
-			, CyProperty<Properties> cytoscapePropertiesServiceRef, CyPluginAdapter adapter, TaskFactory pluginLoaderTaskFactory) {
+			, CyProperty<Properties> cytoscapePropertiesServiceRef, CyPluginAdapter adapter, TaskFactory pluginLoaderTaskFactory,
+			final CyApplicationConfiguration config) {
 				
 		super("Plugin Manager", appMgr);
 
@@ -106,9 +110,10 @@ public class PluginManagerAction extends AbstractCyAction {
 		DefaultPluginUrl = cytoscapePropertiesServiceRef.getProperties().getProperty("defaultPluginDownloadUrl");
 		
 		// initialize version
-		org.cytoscape.plugin.internal.util.CytoscapeVersion.version = version.getVersion();
-		cyConfigVerDir = version.getVersion();
+		cyVersion = version;
 		
+		cyConfigVerDir = new File(config.getSettingLocation(), File.separator + version.getMajorVersion()).getAbsolutePath();
+						
 		setPreferredMenu("Plugins");
 		setMenuGravity(1.0f);
 	
