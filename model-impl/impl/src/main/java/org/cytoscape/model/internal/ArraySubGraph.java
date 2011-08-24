@@ -79,8 +79,8 @@ class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 		internalSUID = SUIDFactory.getNextSUID();
 
-		nodeSet = new HashSet<CyNode>();
-		edgeSet = new HashSet<CyEdge>();
+		nodeSet = new HashSet<CyNode>(20000);
+		edgeSet = new HashSet<CyEdge>(20000);
 
 		internalNodeCount = 0;
 		internalEdgeCount = 0;
