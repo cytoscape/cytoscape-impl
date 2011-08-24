@@ -129,16 +129,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		if (!tableHasBooleanSelected)
 			return dataTable.getRowCount();
 
-		final List<CyRow> rows = dataTable.getAllRows();
-
-		int selectedCount = 0;
-		for (final CyRow row : rows) {
-			final Boolean selected = row.get(CyNetwork.SELECTED, Boolean.class);
-			if (selected != null && selected)
-				++selectedCount;
-		}
-
-		return selectedCount;
+		return dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.valueOf(true)).size();
 	}
 
 	@Override
