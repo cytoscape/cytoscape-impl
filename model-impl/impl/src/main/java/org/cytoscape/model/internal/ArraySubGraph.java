@@ -59,7 +59,7 @@ import java.util.Set;
  * An implementation of CySubNetwork that is largely a passthrough to
  * {@link ArrayGraph}.
  */
-class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
+final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	private final int internalId;
 	private final long internalSUID;
 	private final CyEventHelper eventHelper;

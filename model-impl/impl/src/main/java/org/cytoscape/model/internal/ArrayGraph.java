@@ -71,7 +71,7 @@ a factor of 2).
 The difficulty is keeping proper track of the various linked lists and debugging the related
 code.  
  */
-public class ArrayGraph implements CyRootNetwork {
+final public class ArrayGraph implements CyRootNetwork {
 	private static final int ROOT = 0;
 
 	private final long suid;
