@@ -12,17 +12,6 @@
 		bundle outside of an OSGi container
 	-->
 
-	<osgi:service id="coreCyPropertyService" ref="corePropsReader">
-		<osgi:interfaces>
-            <value>org.cytoscape.property.CyProperty</value>
-            <value>org.cytoscape.session.events.SessionLoadedListener</value>
-        </osgi:interfaces>
-		<osgi:service-properties>
-			<entry key="serviceType" value="property" />
-			<entry key="cyPropertyName" value="coreSettings" />
-		</osgi:service-properties>
-	</osgi:service>
-
 	<osgi:service id="bookmarkCyPropertyService" ref="bookmarksReader">
 		<osgi:interfaces>
             <value>org.cytoscape.property.CyProperty</value>
