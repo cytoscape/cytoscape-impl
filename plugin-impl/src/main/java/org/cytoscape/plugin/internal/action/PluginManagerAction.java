@@ -112,7 +112,7 @@ public class PluginManagerAction extends AbstractCyAction {
 		// initialize version
 		cyVersion = version;
 		
-		cyConfigVerDir = new File(config.getSettingLocation(), File.separator + version.getMajorVersion()).getAbsolutePath();
+		cyConfigVerDir = new File(config.getSettingLocation(), File.separator + version.getMajorVersion()+ "." + version.getMinorVersion()).getAbsolutePath();
 						
 		setPreferredMenu("Plugins");
 		setMenuGravity(1.0f);
