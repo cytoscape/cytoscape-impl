@@ -13,15 +13,13 @@ public class NetworkViewFactoryImpl implements CyNetworkViewFactory {
 
 	private final CyEventHelper eventHelper;
 	private final CyServiceRegistrar registrar;
-	private final Properties props;
 
 	/**
 	 * For injection, use this constructor.
 	 * 
 	 * @param eventHelper
 	 */
-	public NetworkViewFactoryImpl(final CyEventHelper eventHelper, final CyServiceRegistrar registrar,
-			final CyProperty<Properties> prop) {
+	public NetworkViewFactoryImpl(final CyEventHelper eventHelper, final CyServiceRegistrar registrar) {
 
 		if (eventHelper == null)
 			throw new NullPointerException("CyEventHelper is null");
@@ -31,8 +29,6 @@ public class NetworkViewFactoryImpl implements CyNetworkViewFactory {
 			throw new NullPointerException("CyServiceRegistrar is null");
 
 		this.registrar = registrar;
-
-		this.props = prop.getProperties();
 	}
 
 	@Override

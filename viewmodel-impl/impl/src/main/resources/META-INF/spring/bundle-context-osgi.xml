@@ -10,9 +10,6 @@
 	<osgi:reference id="cyServiceRegistrarRef"
 		interface="org.cytoscape.service.util.CyServiceRegistrar" />
 
-	<osgi:reference id="cyPropertyServiceRef" interface="org.cytoscape.property.CyProperty"
-		filter="(cyPropertyName=coreSettings)" />
-
 	<!-- Export Beans as Services -->
 	<osgi:service id="cyNetworkViewFactoryService" ref="cyNetworkViewFactory"
 		interface="org.cytoscape.view.model.CyNetworkViewFactory">

@@ -23,7 +23,7 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 	}
 
 	public NetworkViewTestSupport(CyProperty<Properties> properties) {
-		viewFactory = new NetworkViewFactoryImpl( eventHelper, mock(CyServiceRegistrar.class), properties );
+		viewFactory = new NetworkViewFactoryImpl( eventHelper, mock(CyServiceRegistrar.class));
 	}
 	
 	public CyNetworkView getNetworkView() {

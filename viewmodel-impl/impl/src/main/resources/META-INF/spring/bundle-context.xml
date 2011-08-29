@@ -16,7 +16,6 @@
 		class="org.cytoscape.view.model.internal.NetworkViewFactoryImpl">
 		<constructor-arg ref="cyEventHelperServiceRef" />
 		<constructor-arg ref="cyServiceRegistrarRef" />
-		<constructor-arg ref="cyPropertyServiceRef" />
 	</bean>
 
 	<bean id="cyNetworkViewManager"
