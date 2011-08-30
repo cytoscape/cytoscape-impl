@@ -51,6 +51,7 @@ public class PropertiesWriterImpl extends AbstractTask implements CyWriter {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		properties.store(outputStream, "Written by: Cytoscape's PropertiesWriterImpl");
-		this.outputStream.close();		
+		// Definitely do NOT close the outputStream here because other tasks need the stream too!!!!
+		//this.outputStream.close();		
 	}
 }
