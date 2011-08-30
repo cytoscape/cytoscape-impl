@@ -590,7 +590,7 @@ public class AttributeMappingImpl implements AttributeMapping {
             types.add(ColumnType.getType(table.getColumn(entry.getValue())));
         }
         
-        final ColumnType type = ColumnType.getCompatibleConvertionType(types);
+        final ColumnType type = ColumnType.getResonableCompatibleConvertionType(types);
 
         if (add) { //new
                 mergedAttributeTypes.add(index,type);

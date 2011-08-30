@@ -1,6 +1,4 @@
-package org.cytoscape.network.merge.internal;
-
-/* File: NetworkMergePlugin.java
+/**
 
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -36,10 +34,16 @@ package org.cytoscape.network.merge.internal;
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
 
+package org.cytoscape.network.merge.internal;
+
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.network.merge.internal.ui.NetworkMergeFrame;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.work.TaskManager;
 
 import java.awt.event.ActionEvent;
 
@@ -49,12 +53,24 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private static final long serialVersionUID = -597481727043928800L;
 	
 	private final CySwingApplication swingApp;
+        private final CyNetworkManager cnm;
+        private final CyNetworkFactory cnf;
+        private final CyNetworkNaming cnn;
+        private final TaskManager taskManager;
 
 	public NetworkMergeAction(CyApplicationManager appMgr,
-			CySwingApplication swingApp) {
+			CySwingApplication swingApp,
+                        CyNetworkManager cnm,
+                        CyNetworkFactory cnf,
+                        CyNetworkNaming cnn,
+                        TaskManager taskManager) {
 		super("CyMerge", appMgr);
 		setPreferredMenu("Plugins");
 		this.swingApp = swingApp;
+                this.cnm = cnm;
+                this.cnf = cnf;
+                this.cnn = cnn;
+                this.taskManager = taskManager;
 	}
 
 	/**
@@ -63,7 +79,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 	@Override
 	public void actionPerformed(final ActionEvent ae) {
 
-		final NetworkMergeFrame frame = new NetworkMergeFrame();
+		final NetworkMergeFrame frame = new NetworkMergeFrame(cnm, cnf, cnn, taskManager);
 		frame.setLocationRelativeTo(swingApp.getJFrame());
 		frame.setVisible(true);
 		// TODO: make this value user-editable (always on top or not).

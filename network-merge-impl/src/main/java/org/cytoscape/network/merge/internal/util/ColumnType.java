@@ -1,6 +1,7 @@
 
 package org.cytoscape.network.merge.internal.util;
 
+import java.util.EnumSet;
 import org.cytoscape.model.CyColumn;
 
 import java.util.HashMap;
@@ -92,6 +93,14 @@ public enum ColumnType {
     public Class<?> getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        if (isList)
+            return "List<"+type.getSimpleName()+">";
+        else
+            return type.getSimpleName();
+    }
     
     public static ColumnType getType(CyColumn col) {
         Class<?> type = col.getClass();
@@ -133,7 +142,7 @@ public enum ColumnType {
         return castServ.cast(from);
     }
     
-    public static ColumnType getCompatibleConvertionType(Set<ColumnType> types) {
+    public static ColumnType getResonableCompatibleConvertionType(Set<ColumnType> types) {
         Iterator<ColumnType> it = types.iterator();
         ColumnType curr = it.next();
         boolean li = curr.isList;
@@ -150,6 +159,16 @@ public enum ColumnType {
         }
         
         return li ? ret.toList() : ret;
+    }
+    
+    public static Set<ColumnType> getConvertibleTypes(ColumnType fromType) {
+        Set<ColumnType> types = EnumSet.noneOf(ColumnType.class);
+        for (ColumnType type : ColumnType.values()) {
+            if (isConvertable(fromType, type)) {
+                types.add(type);
+            }
+        }
+        return types;
     }
 
     interface CastService <T> {

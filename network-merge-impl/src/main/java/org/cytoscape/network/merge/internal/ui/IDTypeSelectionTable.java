@@ -37,7 +37,7 @@
 package org.cytoscape.network.merge.internal.ui;
 
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -109,7 +109,7 @@ public class IDTypeSelectionTable extends JTable{
         // set up editor
         RowTableCellEditor rowEditor = new RowTableCellEditor(this);
         int nr = this.getRowCount();
-        List<CheckComboBox> combos = new Vector<CheckComboBox>(nr);
+        List<CheckComboBox> combos = new ArrayList<CheckComboBox>(nr);
         for (int ir=0; ir<nr; ir++) {
                 String net = this.getNetIDAt(ir);
                 String attr = (String) this.getValueAt(ir, 1);
@@ -147,13 +147,13 @@ public class IDTypeSelectionTable extends JTable{
         private void initNetworks() {
             Map<String,Map<String,Set<String>>> selectedNetworkAttributeIDType = parent.getSrcTypes();
 
-            List<String> netTitles = new Vector<String>();
-            List<String> netIDs = new Vector<String>();
+            List<String> netTitles = new ArrayList<String>();
+            List<String> netIDs = new ArrayList<String>();
             int size=0;
             Iterator<String> it = selectedNetworkAttributeIDType.keySet().iterator();
             while (it.hasNext()) {
                 String netID = it.next();
-                String netName = Cytoscape.getNetwork(netID).getTitle();
+                String netName = netID;//Cytoscape.getNetwork(netID).getTitle();
                 int index = 0;
                 while (index<size && netTitles.get(index).compareToIgnoreCase(netName)<0) index++;
 
@@ -162,7 +162,7 @@ public class IDTypeSelectionTable extends JTable{
                 size++;
             }
 
-            listNetIDTitleAttr = new Vector<String[]>();
+            listNetIDTitleAttr = new ArrayList<String[]>();
 
             int n = netIDs.size();
             for (int i=0; i<n; i++) {
@@ -276,7 +276,7 @@ public class IDTypeSelectionTable extends JTable{
 
                private void initCBs() {
                         Set<String> selectedTypes = parent.getSrcTypes().get(net).get(attr);
-                        cbs = new Vector<JCheckBox>();
+                        cbs = new ArrayList<JCheckBox>();
                         JCheckBox cb;
                         for (String type : supportedSrcIDType) {
                                 cb = new JCheckBox(type);

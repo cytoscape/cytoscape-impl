@@ -36,8 +36,8 @@
 
 package org.cytoscape.network.merge.internal.ui;
 
-import cytoscape.cythesaurus.service.CyThesaurusServiceClient;
-import cytoscape.cythesaurus.service.CyThesaurusServiceMessageBasedClient;
+//import cytoscape.cythesaurus.service.CyThesaurusServiceClient;
+//import cytoscape.cythesaurus.service.CyThesaurusServiceMessageBasedClient;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -66,7 +66,7 @@ public class IDMappingDialog extends javax.swing.JDialog {
 
         cancelled = true;
 
-        cythesaurusClient = new CyThesaurusServiceMessageBasedClient("AdvencedNetworkMerge");
+//        cythesaurusClient = new CyThesaurusServiceMessageBasedClient("CyMerge");
 
         initComponents();
     }
@@ -123,7 +123,7 @@ public class IDMappingDialog extends javax.swing.JDialog {
         idTypeSelectionTable = new IDTypeSelectionTable(frame,this);
         //idTypeSelectionTable.setMinimumSize(new java.awt.Dimension(400, 100));
         //idTypeSelectionTable.setPreferredSize(new java.awt.Dimension(450, 200));
-        idTypeSelectionTable.setSupportedSrcIDType(cythesaurusClient.supportedSrcIDTypes());
+//        idTypeSelectionTable.setSupportedSrcIDType(cythesaurusClient.supportedSrcIDTypes());
         idTypeScrollPane.setViewportView(idTypeSelectionTable);
 
         idTypePanel.add(idTypeScrollPane);
@@ -142,9 +142,9 @@ public class IDMappingDialog extends javax.swing.JDialog {
         toLabel.setText("Destination ID Type:");
         toPanel.add(toLabel);
 
-        String[] types = cythesaurusClient.supportedTgtIDTypes().toArray(new String[0]);
-        java.util.Arrays.sort(types);
-        toComboBox.setModel(new javax.swing.DefaultComboBoxModel(types));
+//        String[] types = cythesaurusClient.supportedTgtIDTypes().toArray(new String[0]);
+//        java.util.Arrays.sort(types);
+//        toComboBox.setModel(new javax.swing.DefaultComboBoxModel(types));
         toPanel.add(toComboBox);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -199,27 +199,27 @@ public class IDMappingDialog extends javax.swing.JDialog {
         getContentPane().add(okPanel, gridBagConstraints);
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>                        
 
     private void optionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_optionButtonActionPerformed
-            CyThesaurusServiceClient client = new CyThesaurusServiceMessageBasedClient("AdvancedNetworkMerge");
-            if (!client.openMappingResourceConfigDialog()) {
-                //javax.swing.JOptionPane.showMessageDialog(this, "Failed to open the configuration dialog.");
-            } else {
-                Set<String> srcTypes = cythesaurusClient.supportedSrcIDTypes();
-                for (Map<String,Set<String>> mapAttrTypes : selectedNetworkAttributeIDType.values()) {
-                    for (Set<String> types : mapAttrTypes.values()) {
-                        types.retainAll(srcTypes);
-                    }
-                }
-                idTypeSelectionTable.setSupportedSrcIDType(srcTypes);
-
-                String[] tgtTypes = cythesaurusClient.supportedTgtIDTypes().toArray(new String[0]);
-                java.util.Arrays.sort(tgtTypes);
-                String oldType = (String)toComboBox.getSelectedItem();
-                toComboBox.setModel(new javax.swing.DefaultComboBoxModel(tgtTypes));
-                toComboBox.setSelectedItem(oldType);
-            }
+//            CyThesaurusServiceClient client = new CyThesaurusServiceMessageBasedClient("AdvancedNetworkMerge");
+//            if (!client.openMappingResourceConfigDialog()) {
+//                //javax.swing.JOptionPane.showMessageDialog(this, "Failed to open the configuration dialog.");
+//            } else {
+//                Set<String> srcTypes = cythesaurusClient.supportedSrcIDTypes();
+//                for (Map<String,Set<String>> mapAttrTypes : selectedNetworkAttributeIDType.values()) {
+//                    for (Set<String> types : mapAttrTypes.values()) {
+//                        types.retainAll(srcTypes);
+//                    }
+//                }
+//                idTypeSelectionTable.setSupportedSrcIDType(srcTypes);
+//
+//                String[] tgtTypes = cythesaurusClient.supportedTgtIDTypes().toArray(new String[0]);
+//                java.util.Arrays.sort(tgtTypes);
+//                String oldType = (String)toComboBox.getSelectedItem();
+//                toComboBox.setModel(new javax.swing.DefaultComboBoxModel(tgtTypes));
+//                toComboBox.setSelectedItem(oldType);
+//            }
     }//GEN-LAST:event_optionButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -311,5 +311,5 @@ public boolean isCancelled() {
         private boolean isNode;
 
         private Map<String,Map<String,Set<String>>> selectedNetworkAttributeIDType;
-        private CyThesaurusServiceClient cythesaurusClient;
+//        private CyThesaurusServiceClient cythesaurusClient;
 }

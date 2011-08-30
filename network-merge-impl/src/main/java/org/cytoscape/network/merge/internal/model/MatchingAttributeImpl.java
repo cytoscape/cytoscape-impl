@@ -57,9 +57,7 @@ public class MatchingAttributeImpl implements MatchingAttribute {
         attributeForMatching = new HashMap<CyNetwork,CyColumn>();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Map<CyNetwork,CyColumn> getNetAttrMap() {
         return attributeForMatching;
     }

@@ -38,11 +38,8 @@ package org.cytoscape.network.merge.internal.ui;
 
 import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 
-import cytoscape.Cytoscape;
-
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.TreeSet;
-import java.util.Iterator;
 import java.util.Arrays;
 
 import javax.swing.JTable;
@@ -50,6 +47,10 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 
 /**
  * Table for selecting which attribute to use for matching nodes 
@@ -68,22 +69,18 @@ class MatchNodeTable extends JTable{
     }
     
     protected void setColumnEditorAndCellRenderer() {
-        TreeSet<String> attrset = new TreeSet<String>();
-        //TODO remove in Cytoscape3
-        attrset.add("ID");
-        //TODO: modify if local attribute implemented
-        attrset.addAll(Arrays.asList(Cytoscape.getNodeAttributes().getAttributeNames()));
-
-        String[] attrs = attrset.toArray(new String[0]);
-
         int n = getColumnCount();
         for (int i=0; i<n; i++) {
             TableColumn column = getColumnModel().getColumn(i);
             
-            JComboBox comboBox = new JComboBox(attrs);
+            CyNetwork net = model.getNetork(i);
+            CyTable table = net.getDefaultNodeTable();
+            CyColumn[] cols = table.getColumns().toArray(new CyColumn[0]);
+            
+            JComboBox comboBox = new JComboBox(cols);
             column.setCellEditor(new DefaultCellEditor(comboBox));
 
-            ComboBoxTableCellRenderer comboRenderer = new ComboBoxTableCellRenderer(attrs);
+            ComboBoxTableCellRenderer comboRenderer = new ComboBoxTableCellRenderer(cols);
             column.setCellRenderer(comboRenderer);
         }
     }
@@ -95,19 +92,18 @@ class MatchNodeTable extends JTable{
     }
 
     private class MatchNodeTableModel extends AbstractTableModel {
-        Vector<String> netNames;
-        Vector<String> netIDs;
+        ArrayList<CyNetwork> networks;
 
         public MatchNodeTableModel() {
             resetNetworks();
         }
 
-        //@Override
+        @Override
         public int getColumnCount() {
             return matchingAttribute.getSizeNetwork();
         }
 
-        //@Override
+        @Override
         public int getRowCount() {
             int n = matchingAttribute.getSizeNetwork();
             return n==0?0:1;
@@ -115,12 +111,12 @@ class MatchNodeTable extends JTable{
 
         @Override
         public String getColumnName(int col) {
-            return netNames.get(col);
+            return networks.get(col).toString(); //TODO: get network title
         }
 
-        //@Override
+        @Override
         public Object getValueAt(int row, int col) {
-            return matchingAttribute.getAttributeForMatching(netIDs.get(col));
+            return matchingAttribute.getAttributeForMatching(networks.get(col));
         }
 
         @Override
@@ -137,7 +133,7 @@ class MatchNodeTable extends JTable{
         @Override
         public void setValueAt(Object value, int row, int col) {
             if (value!=null);
-            matchingAttribute.putAttributeForMatching(netIDs.get(col), (String)value);
+            matchingAttribute.putAttributeForMatching(networks.get(col), (CyColumn)value);
             fireTableDataChanged();
         }
 
@@ -148,21 +144,13 @@ class MatchNodeTable extends JTable{
         }
             
         private void resetNetworks() {
-            netNames = new Vector<String>();
-            netIDs = new Vector<String>();
-            int size=0;
-            Iterator<String> it = matchingAttribute.getNetworkSet().iterator();
-            while (it.hasNext()) {
-                String netID = it.next();
-                String netName = Cytoscape.getNetwork(netID).getTitle();
-                int index = 0;
-                while (index<size && netNames.get(index).compareToIgnoreCase(netName)<0) index++;
-                
-                netIDs.add(index,netID);
-                netNames.add(index,netName);
-                size++;
-            }
-       }
+            networks = new ArrayList<CyNetwork>(matchingAttribute.getNetworkSet());
+            //TODO: sort networks maybe alphabetically
+        }
+        
+        public CyNetwork getNetork(int col) {
+            return networks.get(col);
+        }
 
     }
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                      http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
+	default-lazy-init="false">
+
+	<!-- collect necessary services -->
+	
+	<osgi:reference id="cyNetworkNamingServiceRef"
+		interface="org.cytoscape.session.CyNetworkNaming" />
+
+	<osgi:reference id="cyNetworkFactoryServiceRef"
+		interface="org.cytoscape.model.CyNetworkFactory" />
+
+	<osgi:reference id="taskManagerServiceRef" 
+		interface="org.cytoscape.work.TaskManager" />
+
+	<osgi:reference id="cyApplicationManagerServiceRef"
+		interface="org.cytoscape.application.CyApplicationManager" />
+
+	<osgi:reference id="cySwingApplicationServiceRef"
+		interface="org.cytoscape.application.swing.CySwingApplication" />
+
+	<osgi:reference id="cyNetworkManagerServiceRef"
+		interface="org.cytoscape.model.CyNetworkManager" />
+
+
+	<!-- now register our services -->
+
+	<osgi:service id="networkMergeActionService" ref="networkMergeAction"
+		interface="org.cytoscape.application.swing.CyAction">
+	</osgi:service>
+
+</beans>

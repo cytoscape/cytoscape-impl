@@ -36,7 +36,7 @@
 		<module>manual-layout-impl</module>
 		<module>model-impl</module>
 		<module>network-analyzer-impl</module>
-		<!-- <module>network-merge-impl</module> -->
+		<module>network-merge-impl</module>
 		<module>plugin-impl</module>
 		<module>presentation-impl</module>
 		<module>property-impl</module>

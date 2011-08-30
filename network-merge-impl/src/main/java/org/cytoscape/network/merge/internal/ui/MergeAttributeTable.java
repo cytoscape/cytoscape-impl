@@ -36,25 +36,21 @@
 
 package org.cytoscape.network.merge.internal.ui;
 
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.network.merge.internal.model.AttributeMapping;
 import org.cytoscape.network.merge.internal.model.MatchingAttribute;
-import org.cytoscape.network.merge.internal.util.AttributeValueCastUtils;
-        
-import cytoscape.Cytoscape;
-import cytoscape.util.CyNetworkNaming;
-import cytoscape.data.Semantics;
-import cytoscape.data.CyAttributes;
-import cytoscape.data.CyAttributesUtils;
+import org.cytoscape.network.merge.internal.util.ColumnType;
 
+import java.util.ArrayList;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Iterator;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.EventObject;
+import java.util.EnumSet;
+import java.util.Collection;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
@@ -69,11 +65,8 @@ import javax.swing.table.JTableHeader;
 import javax.swing.JComboBox;
 import javax.swing.table.TableColumn;
 import javax.swing.DefaultCellEditor;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.JTextField;
-import javax.swing.event.CellEditorListener;
 
 /**
  * Table for customizing attribute mapping from original netowrks
@@ -95,7 +88,7 @@ class MergeAttributeTable extends JTable{
         super();
         isNode = true;
         indexMatchingAttr = -1;
-        this.mergedNetworkName = CyNetworkNaming.getSuggestedNetworkTitle("Merged.Network");
+        this.mergedNetworkName = "Merged.Network";
         this.attributeMapping = attributeMapping;
         this.matchingAttribute = matchingAttribute;
         model = new MergeAttributeTableModel();
@@ -116,23 +109,37 @@ class MergeAttributeTable extends JTable{
     public String getMergedNetworkName() {
         return mergedNetworkName;
     }
+    
+    private String[] getComboboxOption(int col) {
+        CyNetwork net = model.getNetork(col);
+        CyTable table = attributeMapping.getCyTable(net);
+        Collection<CyColumn> cyCols = table.getColumns();
+        int n = cyCols.size();
+        String[] ret = new String[n+1];
+        int i=0;
+        for (CyColumn cyCol : cyCols) {
+            ret[i++] = cyCol.getName();
+        }
+        ret[n] = nullAttr;
+        return ret;
+    }
 
     protected void setColumnEditorAndRenderer() {
-        final TreeSet<String> attrset = new TreeSet<String>();
-        attrset.addAll(Arrays.asList(attributeMapping.getCyAttributes().getAttributeNames()));
+//        final TreeSet<String> attrset = new TreeSet<String>();
+//        attrset.addAll(Arrays.asList(attributeMapping.getCyAttributes().getAttributeNames()));
 
-        final Vector<String> attrs = new Vector<String>(attrset);
-        attrs.add(nullAttr);
+//        final Vector<String> attrs = new Vector<String>(attrset);
+//        attrs.add(nullAttr);
 
         //final int nnet = attributeMapping.getSizeNetwork();
 
         final int n = this.getColumnCount();//attributeMapping.getSizeNetwork();
         for (int i=0; i<n; i++) { // for each network
-            final JComboBox comboBox = new JComboBox(attrs);
             final TableColumn column = getColumnModel().getColumn(i);
 
-
             if (this.isColumnOriginalNetwork(i)) {
+                final String[] attrs = getComboboxOption(i);
+                final JComboBox comboBox = new JComboBox(attrs);
                 column.setCellEditor(new DefaultCellEditor(comboBox));
                 column.setCellRenderer(new TableCellRenderer() {
                     private DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
@@ -144,10 +151,10 @@ class MergeAttributeTable extends JTable{
                                     boolean isSelected, boolean hasFocus,
                                     int row, int column) {
 
-                                if (row<(isNode?3:2)) {//TODO Cytoscape3
+                                if (row<(isNode?1:0)) {//TODO Cytoscape3
                                         JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                                         label.setBackground(Color.LIGHT_GRAY);
-                                        if (row==2) {
+                                        if (row==0) {
                                                 label.setToolTipText("Change this in the matching node table above");
                                         } else {
                                                 label.setToolTipText("Reserved by system");
@@ -227,31 +234,23 @@ class MergeAttributeTable extends JTable{
                 RowTableCellEditor rowEditor = new RowTableCellEditor(this);
                 int nr = this.getRowCount();
                 //List<JComboBox> combos = new Vector<JComboBox>(nr); // save for render
-                @SuppressWarnings("unchecked") final Vector<String>[] cbvalues = new Vector[nr];
-                for (int ir=2; ir<nr-1; ir++) {
-                        int iAttr = ir-2;
+                final Vector<ColumnType>[] cbvalues = new Vector[nr];
+                for (int ir=0; ir<nr-1; ir++) {
+                        int iAttr = ir;
 
-                        final Set<String> attrNames = new HashSet<String>(attributeMapping.getOriginalAttributeMap(iAttr).values());
-                        final CyAttributes cyAttributes = attributeMapping.getCyAttributes();
-                        final String attr_mc = AttributeValueCastUtils.getMostCompatibleAttribute(attrNames, cyAttributes);
-                        final byte type_mc = attr_mc==null?CyAttributes.TYPE_STRING:cyAttributes.getType(attr_mc);
-
-                        Vector<String> types = new Vector<String>();
-                        types.add(CyAttributesUtils.toString(type_mc));
-                        //if (type_mc>0) {
-                                if (type_mc!=CyAttributes.TYPE_STRING) {
-                                        types.add(CyAttributesUtils.toString(CyAttributes.TYPE_STRING));
-                                }
-                                if (type_mc!=CyAttributes.TYPE_SIMPLE_LIST) {
-                                        types.add(CyAttributesUtils.toString(CyAttributes.TYPE_SIMPLE_LIST));
-                                }
-                        //}
+                        Map<CyNetwork, String> mapNetAttr = attributeMapping.getOriginalAttributeMap(iAttr);
+                        Set<ColumnType> types = EnumSet.noneOf(ColumnType.class);
+                        for (Map.Entry<CyNetwork,String> entry : mapNetAttr.entrySet()) {
+                            CyTable cyTable = attributeMapping.getCyTable(entry.getKey());
+                            types.add(ColumnType.getType(cyTable.getColumn(entry.getValue())));
+                        }
+                        ColumnType reasonalbeType = ColumnType.getResonableCompatibleConvertionType(types);
+                        Vector<ColumnType> convertiableTypes = new Vector<ColumnType>(ColumnType.getConvertibleTypes(reasonalbeType));
                         
-                        cbvalues[ir] = types;
+                        cbvalues[ir] = convertiableTypes;
 
-                        JComboBox cb = new JComboBox(types);
-                        final byte type_curr = attributeMapping.getMergedAttributeType(iAttr);
-                        cb.setSelectedItem(CyAttributesUtils.toString(type_curr));
+                        JComboBox cb = new JComboBox(convertiableTypes);
+                        cb.setSelectedItem(attributeMapping.getMergedAttributeType(iAttr));
 
                         rowEditor.setEditorAt(ir, new DefaultCellEditor(cb));
                         //combos.add(cb);
@@ -359,34 +358,26 @@ class MergeAttributeTable extends JTable{
             indexMatchingAttr = 0;
             String attr_merged = "Matching.Attribute";
             
-            //TODO: remove in Cytoscape3
-            Map<String, String> netAttrMap = new HashMap<String, String>(matchingAttribute.getNetAttrMap());
-            Iterator<Map.Entry<String, String>> it = netAttrMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String,String> entry = it.next();
-                String network = entry.getKey();
-                String attr = entry.getValue();
-                if (attr.compareTo("ID")==0) {
-                    netAttrMap.put(network, Semantics.CANONICAL_NAME);
-                }
-            }//TODO: remove in Cytoscape3
+            Map<CyNetwork, String> netAttrMap = new HashMap<CyNetwork, String>();
+            Set<ColumnType> types = EnumSet.noneOf(ColumnType.class);
+            for (Map.Entry<CyNetwork, CyColumn> entry : matchingAttribute.getNetAttrMap().entrySet()) {
+                netAttrMap.put(entry.getKey(), entry.getValue().getName());
+                types.add(ColumnType.getType(entry.getValue()).toPlain());
+            }
             
             attributeMapping.addAttributes(netAttrMap, attr_merged, indexMatchingAttr);
-            attributeMapping.setMergedAttributeType(indexMatchingAttr, CyAttributes.TYPE_SIMPLE_LIST);
+            attributeMapping.setMergedAttributeType(indexMatchingAttr, ColumnType.getResonableCompatibleConvertionType(types).toList());
             update = true;
-        } else {            
-            Set<String> networks = matchingAttribute.getNetworkSet();
-            Iterator<String> it = networks.iterator();
+        } else {
+            Set<CyNetwork> networks = matchingAttribute.getNetworkSet();
+            Iterator<CyNetwork> it = networks.iterator();
             if (!it.hasNext()) { // empty
                 indexMatchingAttr = -1;
             }
 
             while (it.hasNext()) {
-                String network = it.next();
-                String attr = matchingAttribute.getAttributeForMatching(network);
-                if (attr.compareTo("ID")==0) {
-                    attr = Semantics.CANONICAL_NAME;
-                }
+                CyNetwork network = it.next();
+                String attr = matchingAttribute.getAttributeForMatching(network).getName();
                 String old = attributeMapping.setOriginalAttribute(network, attr, indexMatchingAttr);
                 if (attr.compareTo(old)!=0) {
                     update=true;
@@ -420,8 +411,7 @@ class MergeAttributeTable extends JTable{
  
     // table model
     protected class MergeAttributeTableModel extends AbstractTableModel {
-        Vector<String> netNames; // network titles
-        Vector<String> netIDs; //network identifiers
+        ArrayList<CyNetwork> networks;
 
         public MergeAttributeTableModel() {
             resetNetworks();
@@ -452,7 +442,7 @@ class MergeAttributeTable extends JTable{
             }
 
             if (isColumnOriginalNetwork(col)){
-                return netNames.get(col);
+                return networks.get(col).toString();
             }
 
             return null;
@@ -460,23 +450,14 @@ class MergeAttributeTable extends JTable{
 
         //@Override
         public String getValueAt(final int row, final int col) {
-            //final int iAttr = row; //TODO used in Cytoscape3
-            
-            //TODO remove in Cytoscape3
-            if (row==0) {
-                return isColumnMergedType(col)?"String":"ID";
-            } else if (row==1) {
-                return isColumnMergedType(col)?"String":Semantics.CANONICAL_NAME;
-            }
-            final int iAttr = row - 2;
-            //TODO remove in Cytoscape3
+            final int iAttr = row; //TODO used in Cytoscape3
 
             if (row==getRowCount()-1) {
                 return null;
             }
 
             if (isColumnOriginalNetwork(col)) {
-                return attributeMapping.getOriginalAttribute(netIDs.get(col), iAttr);
+                return attributeMapping.getOriginalAttribute(networks.get(col), iAttr);
             }
 
             if (isColumnMergedNetwork(col)) {
@@ -484,8 +465,7 @@ class MergeAttributeTable extends JTable{
             }
 
             if (isColumnMergedType(col)) {
-                byte type = attributeMapping.getMergedAttributeType(iAttr);
-                return CyAttributesUtils.toString(type);
+                return attributeMapping.getMergedAttributeType(iAttr).toString();
             }
 
             return null;
@@ -498,27 +478,22 @@ class MergeAttributeTable extends JTable{
 
         @Override
         public boolean isCellEditable(final int row, final int col) {
-            //TODO remove in Cytoscape3.0
-            if (row<2) return false;//TODO remove in Cytoscape3.0
-                        
-            if (isNode) { // make the matching attribute ineditable
-                if (row==2) { //TODO use row==0 in Cytoscape3
-                    return !isColumnOriginalNetwork(col);
-                }
-            }
+            if (isNode && row==0) // make the matching attribute ineditable
+                return !isColumnOriginalNetwork(col);
 
             if (isColumnOriginalNetwork(col))
                     return true;
 
-            if (isColumnMergedNetwork(col)) {
+            if (isColumnMergedNetwork(col)) 
                     return row!=getRowCount()-1;
-            }
+            
 
-            if (isColumnMergedType(col)) {
-                    String mergedAttribute = getValueAt(row,col-1);
-                    CyAttributes attrs = attributeMapping.getCyAttributes();
-                    return !Arrays.asList(attrs.getAttributeNames()).contains(mergedAttribute);// non-editable for existing attribute
-            }
+            if (isColumnMergedType(col)) 
+                return true;
+//                    String mergedAttribute = getValueAt(row,col-1);
+//                    CyAttributes attrs = attributeMapping.getCyAttributes();
+//                    return !Arrays.asList(attrs.getAttributeNames()).contains(mergedAttribute);// non-editable for existing attribute
+            
 
             return false;
         }
@@ -528,18 +503,16 @@ class MergeAttributeTable extends JTable{
         public void setValueAt(final Object value, final int row, final int col) {
             if (value==null) return;
             
-            final String v = (String) value;
-            final int iAttr = row-2;//TODO remove in Cytoscape3.0
-            //final int iAttr = row; //TODO use in Cytoscape3.0
+            final int iAttr = row; //TODO use in Cytoscape3.0
             
             final int n = attributeMapping.getSizeMergedAttributes();
             if (iAttr>n) return; // should not happen
 
             if (isColumnMergedType(col)) {
                 if (iAttr==n) return;
-
-                byte type = getByteFromValue(v);
-                byte type_curr = attributeMapping.getMergedAttributeType(iAttr);
+                
+                ColumnType type = (ColumnType)value;
+                ColumnType type_curr = attributeMapping.getMergedAttributeType(iAttr);
                 if (type==type_curr) return;
 
                 attributeMapping.setMergedAttributeType(iAttr, type);
@@ -547,16 +520,12 @@ class MergeAttributeTable extends JTable{
             } else if (isColumnMergedNetwork(col)) { //column of merged network
                 if (iAttr==n) return;
                 
+                final String v = (String) value;
+            
                 String attr_curr = attributeMapping.getMergedAttribute(iAttr);
                 if (attr_curr.compareTo(v)==0) { //if the same
                     return;
                 }
-                
-                //TODO remove in Cytoscape3.0
-                if (v.compareTo("ID")==0||v.compareTo(Semantics.CANONICAL_NAME)==0) {
-                    JOptionPane.showMessageDialog(getParent(),"Atribute "+v+" is reserved! Please use another name for this attribute!", "Error: duplicated attribute Name", JOptionPane.ERROR_MESSAGE );
-                    return;
-                }//TODO remove in Cytoscape3.0
                 
                 if (v.length()==0) {
                     JOptionPane.showMessageDialog(getParent(),"Please use a non-empty name for the attribute!", "Error: empty attribute Name", JOptionPane.ERROR_MESSAGE );
@@ -572,25 +541,20 @@ class MergeAttributeTable extends JTable{
                 fireTableDataChanged();
                 return;
             } else { //column of original network
-                String netID = netIDs.get(col);
+                CyNetwork net = networks.get(col);
+                final String v = (String) value;
                 if (iAttr==n) { // the last row
                     if (v.compareTo(nullAttr)==0) return;
                     
-                    String attr_merged = v;
-                    //TODO remove in Cytoscape3
-                    if (v.compareTo(Semantics.CANONICAL_NAME)==0) {
-                        attr_merged = netID+"."+Semantics.CANONICAL_NAME;
-                    }//TODO remove in Cytoscape3
-                    
-                    Map<String,String> map = new HashMap<String,String>();
-                    map.put(netID, v);
+                    Map<CyNetwork,String> map = new HashMap<CyNetwork,String>();
+                    map.put(net, v);
 
-                    attributeMapping.addAttributes(map, attr_merged);
+                    attributeMapping.addAttributes(map, v);
                     fireTableDataChanged();
                     return;
 
                 } else {
-                    String curr_attr = attributeMapping.getOriginalAttribute(netID, iAttr);                    
+                    String curr_attr = attributeMapping.getOriginalAttribute(net, iAttr);                    
                     if (curr_attr!=null && curr_attr.compareTo(v)==0) {
                         return;
                     }
@@ -598,24 +562,11 @@ class MergeAttributeTable extends JTable{
                     if (v.compareTo(nullAttr)==0) {
                         if (curr_attr==null) return;
                         //if (attributeMapping.getOriginalAttribute(netID, iAttr)==null) return;
-                        attributeMapping.removeOriginalAttribute(netID, iAttr);
+                        attributeMapping.removeOriginalAttribute(net, iAttr);
                     } else {
                         String mergedAttr = attributeMapping.getMergedAttribute(iAttr);
-                        CyAttributes cyAttributes = attributeMapping.getCyAttributes();
-                        if (Arrays.asList(cyAttributes.getAttributeNames()).contains(mergedAttr)
-                                && !AttributeValueCastUtils.isAttributeTypeConvertable(v,
-                                                                          mergedAttr, 
-                                                                          cyAttributes)) {
-                            final int ioption = JOptionPane.showConfirmDialog(getParent(),
-                                        "Atribute "+v+" have a type incompatible to the other attributes to be merged. Are you sure to select "+v+"? ",
-                                        "Warning: types are different",
-                                        JOptionPane.YES_NO_OPTION );
-                                if (ioption==JOptionPane.NO_OPTION) {
-                                    return;
-                                }
-                        }
                                                 
-                        attributeMapping.setOriginalAttribute(netID, v, iAttr);// set the v
+                        attributeMapping.setOriginalAttribute(net, v, iAttr);// set the v
                     }
                     fireTableDataChanged();
                     return;
@@ -630,46 +581,13 @@ class MergeAttributeTable extends JTable{
         }
 
         private void resetNetworks() {
-            netNames = new Vector<String>();
-            netIDs = new Vector<String>();
-            int size=0;
-            Iterator<String> it = attributeMapping.getNetworkSet().iterator();
-            while (it.hasNext()) {
-               String netID = it.next();
-                String netName = Cytoscape.getNetwork(netID).getTitle();
-                int index = 0;
-                while (index<size && netNames.get(index).compareToIgnoreCase(netName)<0) index++;
-                
-                netIDs.add(index,netID);
-                netNames.add(index,netName);
-                size++;
-            }
+            networks = new ArrayList<CyNetwork>(matchingAttribute.getNetworkSet());
+            //TODO: sort networks maybe alphabetically
         }
-    }
-
-    protected byte getByteFromValue(final String value) {
-            if (value.compareTo(CyAttributesUtils.toString(CyAttributes.TYPE_STRING))==0) {
-                    return CyAttributes.TYPE_STRING;
-            }
-            if (value.compareTo(CyAttributesUtils.toString(CyAttributes.TYPE_SIMPLE_LIST))==0) {
-                    return CyAttributes.TYPE_SIMPLE_LIST;
-            }
-            if (value.compareTo(CyAttributesUtils.toString(CyAttributes.TYPE_BOOLEAN))==0) {
-                    return CyAttributes.TYPE_BOOLEAN;
-            }
-            if (value.compareTo(CyAttributesUtils.toString(CyAttributes.TYPE_COMPLEX))==0) {
-                    return CyAttributes.TYPE_COMPLEX;
-            }
-            if (value.compareTo(CyAttributesUtils.toString(CyAttributes.TYPE_FLOATING))==0) {
-                    return CyAttributes.TYPE_FLOATING;
-            }
-            if (value.compareTo(CyAttributesUtils.toString(CyAttributes.TYPE_INTEGER))==0) {
-                    return CyAttributes.TYPE_INTEGER;
-            }
-            if (value.compareTo(CyAttributesUtils.toString(CyAttributes.TYPE_SIMPLE_MAP))==0) {
-                    return CyAttributes.TYPE_SIMPLE_MAP;
-            }
-            return CyAttributes.TYPE_UNDEFINED;
+        
+        public CyNetwork getNetork(int col) {
+            return networks.get(col);
+        }
     }
 
 }
