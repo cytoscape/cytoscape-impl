@@ -135,7 +135,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 		// copy node location only.
 		for (View<CyNode> newNodeView : newView.getNodeViews()) {
-			View<CyNode> origNodeView = curView.getNodeView(newNodeView.getModel());
+			View<CyNode> origNodeView = curView.getNodeView(parentNetwork.getNode(newNodeView.getModel().getIndex()));
 			newNodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,
 					origNodeView.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION));
 			newNodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION,

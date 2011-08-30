@@ -37,6 +37,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AddedNodesEvent;
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveNodesEvent;
@@ -49,10 +50,10 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -67,20 +68,29 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	private int internalNodeCount;
 	private int internalEdgeCount;
 	private NodePointer inFirstNode;
-	private Set<CyNode> nodeSet;
-	private Set<CyEdge> edgeSet;
+	private Map<CyNode,CyNode> subNodeMap;
+	private Map<CyEdge,CyEdge> subEdgeMap;
 	private boolean fireAddedNodesAndEdgesEvents;
 
-	ArraySubGraph(final ArrayGraph par, final int inId, final CyEventHelper eventHelper) {
+	private final Map<String,CyTable> netTables;
+	private final Map<String,CyTable> nodeTables;
+	private final Map<String,CyTable> edgeTables;
+	private final CyTableManager tableMgr;
+
+	ArraySubGraph(final ArrayGraph par, final long inSUID, final int inId, final CyEventHelper eventHelper, final Map<String,CyTable> netTables, final Map<String,CyTable> nodeTables, final Map<String,CyTable> edgeTables, CyTableManager tableMgr) {
 		assert(par != null);
 		parent = par;
 		internalId = inId;
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
 
-		internalSUID = SUIDFactory.getNextSUID();
-
-		nodeSet = new HashSet<CyNode>(20000);
-		edgeSet = new HashSet<CyEdge>(20000);
+		internalSUID = inSUID; 
+		this.netTables = netTables;
+		this.nodeTables = nodeTables;
+		this.edgeTables = edgeTables;
+		this.tableMgr = tableMgr;
+		
+		subNodeMap = new HashMap<CyNode,CyNode>(20000);
+		subEdgeMap = new HashMap<CyEdge,CyEdge>(20000);
 
 		internalNodeCount = 0;
 		internalEdgeCount = 0;
@@ -127,10 +137,11 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	public CyNode addNode() {
 		final CyNode ret;
 		synchronized (this) {
-			ret = parent.nodeAdd();
-			updateNode(ret);
+			CyNodeImpl rootNode = parent.nodeAdd();
+			updateNode(rootNode);
 			internalNodeCount++;
-			nodeSet.add(ret);
+			ret = new CySubNodeImpl(rootNode,nodeTables);
+			subNodeMap.put(rootNode,ret);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
@@ -145,17 +156,51 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	public CyEdge addEdge(final CyNode source, final CyNode target, final boolean isDirected) {
 		// important that it's edgeAdd and not addEdge
 		final CyEdge ret;
+			
 		synchronized (this) {
-			ret = parent.edgeAdd(source, target, isDirected, this);
-			updateEdge(ret);
+			CyEdgeImpl rootEdge = parent.edgeAdd(source, target, isDirected, this); 
+			updateEdge(rootEdge);
 			internalEdgeCount++;
-			edgeSet.add(ret);
+			ret = new CySubEdgeImpl(rootEdge,edgeTables,subNodeMap);
+			subEdgeMap.put(rootEdge,ret);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
 			eventHelper.addEventPayload((CyNetwork)this, ret, AddedEdgesEvent.class);
 
 		return ret;
+	}
+
+	private CyNode getRootNode(CyNode node) {
+		if ( node instanceof CySubNodeImpl )
+			return ((CySubNodeImpl)node).getRootNode();
+		else
+			return node;	
+	}
+
+	private CyNodeImpl getRootNodeImpl(CyNode node) {
+		if ( node instanceof CySubNodeImpl )
+			return (CyNodeImpl)(((CySubNodeImpl)node).getRootNode());
+		else if ( node instanceof CyNodeImpl )
+			return (CyNodeImpl)node;
+		else
+			throw new IllegalArgumentException("unrecognized node type");	
+	}
+
+	private CyEdge getRootEdge(CyEdge edge) {
+		if ( edge instanceof CySubEdgeImpl )
+			return ((CySubEdgeImpl)edge).getRootEdge();
+		else
+			return edge;	
+	}
+
+	private CyEdgeImpl getRootEdgeImpl(CyEdge edge) {
+		if ( edge instanceof CySubEdgeImpl )
+			return (CyEdgeImpl)(((CySubEdgeImpl)edge).getRootEdge());
+		else if ( edge instanceof CyEdgeImpl )
+			return (CyEdgeImpl)edge;
+		else
+			throw new IllegalArgumentException("unrecognized edge type");	
 	}
 
 
@@ -177,35 +222,54 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	 * {@inheritDoc}
 	 */
 	public synchronized List<CyNode> getNodeList() {
-		return parent.getNodeList(inFirstNode, internalId, internalNodeCount);
+		return convertToSubNodes( parent.getNodeList(inFirstNode, internalId, internalNodeCount) );
 	}
+
+	private List<CyNode> convertToSubNodes(List<CyNode> rootNodes) {
+		List<CyNode> subNodes = new ArrayList<CyNode>(rootNodes.size());
+		for ( CyNode root : rootNodes )
+			subNodes.add( subNodeMap.get(root) );
+		return subNodes;
+	}
+
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public synchronized List<CyEdge> getEdgeList() {
-		return parent.getEdgeList(inFirstNode, internalId, internalEdgeCount);
+		return convertToSubEdges( parent.getEdgeList(inFirstNode, internalId, internalEdgeCount) );
+	}
+
+	private List<CyEdge> convertToSubEdges(List<CyEdge> rootEdges) {
+		List<CyEdge> subEdges = new ArrayList<CyEdge>(rootEdges.size());
+		for ( CyEdge root : rootEdges )
+			subEdges.add( subEdgeMap.get(root) );
+		return subEdges;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean containsNode(final CyNode node) {
-		return parent.containsNode(node) && nodeSet.contains(node);
+		final CyNode rootNode = getRootNode(node); 
+		return parent.containsNode(rootNode) && subNodeMap.containsKey(rootNode);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean containsEdge(final CyEdge edge) {
-		return parent.containsEdge(edge) && edgeSet.contains(edge);
+		final CyEdge rootEdge = getRootEdge(edge); 
+		return parent.containsEdge(rootEdge) && subEdgeMap.containsKey(rootEdge);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean containsEdge(final CyNode from, final CyNode to) {
-		return containsNode(from) && containsNode(to) && parent.containsEdge(from, to, internalId);
+		final CyNode rootFrom = getRootNode(from);
+		final CyNode rootTo = getRootNode(to);
+		return containsNode(rootFrom) && containsNode(rootTo) && parent.containsEdge(rootFrom, rootTo, internalId);
 	}
 
 	/**
@@ -218,10 +282,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			return null;
 
 		// make sure the subnetwork still contains the node
-		if ( nodeSet.contains(n) )
-			return n;
-		else
-			return null;
+		return subNodeMap.get(n);
 	}
 
 	/**
@@ -234,24 +295,21 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			return null;
 
 		// make sure the subnetwork still contains the edge
-		if ( edgeSet.contains(e) )
-			return e;
-		else
-			return null;
+		return subEdgeMap.get(e);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public List<CyNode> getNeighborList(final CyNode node, final CyEdge.Type edgeType) {
-		return parent.getNeighborList(node, edgeType, internalId);
+		return convertToSubNodes( parent.getNeighborList(getRootNode(node), edgeType, internalId) );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public List<CyEdge> getAdjacentEdgeList(final CyNode node, final CyEdge.Type edgeType) {
-		return parent.getAdjacentEdgeList(node, edgeType, internalId);
+		return convertToSubEdges( parent.getAdjacentEdgeList(getRootNode(node), edgeType, internalId) );
 	}
 
 	/**
@@ -259,22 +317,19 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	 */
 	public List<CyEdge> getConnectingEdgeList(final CyNode source, final CyNode target,
 	                                          final CyEdge.Type edgeType) {
-		return parent.getConnectingEdgeList(source, target, edgeType, internalId);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public CyRow getCyRow(final String namespace) {
-		return parent.getCyRow(namespace);
+		return convertToSubEdges( parent.getConnectingEdgeList(getRootNode(source), getRootNode(target), edgeType, internalId) );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public CyRow getCyRow() {
-		return parent.getCyRow();
+		return getCyRow(CyNetwork.DEFAULT_ATTRS);
 	}
+
+    public CyRow getCyRow(final String namespace) {
+		return netTables.get(namespace).getRow(internalSUID);
+    }
 
 	/**
 	 * {@inheritDoc}
@@ -283,6 +338,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		if (node == null)
 			throw new NullPointerException("node is null");
 
+		final CyNode subNode; 
 		synchronized (this) {
 			if (containsNode(node))
 				return false;
@@ -292,10 +348,13 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 			// add node
 			internalNodeCount++;
-			nodeSet.add(node);
-			updateNode(node);
+			final CyNodeImpl rootNode = getRootNodeImpl(node);
+			subNode = new CySubNodeImpl(rootNode,nodeTables);
+
+			subNodeMap.put(rootNode,subNode);
+			updateNode(rootNode);
 		}
-		eventHelper.addEventPayload((CyNetwork)this, node, AddedNodesEvent.class);
+		eventHelper.addEventPayload((CyNetwork)this, subNode, AddedNodesEvent.class);
 
 		return true;
 	}
@@ -304,6 +363,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		if (edge == null)
 			throw new NullPointerException("edge is null");
 
+		final CyEdge subEdge; 
 		synchronized (this) {
 			if (containsEdge(edge))
 				return false;
@@ -319,11 +379,13 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			addNode(edge.getTarget());
 
 			// add edge
+			final CyEdgeImpl rootEdge = getRootEdgeImpl(edge);
+			subEdge = new CySubEdgeImpl(rootEdge,edgeTables,subNodeMap);
 			internalEdgeCount++;
-			edgeSet.add(edge);
-			updateEdge(edge);
+			subEdgeMap.put(rootEdge,subEdge);
+			updateEdge(rootEdge);
 		}
-		eventHelper.addEventPayload((CyNetwork)this, edge, AddedEdgesEvent.class);
+		eventHelper.addEventPayload((CyNetwork)this, subEdge, AddedEdgesEvent.class);
 
 		return true;
 	}
@@ -342,18 +404,21 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 		synchronized (this) {
 			for (CyNode n : nodes) {
-
+				//System.out.println("removing node: " + n);
+				
 				if (!containsNode(n))
 					return false;
 
 				// remove adjacent edges
 				removeEdgesInternal(getAdjacentEdgeList(n, CyEdge.Type.ANY));
+	
+				final CyNode rootNode = getRootNode(n);
 
-				final NodePointer node = parent.getNodePointer(n);
+				final NodePointer node = parent.getNodePointer(rootNode);
 				inFirstNode = node.remove(inFirstNode,internalId);
 
 				internalNodeCount--;
-				nodeSet.remove(n);
+				subNodeMap.remove(rootNode);
 			}
 		}
 
@@ -386,26 +451,40 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 	// should be called from within a synchronized block
 	private boolean removeEdgesInternal(Collection<CyEdge> edges) {
+		//System.out.println("removeEdgesInternal edges size: " + edges.size());
 		for (CyEdge edge : edges) {
-			if (!containsEdge(edge))
+			if (!containsEdge(edge)) {
+				//System.out.println("doesn't contain edge: " + edge);
 				return false;
+			}
 
-			final EdgePointer e = parent.getEdgePointer(edge);
-
+			CyEdge rootEdge = getRootEdge(edge);
+			final EdgePointer e = parent.getEdgePointer(rootEdge);
+	
 			e.remove(internalId);
 
 			internalEdgeCount--;
-			edgeSet.remove(edge);
+			subEdgeMap.remove(rootEdge);
 		}
+		//System.out.println("theoretically removed appropriate edges");
 		return true;
 	}
 
 	@Override
 	public void handleEvent(final NetworkAddedEvent e) {
 		if (e.getNetwork() == this) {
-			parent.registerAllTables();
+			registerAllTables();
 			fireAddedNodesAndEdgesEvents = true;
 		}
+	}
+
+	private void registerAllTables() {
+        for (final CyTable table : netTables.values())
+            tableMgr.addTable(table);
+        for (final CyTable table : nodeTables.values())
+            tableMgr.addTable(table);
+        for (final CyTable table : edgeTables.values())
+            tableMgr.addTable(table);
 	}
 
 	/**
@@ -433,14 +512,18 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	}
 
 	public CyTable getDefaultNetworkTable() {
-		return parent.getDefaultNetworkTable();
+		return netTables.get(CyNetwork.DEFAULT_ATTRS); 
 	}
 
 	public CyTable getDefaultNodeTable() {
-		return parent.getDefaultNodeTable();
+		return nodeTables.get(CyNetwork.DEFAULT_ATTRS); 
 	}
 
 	public CyTable getDefaultEdgeTable() {
-		return parent.getDefaultEdgeTable();
+		return edgeTables.get(CyNetwork.DEFAULT_ATTRS); 
+	}
+
+	public String toString() {
+		return "CyNetwork: " + internalSUID + " name: " + getCyRow().get("name", String.class); 
 	}
 }

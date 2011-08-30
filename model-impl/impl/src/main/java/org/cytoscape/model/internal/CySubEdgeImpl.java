@@ -41,55 +41,38 @@ import java.util.List;
 import java.util.Map;
 
 
-class CyNodeImpl extends CyTableEntryImpl implements CyNode {
-	final private int index;
-	private CyNetwork nestedNet;
-	final private CyEventHelper eventHelper;
+class CySubEdgeImpl extends CyTableEntryImpl implements CyEdge {
 
-	CyNodeImpl(int ind, final Map<String,CyTable> table, final CyEventHelper eventHelper) {
-		super(table);
-		index = ind;
-		nestedNet = null;
-		this.eventHelper = eventHelper;
+	private final CyEdgeImpl rootEdge;
+	private final Map<CyNode,CyNode> subNodeMap;
+
+	CySubEdgeImpl(CyEdgeImpl rootEdge, Map<String,CyTable> edgeTable, Map<CyNode,CyNode> subNodeMap) {
+		super(edgeTable, rootEdge.getSUID());
+		this.rootEdge = rootEdge;
+		this.subNodeMap = subNodeMap;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int getIndex() {
-		return index;
+		return rootEdge.getIndex();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	@Override
 	public String toString() {
-		return "Node suid: " + getSUID() + " index: " + index;
+		return rootEdge.toString(); 
 	}
 
-	public synchronized CyNetwork getNetwork() {
-		return nestedNet;
+	public CyNode getSource() {
+		return subNodeMap.get(rootEdge.getSource());
 	}
 
-	public void setNetwork(final CyNetwork n) {
-		final CyNetwork orig; 
-	
-		synchronized (this) {
-			orig = nestedNet;
-			if (n == nestedNet)
-				return;
-			else
-				nestedNet = n;
-		}
+	public CyNode getTarget() {
+		return subNodeMap.get(rootEdge.getTarget());
+	}
 
-		if (orig != null)
-			eventHelper.fireEvent(new UnsetNestedNetworkEvent(this, orig));
-		if (nestedNet != null)
-			eventHelper.fireEvent(new SetNestedNetworkEvent(this, nestedNet));
+	public boolean isDirected() {
+		return rootEdge.isDirected();
+	}
+
+	public CyEdge getRootEdge() {
+		return rootEdge;
 	}
 }

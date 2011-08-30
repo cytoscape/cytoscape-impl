@@ -42,11 +42,15 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	private final long suid;
 	private final Map<String, CyTable> attrMgr;
 
-	CyTableEntryImpl(final Map<String, CyTable> attrMgr) {
-		suid = SUIDFactory.getNextSUID();
+	CyTableEntryImpl(final Map<String, CyTable> attrMgr, long suid) {
+		this.suid = suid;
 		this.attrMgr = attrMgr;
 		getCyRow().set(CyTableEntry.NAME, "");
 		getCyRow().set(CyNetwork.SELECTED, Boolean.FALSE);
+	}
+
+	CyTableEntryImpl(final Map<String, CyTable> attrMgr) {
+		this(attrMgr,SUIDFactory.getNextSUID());
 	}
 
 	final public long getSUID() {

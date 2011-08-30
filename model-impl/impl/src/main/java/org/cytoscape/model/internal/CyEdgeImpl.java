@@ -49,8 +49,8 @@ class CyEdgeImpl extends CyTableEntryImpl implements CyEdge {
 	final private int index;
 	final private boolean directed;
 
-	CyEdgeImpl(CyNode src, CyNode tgt, boolean dir, int ind, Map<String, CyTable> attrMgr) {
-		super(attrMgr);
+	CyEdgeImpl(CyNode src, CyNode tgt, boolean dir, int ind, final Map<String,CyTable> table) {
+		super(table);
 		source = src;
 		target = tgt;
 		directed = dir;

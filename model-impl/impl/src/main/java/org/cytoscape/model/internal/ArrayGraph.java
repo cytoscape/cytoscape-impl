@@ -81,14 +81,17 @@ final public class ArrayGraph implements CyRootNetwork {
 	private NodePointer firstNode;
 	private final List<NodePointer> nodePointers;
 	private final List<EdgePointer> edgePointers;
-	private final Map<String, CyTable> netAttrMgr;
-	private final Map<String, CyTable> nodeAttrMgr;
-	private final Map<String, CyTable> edgeAttrMgr;
+	private final Map<String,CyTable> netTables;
+	private final Map<String,CyTable> nodeTables;
+	private final Map<String,CyTable> edgeTables;
 	private final CyEventHelper eventHelper;
 	private final List<CySubNetwork> subNetworks;
 	private final CySubNetwork base;
 	private final CyTableManagerImpl tableMgr;
+	private final CyTableFactory tableFactory;
 	private final CyServiceRegistrar serviceRegistrar;
+
+	private final boolean publicTables;
 
 	/**
 	 * Creates a new ArrayGraph object.
@@ -99,6 +102,8 @@ final public class ArrayGraph implements CyRootNetwork {
 	                  final CyServiceRegistrar serviceRegistrar, final boolean publicTables)
 	{
 		this.tableMgr = tableMgr;
+		this.tableFactory = tableFactory;
+		this.publicTables = publicTables;
 		this.serviceRegistrar = serviceRegistrar;
 		suid = SUIDFactory.getNextSUID();
 		numSubNetworks = 0;
@@ -108,65 +113,77 @@ final public class ArrayGraph implements CyRootNetwork {
 		nodePointers = new ArrayList<NodePointer>();
 		edgePointers = new ArrayList<EdgePointer>();
 
-		netAttrMgr = new HashMap<String, CyTable>();
-		netAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-			       tableFactory.createTable(suid + " network", Identifiable.SUID, Long.class,
-							publicTables, false));
-		netAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-			       tableFactory.createTable(suid + " network", Identifiable.SUID, Long.class, false,
-							false));
-
-		netAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class,
-								     true);
+		netTables = createNetworkTables(suid); 
 		getCyRow().set(CyTableEntry.NAME, "");
-		// potential leak since "this" isn't yet fully constructed
 
-		nodeAttrMgr = new HashMap<String, CyTable>();
-		nodeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-				tableFactory.createTable(suid + " node", Identifiable.SUID, Long.class,
-							 publicTables, false));
-		nodeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-				tableFactory.createTable(suid + " node", Identifiable.SUID, Long.class,
-							 false, false));
+		nodeTables = createNodeTables(suid); 
+		edgeTables = createEdgeTables(suid); 
 
-		nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
-								      String.class, true);
-		nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
-								      Boolean.class, true);
+        tableMgr.setTableMap(CyNetwork.class, this, netTables);
+        tableMgr.setTableMap(CyNode.class, this, nodeTables);
+        tableMgr.setTableMap(CyEdge.class, this, edgeTables);
 
-		edgeAttrMgr = new HashMap<String, CyTable>();
-		edgeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-				tableFactory.createTable(suid + " edge", Identifiable.SUID, Long.class,
-							 publicTables, false));
-		edgeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-				tableFactory.createTable(suid + " edge", Identifiable.SUID, Long.class,
-							 false, false));
-
-		edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
-								      String.class, true);
-		edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
-								      Boolean.class, true);
-		edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyEdge.INTERACTION,
-								      String.class, true);
 		eventHelper = eh;
 
 		subNetworks = new ArrayList<CySubNetwork>();
 
 		base = addSubNetwork(); 
-
-		tableMgr.setTableMap(CyNetwork.class, base, netAttrMgr);
-		tableMgr.setTableMap(CyNode.class, base, nodeAttrMgr);
-		tableMgr.setTableMap(CyEdge.class, base, edgeAttrMgr);
 	}
 
-	/** Registers the network, node, and edge tables with the table mananger. */
-	void registerAllTables() {
-		for (final CyTable table : netAttrMgr.values())
-			tableMgr.addTable(table);
-		for (final CyTable table : nodeAttrMgr.values())
-			tableMgr.addTable(table);
-		for (final CyTable table : edgeAttrMgr.values())
-			tableMgr.addTable(table);
+	private void registerAllTables() {
+        for (final CyTable table : netTables.values())
+            tableMgr.addTable(table);
+        for (final CyTable table : nodeTables.values())
+            tableMgr.addTable(table);
+        for (final CyTable table : edgeTables.values())
+            tableMgr.addTable(table);
+	}
+
+	private Map<String,CyTable> createNetworkTables(long suidx) {
+		Map<String,CyTable> netAttrMgr = new HashMap<String, CyTable>();
+        netAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " network", Identifiable.SUID, Long.class, publicTables, false));
+        netAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " network", Identifiable.SUID, Long.class, false, false));
+
+        netAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
+        //getCyRow().set(CyTableEntry.NAME, "");
+		return netAttrMgr;
+	}
+
+	private Map<String,CyTable> createNodeTables(long suidx) {
+        Map<String,CyTable> nodeAttrMgr = new HashMap<String, CyTable>();
+        nodeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
+                tableFactory.createTable(suidx + " node", Identifiable.SUID, Long.class,
+                             publicTables, false));
+        nodeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
+                tableFactory.createTable(suidx + " node", Identifiable.SUID, Long.class,
+                             false, false));
+
+        nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
+                                      String.class, true);
+        nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
+                                      Boolean.class, true);
+
+		return nodeAttrMgr;
+
+	}
+
+	private Map<String,CyTable> createEdgeTables(long suidx) {
+        Map<String,CyTable> edgeAttrMgr = new HashMap<String, CyTable>();
+        edgeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
+                tableFactory.createTable(suidx + " edge", Identifiable.SUID, Long.class,
+                             publicTables, false));
+        edgeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
+                tableFactory.createTable(suidx + " edge", Identifiable.SUID, Long.class,
+                             false, false));
+
+        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
+                                      String.class, true);
+        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
+                                      Boolean.class, true);
+        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyEdge.INTERACTION,
+                                      String.class, true);
+
+		return edgeAttrMgr;
 	}
 
 	/**
@@ -287,6 +304,7 @@ final public class ArrayGraph implements CyRootNetwork {
 
 	synchronized List<CyNode> getNeighborList(final CyNode n, final CyEdge.Type e, final int inId) {
 		if (!containsNode(n)) {
+			//System.out.println("network doesn't contain node, so no neighbors: " + n);
 			return new ArrayList<CyNode>();
 			//TODO log.warning("this node is not contained in the network");
 		}
@@ -312,9 +330,11 @@ final public class ArrayGraph implements CyRootNetwork {
 
 	synchronized List<CyEdge> getAdjacentEdgeList(final CyNode n, final CyEdge.Type e, final int inId) {
 		if (!containsNode(n)) {
+			//System.out.println("doesn't contain node: " + n);
 			return new ArrayList<CyEdge>();
 			// TODO log.warning("this node is not contained in the network");
 		}
+		//System.out.println("getting adjacent edge list for node: " + n);
 
 		final NodePointer np = getNodePointer(n);
 		final List<CyEdge> ret = new ArrayList<CyEdge>(countEdges(np, e, inId));
@@ -367,19 +387,21 @@ final public class ArrayGraph implements CyRootNetwork {
 		return nodeAdd();
 	}
 
-	CyNode nodeAdd() {
+	CyNodeImpl nodeAdd() {
 		final NodePointer n;
+		final CyNodeImpl rootNode; 
 
 		synchronized (this) {
 			final int index = nodePointers.size();
-			n = new NodePointer(index, new CyNodeImpl(index, nodeAttrMgr, eventHelper));
+			rootNode = new CyNodeImpl(index, nodeTables, eventHelper);
+			n = new NodePointer(index, rootNode);
 			nodePointers.add(n);
 			nodeCount++;
 			// In ArrayGraph we only ever add the node to the root.
 			firstNode = n.insert(firstNode,ROOT);
 		}
 
-		return n.cyNode;
+		return rootNode; 
 	}
 
 	/**
@@ -423,23 +445,29 @@ final public class ArrayGraph implements CyRootNetwork {
 	}
 
 	// Will be called from ArraySubGraph.
-	CyEdge edgeAdd(final CyNode s, final CyNode t, final boolean directed, final CyNetwork net) {
+	CyEdgeImpl edgeAdd(final CyNode s, final CyNode t, final boolean directed, final CyNetwork net) {
 
 		final EdgePointer e;
+		final CyEdgeImpl rootEdge;
+
+		final CyNode rootS = getRootNode(s);
+		final CyNode rootT = getRootNode(t);
 
 		synchronized (this) {
+			// here we check with possible sub node, not just root node
 			if (!net.containsNode(s))
 				throw new IllegalArgumentException("source node is not a member of this network");
 
+			// here we check with possible sub node, not just root node
 			if (!net.containsNode(t))
 				throw new IllegalArgumentException("target node is not a member of this network");
 
-			final NodePointer source = getNodePointer(s);
-			final NodePointer target = getNodePointer(t);
+			final NodePointer source = getNodePointer(rootS);
+			final NodePointer target = getNodePointer(rootT);
 
 			final int index = edgePointers.size();
-			e = new EdgePointer(source, target, directed, index, 
-			                    new CyEdgeImpl(s, t, directed, index, edgeAttrMgr));
+			rootEdge = new CyEdgeImpl(rootS, rootT, directed, index, edgeTables);
+			e = new EdgePointer(source, target, directed, index, rootEdge); 
 
 			// adds to the root network, adding to the subnetwork is handled in ArraySubGraph 
 			e.insert(ROOT); 
@@ -449,8 +477,25 @@ final public class ArrayGraph implements CyRootNetwork {
 			edgeCount++;
 		}
 
-		return e.cyEdge;
+		//System.out.println("adding edge: " + rootEdge);
+
+		return rootEdge; 
 	}
+
+	private CyNode getRootNode(CyNode node) {
+		if ( node instanceof CySubNodeImpl )
+			return ((CySubNodeImpl)node).getRootNode();
+		else
+			return node;	
+	}
+
+	private CyEdge getRootEdge(CyEdge edge) {
+		if ( edge instanceof CySubEdgeImpl )
+			return ((CySubEdgeImpl)edge).getRootEdge();
+		else
+			return edge;	
+	}
+
 
 	/**
 	 * {@inheritDoc}
@@ -488,13 +533,11 @@ final public class ArrayGraph implements CyRootNetwork {
 	public boolean containsNode(final CyNode node) {
 		if (node == null)
 			return false;
-			//throw new NullPointerException("node is null");
 
 		final int ind = node.getIndex();
 
 		if (ind < 0)
 			return false;
-			//throw new IllegalArgumentException("node index less than zero");
 
 		final NodePointer thisNode; 
 
@@ -508,7 +551,9 @@ final public class ArrayGraph implements CyRootNetwork {
 		if ( thisNode == null )
 			return false;	
 
-		return thisNode.cyNode.equals(node);
+		final CyNode rootNode = getRootNode(node);
+
+		return thisNode.cyNode.equals(rootNode);
 	}
 
 	/**
@@ -534,7 +579,9 @@ final public class ArrayGraph implements CyRootNetwork {
 		if ( thisEdge == null )
 			return false;
 
-		return thisEdge.cyEdge.equals(edge);
+		final CyEdge rootEdge = getRootEdge(edge);
+
+		return thisEdge.cyEdge.equals(rootEdge);
 	}
 
 	/**
@@ -566,31 +613,28 @@ final public class ArrayGraph implements CyRootNetwork {
 	/**
 	 * {@inheritDoc}
 	 */
-	public CyRow getCyRow(final String namespace) {
-		if (namespace == null)
-			throw new NullPointerException("namespace is null");
-
-		final CyRow ret; 
-		final CyTable mgr;
-	
-		synchronized (this) {
-			mgr = netAttrMgr.get(namespace);
-
-			if (mgr == null)
-				throw new NullPointerException("attribute manager is null for namespace: " + namespace);
-
-			ret = mgr.getRow(suid);
-		}
-
-		return ret;
+	public synchronized CyRow getCyRow() {
+		return getCyRow(CyNetwork.DEFAULT_ATTRS); 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public CyRow getCyRow() {
-		return getCyRow(CyNetwork.DEFAULT_ATTRS);
-	}
+    public CyRow getCyRow(final String namespace) {
+        if (namespace == null)
+            throw new NullPointerException("namespace is null");
+
+        final CyRow ret;
+        final CyTable mgr;
+   
+        synchronized (this) {
+            mgr = netTables.get(namespace);
+
+            if (mgr == null)
+                throw new NullPointerException("attribute manager is null for namespace: " + namespace);
+
+            ret = mgr.getRow(suid);
+        }
+
+        return ret;
+    }
 
 	private Iterator<EdgePointer> edgesAdjacent(final NodePointer n, final CyEdge.Type edgeType, final int inId) {
 		assert(n!=null);
@@ -866,12 +910,16 @@ final public class ArrayGraph implements CyRootNetwork {
  	 */
 	public synchronized CySubNetwork addSubNetwork() {
 		final int newId = ++numSubNetworks;
-		final ArraySubGraph sub = new ArraySubGraph(this,newId,eventHelper);
+		final long newSUID = SUIDFactory.getNextSUID();
+		final Map<String,CyTable> newNetTable = createNetworkTables(newSUID);
+		final Map<String,CyTable> newNodeTable = createNodeTables(newSUID);
+		final Map<String,CyTable> newEdgeTable = createEdgeTables(newSUID);
+		final ArraySubGraph sub = new ArraySubGraph(this,newSUID,newId,eventHelper,newNetTable,newNodeTable,newEdgeTable,tableMgr);
 		serviceRegistrar.registerAllServices(sub, new Properties());
 		subNetworks.add(sub);
-		tableMgr.setTableMap(CyNetwork.class, sub, netAttrMgr);
-		tableMgr.setTableMap(CyNode.class, sub, nodeAttrMgr);
-		tableMgr.setTableMap(CyEdge.class, sub, edgeAttrMgr);
+		tableMgr.setTableMap(CyNetwork.class, sub, newNetTable);
+		tableMgr.setTableMap(CyNode.class, sub, newNodeTable);
+		tableMgr.setTableMap(CyEdge.class, sub, newEdgeTable);
 		return sub;
 	}
 
@@ -914,21 +962,21 @@ final public class ArrayGraph implements CyRootNetwork {
 	 * {@inheritDoc}
 	 */
 	public CyTable getDefaultNetworkTable() {
-		return netAttrMgr.get(CyNetwork.DEFAULT_ATTRS);
+		return netTables.get(CyNetwork.DEFAULT_ATTRS); 
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public CyTable getDefaultNodeTable() {
-		return nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS);
+		return nodeTables.get(CyNetwork.DEFAULT_ATTRS); 
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public CyTable getDefaultEdgeTable() {
-		return edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS);
+		return edgeTables.get(CyNetwork.DEFAULT_ATTRS); 
 	}
 
 	/**
@@ -936,5 +984,9 @@ final public class ArrayGraph implements CyRootNetwork {
 	 */
 	public synchronized boolean containsNetwork(final CyNetwork net) {
 		return subNetworks.contains(net);
+	}
+
+	public String toString() {
+		return "CyNetwork: " + suid + " name: " + getCyRow().get("name", String.class); 
 	}
 }

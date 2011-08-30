@@ -1000,8 +1000,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		@Override
 		public Map<String, Object> getAllValues() {
-			final Map<String, Object> nameToValueMap =
-				new HashMap<String, Object>(types.size());
+			final Map<String, Object> nameToValueMap = new HashMap<String, Object>(types.size());
 			for (final CyColumn column : types.values()) {
 				final String columnName = column.getName();
 				final Class<?> type = column.getType();
@@ -1020,13 +1019,16 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return CyTableImpl.this;
 		}
 
-		@Override
+//		@Override
 		public String toString() {
+			return 	"Table: " + title + " SUID: " + suid + " isImmutable: " + isImmutable + " public: " + pub;
+		/*
 			final StringBuilder builder = new StringBuilder();
 			final Map<String, Object> allVal = getAllValues();
 			for(String key: getAllValues().keySet())
 				builder.append(key + " = " + allVal.get(key) + ", ");
 			return builder.toString();
+			*/
 		}
 	}
 }
