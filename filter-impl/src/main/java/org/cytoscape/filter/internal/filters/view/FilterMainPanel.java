@@ -920,10 +920,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			JButton _btn = (JButton) _actionObject;
 
 			if (_btn == btnApplyFilter) {
-				//System.out.println("\nApplyButton is clicked!");
-				//System.out.println("\tThe Filter to apply is \n" + cmbSelectFilter.getSelectedItem().toString()+"\n");
 				CompositeFilter theFilterToApply = (CompositeFilter) cmbSelectFilter.getSelectedItem();
-				theFilterToApply.setNetwork(applicationManager.getCurrentNetwork());
+				final CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
+				if (currentNetwork == null)
+					return;
+				theFilterToApply.setNetwork(currentNetwork);
 				FilterUtil.doSelection(theFilterToApply, applicationManager);
 			}
 			if (_btn == btnAddFilterWidget) {
