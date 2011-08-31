@@ -302,7 +302,6 @@
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<goals>deploy</goals>
-					<updateDependencies>true</updateDependencies>
 				</configuration>
 			</plugin>
 		</plugins>
