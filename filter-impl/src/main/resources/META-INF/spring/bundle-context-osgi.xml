@@ -5,6 +5,7 @@
                       http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd"
 	default-lazy-init="false">
 
+	<!-- Imports -->
 	<osgi:reference id="cySwingApplicationServiceRef" 
 	                interface="org.cytoscape.application.swing.CySwingApplication"/>
 
@@ -17,10 +18,13 @@
 	<osgi:reference id="cyNetworkManagerServiceRef"
                    	interface="org.cytoscape.model.CyNetworkManager" />
 
-    <osgi:reference id="cyServiceRegistrarServiceRef" interface="org.cytoscape.service.util.CyServiceRegistrar" />
+	<osgi:reference id="cyServiceRegistrarServiceRef" interface="org.cytoscape.service.util.CyServiceRegistrar" />
 
 	<osgi:reference id="cyEventHelperServiceRef" interface="org.cytoscape.event.CyEventHelper"/>
+
+	<osgi:reference id="taskManagerServiceRef" interface="org.cytoscape.work.TaskManager" />
 	
+	<!-- Exports -->
 	<osgi:service id="filterCytoPanelComponentService" ref="filterCytoPanelComponent"
                   interface="org.cytoscape.application.swing.CytoPanelComponent"/>
 
@@ -33,5 +37,4 @@
 		interface="org.cytoscape.application.swing.CyAction" />
 	
 	<osgi:service id="quickFindPluginService" ref="quickFindPlugin" auto-export="interfaces"/>
-
 </beans>

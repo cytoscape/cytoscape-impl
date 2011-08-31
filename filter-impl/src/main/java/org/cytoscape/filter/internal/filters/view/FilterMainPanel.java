@@ -1,29 +1,29 @@
 /*
- Copyright (c) 2006, 2007, 2009, 2010, The Cytoscape Consortium (www.cytoscape.org)
+  Copyright (c) 2006, 2007, 2009, 2010, The Cytoscape Consortium (www.cytoscape.org)
 
- This library is free software; you can redistribute it and/or modify it
- under the terms of the GNU Lesser General Public License as published
- by the Free Software Foundation; either version 2.1 of the License, or
- any later version.
+  This library is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as published
+  by the Free Software Foundation; either version 2.1 of the License, or
+  any later version.
 
- This library is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
- MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
- documentation provided hereunder is on an "as is" basis, and the
- Institute for Systems Biology and the Whitehead Institute
- have no obligations to provide maintenance, support,
- updates, enhancements or modifications.  In no event shall the
- Institute for Systems Biology and the Whitehead Institute
- be liable to any party for direct, indirect, special,
- incidental or consequential damages, including lost profits, arising
- out of the use of this software and its documentation, even if the
- Institute for Systems Biology and the Whitehead Institute
- have been advised of the possibility of such damage.  See
- the GNU Lesser General Public License for more details.
+  This library is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
+  MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
+  documentation provided hereunder is on an "as is" basis, and the
+  Institute for Systems Biology and the Whitehead Institute
+  have no obligations to provide maintenance, support,
+  updates, enhancements or modifications.  In no event shall the
+  Institute for Systems Biology and the Whitehead Institute
+  be liable to any party for direct, indirect, special,
+  incidental or consequential damages, including lost profits, arising
+  out of the use of this software and its documentation, even if the
+  Institute for Systems Biology and the Whitehead Institute
+  have been advised of the possibility of such damage.  See
+  the GNU Lesser General Public License for more details.
 
- You should have received a copy of the GNU Lesser General Public License
- along with this library; if not, write to the Free Software Foundation,
- Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+  You should have received a copy of the GNU Lesser General Public License
+  along with this library; if not, write to the Free Software Foundation,
+  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 package org.cytoscape.filter.internal.filters.view;
 
@@ -84,6 +84,9 @@ import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxModel;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
 import org.cytoscape.filter.internal.filters.util.WidestStringProvider;
 import org.cytoscape.filter.internal.quickfind.util.CyAttributesUtil;
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
+import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
+import org.cytoscape.filter.internal.quickfind.util.TaskMonitorBase;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -103,21 +106,22 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.DropDownMenuButton;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.events.NetworkViewAddedEvent;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskManager;
 
 
 public class FilterMainPanel extends JPanel implements ActionListener,
-		ItemListener, SetCurrentNetworkViewListener, NetworkAddedListener,
-		NetworkAboutToBeDestroyedListener, SessionLoadedListener, RowsSetListener,
-		RowsCreatedListener {
-
-    /**
-	 * 
-	 */
+						       ItemListener, SetCurrentNetworkViewListener, NetworkAddedListener,
+						       NetworkAboutToBeDestroyedListener, SessionLoadedListener, RowsSetListener,
+						       RowsCreatedListener, NetworkViewAddedListener
+{
 	private static final long serialVersionUID = -6554492076361739485L;
 	// String constants used for separator entries in the attribute combobox
-    private static final String filtersSeperator = "-- Filters --";
-    private static final String attributesSeperator = "-- Attributes --";
+	private static final String filtersSeperator = "-- Filters --";
+	private static final String attributesSeperator = "-- Attributes --";
 
 	private static JPopupMenu optionMenu;
 
@@ -149,30 +153,35 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private final CyApplicationManager applicationManager;
 	private final FilterPlugin filterPlugin;
 	private final CyNetworkManager networkManager;
-	
 	private final CyServiceRegistrar serviceRegistrar;
 	private final CyEventHelper eventHelper;
+	private final TaskManager taskManager;
 	
-	public FilterMainPanel(CyApplicationManager applicationManager, FilterPlugin filterPlugin, 
-		CyNetworkManager networkManager, final CyServiceRegistrar serviceRegistrar, CyEventHelper eventHelper) {
+	public FilterMainPanel(final CyApplicationManager applicationManager,
+	                       final FilterPlugin filterPlugin, 
+	                       final CyNetworkManager networkManager,
+	                       final CyServiceRegistrar serviceRegistrar,
+	                       final CyEventHelper eventHelper,
+	                       final TaskManager taskManager)
+	{
 		this.applicationManager = applicationManager;
-		this.filterPlugin = filterPlugin;
-		this.networkManager = networkManager;
-		this.eventHelper = eventHelper;
-		
-		this.serviceRegistrar = serviceRegistrar;
-		
+		this.filterPlugin       = filterPlugin;
+		this.networkManager     = networkManager;
+		this.serviceRegistrar   = serviceRegistrar;
+		this.eventHelper        = eventHelper;
+		this.taskManager        = taskManager;
+
 		final Dictionary emptyProps = new Hashtable();
 		
 		//Initialize the option menu with menuItems
 		setupOptionMenu();
 
 		optionButton = new DropDownMenuButton(new AbstractAction() {
-			public void actionPerformed(ActionEvent ae) {
-				DropDownMenuButton b = (DropDownMenuButton) ae.getSource();
-				optionMenu.show(b, 0, b.getHeight());
-			}
-		});
+				public void actionPerformed(ActionEvent ae) {
+					DropDownMenuButton b = (DropDownMenuButton) ae.getSource();
+					optionMenu.show(b, 0, b.getHeight());
+				}
+			});
 
 		optionButton.setToolTipText("Options...");
 		optionButton.setIcon(optionIcon);
@@ -194,7 +203,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		String[] col = {"Network","Nodes","Edges"};
 		DefaultTableModel model = new DefaultTableModel(data,col);
 
-        tblFeedBack.setModel(model);
+		tblFeedBack.setModel(model);
 
 		addEventListeners();
 	
@@ -234,18 +243,18 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	
 	void handleAttributesChanged() {
 		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				refreshAttributeCMB();
-				replaceFilterSettingPanel((CompositeFilter)cmbSelectFilter.getSelectedItem());
+				@Override
+					public void run() {
+					refreshAttributeCMB();
+					replaceFilterSettingPanel((CompositeFilter)cmbSelectFilter.getSelectedItem());
 				
-				FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(cmbSelectFilter.getSelectedItem());
-				if (theSettingPanel != null) {
-					theSettingPanel.refreshIndicesForWidgets();
+					FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(cmbSelectFilter.getSelectedItem());
+					if (theSettingPanel != null) {
+						theSettingPanel.refreshIndicesForWidgets();
+					}
+					updateFeedbackTableModel();
 				}
-				updateFeedbackTableModel();
-			}
-		});
+			});
 	}
 	
 	@Override
@@ -287,7 +296,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		
 		enableForNetwork();
 		updateFeedbackTableModel();
-	
 	}
 
 	@Override
@@ -324,7 +332,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 * Enable select/deselect buttons if the current network exists and is not null.
 	 */
 	public void enableForNetwork() {
-		
 		CyNetwork n = applicationManager.getCurrentNetwork();
 
 		if ( n == null ) {
@@ -343,14 +350,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	
 	
 	public void refreshFilterSelectCMB() {
-        ComboBoxModel cbm;
+		ComboBoxModel cbm;
 
-        // Whatever change caused the refresh may have altered the longest display String
-        // so need to have the model recalculate it.
-        cbm = cmbSelectFilter.getModel();
-        if (cbm instanceof WidestStringProvider) {
-            ((WidestStringProvider)cbm).resetWidest();
-        }
+		// Whatever change caused the refresh may have altered the longest display String
+		// so need to have the model recalculate it.
+		cbm = cmbSelectFilter.getModel();
+		if (cbm instanceof WidestStringProvider) {
+			((WidestStringProvider)cbm).resetWidest();
+		}
 
 		this.cmbSelectFilter.repaint();
 	}
@@ -413,20 +420,20 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 */
 	private void replaceFilterSettingPanel(CompositeFilter pNewFilter) {
 		if (pNewFilter == null) {
-			  pnlFilterDefinition.setVisible(false);
-			  lbPlaceHolder_pnlFilterDefinition.setVisible(true);	
-			  return;
+			pnlFilterDefinition.setVisible(false);
+			lbPlaceHolder_pnlFilterDefinition.setVisible(true);	
+			return;
 		}
 		
-        FilterSettingPanel next;
-        next = filter2SettingPanelMap.get(pNewFilter);
+		FilterSettingPanel next;
+		next = filter2SettingPanelMap.get(pNewFilter);
 
-        // When the next panel exists and is the same as the current one,
-        // we can exit now and avoid hiding and showing the same panel.
-        //
-        if ((next != null) && (next == currentFilterSettingPanel)) {
-            return;
-        }
+		// When the next panel exists and is the same as the current one,
+		// we can exit now and avoid hiding and showing the same panel.
+		//
+		if ((next != null) && (next == currentFilterSettingPanel)) {
+			return;
+		}
         
 		//Hide the existing FilterSettingPanel, if any
 		if (currentFilterSettingPanel != null) {
@@ -442,36 +449,36 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.gridx = 0;
-			gridBagConstraints.gridy = 1;
-			gridBagConstraints.gridwidth = 3;
-			gridBagConstraints.fill = GridBagConstraints.BOTH;
-			gridBagConstraints.weightx = 1.0;
-			gridBagConstraints.weighty = 1.0;
-			gridBagConstraints.insets = new Insets(7, 0, 0, 0);
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new Insets(7, 0, 0, 0);
 			
-			if (pNewFilter instanceof TopologyFilter) {
-				lbAttribute.setVisible(false);
-				btnAddFilterWidget.setVisible(false);
-				cmbAttributes.setVisible(false);	
-				pnlFilterDefinition.setBorder(BorderFactory
-						.createTitledBorder("Topology Filter Definition"));
-			}
-			else if (pNewFilter instanceof InteractionFilter) {
-				lbAttribute.setVisible(false);
-				btnAddFilterWidget.setVisible(false);
-				cmbAttributes.setVisible(false);	
-				pnlFilterDefinition.setBorder(BorderFactory
-						.createTitledBorder("Interaction Filter Definition"));				
-			}
-			else {
-				lbAttribute.setVisible(true);
-				btnAddFilterWidget.setVisible(true);
-				cmbAttributes.setVisible(true);								
-				pnlFilterDefinition.setBorder(BorderFactory
-						.createTitledBorder("Filter Definition"));
+		if (pNewFilter instanceof TopologyFilter) {
+			lbAttribute.setVisible(false);
+			btnAddFilterWidget.setVisible(false);
+			cmbAttributes.setVisible(false);	
+			pnlFilterDefinition.setBorder(BorderFactory
+						      .createTitledBorder("Topology Filter Definition"));
+		}
+		else if (pNewFilter instanceof InteractionFilter) {
+			lbAttribute.setVisible(false);
+			btnAddFilterWidget.setVisible(false);
+			cmbAttributes.setVisible(false);	
+			pnlFilterDefinition.setBorder(BorderFactory
+						      .createTitledBorder("Interaction Filter Definition"));				
+		}
+		else {
+			lbAttribute.setVisible(true);
+			btnAddFilterWidget.setVisible(true);
+			cmbAttributes.setVisible(true);								
+			pnlFilterDefinition.setBorder(BorderFactory
+						      .createTitledBorder("Filter Definition"));
 
-			}
+		}
 		pnlFilterDefinition.add(currentFilterSettingPanel, gridBagConstraints);
 
 		pnlFilterDefinition.setVisible(true);
@@ -518,18 +525,28 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			filter2SettingPanelMap.put(allFilterVect.elementAt(i), null);
 		}
 
-        // Force the first filter in the model to be selected, so that it's panel will be shown
-        if (theModel.getSize() > 0) {
-            cmbSelectFilter.setSelectedIndex(0);
-        }
+		// Force the first filter in the model to be selected, so that it's panel will be shown
+		if (theModel.getSize() > 0) {
+			cmbSelectFilter.setSelectedIndex(0);
+		}
 
 		replaceFilterSettingPanel((CompositeFilter)cmbSelectFilter.getSelectedItem());
 	}
 
 	public void handlePanelSelected() {
-		//if (cmbSelectFilter.getModel().getSize() == 0 && allFilterVect.size()>0) {
+		updateIndex();
+	}
+
+	private void updateIndex() {
+		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		if (currentView == null)
+			return;
+
+		final CyNetwork network = currentView.getModel();
+		taskManager.execute(new FilterIndexingTaskFactory(network));
+
 		if (cmbSelectFilter.getModel().getSize() == 0) {
-			// CMBSelectFilter will not be initialize until the Filer Panel is selected
+			// CMBSelectFilter will not be initialize until the Filter Panel has been selected
 			initCMBSelectFilter();		
 		}
 
@@ -541,12 +558,12 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 * current selected filter
 	 */
 	private void updateCMBAttributes() {
-        DefaultComboBoxModel cbm;
+		DefaultComboBoxModel cbm;
 
-        cbm = ((DefaultComboBoxModel)cmbAttributes.getModel());
-        cbm.removeAllElements();
+		cbm = ((DefaultComboBoxModel)cmbAttributes.getModel());
+		cbm.removeAllElements();
 
-        cbm.addElement(attributesSeperator);
+		cbm.addElement(attributesSeperator);
 		CompositeFilter selectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();
 
 		if (selectedFilter == null) {
@@ -558,28 +575,28 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			return;
 		}
 		
-        List<Object> av;
+		List<Object> av;
 
 		av = getCyAttributesList(network, "node");
-        for (int i = 0; i < av.size(); i++) {
-            cbm.addElement(av.get(i));
-        }
+		for (int i = 0; i < av.size(); i++) {
+			cbm.addElement(av.get(i));
+		}
 
-        av = getCyAttributesList(network, "edge");
-        for (int i = 0; i < av.size(); i++) {
-            cbm.addElement(av.get(i));
-        }
+		av = getCyAttributesList(network, "edge");
+		for (int i = 0; i < av.size(); i++) {
+			cbm.addElement(av.get(i));
+		}
 
 		cbm.addElement(filtersSeperator);
 		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
 		if (allFilterVect != null) {
 			for (int i = 0; i < allFilterVect.size(); i++) {
-                Object fi;
+				Object fi;
 
-                fi = allFilterVect.elementAt(i);
-                if (fi != selectedFilter) {
-                    cbm.addElement(fi);
-                }
+				fi = allFilterVect.elementAt(i);
+				if (fi != selectedFilter) {
+					cbm.addElement(fi);
+				}
 			}
 		}
 	}
@@ -639,13 +656,13 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		pnlCurrentFilter = new JPanel();
 		cmbSelectFilter = new JComboBox();
-        cmbSelectFilter.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
+		cmbSelectFilter.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
 		// optionButton = new javax.swing.JButton();
 		pnlFilterDefinition = new JPanel();
         
-        WidestStringComboBoxModel wscbm = new AttributeSelectWidestStringComboBoxModel();
-        cmbAttributes = new JComboBox(wscbm);
-        cmbAttributes.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
+		WidestStringComboBoxModel wscbm = new AttributeSelectWidestStringComboBoxModel();
+		cmbAttributes = new JComboBox(wscbm);
+		cmbAttributes.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
 
 		btnAddFilterWidget = new JButton();
 		lbAttribute = new JLabel();
@@ -654,20 +671,20 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		btnApplyFilter = new JButton();
 		lbPlaceHolder_pnlFilterDefinition = new JLabel();
 
-        pnlFeedBack = new JPanel();
-        tblFeedBack = new JTable();
+		pnlFeedBack = new JPanel();
+		tblFeedBack = new JTable();
 		
-        pnlSelectButtons = new JPanel();
-        btnSelectAll = new JButton();
-        btnDeSelect = new JButton();
-        pnlScroll = new JScrollPane();
+		pnlSelectButtons = new JPanel();
+		btnSelectAll = new JButton();
+		btnDeSelect = new JButton();
+		pnlScroll = new JScrollPane();
         
 		setLayout(new GridBagLayout());
 
 		pnlCurrentFilter.setLayout(new GridBagLayout());
 
 		pnlCurrentFilter.setBorder(BorderFactory
-				.createTitledBorder("Current Filter"));
+					   .createTitledBorder("Current Filter"));
 		// cmbSelectFilter.setModel(new javax.swing.DefaultComboBoxModel(new
 		// String[] { "My First filter", "My second Filter" }));
 		gridBagConstraints = new GridBagConstraints();
@@ -694,7 +711,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		pnlFilterDefinition.setLayout(new GridBagLayout());
 
 		pnlFilterDefinition.setBorder(BorderFactory
-				.createTitledBorder("Filter Definition"));
+					      .createTitledBorder("Filter Definition"));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 0;
@@ -740,11 +757,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		btnApplyFilter.setText("Apply Filter");
 		pnlButton.add(btnApplyFilter);
 
-        btnSelectAll.setText("Select All");
-        pnlButton.add(btnSelectAll);
+		btnSelectAll.setText("Select All");
+		pnlButton.add(btnSelectAll);
 
-        btnDeSelect.setText("Deselect All");
-        pnlButton.add(btnDeSelect);
+		btnDeSelect.setText("Deselect All");
+		pnlButton.add(btnDeSelect);
 		
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
@@ -764,34 +781,34 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		add(lbPlaceHolder_pnlFilterDefinition, gridBagConstraints);
 
 		// feedback panel
-        pnlFeedBack.setLayout(new GridBagLayout());
-        pnlFeedBack.setBorder(BorderFactory.createTitledBorder(""));
-        pnlFeedBack.setMinimumSize(new Dimension(pnlFeedBack.getWidth(),52));
-        //pnlFeedBack.setMinimumSize(new java.awt.Dimension(300,52));
+		pnlFeedBack.setLayout(new GridBagLayout());
+		pnlFeedBack.setBorder(BorderFactory.createTitledBorder(""));
+		pnlFeedBack.setMinimumSize(new Dimension(pnlFeedBack.getWidth(),52));
+		//pnlFeedBack.setMinimumSize(new java.awt.Dimension(300,52));
         
-        pnlScroll.setViewportView(tblFeedBack);
+		pnlScroll.setViewportView(tblFeedBack);
 
-        //tblFeedBack.setAutoCreateColumnsFromModel(true);
-        //tblFeedBack.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-        tblFeedBack.setEnabled(false);
-        tblFeedBack.setFocusable(false);
-        //tblFeedBack.setRequestFocusEnabled(false);
-        //tblFeedBack.setRowSelectionAllowed(false);
-        //tblFeedBack.setTableHeader(null);
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.fill = GridBagConstraints.BOTH; //.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        //gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 1);
-        pnlFeedBack.add(pnlScroll, gridBagConstraints);
+		//tblFeedBack.setAutoCreateColumnsFromModel(true);
+		//tblFeedBack.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+		tblFeedBack.setEnabled(false);
+		tblFeedBack.setFocusable(false);
+		//tblFeedBack.setRequestFocusEnabled(false);
+		//tblFeedBack.setRowSelectionAllowed(false);
+		//tblFeedBack.setTableHeader(null);
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.fill = GridBagConstraints.BOTH; //.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		//gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 1);
+		pnlFeedBack.add(pnlScroll, gridBagConstraints);
 
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(1, 1, 2, 1);
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridy = 3;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new Insets(1, 1, 2, 1);
 
-        add(pnlFeedBack, gridBagConstraints);
+		add(pnlFeedBack, gridBagConstraints);
 		// Set customized renderer for attributes/filter combobox
 		cmbAttributes.setRenderer(new AttributeFilterRenderer());
 
@@ -819,13 +836,13 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	private JPanel pnlFilterDefinition;
 
-    private JPanel pnlFeedBack;
-    private JTable tblFeedBack;
+	private JPanel pnlFeedBack;
+	private JTable tblFeedBack;
     
-    private JPanel pnlSelectButtons;
-    private JButton btnDeSelect;
-    private JButton btnSelectAll;
-    private JScrollPane pnlScroll;
+	private JPanel pnlSelectButtons;
+	private JButton btnDeSelect;
+	private JButton btnSelectAll;
+	private JScrollPane pnlScroll;
 	// End of variables declaration
 	
 	
@@ -880,28 +897,20 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				refreshAttributeCMB();
 			}
 			else if (cmb == cmbAttributes) {
-                Object selectObject = cmbAttributes.getSelectedItem();
-                if (selectObject != null) {
-                    String selectItem = selectObject.toString();
-                    // Disable the Add button if "--Attribute--" or "-- Filter ---" is selected
-                    if (selectItem.equalsIgnoreCase(filtersSeperator) ||selectItem.equalsIgnoreCase(attributesSeperator)) {
-                        btnAddFilterWidget.setEnabled(false);
-                    }
-                    else {
-                        btnAddFilterWidget.setEnabled(true);
-                    }
-                }
+				Object selectObject = cmbAttributes.getSelectedItem();
+				if (selectObject != null) {
+					String selectItem = selectObject.toString();
+					// Disable the Add button if "--Attribute--" or "-- Filter ---" is selected
+					if (selectItem.equalsIgnoreCase(filtersSeperator) ||selectItem.equalsIgnoreCase(attributesSeperator)) {
+						btnAddFilterWidget.setEnabled(false);
+					}
+					else {
+						btnAddFilterWidget.setEnabled(true);
+					}
+				}
 			}
 		}	
 	}
-
-	
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
 
 	public void actionPerformed(ActionEvent e) {
 		Object _actionObject = e.getSource();
@@ -956,7 +965,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 			JMenuItem _menuItem = (JMenuItem) _actionObject;
 			if (_menuItem == newFilterMenuItem || _menuItem == newTopologyFilterMenuItem 
-					|| _menuItem == newNodeInteractionFilterMenuItem || _menuItem == newEdgeInteractionFilterMenuItem) {
+			    || _menuItem == newNodeInteractionFilterMenuItem || _menuItem == newEdgeInteractionFilterMenuItem) {
 				String filterType = "Composite";
 				//boolean isTopoFilter = false;
 				//boolean isInteractionFilter = false;
@@ -982,8 +991,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				String newFilterName = "";
 				while (true) {
 					newFilterName = JOptionPane.showInputDialog(
-							this, "New filter name", "New Filter Name",
-							JOptionPane.INFORMATION_MESSAGE);
+										    this, "New filter name", "New Filter Name",
+										    JOptionPane.INFORMATION_MESSAGE);
 
 					if (newFilterName == null) { // user clicked "cancel"
 						break;
@@ -991,38 +1000,38 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					if (newFilterName.trim().equals("")) {
 						Object[] options = { "OK" };
 						JOptionPane.showOptionDialog(this,
-								"Filter name is empty!", "Warning",
-								JOptionPane.DEFAULT_OPTION,
-								JOptionPane.WARNING_MESSAGE, null, options,
-								options[0]);
+									     "Filter name is empty!", "Warning",
+									     JOptionPane.DEFAULT_OPTION,
+									     JOptionPane.WARNING_MESSAGE, null, options,
+									     options[0]);
 						continue;
 					}
 					
 					if (org.cytoscape.filter.internal.filters.util.FilterUtil
-							.isFilterNameDuplicated(filterPlugin, newFilterName)) {
+					    .isFilterNameDuplicated(filterPlugin, newFilterName)) {
 						Object[] options = { "OK" };
 						JOptionPane.showOptionDialog(this,
-								"Filter name already existed!", "Warning",
-								JOptionPane.DEFAULT_OPTION,
-								JOptionPane.WARNING_MESSAGE, null, options,
-								options[0]);
+									     "Filter name already existed!", "Warning",
+									     JOptionPane.DEFAULT_OPTION,
+									     JOptionPane.WARNING_MESSAGE, null, options,
+									     options[0]);
 						continue;
 					}
 					break;
 				}// while loop
 
 				if ((newFilterName != null)
-						&& (!newFilterName.trim().equals(""))) {
+				    && (!newFilterName.trim().equals(""))) {
 					createNewFilter(newFilterName, filterType);
 					
 					//System.out.println("FilterMainPanel.firePropertyChange() -- NEW_FILTER_CREATED");
 					//pcs.firePropertyChange("NEW_FILTER_CREATED", "", "");
 					
-//					// TODO: Port this
-//					if (FilterPlugin.shouldFireFilterEvent) {
-//						PropertyChangeEvent evt = new PropertyChangeEvent(this, "NEW_FILTER_CREATED", null, null);
-//						Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);						
-//					}
+					//					// TODO: Port this
+					//					if (FilterPlugin.shouldFireFilterEvent) {
+					//						PropertyChangeEvent evt = new PropertyChangeEvent(this, "NEW_FILTER_CREATED", null, null);
+					//						Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);						
+					//					}
 				}
 			} else if (_menuItem == deleteFilterMenuItem) {
 				CompositeFilter theSelectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();	
@@ -1032,41 +1041,41 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 				Object[] options = { "YES", "CANCEL" };
 				int userChoice = JOptionPane.showOptionDialog(this,
-						"Are you sure you want to delete " + theSelectedFilter.getName()
-								+ "?", "Warning", JOptionPane.DEFAULT_OPTION,
-						JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+									      "Are you sure you want to delete " + theSelectedFilter.getName()
+									      + "?", "Warning", JOptionPane.DEFAULT_OPTION,
+									      JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 
 				if (userChoice == 1) { // user clicked CANCEL
 					return;
 				}
 				deleteFilter(theSelectedFilter);
-//				// TODO: Port this?  No one listens for these events
-//				if (FilterPlugin.shouldFireFilterEvent) {
-//					PropertyChangeEvent evt = new PropertyChangeEvent(this, "FILTER_DELETED", null, null);
-//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
-//				}
+				//				// TODO: Port this?  No one listens for these events
+				//				if (FilterPlugin.shouldFireFilterEvent) {
+				//					PropertyChangeEvent evt = new PropertyChangeEvent(this, "FILTER_DELETED", null, null);
+				//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
+				//				}
 			} else if (_menuItem == renameFilterMenuItem) {
 				CompositeFilter theSelectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();				
 				if (theSelectedFilter == null) {
 					return;
 				}
 				renameFilter();
-//				// TODO: Port this?  No one listens for these events
-//				if (FilterPlugin.shouldFireFilterEvent) {
-//					PropertyChangeEvent evt = new PropertyChangeEvent(this, "FILTER_RENAMED", null, null);
-//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
-//				}
+				//				// TODO: Port this?  No one listens for these events
+				//				if (FilterPlugin.shouldFireFilterEvent) {
+				//					PropertyChangeEvent evt = new PropertyChangeEvent(this, "FILTER_RENAMED", null, null);
+				//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
+				//				}
 			} else if (_menuItem == duplicateFilterMenuItem) {
 				CompositeFilter theSelectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();				
 				if (theSelectedFilter == null) {
 					return;
 				}
 				duplicateFilter();
-//				// TODO: Port this?  No one listens for these events
-//				if (FilterPlugin.shouldFireFilterEvent) {
-//					PropertyChangeEvent evt = new PropertyChangeEvent(this, "FILTER_DUPLICATED", null, null);
-//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
-//				}
+				//				// TODO: Port this?  No one listens for these events
+				//				if (FilterPlugin.shouldFireFilterEvent) {
+				//					PropertyChangeEvent evt = new PropertyChangeEvent(this, "FILTER_DUPLICATED", null, null);
+				//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
+				//				}
 			}
 		} // JMenuItem event
 		
@@ -1076,7 +1085,9 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	
 	private void updateView() {
 		eventHelper.flushPayloadEvents();
-		applicationManager.getCurrentNetworkView().updateView();
+		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		if (currentView != null)
+			currentView.updateView();
 	}
 
 	private void updateInteractionMenuItemStatus() {
@@ -1091,10 +1102,10 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		// Set newEdgeInteractionFilterMenuItem on only if there are at least one 
 		// Node Filter
 		if (hasNodeFilter(allFilterVect)) {
-				newEdgeInteractionFilterMenuItem.setEnabled(true);	
+			newEdgeInteractionFilterMenuItem.setEnabled(true);	
 		}
 		else {
-				newEdgeInteractionFilterMenuItem.setEnabled(false);
+			newEdgeInteractionFilterMenuItem.setEnabled(false);
 		}
 
 		// Set newNodeInteractionFilterMenuItem on only if there are at least one 
@@ -1135,7 +1146,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		return selectEdge;
 	}
 	
-    //Each time, the FilterMainPanel become visible, update the status of InteractionMaenuItems
+	//Each time, the FilterMainPanel become visible, update the status of InteractionMaenuItems
 	class MyComponentAdapter extends ComponentAdapter {
 		public void componentShown(ComponentEvent e) {
 			updateInteractionMenuItemStatus();
@@ -1163,13 +1174,13 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			}
 			
 			if (org.cytoscape.filter.internal.filters.util.FilterUtil
-					.isFilterNameDuplicated(filterPlugin, newFilterName)) {
+			    .isFilterNameDuplicated(filterPlugin, newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
-						"Filter name already existed!", "Warning",
-						JOptionPane.DEFAULT_OPTION,
-						JOptionPane.WARNING_MESSAGE, null, options,
-						options[0]);
+							     "Filter name already existed!", "Warning",
+							     JOptionPane.DEFAULT_OPTION,
+							     JOptionPane.WARNING_MESSAGE, null, options,
+							     options[0]);
 				continue;
 			}
 
@@ -1205,18 +1216,18 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			newFilterName = nameVect.elementAt(0);
 
 			if ((newFilterName == null) || newFilterName.trim().equals("") 
-					||newFilterName.equals(oldFilterName)) {
+			    ||newFilterName.equals(oldFilterName)) {
 				return;
 			}
 			
 			if (org.cytoscape.filter.internal.filters.util.FilterUtil
-					.isFilterNameDuplicated(filterPlugin, newFilterName)) {
+			    .isFilterNameDuplicated(filterPlugin, newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
-						"Filter name already existed!", "Warning",
-						JOptionPane.DEFAULT_OPTION,
-						JOptionPane.WARNING_MESSAGE, null, options,
-						options[0]);
+							     "Filter name already existed!", "Warning",
+							     JOptionPane.DEFAULT_OPTION,
+							     JOptionPane.WARNING_MESSAGE, null, options,
+							     options[0]);
 				continue;
 			}
 
@@ -1282,6 +1293,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 	}
 
+	@Override
+	public void handleEvent(final NetworkViewAddedEvent e) {
+		if (!isShowing())
+			return;
+
+		updateIndex();
+	}
+
 	class AttributeFilterRenderer extends JLabel implements ListCellRenderer {
 		/**
 		 * 
@@ -1293,14 +1312,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 
 		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
+							      int index, boolean isSelected, boolean cellHasFocus) {
 			if (value != null) {
 				if (value instanceof String) {
 					setText((String)value);
 				}
 				else if (value instanceof CompositeFilter) {
 					CompositeFilter theFilter = (CompositeFilter) value;
-    				setText(theFilter.getName());
+					setText(theFilter.getName());
 				}
 			}
 			else { // value == null
@@ -1314,14 +1333,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				setBackground(list.getBackground());
 				setForeground(list.getForeground());
 			}
-            return this;
+			return this;
 		}
 	}// AttributeRenderer
 
 	class FilterRenderer extends JLabel implements ListCellRenderer {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = -2396393425644165756L;
 
 		public FilterRenderer() {
@@ -1329,7 +1345,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 
 		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
+							      int index, boolean isSelected, boolean cellHasFocus) {
 			if (value != null) {
 				CompositeFilter theFilter = (CompositeFilter) value;
 				setText(theFilter.getLabel());
@@ -1350,62 +1366,56 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 	}// FilterRenderer
 
-    class FilterSelectWidestStringComboBoxModel extends WidestStringComboBoxModel {
-        /**
-		 * 
-		 */
+	class FilterSelectWidestStringComboBoxModel extends WidestStringComboBoxModel {
 		private static final long serialVersionUID = -1311538859326314189L;
 
 		public FilterSelectWidestStringComboBoxModel() {
-            super();
-        }
+			super();
+		}
 
-        public FilterSelectWidestStringComboBoxModel(Object[] items) {
-            super(items);
-        }
+		public FilterSelectWidestStringComboBoxModel(Object[] items) {
+			super(items);
+		}
 
-        public FilterSelectWidestStringComboBoxModel(Vector<?> v) {
-            super(v);
-        }
+		public FilterSelectWidestStringComboBoxModel(Vector<?> v) {
+			super(v);
+		}
 
-        @Override
-        protected String getLabel(Object anObject) {
-            return (anObject != null) ? ((CompositeFilter)anObject).getLabel() : "";
-        }
-    }
+		@Override
+			protected String getLabel(Object anObject) {
+			return (anObject != null) ? ((CompositeFilter)anObject).getLabel() : "";
+		}
+	}
 
-    class AttributeSelectWidestStringComboBoxModel extends WidestStringComboBoxModel {
-        /**
-		 * 
-		 */
+	class AttributeSelectWidestStringComboBoxModel extends WidestStringComboBoxModel {
 		private static final long serialVersionUID = -7287008568486671513L;
 
 		public AttributeSelectWidestStringComboBoxModel() {
-            super();
-        }
+			super();
+		}
 
-        public AttributeSelectWidestStringComboBoxModel(Object[] items) {
-            super(items);
-        }
+		public AttributeSelectWidestStringComboBoxModel(Object[] items) {
+			super(items);
+		}
 
-        public AttributeSelectWidestStringComboBoxModel(Vector<?> v) {
-            super(v);
-        }
+		public AttributeSelectWidestStringComboBoxModel(Vector<?> v) {
+			super(v);
+		}
 
-        @Override
-        protected String getLabel(Object anObject) {
-            String rv = "";
+		@Override
+		protected String getLabel(Object anObject) {
+			String rv = "";
 
-            if (anObject != null) {
-                if (anObject instanceof CompositeFilter) {
-                    rv = ((CompositeFilter)anObject).getLabel();
-                }
-                else {
-                    rv = anObject.toString();
-                }
-            }
+			if (anObject != null) {
+				if (anObject instanceof CompositeFilter) {
+					rv = ((CompositeFilter)anObject).getLabel();
+				}
+				else {
+					rv = anObject.toString();
+				}
+			}
 
-            return rv;
-        }
-    }
+			return rv;
+		}
+	}
 }

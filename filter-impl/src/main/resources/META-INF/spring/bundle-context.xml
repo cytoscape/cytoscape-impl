@@ -28,6 +28,7 @@
 		<constructor-arg ref="cyNetworkManagerServiceRef" />
 		<constructor-arg ref="cyServiceRegistrarServiceRef" />
 		<constructor-arg ref="cyEventHelperServiceRef" />
+		<constructor-arg ref="taskManagerServiceRef" />
 	</bean>
 
 	<bean id="filterCytoPanelComponent"

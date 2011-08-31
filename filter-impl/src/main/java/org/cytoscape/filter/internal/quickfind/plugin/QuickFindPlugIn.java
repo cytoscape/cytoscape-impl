@@ -39,8 +39,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.filter.internal.filters.util.SelectUtil;
 import org.cytoscape.filter.internal.filters.util.VisualPropertyUtil;
@@ -49,7 +47,6 @@ import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
 import org.cytoscape.filter.internal.quickfind.util.QuickFindListener;
 import org.cytoscape.filter.internal.quickfind.util.TaskMonitorBase;
-import org.cytoscape.filter.internal.quickfind.view.QuickFindPanel;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.NumberIndex;
@@ -77,8 +74,6 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 
@@ -90,14 +85,12 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
  * @author Ethan Cerami.
  */
 public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
-										AddedNodesListener, RemovedEdgesListener,
-										RemovedNodesListener, NetworkAddedListener,
-										NetworkAboutToBeDestroyedListener,
-										NetworkViewAddedListener,
-										NetworkViewAboutToBeDestroyedListener,
-										SetCurrentNetworkViewListener {
-    static final int REINDEX_THRESHOLD = 1000;
-    private QuickFindPanel quickFindToolBar;
+					AddedNodesListener, RemovedEdgesListener,
+					RemovedNodesListener, NetworkAddedListener,
+					NetworkAboutToBeDestroyedListener,
+					NetworkViewAboutToBeDestroyedListener
+{
+	static final int REINDEX_THRESHOLD = 1000;
 	private final CyApplicationManager applicationManager;
 	private final CyNetworkViewManager viewManager;
 	private final CySwingApplication application;
@@ -107,14 +100,16 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 	/**
 	 * Constructor.
 	 */
-	public QuickFindPlugIn(CyApplicationManager applicationManager, CyNetworkViewManager viewManager, CySwingApplication application, CyNetworkManager networkManager) {
+	public QuickFindPlugIn(final CyApplicationManager applicationManager,
+	                       final CyNetworkViewManager viewManager,
+	                       final CySwingApplication application,
+	                       final CyNetworkManager networkManager)
+	{
 		this.applicationManager = applicationManager;
 		this.viewManager = viewManager;
 		this.application = application;
 		this.networkManager = networkManager;
 		initListeners();
-		initToolBar();
-		initIndex();
 	}
 
 	/**
@@ -123,27 +118,6 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 	private void initListeners() {
         QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		quickFind.addQuickFindListener(this);
-	}
-
-	/**
-	 * Initalizes Tool Bar.
-	 */
-	private void initToolBar() {
-		application.getJMenuBar();
-		quickFindToolBar = new QuickFindPanel(applicationManager, application);
-
-		TextIndexComboBox comboBox = quickFindToolBar.getTextIndexComboBox();
-		ActionListener listener = new UserSelectionListener(comboBox, applicationManager);
-		comboBox.addFinalSelectionListener(listener);
-
-		JRangeSliderExtended slider = quickFindToolBar.getSlider();
-		RangeSelectionListener rangeSelectionListener = new RangeSelectionListener(slider, applicationManager);
-		slider.addChangeListener(rangeSelectionListener);
-
-		// TODO: Is this being replaced by the Enhanced Search Plugin?
-//		JToolBar toolBar = application.getJToolBar();
-//		toolBar.add(quickFindToolBar);
-//		toolBar.validate();
 	}
 
 	/**
@@ -156,7 +130,6 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 
 		//  If a network already exists within Cytoscape, index it
 		final CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
-
 		if ((cyNetwork != null) && (cyNetwork.getNodeCount() > 0)) {
 			//  Run Indexer in separate background daemon thread.
 			Thread thread = new Thread() {
@@ -168,21 +141,6 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 			thread.start();
 		}
 	}
-
-	@Override
-	public void handleEvent(NetworkViewAddedEvent e) {
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
-		final CyNetwork cyNetwork = e.getNetworkView().getModel();
-		
-		//  Run Indexer in separate background daemon thread.
-		Thread thread = new Thread() {
-			public void run() {
-				quickFind.addNetwork(cyNetwork, new TaskMonitorBase());
-			}
-		};
-
-		thread.start();
-	}
 	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
@@ -190,50 +148,6 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 		CyNetworkView networkView = e.getNetworkView();
 		CyNetwork cyNetwork = networkView.getModel();
 		quickFind.removeNetwork(cyNetwork);
-		swapCurrentNetwork(quickFind);
-	}
-	
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
-		swapCurrentNetwork(quickFind);
-	}
-
-	/**
-	 * Determine which network view now has focus.
-	 * If no network view has focus, disable quick find.
-	 */
-	private void swapCurrentNetwork(QuickFind quickFind) {
-		CyNetwork network = applicationManager.getCurrentNetwork();
-		boolean networkHasFocus = false;
-
-		if (network != null) {
-			
-			CyNetworkView networkView = viewManager.getNetworkView(network.getSUID());
-
-			if (networkView != null) {
-				final GenericIndex textIndex = quickFind.getIndex(network);
-
-				if (textIndex != null) {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							quickFindToolBar.setIndex(textIndex);
-						}
-					});
-					networkHasFocus = true;
-				}
-			}
-		}
-
-		if (!networkHasFocus) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					quickFindToolBar.noNetworkLoaded();
-				}
-			});
-		}
 	}
 
 	/**
@@ -254,38 +168,14 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 		//  No-op
 	}
 
-	/**
-	 * Indexing started.
-	 *
-	 * @param cyNetwork     CyNetwork.
-	 * @param indexType     QuickFind.INDEX_NODES or QuickFind.INDEX_EDGES.
-	 * @param controllingAttribute Controlling Attribute.
-	 */
-	public void indexingStarted(CyNetwork cyNetwork, int indexType, String controllingAttribute) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				quickFindToolBar.indexingInProgress();
-			}
-		});
+	@Override
+	public void indexingStarted(CyNetwork cyNetwork, int indexType, String controllingAttribute)
+	{
+		// No-op
 	}
 
-	/**
-	 * Indexing ended.
-	 */
 	public void indexingEnded() {
-		QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
-		CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
-		final GenericIndex index = quickFind.getIndex(cyNetwork);
-		if (index != null){
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					quickFindToolBar.setIndex(index);
-					quickFindToolBar.enableAllQuickFindButtons();			
-				}
-			});
-		}
+		// No-op
 	}
 
 	/**
@@ -514,12 +404,12 @@ public class QuickFindPlugIn implements QuickFindListener, AddedEdgesListener,
 							GenericIndex index = quickFind.getIndex(cyNetwork);
 							quickFind.reindexNetwork(cyNetwork, index.getIndexType(),
 										 index.getControllingAttribute(), new TaskMonitorBase());
-                    }
-                };
-                thread.start();
-            }
-        }
-    }
+						}
+					};
+				thread.start();
+			}
+		}
+	}
 }
 
 
