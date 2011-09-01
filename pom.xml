@@ -6,13 +6,13 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-alpha8-SNAPSHOT</version>
+		<version>3.0.0-alpha8</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0-alpha6-SNAPSHOT</version>
+	<version>3.0.0-alpha6</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<modules>
@@ -258,9 +258,9 @@
     </dependencies>
 
 	<scm>
-		<connection>${scm.connection.root}/impl/trunk</connection>
-		<developerConnection>${scm.dev.connection.root}/impl/trunk</developerConnection>
-		<url>${scm.url.root}/impl/trunk</url>
+		<connection>${scm.connection.root}/impl/tags/impl-parent-3.0.0-alpha6</connection>
+		<developerConnection>${scm.dev.connection.root}/impl/tags/impl-parent-3.0.0-alpha6</developerConnection>
+		<url>${scm.url.root}/impl/tags/impl-parent-3.0.0-alpha6</url>
 	</scm>
 
 	<build>
@@ -284,7 +284,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
