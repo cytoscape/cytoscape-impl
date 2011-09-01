@@ -41,12 +41,14 @@ import java.util.Map;
 class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	private final long suid;
 	private final Map<String, CyTable> attrMgr;
+	private final CyRow defaultRow;
 
 	CyTableEntryImpl(final Map<String, CyTable> attrMgr, long suid) {
 		this.suid = suid;
 		this.attrMgr = attrMgr;
-		getCyRow().set(CyTableEntry.NAME, "");
-		getCyRow().set(CyNetwork.SELECTED, Boolean.FALSE);
+		this.defaultRow = attrMgr.get(CyNetwork.DEFAULT_ATTRS).getRow(suid);
+		defaultRow.set(CyTableEntry.NAME, "");
+		defaultRow.set(CyNetwork.SELECTED, Boolean.FALSE);
 	}
 
 	CyTableEntryImpl(final Map<String, CyTable> attrMgr) {
@@ -81,11 +83,6 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	 * @return  DOCUMENT ME!
 	 */
 	final public CyRow getCyRow() {
-		final CyTable mgr = attrMgr.get(CyNetwork.DEFAULT_ATTRS);
-		if (mgr == null)
-			throw new NullPointerException("attribute manager is null for namespace: "
-			                               + CyNetwork.DEFAULT_ATTRS);
-
-		return mgr.getRow(suid);
+		return defaultRow; 
 	}
 }
