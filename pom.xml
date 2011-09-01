@@ -258,9 +258,9 @@
     </dependencies>
 
 	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/trunk</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/trunk</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/impl/trunk</url>
+		<connection>${scm.connection.root}/impl/trunk</connection>
+		<developerConnection>${scm.dev.connection.root}/impl/trunk</developerConnection>
+		<url>${scm.url.root}/impl/trunk</url>
 	</scm>
 
 	<build>
