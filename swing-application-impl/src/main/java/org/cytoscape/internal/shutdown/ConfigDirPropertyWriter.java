@@ -12,6 +12,10 @@ import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.TaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Properties;
+import java.io.FileOutputStream;
 
 
 public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
@@ -19,6 +23,7 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 	private final CyPropertyWriterManager propertyWriterManager;
 	private final Map<CyProperty, Map> configDirProperties;
 	private final CyApplicationConfiguration config;
+	private static final Logger logger = LoggerFactory.getLogger(ConfigDirPropertyWriter.class);
 
 	ConfigDirPropertyWriter(final TaskManager taskManager,
 				final CyPropertyWriterManager propertyWriterManager, final CyApplicationConfiguration config)
@@ -49,13 +54,30 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 			else
 				propertyFileName = propertyName + ".props";
 			
-			
 			final File outputFile = new File(config.getSettingLocation(), propertyFileName);
 			
-			final PropertyWriterFactory taskFactory =
-				new PropertyWriterFactory(propertyWriterManager, keyAndValue.getKey(),
-							  matchingFileFilter, outputFile);
-			taskManager.execute(taskFactory);
+			//final PropertyWriterFactory taskFactory =
+			//	new PropertyWriterFactory(propertyWriterManager, keyAndValue.getKey(),
+			//				  matchingFileFilter, outputFile);
+
+			//taskFactory.getTaskIterator().next().run(arg0)
+			//taskManager.execute(taskFactory);
+
+			
+			// write properties file
+			// This is a work-around, because there are bugs in propertiesWriter 
+			// (1) can not close outputStream (2) Execute System.exit() before propsWriterTask 
+			Properties props = (Properties) keyAndValue.getKey().getProperties();
+
+			try {
+				FileOutputStream out = new FileOutputStream(outputFile);
+				props.store(out, null);
+				out.close();
+			}
+			catch(Exception e){
+				logger.error("Error in wring properties file!");
+			}
+			
 		}
 		
 	}
