@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-alpha6</version>
+		<version>3.0.0-alpha7-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>layout-jgraph-impl</artifactId>
-	<version>3.0.0-alpha6</version>
+	<version>3.0.0-alpha7-SNAPSHOT</version>
 
 	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
 
