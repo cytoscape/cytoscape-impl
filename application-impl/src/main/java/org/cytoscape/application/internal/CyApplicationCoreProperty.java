@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
@@ -27,46 +26,30 @@ public class CyApplicationCoreProperty implements CyProperty<Properties>, Sessio
 	 * 
 	 */
 	public CyApplicationCoreProperty(final CyApplicationConfiguration config) {
+
 		InputStream is = null;
 
-		final File propFile = new File(config.getSettingLocation(), "cytoscape.props");
-
+		// Load default Cytoscape properties
+		Properties defaultProps = new Properties();
+		
+		is = this.getClass().getClassLoader().getResourceAsStream(DEF_PROP_FILE_NAME);
 		try {
-			
+			defaultProps.load(is);
+		} catch (IOException e1) {
+			logger.warn("Could not read core property.  Use empty one.", e1);
+		}
+		
+		//Load existing properties from config directory if any
+		final File propFile = new File(config.getSettingLocation(), "cytoscape.props");
+		
+		props = new Properties();
+		
+		try {
 			if (propFile.exists()) {
 				is = new FileInputStream(propFile);
-				props = new Properties();
 				props.load(is);
-				if(props.size() == 0) {
-					// Need to load default
-					is = this.getClass().getClassLoader().getResourceAsStream(DEF_PROP_FILE_NAME);
-					props = new Properties();
-					try {
-						props.load(is);
-					} catch (IOException e1) {
-						logger.warn("Could not read core property.  Use empty one.", e1);
-					}
-				}
-				logger.info("PropFile is: " + propFile.getAbsolutePath());
-			} else {
-				logger.warn("Could not read properties from config directry - trying to load default properties.");
-				is = this.getClass().getClassLoader().getResourceAsStream(DEF_PROP_FILE_NAME);
-				props = new Properties();
-				try {
-					props.load(is);
-				} catch (IOException e1) {
-					logger.warn("Could not read core property.  Use empty one.", e1);
-				}
-			}
+			} 
 		} catch (Exception e) {
-			logger.warn("Could not read properties from config directry - trying to load default properties.", e);
-			is = this.getClass().getClassLoader().getResourceAsStream(DEF_PROP_FILE_NAME);
-			props = new Properties();
-			try {
-				props.load(is);
-			} catch (IOException e1) {
-				logger.warn("Could not read core property.  Use empty one.", e1);
-			}
 		} finally {
 			if (is != null) {
 				try {
@@ -74,6 +57,20 @@ public class CyApplicationCoreProperty implements CyProperty<Properties>, Sessio
 				} catch (IOException ioe) {
 				}
 				is = null;
+			}
+		}
+		
+		if(props.size() == 0){
+			// Properties does not exist in config directory, use the default properties
+			props = defaultProps;
+		}
+		else {
+			// Properties already existed, merge default properties with existing properties
+			Object[] keys = defaultProps.keySet().toArray();
+			for (Object key: keys){
+				if (!props.containsKey(key)){
+					props.setProperty((String)key, defaultProps.getProperty((String)key));
+				}
 			}
 		}
 	}
