@@ -49,7 +49,7 @@
 
 	<osgi:reference id="cyPropertyRef"
 		interface="org.cytoscape.property.CyProperty"
-		filter="(cyPropertyName=cytoscape.props)">
+		filter="(cyPropertyName=cytoscape3.props)">
 	</osgi:reference>
 
 	<osgi:reference id="cyPropertyReaderManagerRef"
