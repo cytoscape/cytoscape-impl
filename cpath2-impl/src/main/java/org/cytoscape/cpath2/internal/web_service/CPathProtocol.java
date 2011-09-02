@@ -332,7 +332,7 @@ public class CPathProtocol {
         //  Note to self for future reference: I was able to test all this code
         //  by downloading and installing Privoxy, a local HTTP proxy,
         //  available at:  http://www.privoxy.org/.  Once it was running, I used the
-        //  following props in ~/.cytoscape/cytoscape.props:
+        //  following props in ~/.cytoscape/cytoscape3.props:
         //  proxy.server=127.0.0.1
         //  proxy.server.port=8118
         //  proxy.server.type=HTTP
