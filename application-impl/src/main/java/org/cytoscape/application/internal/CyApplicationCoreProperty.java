@@ -17,7 +17,7 @@ public class CyApplicationCoreProperty implements CyProperty<Properties>, Sessio
 	private static final Logger logger = LoggerFactory.getLogger(CyApplicationCoreProperty.class);
 
 	// This is in the resource file (jar)
-	private static final String DEF_PROP_FILE_NAME = "cytoscape.props";
+	private static final String DEF_PROP_FILE_NAME = "cytoscape3.props";
 
 	private Properties props;
 
@@ -40,7 +40,7 @@ public class CyApplicationCoreProperty implements CyProperty<Properties>, Sessio
 		}
 		
 		//Load existing properties from config directory if any
-		final File propFile = new File(config.getSettingLocation(), "cytoscape.props");
+		final File propFile = new File(config.getSettingLocation(), "cytoscape3.props");
 		
 		props = new Properties();
 		
