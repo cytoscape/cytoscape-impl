@@ -134,7 +134,7 @@
 
 
 	<osgi:reference id="cyPropertyServiceRef" interface="org.cytoscape.property.CyProperty"
-		filter="(cyPropertyName=cytoscape.props)" />
+		filter="(cyPropertyName=cytoscape3.props)" />
 		
 	<osgi:service id="showGraphicsDetailTaskFactoryService" ref="showGraphicsDetailTaskFactory" auto-export="interfaces">
 		<osgi:service-properties>
