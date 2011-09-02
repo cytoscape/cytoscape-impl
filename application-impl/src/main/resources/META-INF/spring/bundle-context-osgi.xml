@@ -28,7 +28,7 @@
 	<osgi:service id="cyApplicationCorePropertyService" ref="cyApplicationCoreProperty" auto-export="interfaces" >
 		<osgi:service-properties>
 			<entry key="serviceType" value="property" />
-			<entry key="cyPropertyName" value="cytoscape.props" />
+			<entry key="cyPropertyName" value="cytoscape3.props" />
 		</osgi:service-properties>
 	</osgi:service>
 
