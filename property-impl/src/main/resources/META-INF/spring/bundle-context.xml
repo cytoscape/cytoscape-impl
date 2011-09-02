@@ -21,7 +21,7 @@
 
 
 	<bean id="corePropsReader" class="org.cytoscape.property.internal.PropsReader">
-		<constructor-arg value="cytoscape.props" />
+		<constructor-arg value="cytoscape3.props" />
 	</bean>
 
 	<bean id="bookmarksReader" class="org.cytoscape.property.internal.bookmark.BookmarkReader">
