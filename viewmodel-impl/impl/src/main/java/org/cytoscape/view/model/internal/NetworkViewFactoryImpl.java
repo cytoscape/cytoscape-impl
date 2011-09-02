@@ -1,7 +1,9 @@
 package org.cytoscape.view.model.internal;
 
+
 import java.util.Properties;
 
+import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
@@ -9,8 +11,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 
-public class NetworkViewFactoryImpl implements CyNetworkViewFactory {
 
+public class NetworkViewFactoryImpl implements CyNetworkViewFactory {
 	private final CyEventHelper eventHelper;
 	private final CyServiceRegistrar registrar;
 
@@ -20,15 +22,13 @@ public class NetworkViewFactoryImpl implements CyNetworkViewFactory {
 	 * @param eventHelper
 	 */
 	public NetworkViewFactoryImpl(final CyEventHelper eventHelper, final CyServiceRegistrar registrar) {
-
 		if (eventHelper == null)
 			throw new NullPointerException("CyEventHelper is null");
-		this.eventHelper = eventHelper;
+		this.eventHelper = DIUtil.stripProxy(eventHelper);
 
 		if (registrar == null)
 			throw new NullPointerException("CyServiceRegistrar is null");
-
-		this.registrar = registrar;
+		this.registrar = DIUtil.stripProxy(registrar);
 	}
 
 	@Override
@@ -38,7 +38,6 @@ public class NetworkViewFactoryImpl implements CyNetworkViewFactory {
 
 	@Override
 	public CyNetworkView getNetworkView(final CyNetwork network, final Boolean useThreshold) {
-
 		CyNetworkView view;
 
 		if (!useThreshold) {
