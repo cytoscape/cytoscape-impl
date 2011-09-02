@@ -1,5 +1,6 @@
 package org.cytoscape.ding.impl;
 
+
 import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
+import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
@@ -33,10 +35,11 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class DingRenderingEngineFactory implements
 		RenderingEngineFactory<CyNetwork>,
-		UpdateNetworkPresentationEventListener {
-
+		UpdateNetworkPresentationEventListener
+{
 	private static final Logger logger = LoggerFactory.getLogger(DingRenderingEngineFactory.class);
 
 	private final RenderingEngineManager renderingEngineManager;
@@ -67,16 +70,16 @@ public class DingRenderingEngineFactory implements
 			CyTableManager tableMgr, CyEventHelper eventHelper,
 			RenderingEngineManager renderingEngineManager) {
 		
-		this.dataTableFactory = dataTableFactory;
-		this.rootNetworkFactory = rootNetworkFactory;
-		this.spacialFactory = spacialFactory;
-		this.undo = undo;
-		this.dingLexicon = dingLexicon;
-		this.tm = tm;
-		this.registrar = registrar;
-		this.tableMgr = tableMgr;
-		this.eventHelper = eventHelper;
-		this.renderingEngineManager = renderingEngineManager;
+		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
+		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);
+		this.spacialFactory = DIUtil.stripProxy(spacialFactory);
+		this.undo = DIUtil.stripProxy(undo);
+		this.dingLexicon = DIUtil.stripProxy(dingLexicon);
+		this.tm = DIUtil.stripProxy(tm);
+		this.registrar = DIUtil.stripProxy(registrar);
+		this.tableMgr = DIUtil.stripProxy(tableMgr);
+		this.eventHelper = DIUtil.stripProxy(eventHelper);
+		this.renderingEngineManager = DIUtil.stripProxy(renderingEngineManager);
 
 		viewMap = new HashMap<CyNetworkView, DGraphView>();
 		nodeViewTFs = new HashMap<NodeViewTaskFactory, Map>();

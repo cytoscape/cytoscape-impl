@@ -1,12 +1,5 @@
 /*
- Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
-
- The Cytoscape Consortium is:
- - Institute for Systems Biology
- - University of California San Diego
- - Memorial Sloan-Kettering Cancer Center
- - Institut Pasteur
- - Agilent Technologies
+ Copyright (c) 2006, 2007, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -31,8 +24,9 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
+*/
 package org.cytoscape.ding.impl;
+
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -41,6 +35,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.ding.ArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
@@ -78,8 +73,8 @@ import org.cytoscape.view.presentation.property.RichVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
-public class DVisualLexicon extends RichVisualLexicon {
 
+public class DVisualLexicon extends RichVisualLexicon {
 	// Set of custom graphics positions.
 	private static final Set<VisualProperty<?>> CG_POSITIONS = new HashSet<VisualProperty<?>>();
 	private static final Set<VisualProperty<?>> CG_SIZE = new HashSet<VisualProperty<?>>();
@@ -350,7 +345,7 @@ public class DVisualLexicon extends RichVisualLexicon {
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(SINEWAVE);
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(VERTICAL_SLASH);
 
-		CG_RANGE.setManager(manager);
+		CG_RANGE.setManager(DIUtil.stripProxy(manager));
 
 		addVisualProperty(NETWORK_NODE_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_EDGE_SELECTION, NETWORK);

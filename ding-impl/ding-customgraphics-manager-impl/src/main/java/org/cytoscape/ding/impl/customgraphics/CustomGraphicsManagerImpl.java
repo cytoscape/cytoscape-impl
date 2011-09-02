@@ -1,5 +1,6 @@
 package org.cytoscape.ding.impl.customgraphics;
 
+
 import java.io.File;
 import java.net.URL;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CytoscapeShutdownEvent;
 import org.cytoscape.application.events.CytoscapeShutdownListener;
+import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
@@ -23,10 +25,7 @@ import org.slf4j.LoggerFactory;
 
 
 public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, CytoscapeShutdownListener {
-
 	private static final Logger logger = LoggerFactory.getLogger(CustomGraphicsManagerImpl.class);
-
-
 	private static final String IMAGE_DIR_NAME = "images3";
 
 	protected final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>();
@@ -35,52 +34,49 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>();
 
 	// Null Object
-	private static final CyCustomGraphics NULL = NullCustomGraphics
-			.getNullObject();
+	private static final CyCustomGraphics NULL = NullCustomGraphics.getNullObject();
 
 	private final File imageHomeDirectory;
-	
 	protected final Map<CyCustomGraphics,Boolean> isUsedCustomGraphics;
 	private final TaskManager taskManager;
-	
-	
 
 	/**
 	 * Creates an image pool object and restore existing images from user
 	 * resource directory.
 	 */
-	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final TaskManager taskManager, final CyApplicationConfiguration config) {
-		
-		this.taskManager = taskManager;
+	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties,
+					 final TaskManager taskManager,
+					 final CyApplicationConfiguration config)
+	{
+		this.taskManager = DIUtil.stripProxy(taskManager);
 		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
-		
-		if(properties == null)
+
+		if (properties == null)
 			throw new NullPointerException("Property object is null.");
-		
+
 		final Properties props = properties.getProperties();
-		
-		if(props == null)
+
+		if (props == null)
 			throw new NullPointerException("Property is missing.");
-		
+
 		this.imageHomeDirectory = new File(config.getSettingLocation(), IMAGE_DIR_NAME);
-		
+
 		logger.debug("\n!!!!!!!!!!!!!!!!! Cytoscape image directory: " + imageHomeDirectory.toString());
 
 		graphicsMap.put(NULL.getIdentifier(), NULL);
 		this.isUsedCustomGraphics.put(NULL, false);
-		
+
 		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(imageHomeDirectory, this);
-		
+
 		taskManager.execute(taskFactory);
-		
 	}
 
 
-	
+
 
 	/**
 	 * Add a custom graphics to current session.
-	 * 
+	 *
 	 * @param hash
 	 *            : Hasn code of image object
 	 * @param graphics
@@ -103,7 +99,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	/**
 	 * Remove graphics from current session (memory).
-	 * 
+	 *
 	 * @param id
 	 *            : ID of graphics (hash code)
 	 */
@@ -117,12 +113,12 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	/**
 	 * Get a Custom Graphics by integer ID.
-	 * 
+	 *
 	 * @param hash
 	 *            Hash code of Custom Graphics object
-	 * 
+	 *
 	 * @return Custom Graphics if exists. Otherwise, null.
-	 * 
+	 *
 	 */
 	@Override public CyCustomGraphics getCustomGraphicsByID(Long id) {
 		return graphicsMap.get(id);
@@ -131,7 +127,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	/**
 	 * Get Custom Graphics by source URL. Images without source cannot be
 	 * retreved by this method.
-	 * 
+	 *
 	 * @param sourceURL
 	 * @return
 	 */
@@ -145,7 +141,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	/**
 	 * Get a collection of all Custom Graphics in current session.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override public Collection<CyCustomGraphics> getAllCustomGraphics() {
@@ -167,7 +163,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	/**
 	 * Convert current list of custom graphics into Property object.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override public Properties getMetadata() {
@@ -190,18 +186,18 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	@Override public SortedSet<Long> getIDSet() {
 		return new TreeSet<Long>(graphicsMap.keySet());
 	}
-	
+
 	@Override public boolean isUsedInCurrentSession(final CyCustomGraphics graphics) {
 		if(graphics == null || this.isUsedCustomGraphics.containsKey(graphics) == false)
 			return false;
 
 		return isUsedCustomGraphics.get(graphics);
 	}
-	
+
 	@Override public void setUsedInCurrentSession(final CyCustomGraphics graphics, final Boolean isUsed) {
 		if(isUsed == null || graphics == null)
 			return;
-		
+
 		if(this.isUsedCustomGraphics.containsKey(graphics) == false){
 			// Just ignore.
 			return;
@@ -219,7 +215,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		final PersistImageTaskFactory factory = new PersistImageTaskFactory(imageHomeDirectory, this);
 
 		try {
-			
+
 			//FIXME how this section can wait until everything is done?
 			taskManager.execute(factory);
 		} catch (Exception e1) {
@@ -227,6 +223,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		}
 
 		logger.info("========== Image saving process finished =============");
-		
+
 	}
 }
