@@ -15,7 +15,7 @@
 	<osgi:reference id="recentlyOpenedTrackerServiceRef" interface="org.cytoscape.io.util.RecentlyOpenedTracker" />
 
 	<osgi:reference id="cytoscapePropertiesServiceRef"
-		interface="org.cytoscape.property.CyProperty" filter="(cyPropertyName=cytoscape.props)" />
+		interface="org.cytoscape.property.CyProperty" filter="(cyPropertyName=cytoscape3.props)" />
 
 	<osgi:reference id="cyApplicationManagerServiceRef"
 		interface="org.cytoscape.application.CyApplicationManager" />

@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 // dialog - this needs to be supported more generally on an application level, perhaps
 // on a shutdown event?
 public class CyOperatingContextImpl {
-	public static final String PROPS = "cytoscape.props";
+	public static final String PROPS = "cytoscape3.props";
 
 	private static final Logger logger = LoggerFactory.getLogger(CyOperatingContextImpl.class);
 
