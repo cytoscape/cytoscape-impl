@@ -13,7 +13,7 @@ public class SessionUtil {
 	public static final String CYSESSION = "cysession.xml";
 	public static final String VIZMAP_PROPS = "vizmap.props";
 	public static final String VIZMAP_XML = "vizmap.xml";
-	public static final String CY_PROPS = "cytoscape.props";
+	public static final String CY_PROPS = "cytoscape3.props";
 	public static final String XGMML_EXT = ".xgmml";
 	public static final String BOOKMARKS_FILE = "session_bookmarks.xml";
 	public static final String TABLE_EXT = ".cytable";
