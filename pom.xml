@@ -6,13 +6,13 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-alpha8</version>
+		<version>3.0.0-alpha9-SNAPSHOT</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0-alpha7</version>
+	<version>3.0.0-alpha8-SNAPSHOT</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<modules>
@@ -258,9 +258,9 @@
     </dependencies>
 
 	<scm>
-		<connection>${scm.connection.root}/impl/tags/impl-parent-3.0.0-alpha7</connection>
-		<developerConnection>${scm.dev.connection.root}/impl/tags/impl-parent-3.0.0-alpha7</developerConnection>
-		<url>${scm.url.root}/impl/tags/impl-parent-3.0.0-alpha7</url>
+		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/trunk</connection>
+		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/trunk</developerConnection>
+		<url>http://chianti.ucsd.edu/svn/core3/impl/trunk</url>
 	</scm>
 
 	<build>
