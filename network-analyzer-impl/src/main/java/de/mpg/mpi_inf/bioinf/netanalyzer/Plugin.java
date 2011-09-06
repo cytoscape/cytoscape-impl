@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
+import org.cytoscape.application.CytoscapeVersion;
+
 
 /**
  * Wrapper class for the NetworkAnalyzer plugin.
@@ -51,9 +53,9 @@ public class Plugin {
 	public static final String settingsFileName = "NetworkAnalyzer.xml";
 
 	/**
-	 * Current version of the NetworkAnalyzer plugin.
+	 * Current version of the NetworkAnalyzer plugin. We set it to the Current version of Cytoscape
 	 */
-	public static final String version = "2.7";
+	public static String version = "3.0";
 
 	/**
 	 * Gets the decorator class given decorators name.
@@ -180,8 +182,11 @@ public class Plugin {
 	/**
 	 * Initializes a new instance of <code>Plugin</code>.
 	 */
-	public Plugin(CySwingApplication swingApp) {
+	public Plugin(CySwingApplication swingApp, CytoscapeVersion cytoscapeVersion) {
 		try {
+			// Set the version to current version of Cytoscape
+			Plugin.version = cytoscapeVersion.getMajorVersion() + "."+ cytoscapeVersion.getMinorVersion();
+			
 			// Initiate default visual settings
 			SettingsSerializer.initVisualSettings();
 			// If initialization fails, the following lines are not executed:
