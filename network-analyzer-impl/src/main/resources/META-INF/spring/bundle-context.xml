@@ -11,6 +11,7 @@
 
 	<bean id="plugin" class="de.mpg.mpi_inf.bioinf.netanalyzer.Plugin">
 		<constructor-arg ref="cySwingApplicationServiceRef" />
+		<constructor-arg ref="cytoscapeVersionService" />
 	</bean>
 	
 	<bean id="aboutAction" class="de.mpg.mpi_inf.bioinf.netanalyzer.AboutAction">
