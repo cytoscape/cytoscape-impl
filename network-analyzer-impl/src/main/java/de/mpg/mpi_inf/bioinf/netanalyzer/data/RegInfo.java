@@ -17,7 +17,6 @@
 
 package de.mpg.mpi_inf.bioinf.netanalyzer.data;
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
 
 /**
  * Class storing and managing the NetworkAnalyzer registration information.
@@ -44,7 +43,6 @@ public class RegInfo {
 		surname = aSurname;
 		institute = aInstitute;
 		email = aEmail;
-		version = Plugin.version;
 	}
 
 	/**
@@ -123,24 +121,6 @@ public class RegInfo {
 		email = aEmail;
 	}
 
-	/**
-	 * Get NetworkAnalyzer version number.
-	 * 
-	 * @return NetworkAnalyzer version number.
-	 */
-	public String getVersion() {
-		return version;
-	}
-
-	/**
-	 * Set new NetworkAnalyzer version number.
-	 * 
-	 * @param aVersion
-	 *            New NetworkAnalyzer version number.
-	 */
-	public void setVersion(String aVersion) {
-		version = aVersion;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -158,7 +138,6 @@ public class RegInfo {
 		buffer.append("\t");
 		buffer.append(email);
 		buffer.append("\t");
-		buffer.append(version);
 		return buffer.toString();
 	}
 
@@ -181,9 +160,4 @@ public class RegInfo {
 	 * User's email address.
 	 */
 	private String email;
-
-	/**
-	 * Current NetworkAnalyzer version.
-	 */
-	private String version;
 }

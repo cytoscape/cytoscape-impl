@@ -53,11 +53,6 @@ public class Plugin {
 	public static final String settingsFileName = "NetworkAnalyzer.xml";
 
 	/**
-	 * Current version of the NetworkAnalyzer plugin. We set it to the Current version of Cytoscape
-	 */
-	public static String version = "3.0";
-
-	/**
 	 * Gets the decorator class given decorators name.
 	 * 
 	 * @param aName
@@ -182,11 +177,8 @@ public class Plugin {
 	/**
 	 * Initializes a new instance of <code>Plugin</code>.
 	 */
-	public Plugin(CySwingApplication swingApp, CytoscapeVersion cytoscapeVersion) {
+	public Plugin(CySwingApplication swingApp) {
 		try {
-			// Set the version to current version of Cytoscape
-			Plugin.version = cytoscapeVersion.getMajorVersion() + "."+ cytoscapeVersion.getMinorVersion();
-			
 			// Initiate default visual settings
 			SettingsSerializer.initVisualSettings();
 			// If initialization fails, the following lines are not executed:

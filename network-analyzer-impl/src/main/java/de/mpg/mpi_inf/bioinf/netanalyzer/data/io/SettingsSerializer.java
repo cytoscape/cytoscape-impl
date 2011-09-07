@@ -155,7 +155,6 @@ public abstract class SettingsSerializer {
 	 */
 	public static void save() throws IOException {
 		Element settingsRoot = new Element(rootTag);
-		settingsRoot.setAttribute(versionAttribute, Plugin.version);
 		settingsRoot.addContent(pluginSettings.toXmlNode());
 
 		for (String id : visualSettings.keySet()) {
@@ -253,7 +252,6 @@ public abstract class SettingsSerializer {
 	private static void loadSettings(Document aDoc) {
 		try {
 			Element root = aDoc.getRootElement();
-			verifyVersion(root.getAttributeValue("ver"));
 			pluginSettings = new PluginSettings(root.getChild(PluginSettings.tag));
 			// TODO: [Cytoscape 2.8] Check if a new version of JDom is used
 			final List<?> paramSettings = root.getChildren(SettingsGroup.tag);
@@ -280,26 +278,6 @@ public abstract class SettingsSerializer {
 			// NoSuchMethodException
 			// NullPointerException
 			throw new InnerException(ex);
-		}
-	}
-
-	/**
-	 * Verifies the given version is compatible with the version of this plugin.
-	 * <p>
-	 * In case the versions are incompatible, this method throws an exception.
-	 * </p>
-	 * 
-	 * @param aVersion
-	 *            Version to be checked for compatibility.
-	 * 
-	 * @throws DOMException
-	 *             If <code>aVersion</code> is incompatible with {@link Plugin#version}.
-	 * @throws NullPointerException
-	 *             If <code>aVersion</code> is <code>null</code>.
-	 */
-	private static void verifyVersion(String aVersion) {
-		if (!(new Version(Plugin.version).equals(new Version(aVersion)))) {
-			throw new DOMException((short) 9, "Version is not supported");
 		}
 	}
 
