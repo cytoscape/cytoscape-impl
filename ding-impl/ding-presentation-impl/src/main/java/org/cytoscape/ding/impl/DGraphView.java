@@ -2706,12 +2706,13 @@ public class DGraphView implements RenderingEngine<CyNetwork>, GraphView,
 	@Override
 	public void handleEvent(NodeViewsChangedEvent e) {
 		if ( e.getSource() != cyNetworkView )
-				return;
+			return;
 		
 		for ( ViewChangeRecord<CyNode> record : e.getPayloadCollection()) {
 			final Integer index = record.getView().getModel().getIndex();
-			if (m_nodeViewMap.containsKey(index))
-				m_nodeViewMap.get(index).setVisualPropertyValue(record.getVisualProperty(), record.getValue());
+			final NodeView view = m_nodeViewMap.get(index);
+			if (view != null)
+				view.setVisualPropertyValue(record.getVisualProperty(), record.getValue());
 		}
 	}
 
@@ -2725,8 +2726,9 @@ public class DGraphView implements RenderingEngine<CyNetwork>, GraphView,
 	
 		for ( ViewChangeRecord<CyEdge> record : e.getPayloadCollection()) {
 			final Integer index = record.getView().getModel().getIndex();
-			if (m_edgeViewMap.containsKey(index))
-				m_edgeViewMap.get(index).setVisualPropertyValue(record.getVisualProperty(), record.getValue());
+			final EdgeView view = m_edgeViewMap.get(index);
+			if (view != null)
+				view.setVisualPropertyValue(record.getVisualProperty(), record.getValue());
 		}
 	}
 
