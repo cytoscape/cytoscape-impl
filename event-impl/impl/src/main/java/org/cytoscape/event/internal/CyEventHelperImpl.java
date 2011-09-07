@@ -39,19 +39,14 @@ import org.cytoscape.event.CyPayloadEvent;
 import org.cytoscape.event.CyEventHelper;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Random;
 import java.util.Set;
-import java.lang.reflect.Constructor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +63,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 
 	public CyEventHelperImpl(final CyListenerAdapter normal) {
 		this.normal = normal;
-		sourceAccMap = new HashMap<Object,Map<Class<?>,PayloadAccumulator<?,?,?>>>();
+		sourceAccMap = new LinkedHashMap<Object,Map<Class<?>,PayloadAccumulator<?,?,?>>>();
 		payloadEventMonitor = Executors.newSingleThreadScheduledExecutor();
 		silencedSources = new HashSet<Object>();
 		havePayload = false;
@@ -127,7 +122,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 		synchronized (this) {
 			Map<Class<?>,PayloadAccumulator<?,?,?>> cmap = sourceAccMap.get(source);
 			if ( cmap == null ) { 
-				cmap = new HashMap<Class<?>,PayloadAccumulator<?,?,?>>();
+				cmap = new LinkedHashMap<Class<?>,PayloadAccumulator<?,?,?>>();
 				sourceAccMap.put(source,cmap);
 			}
 	
