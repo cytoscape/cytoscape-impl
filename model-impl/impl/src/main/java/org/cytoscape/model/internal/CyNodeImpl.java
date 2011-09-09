@@ -28,17 +28,14 @@
 package org.cytoscape.model.internal;
 
 
+import java.util.Map;
+
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.SetNestedNetworkEvent;
 import org.cytoscape.model.events.UnsetNestedNetworkEvent;
-
-import java.util.List;
-import java.util.Map;
 
 
 class CyNodeImpl extends CyTableEntryImpl implements CyNode {
@@ -54,28 +51,25 @@ class CyNodeImpl extends CyTableEntryImpl implements CyNode {
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyNode#getIndex()
 	 */
+	@Override
 	public int getIndex() {
 		return index;
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyNode#getNetwork()
 	 */
 	@Override
-	public String toString() {
-		return "Node suid: " + getSUID() + " index: " + index;
-	}
-
 	public synchronized CyNetwork getNetwork() {
 		return nestedNet;
 	}
 
+	/**
+	 * @see org.cytoscape.model.CyNode#setNetwork(CyNetwork)
+	 */
+	@Override
 	public void setNetwork(final CyNetwork n) {
 		final CyNetwork orig; 
 	
@@ -91,5 +85,10 @@ class CyNodeImpl extends CyTableEntryImpl implements CyNode {
 			eventHelper.fireEvent(new UnsetNestedNetworkEvent(this, orig));
 		if (nestedNet != null)
 			eventHelper.fireEvent(new SetNestedNetworkEvent(this, nestedNet));
+	}
+	
+	@Override
+	public String toString() {
+		return "Node suid: " + getSUID() + " index: " + index;
 	}
 }

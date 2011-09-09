@@ -28,17 +28,11 @@
 package org.cytoscape.model.internal;
 
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
+import java.util.Map;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.SetNestedNetworkEvent;
-import org.cytoscape.model.events.UnsetNestedNetworkEvent;
-
-import java.util.List;
-import java.util.Map;
 
 
 class CySubNodeImpl extends CyTableEntryImpl implements CyNode {
@@ -50,23 +44,27 @@ class CySubNodeImpl extends CyTableEntryImpl implements CyNode {
 		this.rootNode = rootNode;
 	}
 
+	@Override
 	public int getIndex() {
 		return rootNode.getIndex();
 	}
 
-	public String toString() {
-		return "SUBNODE of : " + rootNode.toString(); 
-	}
-
+	@Override
 	public CyNetwork getNetwork() {
 		return rootNode.getNetwork();
 	}
 
+	@Override
 	public void setNetwork(final CyNetwork n) {
 		rootNode.setNetwork(n);
 	}
 
 	public CyNode getRootNode() {
 		return rootNode;
+	}
+	
+	@Override
+	public String toString() {
+		return "SUBNODE of : " + rootNode.toString(); 
 	}
 }

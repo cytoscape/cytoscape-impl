@@ -28,14 +28,14 @@
 package org.cytoscape.model.internal;
 
 
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import java.util.Map;
+
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.SUIDFactory;
-
-import java.util.Map;
 
 
 class CyTableEntryImpl implements CyTableEntry, Identifiable {
@@ -55,17 +55,18 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 		this(attrMgr,SUIDFactory.getNextSUID());
 	}
 
+	/**
+	 * @see org.cytoscape.model.Identifiable#getSUID()
+	 */
+	@Override
 	final public long getSUID() {
 		return suid;
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param namespace DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyTableEntry#getCyRow(String)
 	 */
+	@Override
 	final public CyRow getCyRow(final String namespace) {
 		if (namespace == null)
 			throw new NullPointerException("namespace is null");
@@ -78,11 +79,30 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyTableEntry#getCyRow()
 	 */
+	@Override
 	final public CyRow getCyRow() {
 		return defaultRow; 
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 17;
+		int result = 1;
+		result = prime * result + (int) (suid ^ (suid >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (! (obj instanceof CyTableEntryImpl))
+			return false;
+		CyTableEntryImpl other = (CyTableEntryImpl) obj;
+		return (suid == other.suid);
 	}
 }

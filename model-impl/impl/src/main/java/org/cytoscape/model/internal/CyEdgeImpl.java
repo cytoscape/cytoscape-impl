@@ -59,46 +59,37 @@ class CyEdgeImpl extends CyTableEntryImpl implements CyEdge {
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyEdge#getIndex()
 	 */
+	@Override
 	public int getIndex() {
 		return index;
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyEdge#getSource()
 	 */
+	@Override
 	public CyNode getSource() {
 		return source;
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyEdge#getTarget()
 	 */
+	@Override
 	public CyNode getTarget() {
 		return target;
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * @see org.cytoscape.model.CyEdge#isDirected()
 	 */
+	@Override
 	public boolean isDirected() {
 		return directed;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
