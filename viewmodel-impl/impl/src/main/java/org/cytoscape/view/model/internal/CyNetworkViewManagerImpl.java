@@ -1,7 +1,7 @@
 /*
  File: CyNetworkViewManagerImpl.java
 
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2006, 2010-2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -26,14 +26,16 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
+*/
 package org.cytoscape.view.model.internal;
+
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
@@ -46,11 +48,11 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * An implementation of CyNetworkViewManager.
  */
 public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAboutToBeDestroyedListener {
-
 	private static final Logger logger = LoggerFactory.getLogger(CyNetworkViewManagerImpl.class);
 
 	private final Map<Long, CyNetworkView> networkViewMap;
@@ -62,7 +64,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	 */
 	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper) {
 		networkViewMap = new HashMap<Long, CyNetworkView>();
-		this.cyEventHelper = cyEventHelper;
+		this.cyEventHelper = DIUtil.stripProxy(cyEventHelper);
 	}
 
 	@Override
