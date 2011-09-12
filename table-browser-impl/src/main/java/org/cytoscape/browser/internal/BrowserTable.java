@@ -55,6 +55,10 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
+import java.awt.event.FocusListener;
+import java.awt.event.FocusEvent;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 
 
 public class BrowserTable extends JTable
@@ -78,6 +82,9 @@ public class BrowserTable extends JTable
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
 	private boolean updateColumnComparators;
+	private CellFocusListener myCellFocusListener = new CellFocusListener();
+
+	
 
 	public BrowserTable(final OpenBrowser openBrowser, final EquationCompiler compiler,
 			    final PopupMenuHelper popupMenuHelper)
@@ -241,7 +248,7 @@ public class BrowserTable extends JTable
 		}
 
 		TableCellEditor editor = getCellEditor(row, column);
-
+		
 		if ((editor != null) && editor.isCellEditable(e)) {
 			// Do this first so that the bounds of the JTextArea editor
 			// will be correct.
@@ -257,6 +264,24 @@ public class BrowserTable extends JTable
 				return false;
 			}
 
+			//
+			FocusListener[] ls = editorComp.getFocusListeners();
+			
+			boolean addMyFocusListener = true;
+			for (FocusListener l: ls){
+				if(l == this.myCellFocusListener){
+					addMyFocusListener = false;
+					break;
+				}
+			}
+			
+			if (addMyFocusListener){
+				editorComp.addFocusListener(this.myCellFocusListener);	
+				this.myCellFocusListener.setRow(this.editingRow);
+				this.myCellFocusListener.setColumn(this.editingColumn);				
+			}
+			
+			
 			Rectangle cellRect = getCellRect(row, column, false);
 
 			if (editor instanceof MultiLineTableCellEditor) {
@@ -280,6 +305,32 @@ public class BrowserTable extends JTable
 		return false;
 	}
 
+
+	public class CellFocusListener implements FocusListener {
+	
+		private int rowFocused = -1, colFocused = -1;
+		public void focusGained(FocusEvent e){
+		}
+		
+		public void setRow(int rowFocused){
+			this.rowFocused = rowFocused;
+		}
+		
+		public void setColumn(int colFocused){
+			this.colFocused = colFocused;
+		}
+		
+		public void focusLost(FocusEvent e){
+			
+			TableCellEditor editor = getCellEditor(this.rowFocused, this.colFocused);
+			
+			if ((editor != null) && editor.isCellEditable(e)) {
+				editor.stopCellEditing();
+			}
+		}
+	}
+
+	
 	/**
 	 *  Display elements in the list objects.
 	 */
