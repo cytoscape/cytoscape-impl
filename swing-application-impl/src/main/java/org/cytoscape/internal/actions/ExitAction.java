@@ -42,6 +42,7 @@ package org.cytoscape.internal.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 import javax.swing.KeyStroke;
 
@@ -67,8 +68,18 @@ public class ExitAction extends AbstractCyAction {
 	this.shutdown = shutdown;
 	setPreferredMenu("File");
 
-	// TODO: need to create special case for Mac to use apple key.
-	setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.VK_CONTROL));
+	String osName = System.getProperty("os.name").toLowerCase();
+	//boolean isMacOs = osName.startsWith("mac os x");
+	
+	if (osName.indexOf("mac") != -1) {    
+		// TODO: need to create special case for Mac to use apple key.
+		// do mac-specific things here
+		//setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_MASK));	
+		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.VK_CONTROL));
+	}
+	else {
+		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK));		
+	}
 	setMenuGravity(1000.0f);
     }
 
