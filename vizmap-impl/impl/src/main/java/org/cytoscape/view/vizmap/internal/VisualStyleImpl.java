@@ -171,8 +171,11 @@ public class VisualStyleImpl implements VisualStyle {
 			return;
 		}
 
-		logger.debug("Visual Style Apply method called: " + this.title);
+		logger.info(networkView.getSUID() + ": Visual Style Apply method called: " + this.title);
 
+		
+		final long start = System.currentTimeMillis();
+		
 		final Collection<View<CyNode>> nodeViews = networkView.getNodeViews();
 		final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
 		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
@@ -183,7 +186,7 @@ public class VisualStyleImpl implements VisualStyle {
 		applyImpl(edgeViews, lexManager.getEdgeVisualProperties());
 		applyImpl(networkViewSet, lexManager.getNetworkVisualProperties());
 
-		logger.debug("Visual Style applied: " + this.title + "\n");
+		logger.info(title + ": Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
 	}
 
 	/**
@@ -217,9 +220,8 @@ public class VisualStyleImpl implements VisualStyle {
 			for (View<?> view : views) {
 				mapping.apply((View<? extends CyTableEntry>) view);
 				
-				if (view.getVisualProperty(vp) == vpDefault) {
+				if (view.getVisualProperty(vp) == vpDefault)
 					view.setVisualProperty(vp, styleDefaultValue);
-				} 
 			}
 		} else if (!vp.shouldIgnoreDefault()) {
 			// Ignore defaults flag is OFF. Apply defaults.
@@ -233,11 +235,8 @@ public class VisualStyleImpl implements VisualStyle {
 				defVal = getDefaultValue(vp);
 			}
 			for (View<?> view : views) {
-				Object val = view.getVisualProperty(vp);
-				// logger.debug(vp.getDisplayName() + ": Ignore flag.  Val = " +
-				// val);
-				// logger.debug(vp.getDisplayName() + ": DEF Val = " + defVal);
-				if (defVal.equals(val) == false)
+				final Object val = view.getVisualProperty(vp);
+				if (defVal != val)
 					view.setVisualProperty(vp, val);
 			}
 		}
@@ -258,23 +257,12 @@ public class VisualStyleImpl implements VisualStyle {
 			if (vp.getDefault() instanceof Visualizable)
 				continue;
 
-			final Object currentValue = viewModel.getVisualProperty(vp);
-
-			// // Some of the VP has null defaults.
-			// if (currentValue == null)
-			// continue;
-
-			// // If equals, it is not necessary to set new value.
-			// if (currentValue.equals(defaultValue))
-			// continue;
-			//
-			//
+			// If equals, it is not necessary to set new value.
+			if (viewModel.getVisualProperty(vp) == defaultValue)
+				continue;
 
 			// This is a leaf, and need to be updated.
 			viewModel.setVisualProperty(vp, defaultValue);
-
-			// logger.debug(vp.getDisplayName() + " updated from: " +
-			// currentValue + " to " + defaultValue);
 		}
 	}
 
