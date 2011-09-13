@@ -133,14 +133,20 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		// any existing equations should be parsed first
 		readDataMgr.parseAllEquations();
-		
 		netView = cyNetworkViewFactory.getNetworkView(network);
 
 		if (netView != null) {
 			// Network Title
-			CyRow netRow = netView.getModel().getCyRow();
-			String netName = readDataMgr.getNetworkName();
-			netRow.set(CyTableEntry.NAME, netName);
+			// (only when directly importing an XGMML file or if as part of a 2.x CYS file;
+			//  otherwise the name is stored in a cyTable)
+			if (!sessionFormat || readDataMgr.getDocumentVersion() < 3.0) {
+				String netName = readDataMgr.getNetworkName();
+				
+				if (netName != null) {
+					CyRow netRow = netView.getModel().getCyRow();
+					netRow.set(CyTableEntry.NAME, netName);
+				}
+			}
 
 			// Nodes and edges
 			if (netView.getModel().getNodeCount() > 0) {
@@ -190,28 +196,26 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 				layoutGraphics(ev, atts);
 			}
 
-			// TODO edge bend:
-			//		if (attributeValueUtil.getAttributeNS(attr, "curved", CY_NAMESPACE) != null) {
-			//			String value = attributeValueUtil.getAttributeNS(attr, "curved",
-			//					CY_NAMESPACE);
-			//			if (value.equals("STRAIGHT_LINES")) {
-			//				edgeView.setLineType(EdgeView.STRAIGHT_LINES);
-			//			} else if (value.equals("CURVED_LINES")) {
-			//				edgeView.setLineType(EdgeView.CURVED_LINES);
-			//			}
-			//		}
-			//		if (attributeValueUtil.getAttribute(attr, "edgeHandleList") != null) {
-			//			String handles[] = attributeValueUtil.getAttribute(attr,
-			//					"edgeHandleList").split(";");
-			//			for (int i = 0; i < andles.length; i++) {
-			//				String points[] = handles[i].split(",");
-			//				double x = (new Double(points[0])).doubleValue();
-			//				double y = (new Double(points[1])).doubleValue();
-			//				Point2D.Double point = new Point2D.Double();
-			//				point.setLocation(x, y);
-			//				edgeView.getBend().addHandle(point);
-			//			}
-			//		}
+			// TODO Edge bend
+//			if (readDataMgr.getAttributeNS(attr, "curved", CY_NAMESPACE) != null) {
+//				String value = readDataMgr.getAttributeNS(attr, "curved", CY_NAMESPACE);
+//				if (value.equals("STRAIGHT_LINES")) {
+//					ev.setLineType(EdgeView.STRAIGHT_LINES);
+//				} else if (value.equals("CURVED_LINES")) {
+//					ev.setLineType(EdgeView.CURVED_LINES);
+//				}
+//			}
+//			if (readDataMgr.getAttribute(attr, "edgeHandleList") != null) {
+//				String handles[] = readDataMgr.getAttribute(attr, "edgeHandleList").split(";");
+//				for (int i = 0; i < handles.length; i++) {
+//					String points[] = handles[i].split(",");
+//					double x = (new Double(points[0])).doubleValue();
+//					double y = (new Double(points[1])).doubleValue();
+//					Point2D.Double point = new Point2D.Double();
+//					point.setLocation(x, y);
+//					ev.getBend().addHandle(point);
+//				}
+//			}
 		}
 	}
 

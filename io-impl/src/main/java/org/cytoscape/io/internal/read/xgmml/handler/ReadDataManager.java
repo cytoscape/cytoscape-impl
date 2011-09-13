@@ -144,6 +144,10 @@ public class ReadDataManager {
 		sessionFormat = false;
 	}
 
+	public double getDocumentVersion() {
+		return documentVersion;
+	}
+
 	public boolean isSessionFormat() {
 		return sessionFormat;
 	}

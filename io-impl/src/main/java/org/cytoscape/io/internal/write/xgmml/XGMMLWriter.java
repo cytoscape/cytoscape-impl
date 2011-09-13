@@ -277,7 +277,6 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         java.util.Date now = new java.util.Date();
         java.text.DateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         writeElement("<dc:date>" + df.format(now) + "</dc:date>\n");
-        // TODO fix the use of hardcoded "name" here
         writeElement("<dc:title>" + getNetworkName(network) + "</dc:title>\n");
         writeElement("<dc:source>http://www.cytoscape.org/</dc:source>\n");
         writeElement("<dc:format>Cytoscape-XGMML</dc:format>\n");
@@ -316,12 +315,14 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
             writeAttributeXML(GRAPH_VIEW_CENTER_Y, ObjectType.REAL, cy, true);
         }
 
-        // Now handle all of the other network attributes
-        CyRow row = network.getCyRow();
-        CyTable table = row.getTable();
-
-        for (final CyColumn column : table.getColumns())
-            writeAttribute(row, column.getName());
+        // Now handle all of the other network attributes, but only if exporting to XGMML directly
+        if (!sessionFormat) {
+	        CyRow row = network.getCyRow();
+	        CyTable table = row.getTable();
+	
+	        for (final CyColumn column : table.getColumns())
+	            writeAttribute(row, column.getName());
+        }
     }
 
     /**
@@ -349,7 +350,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 
         // Output the node
         String id = quote(Long.toString(node.getSUID()));
-		String label = quote(node.getCyRow().get("name", String.class));
+		String label = quote(node.getCyRow().get(CyNetwork.NAME, String.class));
 
 		writeElement("<node id=" + id + " label=" + label + ">\n");
         depth++;
@@ -451,7 +452,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 		if (!nodeMap.containsKey(curEdge.getTarget()) || !nodeMap.containsKey(curEdge.getSource())) return;
 
 		String id = quote(Long.toString(curEdge.getSUID()));
-		String label = quote(curEdge.getCyRow().get("name", String.class));
+		String label = quote(curEdge.getCyRow().get(CyNetwork.NAME, String.class));
 		String directed = quote(curEdge.isDirected() ? "1" : "0");
 
 		writeElement("<edge id=" + id + " label=" + label + " source=" + source + " target=" + target +
@@ -759,7 +760,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     }
 
     private String getNetworkName(CyNetwork network) {
-        String name = encode(network.getCyRow().get("name", String.class));
+        String name = encode(network.getCyRow().get(CyNetwork.NAME, String.class));
         if (name == null) name = "UNDEFINED";
 
         return name;
