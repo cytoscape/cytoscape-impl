@@ -55,6 +55,9 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
 import javax.swing.event.CellEditorListener;
@@ -83,7 +86,7 @@ public class BrowserTable extends JTable
 	private final PopupMenuHelper popupMenuHelper;
 	private boolean updateColumnComparators;
 	private CellFocusListener myCellFocusListener = new CellFocusListener();
-
+	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
 	
 
 	public BrowserTable(final OpenBrowser openBrowser, final EquationCompiler compiler,
@@ -248,7 +251,7 @@ public class BrowserTable extends JTable
 		}
 
 		TableCellEditor editor = getCellEditor(row, column);
-		
+
 		if ((editor != null) && editor.isCellEditable(e)) {
 			// Do this first so that the bounds of the JTextArea editor
 			// will be correct.
@@ -262,23 +265,6 @@ public class BrowserTable extends JTable
 			if (editorComp == null) {
 				removeEditor();
 				return false;
-			}
-
-			//
-			FocusListener[] ls = editorComp.getFocusListeners();
-			
-			boolean addMyFocusListener = true;
-			for (FocusListener l: ls){
-				if(l == this.myCellFocusListener){
-					addMyFocusListener = false;
-					break;
-				}
-			}
-			
-			if (addMyFocusListener){
-				editorComp.addFocusListener(this.myCellFocusListener);	
-				this.myCellFocusListener.setRow(this.editingRow);
-				this.myCellFocusListener.setColumn(this.editingColumn);				
 			}
 			
 			
@@ -299,6 +285,22 @@ public class BrowserTable extends JTable
 			add(editorComp);
 			editorComp.validate();
 
+			
+			//
+			FocusListener[] ls = editorComp.getFocusListeners();
+			
+			boolean addMyFocusListener = true;
+			for (FocusListener l: ls){
+				if(l == this.myCellFocusListener){
+					addMyFocusListener = false;
+					break;
+				}
+			}
+			
+			if (addMyFocusListener){
+				editorComp.addFocusListener(this.myCellFocusListener);				
+			}
+			
 			return true;
 		}
 
@@ -307,25 +309,23 @@ public class BrowserTable extends JTable
 
 
 	public class CellFocusListener implements FocusListener {
-	
-		private int rowFocused = -1, colFocused = -1;
+
 		public void focusGained(FocusEvent e){
 		}
 		
-		public void setRow(int rowFocused){
-			this.rowFocused = rowFocused;
-		}
-		
-		public void setColumn(int colFocused){
-			this.colFocused = colFocused;
-		}
-		
 		public void focusLost(FocusEvent e){
-			
-			TableCellEditor editor = getCellEditor(this.rowFocused, this.colFocused);
-			
+									
+			TableCellEditor editor = BrowserTable.this.getCellEditor();
 			if ((editor != null) && editor.isCellEditable(e)) {
-				editor.stopCellEditing();
+				try {
+					getCellEditor().cancelCellEditing();
+					//getCellEditor().stopCellEditing();
+				}
+				catch (Exception ex){
+					// If user click on open space, not on node/edge, the cell is no longer there. 
+					// In this case, we can not run stopCellEditing(), otherwise we get ArrayOutOfBoundException
+					logger.info(ex.getMessage());
+				}
 			}
 		}
 	}
