@@ -148,7 +148,9 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 
 		public void keyTyped(KeyEvent e) {}
 
-		public void keyReleased(KeyEvent e) {}
+		public void keyReleased(KeyEvent e) {
+			lastValueUserEntered = getCellEditorValue();
+		}
 
 		public void keyPressed(final KeyEvent event) {
 			if (event.getKeyCode() != KeyEvent.VK_ENTER)
@@ -180,4 +182,6 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			}
 		}
 	}
+	
+	public static Object lastValueUserEntered = null;
 }

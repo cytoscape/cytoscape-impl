@@ -31,6 +31,7 @@ import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import java.util.Vector;
 
 
 public final class BrowserTableModel extends AbstractTableModel implements ColumnCreatedListener,
@@ -406,6 +407,16 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		throw new IllegalStateException("We should *never* get here! (index="+index+", i="+i);
 	}
 
+	// Because tableModel will disappear if user click on open space on canvas, 
+	// we have to remember it before it is gone
+	public Vector getCellData(final int rowIndex, final int columnIndex){
+		Vector cellVect = new Vector();
+		cellVect.add(mapRowIndexToRow(rowIndex));
+		cellVect.add( mapColumnIndexToColumnName(columnIndex));
+		
+		return cellVect;
+	}
+	
 	@Override
 	public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
 		final String text = (String)value;

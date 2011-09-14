@@ -30,6 +30,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -53,6 +54,7 @@ import javax.swing.table.TableRowSorter;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
 import org.slf4j.Logger;
@@ -71,7 +73,7 @@ public class BrowserTable extends JTable
 	private static final TableCellRenderer cellRenderer = new BrowserTableCellRenderer();
 	private static final String MAC_OS_ID = "mac";
 	private Clipboard systemClipboard;
-	private PropertyChangeListener editorRemover = null;
+	private CellEditorRemover editorRemover = null;
 	private Map<String, Map<String, String>> linkoutProps;
 	private final HashMap<String, Integer> columnWidthMap = new HashMap<String, Integer>();
 
@@ -85,7 +87,6 @@ public class BrowserTable extends JTable
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
 	private boolean updateColumnComparators;
-	private CellFocusListener myCellFocusListener = new CellFocusListener();
 	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
 	
 
@@ -251,7 +252,12 @@ public class BrowserTable extends JTable
 		}
 
 		TableCellEditor editor = getCellEditor(row, column);
-
+		
+		// remember the table row, because tableModel will disappear if 
+		// user click on open space on canvas, so we have to remember it before it is gone
+		BrowserTableModel model = (BrowserTableModel) this.getModel();	
+		editorRemover.setCellData(model.getCellData(row, column));
+				
 		if ((editor != null) && editor.isCellEditable(e)) {
 			// Do this first so that the bounds of the JTextArea editor
 			// will be correct.
@@ -278,28 +284,13 @@ public class BrowserTable extends JTable
 				                     Math.max(cellRect.width, prefSize.width),
 				                     Math.max(cellRect.height, prefSize.height));
 				((JComponent) editorComp).putClientProperty(MultiLineTableCellEditor.UPDATE_BOUNDS,
-				                                            Boolean.FALSE);
+				                                            Boolean.FALSE);				
 			} else
 				editorComp.setBounds(cellRect);
 
 			add(editorComp);
 			editorComp.validate();
-
 			
-			//
-			FocusListener[] ls = editorComp.getFocusListeners();
-			
-			boolean addMyFocusListener = true;
-			for (FocusListener l: ls){
-				if(l == this.myCellFocusListener){
-					addMyFocusListener = false;
-					break;
-				}
-			}
-			
-			if (addMyFocusListener){
-				editorComp.addFocusListener(this.myCellFocusListener);				
-			}
 			
 			return true;
 		}
@@ -308,29 +299,6 @@ public class BrowserTable extends JTable
 	}
 
 
-	public class CellFocusListener implements FocusListener {
-
-		public void focusGained(FocusEvent e){
-		}
-		
-		public void focusLost(FocusEvent e){
-									
-			TableCellEditor editor = BrowserTable.this.getCellEditor();
-			if ((editor != null) && editor.isCellEditable(e)) {
-				try {
-					getCellEditor().cancelCellEditing();
-					//getCellEditor().stopCellEditing();
-				}
-				catch (Exception ex){
-					// If user click on open space, not on node/edge, the cell is no longer there. 
-					// In this case, we can not run stopCellEditing(), otherwise we get ArrayOutOfBoundException
-					logger.info(ex.getMessage());
-				}
-			}
-		}
-	}
-
-	
 	/**
 	 *  Display elements in the list objects.
 	 */
@@ -638,13 +606,16 @@ public class BrowserTable extends JTable
 
 	private class CellEditorRemover implements PropertyChangeListener {
 		private final KeyboardFocusManager focusManager;
+		private BrowserTableModel model;
+		private int row =-1, column = -1;
+		private Vector cellVect = null;
 
 		public CellEditorRemover(final KeyboardFocusManager fm) {
 			this.focusManager = fm;
 		}
 
 		public void propertyChange(PropertyChangeEvent ev) {
-			if (!isEditing() || (getClientProperty("terminateEditOnFocusLost") != Boolean.TRUE)) {
+			if (!isEditing()) {
 				return;
 			}
 
@@ -656,8 +627,14 @@ public class BrowserTable extends JTable
 					return;
 				} else if (c instanceof Window) {
 					if (c == SwingUtilities.getRoot(BrowserTable.this)) {
-						if (!getCellEditor().stopCellEditing()) {
+						
+						try {
+							getCellEditor().stopCellEditing();
+						}
+						catch (Exception e){
 							getCellEditor().cancelCellEditing();
+							//Update the cell data based on the remembered value
+							updateAttributeAfterCellLostFocus();
 						}
 					}
 
@@ -667,8 +644,23 @@ public class BrowserTable extends JTable
 				c = c.getParent();
 			}
 		}
+		
+		// Cell data passed from previous TableModel, because tableModel will disappear if 
+		// user click on open space on canvas, so we have to remember it before it is gone
+		public void setCellData(Vector cellVect){
+			this.cellVect = cellVect;
+		}
+		
+		private void updateAttributeAfterCellLostFocus(){
+			
+			CyRow rowObj = (CyRow) cellVect.get(0);
+			String columnName = (String)cellVect.get(1);
+			
+			rowObj.set(columnName, MultiLineTableCellEditor.lastValueUserEntered);					
+		}	
 	}
-
+		
+	
 	public void addColumn(final TableColumn aColumn) {
 		super.addColumn(aColumn);
 
@@ -684,5 +676,8 @@ public class BrowserTable extends JTable
 		rowSorter.setComparator(aColumn.getModelIndex(),
 					new ValidatedObjectAndEditStringComparator(rowDataType));
 	}
+	
+
+
 }
 
