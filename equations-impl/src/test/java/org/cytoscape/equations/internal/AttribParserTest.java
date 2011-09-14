@@ -46,6 +46,12 @@ public class AttribParserTest extends TestCase {
 		assertTrue(parser.parse("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", attribNameToTypeMap));
 	}
 
+	public void testStringVarDefault() throws Exception {
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		attribNameToTypeMap.put("STR", String.class);
+		assertTrue(parser.parse("=${STR:\"xyz\"}", attribNameToTypeMap));
+	}
+
 	public void testUnaryPlusAndMinus() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("attr1", Double.class);
