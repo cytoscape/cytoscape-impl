@@ -340,25 +340,9 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// mappingTypes.toArray());
 	}
 
-	
 	/**
-	 * Loads the Key Set. private Set<Object> loadKeySet(final Map mapAttrs) {
-	 * final Set<Object> mappedKeys = new TreeSet<Object>();
 	 * 
-	 * final Iterator keyIter = mapAttrs.values().iterator();
-	 * 
-	 * Object o = null;
-	 * 
-	 * while (keyIter.hasNext()) { o = keyIter.next();
-	 * 
-	 * if (o instanceof List) { List list = (List) o;
-	 * 
-	 * for (int i = 0; i < list.size(); i++) { Object vo = list.get(i);
-	 * 
-	 * if (!mappedKeys.contains(vo)) mappedKeys.add(vo); } } else { if
-	 * (!mappedKeys.contains(o)) mappedKeys.add(o); } }
-	 * 
-	 * return mappedKeys; }
+	 * @param defImage
 	 */
 	public void setDefaultViewImagePanel(final Image defImage) {
 		if (defImage == null) {

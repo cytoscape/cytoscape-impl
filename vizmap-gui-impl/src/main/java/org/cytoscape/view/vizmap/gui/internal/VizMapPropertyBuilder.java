@@ -64,7 +64,6 @@ import org.slf4j.LoggerFactory;
 
 import com.l2fprod.common.propertysheet.DefaultProperty;
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
-import com.l2fprod.common.propertysheet.PropertyRendererFactory;
 import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTable;
@@ -73,6 +72,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTable;
  * Create property for the Property Sheet object.
  */
 public class VizMapPropertyBuilder {
+	
 	private static final Logger logger = LoggerFactory.getLogger(VizMapPropertyBuilder.class);
 
 	private DefaultTableCellRenderer emptyBoxRenderer;
@@ -171,10 +171,11 @@ public class VizMapPropertyBuilder {
 		}
 
 		final VisualPropertyEditor<V> vpEditor = editorManager.getVisualPropertyEditor(vp);
-		logger.debug("==========>>>>>> Setting vpEditor:" + vpEditor);
 
 		if (visualMapping instanceof DiscreteMapping && (attrName != null)) {
 			// Discrete Mapping
+			
+			// This set should not contain null!
 			final SortedSet<K> attrSet = new TreeSet<K>();
 
 			for (CyTableEntry go : graphObjectSet) {
@@ -194,8 +195,7 @@ public class VizMapPropertyBuilder {
 							}
 						}
 					} else {
-						Object id = row.get(attrName, attrClass);
-
+						final Object id = row.get(attrName, attrClass);
 						if (id != null)
 							attrSet.add((K) id);
 					}
@@ -217,7 +217,7 @@ public class VizMapPropertyBuilder {
 			topProperty.addSubProperty(graphicalView);
 
 			final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer();
-			logger.debug("@@@@@@@@@@@@@ Continuous renderer:" + continuousRenderer);
+
 			//FIXME
 			final PropertySheetTable table = propertySheetPanel.getTable();
 			final PropertyRendererRegistry rendReg = (PropertyRendererRegistry) table.getRendererFactory();
