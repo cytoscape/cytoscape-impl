@@ -106,16 +106,16 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.EdgeViewsChangedEvent;
+import org.cytoscape.view.model.events.EdgeViewsChangedListener;
 import org.cytoscape.view.model.events.FitContentEvent;
 import org.cytoscape.view.model.events.FitContentEventListener;
 import org.cytoscape.view.model.events.FitSelectedEvent;
 import org.cytoscape.view.model.events.FitSelectedEventListener;
 import org.cytoscape.view.model.events.NetworkViewChangedEvent;
-import org.cytoscape.view.model.events.NodeViewsChangedEvent;
-import org.cytoscape.view.model.events.EdgeViewsChangedEvent;
 import org.cytoscape.view.model.events.NetworkViewChangedListener;
+import org.cytoscape.view.model.events.NodeViewsChangedEvent;
 import org.cytoscape.view.model.events.NodeViewsChangedListener;
-import org.cytoscape.view.model.events.EdgeViewsChangedListener;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
@@ -803,15 +803,10 @@ public class DGraphView implements RenderingEngine<CyNetwork>, GraphView,
 		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin,
 				m_defaultNodeXMax, m_defaultNodeYMax);
 
-		// read in visual properties from view obj
-		// FIXME TODO: this process is not necessary
-//		final Collection<VisualProperty<?>> nodeVPs = rootLexicon
-//				.getVisualProperties(NODE);
-//
-//		for (VisualProperty<?> vp : nodeVPs)
-//			nodeVisualPropertySet(nodeViewModel, vp,
-//					nodeViewModel.getVisualProperty(vp));
-
+		// Set location values from View Model for reflect correct position created by layout algorithms.
+		dNodeView.setVisualPropertyValue(MinimalVisualLexicon.NODE_X_LOCATION, nodeViewModel.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION));
+		dNodeView.setVisualPropertyValue(MinimalVisualLexicon.NODE_Y_LOCATION, nodeViewModel.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION));
+		
 		return dNodeView;
 	}
 
