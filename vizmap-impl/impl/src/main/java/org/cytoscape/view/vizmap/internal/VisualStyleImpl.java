@@ -226,19 +226,6 @@ public class VisualStyleImpl implements VisualStyle {
 		} else if (!vp.shouldIgnoreDefault()) {
 			// Ignore defaults flag is OFF. Apply defaults.
 			applyStyleDefaults((Collection<View<?>>) views, vp);
-		} else if (vp.getDefault() instanceof Visualizable == false) {
-			Object defVal = getDefaultValue(vp);
-
-			// Visual Style does not have default value
-			if (defVal == null) {
-				this.perVSDefaults.put(vp, vp.getDefault());
-				defVal = getDefaultValue(vp);
-			}
-			for (View<?> view : views) {
-				final Object val = view.getVisualProperty(vp);
-				if (defVal != val)
-					view.setVisualProperty(vp, val);
-			}
 		}
 	}
 
