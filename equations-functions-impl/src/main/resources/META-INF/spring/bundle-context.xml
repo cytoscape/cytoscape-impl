@@ -17,7 +17,7 @@
 
 	<bean id="suidToNodeMapper" class="org.cytoscape.equations.internal.SUIDToNodeMapper" />
 
-	<bean id="functionRegistrar" class="org.cytoscape.equations.internal.FunctionRegistrar>">
+	<bean id="functionRegistrar" class="org.cytoscape.equations.internal.FunctionRegistrar">
 		<constructor-arg ref="compilerServiceRef" />
 		<constructor-arg ref="applicationManagerServiceRef" />
 		<constructor-arg ref="suidToNodeMapper" />
