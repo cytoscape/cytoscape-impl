@@ -136,6 +136,7 @@ class EqnSupport {
 			currentlyActiveAttributes.add(columnName);
 
 		final Collection<String> attribReferences = equation.getVariableReferences();
+		final Map<String, Object> defaultValues = equation.getDefaultVariableValues();
 
 		final Map<String, IdentDescriptor> nameToDescriptorMap = new TreeMap<String, IdentDescriptor>();
 		for (final String attribRef : attribReferences) {
@@ -144,20 +145,25 @@ class EqnSupport {
 				continue;
 			}
 
-			final Object attribValue = tableImpl.getValue(key, attribRef);
+			Object attribValue = tableImpl.getValue(key, attribRef);
 			if (attribValue == null) {
-				currentlyActiveAttributes.clear();
-				try {
-					lastInternalError.append(
-						"Missing value for referenced attribute \""
-						+ attribRef + "\"!");
-				} catch (Exception e) {
-					// Intentionally empty!
+				final Object defaultValue = defaultValues.get(attribRef);
+				if (defaultValue != null)
+					attribValue = defaultValue;
+				else {
+					currentlyActiveAttributes.clear();
+					try {
+						lastInternalError.append(
+							"Missing value for referenced attribute \""
+							+ attribRef + "\"!");
+					} catch (Exception e) {
+						// Intentionally empty!
+					}
+					logger.warn("Missing value for \"" + attribRef
+					            + "\" while evaluating an equation (ID:" + key
+					            + ", attribute name:" + columnName + ")");
+					return null;
 				}
-				logger.warn("Missing value for \"" + attribRef
-				            + "\" while evaluating an equation (ID:" + key
-				            + ", attribute name:" + columnName + ")");
-				return null;
 			}
 
 			try {

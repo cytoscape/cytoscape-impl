@@ -76,7 +76,9 @@ public class EquationCompilerImpl implements EquationCompiler {
 			code[i]            = codeAndSourceLocation.getCode();
 			sourceLocations[i] = codeAndSourceLocation.getSourceLocation();
 		}
-		this.equation = new Equation(equation, parser.getVariableReferences(), code, sourceLocations, parser.getType());
+		this.equation = new Equation(equation, parser.getVariableReferences(),
+		                             parser.getDefaultVariableValues(), code, sourceLocations,
+		                             parser.getType());
 
 		errorMsg = null;
 		return true;
@@ -101,7 +103,8 @@ public class EquationCompilerImpl implements EquationCompiler {
 			throw new IllegalStateException("internal error in Equation.getErrorEquation().  This should *never* happen!");
 
 		final Equation errorEquation = getEquation();
-		return new Equation(equation, errorEquation.getVariableReferences(), errorEquation.getCode(),
+		return new Equation(equation, errorEquation.getVariableReferences(),
+		                    errorEquation.getDefaultVariableValues(), errorEquation.getCode(),
 		                    errorEquation.getSourceLocations(), type);
 	}
 
