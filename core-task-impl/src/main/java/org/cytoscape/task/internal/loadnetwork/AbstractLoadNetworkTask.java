@@ -81,18 +81,18 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 		if (viewReader == null)
 			throw new IllegalArgumentException("Could not read file: Network View Reader is null.");
 
-if (taskMonitor != null) {
-		taskMonitor.setStatusMessage("Reading in Network Data...");
-		taskMonitor.setProgress(0.0);
-		taskMonitor.setStatusMessage("Creating Cytoscape Network...");
-}
+		if (taskMonitor != null) {
+			taskMonitor.setStatusMessage("Reading in Network Data...");
+			taskMonitor.setProgress(0.0);
+			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
+		}
 
 		System.out.println("inserting generate network task");
 		insertTasksAfterCurrentTask(viewReader, new GenerateNetworkViewsTask(name, viewReader, networkManager,
 				networkViewManager, namingUtil, viewThreshold));
 		System.out.println("finished inserting generate network task");
-if (taskMonitor != null)
-		taskMonitor.setProgress(1.0);
+		if (taskMonitor != null)
+			taskMonitor.setProgress(1.0);
 	}
 
 	private int getViewThreshold() {
@@ -129,13 +129,13 @@ class GenerateNetworkViewsTask extends AbstractTask {
 	}
 
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-if (taskMonitor!=null)
-		taskMonitor.setProgress(0.0);
-				
+		if (taskMonitor != null)
+			taskMonitor.setProgress(0.0);
+
 		final CyNetwork[] networks = viewReader.getCyNetworks();
-		
+
 		for (CyNetwork network : networks) {
-			
+
 			network.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle(name));
 			networkManager.addNetwork(network);
 
@@ -145,7 +145,7 @@ if (taskMonitor!=null)
 				networkViewManager.addNetworkView(view);
 				view.fitContent();
 			}
-			
+
 			informUserOfGraphStats(network, numGraphObjects, taskMonitor);
 		}
 	}
@@ -164,7 +164,6 @@ if (taskMonitor!=null)
 		sb.append(" nodes and " + formatter.format(newNetwork.getEdgeCount()));
 		sb.append(" edges.\n\n");
 
-
 		if (objectCount < viewThreshold) {
 			sb.append("Network is under " + viewThreshold + " graph objects.  A view will be automatically created.");
 		} else {
@@ -172,7 +171,7 @@ if (taskMonitor!=null)
 					+ "  If you wish to view this network, use " + "\"Create View\" from the \"Edit\" menu.");
 		}
 
-if(taskMonitor!=null)
-		taskMonitor.setStatusMessage(sb.toString());
+		if (taskMonitor != null)
+			taskMonitor.setStatusMessage(sb.toString());
 	}
 }
