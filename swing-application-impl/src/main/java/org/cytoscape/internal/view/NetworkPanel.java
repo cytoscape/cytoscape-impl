@@ -94,6 +94,9 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Collection;
+import org.cytoscape.model.events.RowSetRecord;
+import java.util.Iterator;
 
 public class NetworkPanel extends JPanel implements TreeSelectionListener,
 		SetCurrentNetworkViewListener, SetCurrentNetworkListener,
@@ -358,12 +361,26 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener,
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
+
+		// if Selection column has been updated, update the UI
+		Collection<RowSetRecord> rowSetRecords =  e.getPayloadCollection();
+		Iterator<RowSetRecord> it = rowSetRecords.iterator();
+		while (it.hasNext()){
+			RowSetRecord record = it.next();
+			if (record.getColumn().equalsIgnoreCase(CyNetwork.SELECTED)){
+				//Selection column is updated, updated the UI 
+				treeTable.getTree().updateUI();
+				break;
+			}
+		}
+		
 		CyNetwork n = nameTables.get( e.getSource() );
+		
 		if ( n == null )
 			return;
 		
 		final String title = n.getCyRow().get(CyTableEntry.NAME, String.class);
-		updateTitle(n, title); // this should updated the UI regardless...
+		updateTitle(n, title); // this should updated the UI regardless...	
 	}
 
 	@Override
