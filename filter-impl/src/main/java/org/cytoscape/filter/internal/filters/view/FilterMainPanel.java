@@ -229,6 +229,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			}
 		}
 		if (isSelection) {
+			updateFeedbackTableModel();
 			return;
 		}
 		handleAttributesChanged();	
