@@ -89,20 +89,4 @@ public interface CyCustomGraphics<T> {
 	 * @return rendered image object.
 	 */
 	public Image getRenderedImage();
-
-	
-//	/**
-//	 * Set position of this graphics.
-//	 * 
-//	 * @param position
-//	 */
-//	public void setPosition(final ObjectPosition position);
-//	
-//	
-//	/**
-//	 * Current position
-//	 * 
-//	 * @return position of graphics as ObjectPosition.
-//	 */
-//	public ObjectPosition getPosition();
 }
