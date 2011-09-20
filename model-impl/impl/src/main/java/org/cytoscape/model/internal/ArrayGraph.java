@@ -88,6 +88,7 @@ final public class ArrayGraph implements CyRootNetwork {
 	private final List<CySubNetwork> subNetworks;
 	private final CySubNetwork base;
 	private final CyTableManagerImpl tableMgr;
+	private final CyNetworkTableManagerImpl networkTableMgr;
 	private final CyTableFactory tableFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -98,10 +99,12 @@ final public class ArrayGraph implements CyRootNetwork {
 	 * @param eh The CyEventHelper used for firing events.
 	 */
 	public ArrayGraph(final CyEventHelper eh, final CyTableManagerImpl tableMgr,
-			  final CyTableFactory tableFactory,
+					  final CyNetworkTableManagerImpl networkTableMgr,
+					  final CyTableFactory tableFactory,
 	                  final CyServiceRegistrar serviceRegistrar, final boolean publicTables)
 	{
 		this.tableMgr = tableMgr;
+		this.networkTableMgr = networkTableMgr;
 		this.tableFactory = tableFactory;
 		this.publicTables = publicTables;
 		this.serviceRegistrar = serviceRegistrar;
@@ -119,9 +122,9 @@ final public class ArrayGraph implements CyRootNetwork {
 		nodeTables = createNodeTables(suid); 
 		edgeTables = createEdgeTables(suid); 
 
-        tableMgr.setTableMap(CyNetwork.class, this, netTables);
-        tableMgr.setTableMap(CyNode.class, this, nodeTables);
-        tableMgr.setTableMap(CyEdge.class, this, edgeTables);
+        networkTableMgr.setTableMap(CyNetwork.class, this, netTables);
+        networkTableMgr.setTableMap(CyNode.class, this, nodeTables);
+        networkTableMgr.setTableMap(CyEdge.class, this, edgeTables);
 
 		eventHelper = eh;
 
@@ -917,9 +920,9 @@ final public class ArrayGraph implements CyRootNetwork {
 		final ArraySubGraph sub = new ArraySubGraph(this,newSUID,newId,eventHelper,newNetTable,newNodeTable,newEdgeTable,tableMgr);
 		serviceRegistrar.registerAllServices(sub, new Properties());
 		subNetworks.add(sub);
-		tableMgr.setTableMap(CyNetwork.class, sub, newNetTable);
-		tableMgr.setTableMap(CyNode.class, sub, newNodeTable);
-		tableMgr.setTableMap(CyEdge.class, sub, newEdgeTable);
+		networkTableMgr.setTableMap(CyNetwork.class, sub, newNetTable);
+		networkTableMgr.setTableMap(CyNode.class, sub, newNodeTable);
+		networkTableMgr.setTableMap(CyEdge.class, sub, newEdgeTable);
 		return sub;
 	}
 

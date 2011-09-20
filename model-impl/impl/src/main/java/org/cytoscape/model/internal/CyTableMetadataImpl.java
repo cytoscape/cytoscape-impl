@@ -1,7 +1,5 @@
 package org.cytoscape.model.internal;
 
-import java.util.Set;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableMetadata;
@@ -10,13 +8,13 @@ public class CyTableMetadataImpl implements CyTableMetadata {
 
 	private final Class<?> type;
 	private final CyTable table;
-	private final Set<CyNetwork> networks;
+	private final CyNetwork network;
 	private final String namespace;
 
-	public CyTableMetadataImpl(Class<?> type, CyTable table, Set<CyNetwork> networks, String namespace) {
+	public CyTableMetadataImpl(Class<?> type, CyTable table, CyNetwork network, String namespace) {
 		this.type = type;
 		this.table = table;
-		this.networks = networks;
+		this.network = network;
 		this.namespace = namespace;
 	}
 	
@@ -31,8 +29,8 @@ public class CyTableMetadataImpl implements CyTableMetadata {
 	}
 
 	@Override
-	public Set<CyNetwork> getCyNetworks() {
-		return networks;
+	public CyNetwork getCyNetwork() {
+		return network;
 	}
 
 	@Override

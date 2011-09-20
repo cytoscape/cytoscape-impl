@@ -28,19 +28,21 @@
 package org.cytoscape.model;
 
 
-import org.cytoscape.event.DummyCyEventHelper;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.internal.ArrayGraph;
-import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
+import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import static org.mockito.Mockito.*;
 
 
 public class TestCyNetworkFactory {
@@ -56,22 +58,24 @@ public class TestCyNetworkFactory {
 
 	public static CyRootNetwork getPublicRootInstance() {	
 		DummyCyEventHelper deh = new DummyCyEventHelper();
-		CyTableManagerImpl tm = new CyTableManagerImpl(deh);
+		CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
+		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
 		Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		ArrayGraph ar =
-			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
+			new ArrayGraph(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
 			               serviceRegistrar, true);
 		return ar; 
 	}
 
 	public static CyRootNetwork getPrivateRootInstance() {	
 		DummyCyEventHelper deh = new DummyCyEventHelper();
-		CyTableManagerImpl tm = new CyTableManagerImpl(deh);
+		CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
+		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
 		Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		ArrayGraph ar =
-			new ArrayGraph(deh, tm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
+			new ArrayGraph(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
 			               serviceRegistrar, false);
 		return ar; 
 	}

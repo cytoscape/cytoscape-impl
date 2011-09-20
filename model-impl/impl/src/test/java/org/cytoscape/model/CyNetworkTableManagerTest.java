@@ -49,7 +49,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import static org.mockito.Mockito.*;
 
 
-public class CyTableManagerTest extends AbstractCyTableManagerTest {
+public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest {
 	CyTableManagerImpl mgrImpl;
 	CyNetworkTableManagerImpl networkTableMgr;
 
@@ -57,9 +57,9 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 	public void setUp() {
 		super.setUp();
 		CyEventHelper eh = new DummyCyEventHelper();
-		networkTableMgr = new CyNetworkTableManagerImpl();
 		mgrImpl = new CyTableManagerImpl(eh, networkTableMgr, null);
-		mgr = mgrImpl;
+		networkTableMgr = new CyNetworkTableManagerImpl();
+		mgr = networkTableMgr;
 		final Interpreter interpreter = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		goodNetwork =
@@ -72,45 +72,5 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 	public void tearDown() {
 		mgr = null;
 		goodNetwork = null;
-	}
- 
-	@Test
-	public void immutableTableTest() {
-		mgr.addTable(goodNetwork.getDefaultNodeTable());
-		boolean exceptionWasThrown = false;
-		try {
-			mgr.deleteTable(goodNetwork.getDefaultNodeTable().getSUID());
-		} catch (IllegalArgumentException e) {
-			exceptionWasThrown = true;
-		}
-		assertTrue(exceptionWasThrown);	
-	}
-
-	@Test
-	public void tableWithVirtColumnDeletionTest() {
-		CyEventHelper eventHelper = new DummyCyEventHelper();
-		final Interpreter interpreter = new InterpreterImpl();
-		CyTable table = new CyTableImpl("homer", Identifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-						eventHelper, interpreter);
-		CyTable table2 = new CyTableImpl("marge", Identifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-						 eventHelper, interpreter);
-
-		table.createColumn("x", Long.class, false);
-		CyColumn column = table.getColumn("x");
-		assertNull(column.getVirtualColumnInfo().getSourceTable());
-		table2.createColumn("x2", Long.class, false);
-		table2.createListColumn("b", Boolean.class, false);
-		table.addVirtualColumn("b1", "b", table2, "x2", "x", true);
-
-		mgrImpl.addTable(table2);
-		boolean caughtException = false;
-		try {
-			mgr.deleteTable(table2.getSUID());
-		} catch (IllegalArgumentException e) {
-			caughtException = true;
-		}
-		assertTrue(caughtException);
-		table2.deleteColumn("b1");
-		mgr.deleteTable(table.getSUID());
 	}
 }

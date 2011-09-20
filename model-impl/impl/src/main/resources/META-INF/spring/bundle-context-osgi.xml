@@ -35,6 +35,13 @@
 		</osgi:interfaces>
 	</osgi:service>
 	
+	<osgi:service id="cyNetworkTableManagerService"
+		ref="cyNetworkTableManager">
+		<osgi:interfaces>
+			<value>org.cytoscape.model.CyNetworkTableManager</value>
+		</osgi:interfaces>
+	</osgi:service>
+
 	<osgi:service id="cyNetworkManagerService"
 		ref="cyNetworkManager" interface="org.cytoscape.model.CyNetworkManager">
 	</osgi:service>

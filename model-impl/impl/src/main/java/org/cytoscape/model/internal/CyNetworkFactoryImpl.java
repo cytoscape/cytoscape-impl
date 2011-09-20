@@ -31,7 +31,6 @@ package org.cytoscape.model.internal;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -44,6 +43,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	
 	private final CyEventHelper help;
 	private final CyTableManagerImpl mgr;
+	private final CyNetworkTableManagerImpl networkTableMgr;
 	private final CyTableFactory tableFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -53,6 +53,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 * @param help An instance of CyEventHelper. 
 	 */
 	public CyNetworkFactoryImpl(final CyEventHelper help, final CyTableManagerImpl mgr,
+					final CyNetworkTableManagerImpl networkTableMgr,
 				    final CyTableFactory tableFactory,
 				    final CyServiceRegistrar serviceRegistrar)
 	{
@@ -70,6 +71,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 
 		this.help             = help;
 		this.mgr              = mgr;
+		this.networkTableMgr  = networkTableMgr;
 		this.tableFactory     = tableFactory;
 		this.serviceRegistrar = serviceRegistrar;
 	}
@@ -79,7 +81,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 */
 	@Override
 	public CyNetwork getInstance() {
-		ArrayGraph net = new ArrayGraph(help, mgr, tableFactory, serviceRegistrar, true);
+		ArrayGraph net = new ArrayGraph(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, true);
 		logger.info("CyNetwork w/ public tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ public tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
 		return net.getBaseNetwork(); 
@@ -90,7 +92,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 */
 	@Override
 	public CyNetwork getInstanceWithPrivateTables() {
-		ArrayGraph net = new ArrayGraph(help, mgr, tableFactory, serviceRegistrar, false);
+		ArrayGraph net = new ArrayGraph(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, false);
 		logger.info("CyNetwork w/ private tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ private tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
 		return net.getBaseNetwork(); 

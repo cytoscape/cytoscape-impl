@@ -28,21 +28,18 @@
 package org.cytoscape.model.subnetwork;
 
 
-import java.util.Map;
+import static org.mockito.Mockito.mock;
 
-import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.model.internal.CyTableFactoryImpl;
-import org.cytoscape.model.internal.ArrayGraph;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.AbstractCyTableManagerTest;
+import org.cytoscape.model.internal.ArrayGraph;
+import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyTableFactoryImpl;
+import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
-
-import org.junit.Test;
-
-import static org.mockito.Mockito.*;
 
 
 /**
@@ -53,12 +50,13 @@ public class CySubNetworkCyTableManagerTest extends AbstractCyTableManagerTest {
 	public void setUp() {
 		super.setUp();
 		CyEventHelper eh = new DummyCyEventHelper();
-		CyTableManagerImpl mgrImpl = new CyTableManagerImpl(eh);
+		CyNetworkTableManagerImpl networkMgrImpl = new CyNetworkTableManagerImpl();
+		CyTableManagerImpl mgrImpl = new CyTableManagerImpl(eh, networkMgrImpl, null);
 		mgr = mgrImpl; 
 		final Interpreter interpreter = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		ArrayGraph baseNet =
-			new ArrayGraph(eh, mgrImpl,
+			new ArrayGraph(eh, mgrImpl, networkMgrImpl,
 			               new CyTableFactoryImpl(eh, interpreter, serviceRegistrar),
 			               serviceRegistrar, true);
 		// This is a different subnetwork and not "baseNetwork" in ArrayGraph.
