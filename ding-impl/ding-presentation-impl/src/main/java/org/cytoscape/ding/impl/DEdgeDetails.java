@@ -238,12 +238,12 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 * @return DOCUMENT ME!
 	 */
 	public EdgeAnchors anchors(int edge) {
-		final EdgeAnchors returnThis = (EdgeAnchors) (m_view.getEdgeView(edge));
+		final EdgeAnchors returnThis = (EdgeAnchors) (m_view.getDEdgeView(edge));
 
 		if (returnThis.numAnchors() > 0) 
 			return returnThis;
 
-		final CyNetwork graph = m_view.networkModel;
+		final CyNetwork graph = m_view.model;
 		final CyEdge edgeObj = graph.getEdge(edge);
 		if (edgeObj == null) {
 			System.err.println("in DEdgeDetails.anchors(): Warning: non-existent edge="+edge);
@@ -284,7 +284,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 				if (e2 == edge)
 					break;
 
-				if (((EdgeAnchors) m_view.getEdgeView(e2)).numAnchors() == 0)
+				if (((EdgeAnchors) m_view.getDEdgeView(e2)).numAnchors() == 0)
 					i++;
 			}
 
@@ -334,14 +334,14 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 				break;
 
 			// So we don't count the other edge twice?
-			int i = (((EdgeAnchors) m_view.getEdgeView(otherEdge)).numAnchors() == 0) ? 1 : 0;
+			int i = (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0) ? 1 : 0;
 
 			// Count the number of other edges.
 			while (true) {
 				if (edge == (otherEdge = otherEdges.nextInt()))
 					break;
 
-				if (((EdgeAnchors) m_view.getEdgeView(otherEdge)).numAnchors() == 0)
+				if (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0)
 					i++;
 			}
 
@@ -422,8 +422,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 * @return DOCUMENT ME!
 	 */
 	public float anchorSize(int edge, int anchorInx) {
-		if (m_view.getEdgeView(edge).isSelected()
-		    && (((DEdgeView) m_view.getEdgeView(edge)).numAnchors() > 0))
+		if (m_view.getDEdgeView(edge).isSelected()
+		    && (((DEdgeView) m_view.getDEdgeView(edge)).numAnchors() > 0))
 			return m_view.getAnchorSize();
 		else
 
@@ -439,7 +439,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 * @return DOCUMENT ME!
 	 */
 	public Paint anchorPaint(int edge, int anchorInx) {
-		if (((DEdgeView) (m_view.getEdgeView(edge))).m_lineType == DEdgeView.STRAIGHT_LINES)
+		if (((DEdgeView) (m_view.getDEdgeView(edge))).m_lineType == DEdgeView.STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;
 
 		if (m_view.m_selectedAnchors.count((edge << 6) | anchorInx) > 0)

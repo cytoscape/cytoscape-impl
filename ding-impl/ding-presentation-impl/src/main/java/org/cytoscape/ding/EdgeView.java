@@ -5,7 +5,6 @@ import java.awt.Paint;
 import java.awt.Stroke;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.View;
 
 
 public interface EdgeView  extends GraphViewObject {
@@ -18,31 +17,6 @@ public interface EdgeView  extends GraphViewObject {
 	 * Draws straight lines for edges.
 	 */
 	public static int STRAIGHT_LINES = 2;
-
-//	public static int NO_END = 0;
-//	public static int WHITE_DELTA = 1;
-//	public static int BLACK_DELTA = 2;
-//	public static int EDGE_COLOR_DELTA = 3;
-//	public static int WHITE_ARROW = 4;
-//	public static int BLACK_ARROW = 5;
-//	public static int EDGE_COLOR_ARROW = 6;
-//	public static int WHITE_DIAMOND = 7;
-//	public static int BLACK_DIAMOND = 8;
-//	public static int EDGE_COLOR_DIAMOND = 9;
-//	public static int WHITE_CIRCLE = 10;
-//	public static int BLACK_CIRCLE = 11;
-//	public static int EDGE_COLOR_CIRCLE = 12;
-//	public static int WHITE_T = 13;
-//	public static int BLACK_T = 14;
-//	public static int EDGE_COLOR_T = 15;
-//	public static int EDGE_HALF_ARROW_TOP = 16;
-//	public static int EDGE_HALF_ARROW_BOTTOM = 17;
-//	public static int EDGE_COLOR_HALF_TOP = 18;
-//	public static int WHITE_HALF_TOP = 19;
-//	public static int BLACK_HALF_TOP = 20;
-//	public static int EDGE_COLOR_HALF_BOTTOM = 21;
-//	public static int WHITE_HALF_BOTTOM = 22;
-//	public static int BLACK_HALF_BOTTOM = 23;
 
 	/**
 	 * @return the index of this edge in the GraphPerspective
@@ -58,7 +32,6 @@ public interface EdgeView  extends GraphViewObject {
 	 * @return the Edge to which we are a view on
 	 */
 	public CyEdge getEdge();
-	public View<CyEdge> getEdgeView();
 
 
 	/**

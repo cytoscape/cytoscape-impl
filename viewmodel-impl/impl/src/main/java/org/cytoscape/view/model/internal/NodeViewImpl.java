@@ -11,13 +11,13 @@ public class NodeViewImpl extends ViewImpl<CyNode> {
 
 	private final CyNetworkView parent;
 	
-	public NodeViewImpl(CyNode model, CyEventHelper cyEventHelper, CyNetworkView parent) {
+	public NodeViewImpl(final CyNode model, final CyEventHelper cyEventHelper, final CyNetworkView parent) {
 		super(model, cyEventHelper);
 		this.parent = parent;
 	}
 	
 	@Override
-	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
+	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, final V value) {
 		
 		if(value == null)
 			this.visualProperties.remove(vp);

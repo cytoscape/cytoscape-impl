@@ -419,7 +419,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.m_selectedNodes.empty();
 
 			for (int i = 0; i < unselectedNodes.length; i++)
-				((DNodeView) m_view.getNodeView(unselectedNodes[i])).unselectInternal();
+				((DNodeView) m_view.getDNodeView(unselectedNodes[i])).unselectInternal();
 		} else
 			unselectedNodes = new int[0];
 		return unselectedNodes;
@@ -435,7 +435,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.m_selectedEdges.empty();
 
 			for (int i = 0; i < unselectedEdges.length; i++)
-				((DEdgeView) m_view.getEdgeView(unselectedEdges[i])).unselectInternal();
+				((DEdgeView) m_view.getDEdgeView(unselectedEdges[i])).unselectInternal();
 		} else
 			unselectedEdges = new int[0];
 		return unselectedEdges;
@@ -443,13 +443,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	private int toggleSelectedNode(int chosenNode, MouseEvent e) {
 		int chosenNodeSelected = 0;
-		final boolean wasSelected = m_view.getNodeView(chosenNode).isSelected();
+		final boolean wasSelected = m_view.getDNodeView(chosenNode).isSelected();
 
 		if (wasSelected && e.isShiftDown()) {
-			((DNodeView) m_view.getNodeView(chosenNode)).unselectInternal();
+			((DNodeView) m_view.getDNodeView(chosenNode)).unselectInternal();
 			chosenNodeSelected = -1;
 		} else if (!wasSelected) {
-			((DNodeView) m_view.getNodeView(chosenNode)).selectInternal();
+			((DNodeView) m_view.getDNodeView(chosenNode)).selectInternal();
 			chosenNodeSelected = 1;
 		}
 
@@ -465,7 +465,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			final int anchorInx = chosenAnchor & 0x0000003f;
 			// Save remove handle
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Remove Edge Handle",m_undo);
-			((DEdgeView) m_view.getEdgeView(edge)).removeHandle(anchorInx);
+			((DEdgeView) m_view.getDEdgeView(edge)).removeHandle(anchorInx);
 			m_button1NodeDrag = false;
 		} else {
 			final boolean wasSelected = m_view.m_selectedAnchors.count(chosenAnchor) > 0;
@@ -494,19 +494,19 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_view.xformComponentToNodeCoords(m_ptBuff);
 				// Store current handle list 
 				m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Add Edge Handle",m_undo);
-				final int chosenInx = ((DEdgeView) m_view.getEdgeView(chosenEdge))
+				final int chosenInx = ((DEdgeView) m_view.getDEdgeView(chosenEdge))
 																												.addHandleFoo(new Point2D.Float((float) m_ptBuff[0],
 																												(float) m_ptBuff[1]));
 				m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
 			}
 
-			final boolean wasSelected = m_view.getEdgeView(chosenEdge).isSelected();
+			final boolean wasSelected = m_view.getDEdgeView(chosenEdge).isSelected();
 
 			if (wasSelected && e.isShiftDown()) {
-				((DEdgeView) m_view.getEdgeView(chosenEdge)).unselectInternal();
+				((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
 				chosenEdgeSelected = -1;
 			} else if (!wasSelected) {
-				((DEdgeView) m_view.getEdgeView(chosenEdge)).selectInternal(false);
+				((DEdgeView) m_view.getDEdgeView(chosenEdge)).selectInternal(false);
 				chosenEdgeSelected = 1;
 
 				if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
@@ -575,7 +575,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			selectedNodes[i] = nodes.nextInt();
 
 		for (int i = 0; i < selectedNodes.length; i++)
-			((DNodeView) m_view.getNodeView(selectedNodes[i])) .selectInternal();
+			((DNodeView) m_view.getDNodeView(selectedNodes[i])) .selectInternal();
 
 		if (selectedNodes.length > 0)
 			m_view.m_contentChanged = true;	
@@ -640,7 +640,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			selectedEdges[i] = edges.nextInt();
 
 		for (int i = 0; i < selectedEdges.length; i++)
-			((DEdgeView) m_view.getEdgeView(selectedEdges[i])).selectInternal(true);
+			((DEdgeView) m_view.getDEdgeView(selectedEdges[i])).selectInternal(true);
 
 		if (selectedEdges.length > 0)
 			m_view.m_contentChanged = true;
@@ -897,7 +897,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_view.m_viewportChanged = true;
 		
 		// Update view model.
-		m_view.cyNetworkView.setVisualProperty(MinimalVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
+		m_view.setVisualProperty(MinimalVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
 		repaint();
 	}
 
@@ -971,7 +971,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 
 	private void handleEscapeKey() {
-		AddEdgeStateMonitor.reset(m_view.cyNetworkView);
+		AddEdgeStateMonitor.reset(m_view);
 		repaint();
 	}
 
@@ -987,7 +987,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			int[] selectedNodes = m_view.getSelectedNodeIndices();
 
 			for (int i = 0; i < selectedNodes.length; i++) {
-				DNodeView nv = ((DNodeView) m_view.getNodeView(selectedNodes[i]));
+				DNodeView nv = ((DNodeView) m_view.getDNodeView(selectedNodes[i]));
 				double xPos = nv.getXPosition();
 				double yPos = nv.getYPosition();
 
@@ -1013,7 +1013,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final int edgeAndAnchor = anchorsToMove.nextInt();
 				final int edge = edgeAndAnchor >>> 6;
 				final int anchorInx = edgeAndAnchor & 0x0000003f;
-				final DEdgeView ev = (DEdgeView) m_view.getEdgeView(edge);
+				final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
 				ev.getHandleInternal(anchorInx, m_floatBuff1);
 
 				if (code == KeyEvent.VK_UP) {
@@ -1084,9 +1084,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if ((!e.isShiftDown()) // If shift is down never unselect.
 				    && (((chosenNode < 0) && (chosenEdge < 0) && (chosenAnchor < 0)) // Mouse missed all.
 				       // Not [we hit something but it was already selected].
-				       || !( ((chosenNode >= 0) && m_view.getNodeView(chosenNode).isSelected())
+				       || !( ((chosenNode >= 0) && m_view.getDNodeView(chosenNode).isSelected())
 				             || (chosenAnchor >= 0) 
-				             || ((chosenEdge >= 0) && m_view.getEdgeView(chosenEdge).isSelected()) ))) {
+				             || ((chosenEdge >= 0) && m_view.getDEdgeView(chosenEdge).isSelected()) ))) {
 				
 						unselectedNodes = getUnselectedNodes();
 						unselectedEdges = getUnselectedEdges();
@@ -1129,19 +1129,19 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if (chosenNode >= 0) {
 					if (chosenNodeSelected > 0)
 						listener.graphViewChanged(new GraphViewNodesSelectedEvent(m_view,
-							DGraphView.makeList(m_view.getNodeView(chosenNode).getNodeViewModel().getModel())));
+							DGraphView.makeList(((DNodeView)m_view.getDNodeView(chosenNode)).getModel())));
 					else if (chosenNodeSelected < 0)
 						listener.graphViewChanged(new GraphViewNodesUnselectedEvent(m_view,
-							DGraphView.makeList(m_view.getNodeView(chosenNode).getNodeViewModel().getModel())));
+							DGraphView.makeList(((DNodeView)m_view.getDNodeView(chosenNode)).getModel())));
 				}
 	
 				if (chosenEdge >= 0) {
 					if (chosenEdgeSelected > 0)
 						listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view,
-							DGraphView.makeList(m_view.getEdgeView(chosenEdge).getEdge())));
+							DGraphView.makeList(m_view.getDEdgeView(chosenEdge).getEdge())));
 					else if (chosenEdgeSelected < 0)
 						listener.graphViewChanged(new GraphViewEdgesUnselectedEvent(m_view,
-							DGraphView.makeList(m_view.getEdgeView(chosenEdge).getEdge())));
+							DGraphView.makeList(m_view.getDEdgeView(chosenEdge).getEdge())));
 				}
 			}
 	
@@ -1247,11 +1247,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			// Update view model if necessary (node location)
 			if(selected.size() != 0) {
 				for (CyNode node : selected) {
-					final NodeView dNodeView = m_view.getNodeView(node);
+					final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
 					// Update visual property value (x/y)
-					final View<CyNode> nodeView = dNodeView.getNodeViewModel();
-					nodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
-					nodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());					
+					dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
+					dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());					
 				}
 			}
 		}
@@ -1332,7 +1331,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					final int[] selectedNodes = m_view.getSelectedNodeIndices();
 	
 					for (int i = 0; i < selectedNodes.length; i++) {
-						final NodeView dNodeView = m_view.getNodeView(selectedNodes[i]);
+						final NodeView dNodeView = m_view.getDNodeView(selectedNodes[i]);
 						final double oldXPos = dNodeView.getXPosition();
 						final double oldYPos = dNodeView.getYPosition();
 						dNodeView.setOffset(oldXPos + deltaX, oldYPos + deltaY);
@@ -1346,7 +1345,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						final int edgeAndAnchor = anchorsToMove.nextInt();
 						final int edge = edgeAndAnchor >>> 6;
 						final int anchorInx = edgeAndAnchor & 0x0000003f;
-						final DEdgeView ev = (DEdgeView) m_view.getEdgeView(edge);
+						final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
 						ev.getHandleInternal(anchorInx, m_floatBuff1);
 						ev.moveHandleInternal(anchorInx, m_floatBuff1[0] + deltaX,
 						                      m_floatBuff1[1] + deltaY);
@@ -1398,8 +1397,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 	
 			m_view.m_viewportChanged = true;
-			m_view.cyNetworkView.setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION, m_xCenter);
-			m_view.cyNetworkView.setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_yCenter);
+			m_view.setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION, m_xCenter);
+			m_view.setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_yCenter);
 			
 			repaint();
 		}

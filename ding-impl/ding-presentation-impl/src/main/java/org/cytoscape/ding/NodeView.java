@@ -6,18 +6,14 @@ import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.util.List;
 
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
 /**
- * Any and all questions should be directed to me.
- * @author Rowan Christmas
+ * Legacy interface of ding node view.
+ *
  */
-public interface NodeView  extends GraphViewObject {
-
-	View<CyNode> getNodeViewModel();
+public interface NodeView extends GraphViewObject {
 
 	/**
 	 * @return the index of this node in the perspective to which we are in a view on.
@@ -169,12 +165,8 @@ public interface NodeView  extends GraphViewObject {
 	 * @return the current y position of this node
 	 * @see #setYPosition
 	 */
-	public double getYPosition() ;
+	double getYPosition() ;
 
-//	/**
-//	 * moves this node to its stored x and y locations.
-//	 */
-//	public void setNodePosition(boolean animate) ;
 
 	/**
 	 * This draws us as selected
@@ -216,13 +208,4 @@ public interface NodeView  extends GraphViewObject {
 	
 	ObjectPosition getLabelPosition();
 	void setLabelPosition(final ObjectPosition p);
-
-	 
-//	public void setLabelOffsetX(double x);
-//	public void setLabelOffsetY(double y);
-//	public void setNodeLabelAnchor(int position);
-//
-//	public double getLabelOffsetX();
-//	public double getLabelOffsetY();
-//	public int getNodeLabelAnchor();
 }

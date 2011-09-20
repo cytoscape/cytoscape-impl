@@ -11,13 +11,13 @@ public class EdgeViewImpl extends ViewImpl<CyEdge> {
 
 	private final CyNetworkView parent;
 	
-	public EdgeViewImpl(CyEdge model, CyEventHelper cyEventHelper, CyNetworkView parent) {
+	public EdgeViewImpl(final CyEdge model, final CyEventHelper cyEventHelper, final CyNetworkView parent) {
 		super(model, cyEventHelper);
 		this.parent = parent;
 	}
 
 	@Override
-	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
+	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, final V value) {
 		if(value == null)
 			this.visualProperties.remove(vp);
 		else
@@ -26,5 +26,4 @@ public class EdgeViewImpl extends ViewImpl<CyEdge> {
 		// getVisualProperty method call is REQUIRED to check bypass.
 		cyEventHelper.addEventPayload(parent, new ViewChangeRecord<CyEdge>(this, vp, this.getVisualProperty(vp)),EdgeViewsChangedEvent.class);
 	}
-
 }

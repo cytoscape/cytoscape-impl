@@ -11,12 +11,7 @@
 		interface="org.cytoscape.service.util.CyServiceRegistrar" />
 
 	<!-- Export Beans as Services -->
-	<osgi:service id="cyNetworkViewFactoryService" ref="cyNetworkViewFactory"
-		interface="org.cytoscape.view.model.CyNetworkViewFactory">
-		<osgi:service-properties>
-			<entry key="service.type" value="factory" />
-		</osgi:service-properties>
-	</osgi:service>
+	
 	<osgi:service id="cyNetworkViewManagerService" ref="cyNetworkViewManager"
 		auto-export="interfaces">
 	</osgi:service>

@@ -54,7 +54,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 
-class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
+class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, Bend, EdgeAnchors {
 	
 	static final float DEFAULT_ARROW_SIZE = 5.0f;
 	static final Paint DEFAULT_ARROW_PAINT = Color.black;
@@ -79,8 +79,6 @@ class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
 	ArrayList<Point2D> m_anchors; // A list of Point2D objects.
 	int m_lineType;
 	String m_toolTipText = null;
-
-	private final View<CyEdge> m_edgeView;
 	
 	// Visual Properties used in this node view.
 	private final VisualLexicon lexicon;
@@ -88,11 +86,12 @@ class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
 	/*
 	 * @param inx the RootGraph index of edge (a negative number).
 	 */
-	DEdgeView(final VisualLexicon lexicon, DGraphView view, int inx, View<CyEdge> ev) {
+	DEdgeView(final VisualLexicon lexicon, final DGraphView view, final int inx, final CyEdge model) {
+		super(model);
+		
 		this.lexicon = lexicon;
 		m_view = view;
 		m_inx = inx;
-		m_edgeView = ev;
 		m_selected = false;
 		m_unselectedPaint = m_view.m_edgeDetails.segmentPaint(m_inx);
 		m_selectedPaint = Color.red;
@@ -130,11 +129,11 @@ class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
 	 * @return DOCUMENT ME!
 	 */
 	public CyEdge getEdge() {
-		return m_view.getGraphPerspective().getEdge(m_inx);
+		return m_view.getNetwork().getEdge(m_inx);
 	}
 
 	public View<CyEdge> getEdgeView() {
-		return m_edgeView;
+		return this;
 	}
 
 	/**
@@ -1042,9 +1041,9 @@ class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
 				return 0;
 			}
 
-			final Point2D sourcePt = m_view.getNodeView(getEdge().getSource())
+			final Point2D sourcePt = m_view.getDNodeView(getEdge().getSource())
 					.getOffset();
-			final Point2D targetPt = m_view.getNodeView(getEdge().getTarget())
+			final Point2D targetPt = m_view.getDNodeView(getEdge().getTarget())
 					.getOffset();
 			double bestDist = (pt.distance(sourcePt) + pt
 					.distance((Point2D) m_anchors.get(0)))
@@ -1401,7 +1400,7 @@ class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
 	}
 
 	@Override
-	public void setVisualPropertyValue(final VisualProperty<?> vpOriginal, final Object value) {
+	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vpOriginal, V value) {
 		
 		final VisualProperty<?> vp;
 		VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
@@ -1469,15 +1468,9 @@ class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
 			setSourceEdgeEnd(((ArrowShape) value).getRendererTypeID());
 		} else if (vp == MinimalVisualLexicon.EDGE_LABEL) {
-			setText(value.toString());
+			setText((String) value);
 		} else if (vp == DVisualLexicon.EDGE_TOOLTIP) {
 			setToolTip(value.toString());
-//		} else if (vp == DVisualLexicon.EDGE_LABEL_ANCHOR_X_OFFSET) {
-//			setLabelOffsetX(((Double) value).doubleValue());
-//		} else if (vp == DVisualLexicon.EDGE_LABEL_ANCHOR_Y_OFFSET) {
-//			setLabelOffsetY(((Double) value).doubleValue());
-//		} else if (vp == DVisualLexicon.EDGE_LABEL_JUSTIFY) {
-//			setJustify(((Justify) value).getNativeValue());
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {
 			setFont((Font) value);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
@@ -1492,5 +1485,7 @@ class DEdgeView implements EdgeView, Label, Bend, EdgeAnchors {
 		} else if (vp == DVisualLexicon.EDGE_LABEL_POSITION) {
 			// FIXME: Not implemented yet.
 		}
+		
+		visualProperties.put(vp, value);
 	}
 }

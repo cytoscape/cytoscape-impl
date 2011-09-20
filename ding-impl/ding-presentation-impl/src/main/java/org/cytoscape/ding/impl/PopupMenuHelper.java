@@ -86,7 +86,7 @@ class PopupMenuHelper {
 		if (edgeView != null ) {
 
 			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(m_view.edgeViewTFs,action);
-			View<CyEdge> ev = edgeView.getEdgeView();
+			View<CyEdge> ev = (DEdgeView)edgeView;
 
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
@@ -95,7 +95,7 @@ class PopupMenuHelper {
 				JMenuTracker tracker = new JMenuTracker(menu);
 
 				for ( EdgeViewTaskFactory evtf : usableTFs ) {
-					evtf.setEdgeView(ev,m_view.cyNetworkView);
+					evtf.setEdgeView(ev,m_view);
 					createMenuItem(ev, menu, evtf, tracker, m_view.edgeViewTFs.get(evtf) );
 				}
 
@@ -104,7 +104,7 @@ class PopupMenuHelper {
 			// execute the task directly if only one factory exists
 			} else if ( usableTFs.size() == 1) {
 				EdgeViewTaskFactory tf  = usableTFs.iterator().next();
-				tf.setEdgeView(ev,m_view.cyNetworkView);
+				tf.setEdgeView(ev,m_view);
 				executeTask(tf);
 			}
 		}
@@ -116,7 +116,7 @@ class PopupMenuHelper {
 	void createDropNodeViewMenu(NodeView nview, Point rawPt, Point xformPt, Transferable t, String action) {
 		if (nview != null ) {
 			Collection<DropNodeViewTaskFactory> usableTFs = getPreferredActions(m_view.dropNodeViewTFs,action);
-			View<CyNode> nv = nview.getNodeViewModel();
+			View<CyNode> nv = (DNodeView)nview;
 
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
@@ -125,7 +125,7 @@ class PopupMenuHelper {
 				JMenuTracker tracker = new JMenuTracker(menu);
 
 				for ( DropNodeViewTaskFactory nvtf : usableTFs ) {
-					nvtf.setNodeView(nv,m_view.cyNetworkView);
+					nvtf.setNodeView(nv,m_view);
 					nvtf.setDropInformation(t,rawPt,xformPt);
 					createMenuItem(nv, menu, nvtf, tracker, m_view.dropNodeViewTFs.get( nvtf ));
 				}
@@ -135,7 +135,7 @@ class PopupMenuHelper {
 			// execute the task directly if only one factory exists
 			} else if ( usableTFs.size() == 1) {
 				DropNodeViewTaskFactory tf  = usableTFs.iterator().next();
-				tf.setNodeView(nv,m_view.cyNetworkView);
+				tf.setNodeView(nv,m_view);
 				tf.setDropInformation(t,rawPt,xformPt);
 				executeTask(tf);
 			}
@@ -148,7 +148,7 @@ class PopupMenuHelper {
 	void createNodeViewMenu(NodeView nview, int x, int y , String action) {
 		if (nview != null ) {
 			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(m_view.nodeViewTFs,action);
-			View<CyNode> nv = nview.getNodeViewModel();
+			View<CyNode> nv = (DNodeView)nview;
 
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
@@ -157,7 +157,7 @@ class PopupMenuHelper {
 				JMenuTracker tracker = new JMenuTracker(menu);
 
 				for ( NodeViewTaskFactory nvtf : usableTFs ) {
-					nvtf.setNodeView(nv,m_view.cyNetworkView);
+					nvtf.setNodeView(nv, m_view);
 					createMenuItem(nv, menu, nvtf, tracker, m_view.nodeViewTFs.get( nvtf ));
 				}
 
@@ -166,7 +166,7 @@ class PopupMenuHelper {
 			// execute the task directly if only one factory exists
 			} else if ( usableTFs.size() == 1) {
 				NodeViewTaskFactory tf  = usableTFs.iterator().next();
-				tf.setNodeView(nv,m_view.cyNetworkView);
+				tf.setNodeView(nv, m_view);
 				executeTask(tf);
 			}
 		}
@@ -182,7 +182,7 @@ class PopupMenuHelper {
 			JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
 			JMenuTracker tracker = new JMenuTracker(menu);
 			for ( DropNetworkViewTaskFactory nvtf : usableTFs ) {
-				nvtf.setNetworkView(m_view.cyNetworkView);
+				nvtf.setNetworkView(m_view);
 				nvtf.setDropInformation(t,rawPt,xformPt);
 				createMenuItem(null, menu, nvtf, tracker, m_view.dropEmptySpaceTFs.get( nvtf ) );
 			}
@@ -190,7 +190,7 @@ class PopupMenuHelper {
 		// execute the task directly if only one factory exists
 		} else if ( usableTFs.size() == 1) {
 			DropNetworkViewTaskFactory tf = usableTFs.iterator().next();
-			tf.setNetworkView(m_view.cyNetworkView);
+			tf.setNetworkView(m_view);
 			tf.setDropInformation(t,rawPt,xformPt);
 			executeTask(tf);
 		}
@@ -205,14 +205,14 @@ class PopupMenuHelper {
 			final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
 			final JMenuTracker tracker = new JMenuTracker(menu);
 			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
-				nvtf.setNetworkView(m_view.cyNetworkView);
+				nvtf.setNetworkView(m_view);
 				createMenuItem(null, menu, nvtf, tracker, m_view.emptySpaceTFs.get( nvtf ) );
 			}
 			menu.show(invoker, x, y);
 		// execute the task directly if only one factory exists
 		} else if ( usableTFs.size() == 1) {
 			NetworkViewTaskFactory tf = usableTFs.iterator().next();
-			tf.setNetworkView(m_view.cyNetworkView);
+			tf.setNetworkView(m_view);
 			executeTask(tf);
 		}
 	}

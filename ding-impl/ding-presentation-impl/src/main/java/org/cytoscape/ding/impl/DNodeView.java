@@ -75,14 +75,12 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Ding implementation of node presentation.
+ * DING implementation of View Model and Presentation.
  * 
  */
-public class DNodeView implements NodeView, Label {
+public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, Label {
 	
 	// Affects size of the nested network image relative to the node size:
 	private static final float NESTED_IMAGE_SCALE_FACTOR = 0.6f;
@@ -183,9 +181,6 @@ public class DNodeView implements NodeView, Label {
 	// Will be used when Custom graphics is empty.
 	private final static Set<CustomGraphic> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphic>(0);
 
-	// View Model for this node presentation.
-	private final View<CyNode> nodeViewModel;
-
 	// Map from NodeCustomGraphics Visual Property to native CustomGraphics
 	// objects.
 	private final Map<VisualProperty<?>, Set<CustomGraphic>> cgMap;
@@ -199,19 +194,12 @@ public class DNodeView implements NodeView, Label {
 	// Visual Properties used in this node view.
 	private final VisualLexicon lexicon;
 
-	/**
-	 * Constructor takes
-	 * 
-	 * @param lexicon
-	 * @param graphView
-	 * @param inx
-	 * @param viewModel
-	 */
-	DNodeView(final VisualLexicon lexicon, final DGraphView graphView, int inx, final View<CyNode> viewModel) {
+	
+	DNodeView(final VisualLexicon lexicon, final DGraphView graphView, int inx, final CyNode model) {
+		super(model);
+		
 		if (graphView == null)
 			throw new NullPointerException("View must never be null!");
-		if (viewModel == null)
-			throw new NullPointerException("View model must never be null!");
 		if (lexicon == null)
 			throw new NullPointerException("Lexicon must never be null!");
 
@@ -224,7 +212,6 @@ public class DNodeView implements NodeView, Label {
 		this.graphView = graphView;
 
 		m_inx = inx;
-		nodeViewModel = viewModel;
 
 		m_selected = false;
 
@@ -240,33 +227,17 @@ public class DNodeView implements NodeView, Label {
 		return graphView;
 	}
 
-	/**
-	 * Returns View Model object of this node presentation.
-	 */
-	@Override
-	public View<CyNode> getNodeViewModel() {
-		return this.nodeViewModel;
-	}
-
-	/**
-	 * Returns node index of this node presentation in the parent network.
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	@Override
 	public int getGraphPerspectiveIndex() {
 		return m_inx;
 	}
 
-	
-	/**
-	 * Provides list of DING edge views.
-	 */
+
 	@Override
 	public List<EdgeView> getEdgeViewsList(final NodeView otherNodeView) {
 		synchronized (graphView.m_lock) {
-			return graphView.getEdgeViewsList(this.getNodeViewModel().getModel(), otherNodeView.getNodeViewModel()
-					.getModel());
+			return graphView.getEdgeViewsList(getModel(), ((DNodeView)otherNodeView).getModel());
 		}
 	}
 
@@ -278,12 +249,7 @@ public class DNodeView implements NodeView, Label {
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
+
 	@Override
 	public void setSelectedPaint(Paint paint) {
 		synchronized (graphView.m_lock) {
@@ -303,22 +269,13 @@ public class DNodeView implements NodeView, Label {
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	@Override
 	public Paint getSelectedPaint() {
 		return m_selectedPaint;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
+
 	@Override
 	public void setUnselectedPaint(Paint paint) {
 		synchronized (graphView.m_lock) {
@@ -386,11 +343,7 @@ public class DNodeView implements NodeView, Label {
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	@Override
 	public float getBorderWidth() {
 		synchronized (graphView.m_lock) {
@@ -457,11 +410,6 @@ public class DNodeView implements NodeView, Label {
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public Stroke getBorder() {
 		synchronized (graphView.m_lock) {
@@ -833,11 +781,6 @@ public class DNodeView implements NodeView, Label {
 		return true;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public boolean isSelected() {
 		return m_selected;
@@ -873,32 +816,19 @@ public class DNodeView implements NodeView, Label {
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param tip
-	 *            DOCUMENT ME!
-	 */
+
 	@Override
 	public void setToolTip(final String tip) {
 		m_toolTipText = tip;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	@Override
 	public String getToolTip() {
 		return m_toolTipText;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	@Override
 	public Paint getTextPaint() {
 		synchronized (graphView.m_lock) {
@@ -1186,7 +1116,7 @@ public class DNodeView implements NodeView, Label {
 		synchronized (graphView.m_lock) {
 			++nestedNetworkPaintingDepth;
 			try {
-				if (nestedNetworkPaintingDepth > 1 || this.getNodeViewModel().getModel().getNetwork() == null
+				if (nestedNetworkPaintingDepth > 1 || getModel().getNetwork() == null
 						|| !nestedNetworkVisible)
 					return null;
 
@@ -1289,7 +1219,7 @@ public class DNodeView implements NodeView, Label {
 	}
 
 	@Override
-	public void setVisualPropertyValue(final VisualProperty<?> vpOriginal, final Object value) {
+	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vpOriginal, final V value) {
 		
 		final VisualProperty<?> vp;
 		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
@@ -1371,6 +1301,8 @@ public class DNodeView implements NodeView, Label {
 		} else if (vp instanceof CustomGraphicsVisualProperty) {
 			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphic>) value);
 		}
+		visualProperties.put(vp, value);
+		//System.out.println(vp.getDisplayName() + " ### Apply to node view called: " + value);
 	}
 
 	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {
@@ -1403,7 +1335,7 @@ public class DNodeView implements NodeView, Label {
 		boolean sync = sizeTreeNode.isDepend();
 
 		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
-		final ObjectPosition positionValue = nodeViewModel.getVisualProperty(cgPositionVP);
+		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
 		// final ObjectPosition position = this.graphicsPositions.get(vp);
 
 		// System.out.print("CG Position for: " +
@@ -1536,4 +1468,55 @@ public class DNodeView implements NodeView, Label {
 		return new CustomGraphic(scale.createTransformedShape(originalShape), cg.getPaintFactory());
 	}
 
+//	@Override
+//	public <T> T getVisualProperty(final VisualProperty<T> vp) {
+//		Object value = null;
+//		
+//		if (vp == DVisualLexicon.NODE_SHAPE) {
+//			value = Integer.valueOf(getShape());
+//		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
+//			value = getSelectedPaint();
+//		} else if (vp == MinimalVisualLexicon.NODE_SELECTED) {
+//			value = Boolean.valueOf(isSelected());
+//		} else if (vp == MinimalVisualLexicon.NODE_VISIBLE) {
+//			value = !graphView.isHidden(this);
+//		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
+//			value = getUnselectedPaint();
+//		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
+//			value = getBorderPaint();
+//		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
+//			value = getBorderWidth();
+//		} else if (vp == DVisualLexicon.NODE_BORDER_LINE_TYPE) {
+//			value = this.getBorder();
+//		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
+//			value = getTransparency();
+//		} else if (vp == MinimalVisualLexicon.NODE_WIDTH) {
+//			value = getWidth();
+//		} else if (vp == MinimalVisualLexicon.NODE_HEIGHT) {
+//			value = getHeight();
+//		} else if (vp == MinimalVisualLexicon.NODE_SIZE) {
+//			value = getWidth();
+//		} else if (vp == MinimalVisualLexicon.NODE_LABEL) {
+//			value = getText();
+//		} else if (vp == MinimalVisualLexicon.NODE_X_LOCATION) {
+//			value = getXPosition();
+//		} else if (vp == MinimalVisualLexicon.NODE_Y_LOCATION) {
+//			value = getYPosition();
+//		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
+//			value = getToolTip();
+//		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
+//			value = getTextPaint();
+//		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
+//			value = getFont();
+//		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_SIZE) {
+//			value = getFont().getSize();
+//		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
+//			value = getLabelPosition();
+//		} else if (vp instanceof CustomGraphicsVisualProperty) {
+//			// FIXME!
+//		} else
+//			value = vp.getDefault();
+//		
+//		return (T) value;
+//	}
 }

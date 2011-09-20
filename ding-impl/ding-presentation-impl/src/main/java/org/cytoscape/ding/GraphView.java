@@ -51,9 +51,6 @@ public static int NODE_X_POSITION = 0;
   public static int EDGE_TARGET_END_SELECTED_PAINT = 11;
 
 
-
-  public CyNetwork getGraphPerspective();
-  
   public CyNetwork getNetwork();
 
 
@@ -233,13 +230,13 @@ public static int NODE_X_POSITION = 0;
    *
    * @return The NodeView of the given Node
    */
-  public NodeView getNodeView(CyNode node);
+  public NodeView getDNodeView(CyNode node);
         
   /**
    * @param index the index of the node whose view is requested
    * @return The NodeView of the given Node
    */
-  public NodeView getNodeView(int index);
+  public NodeView getDNodeView(int index);
         
   /**
    * Return all of the EdgeViews in this GraphView
@@ -265,7 +262,7 @@ public static int NODE_X_POSITION = 0;
   /**
    * @return the EdgeView that corresponds to the given index
    */
-  public  EdgeView getEdgeView(int edge_index);
+  public  EdgeView getDEdgeView(int edge_index);
   
   /**
    * Return all of the EdgeViews in this GraphView
@@ -275,7 +272,7 @@ public static int NODE_X_POSITION = 0;
   /**
    * @return the EdgeView that corresponds to the given Edge
    */
-  public EdgeView getEdgeView(CyEdge edge);
+  public EdgeView getDEdgeView(CyEdge edge);
   
   /**
    * @return the number of edges

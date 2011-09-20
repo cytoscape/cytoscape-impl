@@ -145,4 +145,12 @@
 			<entry key="accelerator" value="fn1" />
 		</osgi:service-properties>
 	</osgi:service>
+	
+	
+	<osgi:service id="dingNetworkViewFactoryService" ref="dingNetworkViewFactory"
+		interface="org.cytoscape.view.model.CyNetworkViewFactory">
+		<osgi:service-properties>
+			<entry key="service.type" value="factory" />
+		</osgi:service-properties>
+	</osgi:service>
 </beans>

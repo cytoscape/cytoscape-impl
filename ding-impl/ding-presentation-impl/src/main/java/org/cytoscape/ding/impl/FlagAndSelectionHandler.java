@@ -112,7 +112,7 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 
 		// select all nodes that are flagged but not currently selected
 		for (final CyNode node : flaggedNodes) {
-			final NodeView nv = view.getNodeView(node);
+			final NodeView nv = view.getDNodeView(node);
 
 			if ((nv == null) || nv.isSelected())
 				continue;
@@ -122,7 +122,7 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 
 		// select all edges that are flagged but not currently selected
 		for (final CyEdge edge : flaggedEdges) {
-			final EdgeView ev = view.getEdgeView(edge);
+			final EdgeView ev = view.getDEdgeView(edge);
 
 			if ((ev == null) || ev.isSelected())
 				continue;

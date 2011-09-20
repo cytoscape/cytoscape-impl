@@ -11,22 +11,19 @@ import org.cytoscape.view.model.VisualProperty;
 
 /**
  * This is an implementation of row-oriented ViewModel.
- * 
- * @author kono
  *
- * @param <M>
+ * @param <M> Data model type, i.e., CyNode, CyEdge, etc.
  */
 public abstract class ViewImpl<M> implements View<M> {
 	
+	// Both of them are immutable.
 	protected final M model;
 	protected final long suid;
-	
+		
 	protected final CyEventHelper cyEventHelper;
 	
-	//TODO: Thread safety?
 	protected final Map<VisualProperty<?>, Object> visualProperties;
 	protected final Map<VisualProperty<?>, Object> visualPropertyLocks;
-	
 	
 	/**
 	 * Create an instance of view model, but not firing event to upper layer.
@@ -60,10 +57,10 @@ public abstract class ViewImpl<M> implements View<M> {
 		return suid;
 	}
 	
-
-	abstract public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value);
-
 	
+	@Override
+	abstract public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, final V value);
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getVisualProperty(VisualProperty<T> vp) {
@@ -73,21 +70,20 @@ public abstract class ViewImpl<M> implements View<M> {
 				return vp.getDefault();
 			else
 				return (T) visualProperties.get(vp);
-			
 		} else
 			return (T) this.visualPropertyLocks.get(vp);
 	}
 
 	
-	// TODO: should I fire event?
+	// TODO: should I fire event here?
 	@Override
-	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
+	public <T, V extends T> void setLockedValue(final VisualProperty<? extends T> vp, final V value) {
 		this.visualPropertyLocks.put(vp, value);
 	}
 	
 
 	@Override
-	public boolean isValueLocked(VisualProperty<?> vp) {
+	public boolean isValueLocked(final VisualProperty<?> vp) {
 		if(visualPropertyLocks.get(vp) == null)
 			return false;
 		else 
@@ -95,7 +91,7 @@ public abstract class ViewImpl<M> implements View<M> {
 	}
 
 	@Override
-	public void clearValueLock(VisualProperty<?> vp) {
+	public void clearValueLock(final VisualProperty<?> vp) {
 		this.visualPropertyLocks.remove(vp);
 	}
 

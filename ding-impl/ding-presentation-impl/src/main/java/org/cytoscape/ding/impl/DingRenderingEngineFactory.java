@@ -117,7 +117,13 @@ public class DingRenderingEngineFactory implements
 			logger.debug("Start rendering presentation by Ding: "
 					+ targetView.getSUID());
 
-			dgv = new DGraphView(targetView, dataTableFactory,
+			
+			if(view instanceof DGraphView) {
+				dgv = (DGraphView) view;
+				logger.info("%%%%%%% This view is DGV.");
+			}
+			else
+				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkFactory, undo, spacialFactory, dingLexicon,
 					nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs,
 					dropEmptySpaceTFs, tm, eventHelper, tableMgr);
@@ -235,16 +241,14 @@ public class DingRenderingEngineFactory implements
 		dropEmptySpaceTFs.remove(evtf);
 	}
 
-	public void addDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf,
-			Map props) {
+	public void addDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf, Map props) {
 		if (nvtf == null)
 			return;
 
 		dropNodeViewTFs.put(nvtf, props);
 	}
 
-	public void removeDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf,
-			Map props) {
+	public void removeDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf, Map props) {
 		if (nvtf == null)
 			return;
 

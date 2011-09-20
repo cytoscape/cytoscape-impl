@@ -68,7 +68,7 @@ class AddEdgeStateMonitor {
 	}
 
 	boolean addingEdge() {
-		return sourceNodes.containsKey(m_view.cyNetworkView);
+		return sourceNodes.containsKey(m_view);
 	}
 
 	static CyNode getSourceNode(CyNetworkView view) {
@@ -113,7 +113,7 @@ class AddEdgeStateMonitor {
 	void drawRubberBand(MouseEvent e) {
 		nextPoint = e.getPoint();
 
-		Point2D startPoint = getSourcePoint(m_view.cyNetworkView);
+		Point2D startPoint = getSourcePoint(m_view);
 		if ( startPoint == null )
 			return;
 

@@ -186,20 +186,14 @@ class DNodeDetails extends IntermediateNodeDetails {
 			m_fillPaints.put(Integer.valueOf(node), paint);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param node DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public float borderWidth(int node) {
-		final Object o = m_borderWidths.get(Integer.valueOf(node));
+	
+	public float borderWidth(final int node) {
+		final Float o = m_borderWidths.get(node);
 
 		if (o == null)
 			return super.borderWidth(node);
 
-		return ((Float) o).floatValue();
+		return o;
 	}
 
 	/*
@@ -356,18 +350,18 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	// overrides NodeDetails.customGraphicCount():
 	public int customGraphicCount(final int node) {
-		final DNodeView dnv = (DNodeView) m_view.getNodeView(node);	
+		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);	
 		return dnv.getNumCustomGraphics();
 	}
 
 	// overrides NodeDetails.customGraphics():
 	public Iterator<CustomGraphic> customGraphics (final int node) {
-		final DNodeView dnv = (DNodeView) m_view.getNodeView(node);
+		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);
 		return dnv.customGraphicIterator();
 	}
 	// overrides NodeDetails.customGraphicLock():
 	public Object customGraphicLock (final int node) {
-		final DNodeView dnv = (DNodeView) m_view.getNodeView(node);
+		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);
 		return dnv.customGraphicLock();	
 	}
 
@@ -510,7 +504,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	@Override
 	public TexturePaint getNestedNetworkTexturePaint(final int node) {
-		final DNodeView dNodeView = (DNodeView) m_view.getNodeView(node);
+		final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
 		return dNodeView.getNestedNetworkTexturePaint();
 	}
 	
