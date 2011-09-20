@@ -1317,11 +1317,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private boolean hideGraphObjectInternal(Object obj,
 			boolean fireListenerEvents) {
 		if (obj instanceof DEdgeView) {
-			int edgeInx;
 			CyEdge edge;
 
 			synchronized (m_lock) {
-				edgeInx = ((DEdgeView) obj).getRootGraphIndex();
 				edge = ((DEdgeView) obj).getEdge();
 
 				edge.getCyRow("VIEW").set("hidden", true);

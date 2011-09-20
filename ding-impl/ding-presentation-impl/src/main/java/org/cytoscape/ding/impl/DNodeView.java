@@ -1228,6 +1228,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (vp == DVisualLexicon.NODE_SHAPE) {
 			setShape(((NodeShape) value));
 		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
+			if(value == null)
+				return;
+			
 			setSelectedPaint((Paint) value);
 		} else if (vp == MinimalVisualLexicon.NODE_SELECTED) {
 			setSelected((Boolean) value);
@@ -1237,6 +1240,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			else
 				graphView.hideGraphObject(this);
 		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
+			if(value == null)
+				return;
+			
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			setBorderPaint((Paint) value);
@@ -1280,7 +1286,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphic>) value);
 		}
 		visualProperties.put(vp, value);
-		//System.out.println(vp.getDisplayName() + " ### Apply to node view called: " + value);
 	}
 
 	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {

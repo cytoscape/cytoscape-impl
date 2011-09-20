@@ -94,7 +94,6 @@ public class StrokeIcon extends VisualPropertyIcon<Stroke> {
 		 * Superimpose text if text object is not empty.
 		 */
 		if (superimposedText != null) {
-			int strWidth = SwingUtilities.computeStringWidth(g2d.getFontMetrics(), superimposedText);
 
 			if (textColor == null) {
 				g2d.setColor(Color.DARK_GRAY);

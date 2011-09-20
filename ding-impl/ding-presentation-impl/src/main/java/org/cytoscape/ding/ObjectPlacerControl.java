@@ -114,8 +114,8 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 			labelAnchors.setSelectedItem(labelAnchor.getName());
 
 		justifyCombo.setSelectedItem(lp.getJustify().getName());
-		xoffsetBox.setText(new Integer((int) lp.getOffsetX()).toString());
-		yoffsetBox.setText(new Integer((int) lp.getOffsetY()).toString());
+		xoffsetBox.setText(Integer.valueOf((int)lp.getOffsetX()).toString());
+		yoffsetBox.setText(Integer.valueOf((int) lp.getOffsetY()).toString());
 		ignoreEvents = false;
 		repaint();
 	}

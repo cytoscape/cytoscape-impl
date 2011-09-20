@@ -76,7 +76,7 @@ public enum Position {
 		return displayNames;
 	}
 	
-	private class Conversion {
+	private static final class Conversion {
 		// TODO: remove these numbers.
 		private static final int NW = 0;
 		private static final int N = 1;
