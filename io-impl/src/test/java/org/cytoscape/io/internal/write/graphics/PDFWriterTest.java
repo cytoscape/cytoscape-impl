@@ -34,7 +34,7 @@ public class PDFWriterTest {
 	@Test
 	public void itextLibTest() throws Exception {
 		
-		final OutputStream os = new BufferedOutputStream(new FileOutputStream("itextTest.pdf"));
+		final OutputStream os = new BufferedOutputStream(new FileOutputStream("target/itextTest.pdf"));
 		final Rectangle pageSize = PageSize.LETTER;
 		final Document document = new Document(pageSize);
 
