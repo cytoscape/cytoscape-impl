@@ -10,17 +10,7 @@ import org.cytoscape.model.CyTableEntry;
 
 public class AttributeUtil {
 	public static void set(CyTableEntry entry, String name, Object value, Class<?> type) {
-		CyRow row = entry.getCyRow();
-		CyTable table = row.getTable();
-		CyColumn column = table.getColumn(name);
-		if (column == null) {
-			if (value instanceof List) {
-				table.createListColumn(name, type, false);
-			} else { 
-				table.createColumn(name, type, false);
-			}
-		}
-		row.set(name, value);
+		set(entry, null, name, value, type);
 	}
 
 	public static void copyAttributes(CyTableEntry source, CyTableEntry target) {
@@ -37,5 +27,20 @@ public class AttributeUtil {
 			}
 			set(target, key, value, type);
 		}
+	}
+	
+	
+	public static void set(CyTableEntry entry, String tableName, String name, Object value, Class<?> type) {
+		CyRow row = (tableName==null) ? entry.getCyRow() : entry.getCyRow(tableName);
+		CyTable table = row.getTable();
+		CyColumn column = table.getColumn(name);
+		if (column == null) {
+			if (value instanceof List) {
+				table.createListColumn(name, type, false);
+			} else { 
+				table.createColumn(name, type, false);
+			}
+		}
+		row.set(name, value);
 	}
 }

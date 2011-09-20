@@ -3,7 +3,6 @@ package org.cytoscape.biopax.internal;
 import java.io.InputStream;
 
 import org.cytoscape.biopax.NetworkListener;
-import org.cytoscape.biopax.internal.view.BioPaxContainerImpl;
 import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -19,7 +18,6 @@ public class BioPaxNetworkViewTaskFactory implements InputStreamTaskFactory {
 	private final CyNetworkFactory networkFactory;
 	private final CyNetworkViewFactory viewFactory;
 	private final CyNetworkNaming naming;
-	private final BioPaxContainerImpl bpContainer;
 	private final NetworkListener networkListener;
 
 	private InputStream inputStream;
@@ -27,20 +25,22 @@ public class BioPaxNetworkViewTaskFactory implements InputStreamTaskFactory {
 	private VisualMappingManager mappingManager;
 	private BioPaxVisualStyleUtil bioPaxVisualStyleUtil;
 
-	public BioPaxNetworkViewTaskFactory(CyFileFilter filter, CyNetworkFactory networkFactory, CyNetworkViewFactory viewFactory, CyNetworkNaming naming, BioPaxContainerImpl bpContainer, NetworkListener networkListener, VisualMappingManager mappingManager, BioPaxVisualStyleUtil bioPaxVisualStyleUtil) {
+	public BioPaxNetworkViewTaskFactory(CyFileFilter filter, CyNetworkFactory networkFactory, CyNetworkViewFactory viewFactory, CyNetworkNaming naming, NetworkListener networkListener, VisualMappingManager mappingManager, BioPaxVisualStyleUtil bioPaxVisualStyleUtil) {
 		this.filter = filter;
 		this.networkFactory = networkFactory;
 		this.viewFactory = viewFactory;
 		this.naming = naming;
-		this.bpContainer = bpContainer;
 		this.networkListener = networkListener;
 		this.mappingManager = mappingManager;
 		this.bioPaxVisualStyleUtil = bioPaxVisualStyleUtil;
+		this.inputName = "BioPAX_Network"; //default name fallback
 	}
 	
 	@Override
 	public TaskIterator getTaskIterator() {
-		BioPaxNetworkViewReaderTask task = new BioPaxNetworkViewReaderTask(inputStream, inputName, networkFactory, viewFactory, naming, bpContainer, networkListener, mappingManager, bioPaxVisualStyleUtil);
+		BioPaxNetworkViewReaderTask task = new BioPaxNetworkViewReaderTask(
+				inputStream, inputName, networkFactory, viewFactory, naming, 
+				networkListener, mappingManager, bioPaxVisualStyleUtil);
 		return new TaskIterator(task);
 	}
 

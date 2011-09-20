@@ -42,7 +42,6 @@ import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
 import org.cytoscape.biopax.NetworkListener;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
 import org.cytoscape.biopax.util.BioPaxUtil;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -65,7 +64,6 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	private final BioPaxDetailsPanel bpPanel;
 	private final BioPaxContainer bpContainer;
 	private final MapBioPaxToCytoscape mapBioPaxToCytoscape;
-
 	private final CyNetworkViewManager viewManager;
 	private final Map<CyNetworkView, RowsSetListener> listeners;
 
@@ -74,10 +72,12 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 *
 	 * @param bpPanel BioPaxDetails Panel Object.
 	 */
-	public NetworkListenerImpl(BioPaxDetailsPanel bpPanel, BioPaxContainer bpContainer, MapBioPaxToCytoscapeFactory mapBioPaxToCytoscapeFactory, CyNetworkViewManager viewManager) {
+	public NetworkListenerImpl(BioPaxDetailsPanel bpPanel, BioPaxContainer bpContainer, 
+			MapBioPaxToCytoscapeFactory mapBioPaxToCytoscapeFactory, CyNetworkViewManager viewManager) 
+	{
 		this.bpPanel = bpPanel;
 		this.bpContainer = bpContainer;
-		this.mapBioPaxToCytoscape = mapBioPaxToCytoscapeFactory.getInstance(null, null);
+		this.mapBioPaxToCytoscape = mapBioPaxToCytoscapeFactory.getInstance(null, null, null);
 		this.viewManager = viewManager;
 		this.listeners = new HashMap<CyNetworkView, RowsSetListener>();
 	}
@@ -89,7 +89,9 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 */
 	@Override
 	public void registerNetwork(CyNetworkView view) {
-		registerNodeSelectionEvents(view);
+		if (BioPaxUtil.isBioPAXNetwork(view.getModel())) {
+			registerNodeSelectionEvents(view);
+		}
 	}
 
 	/**
@@ -141,28 +143,11 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 * Network Created Event
 	 */
 	@Override
-	public void handleEvent(NetworkViewAddedEvent e) {
-		// get the network
-		/* (why was that?)
-		CyNetwork cyNetwork = null;
-		Object newValue = event.getNewValue();
-
-		if (event.getPropertyName() == Cytoscape.SESSION_LOADED) {
-			cyNetwork = Cytoscape.getCurrentNetwork();
-		} else if (newValue instanceof CyNetwork) {
-			cyNetwork = (CyNetwork) newValue;
-		} else if (newValue instanceof String) {
-			String networkID = (String) newValue;
-			cyNetwork = Cytoscape.getNetwork(networkID);
+	public void handleEvent(NetworkViewAddedEvent e) {	
+		if(BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+			bpContainer.showLegend();
+			bpPanel.resetText();
 		}
-		
-		if(cyNetwork != null && BioPaxUtil.isBioPAXNetwork(cyNetwork)) {
-			Cytoscape.firePropertyChange(Cytoscape.NETWORK_CREATED, null, cyNetwork);
-		}
-		*/
-		
-        bpContainer.showLegend();
-		bpPanel.resetText();
 	}
 
 	/**
@@ -170,40 +155,10 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 */
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
-//		// get network id
-//		String networkId = null;
-//		CyNetwork cyNetwork = null;
-//		Object newValue = event.getNewValue();
-//
-//		if (event.getPropertyName() == Cytoscape.SESSION_LOADED) {
-//			cyNetwork = Cytoscape.getCurrentNetwork();
-//			networkId = cyNetwork.getIdentifier();
-//		} else if (newValue instanceof CyNetwork) {
-//			cyNetwork = (CyNetwork) newValue;
-//			networkId = cyNetwork.getIdentifier();
-//		} else if (newValue instanceof String) {
-//			networkId = (String) newValue;
-//			cyNetwork = Cytoscape.getNetwork(networkId);
-//		}
-//
-//		if (networkId != null) {
-//			// update bpPanel accordingly
-//            if (!sessionLoaded) {
-            	if (BioPaxUtil.getNetworkModelMap().containsKey(e.getNetworkView().getModel().getSUID())) {
-                    bpPanel.resetText();
-                } else {
-                    bpPanel.resetText("Node details are not provided for"
-                                      + " the currently selected network.");
-                }
-//            }
-//            
-//            // due to quirky-ness in event model, we could get here without registering network
-//            // check if this is a biopax network
-//            if (BioPaxUtil.isBioPAXNetwork(cyNetwork) 
-//            		&& !BioPaxUtil.getNetworkModelMap().containsKey(networkId)) {
-//            	registerNetwork(cyNetwork);
-//            }
-//        }
+		// update bpPanel accordingly
+       	if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+            bpPanel.resetText();
+        }
 	}
 
 	/*
@@ -213,42 +168,12 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	*/
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		CyNetworkView view = e.getNetworkView();
-		CyNetwork network = view.getModel();
-		// destroy the corresponding model
-		BioPaxUtil.removeNetworkModel(network.getSUID());
-		listeners.remove(view);
-		
-		if (!networkViewsRemain()) {
-			onZeroNetworkViewsRemain();
+		if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+			CyNetworkView view = e.getNetworkView();
+			listeners.remove(view);
 		}
 	}
 
-	/*
-	* Determines if any network views we have created remains.
-	*
-	 * @return boolean if any network views that we have created remain.
-	*/
-	private boolean networkViewsRemain() {
-		// interate through our network list checking if their views exists
-		for (Long networkId : BioPaxUtil.getNetworkModelMap().keySet()) {
-			// get the network view via id
-			CyNetworkView cyNetworkView = viewManager.getNetworkView(networkId);
-			if (cyNetworkView != null) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Event:  No Registered Network Views Remain.
-	 * May be subclassed.
-	 */
-	protected void onZeroNetworkViewsRemain() {
-		bpPanel.resetText("BioPAX Details not available.  Please load"
-		                  + " a BioPAX file to proceed.");
-	}
 
 	@Override
 	public void handleEvent(RowsSetEvent e) {

@@ -36,7 +36,7 @@ import java.net.URL;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-import org.cytoscape.biopax.internal.util.CytoscapeWrapper;
+//import org.cytoscape.biopax.internal.util.CytoscapeWrapper;
 import org.cytoscape.util.swing.OpenBrowser;
 
 
@@ -63,9 +63,9 @@ public class LaunchExternalBrowser implements HyperlinkListener {
 
 		if (url != null) {
 			if (evt.getEventType() == HyperlinkEvent.EventType.ENTERED) {
-				CytoscapeWrapper.setStatusBarMsg(url.toString());
+				//CytoscapeWrapper.setStatusBarMsg(url.toString());
 			} else if (evt.getEventType() == HyperlinkEvent.EventType.EXITED) {
-				CytoscapeWrapper.clearStatusBar();
+				//CytoscapeWrapper.clearStatusBar();
 			} else if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 				browser.openURL(url.toString());
 			}

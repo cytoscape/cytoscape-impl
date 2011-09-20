@@ -37,6 +37,7 @@ package org.cytoscape.biopax.internal;
  *
  * @author Ethan Cerami
  */
+@Deprecated
 public class ExternalLink {
 	private String dbName;
 	private String id;

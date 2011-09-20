@@ -35,16 +35,12 @@ import java.awt.Color;
 import java.awt.Paint;
 
 import org.biopax.paxtools.model.BioPAXElement;
-import org.biopax.paxtools.model.level2.complex;
-import org.biopax.paxtools.model.level2.control;
-import org.biopax.paxtools.model.level2.interaction;
-import org.biopax.paxtools.model.level2.physicalEntity;
 import org.biopax.paxtools.model.level3.Complex;
 import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
-import org.cytoscape.biopax.MapBioPaxToCytoscape;
-import org.cytoscape.biopax.internal.BiopaxPlugin;
+import static org.cytoscape.biopax.MapBioPaxToCytoscape.*;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -68,23 +64,11 @@ import org.slf4j.LoggerFactory;
 public class BioPaxVisualStyleUtil {
 	public static final Logger log = LoggerFactory
 			.getLogger(BioPaxVisualStyleUtil.class);
-	/**
-	 * Verion Number String.
-	 */
-	public static final String VERSION_POST_FIX = " v "
-			+ BiopaxPlugin.VERSION_MAJOR_NUM + "_"
-			+ BiopaxPlugin.VERSION_MINOR_NUM;
 
 	/**
 	 * Name of BioPax Visual Style.
 	 */
-	public static final String BIO_PAX_VISUAL_STYLE = "BioPAX"
-			+ VERSION_POST_FIX;
-
-	/**
-	 * Node Label Attribute.
-	 */
-	public static final String BIOPAX_NODE_LABEL = "biopax.node_label";
+	public static final String BIO_PAX_VISUAL_STYLE = "BioPAX";
 
 	/**
 	 * size of physical entity node (default node size width)
@@ -183,6 +167,7 @@ public class BioPaxVisualStyleUtil {
 		return style;
 	}
 
+	
 	private void createNodeShape(VisualStyle style) {
 		style.setDefaultValue(RichVisualLexicon.NODE_SHAPE,
 				NodeShapeVisualProperty.RECTANGLE);
@@ -190,14 +175,13 @@ public class BioPaxVisualStyleUtil {
 		// create a discrete mapper, for mapping a biopax type to a shape
 		DiscreteMapping<String, NodeShape> function = (DiscreteMapping<String, NodeShape>) discreteFactory
 				.createVisualMappingFunction(
-						MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class,
 						RichVisualLexicon.NODE_SHAPE);
 
 		// map all physical entities to circles
-		for (Class<? extends BioPAXElement> claz : BioPaxUtil.getSubclassNames(
-				PhysicalEntity.class, physicalEntity.class)) {
-			String name = BioPaxUtil
-					.getTypeInPlainEnglish(claz.getSimpleName());
+		for (Class<? extends BioPAXElement> claz : BioPaxUtil.getSubclassNames(PhysicalEntity.class)) 
+		{
+			String name = claz.getSimpleName();
 			function.putMapValue(name, NodeShapeVisualProperty.ELLIPSE);
 		}
 
@@ -208,12 +192,9 @@ public class BioPaxVisualStyleUtil {
 		// map all interactions
 		// - control to triangles
 		// - others to square
-		for (Class<?> c : BioPaxUtil.getSubclassNames(Interaction.class,
-				interaction.class)) {
-			String entityName = BioPaxUtil.getTypeInPlainEnglish(c
-					.getSimpleName());
-			if (Control.class.isAssignableFrom(c)
-					|| control.class.isAssignableFrom(c)) {
+		for (Class<?> c : BioPaxUtil.getSubclassNames(Interaction.class)) {
+			String entityName = c.getSimpleName();
+			if (Control.class.isAssignableFrom(c)) {
 				function.putMapValue(entityName,
 						NodeShapeVisualProperty.TRIANGLE);
 			} else {
@@ -224,41 +205,40 @@ public class BioPaxVisualStyleUtil {
 		style.addVisualMappingFunction(function);
 	}
 
+	
 	private void createNodeSize(VisualStyle style) {
 		// create a discrete mapper, for mapping biopax node type
 		// to a particular node size.
 		DiscreteMapping<String, Double> width = (DiscreteMapping<String, Double>) discreteFactory
 				.createVisualMappingFunction(
-						MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class,
 						MinimalVisualLexicon.NODE_WIDTH);
 		DiscreteMapping<String, Double> height = (DiscreteMapping<String, Double>) discreteFactory
 				.createVisualMappingFunction(
-						MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class,
 						MinimalVisualLexicon.NODE_HEIGHT);
 
 		// map all interactions to required size
-		for (Class c : BioPaxUtil.getSubclassNames(Interaction.class,
-				interaction.class)) {
+		for (Class c : BioPaxUtil.getSubclassNames(Interaction.class)) {
 			String entityName = c.getSimpleName();
-			width.putMapValue(BioPaxUtil.getTypeInPlainEnglish(entityName),
+			width.putMapValue(entityName,
 					new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH
 							* BIO_PAX_VISUAL_STYLE_INTERACTION_NODE_SIZE_SCALE));
-			height.putMapValue(BioPaxUtil.getTypeInPlainEnglish(entityName),
+			height.putMapValue(entityName,
 					new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT
 							* BIO_PAX_VISUAL_STYLE_INTERACTION_NODE_SIZE_SCALE));
 		}
 
 		// map all complex to required size
-		for (Class c : BioPaxUtil
-				.getSubclassNames(complex.class, Complex.class)) {
-			String entityName = c.getSimpleName();
-			width.putMapValue(BioPaxUtil.getTypeInPlainEnglish(entityName),
+//		for (Class c : BioPaxUtil.getSubclassNames(Complex.class)) {
+			String entityName = "Complex";//c.getSimpleName();
+			width.putMapValue(entityName,
 					new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH
 							* BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE));
-			height.putMapValue(BioPaxUtil.getTypeInPlainEnglish(entityName),
+			height.putMapValue(entityName,
 					new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT
 							* BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE));
-		}
+//		}
 
 		/*
 		 * // hack for phosphorylated proteins - make them large so label fits
@@ -281,13 +261,15 @@ public class BioPaxVisualStyleUtil {
 		style.addVisualMappingFunction(height);
 	}
 
+	
 	private void createNodeLabel(VisualStyle style) {
 		// create pass through mapper for node labels
 		style.addVisualMappingFunction(passthroughFactory
-				.createVisualMappingFunction(BIOPAX_NODE_LABEL, String.class,
+				.createVisualMappingFunction(CyNode.NAME, String.class,
 						MinimalVisualLexicon.NODE_LABEL));
 	}
 
+	
 	private void createNodeColor(VisualStyle style) {
 		style.setDefaultValue(MinimalVisualLexicon.NODE_FILL_COLOR,
 				DEFAULT_NODE_COLOR);
@@ -296,15 +278,15 @@ public class BioPaxVisualStyleUtil {
 		// to a particular node color
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
-						MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class,
 						MinimalVisualLexicon.NODE_FILL_COLOR);
 
 		// map all complex to black
 		function.putMapValue("Complex", COMPLEX_NODE_COLOR);
-
 		style.addVisualMappingFunction(function);
 	}
 
+	
 	private void createNodeBorderColor(VisualStyle style) {
 		style.setDefaultValue(RichVisualLexicon.NODE_BORDER_PAINT,
 				DEFAULT_NODE_BORDER_COLOR);
@@ -313,15 +295,15 @@ public class BioPaxVisualStyleUtil {
 		// to a particular node color
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
-						MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class,
 						RichVisualLexicon.NODE_BORDER_PAINT);
 
 		// map all complex to black
 		function.putMapValue("Complex", COMPLEX_NODE_BORDER_COLOR);
-
 		style.addVisualMappingFunction(function);
 	}
 
+	@Deprecated
 	private void createTargetArrows(VisualStyle style) {
 		// DiscreteMapping discreteMapping = new
 		// DiscreteMapping(ArrowShape.NONE,
@@ -360,6 +342,7 @@ public class BioPaxVisualStyleUtil {
 		// eac.setCalculator(edgeTargetArrowCalculator);
 	}
 
+	@Deprecated
 	public void setNodeToolTips(CyNetworkView networkView) {
 		// // grab node attributes
 		// CyAttributes nodeAttributes = Cytoscape.getNodeAttributes();

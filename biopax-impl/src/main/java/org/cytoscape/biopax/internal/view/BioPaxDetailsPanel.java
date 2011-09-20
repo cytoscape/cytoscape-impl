@@ -53,10 +53,10 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.ParagraphView;
 import javax.swing.text.html.StyleSheet;
 
-import org.biopax.paxtools.model.level2.physicalEntity;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.biopax.internal.MapBioPaxToCytoscapeImpl;
+import static org.cytoscape.biopax.MapBioPaxToCytoscape.*;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.model.CyNetwork;
@@ -72,6 +72,9 @@ import org.slf4j.LoggerFactory;
  * @author Ethan Cerami.
  */
 public class BioPaxDetailsPanel extends JPanel {
+
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger log = LoggerFactory.getLogger(BioPaxDetailsPanel.class);
 	
 	CyApplicationManager applicationManager;
@@ -163,42 +166,55 @@ public class BioPaxDetailsPanel extends JPanel {
 
 		CyRow row = node.getCyRow();
 		
-        // name, shortname
-        stringRef = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_NAME, String.class);
+        // name
+        stringRef = row.get(CyNode.NAME, String.class);
+        buf.append("<h2>" + stringRef + "</h2>");
 
-        String shortName = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_SHORT_NAME, String.class);
-
-        if ((shortName != null) && (shortName.length() > 0)) {
-                buf.append("<h2>" + shortName + "</h2>");
-        } else if (stringRef != null && stringRef.length() > 0) {
-            buf.append("<h2>" + stringRef + "</h2>");
-        }
-
-        addType(node, buf);
-
+        // type (to the text buffer)
+        String type = node.getCyRow().get(BIOPAX_ENTITY_TYPE, String.class);
+        type = BioPaxUtil.getTypeInPlainEnglish(type);
+        buf.append("<h3>" + type + "</h3>");
+        
         // organism
-        stringRef = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_ORGANISM_NAME, String.class);
+        stringRef = null;
+        stringRef = row.get("/entityReference/organism/displayName", String.class);
+        if(stringRef == null)
+        	stringRef = row.get("/organism/displayName", String.class);
         if (stringRef != null) {
             buf.append("<h3>" + stringRef + "</h3>");
         }
 
         //  Add (optional) cPath Link
         addCPathLink(network, node, buf);
-
-        // synonyms
-        addAttributeList(node, MapBioPaxToCytoscapeImpl.BIOPAX_SYNONYMS, "Synonyms:", buf);
         
 		// cellular location
-		addAttributeList(node, MapBioPaxToCytoscapeImpl.BIOPAX_CELLULAR_LOCATIONS,
-		                 "Cellular Location(s):", buf);
-
+		stringRef = null;
+        stringRef = row.get("/cellularLocation", String.class);
+        if (stringRef != null) {
+           appendHeader("Cellular Location: " + stringRef, buf);
+        }
+		
 		// chemical modification
-		addAttributeList(node, MapBioPaxToCytoscapeImpl.BIOPAX_CHEMICAL_MODIFICATIONS_LIST,
-		                 "Chemical Modifications:", buf);
+		addAttributeList(node, null,
+		                 BIOPAX_CHEMICAL_MODIFICATIONS_LIST, "Chemical Modifications:", buf);
 
+		// data source
+        addAttributeList(node, null, "/dataSource", "Data sources:", buf);
+        
+		
 		// links
 		addLinks(node, buf);
 
+		
+		// excerpt from the BioPAX OWL
+		stringRef = null;
+        //stringRef = node.getCyRow(BioPaxUtil.PRIVATE_TABLE_NAME).get(BioPaxUtil.BIOPAX_DATA, String.class);
+        stringRef = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
+        if (stringRef != null) {
+        	appendHeader("BioPAX L3 (excerpt)", buf);
+            buf.append("<pre>" + StringEscapeUtils.escapeXml(stringRef) + "</pre>");
+        }
+		
 		buf.append("</BODY></HTML>");
 		textPane.setText(buf.toString());
 		textPane.setCaretPosition(0);
@@ -208,48 +224,41 @@ public class BioPaxDetailsPanel extends JPanel {
 		Container parent = this.getTopLevelAncestor();
     }
 
+	//TODO test; remove or upgrade to PC2 api (URI based)
+	@Deprecated
     private void addCPathLink(CyNetwork cyNetwork, CyNode node, StringBuffer buf) {
     	CyRow networkRow = cyNetwork.getCyRow();
         String serverName = networkRow.get("CPATH_SERVER_NAME", String.class);
         String serverDetailsUrl = networkRow.get("CPATH_SERVER_DETAILS_URL", String.class);
         if (serverName != null && serverDetailsUrl != null) {
         	CyRow nodeRow = node.getCyRow();
-            String type = nodeRow.get(MapBioPaxToCytoscapeImpl.BIOPAX_ENTITY_TYPE, String.class);
-            if (BioPaxUtil.getSubclassNames(physicalEntity.class, PhysicalEntity.class).contains(type)) {
+            String type = nodeRow.get(BIOPAX_ENTITY_TYPE, String.class);
+            if (BioPaxUtil.getSubclassNames(PhysicalEntity.class).contains(type)) {
                 String url = serverDetailsUrl + node;
                 buf.append ("<h3><A href='" + url + "'>" + serverName + ": " + node + "</A>");
             }
         }
     }
 
-    private void addType(CyNode node, StringBuffer buf) {
-    	CyRow row = node.getCyRow();
-        String type = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_ENTITY_TYPE, String.class);
-        buf.append("<h3>" + type + "</h3>");
-    }
-
     private void addLinks(CyNode node, StringBuffer buf) {
     	CyRow row = node.getCyRow();
-		String xrefs1 = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_UNIFICATION_REFERENCES, String.class);
-        String xrefs2 = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_RELATIONSHIP_REFERENCES, String.class);
 
-		if (xrefs1 != null || xrefs2 != null) {
-			appendHeader("Links:", buf);
-            buf.append("<UL>");
-            if (xrefs1 != null) {
-                appendData(xrefs1, buf, false);
-            }
-            if (xrefs2 != null) {
-                appendData(xrefs2, buf, false);
-            }
-            addIHOPLinks(node, buf);
-            buf.append("</UL>");
-        }
+        addAttributeList(node, BioPaxUtil.PRIVATE_TABLE_NAME,
+                BIOPAX_UNIFICATION_REFERENCES, "Links:", buf);
+        addAttributeList(node, BioPaxUtil.PRIVATE_TABLE_NAME,
+                BIOPAX_RELATIONSHIP_REFERENCES, null, buf);
+        addAttributeList(node, BioPaxUtil.PRIVATE_TABLE_NAME,
+                BIOPAX_PUBLICATION_REFERENCES, "Publications:", buf);
+         
+        addIHOPLinks(node, buf);
 	}
 
-	private void addAttributeList(CyNode node, String attribute, String label, StringBuffer buf) {
+	private void addAttributeList(CyNode node, String tableName, 
+			String attribute, String label, StringBuffer buf) 
+	{
 		StringBuffer displayString = new StringBuffer();
-		CyRow row = node.getCyRow();
+		// use private or default table
+		CyRow row = (tableName == null) ? node.getCyRow() : node.getCyRow(tableName);
 		if (row.getTable().getColumn(attribute) == null) {
 			return;
 		}
@@ -280,7 +289,8 @@ public class BioPaxDetailsPanel extends JPanel {
 
         // do we have a string to display ?
 		if (displayString.length() > 0) {
-			appendHeader(label, buf);
+			if(label != null)
+				appendHeader(label, buf);
             buf.append ("<UL>");
             appendData(displayString.toString(), buf, false);
             buf.append ("</UL>");
@@ -302,10 +312,12 @@ public class BioPaxDetailsPanel extends JPanel {
 
 	private void addIHOPLinks(CyNode node, StringBuffer buf) {
 		CyRow row = node.getCyRow();
-		String ihopLinks = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_IHOP_LINKS, String.class);
+		String ihopLinks = row.get(BIOPAX_IHOP_LINKS, String.class);
 
 		if (ihopLinks != null) {
+			buf.append("<UL>");
 			appendData(ihopLinks, buf, false);
+			buf.append("</UL>");
 		}
 	}
 }
@@ -330,8 +342,9 @@ public class BioPaxDetailsPanel extends JPanel {
  * @author Joust Team.
  */
 class MyEditorKit extends HTMLEditorKit {
+	private static final long serialVersionUID = 1L;
 
-    /**
+	/**
 	 * Gets the ViewFactor Object.
 	 *
 	 * @return View Factor Object.

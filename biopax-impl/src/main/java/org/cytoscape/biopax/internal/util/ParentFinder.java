@@ -3,7 +3,7 @@ package org.cytoscape.biopax.internal.util;
 import org.biopax.paxtools.controller.AbstractTraverser;
 import org.biopax.paxtools.controller.EditorMap;
 import org.biopax.paxtools.controller.PropertyEditor;
-import org.biopax.paxtools.controller.PropertyFilter;
+import org.biopax.paxtools.util.Filter;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.Model;
 
@@ -18,9 +18,9 @@ public final class ParentFinder extends AbstractTraverser {
 	private boolean found;
 	
 	public ParentFinder(EditorMap editorMap) {
-		super(editorMap, new PropertyFilter() {
+		super(editorMap, new Filter<PropertyEditor>() {
 			public boolean filter(PropertyEditor editor) {
-				return !editor.getProperty().equals("NEXT-STEP");
+				return !editor.getProperty().equals("nextStep");
 			}
 		});
 	}

@@ -27,6 +27,7 @@ package org.cytoscape.biopax.util;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,24 +37,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.biopax.paxtools.controller.EditorMap;
+import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.controller.SimpleEditorMap;
+import org.biopax.paxtools.converter.OneTwoThree;
 import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
-import org.biopax.paxtools.model.level2.Level2Element;
-import org.biopax.paxtools.model.level2.bioSource;
-import org.biopax.paxtools.model.level2.dataSource;
-import org.biopax.paxtools.model.level2.entity;
-import org.biopax.paxtools.model.level2.interaction;
-import org.biopax.paxtools.model.level2.pathway;
-import org.biopax.paxtools.model.level2.physicalEntityParticipant;
-import org.biopax.paxtools.model.level2.publicationXref;
-import org.biopax.paxtools.model.level2.relationshipXref;
-import org.biopax.paxtools.model.level2.sequenceFeature;
-import org.biopax.paxtools.model.level2.unificationXref;
-import org.biopax.paxtools.model.level2.xref;
 import org.biopax.paxtools.model.level3.BioSource;
 import org.biopax.paxtools.model.level3.Entity;
 import org.biopax.paxtools.model.level3.Interaction;
@@ -65,7 +55,7 @@ import org.biopax.paxtools.model.level3.PublicationXref;
 import org.biopax.paxtools.model.level3.RelationshipTypeVocabulary;
 import org.biopax.paxtools.model.level3.RelationshipXref;
 import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
-import org.biopax.paxtools.model.level3.UnificationXref;
+import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.cytoscape.biopax.internal.ExternalLink;
@@ -86,23 +76,13 @@ public class BioPaxUtil {
 	private static final Map<String,String> plainEnglishMap;
 	private static final Map<String,String> cellLocationMap;
 	private static final Map<String,String> chemModificationsMap;
-	private static final EditorMap editorMapLevel3;
-	private static final EditorMap editorMapLevel2;
 	
 	public static final Logger log = LoggerFactory.getLogger(BioPaxUtil.class);
-	
-	protected BioPaxUtil() {}
-	
-	
-    private static Map<Long, Model> networkModelMap = new HashMap<Long, Model>();
-
-    public static final String BIOPAX_MODEL_STRING = "biopax.model.xml";
-    
+    public static final String BIOPAX_DATA = "biopax_data";
     public static final String DEFAULT_CHARSET = "UTF-8";
-	
     public static final int MAX_DISPLAY_STRING_LEN = 25;
-
 	public static final String NULL_ELEMENT_TYPE = "BioPAX Element";
+	public static final String PRIVATE_TABLE_NAME = null; //TODO "biopax_hidden";
 	
 	/**
 	 * BioPAX Class:  phosphorylation site
@@ -114,11 +94,10 @@ public class BioPaxUtil {
 	 */
 	public static final String PROTEIN_PHOSPHORYLATED = "protein-phosphorylated";
 	
-
+	// protected Constructor
+	protected BioPaxUtil() {}
+	
 	static  {
-		editorMapLevel2 = new SimpleEditorMap();
-		editorMapLevel3 = new SimpleEditorMap(BioPAXLevel.L3);
-		
 		plainEnglishMap = new HashMap<String,String>();
 		// all keys are lower case!
 		plainEnglishMap.put("protein", "Protein");
@@ -197,12 +176,19 @@ public class BioPaxUtil {
 	 * @throws FileNotFoundException 
 	 */
 	public static Model read(final InputStream in) throws FileNotFoundException {
+		Model model = null;
 		try {
-			return new SimpleIOHandler().convertFromOWL(in);
+			SimpleIOHandler handler = new SimpleIOHandler();
+			handler.mergeDuplicates(true); // a workaround (illegal) BioPAX data having duplicated rdf:ID...
+			model =  handler.convertFromOWL(in);	
+			// immediately convert to BioPAX Level3 model
+			if(model != null && BioPAXLevel.L2.equals(model.getLevel())) {
+				model = new OneTwoThree().filter(model);
+			}
 		} catch (Exception e) {
 			log.warn("Import failed: " + e);
 		}
-		return null;
+		return model;
 	}
 
 	/**
@@ -216,7 +202,6 @@ public class BioPaxUtil {
 	 * @return BioPAX Type String, in "Plain English".
 	 */
 	public static String getTypeInPlainEnglish(String type) {
-
 		String plainEnglish = plainEnglishMap.get(type.toLowerCase());
 
 		if (plainEnglish == null) {
@@ -227,24 +212,13 @@ public class BioPaxUtil {
 	}
 
 	
+	@Deprecated
 	public static String getType(BioPAXElement bpe) {
-		if(bpe instanceof physicalEntityParticipant) {
-			return getType(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		}
-
 		return (bpe != null) 
 			? getTypeInPlainEnglish(bpe.getModelInterface().getSimpleName())
 			: NULL_ELEMENT_TYPE;	
 	}
 	
-	
-	public Map<String,String> BioPaxCellularLocations() {
-		return cellLocationMap;
-	}
-	
-	public Map<String,String> BioPaxChemicalModifications() {
-		return chemModificationsMap;
-	}
 	
 	/**
 	 * Gets or infers the name of the node. 
@@ -278,26 +252,11 @@ public class BioPaxUtil {
 	}
 	
 	
-	public static String generateId(CyNetwork network, BioPAXElement bpe) {
-		String id = (bpe instanceof physicalEntityParticipant 
-				&& ((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY()!=null)
-					? ((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY().getRDFId() 
-					: bpe.getRDFId();
-		return network.getSUID() + 
-				"" + id.hashCode() + "-" + getLocalPartRdfId(bpe);
-	}
-
-	
 	public static String getLocalPartRdfId(BioPAXElement bpe) {
-		if(bpe == null) return "";
-		
-		// also fix pEPs
-		String id = (bpe instanceof physicalEntityParticipant 
-				&& ((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY()!=null)
-					? ((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY().getRDFId() 
-					: bpe.getRDFId();
-					
-		return id.replaceFirst("^.+#", "");
+		if(bpe == null) 
+			return "";
+		else
+			return bpe.getRDFId().replaceFirst("^.+#", "");
 	}
 	
 	// get the shortest string
@@ -319,12 +278,12 @@ public class BioPaxUtil {
 	/**
 	 * Attempts to get the value of any of the BioPAX properties
 	 * in the list.
-	 * 
 	 * @param bpe BioPAX Element
 	 * @param properties BioPAX property names
+	 * 
 	 * @return the value or null
 	 */
-	public static Object getValue(CyNetwork network, BioPAXElement bpe, String... properties) {
+	public static Object getValue(BioPAXElement bpe, String... properties) {
 		for (String property : properties) {
 			try {
 				Method method = bpe.getModelInterface().getMethod(
@@ -334,27 +293,29 @@ public class BioPaxUtil {
 				if (invoke != null) {
 					return invoke;
 				}
+//				PropertyEditor editor = SimpleEditorMap.L3
+//					.getEditorForProperty(property, bpe.getModelInterface());
+//				return editor.getValueFromBean(bpe); // is always a Set!
 			} catch (Exception e) {
 				if(log.isDebugEnabled()) {
 					// this is often OK, as we guess L2 or L3 properties...
 					log.debug("Ignore property " + property + " for " 
-						+ BioPaxUtil.generateId(network, bpe) + ": " + e);
+						+ bpe.getRDFId() + ": " + e);
 				}
 			}
 		}
-
 		return null;
 	}
 	
 	
 	/**
 	 * Attempts to get the values of specified BioPAX properties.
-	 * 
 	 * @param bpe BioPAX Element
 	 * @param properties BioPAX property names
+	 * 
 	 * @return the set of property values or null
 	 */
-	public static Collection<?> getValues(CyNetwork network, BioPAXElement bpe, String... properties) {
+	public static Collection<?> getValues(BioPAXElement bpe, String... properties) {
 		Collection<Object> col = new HashSet<Object>();
 		
 		for (String property : properties) {
@@ -375,7 +336,7 @@ public class BioPaxUtil {
 			} catch (Exception e) {
 				if(log.isDebugEnabled()) {
 					log.debug("Cannot get value of '" + property + "' for "
-						+ BioPaxUtil.generateId(network, bpe) + ": " + e);
+						+ bpe.getRDFId() + ": " + e);
 				}
 			}
 		}
@@ -395,14 +356,8 @@ public class BioPaxUtil {
 		
 		if(bpe instanceof Named) {
 			shortName = ((Named)bpe).getDisplayName();
-		} else if(bpe instanceof sequenceFeature) {
-			shortName = ((sequenceFeature)bpe).getSHORT_NAME();
-		} else if(bpe instanceof physicalEntityParticipant){ // fix PEPs
-			shortName = getShortName(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if(bpe instanceof entity) {
-			shortName = ((entity)bpe).getSHORT_NAME();
-		}
-		
+		} 
+	
 		return shortName;
 	}
 
@@ -413,21 +368,10 @@ public class BioPaxUtil {
 	 * @return name field, or null if not available.
 	 */
 	public static String getStandardName(BioPAXElement bpe) {
-		String stdName = null;
 		if(bpe instanceof Named) {
-			stdName = ((Named)bpe).getStandardName();
-		} else if(bpe instanceof sequenceFeature) {
-			stdName = ((sequenceFeature)bpe).getNAME();
-		} else if(bpe instanceof physicalEntityParticipant){
-			stdName = getStandardName(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if(bpe instanceof entity) {
-			stdName = ((entity)bpe).getNAME();
-		} else if(bpe instanceof bioSource) {
-			stdName = ((bioSource)bpe).getNAME();
-		} else if(bpe instanceof dataSource) {
-			stdName = ((dataSource)bpe).getNAME().toString();
-		} 
-		return stdName;
+			return ((Named)bpe).getStandardName();
+		} else 
+			return null;
 	}
 
 	/**
@@ -438,17 +382,9 @@ public class BioPaxUtil {
 	 */
 	public static Collection<String> getSynonymList(BioPAXElement bpe) {
 		Collection<String> names = new HashSet<String>();
-		
 		if(bpe instanceof Named) {
 			names = ((Named)bpe).getName();
-		} else if(bpe instanceof sequenceFeature) {
-			names = ((sequenceFeature)bpe).getSYNONYMS();
-		} else if(bpe instanceof physicalEntityParticipant){
-			names = getSynonymList(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if(bpe instanceof entity) {
-			names = ((entity)bpe).getSYNONYMS();
 		}
-		
 		return names;
 	}
 
@@ -460,12 +396,8 @@ public class BioPaxUtil {
 	 */
 	public static String getOrganismName(CyNetwork network, BioPAXElement bpe) {
 		String organism = null;
-		
-		if(bpe instanceof physicalEntityParticipant) {
-			return getOrganismName(network, ((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		}
-		
-		BioPAXElement bs = (BioPAXElement) getValue(network, bpe, "ORGANISM", "organism");
+			
+		BioPAXElement bs = (BioPAXElement) getValue(bpe, "organism");
 		if (bs != null) {
 			organism = getNodeName(bs);
 		} 
@@ -484,16 +416,7 @@ public class BioPaxUtil {
 	public static String getDataSource(BioPAXElement bpe) {
 		StringBuffer sb = new StringBuffer();
 		
-		if(bpe instanceof physicalEntityParticipant) {
-			return getDataSource(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if (bpe instanceof entity) {
-			Collection<dataSource> datasources = ((entity)bpe).getDATA_SOURCE();
-			for(dataSource ds : datasources) {
-				if(ds.getCOMMENT() != null) 
-					sb.append(ds.getCOMMENT().toString());
-				sb.append(" : ").append(getNodeName(ds)).append(' '); 
-			}
-		} else if(bpe instanceof Entity) {
+		if(bpe instanceof Entity) {
 			Collection<Provenance> datasources = ((Entity)bpe).getDataSource();
 			for(Provenance pr : datasources) {
 				if(pr.getComment() != null) 
@@ -514,21 +437,15 @@ public class BioPaxUtil {
 	 */
 	public static int getOrganismTaxonomyId(CyNetwork network, BioPAXElement bpe) {
 		int taxonomyId = -1;
-
-		if(bpe instanceof physicalEntityParticipant) {
-			return getOrganismTaxonomyId(network, ((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		}
 		
 		try {
-			Object bs = getValue(network, bpe, "ORGANISM", "organism");
+			Object bs = getValue(bpe, "organism");
 			if (bs instanceof BioSource) {
 				Set<Xref> xrefs = ((BioSource)bs).getXref();
 				if(!xrefs.isEmpty()) {
 					Xref tx = xrefs.iterator().next();
 					taxonomyId = Integer.parseInt(tx.getId());
 				}
-			} else if(bs instanceof bioSource){
-				taxonomyId = Integer.parseInt(((bioSource)bs).getTAXON_XREF().getID());
 			}
 		} catch (Exception e) {
 			taxonomyId = -1;
@@ -540,16 +457,11 @@ public class BioPaxUtil {
 	/**
 	 * Gets the Comment field.
 	 *
-	 * @param bpe BioPAX element
-	 * @return comment field or null, if not available.
+	 * @param bpe a BioPAX element
+	 * @return comment field
 	 */
 	public static String getComment(BioPAXElement bpe) {
-		if(bpe instanceof Level3Element) {
-			return ((Level3Element)bpe).getComment().toString();
-		} else if(bpe instanceof Level2Element){
-			return ((Level2Element)bpe).getCOMMENT().toString();
-		}
-		return null;
+		return ((Level3Element)bpe).getComment().toString();
 	}
 
 	/**
@@ -559,137 +471,53 @@ public class BioPaxUtil {
 	 * @return availability field or null, if not available.
 	 */
 	public static String getAvailability(BioPAXElement bpe) {
-		
-		if(bpe instanceof physicalEntityParticipant) {
-			return getAvailability(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		}
-		
-		String availability = null;
-
-		if (bpe instanceof entity) {
-			availability = ((entity)bpe).getAVAILABILITY().toString();
-		} else if(bpe instanceof Entity) {
-			availability = ((Entity)bpe).getAvailability().toString();
-		}
-
-		return availability;
-	}
-
-	/**
-	 * Gets an ArrayList of all Unification XRefs.
-	 *
-	 * @param bpe BioPAX element
-	 * @return ArrayList of ExternalLink Objects.
-	 */
-	public static List<ExternalLink> getUnificationXRefs(BioPAXElement bpe) {
-		
-		if(bpe instanceof physicalEntityParticipant) {
-			return getUnificationXRefs(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if(bpe instanceof org.biopax.paxtools.model.level2.XReferrable) {
-			return extractXrefs(new ClassFilterSet<unificationXref>(
-					((org.biopax.paxtools.model.level2.XReferrable)bpe).getXREF(),
-						unificationXref.class) );
-		} else if(bpe instanceof org.biopax.paxtools.model.level3.XReferrable) {
-			List<ExternalLink> erefs = new ArrayList<ExternalLink>();
-			erefs.addAll(extractXrefs(new ClassFilterSet<UnificationXref>(
-					((org.biopax.paxtools.model.level3.XReferrable)bpe).getXref(),
-					UnificationXref.class) ));
-			if(bpe instanceof SimplePhysicalEntity && ((SimplePhysicalEntity)bpe).getEntityReference() != null) {
-				erefs.addAll(extractXrefs(new ClassFilterSet<UnificationXref>(
-						((SimplePhysicalEntity)bpe).getEntityReference().getXref(),
-						UnificationXref.class) ));
-			}
-			return erefs;
-		}
-		return new ArrayList<ExternalLink>();
-	}
-
-	/**
-	 * Gets an ArrayList of all Relationship XRefs.
-	 *
-	 * @param bpe BioPAX element
-	 * @return ArrayList of ExternalLink Objects.
-	 */
-	public static List<ExternalLink> getRelationshipXRefs(BioPAXElement bpe) {
-		
-		if(bpe instanceof physicalEntityParticipant) {
-			return getRelationshipXRefs(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if(bpe instanceof org.biopax.paxtools.model.level2.XReferrable) {
-			return extractXrefs(new ClassFilterSet<relationshipXref>(
-					((org.biopax.paxtools.model.level2.XReferrable)bpe).getXREF(),
-						relationshipXref.class) );
-		} else if(bpe instanceof org.biopax.paxtools.model.level3.XReferrable) {
-			List<ExternalLink> erefs = new ArrayList<ExternalLink>();
-			erefs.addAll(extractXrefs(new ClassFilterSet<RelationshipXref>(
-					((org.biopax.paxtools.model.level3.XReferrable)bpe).getXref(),
-					RelationshipXref.class) ));
-			if(bpe instanceof SimplePhysicalEntity && ((SimplePhysicalEntity)bpe).getEntityReference() != null) {
-				erefs.addAll(extractXrefs(new ClassFilterSet<RelationshipXref>(
-						((SimplePhysicalEntity)bpe).getEntityReference().getXref(),
-						RelationshipXref.class) ));
-			}
-			return erefs;
-		}
-		return new ArrayList<ExternalLink>();
+		if(bpe instanceof Entity) {
+			return ((Entity)bpe).getAvailability().toString();
+		} else
+			return null;
 	}
 
 	
-	/**
-	 * Gets an ArrayList of all Publication XRefs.
-	 *
-	 * @param bpe BioPAX element
-	 * @return ArrayList of ExternalLink Objects.
-	 */
-	public static List<ExternalLink> getPublicationXRefs(BioPAXElement bpe) {
+	@Deprecated
+	public static <T extends Xref> List<ExternalLink> xrefToExternalLinks(BioPAXElement bpe, Class<T> xrefClass) {
 		
-		if(bpe instanceof physicalEntityParticipant) {
-			return getPublicationXRefs(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if(bpe instanceof org.biopax.paxtools.model.level2.XReferrable) {
-			return extractXrefs(new ClassFilterSet<publicationXref>(
-					((org.biopax.paxtools.model.level2.XReferrable)bpe).getXREF(),
-					publicationXref.class) );
-		} else if(bpe instanceof org.biopax.paxtools.model.level3.XReferrable) {
+		if(bpe instanceof XReferrable) {
 			List<ExternalLink> erefs = new ArrayList<ExternalLink>();
-			erefs.addAll(extractXrefs(new ClassFilterSet<PublicationXref>(
-					((org.biopax.paxtools.model.level3.XReferrable)bpe).getXref(),
-					PublicationXref.class) ));
-			if(bpe instanceof SimplePhysicalEntity && ((SimplePhysicalEntity)bpe).getEntityReference() != null) {
-				erefs.addAll(extractXrefs(new ClassFilterSet<PublicationXref>(
-						((SimplePhysicalEntity)bpe).getEntityReference().getXref(),
-						PublicationXref.class) ));
+			erefs.addAll(extractXrefs(new ClassFilterSet<Xref,T>(
+				((XReferrable)bpe).getXref(), xrefClass) ));
+			if(bpe instanceof SimplePhysicalEntity && 
+				((SimplePhysicalEntity)bpe).getEntityReference() != null)
+			{
+				erefs.addAll(extractXrefs(new ClassFilterSet<Xref,T>(
+					((SimplePhysicalEntity)bpe).getEntityReference().getXref(), xrefClass) ));
 			}
 			return erefs;
 		}
-		
 		return new ArrayList<ExternalLink>();
 	}
 	
 	
-	/**
-	 * Gets an ArrayList of all XRefs.
-	 *
-	 * @return ArrayList of ExternalLink Objects.
-	 */
-	public static List<ExternalLink> getAllXRefs(BioPAXElement bpe) {
-		if(bpe instanceof physicalEntityParticipant) {
-			return getAllXRefs(((physicalEntityParticipant)bpe).getPHYSICAL_ENTITY());
-		} else if(bpe instanceof org.biopax.paxtools.model.level2.XReferrable) {
-			return extractXrefs(((org.biopax.paxtools.model.level2.XReferrable)bpe).getXREF());
-		} else if(bpe instanceof org.biopax.paxtools.model.level3.XReferrable) {
-			List<ExternalLink> erefs = new ArrayList<ExternalLink>();
-			erefs.addAll(extractXrefs(((org.biopax.paxtools.model.level3.XReferrable)bpe).getXref()));
-			if(bpe instanceof SimplePhysicalEntity && ((SimplePhysicalEntity)bpe).getEntityReference() != null) {
-				erefs.addAll(extractXrefs(((SimplePhysicalEntity)bpe).getEntityReference().getXref()));
+	public static <T extends Xref> List<T> getXRefs(BioPAXElement bpe, Class<T> xrefClass) {
+		if(bpe instanceof XReferrable) {
+			List<T> erefs = new ArrayList<T>();
+			erefs.addAll(new ClassFilterSet<Xref,T>( ((XReferrable)bpe).getXref(), xrefClass) );
+			if(bpe instanceof SimplePhysicalEntity && 
+				((SimplePhysicalEntity)bpe).getEntityReference() != null)
+			{
+				erefs.addAll(new ClassFilterSet<Xref,T>(
+					((SimplePhysicalEntity)bpe).getEntityReference().getXref(), xrefClass) );
 			}
 			return erefs;
 		}
-		return new ArrayList<ExternalLink>();
+		return new ArrayList<T>();
 	}
+	
 
-	private static List<ExternalLink> extractXrefs(Collection<? extends BioPAXElement> xrefs) {
+	@Deprecated
+	private static List<ExternalLink> extractXrefs(Collection<? extends Xref> xrefs) {
 		List<ExternalLink> dbList = new ArrayList<ExternalLink>();
 
-		for (BioPAXElement ref: xrefs) {		
+		for (Xref x: xrefs) {		
 			String db = null;
 			String id = null;
 			String relType = null;
@@ -699,39 +527,20 @@ public class BioPaxUtil {
 			String url = null;
 			String source = null;
 			
-			if(ref instanceof xref) {
-				xref x = (xref)ref;
-				db = x.getDB();
-				String ver = x.getID_VERSION();
-				id = x.getID(); // + ((ver!=null) ? "_" + ver : "");
-				if(x instanceof relationshipXref) {
-					relType = ((relationshipXref)x).getRELATIONSHIP_TYPE();
-				}
-				if(x instanceof publicationXref) {
-					publicationXref px = (publicationXref)x;
-					author = px.getAUTHORS().toString();
-					title = px.getTITLE();
-					source = px.getSOURCE().toString();
-					url =px.getURL().toString();
-					year = px.getYEAR() + "";
-				}
-			} else if(ref instanceof Xref) {
-				Xref x = (Xref)ref;
-				db = x.getDb();
-				String ver = x.getIdVersion();
-				id = x.getId(); // + ((ver!=null) ? "_" + ver : "");
-				if(x instanceof RelationshipXref) {
-					RelationshipTypeVocabulary v = ((RelationshipXref)x).getRelationshipType();
-					if(v != null) relType = v.getTerm().toString();
-				}
-				if(x instanceof PublicationXref) {
-					PublicationXref px = (PublicationXref)x;
-					author = px.getAuthor().toString();
-					title = px.getTitle();
-					source = px.getSource().toString();
-					url =px.getUrl().toString();
-					year = px.getYear() + "";
-				}
+			db = x.getDb();
+			String ver = x.getIdVersion();
+			id = x.getId(); // + ((ver!=null) ? "_" + ver : "");
+			if(x instanceof RelationshipXref) {
+				RelationshipTypeVocabulary v = ((RelationshipXref)x).getRelationshipType();
+				if(v != null) relType = v.getTerm().toString();
+			}
+			if(x instanceof PublicationXref) {
+				PublicationXref px = (PublicationXref)x;
+				author = px.getAuthor().toString();
+				title = px.getTitle();
+				source = px.getSource().toString();
+				url =px.getUrl().toString();
+				year = px.getYear() + "";
 			}
 
 			if ((db != null) && (id != null)) {
@@ -748,16 +557,7 @@ public class BioPaxUtil {
 
 		return dbList;
 	}
-	
-	/**
-	 * Gets the BioPAX Classes to Property Editors Map (PaxTools)
-	 * 
-	 * @param bioPAXLevel
-	 * @return
-	 */
-	public static EditorMap getEditorMap(BioPAXLevel bioPAXLevel) {
-		return (bioPAXLevel == BioPAXLevel.L2) ? editorMapLevel2 : editorMapLevel3;
-	}
+
 	
 	/**
 	 * Gets the joint set of all known subclasses of the specified BioPAX types.
@@ -769,11 +569,7 @@ public class BioPaxUtil {
 		Collection<Class> subclasses = new HashSet<Class>();
 		
 		for (Class<? extends BioPAXElement> c : classes) {
-			if (Level3Element.class.isAssignableFrom(c)) {
-				subclasses.addAll(editorMapLevel3.getKnownSubClassesOf(c));
-			} else {
-				subclasses.addAll(editorMapLevel2.getKnownSubClassesOf(c));
-			}
+			subclasses.addAll(SimpleEditorMap.L3.getKnownSubClassesOf(c));
 		}
 		
 		return subclasses;
@@ -782,7 +578,7 @@ public class BioPaxUtil {
 
 	/**
 	 * Creates a name for to the BioPAX model
-	 * using its top-level pathway name(s). 
+	 * using its top-level process name(s). 
 	 * 
 	 * @param model
 	 * @return
@@ -790,48 +586,29 @@ public class BioPaxUtil {
 	public static String getName(Model model) {		
 		StringBuffer modelName = new StringBuffer();
 		
-		if(model.getLevel() == BioPAXLevel.L3) {
-			Collection<Pathway> pws = model.getObjects(Pathway.class);
-			for(Pathway pw: pws) {
-				if(pw.getPathwayComponentOf().isEmpty()
-						&& pw.getParticipantOf().isEmpty()
-						&& pw.getControlledOf().isEmpty()) {
-					modelName.append(" ").append(getNodeName(pw)); 
-				}
-			}
-			if(modelName.length()==0) {
-				Collection<Interaction> itrs = model.getObjects(Interaction.class);
-				for(Interaction it: itrs) {
-					if(it.getPathwayComponentOf().isEmpty()
-							&& it.getControlledOf().isEmpty()
-							&& it.getParticipantOf().isEmpty()) {
-						modelName.append(" ").append(getNodeName(it));
-					}
-				}	
-			}
-		} else { // Level 1 and 2
-			Collection<pathway> pws = model.getObjects(pathway.class);
-			for(pathway pw: pws) {
-				if(pw.isPATHWAY_COMPONENTSof().isEmpty()
-						&& pw.isPARTICIPANTSof().isEmpty()
-						&& pw.isCONTROLLEDOf().isEmpty()) {
-					modelName.append(" ").append(getNodeName(pw));
-				}
-			}
-			if(modelName.length()==0) {
-				Collection<interaction> itrs = model.getObjects(interaction.class);
-				for(interaction it: itrs) {
-					if(it.isPATHWAY_COMPONENTSof().isEmpty()
-							&& it.isPARTICIPANTSof().isEmpty()
-							&& it.isCONTROLLEDOf().isEmpty()) {
-						modelName.append(" ").append(getNodeName(it));
-					}
-				}	
-			}
+		ModelUtils mu = new ModelUtils(model);
+		
+		Collection<Pathway> pws = mu.getRootElements(Pathway.class);
+		for(Pathway pw: pws) {
+				modelName.append(" ").append(getNodeName(pw)); 
 		}
 		
-		return modelName.toString().trim();
+		if(modelName.length()==0) {
+			Collection<Interaction> itrs = mu.getRootElements(Interaction.class);
+			for(Interaction it: itrs) {
+				modelName.append(" ").append(getNodeName(it));
+			}	
+		}
+		
+		if(modelName.length()==0) {
+			modelName.append(model.getXmlBase());
+		}
+		
+		String name = modelName.toString().trim();
+
+		return name;
 	}
+
 	
 	/**
 	 * Gets all the objects of provided BioPAX types.
@@ -850,81 +627,6 @@ public class BioPaxUtil {
 		return coll;
 	}
 
-
-	/**
-	 * For a BioPAX element, 
-	 * find parent pathways names.
-	 * 
-	 * @param bpe
-	 * @param model 
-	 * @return
-	 */
-	/* TODO re-factoring (pre-calculate pathway membership for all entities, save in the Map, get from the Map...)
-	public static Set<String> getParentPathwayName(BioPAXElement bpe, Model model) {
-		Set<String> pathwayNames = new HashSet<String>();
-		
-		Set<? extends BioPAXElement> procs = BioPaxUtil.getObjects(model, pathway.class, Pathway.class);
-		
-		// remove sub-pathways (finding all parents is sacrificed to performance...)
-		Set<BioPAXElement> topPathways = new HashSet<BioPAXElement>();
-		for(BioPAXElement p : procs ) {
-			if( (p instanceof pathway 
-				&& ((pathway)p).isPATHWAY_COMPONENTSof().isEmpty()
-				&& ((pathway)p).isPARTICIPANTSof().isEmpty()
-				&& ((pathway)p).isCONTROLLEDOf().isEmpty()) 
-				||
-				(p instanceof Pathway 
-				&& ((Pathway)p).getPathwayComponentOf().isEmpty()
-				&& ((Pathway)p).getParticipantOf().isEmpty()
-				&& ((Pathway)p).getControlledOf().isEmpty()))
-			{
-				topPathways.add(p);
-			}
-		}
-		
-		Set<BioPAXElement> pathways = fetchParentNodeNames(bpe, topPathways);
-				
-		if(!pathways.isEmpty()) {
-			for(BioPAXElement pw : pathways) {
-				pathwayNames.add(getNodeName(pw));
-			}
-		} else if(bpe instanceof pathway || bpe instanceof Pathway) {
-			pathwayNames.add(getNodeName(bpe));
-		}
-			
-		
-		if(!pathwayNames.isEmpty()) {
-			return pathwayNames;
-		}
-		
-		// otherwise, find top-level interactions
-		procs = BioPaxUtil.getObjects(model, interaction.class, Interaction.class);
-		for(BioPAXElement itr : procs ) {
-			if( (itr instanceof interaction 
-				&& ((interaction)itr).isPATHWAY_COMPONENTSof().isEmpty()
-				&& ((interaction)itr).isPARTICIPANTSof().isEmpty()
-				&& ((interaction)itr).isCONTROLLEDOf().isEmpty()) 
-				||
-				(itr instanceof Interaction 
-				&& ((Interaction)itr).getPathwayComponentOf().isEmpty()
-				&& ((Interaction)itr).getParticipantOf().isEmpty()
-				&& ((Interaction)itr).getControlledOf().isEmpty()))
-			{
-				topPathways.add(itr);
-			}
-		}
-		pathways = fetchParentNodeNames(bpe, topPathways);
-		if(!pathways.isEmpty()) {
-			for(BioPAXElement pw : pathways) {
-				pathwayNames.add(getNodeName(pw));
-			}
-		} else if(bpe instanceof interaction || bpe instanceof Interaction) {
-			pathwayNames.add(getNodeName(bpe));
-		}
-		
-		return pathwayNames;
-	}
-	*/
 	
 	/**
 	 * Finds element's parents (CyNode names) in the collection.
@@ -937,8 +639,7 @@ public class BioPaxUtil {
 	 */
 	public static Set<BioPAXElement> fetchParentNodeNames(BioPAXElement bpe, Set<? extends BioPAXElement> procs) {
 		Set<BioPAXElement> parents = new HashSet<BioPAXElement>();
-		EditorMap editorMap = (bpe instanceof Level2Element) ? editorMapLevel2 : editorMapLevel3;
-		ParentFinder parentFinder = new ParentFinder(editorMap);
+		ParentFinder parentFinder = new ParentFinder(SimpleEditorMap.L3);
 		for (BioPAXElement proc : procs) {
 			if(!parents.contains(proc) && parentFinder.isParentChild(proc, bpe))
 				parents.add(proc);
@@ -946,18 +647,6 @@ public class BioPaxUtil {
 		return parents;
 	}
 	
-	// convenience proc.
-	private static String joinNames(Collection<? extends BioPAXElement> elements) {
-		if(elements != null && !elements.isEmpty()) {
-			StringBuffer name = new StringBuffer();
-			for(BioPAXElement e : elements) {
-				name.append(getNodeName(e)).append(' ');
-			}
-			return name.toString();
-		}
-		return null;
-	}
-
 
 	/**
 	 * Checks whether the element is of 
@@ -1027,36 +716,26 @@ public class BioPaxUtil {
 		return str;
 	}
 
-	public static Map<Long, Model> getNetworkModelMap() {
-		return networkModelMap;
-	}
-
-	public static void removeNetworkModel(long cyNetworkId) {
-	    networkModelMap.remove(cyNetworkId);
-	    if(log.isDebugEnabled())
-	    	log.debug("in-memory biopax networks: " 
-	    			+ networkModelMap.toString());
-	}
-
-	public static boolean addNetworkModel(long cyNetworkId, Model bpModel) {
-		networkModelMap.put(cyNetworkId, bpModel);
-		return true;
-	}
-
-	public static Model getNetworkModel(long cyNetworkId) {
-		Model bpModel = networkModelMap.get(cyNetworkId);
-		return bpModel;
-	}
 	
 	public static boolean isBioPAXNetwork(CyNetwork cyNetwork) {
 		// BioPAX network (having interaction nodes)
 		CyRow row = cyNetwork.getCyRow();
 		Boolean b1 = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.class);
-		// BioPAX network that was converted to SIF (TODO mapping to the simplified SIF network currently is not done)
-        // Bgg fix: disable exporting SIF networks (read from PC web service) for now
+		// BioPAX network that was converted to SIF (TODO mapping to SIF network currently is not done)
+        // Bug fix: disable exporting SIF networks (read from PC web service) for now
 		Boolean b2 = false; //networkAttributes.getBooleanAttribute(networkID, MapBioPaxToCytoscape.BINARY_NETWORK);
-
-        return (b1 != null && b1) || (b2 != null && b2);
+        return Boolean.TRUE.equals(b1) || Boolean.TRUE.equals(b2);
 	}
 	
+	
+	public static String toOwl(BioPAXElement bpe) {
+		StringWriter writer = new StringWriter();
+		try {
+			SimpleIOHandler simpleExporter = new SimpleIOHandler(BioPAXLevel.L3);
+			simpleExporter.writeObject(writer, bpe);
+		} catch (Exception e) {
+			log.error("Failed printing '" + bpe.getRDFId() + "' to OWL", e);
+		}
+		return writer.toString();
+	}
 }

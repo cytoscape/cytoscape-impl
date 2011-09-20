@@ -32,14 +32,12 @@
 package org.cytoscape.biopax.internal.view;
 
 import java.awt.BorderLayout;
-import java.util.Properties;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
-import org.cytoscape.biopax.internal.BiopaxPlugin;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 
 
@@ -71,22 +69,6 @@ public class AboutPanel extends JPanel {
         temp.append(title + ", Version:  " + majorVersion + ". " + minorVersion);
         temp.append("</h2>");
         temp.append("<P>");
-
-		// TODO: Port this
-//		Properties cytoProps = CytoscapeInit.getProperties();
-        Properties cytoProps = null;
-
-		if (cytoProps != null) {
-			String proxyHost = (String) cytoProps.get(BiopaxPlugin.PROXY_HOST_PROPERTY);
-			String proxyPort = (String) cytoProps.get(BiopaxPlugin.PROXY_PORT_PROPERTY);
-
-			if ((proxyHost != null) && (proxyPort != null)) {
-				temp.append("HTTP Proxy Support Enabled:  ");
-				temp.append(proxyHost + " [Port:  " + proxyPort + "]");
-			} else {
-				temp.append("HTTP Proxy Support:  Not Enabled.");
-			}
-		}
 
 		temp.append("<BR><BR>Plugin released by:  Sander Group, "
 		            + "<A class=\"link\" HREF=\"http://www.cbio.mskcc.org/\">"

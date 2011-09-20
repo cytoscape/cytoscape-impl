@@ -2,9 +2,9 @@ package org.cytoscape.biopax.internal.action;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
-import org.biopax.paxtools.io.SimpleIOHandler;
-import org.biopax.paxtools.model.Model;
 import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
@@ -28,16 +28,11 @@ class ExportAsBioPAXTask implements CyWriter {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setStatusMessage("Exporting BioPAX...");
-        Model bpModel = BioPaxUtil.getNetworkModel(network.getSUID());
-        String bpModelStr = network.getCyRow().get(BioPaxUtil.BIOPAX_MODEL_STRING, String.class);
+        String bpModelStr = network.getCyRow().get(BioPaxUtil.BIOPAX_DATA, String.class);
         try {
-            if(bpModel == null || bpModelStr == null )
-                throw new IllegalArgumentException("Invalid/empty BioPAX model.");
-
-            SimpleIOHandler simpleExporter = new SimpleIOHandler(bpModel.getLevel());
-            simpleExporter.convertToOWL(bpModel, stream);
-
-            stream.close();
+            Writer w = new OutputStreamWriter(stream);
+            w.write(bpModelStr);
+            w.close();
 
             // TODO: Port this?
 //			Object[] ret_val = new Object[3];

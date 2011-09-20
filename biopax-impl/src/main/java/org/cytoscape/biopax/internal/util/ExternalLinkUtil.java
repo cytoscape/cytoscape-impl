@@ -41,6 +41,8 @@ import org.cytoscape.biopax.internal.ExternalLink;
  * Utility Class for Creating Links to External Databases.
  *
  * @author Ethan Cerami
+ * 
+ * TODO replace with Miriam (MiriamLink) or identifiers.org API
  */
 public class ExternalLinkUtil {
 	private static Map dbMap;
@@ -60,10 +62,6 @@ public class ExternalLinkUtil {
 	 * @return a URL String, or null, if dbName is not found.
 	 */
 	public static String getUrl(String dbName, String id) {
-		if (dbMap == null) {
-			initMap();
-		}
-
 		dbName = dbName.toUpperCase();
 
 		String url = (String) dbMap.get(dbName);
@@ -136,9 +134,12 @@ public class ExternalLinkUtil {
 	 * @param taxonomyId NCBI TaxonomyID or -1 if unknown.
 	 * @return URL String, or null if a URL cannot be constructed.
 	 */
-	public static String getIHOPUrl(String type, List synList, List dbList, int taxonomyId) {
-		if (type.equalsIgnoreCase("protein") || type.equalsIgnoreCase("dna")
-		    || type.equalsIgnoreCase("rna")) {
+	public static String getIHOPUrl(String type, List synList, List dbList, int taxonomyId) 
+	{
+		if (type.equalsIgnoreCase("protein") 
+			|| type.equalsIgnoreCase("dna")
+		    	|| type.equalsIgnoreCase("rna")) 
+		{
 			StringBuffer url = new StringBuffer();
 
 			// Use the URL Below for local testing within cbio
@@ -151,24 +152,21 @@ public class ExternalLinkUtil {
             if (dbParameter != null && dbParameter.length() > 0) {
                 appendAmpersand(synonymParameter, url);
 			    url.append(dbParameter);
-        }
+            }
 
             //  Taxonomy ID appears like this:
-			//  ncbi_tax_id_1=9609
-			if (url.length() > 0) {
-                //  removed NCBI Taxonomy ID;  results in nearly always getting a hit w/i iHOP.
-                //	url.append("ncbi_tax_id_1=" + taxonomyId);
+            //  ncbi_tax_id_1=9609
+            if (url.length() > 0) {
+            	//  removed NCBI Taxonomy ID;  results in nearly always getting a hit w/i iHOP.
+            	//	url.append("ncbi_tax_id_1=" + taxonomyId);
+            	url.insert(0, "http://www.ihop-net.org/UniPub/iHOP/in?");
 
-				url.insert(0, "http://www.ihop-net.org/UniPub/iHOP/in?");
-
-				// return string - but encode spaces first
-				return url.toString().replaceAll("\\s", SPACE);
-			} else {
-				return null;
-			}
-		} else {
-			return null;
-		}
+            	// return string - but encode spaces first
+            	return url.toString().replaceAll("\\s", SPACE);
+            }
+		} 
+		
+		return null;
 	}
 
 	private static void appendAmpersand(String param, StringBuffer url) {
@@ -189,15 +187,16 @@ public class ExternalLinkUtil {
 		if ((dbList != null) && (dbList.size() > 0)) {
 			for (int i = 0; i < dbList.size(); i++) {
 				ExternalLink link = (ExternalLink) dbList.get(i);
-				String code = (String) ihopMap.get(link.getDbName().toUpperCase());
+				if(link != null && link.getDbName() != null) {
+					String code = (String) ihopMap.get(link.getDbName().toUpperCase());
+					if (code != null) {
+						if (code.equals(UNIPROT_AC)) {
+							uniProtHits++;
+						}
 
-				if (code != null) {
-					if (code.equals(UNIPROT_AC)) {
-						uniProtHits++;
+						dbHits++;
+						temp.append(code + pipeChar + link.getId() + COMMA);
 					}
-
-					dbHits++;
-					temp.append(code + pipeChar + link.getId() + COMMA);
 				}
 			}
 
@@ -248,21 +247,21 @@ public class ExternalLinkUtil {
 	 * @param taxonomyId NCBI TaxonomyID or -1 if unknown.
 	 * @return HTML Link.
 	 */
-	public static String createIHOPLink(String type, List synList, List linkList,
-	                                    int taxonomyId) {
+	public static String createIHOPLink(String type, 
+			List synList, List linkList, int taxonomyId) 
+	{
 		String url = getIHOPUrl(type, synList, linkList, taxonomyId);
 
         if (url != null) {
 			StringBuffer buf = new StringBuffer();
 			buf.append("<A class=\"link\" HREF=\"" + url + "\">" + "Search iHOP</A>");
-
 			return buf.toString();
 		} else {
 			return null;
 		}
 	}
 
-	private static void initMap() {
+	static {
 		dbMap = new HashMap();
 		ihopMap = new HashMap();
 

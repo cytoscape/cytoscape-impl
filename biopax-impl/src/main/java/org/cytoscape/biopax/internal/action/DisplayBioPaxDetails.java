@@ -73,65 +73,30 @@ public class DisplayBioPaxDetails implements RowsSetListener {
 
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-	
+		
+		if(!view.getModel().getDefaultNodeTable().equals(e.getSource()))
+			return;
+		
 		try {
 			CyNode selected = null;
 			CyNetwork network = view.getModel();
 			for (CyNode node : network.getNodeList()) {
 				if (node.getCyRow().get(CyNetwork.SELECTED, Boolean.class)) {
-					if (selected != null) {
-						return;
-					}
 					selected = node;
+					break;
 				}
 			}
 			
-			if (selected == null) {
-				return;
+			if (selected != null) {
+				//  Show the details
+				bpPanel.showDetails(network, selected);
+            	//  If legend is showing, show details
+            	bpContainer.showDetails();
 			}
-			
-            //  Show the details
-            bpPanel.showDetails(network, selected);
-            //  If legend is showing, show details
-            bpContainer.showDetails();
 		} finally {
 			// update custom nodes
 			mapBioPaxToCytoscape.customNodes(view);
 		}
 	}
-//
-//	/**
-//	 * Recursive Method for Walking up a Containment Tree, looking for
-//	 * a CytoPanel
-//	 *
-//	 * @param c Container Object.
-//	 */
-//	private void activateTabs(Container c) {
-//		Container parent = c.getParent();
-//
-//		if (parent != null) {
-//			if (parent instanceof JTabbedPane) {
-//				JTabbedPane parentTabbedPane = (JTabbedPane) parent;
-//				int index = parentTabbedPane.indexOfComponent(c);
-//				parentTabbedPane.setSelectedIndex(index);
-//			}
-//
-//			activateTabs(parent);
-//		}
-//	}
-//
-//	/**
-//	 * Keeps track of total number of Nodes currently selected by the user.
-//	 */
-//	private void trackTotalNumberNodesSelected(SelectEvent event, HashSet set) {
-//		if (event.getEventType()) {
-//			totalNumNodesSelected += set.size();
-//		} else {
-//			totalNumNodesSelected -= set.size();
-//
-//			if (totalNumNodesSelected < 0) {
-//				totalNumNodesSelected = 0;
-//			}
-//		}
-//	}
+
 }
