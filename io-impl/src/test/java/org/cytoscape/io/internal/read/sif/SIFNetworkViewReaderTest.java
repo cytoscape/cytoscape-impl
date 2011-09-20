@@ -72,15 +72,24 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 		findInteraction(net, "TRAF6", "HJKOL coltrane", "interactsWith", 13);
 	}
 
-	private CyNetworkView[] getViews(String file) throws Exception {
+	private  SIFNetworkReader readFile(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/sif/" + file);
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory,
-				eventHelper);
+		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, eventHelper);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
-		final CyNetwork[] networks = snvp.getCyNetworks();
+		return snvp;
+	}
+
+	private CyNetwork[] getNetworks(String file) throws Exception {
+		final SIFNetworkReader snvp = readFile(file);
+		return snvp.getCyNetworks();
+	}
+
+	private CyNetworkView[] getViews(String file) throws Exception {
+		final SIFNetworkReader snvp = readFile(file);
+		final CyNetwork[] networks = snvp.getCyNetworks(); 
 		final CyNetworkView[] views = new CyNetworkView[networks.length];
 		int i = 0;
 		for(CyNetwork network: networks) {
@@ -89,5 +98,29 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 		}
 		
 		return views;
+	}
+
+	@Test
+	public void testReadLargeSIFFiles() throws Exception {
+		//justNetworkPerf("A200-200.sif");
+		justNetworkPerf("A50-100.sif");
+		//justNetworkPerf("A50-50.sif");
+		//networkAndViewPerf("A200-200.sif");
+		//networkAndViewPerf("A50-100.sif");
+		//networkAndViewPerf("A50-50.sif");
+	}
+
+	private void justNetworkPerf(String name) throws Exception {
+		long start = System.currentTimeMillis();
+		CyNetwork[] nets = getNetworks(name);
+		long end = System.currentTimeMillis();
+		System.out.println("LOADING SIF file (" + name + ") no view duration: " + (end - start));
+	}
+
+	private void networkAndViewPerf(String name) throws Exception {
+		long start = System.currentTimeMillis();
+		CyNetworkView[] views = getViews(name);
+		long end = System.currentTimeMillis();
+		System.out.println("LOADING SIF file (" + name + ") with view duration: " + (end - start));
 	}
 }
