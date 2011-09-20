@@ -28,20 +28,12 @@
 package org.cytoscape.search.internal.util;
 
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyTable; 
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyTable;
 
 
 /**
@@ -50,11 +42,9 @@ import org.cytoscape.model.CyTableManager;
  * This way CustomMultiFieldQueryParser can recognize numeric attribute fields.
  */
 public class AttributeFields {
-	private final CyTableManager tableMgr;
 	private final Map<String, Class<?>> columnTypeMap;
 
-	public AttributeFields(final CyNetwork network, final CyTableManager tableMgr) {
-		this.tableMgr = tableMgr;
+	public AttributeFields(final CyNetwork network) {
 		this.columnTypeMap = new HashMap<String, Class<?>>();
 		initFields(network);
 	}
@@ -67,12 +57,12 @@ public class AttributeFields {
 	 * There are probably better ways to do this, but there you go :)
 	 */
 	private void initFields(final CyNetwork network) {
-		CyTable nodeCyDataTable = tableMgr.getTableMap(CyNode.class, network).get(CyNetwork.DEFAULT_ATTRS);
+		CyTable nodeCyDataTable = network.getDefaultNodeTable();
 		for (final CyColumn column : nodeCyDataTable.getColumns())
 			columnTypeMap.put(EnhancedSearchUtils.replaceWhitespace(column.getName()),
 					  column.getType());
 
-		CyTable edgeCyDataTable = (CyTable) tableMgr.getTableMap(CyEdge.class, network).get(CyNetwork.DEFAULT_ATTRS);
+		CyTable edgeCyDataTable = network.getDefaultEdgeTable();
 		for (final CyColumn column : edgeCyDataTable.getColumns())
 			columnTypeMap.put(EnhancedSearchUtils.replaceWhitespace(column.getName()),
 					  column.getType());

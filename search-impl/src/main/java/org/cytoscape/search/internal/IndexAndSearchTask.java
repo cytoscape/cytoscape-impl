@@ -37,7 +37,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -53,7 +52,6 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	private boolean interrupted = false;
 	
 	private final EnhancedSearch enhancedSearch;
-	private final CyTableManager tableMgr;
 	private final CyNetworkViewManager viewManager;
 	private final CyApplicationManager appManager;
 
@@ -64,13 +62,12 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	 * the user should be provided as arguments to the constructor.
 	 */
 	public IndexAndSearchTask(final CyNetwork network, final EnhancedSearch enhancedSearch,
-			final CyTableManager tableMgr, final String query, final CyNetworkViewManager viewManager,
+			final String query, final CyNetworkViewManager viewManager,
 			final CyApplicationManager appManager) {
 
 		// Will set a CyNetwork field called "net".
 		super(network);
 		this.enhancedSearch = enhancedSearch;
-		this.tableMgr = tableMgr;
 		this.query = query;
 		this.viewManager = viewManager;
 		this.appManager = appManager;
@@ -104,7 +101,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 		// Execute query
 		taskMonitor.setStatusMessage("Executing query");
-		EnhancedSearchQuery queryHandler = new EnhancedSearchQuery(network, idx, tableMgr);
+		EnhancedSearchQuery queryHandler = new EnhancedSearchQuery(network, idx);
 		queryHandler.executeQuery(query);
 
 		if (interrupted)

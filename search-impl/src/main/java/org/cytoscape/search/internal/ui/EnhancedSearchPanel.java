@@ -2,13 +2,9 @@ package org.cytoscape.search.internal.ui;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.search.internal.EnhancedSearch;
 import org.cytoscape.search.internal.SearchTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.GUITaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +16,13 @@ public class EnhancedSearchPanel extends javax.swing.JPanel {
 	private static final Logger logger = LoggerFactory.getLogger(EnhancedSearchPanel.class);
 	
 	private CyApplicationManager appManager;
-	private CyTableManager tableMgr;
 	private EnhancedSearch searchMgr;
 	private GUITaskManager taskMgr;
 	
 	private final CyNetworkViewManager viewManager;
 
 	/** Creates new form NewJPanel */
-	public EnhancedSearchPanel(CyApplicationManager appManager, final CyNetworkViewManager viewManager, CyTableManager tableMgr, EnhancedSearch searchMgr,
+	public EnhancedSearchPanel(CyApplicationManager appManager, final CyNetworkViewManager viewManager, EnhancedSearch searchMgr,
 			GUITaskManager taskMgr) {
 		initComponents();
 
@@ -36,7 +31,6 @@ public class EnhancedSearchPanel extends javax.swing.JPanel {
 		this.lbSearch.setVisible(true);
 
 		this.appManager = appManager;
-		this.tableMgr = tableMgr;
 		this.searchMgr = searchMgr;
 		this.taskMgr = taskMgr;
 		this.viewManager = viewManager;
@@ -60,7 +54,7 @@ public class EnhancedSearchPanel extends javax.swing.JPanel {
 			logger.debug("Target Network ID = " + currentNetwork.getSUID());
 
 			final SearchTaskFactory factory = new SearchTaskFactory(currentNetwork, searchMgr,
-					tableMgr, queryStr, viewManager, appManager);
+					queryStr, viewManager, appManager);
 			this.taskMgr.execute(factory);
 		} else
 			logger.error("Could not find network for search");

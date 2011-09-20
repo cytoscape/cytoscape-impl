@@ -18,7 +18,6 @@
 		class="org.cytoscape.search.internal.EnhancedSearchPlugin">
 		<constructor-arg ref="cytoscapeDesktopService" />
 		<constructor-arg ref="cyApplicationManagerRef" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
 		<constructor-arg ref="guiTaskManagerServiceRef" />
 		<constructor-arg ref="cyEventHelperServiceRef" />
 		<constructor-arg ref="cyNetworkViewManagerServiceRef" />

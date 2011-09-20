@@ -45,7 +45,6 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.util.Version;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.search.internal.util.AttributeFields;
 import org.cytoscape.search.internal.util.CustomMultiFieldQueryParser;
 import org.cytoscape.search.internal.util.EnhancedSearchUtils;
@@ -59,14 +58,12 @@ public class EnhancedSearchQuery {
 	
 	private final RAMDirectory idx;
 	private final CyNetwork network;
-	private final CyTableManager tableMgr;
 	private IdentifiersCollector hitCollector = null;
 	private Searcher searcher = null;
 
-	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index, CyTableManager tableMgr) {
+	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index) {
 		this.network = network;
 		this.idx = index;
-		this.tableMgr = tableMgr;
 	}
 
 	public void executeQuery(String queryString) {
@@ -74,7 +71,7 @@ public class EnhancedSearchQuery {
 			logger.debug("Query start for: " + queryString);
 			
 			// Define attribute fields in which the search is to be carried on
-			AttributeFields attFields = new AttributeFields(network, tableMgr);
+			AttributeFields attFields = new AttributeFields(network);
 
 			// Build an IndexSearcher using the in-memory index
 			searcher = new IndexSearcher(idx);
