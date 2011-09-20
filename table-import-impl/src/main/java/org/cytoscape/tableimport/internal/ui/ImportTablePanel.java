@@ -99,7 +99,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -270,7 +269,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		network = CytoscapeServices.appMgr.getCurrentNetwork();
 		if (network != null){
-			selectedAttributes = CytoscapeServices.tblMgr.getTableMap(CyNode.class, network).get(CyNetwork.DEFAULT_ATTRS);
+			selectedAttributes = network.getDefaultNodeTable();
 		}
 		this.objType = NODE;
 		this.dialogType = dialogType;
@@ -1312,14 +1311,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (nodeRadioButton.isSelected()) {
 			//selectedAttributes = Cytoscape.getNodeAttributes();
 			if (network != null){
-				selectedAttributes = CytoscapeServices.tblMgr.getTableMap(CyNode.class, network).get(CyNetwork.DEFAULT_ATTRS);
+				selectedAttributes = network.getDefaultNodeTable();
 			}
 
 			objType = NODE;
 		} else if (edgeRadioButton.isSelected()) {
 			//selectedAttributes = Cytoscape.getEdgeAttributes();
 			if (network != null){
-				selectedAttributes = CytoscapeServices.tblMgr.getTableMap(CyEdge.class, network).get(CyNetwork.DEFAULT_ATTRS);
+				selectedAttributes = network.getDefaultEdgeTable();
 			}
 
 			objType = EDGE;

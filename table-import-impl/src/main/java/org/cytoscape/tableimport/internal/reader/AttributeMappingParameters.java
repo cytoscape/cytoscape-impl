@@ -249,7 +249,7 @@ public class AttributeMappingParameters implements MappingParameter {
 				
 				
 				if (network != null){
-					attributes = CytoscapeServices.tblMgr.getTableMap(CyNode.class, network).get(CyNetwork.DEFAULT_ATTRS);
+					attributes = network.getDefaultNodeTable();
 
 					//existingAliases = Cytoscape.getOntologyServer().getNodeAliases();
 					it = network.getNodeList().iterator(); //Cytoscape.getRootGraph().nodesIterator();					
@@ -259,7 +259,7 @@ public class AttributeMappingParameters implements MappingParameter {
 
 			case EDGE:
 				if (network != null){
-					attributes = CytoscapeServices.tblMgr.getTableMap(CyNode.class, network).get(CyNetwork.DEFAULT_ATTRS);
+					attributes = network.getDefaultEdgeTable();
 
 					//existingAliases = Cytoscape.getOntologyServer().getNodeAliases();
 					it = network.getEdgeList().iterator(); //Cytoscape.getRootGraph().nodesIterator();					
