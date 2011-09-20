@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +65,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
+import org.cytoscape.browser.util.TableBrowserUtil;
 
 
 public class BrowserTable extends JTable
@@ -656,7 +658,15 @@ public class BrowserTable extends JTable
 			CyRow rowObj = (CyRow) cellVect.get(0);
 			String columnName = (String)cellVect.get(1);
 			
-			rowObj.set(columnName, MultiLineTableCellEditor.lastValueUserEntered);					
+			ArrayList parsedData = TableBrowserUtil.parseCellInput(rowObj.getTable(), columnName, MultiLineTableCellEditor.lastValueUserEntered);
+			
+			if (parsedData.get(0) != null){
+				rowObj.set(columnName, MultiLineTableCellEditor.lastValueUserEntered);									
+			}
+			else {
+				// Error
+				// discard the change
+			}
 		}	
 	}
 		
