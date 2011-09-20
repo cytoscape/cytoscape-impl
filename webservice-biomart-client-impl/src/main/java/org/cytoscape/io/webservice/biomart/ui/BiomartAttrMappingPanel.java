@@ -37,7 +37,6 @@ package org.cytoscape.io.webservice.biomart.ui;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -251,8 +250,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 		// }
 		// } else {
 		// Use Attributes for mapping
-		final CyTable defTable = tblManager.getTableMap(CyNode.class,
-				curNetwork).get(CyNetwork.DEFAULT_ATTRS);
+		final CyTable defTable = curNetwork.getDefaultNodeTable();
 		
 		final CyColumn column = defTable.getColumn(keyAttrName);
 		final Class<?> attrDataType = column.getType();
