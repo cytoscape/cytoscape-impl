@@ -46,6 +46,7 @@ import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.BioSource;
 import org.biopax.paxtools.model.level3.Entity;
+import org.biopax.paxtools.model.level3.EntityReference;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.Level3Element;
 import org.biopax.paxtools.model.level3.Named;
@@ -63,6 +64,7 @@ import org.cytoscape.biopax.internal.MapBioPaxToCytoscapeImpl;
 import org.cytoscape.biopax.internal.util.ParentFinder;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTableUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +75,6 @@ import org.slf4j.LoggerFactory;
  * @author Ethan Cerami, Rex, Arman and Igor Rodchenkov
  */
 public class BioPaxUtil {
-	private static final Map<String,String> plainEnglishMap;
 	private static final Map<String,String> cellLocationMap;
 	private static final Map<String,String> chemModificationsMap;
 	
@@ -82,7 +83,6 @@ public class BioPaxUtil {
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final int MAX_DISPLAY_STRING_LEN = 25;
 	public static final String NULL_ELEMENT_TYPE = "BioPAX Element";
-	public static final String PRIVATE_TABLE_NAME = null; //TODO "biopax_hidden";
 	
 	/**
 	 * BioPAX Class:  phosphorylation site
@@ -92,56 +92,12 @@ public class BioPaxUtil {
 	/**
 	 * BioPAX Class:  protein phosphorylated
 	 */
-	public static final String PROTEIN_PHOSPHORYLATED = "protein-phosphorylated";
+	public static final String PROTEIN_PHOSPHORYLATED = "Protein-phosphorylated";
 	
 	// protected Constructor
 	protected BioPaxUtil() {}
 	
 	static  {
-		plainEnglishMap = new HashMap<String,String>();
-		// all keys are lower case!
-		plainEnglishMap.put("protein", "Protein");
-		plainEnglishMap.put("smallmolecule", "Small Molecule");
-		plainEnglishMap.put("physicalentity", "Physical Entity");
-		plainEnglishMap.put("complex", "Complex");
-		plainEnglishMap.put("dna", "DNA");
-		plainEnglishMap.put("rna", "RNA");
-		plainEnglishMap.put("interaction", "Interaction");
-		plainEnglishMap.put("physicalinteraction", "Physical Interaction");
-		plainEnglishMap.put("control", "Control");
-		plainEnglishMap.put("catalysis", "Catalysis");
-		plainEnglishMap.put("modulation", "Modulation");
-		plainEnglishMap.put("conversion", "Conversion");
-		plainEnglishMap.put("biochemicalreaction", "Biochemical Reaction");
-		plainEnglishMap.put("molecularinteraction", "Molecular Interaction");
-		plainEnglishMap.put("complexassembly", "Complex Assembly");
-		plainEnglishMap.put("transportwithbiochemicalreaction", "Transport with Biochemical Reaction");
-		plainEnglishMap.put("transport", "Transport");
-		plainEnglishMap.put("transportwithbiochemicalreaction", "Transport with Biochemical Reaction");
-		plainEnglishMap.put("geneticinteraction", "Genetic Interaction");
-		plainEnglishMap.put("templatereaction", "Template Reaction");
-		plainEnglishMap.put("degradation", "Degradation");
-		// chemical modifications
-		plainEnglishMap.put("acetylation site", "Acetylation Site");
-		plainEnglishMap.put("glycosylation site", "Glycosylation Site");
-		plainEnglishMap.put("phosphorylation site", "Phosphorylation Site");
-		plainEnglishMap.put("sumoylation site", "Sumoylation Site");
-		plainEnglishMap.put("ubiquitination site", "Ubiquitination Site");
-		// cellular locations
-		plainEnglishMap.put("cellular component unknown", "Cellular Component Unknown");
-		plainEnglishMap.put("centrosome", "Centrosome");
-		plainEnglishMap.put("cytoplasm", "Cytoplasm");
-		plainEnglishMap.put("endoplasmic reticulum", "Endoplasmic Reticulum");
-		plainEnglishMap.put("endosome", "Endosome");
-		plainEnglishMap.put("extracellular", "Extracellular");
-		plainEnglishMap.put("golgi apparatus", "Golgi Apparatus");
-		plainEnglishMap.put("mitochondrion", "Mitochondrion");
-		plainEnglishMap.put("nucleoplasm", "Nucleoplasm");
-		plainEnglishMap.put("nucleus", "Nucleus");
-		plainEnglishMap.put("plasma membrane", "Plasma Membrane");
-		plainEnglishMap.put("ribosome", "Ribosome");
-		plainEnglishMap.put("transmembrane", "Transmembrane");
-		
 		// the following is for node labels
 		cellLocationMap = new HashMap<String, String>();
 		cellLocationMap.put("cellular component unknown", "");
@@ -191,34 +147,6 @@ public class BioPaxUtil {
 		return model;
 	}
 
-	/**
-	 * Converts the specified type into "Plain English".
-	 * For example, the type "biochemicalReaction" is converted to
-	 * "Biochemical Reaction".
-	 * <p/>
-	 * If the type is not know, the origianl argument type is simply returned.
-	 *
-	 * @param type BioPAX Type String.
-	 * @return BioPAX Type String, in "Plain English".
-	 */
-	public static String getTypeInPlainEnglish(String type) {
-		String plainEnglish = plainEnglishMap.get(type.toLowerCase());
-
-		if (plainEnglish == null) {
-			return type;
-		} else {
-			return plainEnglish;
-		}
-	}
-
-	
-	@Deprecated
-	public static String getType(BioPAXElement bpe) {
-		return (bpe != null) 
-			? getTypeInPlainEnglish(bpe.getModelInterface().getSimpleName())
-			: NULL_ELEMENT_TYPE;	
-	}
-	
 	
 	/**
 	 * Gets or infers the name of the node. 
@@ -248,16 +176,9 @@ public class BioPaxUtil {
 			return getTheShortestString(names);
 		}
 
-		return getLocalPartRdfId(bpe);
+		return bpe.getRDFId();
 	}
 	
-	
-	public static String getLocalPartRdfId(BioPAXElement bpe) {
-		if(bpe == null) 
-			return "";
-		else
-			return bpe.getRDFId().replaceFirst("^.+#", "");
-	}
 	
 	// get the shortest string
 	public static String getTheShortestString(Collection<String> nameList) {
@@ -718,13 +639,14 @@ public class BioPaxUtil {
 
 	
 	public static boolean isBioPAXNetwork(CyNetwork cyNetwork) {
-		// BioPAX network (having interaction nodes)
-		CyRow row = cyNetwork.getCyRow();
-		Boolean b1 = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.class);
-		// BioPAX network that was converted to SIF (TODO mapping to SIF network currently is not done)
-        // Bug fix: disable exporting SIF networks (read from PC web service) for now
-		Boolean b2 = false; //networkAttributes.getBooleanAttribute(networkID, MapBioPaxToCytoscape.BINARY_NETWORK);
-        return Boolean.TRUE.equals(b1) || Boolean.TRUE.equals(b2);
+		return Boolean.TRUE == cyNetwork.getCyRow()
+			.get(MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.class);
+	}
+	
+	
+	public static boolean isBiopaxSifNetwork(CyNetwork cyNetwork) {
+		return Boolean.TRUE == cyNetwork.getCyRow()
+			.get(MapBioPaxToCytoscapeImpl.BINARY_NETWORK, Boolean.class);
 	}
 	
 	
@@ -737,5 +659,36 @@ public class BioPaxUtil {
 			log.error("Failed printing '" + bpe.getRDFId() + "' to OWL", e);
 		}
 		return writer.toString();
+	}
+	
+	
+	public static void fixDisplayName(Model model) {
+		if (log.isInfoEnabled())
+			log.info("Trying to auto-fix 'null' displayName...");
+		// where it's null, set to the shortest name if possible
+		for (Named e : model.getObjects(Named.class)) {
+			if (e.getDisplayName() == null) {
+				if (e.getStandardName() != null) {
+					e.setDisplayName(e.getStandardName());
+				} else if (!e.getName().isEmpty()) {
+					String dsp = e.getName().iterator().next();
+					for (String name : e.getName()) {
+						if (name.length() < dsp.length())
+							dsp = name;
+					}
+					e.setDisplayName(dsp);
+				}
+			}
+		}
+		// if required, set PE name to (already fixed) ER's name...
+		for(EntityReference er : model.getObjects(EntityReference.class)) {
+			for(SimplePhysicalEntity spe : er.getEntityReferenceOf()) {
+				if(spe.getDisplayName() == null || spe.getDisplayName().trim().length() == 0) {
+					if(er.getDisplayName() != null && er.getDisplayName().trim().length() > 0) {
+						spe.setDisplayName(er.getDisplayName());
+					}
+				}
+			}
+		}
 	}
 }

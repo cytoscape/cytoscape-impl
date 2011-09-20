@@ -172,7 +172,6 @@ public class BioPaxDetailsPanel extends JPanel {
 
         // type (to the text buffer)
         String type = node.getCyRow().get(BIOPAX_ENTITY_TYPE, String.class);
-        type = BioPaxUtil.getTypeInPlainEnglish(type);
         buf.append("<h3>" + type + "</h3>");
         
         // organism
@@ -208,8 +207,8 @@ public class BioPaxDetailsPanel extends JPanel {
 		
 		// excerpt from the BioPAX OWL
 		stringRef = null;
-        //stringRef = node.getCyRow(BioPaxUtil.PRIVATE_TABLE_NAME).get(BioPaxUtil.BIOPAX_DATA, String.class);
-        stringRef = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
+        stringRef = node.getCyRow(CyNetwork.HIDDEN_ATTRS).get(BioPaxUtil.BIOPAX_DATA, String.class);
+        //stringRef = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
         if (stringRef != null) {
         	appendHeader("BioPAX L3 (excerpt)", buf);
             buf.append("<pre>" + StringEscapeUtils.escapeXml(stringRef) + "</pre>");
@@ -243,11 +242,11 @@ public class BioPaxDetailsPanel extends JPanel {
     private void addLinks(CyNode node, StringBuffer buf) {
     	CyRow row = node.getCyRow();
 
-        addAttributeList(node, BioPaxUtil.PRIVATE_TABLE_NAME,
+        addAttributeList(node, CyNetwork.HIDDEN_ATTRS,
                 BIOPAX_UNIFICATION_REFERENCES, "Links:", buf);
-        addAttributeList(node, BioPaxUtil.PRIVATE_TABLE_NAME,
+        addAttributeList(node, CyNetwork.HIDDEN_ATTRS,
                 BIOPAX_RELATIONSHIP_REFERENCES, null, buf);
-        addAttributeList(node, BioPaxUtil.PRIVATE_TABLE_NAME,
+        addAttributeList(node, CyNetwork.HIDDEN_ATTRS,
                 BIOPAX_PUBLICATION_REFERENCES, "Publications:", buf);
          
         addIHOPLinks(node, buf);
@@ -278,8 +277,7 @@ public class BioPaxDetailsPanel extends JPanel {
 			String listItem = list.get(lc);
 
 			if ((listItem != null) && (listItem.length() > 0)) {
-				String plainEnglish = BioPaxUtil.getTypeInPlainEnglish(listItem);
-                displayString.append("<LI> - " + plainEnglish);
+                displayString.append("<LI> - " + listItem);
                 displayString.append("</LI>"); 
 			}
 		}
@@ -311,7 +309,7 @@ public class BioPaxDetailsPanel extends JPanel {
 	}
 
 	private void addIHOPLinks(CyNode node, StringBuffer buf) {
-		CyRow row = node.getCyRow();
+		CyRow row = node.getCyRow(CyNetwork.HIDDEN_ATTRS);
 		String ihopLinks = row.get(BIOPAX_IHOP_LINKS, String.class);
 
 		if (ihopLinks != null) {

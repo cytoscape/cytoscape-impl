@@ -9,6 +9,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 
 public class AttributeUtil {
+	
 	public static void set(CyTableEntry entry, String name, Object value, Class<?> type) {
 		set(entry, null, name, value, type);
 	}

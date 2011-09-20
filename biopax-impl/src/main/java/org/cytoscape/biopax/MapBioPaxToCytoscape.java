@@ -1,6 +1,7 @@
 package org.cytoscape.biopax;
 
 import org.biopax.paxtools.model.BioPAXElement;
+import org.biopax.paxtools.model.Model;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -79,7 +80,7 @@ public interface MapBioPaxToCytoscape {
 
 	
 	/**
-	 * Maps a BioPAX model (internal) to a new CyNetwork.
+	 * Maps a BioPAX model (set internally) to a new CyNetwork.
 	 * 
 	 * @param networkName
 	 * @return
@@ -89,9 +90,10 @@ public interface MapBioPaxToCytoscape {
 	/**
      * Maps BioPAX element properties to CyNode attributes.
      * @param element          BioPAX Object.
-     * @param node
+	 * @param node
+	 * @param network
      */
-	void createAttributesFromProperties(BioPAXElement element, CyNode node);
+	void createAttributesFromProperties(BioPAXElement element, CyNode node, CyNetwork network);
 	
 	
 	void customNodes(CyNetworkView networkView);

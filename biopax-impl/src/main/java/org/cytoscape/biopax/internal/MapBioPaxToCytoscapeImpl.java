@@ -25,7 +25,6 @@ import org.biopax.paxtools.model.level3.CellularLocationVocabulary;
 import org.biopax.paxtools.model.level3.Complex;
 import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.ControlType;
-import org.biopax.paxtools.model.level3.ControlledVocabulary;
 import org.biopax.paxtools.model.level3.Controller;
 import org.biopax.paxtools.model.level3.Conversion;
 import org.biopax.paxtools.model.level3.Entity;
@@ -105,7 +104,8 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	
 	// BioPAX ID (URI) to CyNode map
 	// remark: nodes's CyTable will also have 'URI' (RDF Id) column
-	private final Map<String, CyNode> uriToCyNodeMap = new HashMap<String, CyNode>();
+	private final Map<BioPAXElement, CyNode> 
+		uriToCyNodeMap = new HashMap<BioPAXElement, CyNode>();
 	
 	/**
 	 * Inner class to store a given nodes's
@@ -174,19 +174,13 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	@Override
 	public CyNetwork createCyNetwork(String networkName)  {		
 		CyNetwork network = networkFactory.getInstance();
-
-		//TODO create BioPaxUtil.PRIVATE_TABLE_NAME private table
-		
+	
 		// First, create nodes for all Entity class objects
-		// (skip creating attributes for now, except for the URI)
 		createEntityNodes(network);
-		
+
+		// create edges
 		createInteractionEdges(network);
 		createComplexEdges(network);
-		
-		// traverse the entire model to 
-		// generate node attributes from BioPAX properties
-		createAttributesFromProperties(network);	
 		
 		// Finally, set network attributes:
 		
@@ -203,7 +197,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			new SimpleIOHandler().convertToOWL(model, baos);
-			AttributeUtil.set(network, BioPaxUtil.PRIVATE_TABLE_NAME, 
+			AttributeUtil.set(network, CyNetwork.HIDDEN_ATTRS, 
 					BioPaxUtil.BIOPAX_DATA, baos.toString("UTF-8"), String.class);
 		} catch (Exception e) {
 			log.error("Serializing BioPAX to RDF/XML string failed.", e);
@@ -224,43 +218,12 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 			if(bpe instanceof Pathway)
 				continue;
 			
-			String id = bpe.getRDFId();
 			//  Create node symbolizing the interaction
 			CyNode node = network.addNode();
-			uriToCyNodeMap.put(id, node);
-
-			// set the most important attributes
-			AttributeUtil.set(node, BIOPAX_RDF_ID, bpe.getRDFId(), String.class);
-			//AttributeUtil.set(node, BIOPAX_ENTITY_TYPE, BioPaxUtil.getType(bpe), String.class);	
-			AttributeUtil.set(node, BIOPAX_ENTITY_TYPE, bpe.getModelInterface().getSimpleName(), String.class);	
-			
-			// add a piece of the BioPAX (RDF/XML without parent|child elements)
-			
-			String owl = BioPaxUtil.toOwl(bpe); // (requires common-lang-2.4 bundle to be started)
-			AttributeUtil.set(node, BioPaxUtil.PRIVATE_TABLE_NAME,BioPaxUtil.BIOPAX_DATA, owl, String.class);
-			
-			String name = BioPaxUtil.truncateLongStr(BioPaxUtil.getNodeName(bpe) + "");
-			
-			if (!(bpe instanceof Interaction)) {
-				// get chemical modification & cellular location attributes
-				NodeAttributesWrapper chemicalModificationsWrapper = getInteractionChemicalModifications(bpe);
-				// add modifications to the label/name
-				String modificationsString = getModificationsString(chemicalModificationsWrapper);
-				name += modificationsString;				
-				// add cellular location to the label/name
-				if(bpe instanceof PhysicalEntity) {
-					CellularLocationVocabulary cl = ((PhysicalEntity) bpe).getCellularLocation();
-					if(cl != null) {
-						String clAbbr = BioPaxUtil.getAbbrCellLocation(cl.toString())
-							.replaceAll("\\[|\\]", "");
-						name += (clAbbr.length() > 0) ? ("\n" + clAbbr) : "";
-					}
-				}
-				// set node attributes
-				setChemicalModificationAttributes(node, chemicalModificationsWrapper);	
-			}
-			
-			AttributeUtil.set(node, CyNode.NAME, name, String.class);		
+			uriToCyNodeMap.put(bpe, node);
+				           
+			// traverse
+			createAttributesFromProperties(bpe, node, network);
 			
 			// update progress bar
 			double perc = (double) i++ / entities.size();
@@ -308,14 +271,12 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	private void createComplexEdges(CyNetwork network) {
 		// interate through all pe's
 		for (Complex complexElement : model.getObjects(Complex.class)) {
-			// get id
-			String id = complexElement.getRDFId();
 			// get node
-			CyNode complexCyNode = uriToCyNodeMap.get(id);
+			CyNode complexCyNode = uriToCyNodeMap.get(complexElement);
 			// get all components. There can be 0 or more
 			for (PhysicalEntity member : complexElement.getComponent()) 
 			{
-				CyNode complexMemberCyNode = uriToCyNodeMap.get(member.getRDFId());
+				CyNode complexMemberCyNode = uriToCyNodeMap.get(member);
 				// create edge, set attributes
 				CyEdge edge = network.addEdge(complexCyNode, complexMemberCyNode, true);
 				AttributeUtil.set(edge, BIOPAX_EDGE_TYPE, "contains", String.class);
@@ -359,8 +320,8 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	private void linkNodes(CyNetwork network, BioPAXElement bpeA, BioPAXElement bpeB, String type) 
 	{	
 		// Note: getCyNode also assigns cellular location attribute...
-		CyNode nodeA = uriToCyNodeMap.get(bpeA.getRDFId());
-		CyNode nodeB = uriToCyNodeMap.get(bpeB.getRDFId());
+		CyNode nodeA = uriToCyNodeMap.get(bpeA);
+		CyNode nodeB = uriToCyNodeMap.get(bpeB);
 		CyEdge edge = null;
 		if (type.equals("right") || type.equals("cofactor")
 				|| type.equals("participant")) {
@@ -526,25 +487,6 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		}
 	}
 
-
-	/**
-	 * Maps BioPAX properties to node attributes.
-	 *
-	 */
-	public void createAttributesFromProperties(CyNetwork network) {
-		for (CyNode node : network.getNodeList()) {
-			// get node element
-			String biopaxID = node.getCyRow().get(BIOPAX_RDF_ID, String.class);
-			BioPAXElement resource = model.getByID(biopaxID);
-            
-			// traverse
-			createAttributesFromProperties(resource, node);
-			
-            // create custom (convenience?) attributes, mainly - from xrefs
-			createExtraXrefAttributes(resource, network, node);
-        }
-	}
-
 	
     private void createExtraXrefAttributes(BioPAXElement resource, CyNetwork network, CyNode node) {
 		// the following code should replace the old way to set
@@ -559,7 +501,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		// ihop links
 		String stringRef = addIHOPLinks(network, resource);
 		if (stringRef != null) {
-			AttributeUtil.set(node, BIOPAX_IHOP_LINKS, stringRef, String.class);
+			AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_IHOP_LINKS, stringRef, String.class);
 		}
 
 		List<String> allxList = new ArrayList<String>();
@@ -614,15 +556,15 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		}
 		
 		AttributeUtil.set(node, BIOPAX_XREF_IDS, allxList, String.class);
-		AttributeUtil.set(node, BioPaxUtil.PRIVATE_TABLE_NAME, BIOPAX_UNIFICATION_REFERENCES, unifxfList, String.class);
-		AttributeUtil.set(node, BioPaxUtil.PRIVATE_TABLE_NAME, BIOPAX_RELATIONSHIP_REFERENCES, relxList, String.class);
-		AttributeUtil.set(node, BioPaxUtil.PRIVATE_TABLE_NAME, BIOPAX_PUBLICATION_REFERENCES, pubxList, String.class);	
+		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_UNIFICATION_REFERENCES, unifxfList, String.class);
+		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_RELATIONSHIP_REFERENCES, relxList, String.class);
+		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_PUBLICATION_REFERENCES, pubxList, String.class);	
 	}
 
 
 	@Override
 	public void createAttributesFromProperties(final BioPAXElement element,
-			final CyNode node) 
+			final CyNode node, CyNetwork network) 
 	{
 		Filter<PropertyEditor> filter = new Filter<PropertyEditor>() {
 			@Override
@@ -646,8 +588,6 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 				return true;
 			}
 		};
-		
-//		final String elementType = element.getModelInterface().getSimpleName();
 		
 		@SuppressWarnings("unchecked")
 		AbstractTraverser bpeAutoMapper = new AbstractTraverser(SimpleEditorMap.L3, filter) 
@@ -705,8 +645,43 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 			}
 		};
 
-		// do
+		// set the most important attributes
+		AttributeUtil.set(node, BIOPAX_RDF_ID, element.getRDFId(), String.class);
+		AttributeUtil.set(node, BIOPAX_ENTITY_TYPE, element.getModelInterface().getSimpleName(), String.class);	
+		
+		// add a piece of the BioPAX (RDF/XML without parent|child elements)
+		
+		String owl = BioPaxUtil.toOwl(element); // (requires common-lang-2.4 bundle to be started)
+		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS,BioPaxUtil.BIOPAX_DATA, owl, String.class);
+		
+		String name = BioPaxUtil.truncateLongStr(BioPaxUtil.getNodeName(element) + "");
+		
+		if (!(element instanceof Interaction)) {
+			// get chemical modification & cellular location attributes
+			NodeAttributesWrapper chemicalModificationsWrapper = getInteractionChemicalModifications(element);
+			// add modifications to the label/name
+			String modificationsString = getModificationsString(chemicalModificationsWrapper);
+			name += modificationsString;				
+			// add cellular location to the label/name
+			if(element instanceof PhysicalEntity) {
+				CellularLocationVocabulary cl = ((PhysicalEntity) element).getCellularLocation();
+				if(cl != null) {
+					String clAbbr = BioPaxUtil.getAbbrCellLocation(cl.toString())
+						.replaceAll("\\[|\\]", "");
+					name += (clAbbr.length() > 0) ? ("\n" + clAbbr) : "";
+				}
+			}
+			// set node attributes
+			setChemicalModificationAttributes(node, chemicalModificationsWrapper);	
+		}
+		// update the name (also used for node's label and quick find)
+		AttributeUtil.set(node, CyNode.NAME, name, String.class);		
+		
+		// traverse to create the rest of attr.
 		bpeAutoMapper.traverse(element, model);
+		
+        // create custom (convenience?) attributes, mainly - from xrefs
+		createExtraXrefAttributes(element, network, node);
 	}
 
     /**

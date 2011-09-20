@@ -89,7 +89,8 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 */
 	@Override
 	public void registerNetwork(CyNetworkView view) {
-		if (BioPaxUtil.isBioPAXNetwork(view.getModel())) {
+		if (BioPaxUtil.isBioPAXNetwork(view.getModel())
+				|| BioPaxUtil.isBiopaxSifNetwork(view.getModel())) {
 			registerNodeSelectionEvents(view);
 		}
 	}
@@ -144,7 +145,8 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 */
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {	
-		if(BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+		if(BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())
+				|| BioPaxUtil.isBiopaxSifNetwork(e.getNetworkView().getModel())) {
 			bpContainer.showLegend();
 			bpPanel.resetText();
 		}
@@ -156,7 +158,8 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		// update bpPanel accordingly
-       	if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+       	if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())
+       			|| BioPaxUtil.isBiopaxSifNetwork(e.getNetworkView().getModel())) {
             bpPanel.resetText();
         }
 	}
@@ -168,7 +171,8 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	*/
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+		if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())
+				|| BioPaxUtil.isBiopaxSifNetwork(e.getNetworkView().getModel())) {
 			CyNetworkView view = e.getNetworkView();
 			listeners.remove(view);
 		}

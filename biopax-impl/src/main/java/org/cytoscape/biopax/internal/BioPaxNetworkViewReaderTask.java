@@ -96,7 +96,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 				+ " BioPAX elements");
 		
 		//normalize/infer properties: displayName, cellularLocation, organism, dartaSource
-		fixDisplayName(model);
+		BioPaxUtil.fixDisplayName(model);
 		ModelUtils mu = new ModelUtils(model);
 		mu.inferPropertyFromParent("dataSource");
 		mu.inferPropertyFromParent("organism");
@@ -166,35 +166,5 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 		
 		return view;
 	}
-	
-	
-	private void fixDisplayName(Model model) {
-		if (log.isInfoEnabled())
-			log.info("Trying to auto-fix 'null' displayName...");
-		// where it's null, set to the shortest name if possible
-		for (Named e : model.getObjects(Named.class)) {
-			if (e.getDisplayName() == null) {
-				if (e.getStandardName() != null) {
-					e.setDisplayName(e.getStandardName());
-				} else if (!e.getName().isEmpty()) {
-					String dsp = e.getName().iterator().next();
-					for (String name : e.getName()) {
-						if (name.length() < dsp.length())
-							dsp = name;
-					}
-					e.setDisplayName(dsp);
-				}
-			}
-		}
-		// if required, set PE name to (already fixed) ER's name...
-		for(EntityReference er : model.getObjects(EntityReference.class)) {
-			for(SimplePhysicalEntity spe : er.getEntityReferenceOf()) {
-				if(spe.getDisplayName() == null || spe.getDisplayName().trim().length() == 0) {
-					if(er.getDisplayName() != null && er.getDisplayName().trim().length() > 0) {
-						spe.setDisplayName(er.getDisplayName());
-					}
-				}
-			}
-		}
-	}
+
 }
