@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Paint;
 
 import org.cytoscape.biopax.MapBioPaxToCytoscape;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -23,7 +22,6 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
  */
 public class BinarySifVisualStyleUtil {
 	public final static String BINARY_SIF_VISUAL_STYLE = "Binary_SIF_Version_1";
-	public final static String BINARY_NETWORK = "BINARY_NETWORK";
 	public final static String COMPONENT_OF = "COMPONENT_OF";
 	public final static String COMPONENT_IN_SAME = "IN_SAME_COMPONENT";
 	public final static String SEQUENTIAL_CATALYSIS = "SEQUENTIAL_CATALYSIS";
@@ -35,8 +33,6 @@ public class BinarySifVisualStyleUtil {
 	public final static String CO_CONTROL_INDEPENDENT_ANTI = "CO_CONTROL_INDEPENDENT_ANTI";
 	public final static String CO_CONTROL_DEPENDENT_SIMILAR = "CO_CONTROL_DEPENDENT_SIMILAR";
 	public final static String CO_CONTROL_DEPENDENT_ANTI = "CO_CONTROL_DEPENDENT_ANTI";
-	private final static String COMPLEX = "Complex";
-	private static final String INTERACTION = "interaction"; // TODO: Double check this constant
 
 	VisualStyle binarySifStyle;
 
@@ -65,8 +61,7 @@ public class BinarySifVisualStyleUtil {
 	public VisualStyle getVisualStyle() {
 		synchronized (this) {
 			if (binarySifStyle == null) {
-				binarySifStyle = styleFactory
-						.getInstance(BINARY_SIF_VISUAL_STYLE);
+				binarySifStyle = styleFactory.getInstance(BINARY_SIF_VISUAL_STYLE);
 
 				// set node opacity
 				binarySifStyle.setDefaultValue(
@@ -78,8 +73,7 @@ public class BinarySifVisualStyleUtil {
 				createNodeColors(binarySifStyle);
 				createNodeLabel(binarySifStyle);
 
-				binarySifStyle.setDefaultValue(MinimalVisualLexicon.EDGE_WIDTH,
-						4.0);
+				binarySifStyle.setDefaultValue(MinimalVisualLexicon.EDGE_WIDTH, 4.0);
 				createEdgeColor(binarySifStyle);
 				createDirectedEdges(binarySifStyle);
 
@@ -107,7 +101,7 @@ public class BinarySifVisualStyleUtil {
 				.createVisualMappingFunction(
 						MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE, String.class,
 						RichVisualLexicon.NODE_SHAPE);
-		function.putMapValue(COMPLEX, NodeShapeVisualProperty.HEXAGON);
+		function.putMapValue("Complex", NodeShapeVisualProperty.HEXAGON);
 		style.addVisualMappingFunction(function);
 	}
 
@@ -121,7 +115,7 @@ public class BinarySifVisualStyleUtil {
 				.createVisualMappingFunction(
 						MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE, String.class,
 						RichVisualLexicon.NODE_FILL_COLOR);
-		function.putMapValue(COMPLEX, lightBlue);
+		function.putMapValue("Complex", lightBlue);
 		style.addVisualMappingFunction(function);
 	}
 
@@ -130,7 +124,7 @@ public class BinarySifVisualStyleUtil {
 		// to a particular node color
 		style.setDefaultValue(MinimalVisualLexicon.EDGE_PAINT, Color.BLACK);
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
-				.createVisualMappingFunction(INTERACTION, String.class,
+				.createVisualMappingFunction("interaction", String.class,
 						RichVisualLexicon.EDGE_PAINT);
 		
 		function.putMapValue(PARTICIPATES_CONVERSION,

@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.biopax.MapBioPaxToCytoscape;
-import org.cytoscape.cpath2.internal.cytoscape.BinarySifVisualStyleUtil;
 import org.cytoscape.cpath2.internal.web_service.CPathProperties;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -34,7 +33,7 @@ public class NetworkGroupUtil {
         for (CyNetwork net : cyNetworks) {
             String attribute = MapBioPaxToCytoscape.BIOPAX_NETWORK;
             if (type == CPathProperties.DOWNLOAD_REDUCED_BINARY_SIF) {
-                attribute = BinarySifVisualStyleUtil.BINARY_NETWORK;
+                attribute = MapBioPaxToCytoscape.BINARY_NETWORK;
             }
             Boolean b = net.getCyRow().get(attribute, Boolean.class);
             if (b != null && b) {

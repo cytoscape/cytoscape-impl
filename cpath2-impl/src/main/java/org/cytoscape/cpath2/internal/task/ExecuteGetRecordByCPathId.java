@@ -14,10 +14,14 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.converter.OneTwoThree;
 import org.biopax.paxtools.io.SimpleIOHandler;
+import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
+import org.biopax.paxtools.model.level3.Complex;
+import org.biopax.paxtools.model.level3.EntityReference;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.cytoscape.biopax.BioPaxContainer;
 import org.cytoscape.biopax.MapBioPaxToCytoscape;
@@ -25,7 +29,6 @@ import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
 import org.cytoscape.biopax.NetworkListener;
 import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.cpath2.internal.CPath2Factory;
-import org.cytoscape.cpath2.internal.cytoscape.BinarySifVisualStyleUtil;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.cpath2.internal.util.SelectUtil;
 import org.cytoscape.cpath2.internal.web_service.CPathException;
@@ -160,14 +163,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			writer.write(data);
 			writer.close();
 
-			// Load up File via ImportHandler Framework
-			// the biopax graph reader is going to be called
-			// it will look for the network view title
-			// via system properties, so lets set it now
-//			if (networkTitle != null && networkTitle.length() > 0) {
-//				System.setProperty("biopax.network_view_title", networkTitle);
-//			}
-
 			CyNetworkReader reader = cPathFactory.getCyNetworkViewReaderManager().getReader(tmpFile.toURI(),
 					tmpFile.getName());
 			if (taskMonitor != null) {
@@ -271,10 +266,10 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		final CyNetwork cyNetwork = view.getModel();
 
 		// Set the Quick Find Default Index
-		AttributeUtil.set(cyNetwork, "quickfind.default_index", "biopax.node_label", String.class);
+		AttributeUtil.set(cyNetwork, "quickfind.default_index", CyNode.NAME, String.class);
 
 		// Specify that this is a BINARY_NETWORK
-		AttributeUtil.set(cyNetwork, BinarySifVisualStyleUtil.BINARY_NETWORK, Boolean.TRUE, Boolean.class);
+		AttributeUtil.set(cyNetwork, MapBioPaxToCytoscape.BINARY_NETWORK, Boolean.TRUE, Boolean.class);
 
 		// Get all node details.
 		getNodeDetails(cyNetwork, taskMonitor);
@@ -454,6 +449,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			for (int j = 0; j < currentList.size(); j++) {
 				CyNode node = currentList.get(j);
 				String name = node.getCyRow().get(CyNode.NAME, String.class);
+				// 'name' is actually a CPATH-ID (for SIF imports)
 				nodes.put(name, node);
 				ids[j] = Long.valueOf(name);
 			}
@@ -464,14 +460,30 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				if(BioPAXLevel.L2.equals(model.getLevel())) { // 
 					model = (new OneTwoThree()).filter(model);
 				}
-				
-				for (PhysicalEntity pe : model.getObjects(PhysicalEntity.class)) {
-					String id = BioPaxUtil.getLocalPartRdfId(pe);
-					if (id != null) {
-						//id = id.replaceAll("CPATH-", ""); // why??
-						mapBioPaxToCytoscape.createAttributesFromProperties(pe, nodes.get(id));
+				//normalize/infer properties: displayName, organism, dataSource
+				BioPaxUtil.fixDisplayName(model);
+				ModelUtils mu = new ModelUtils(model);
+				mu.inferPropertyFromParent("dataSource");
+				mu.inferPropertyFromParent("organism");
+				//map biopax properties to Cy attributes for SIF nodes
+				for (BioPAXElement e : model.getObjects()) {
+					if(e instanceof EntityReference 
+							|| e instanceof Complex 
+								|| e.getModelInterface().equals(PhysicalEntity.class)) {
+						String id = e.getRDFId().replaceFirst(model.getXmlBase(), "");
+						if (id != null) {
+							id = id.replaceAll("CPATH-", "");
+							CyNode node = nodes.get(id);
+							if(node != null)
+								mapBioPaxToCytoscape.createAttributesFromProperties(e, node, cyNetwork);
+							// - this will also update the 'name' attribute (to a biol. label)
+							else {
+								logger.debug("Oops: no node for " + e.getRDFId());
+							}
+						}
 					}
 				}
+				
 				double percentComplete = i / (double) batchList.size();
 				if (taskMonitor != null) {
 					taskMonitor.setProgress(percentComplete);
@@ -492,9 +504,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		for (CyNode node : cyNetwork.getNodeList()) {
 			CyRow row = node.getCyRow();
 			String label = row.get(CyNode.NAME, String.class);
-
-			// If we already have details on this node, skip it.
-			if (label == null) {
+			if (label != null) {
 				currentList.add(node);
 				counter++;
 			}
