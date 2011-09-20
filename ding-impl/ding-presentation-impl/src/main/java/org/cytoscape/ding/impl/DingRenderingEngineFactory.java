@@ -14,6 +14,7 @@ import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
@@ -59,7 +60,7 @@ public class DingRenderingEngineFactory implements
 	private Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
 
 	private TaskManager tm;
-	private final CyTableManager tableMgr;
+	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
 	
 	
@@ -67,7 +68,8 @@ public class DingRenderingEngineFactory implements
 			CyRootNetworkFactory rootNetworkFactory, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
 			TaskManager tm, CyServiceRegistrar registrar,
-			CyTableManager tableMgr, CyEventHelper eventHelper,
+			CyNetworkTableManager tableMgr,
+			CyEventHelper eventHelper,
 			RenderingEngineManager renderingEngineManager) {
 		
 		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);

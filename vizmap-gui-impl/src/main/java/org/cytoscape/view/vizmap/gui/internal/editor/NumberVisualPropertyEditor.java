@@ -35,6 +35,7 @@
 package org.cytoscape.view.vizmap.gui.internal.editor;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
@@ -49,7 +50,7 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 	/**
 	 * Creates a new DiscreteNumber object.
 	 */
-	public NumberVisualPropertyEditor(Class<T> type, final CyTableManager manager,
+	public NumberVisualPropertyEditor(Class<T> type, final CyNetworkTableManager manager,
 			final CyApplicationManager appManager, final SelectedVisualStyleManager selectedManager,
 			final EditorManager editorManager, final VisualMappingManager vmm) {
 		super(type, new CyNumberPropertyEditor<T>(type, null));

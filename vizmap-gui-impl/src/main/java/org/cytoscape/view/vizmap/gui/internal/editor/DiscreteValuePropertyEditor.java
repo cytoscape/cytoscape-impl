@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.gui.internal.editor;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
@@ -21,7 +22,7 @@ import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPr
  */
 public class DiscreteValuePropertyEditor<T> extends BasicVisualPropertyEditor<T> {
 
-	public DiscreteValuePropertyEditor(Class<T> type, Set<T> values, final CyTableManager manager,
+	public DiscreteValuePropertyEditor(Class<T> type, Set<T> values, final CyNetworkTableManager manager,
 			final CyApplicationManager appManager, final SelectedVisualStyleManager selectedManager,
 			final EditorManager editorManager, final VisualMappingManager vmm) {
 		super(type, new CyComboBoxPropertyEditor());

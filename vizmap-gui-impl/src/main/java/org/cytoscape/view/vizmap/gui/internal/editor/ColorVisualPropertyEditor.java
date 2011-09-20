@@ -38,7 +38,7 @@ import java.awt.Color;
 import java.awt.Paint;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -59,7 +59,7 @@ public class ColorVisualPropertyEditor extends
 	 * Constructor. Should instantiate one editor per VisualProperty.
 	 */
 	public ColorVisualPropertyEditor(final Class<Paint> type,
-			final CyTableManager manager,
+			final CyNetworkTableManager manager,
 			final CyApplicationManager appManager,
 			final SelectedVisualStyleManager selectedManager, final EditorManager editorManager, final VisualMappingManager vmm) {
 		super(type, new CyColorPropertyEditor());

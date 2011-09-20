@@ -25,6 +25,8 @@
 
 	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
 
+	<osgi:reference id="cyNetworkTableManagerServiceRef" interface="org.cytoscape.model.CyNetworkTableManager" />
+
 	<osgi:reference id="visualMappingManagerServiceRef"
 		interface="org.cytoscape.view.vizmap.VisualMappingManager" />
 

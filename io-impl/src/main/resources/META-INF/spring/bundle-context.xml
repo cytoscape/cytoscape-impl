@@ -455,6 +455,7 @@
         <constructor-arg ref="vizmapReaderManager" />
         <constructor-arg ref="sessionTableReaderFactory" />
         <constructor-arg ref="cyTableManagerServiceRef"/>
+        <constructor-arg ref="cyNetworkTableManagerServiceRef"/>
     </bean>
 
     <bean id="cysessionReaderFactory"

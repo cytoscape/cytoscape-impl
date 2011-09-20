@@ -23,7 +23,7 @@
 
 	<bean id="attributeSetManager"
 		class="org.cytoscape.view.vizmap.gui.internal.AttributeSetManager">
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 	</bean>
 
 	<!-- Mapping Factory Manager -->
@@ -60,7 +60,7 @@
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
 		<constructor-arg ref="attributeSetManager" />
 		<constructor-arg ref="vmmServiceRef" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="selectedVisualStyleManager" />
 	</bean>
 
@@ -137,7 +137,7 @@
 	<bean id="colorPropertyEditor"
 		class="org.cytoscape.view.vizmap.gui.internal.editor.ColorVisualPropertyEditor">
 		<constructor-arg ref="paintClass" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
 		<constructor-arg ref="selectedVisualStyleManager" />
 		<constructor-arg ref="editorManager" />
@@ -146,7 +146,7 @@
 	<bean id="doublePropertyEditor"
 		class="org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor">
 		<constructor-arg ref="doubleClass" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
 		<constructor-arg ref="selectedVisualStyleManager" />
 		<constructor-arg ref="editorManager" />
@@ -155,7 +155,7 @@
 	<bean id="integerPropertyEditor"
 		class="org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor">
 		<constructor-arg ref="integerClass" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
 		<constructor-arg ref="selectedVisualStyleManager" />
 		<constructor-arg ref="editorManager" />
@@ -164,7 +164,7 @@
 	<bean id="floatPropertyEditor"
 		class="org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor">
 		<constructor-arg ref="floatClass" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
 		<constructor-arg ref="selectedVisualStyleManager" />
 		<constructor-arg ref="editorManager" />
@@ -313,7 +313,7 @@
 		<constructor-arg ref="vizMapPropertySheetBuilder" />
 		<constructor-arg ref="propertySheetPanel" />
 		<constructor-arg ref="vizMapperMainPanel" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="cyApplicationManagerServiceRef" />
 		<constructor-arg ref="attributeSetManager" />
 		<constructor-arg ref="vizMapperUtil" />

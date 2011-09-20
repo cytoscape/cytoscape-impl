@@ -10,11 +10,10 @@ import java.util.Set;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -38,12 +37,12 @@ public class AttributeSetManager implements ColumnDeletedListener,
 		GRAPH_OBJECTS.add(CyNetwork.class);
 	}
 
-	private final CyTableManager tableMgr;
+	private final CyNetworkTableManager tableMgr;
 
 	private final Map<CyNetwork, Map<Class<? extends CyTableEntry>, AttributeSet>> attrSets;
 	private final Map<CyNetwork, Map<Class<? extends CyTableEntry>, Set<CyTable>>> tableSets;
 
-	public AttributeSetManager(final CyTableManager tableMgr) {
+	public AttributeSetManager(final CyNetworkTableManager tableMgr) {
 		this.tableMgr = tableMgr;
 
 		this.attrSets = new HashMap<CyNetwork, Map<Class<? extends CyTableEntry>, AttributeSet>>();
@@ -83,8 +82,7 @@ public class AttributeSetManager implements ColumnDeletedListener,
 		final Map<Class<? extends CyTableEntry>, AttributeSet> attrSetMap = new HashMap<Class<? extends CyTableEntry>, AttributeSet>();
 
 		for (final Class<? extends CyTableEntry> objectType : GRAPH_OBJECTS) {
-			final Map<String, CyTable> tableMap = tableMgr.getTableMap(
-					objectType, network);
+			final Map<String, CyTable> tableMap = tableMgr.getTables(network, objectType);
 			final Collection<CyTable> tables = tableMap.values();
 
 			object2tableMap.put(objectType, new HashSet<CyTable>(tables));

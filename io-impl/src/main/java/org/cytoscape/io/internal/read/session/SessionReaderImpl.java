@@ -81,9 +81,11 @@ import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -118,6 +120,7 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyTableManager tableManager;
+	private final CyNetworkTableManager networkTableManager;
 
 	private Cysession cysession;
 	private Bookmarks bookmarks;
@@ -138,7 +141,8 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 							 final CyPropertyReaderManager propertyReaderMgr,
 							 final VizmapReaderManager vizmapReaderMgr,
 							 final CSVCyReaderFactory csvCyReaderFactory,
-							 final CyTableManager tableManager) {
+							 final CyTableManager tableManager,
+							 final CyNetworkTableManager networkTableManager) {
 
 		if (sourceInputStream == null) throw new NullPointerException("input stream is null!");
 		this.sourceInputStream = sourceInputStream;
@@ -157,6 +161,9 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 		
 		if (tableManager == null) throw new NullPointerException("table manager is null!");
 		this.tableManager = tableManager;
+
+		if (networkTableManager == null) throw new NullPointerException("network table manager is null!");
+		this.networkTableManager = networkTableManager;
 
 		filenameTableMap = new HashMap<String, CyTable>();
 		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
@@ -298,9 +305,7 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 				continue;
 
 			for (CyTableMetadataBuilder builder : builders) {
-				final Set<CyNetwork> networks = new HashSet<CyNetwork>();
-				networks.add(network);
-				builder.setNetworks(networks);
+				builder.setNetwork(network);
 				mergeNetworkTable(network, builder);
 				CyTableMetadata metadata = builder.build();
 				tableMetadata.add(metadata);
@@ -325,14 +330,15 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 			table.deleteColumn(XGMMLNetworkReader.ORIGINAL_ID_COLUMN);
 	}
 
+	@SuppressWarnings("unchecked")
 	void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder) {
-		Class<?> type = builder.getType();
+		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) builder.getType();
 		String namespace = builder.getNamespace();
 		if ("VIEW".equals(namespace)) {
 			return; // TODO: disabled due to timing conflicts with Ding.
 		}
 		
-		Map<String, CyTable> tableMap = tableManager.getTableMap(type, network);
+		Map<String, CyTable> tableMap = networkTableManager.getTables(network, type);
 		CyTable targetTable = tableMap.get(namespace);
 		CyTable mappingTable = tableMap.get(CyNetwork.HIDDEN_ATTRS);
 		CyTable sourceTable = builder.getCyTable();
@@ -455,8 +461,7 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 		if (matcher.matches()) {
 			String title = SessionUtil.unescape(matcher.group(3));
 			table.setTitle(title);
-			Set<CyNetwork> networks = Collections.emptySet();
-			CyTableMetadataBuilder builder = new CyTableMetadataBuilder().setCyTable(table).setNetworks(networks);
+			CyTableMetadataBuilder builder = new CyTableMetadataBuilder().setCyTable(table).setNetwork(null);
 			tableMetadata.add(builder.build());
 			
 			String filename = matcher.group(1);

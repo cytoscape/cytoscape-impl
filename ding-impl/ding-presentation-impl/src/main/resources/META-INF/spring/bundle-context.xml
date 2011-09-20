@@ -32,7 +32,7 @@
 		<constructor-arg ref="dVisualLexicon" />
 		<constructor-arg ref="taskManagerServiceRef" />
 		<constructor-arg ref="cyServiceRegistrarRef" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="cyEventHelperServiceRef" />
 		<constructor-arg ref="renderingEngineManagerServiceRef" />
 	</bean>
@@ -74,7 +74,7 @@
 		<constructor-arg ref="dVisualLexicon" />
 		<constructor-arg ref="taskManagerServiceRef" />
 		<constructor-arg ref="cyServiceRegistrarRef" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
+		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
 		<constructor-arg ref="cyEventHelperServiceRef" />
 	</bean>
 

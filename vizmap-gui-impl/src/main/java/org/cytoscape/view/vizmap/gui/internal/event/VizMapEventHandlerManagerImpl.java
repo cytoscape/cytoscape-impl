@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
@@ -38,7 +38,7 @@ public class VizMapEventHandlerManagerImpl implements
 	
 	private VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
 	
-	private final CyTableManager tableMgr;
+	private final CyNetworkTableManager tableMgr;
 	private final CyApplicationManager applicationManager;
 	
 	private final AttributeSetManager attrManager;
@@ -48,7 +48,7 @@ public class VizMapEventHandlerManagerImpl implements
 	public VizMapEventHandlerManagerImpl(final SelectedVisualStyleManager manager, final EditorManager editorManager,
 					     final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
 					     final PropertySheetPanel propertySheetPanel, final VizMapperMainPanel gui,
-					     final CyTableManager tableMgr, final CyApplicationManager applicationManager, final AttributeSetManager attrManager,  final VizMapperUtil util)
+					     final CyNetworkTableManager tableMgr, final CyApplicationManager applicationManager, final AttributeSetManager attrManager,  final VizMapperUtil util)
 	{
 		this.vizMapPropertySheetBuilder = vizMapPropertySheetBuilder;
 		this.editorManager = editorManager;

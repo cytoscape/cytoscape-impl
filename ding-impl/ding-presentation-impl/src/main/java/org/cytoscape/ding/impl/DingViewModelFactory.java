@@ -9,8 +9,8 @@ import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
@@ -44,12 +44,12 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
 
 	private TaskManager tm;
-	private final CyTableManager tableMgr;
+	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkFactory rootNetworkFactory,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, TaskManager tm,
-			CyServiceRegistrar registrar, CyTableManager tableMgr, CyEventHelper eventHelper) {
+			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper) {
 
 		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
 		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);

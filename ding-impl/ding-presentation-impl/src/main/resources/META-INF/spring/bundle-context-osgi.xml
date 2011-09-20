@@ -43,6 +43,9 @@
 	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager">
 	</osgi:reference>
 
+	<osgi:reference id="cyNetworkTableManagerServiceRef" interface="org.cytoscape.model.CyNetworkTableManager">
+	</osgi:reference>
+
 	<osgi:reference id="cyNetworkManagerServiceRef"
 		interface="org.cytoscape.model.CyNetworkManager">
 	</osgi:reference>

@@ -1,4 +1,4 @@
-package org.cytoscape.io.internal.read.session;
+package org.cytoscape.session.internal;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;

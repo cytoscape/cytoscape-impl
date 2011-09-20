@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JPanel;
@@ -29,9 +28,11 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
@@ -47,7 +48,7 @@ public class TableBrowser extends JPanel implements CytoPanelComponent, ActionLi
 	
 	private static final long serialVersionUID = 1968196123280466989L;
 	
-	private final CyTableManager tableManager;
+	private final CyNetworkTableManager networkTableManager;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final EquationCompiler compiler;
 	private final BrowserTable browserTable;
@@ -60,7 +61,9 @@ public class TableBrowser extends JPanel implements CytoPanelComponent, ActionLi
 	private final Map<CyTable, TableMetadata> tableToMetadataMap;
 	private final CyApplicationManager applicationManager;
 
-	TableBrowser(final CyTableManager tableManager, final CyServiceRegistrar serviceRegistrar,
+	TableBrowser(final CyTableManager tableManager,
+             final CyNetworkTableManager networkTableManager,
+             final CyServiceRegistrar serviceRegistrar,
 		     final EquationCompiler compiler, final OpenBrowser openBrowser,
 		     final CyNetworkManager networkManager,
 		     final TableTaskFactory deleteTableTaskFactoryService,
@@ -68,7 +71,7 @@ public class TableBrowser extends JPanel implements CytoPanelComponent, ActionLi
 		     final PopupMenuHelper popupMenuHelper,
 		     final CyApplicationManager applicationManager)
 	{
-		this.tableManager = tableManager;
+		this.networkTableManager = networkTableManager;
 		this.serviceRegistrar = serviceRegistrar;
 		this.compiler = compiler;
 
@@ -182,14 +185,15 @@ public class TableBrowser extends JPanel implements CytoPanelComponent, ActionLi
 		if (currentTable == null) {
 			comboBoxModel.addAndSetSelectedItem(currentNetwork.getDefaultNodeTable());
 		} else {
+			Class<? extends CyTableEntry> tableType = null;
 			// Determine which table type we're currently displaying:
-			final Set<CyTableMetadata> tableMetadataSet =
-				tableManager.getAllTables(/* includePrivate = */false);
-			Class<?> tableType = null;
-			for (final CyTableMetadata tableMetadata : tableMetadataSet) {
-				if (currentTable.getSUID() == tableMetadata.getCyTable().getSUID()) {
-					tableType = tableMetadata.getType();
-					break;
+			for (Class<? extends CyTableEntry> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
+				final Map<String, CyTable> tables = networkTableManager.getTables(currentNetwork, type);
+				for (final CyTable table : tables.values()) {
+					if (currentTable.getSUID() == table.getSUID()) {
+						tableType = type;
+						break;
+					}
 				}
 			}
 

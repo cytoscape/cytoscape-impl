@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +22,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableMetadata;
 
 
 public class TableChooser extends JComboBox {
@@ -60,10 +58,7 @@ final class MyComboBoxModel extends DefaultComboBoxModel {
 		this.networkManager   = networkManager;
 		this.tableToStringMap = tableToStringMap;
 
-		oldSet = new HashSet<CyTable>();
-		for (CyTableMetadata metadata : tableManager.getAllTables(/* includePrivate = */ false)) {
-			oldSet.add(metadata.getCyTable());
-		}
+		oldSet = tableManager.getAllTables(/* includePrivate = */ false);
 		tables = new ArrayList<CyTable>(oldSet);
 		Collections.sort(tables, tableComparator);
 		updateTableToStringMap();
@@ -84,10 +79,7 @@ final class MyComboBoxModel extends DefaultComboBoxModel {
 	}
 
 	public int getSize() {
-		final Set<CyTable> tableSet = new HashSet<CyTable>();
-		for (CyTableMetadata metadata : tableManager.getAllTables(/* includePrivate = */ false)) {
-			tableSet.add(metadata.getCyTable());
-		}
+		final Set<CyTable> tableSet = tableManager.getAllTables(/* includePrivate = */ false);
 		if (!tableSet.equals(oldSet)) {
 			oldSet = tableSet;
 			fireContentsChanged(this, 0, tableSet.size() - 1);

@@ -361,17 +361,14 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
 			String tableTitle = SessionUtil.escape(table.getTitle());
 			String fileName;
-			Set<CyNetwork> networks = metadata.getCyNetworks();
+			CyNetwork network = metadata.getCyNetwork();
 			
-			if (networks.size() == 0) {
+			if (network == null) {
 				fileName = String.format("global/%d-%s.cytable", table.getSUID(), tableTitle);
 			} else {
-				CyNetwork network = findIntersection(includedNetworks, networks);
-				
-				if (network == null) {
+				if (!includedNetworks.contains(network)) {
 					continue;
 				}
-				
 				fileName = SessionUtil.getNetworkTableFilename(network, metadata);
 			}
 			
@@ -385,14 +382,5 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 				zos.closeEntry();
 			}
 		}
-	}
-
-	private <T> T findIntersection(Set<T> set1, Set<T> set2) {
-		for (T element: set1) {
-			if (set2.contains(element)) {
-				return element;
-			}
-		}
-		return null;
 	}
 }

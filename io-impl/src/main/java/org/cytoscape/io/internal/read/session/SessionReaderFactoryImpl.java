@@ -35,6 +35,7 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskIterator;
 
@@ -46,6 +47,7 @@ public class SessionReaderFactoryImpl implements InputStreamTaskFactory {
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyTableManager tableManager;
+	private final CyNetworkTableManager networkTableManager;
 
 	private InputStream inputStream;
 	private String inputName;
@@ -55,13 +57,15 @@ public class SessionReaderFactoryImpl implements InputStreamTaskFactory {
 									final CyPropertyReaderManager propertyReaderMgr,
 									final VizmapReaderManager vizmapReaderMgr,
 									final CSVCyReaderFactory csvCyReaderFactory,
-									final CyTableManager tableManager) {
+									final CyTableManager tableManager,
+									final CyNetworkTableManager networkTableManager) {
 		this.filter = filter;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.csvCyReaderFactory = csvCyReaderFactory;
 		this.tableManager = tableManager;
+		this.networkTableManager = networkTableManager;
 	}
 
 	public void setInputStream(InputStream is, String in) {
@@ -76,6 +80,7 @@ public class SessionReaderFactoryImpl implements InputStreamTaskFactory {
 
 	public TaskIterator getTaskIterator() {
 		return new TaskIterator(new SessionReaderImpl(inputStream, networkReaderMgr, propertyReaderMgr,
-													  vizmapReaderMgr, csvCyReaderFactory, tableManager));
+													  vizmapReaderMgr, csvCyReaderFactory, tableManager,
+													  networkTableManager));
 	}
 }

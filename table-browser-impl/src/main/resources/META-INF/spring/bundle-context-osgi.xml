@@ -7,6 +7,7 @@
 
 	<!-- imports -->
 	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
+	<osgi:reference id="cyNetworkTableManagerServiceRef" interface="org.cytoscape.model.CyNetworkTableManager" />
 	<osgi:reference id="cyServiceRegistrarServiceRef" interface="org.cytoscape.service.util.CyServiceRegistrar" />
 	<osgi:reference id="compilerServiceRef" interface="org.cytoscape.equations.EquationCompiler" />
 	<osgi:reference id="openBrowserServiceRef" interface="org.cytoscape.util.swing.OpenBrowser" />

@@ -46,9 +46,13 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
@@ -84,6 +88,7 @@ public class CySessionManagerImpl implements CySessionManager {
 	private final CyEventHelper cyEventHelper;
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tblMgr;
+	private final CyNetworkTableManager netTblMgr;
 	private final VisualMappingManager vmMgr;
 	private final CyNetworkViewManager nvMgr;
 
@@ -94,11 +99,13 @@ public class CySessionManagerImpl implements CySessionManager {
 	public CySessionManagerImpl(final CyEventHelper cyEventHelper,
 								final CyNetworkManager netMgr,
 								final CyTableManager tblMgr,
+								final CyNetworkTableManager netTblMgr,
 								final VisualMappingManager vmMgr,
 								final CyNetworkViewManager nvMgr) {
 		this.cyEventHelper = cyEventHelper;
 		this.netMgr = netMgr;
 		this.tblMgr = tblMgr;
+		this.netTblMgr = netTblMgr;
 		this.vmMgr = vmMgr;
 		this.nvMgr = nvMgr;
 		sessionProperties = new HashMap<CyProperty<?>, Map<String, String>>();
@@ -131,17 +138,68 @@ public class CySessionManagerImpl implements CySessionManager {
 		Cysession cysess = cysessFactory.createCysession(savingEvent.getDesktop(), savingEvent.getCytopanels(), null);
 
 		Map<String, List<File>> pluginMap = savingEvent.getPluginFileListMap();
-		Set<CyTableMetadata> tables = tblMgr.getAllTables(true);
+		Set<CyTable> tables = tblMgr.getAllTables(true);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 		Properties props = getProperties();
 		Bookmarks bkmarks = getBookmarks();
 
+		Set<CyTableMetadata> metadata = buildMetadata(tables, netViews);
 		// Build the session
 		CySession sess = new CySession.Builder().cytoscapeProperties(props).bookmarks(bkmarks).cysession(cysess)
-				.pluginFileListMap(pluginMap).tables(tables).networkViews(netViews).visualStyles(styles)
+				.pluginFileListMap(pluginMap).tables(metadata).networkViews(netViews).visualStyles(styles)
 				.viewVisualStyleMap(stylesMap).build();
 
 		return sess;
+	}
+
+	private Set<CyTableMetadata> buildMetadata(Set<CyTable> tables, Set<CyNetworkView> netViews) {
+		Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
+		
+		// Figure out which tables aren't associated with networks
+		Map<CyTable, Set<CyTableMetadata>> networkTables = getNetworkTables(netViews);
+		
+		// Merge network/global metadata into a single set
+		for (CyTable table : tables) {
+			Set<CyTableMetadata> metadataSet = networkTables.get(table);
+			if (metadataSet == null || metadataSet.size() == 0) {
+				result.add(new CyTableMetadataImpl.CyTableMetadataBuilder().setCyTable(table));
+			} else {
+				for (CyTableMetadata metadata : metadataSet) {
+					result.add(metadata);
+				}
+			}
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Class<? extends CyTableEntry>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
+	
+	private Map<CyTable, Set<CyTableMetadata>> getNetworkTables(Set<CyNetworkView> views) {
+		Map<CyTable, Set<CyTableMetadata>> result = new HashMap<CyTable, Set<CyTableMetadata>>();
+		for (CyNetworkView view : views) {
+			CyNetwork network = view.getModel();
+			for (Class<? extends CyTableEntry> type : TYPES) {
+				Map<String, CyTable> tableMap = netTblMgr.getTables(network, type);
+				for (Entry<String, CyTable> entry : tableMap.entrySet()) {
+					CyTable table = entry.getValue();
+					
+					Set<CyTableMetadata> metadataSet = result.get(table);
+					if (metadataSet == null) {
+						metadataSet = new HashSet<CyTableMetadata>();
+						result.put(table, metadataSet);
+					}
+					String namespace = entry.getKey();
+					metadataSet.add(new CyTableMetadataImpl.CyTableMetadataBuilder()
+										.setCyTable(table)
+										.setNamespace(namespace)
+										.setType(type)
+										.setNetwork(network)
+										.build());
+				}
+			}
+		}
+		return result ;
 	}
 
 	@Override
@@ -166,6 +224,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		} else {
 			logger.debug("Restoring the session...");
 			restoreNetworks(sess);
+			restoreTables(sess);
 			restoreVisualStyles(sess);
 			restoreSelection(sess);
 		}
@@ -174,6 +233,16 @@ public class CySessionManagerImpl implements CySessionManager {
 		currentFileName = fileName;
 
 		cyEventHelper.fireEvent(new SessionLoadedEvent(this, currentSession, getCurrentSessionFileName()));
+	}
+
+	private void restoreTables(CySession sess) {
+		// Register global tables
+		for (CyTableMetadata metadata : sess.getTables()) {
+			CyNetwork network = metadata.getCyNetwork();
+			if (network == null) {
+				tblMgr.addTable(metadata.getCyTable());
+			}
+		}
 	}
 
 	@Override
@@ -384,5 +453,6 @@ public class CySessionManagerImpl implements CySessionManager {
 		}
 
 		// TODO: destroy unattached tables--how?
+		tblMgr.reset();
 	}
 }

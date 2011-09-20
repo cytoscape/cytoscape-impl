@@ -92,6 +92,8 @@
 
 	<osgi:reference id="cyTableManagerServiceRef" interface="org.cytoscape.model.CyTableManager" />
 
+	<osgi:reference id="cyNetworkTableManagerServiceRef" interface="org.cytoscape.model.CyNetworkTableManager" />
+
 	<!-- passthrough mapping factory -->
 	<osgi:reference id="passthroughMappingFactoryRef" 
 		interface="org.cytoscape.view.vizmap.VisualMappingFunctionFactory" 

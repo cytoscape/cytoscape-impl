@@ -5,7 +5,9 @@ import java.awt.Paint;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
@@ -14,7 +16,7 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 public class GradientEditor extends AbstractContinuousMappingEditor<Double, Color> {
 		
-	public GradientEditor(final CyTableManager manager, final CyApplicationManager appManager, final SelectedVisualStyleManager selectedManager, final EditorManager editorManager, final VisualMappingManager vmm) {
+	public GradientEditor(final CyNetworkTableManager manager, final CyApplicationManager appManager, final SelectedVisualStyleManager selectedManager, final EditorManager editorManager, final VisualMappingManager vmm) {
 		super(manager, appManager, selectedManager, editorManager, vmm);
 	}
 	
@@ -25,7 +27,9 @@ public class GradientEditor extends AbstractContinuousMappingEditor<Double, Colo
 		// TODO: error chekcing
 		
 		mapping = (ContinuousMapping<Double, Color>) value;
-		final CyTable attr = manager.getTableMap(mapping.getVisualProperty().getTargetDataType(), appManager.getCurrentNetwork()).get(CyNetwork.DEFAULT_ATTRS);
+		@SuppressWarnings("unchecked")
+		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) mapping.getVisualProperty().getTargetDataType();
+		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 		this.editorPanel = new GradientEditorPanel(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager, editorManager.getValueEditor(Paint.class), vmm);		
 	}
 }

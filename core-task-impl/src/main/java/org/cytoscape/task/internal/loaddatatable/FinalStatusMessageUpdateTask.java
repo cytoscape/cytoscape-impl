@@ -6,7 +6,6 @@ import java.util.Set;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -43,10 +42,9 @@ class FinalStatusMessageUpdateTask extends AbstractTask {
 	private CyTable getTableByTitle(CyTableManager tableMgr, String tableTitle){
 		CyTable retValue = null;
 
-		Set<CyTableMetadata> tableSet = tableMgr.getAllTables(false);
+		Set<CyTable> tableSet = tableMgr.getAllTables(false);
 
-		for (CyTableMetadata metadata : tableSet){
-			CyTable tbl= metadata.getCyTable();
+		for (CyTable tbl : tableSet){
 			if(tbl.getTitle().equalsIgnoreCase(tableTitle)){
 				retValue = tbl;
 				break;

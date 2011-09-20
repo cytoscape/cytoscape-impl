@@ -49,6 +49,7 @@ import javax.swing.JOptionPane;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
@@ -90,7 +91,7 @@ public class EditorManagerImpl implements EditorManager {
 
 	private final CyApplicationManager appManager;
 
-	private final CyTableManager tableManager;
+	private final CyNetworkTableManager tableManager;
 	private final SelectedVisualStyleManager selectedManager;
 	private final VisualMappingManager vmm;
 
@@ -98,7 +99,7 @@ public class EditorManagerImpl implements EditorManager {
 	 * Creates a new EditorFactory object.
 	 */
 	public EditorManagerImpl(final CyApplicationManager appManager, final AttributeSetManager attrManager,
-			final VisualMappingManager vmm, final CyTableManager tableManager,
+			final VisualMappingManager vmm, final CyNetworkTableManager tableManager,
 			final SelectedVisualStyleManager selectedManager) {
 
 		this.appManager = appManager;

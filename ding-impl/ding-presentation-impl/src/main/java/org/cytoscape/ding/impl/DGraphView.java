@@ -88,11 +88,11 @@ import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
@@ -392,7 +392,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
 			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
 			TaskManager manager, CyEventHelper eventHelper,
-			CyTableManager tableMgr) {
+			CyNetworkTableManager tableMgr) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, nodeViewTFs, edgeViewTFs,
 				emptySpaceTFs, dropNodeViewTFs, dropEmptySpaceTFs, manager, eventHelper, tableMgr);
@@ -427,7 +427,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
 			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
 			TaskManager manager, CyEventHelper eventHelper,
-			CyTableManager tableMgr) {
+			CyNetworkTableManager tableMgr) {
 		super(model);
 		this.props = new Properties();
 		
@@ -443,14 +443,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.manager = manager;
 
 		final CyTable nodeCAM = dataFactory.createTable("node view", Identifiable.SUID, Long.class, false, false);
-		tableMgr.addTable(nodeCAM);
 		nodeCAM.createColumn("hidden", Boolean.class, false);
-		tableMgr.getTableMap(CyNode.class, model).put("VIEW", nodeCAM);
+		tableMgr.setTable(model, CyNode.class, "VIEW", nodeCAM);
 
 		final CyTable edgeCAM = dataFactory.createTable("edge view", Identifiable.SUID, Long.class, false, false);
-		tableMgr.addTable(edgeCAM);
 		edgeCAM.createColumn("hidden", Boolean.class, false);
-		tableMgr.getTableMap(CyEdge.class, model).put("VIEW", edgeCAM);
+		tableMgr.setTable(model, CyEdge.class, "VIEW", edgeCAM);
 
 		// creating empty subnetworks
 		m_drawPersp = cyRoot.convert(model).addSubNetwork();

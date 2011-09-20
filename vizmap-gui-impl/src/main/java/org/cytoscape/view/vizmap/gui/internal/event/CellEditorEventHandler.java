@@ -36,6 +36,7 @@ import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
@@ -77,7 +78,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 	// Keeps current discrete mappings. NOT PERMANENT
 	private final Map<String, Map<Object, Object>> discMapBuffer;
 
-	private final CyTableManager tableMgr;
+	private final CyNetworkTableManager tableMgr;
 
 	protected final VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
 	protected final PropertySheetPanel propertySheetPanel;
@@ -93,7 +94,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 	 */
 	public CellEditorEventHandler(final SelectedVisualStyleManager manager,
 			final PropertySheetPanel propertySheetPanel,
-			final CyTableManager tableMgr,
+			final CyNetworkTableManager tableMgr,
 			final CyApplicationManager applicationManager,
 			final VizMapPropertySheetBuilder vizMapPropertySheetBuilder, final AttributeSetManager attrManager, final VizMapperUtil util) {
 		
@@ -475,10 +476,9 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		/*
 		 * Ignore if not compatible.
 		 */
-		final CyTable attrForTest = tableMgr.getTableMap(
-				editor.getTargetObjectType(),
-				applicationManager.getCurrentNetwork()).get(
-				CyNetwork.DEFAULT_ATTRS);
+		@SuppressWarnings("unchecked")
+		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) editor.getTargetObjectType();
+		final CyTable attrForTest = tableMgr.getTable(applicationManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 
 		final Class<K> dataType = (Class<K>)attrForTest.getColumn(ctrAttrName).getType();
 
