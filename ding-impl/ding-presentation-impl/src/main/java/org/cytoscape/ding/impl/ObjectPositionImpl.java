@@ -1,5 +1,8 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.Justification.JUSTIFY_CENTER;
+import static org.cytoscape.ding.Position.CENTER;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -7,9 +10,6 @@ import java.util.Locale;
 import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
-
-import static org.cytoscape.ding.Position.*;
-import static org.cytoscape.ding.Justification.*;
 
 
 /**

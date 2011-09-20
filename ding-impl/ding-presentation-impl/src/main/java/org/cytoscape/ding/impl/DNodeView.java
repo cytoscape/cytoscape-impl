@@ -67,7 +67,6 @@ import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -94,6 +93,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	private static int nestedNetworkPaintingDepth = 0;
 
 	static {
+		// Initialize image icons for nested networks
 		try {
 			DEFAULT_NESTED_NETWORK_IMAGE = ImageIO.read(DNodeView.class.getClassLoader().getResource(
 					"images/default_network.png"));
@@ -304,12 +304,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return m_unselectedPaint;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
+
 	@Override
 	public void setBorderPaint(Paint paint) {
 		synchronized (graphView.m_lock) {
@@ -319,11 +314,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	@Override
 	public Paint getBorderPaint() {
 		return m_borderPaint;
@@ -653,11 +644,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	public double getXPosition() {
 		synchronized (graphView.m_lock) {
 			if (graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
@@ -667,12 +654,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param yPos
-	 *            DOCUMENT ME!
-	 */
+
 	public void setYPosition(double yPos) {
 		synchronized (graphView.m_lock) {
 			final double hDiv2;
@@ -707,11 +689,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	public double getYPosition() {
 		synchronized (graphView.m_lock) {
 			if (graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
@@ -1078,8 +1056,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return CG_LOCK;
 	}
 
-	private class ReadOnlyIterator<T> implements Iterator<T> {
-		private Iterator<? extends T> _iterator;
+	private static final class ReadOnlyIterator<T> implements Iterator<T> {
+		private final Iterator<? extends T> _iterator;
 
 		public ReadOnlyIterator(Iterable<T> toIterate) {
 			_iterator = toIterate.iterator();

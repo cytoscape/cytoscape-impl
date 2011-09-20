@@ -36,10 +36,10 @@
 
 package org.cytoscape.ding.impl.events;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.GraphViewChangeEvent;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
 
 
 abstract class GraphViewChangeEventAdapter extends GraphViewChangeEvent {

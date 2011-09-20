@@ -36,10 +36,10 @@
 
 package org.cytoscape.ding.impl.events;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.ding.GraphView;
-
 import java.util.List;
+
+import org.cytoscape.ding.GraphView;
+import org.cytoscape.model.CyEdge;
 
 
 

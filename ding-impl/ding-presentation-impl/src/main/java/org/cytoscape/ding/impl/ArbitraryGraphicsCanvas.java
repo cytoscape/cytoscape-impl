@@ -30,21 +30,19 @@
 package org.cytoscape.ding.impl;
 
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.ding.NodeView;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
-
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.cytoscape.ding.impl.events.ViewportChangeListener;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 
 
 /**

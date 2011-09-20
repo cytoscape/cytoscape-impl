@@ -28,21 +28,22 @@
 
 package org.cytoscape.ding.impl;
 
-import org.cytoscape.graph.render.stateful.EdgeDetails;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Paint;
+import java.awt.Stroke;
 
-import java.awt.*;
+import org.cytoscape.graph.render.stateful.EdgeDetails;
 
 
 class IntermediateEdgeDetails extends EdgeDetails {
 	// Note: It is extremely important that the methds sourceArrow(int) and
+	
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public Color colorLowDetail(int edge) {
+	@Override
+	public Color colorLowDetail(final int edge) {
 		return DEdgeView.DEFAULT_EDGE_PAINT;
 	}
 

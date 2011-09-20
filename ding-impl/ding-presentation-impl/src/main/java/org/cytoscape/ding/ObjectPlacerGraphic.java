@@ -1,5 +1,9 @@
 package org.cytoscape.ding;
 
+import static org.cytoscape.ding.Justification.JUSTIFY_LEFT;
+import static org.cytoscape.ding.Justification.JUSTIFY_RIGHT;
+import static org.cytoscape.ding.Position.NONE;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,9 +23,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.ObjectPositionImpl;
-
-import static org.cytoscape.ding.Justification.*;
-import static org.cytoscape.ding.Position.*;
 
 public class ObjectPlacerGraphic extends JPanel implements
 		PropertyChangeListener {

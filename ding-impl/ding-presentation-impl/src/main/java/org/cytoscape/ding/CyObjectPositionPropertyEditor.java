@@ -44,7 +44,6 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.PercentLayout;
-import com.l2fprod.common.beans.editor.AbstractPropertyEditor; 
 
 /**
  *

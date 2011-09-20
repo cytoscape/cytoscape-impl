@@ -30,20 +30,19 @@
 package org.cytoscape.ding.impl;
 
 
+import org.cytoscape.ding.GraphView;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
-import org.cytoscape.view.model.events.AddedNodeViewsEvent;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsListener;
 import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
 import org.cytoscape.view.model.events.AboutToRemoveNodeViewsListener;
+import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedEdgeViewsListener;
+import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsListener;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-
-import org.cytoscape.ding.GraphView;
 
 
 

@@ -28,9 +28,10 @@
 package org.cytoscape.ding.impl;
 
 
-import org.cytoscape.graph.render.stateful.NodeDetails;
+import java.awt.Font;
+import java.awt.Paint;
 
-import java.awt.*;
+import org.cytoscape.graph.render.stateful.NodeDetails;
 
 
 class IntermediateNodeDetails extends NodeDetails {

@@ -77,7 +77,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.util.intr.IntHash;
 import org.cytoscape.util.intr.IntStack;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.work.undo.UndoSupport;
 

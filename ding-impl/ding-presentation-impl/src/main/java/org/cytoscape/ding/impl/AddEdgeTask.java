@@ -1,16 +1,15 @@
 
 package org.cytoscape.ding.impl; 
 
+import java.awt.datatransfer.Transferable;
+
+import org.cytoscape.dnd.DropUtil;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.dnd.DropUtil;
-
-import java.awt.datatransfer.Transferable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

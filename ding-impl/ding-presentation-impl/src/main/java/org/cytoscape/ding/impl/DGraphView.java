@@ -132,7 +132,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * DING implementation of the GINY view.
+ * DING implementation of Cytoscpae 3.
  *
  * Explain relationship to cytoscape.
  *
@@ -143,9 +143,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Nerius Landys
  */
-public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetworkView, RenderingEngine<CyNetwork>, GraphView,
-		Printable, AddedEdgesListener, AddedNodesListener,
-		AboutToRemoveEdgesListener, AboutToRemoveNodesListener, FitContentEventListener, FitSelectedEventListener {
+public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetworkView, RenderingEngine<CyNetwork>,
+		GraphView, Printable, AddedEdgesListener, AddedNodesListener, AboutToRemoveEdgesListener,
+		AboutToRemoveNodesListener, FitContentEventListener, FitSelectedEventListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(DGraphView.class);
 	
@@ -1257,15 +1257,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return getEdgeViewsList(n1, n2);
 	}
 
+
 	/**
-	 * Returns an edge view with specified edge index whether or not the edge
-	 * view is hidden; null is returned if view does not exist.
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	public EdgeView getDEdgeView(final int edgeInx) {
 		synchronized (m_lock) {
 			return m_edgeViewMap.get(edgeInx);
@@ -2944,10 +2940,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		
 		return (T) value;
 	}
-
-
-	
-
 
 	@Override
 	public View<CyNode> getNodeView(CyNode node) {

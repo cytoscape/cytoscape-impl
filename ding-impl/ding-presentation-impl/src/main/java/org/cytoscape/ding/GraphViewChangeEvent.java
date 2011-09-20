@@ -1,9 +1,9 @@
 package org.cytoscape.ding;
 
+import java.util.EventObject;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
-
-import java.util.EventObject;
 
 /**
  * The event source must be the GraphPerspective that changed.

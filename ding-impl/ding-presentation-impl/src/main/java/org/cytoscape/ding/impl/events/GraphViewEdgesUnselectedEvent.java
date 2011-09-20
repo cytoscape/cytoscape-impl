@@ -36,10 +36,10 @@
 
 package org.cytoscape.ding.impl.events;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.ding.GraphView;
-
 import java.util.List;
+
+import org.cytoscape.ding.GraphView;
+import org.cytoscape.model.CyEdge;
 
 public final class GraphViewEdgesUnselectedEvent extends GraphViewChangeEventAdapter {
 	private final static long serialVersionUID = 1202416512105252L;

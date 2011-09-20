@@ -2,14 +2,12 @@ package org.cytoscape.ding;
 
 // java
 
-import org.cytoscape.graph.render.stateful.GraphLOD;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Paint;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -18,6 +16,14 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.JLayeredPane;
+
+import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
 
 /**
  * @author xmas

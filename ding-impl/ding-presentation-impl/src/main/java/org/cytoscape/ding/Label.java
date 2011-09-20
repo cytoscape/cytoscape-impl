@@ -1,6 +1,7 @@
 package org.cytoscape.ding;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Paint;
 
 public interface Label {
 

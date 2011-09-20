@@ -57,7 +57,7 @@ import org.cytoscape.view.presentation.property.values.LineType;
 class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, Bend, EdgeAnchors {
 	
 	static final float DEFAULT_ARROW_SIZE = 5.0f;
-	static final Paint DEFAULT_ARROW_PAINT = Color.black;
+	static final Paint DEFAULT_ARROW_PAINT = Color.BLACK;
 	static final float DEFAULT_EDGE_THICKNESS = 1.0f;
 	static final Stroke DEFAULT_EDGE_STROKE = new BasicStroke(); 
 	static final Color DEFAULT_EDGE_PAINT = Color.black;
@@ -79,6 +79,8 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	ArrayList<Point2D> m_anchors; // A list of Point2D objects.
 	int m_lineType;
 	String m_toolTipText = null;
+	
+	private LineType lineType;
 	
 	// Visual Properties used in this node view.
 	private final VisualLexicon lexicon;
@@ -145,12 +147,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		return m_view;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param width
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setStrokeWidth(float width) {
 		synchronized (m_view.m_lock) {
 			m_view.m_edgeDetails.overrideSegmentThickness(m_inx, width);
@@ -219,13 +216,12 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		return m_lineType;
 	}
 
+	
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public void setUnselectedPaint(Paint paint) {
+	@Override
+	public void setUnselectedPaint(final Paint paint) {
 		synchronized (m_view.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
@@ -1430,28 +1426,43 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 		
 		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
-			setSelectedPaint((Paint) value);
+			if(value == null)
+				return;
+			else
+				setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
-			setUnselectedPaint((Paint) value);
+			if(value == null)
+				return;
+			else
+				setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
+			if(value == null)
+				return;
+			
 			setSourceEdgeEndSelectedPaint((Paint) value);
 			setTargetEdgeEndSelectedPaint((Paint) value);
 			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
+			if(value == null)
+				return;
+			
 			setSourceEdgeEndPaint((Paint) value);
 			setTargetEdgeEndPaint((Paint) value);
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
+			
 			final float currentWidth = this.getStrokeWidth();
-			final float newWidth = ((Number) value).floatValue();
+			final float newWidth = ((Number) value).floatValue();			
 			if(currentWidth != newWidth) {
 				setStrokeWidth(newWidth);
-				//setStroke(LineStyle.extractLineStyle(getStroke()).getStroke(newWidth));
-				//setStroke(LineStyle.extractLineStyle(getStroke()).getStroke(newWidth));
+				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth));
 			}
 		} else if (vp == DVisualLexicon.EDGE_LINE_TYPE) {
-			//final Stroke newStroke = LineStyle.extractLineStyle((Stroke) value).getStroke(this.getStrokeWidth());
-			final Stroke newStroke = DLineType.getDLineType((LineType)value).getStroke(this.getStrokeWidth());
+			if(lineType == value)
+				return;
+			
+			lineType = (LineType) value;
+			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(getStrokeWidth());
 			setStroke(newStroke);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
 			setSourceEdgeEndSelectedPaint((Paint) value);

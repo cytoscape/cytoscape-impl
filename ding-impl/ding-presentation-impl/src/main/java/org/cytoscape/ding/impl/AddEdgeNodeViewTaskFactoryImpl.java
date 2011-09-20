@@ -1,19 +1,16 @@
 package org.cytoscape.ding.impl; 
 
 
-import java.awt.geom.Point2D;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.DataFlavor;
+import java.awt.geom.Point2D;
 
 import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.AbstractTask;
 
 
 public class AddEdgeNodeViewTaskFactoryImpl implements DropNodeViewTaskFactory {

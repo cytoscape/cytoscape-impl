@@ -7,13 +7,11 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.CyCustomGraphicsParser;
 import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.Layer;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.impl.ObjectPositionImpl;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 
 public abstract class AbstractDCustomGraphics implements

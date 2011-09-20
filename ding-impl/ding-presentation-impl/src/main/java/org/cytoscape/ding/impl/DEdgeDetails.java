@@ -32,74 +32,67 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
-
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
-
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge;
-
 import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.IntIterator;
 import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.util.intr.MinIntHeap;
 
 
 class DEdgeDetails extends IntermediateEdgeDetails {
+	
 	final DGraphView m_view;
 	final IntObjHash m_colorsLowDetail = new IntObjHash();
 	final Object m_deletedEntry = new Object();
-	final HashMap m_segmentThicknesses = new HashMap();
-	final HashMap m_segmentStrokes = new HashMap();
-	final HashMap m_sourceArrows = new HashMap();
-	final HashMap m_sourceArrowPaints = new HashMap();
-	final HashMap m_targetArrows = new HashMap();
-	final HashMap m_targetArrowPaints = new HashMap();
-	final HashMap m_segmentPaints = new HashMap();
-	final HashMap m_labelCounts = new HashMap();
-	final HashMap m_labelTexts = new HashMap();
-	final HashMap m_labelFonts = new HashMap();
-	final HashMap m_labelPaints = new HashMap();
-	final HashMap m_labelWidths = new HashMap();
+	
+	final Map<Integer, Float> m_segmentThicknesses = new HashMap<Integer, Float>();
+	final Map<Integer, Stroke> m_segmentStrokes = new HashMap<Integer, Stroke>();
+	final Map<Integer, Byte> m_sourceArrows = new HashMap<Integer, Byte>();
+	final Map<Integer, Paint> m_sourceArrowPaints = new HashMap<Integer, Paint>();
+	final Map<Integer, Byte> m_targetArrows = new HashMap<Integer, Byte>();
+	final Map<Integer, Paint> m_targetArrowPaints = new HashMap<Integer, Paint>();
+	final Map<Integer, Paint> m_segmentPaints = new HashMap<Integer, Paint>();
+	final Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
+	final Map<Integer, String> m_labelTexts = new HashMap<Integer, String>();
+	final Map<Integer, Font> m_labelFonts = new HashMap<Integer, Font>();
+	final Map<Integer, Paint> m_labelPaints = new HashMap<Integer, Paint>();
+	final Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
+	
+	private final MinIntHeap m_heap = new MinIntHeap();
+	private final float[] m_extentsBuff = new float[4];
 
-	DEdgeDetails(DGraphView view) {
+	DEdgeDetails(final DGraphView view) {
 		m_view = view;
 	}
 
-	void unregisterEdge(int edge) {
-		final Object o = m_colorsLowDetail.get(edge);
+	void unregisterEdge(final int edgeIdx) {
+		final Object colorDetail = m_colorsLowDetail.get(edgeIdx);
+		if ((colorDetail != null) && (colorDetail != m_deletedEntry))
+			m_colorsLowDetail.put(edgeIdx, m_deletedEntry);
 
-		if ((o != null) && (o != m_deletedEntry))
-			m_colorsLowDetail.put(edge, m_deletedEntry);
-
-		final Integer key = new Integer(edge);
-		m_segmentThicknesses.remove(key);
-		m_segmentStrokes.remove(key);
-		m_sourceArrows.remove(key);
-		m_sourceArrowPaints.remove(key);
-		m_targetArrows.remove(key);
-		m_targetArrowPaints.remove(key);
-		m_segmentPaints.remove(key);
-//		m_segmentDashLengths.remove(key);
-		m_labelCounts.remove(key);
-		m_labelTexts.remove(key);
-		m_labelFonts.remove(key);
-		m_labelPaints.remove(key);
-		m_labelWidths.remove(key);
+		m_segmentThicknesses.remove(edgeIdx);
+		m_segmentStrokes.remove(edgeIdx);
+		m_sourceArrows.remove(edgeIdx);
+		m_sourceArrowPaints.remove(edgeIdx);
+		m_targetArrows.remove(edgeIdx);
+		m_targetArrowPaints.remove(edgeIdx);
+		m_segmentPaints.remove(edgeIdx);
+		m_labelCounts.remove(edgeIdx);
+		m_labelTexts.remove(edgeIdx);
+		m_labelFonts.remove(edgeIdx);
+		m_labelPaints.remove(edgeIdx);
+		m_labelWidths.remove(edgeIdx);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Color colorLowDetail(int edge) {
+
+	public Color colorLowDetail(final int edge) {
 		final Object o = m_colorsLowDetail.get(edge);
 
 		if ((o == null) || (o == m_deletedEntry))
@@ -111,7 +104,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	/*
 	 * A null color has the special meaning to remove overridden color.
 	 */
-	void overrideColorLowDetail(int edge, Color color) {
+	void overrideColorLowDetail(final int edge, final Color color) {
 		if ((color == null) || color.equals(super.colorLowDetail(edge))) {
 			final Object val = m_colorsLowDetail.get(edge);
 
@@ -121,124 +114,99 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			m_colorsLowDetail.put(edge, color);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public byte sourceArrow(int edge) {
-		final Object o = m_sourceArrows.get(new Integer(edge));
-
-		if (o == null)
+	@Override
+	public byte sourceArrow(final int edge) {
+		final Byte arrow = m_sourceArrows.get(edge);
+		if (arrow == null)
 			return super.sourceArrow(edge);
 
-		return ((Byte) o).byteValue();
+		return arrow;
 	}
 
 	/*
 	 * A non-negative arrowType has the special meaning to remove overridden
 	 * arrow.
 	 */
-	void overrideSourceArrow(int edge, byte arrowType) {
+	void overrideSourceArrow(final int edge, final byte arrowType) {
 		if ((arrowType >= 0) || (arrowType == super.sourceArrow(edge)))
-			m_sourceArrows.remove(new Integer(edge));
+			m_sourceArrows.remove(edge);
 		else
-			m_sourceArrows.put(new Integer(edge), new Byte(arrowType));
+			m_sourceArrows.put(edge, arrowType);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Paint sourceArrowPaint(int edge) {
-		final Object o = m_sourceArrowPaints.get(new Integer(edge));
 
-		if (o == null)
+	public Paint sourceArrowPaint(final int edge) {
+		final Paint arrowPaint = m_sourceArrowPaints.get(edge);
+		if (arrowPaint == null)
 			return super.sourceArrowPaint(edge);
 
-		return (Paint) o;
+		return arrowPaint;
 	}
 
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideSourceArrowPaint(int edge, Paint paint) {
+	void overrideSourceArrowPaint(final int edge, final Paint paint) {
 		if ((paint == null) || paint.equals(super.sourceArrowPaint(edge)))
-			m_sourceArrowPaints.remove(new Integer(edge));
+			m_sourceArrowPaints.remove(edge);
 		else
-			m_sourceArrowPaints.put(new Integer(edge), paint);
+			m_sourceArrowPaints.put(edge, paint);
 	}
 
+	
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public byte targetArrow(int edge) {
-		final Object o = m_targetArrows.get(new Integer(edge));
+	@Override
+	public byte targetArrow(final int edge) {
+		final Byte arrow = m_targetArrows.get(edge);
 
-		if (o == null)
+		if (arrow == null)
 			return super.targetArrow(edge);
 
-		return ((Byte) o).byteValue();
+		return arrow;
 	}
 
 	/*
 	 * A non-negative arrowType has the special meaning to remove overridden
 	 * arrow.
 	 */
-	void overrideTargetArrow(int edge, byte arrowType) {
+	void overrideTargetArrow(final int edge, final byte arrowType) {
 		if ((arrowType >= 0) || (arrowType == super.targetArrow(edge)))
-			m_targetArrows.remove(new Integer(edge));
+			m_targetArrows.remove(edge);
 		else
-			m_targetArrows.put(new Integer(edge), new Byte(arrowType));
+			m_targetArrows.put(edge, arrowType);
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public Paint targetArrowPaint(int edge) {
-		final Object o = m_targetArrowPaints.get(new Integer(edge));
-
-		if (o == null)
+	@Override
+	public Paint targetArrowPaint(final int edge) {
+		final Paint arrowPaint = m_targetArrowPaints.get(edge);
+		if (arrowPaint == null)
 			return super.targetArrowPaint(edge);
 
-		return (Paint) o;
+		return arrowPaint;
 	}
 
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideTargetArrowPaint(int edge, Paint paint) {
+	void overrideTargetArrowPaint(final int edge, final Paint paint) {
 		if ((paint == null) || paint.equals(super.targetArrowPaint(edge)))
-			m_targetArrowPaints.remove(new Integer(edge));
+			m_targetArrowPaints.remove(edge);
 		else
-			m_targetArrowPaints.put(new Integer(edge), paint);
+			m_targetArrowPaints.put(edge, paint);
 	}
 
-	private final MinIntHeap m_heap = new MinIntHeap();
-	private final float[] m_extentsBuff = new float[4];
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public EdgeAnchors anchors(int edge) {
-		final EdgeAnchors returnThis = (EdgeAnchors) (m_view.getDEdgeView(edge));
+	@Override
+	public EdgeAnchors anchors(final int edge) {
+		final EdgeAnchors returnThis = (EdgeAnchors) m_view.getDEdgeView(edge);
 
 		if (returnThis.numAnchors() > 0) 
 			return returnThis;
@@ -276,7 +244,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			final double y = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
 			final double nodeSize = Math.max(w, h);
 			int i = 0;
-			List<CyEdge> selfEdges = graph.getConnectingEdgeList(nodeObj, nodeObj, CyEdge.Type.ANY);
+			
+			final List<CyEdge> selfEdges = graph.getConnectingEdgeList(nodeObj, nodeObj, CyEdge.Type.ANY);
 
 			for ( CyEdge e2obj : selfEdges ) {
 				final int e2 = e2obj.getIndex();
@@ -317,7 +286,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			final int tmpTrg = Math.max( srcNode, trgNode ); 
 
 			// Sort the connecting edges.
-			List<CyEdge> selfEdges = graph.getConnectingEdgeList(edgeObj.getSource(), edgeObj.getTarget(), CyEdge.Type.ANY);
+			final List<CyEdge> selfEdges = graph.getConnectingEdgeList(edgeObj.getSource(), edgeObj.getTarget(), CyEdge.Type.ANY);
 
 			m_heap.empty();
 
@@ -414,297 +383,215 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param anchorInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public float anchorSize(int edge, int anchorInx) {
-		if (m_view.getDEdgeView(edge).isSelected()
-		    && (((DEdgeView) m_view.getDEdgeView(edge)).numAnchors() > 0))
+	@Override
+	public float anchorSize(final int edge, final int anchorInx) {
+		if (m_view.getDEdgeView(edge).isSelected() && (((DEdgeView) m_view.getDEdgeView(edge)).numAnchors() > 0))
 			return m_view.getAnchorSize();
 		else
-
 			return 0.0f;
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param anchorInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public Paint anchorPaint(int edge, int anchorInx) {
+	@Override
+	public Paint anchorPaint(final int edge, int anchorInx) {
 		if (((DEdgeView) (m_view.getDEdgeView(edge))).m_lineType == DEdgeView.STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;
 
 		if (m_view.m_selectedAnchors.count((edge << 6) | anchorInx) > 0)
 			return m_view.getAnchorSelectedPaint();
 		else
-
 			return m_view.getAnchorUnselectedPaint();
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public float segmentThickness(int edge) {
-		final Object o = m_segmentThicknesses.get(new Integer(edge));
-
-		if (o == null)
+	@Override
+	public float segmentThickness(final int edge) {
+		final Float thickness = m_segmentThicknesses.get(edge);
+		if (thickness == null)
 			return super.segmentThickness(edge);
 
-		return ((Float) o).floatValue();
+		return thickness;
 	}
 
 	/*
 	 * A negative thickness value has the special meaning to remove overridden
 	 * thickness.
 	 */
-	void overrideSegmentThickness(int edge, float thickness) {
+	void overrideSegmentThickness(final int edge, final float thickness) {
 		if ((thickness < 0.0f) || (thickness == super.segmentThickness(edge)))
-			m_segmentThicknesses.remove(new Integer(edge));
+			m_segmentThicknesses.remove(edge);
 		else
-			m_segmentThicknesses.put(new Integer(edge), new Float(thickness));
+			m_segmentThicknesses.put(edge, thickness);
 	}
 
+
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	public Paint segmentPaint(int edge) {
-		final Object o = m_segmentPaints.get(new Integer(edge));
-
-		if (o == null)
-			return super.segmentPaint(edge);
-
-		return (Paint) o;
-	}
+	 * {@inheritDoc}
 	 */
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Stroke segmentStroke(int edge) {
-		final Object o = m_segmentStrokes.get(new Integer(edge));
-
-		if (o == null)
+	@Override
+	public Stroke segmentStroke(final int edge) {
+		final Stroke stroke = m_segmentStrokes.get(edge);
+		if (stroke == null)
 			return super.segmentStroke(edge);
 
-		return (Stroke) o;
+		return stroke;
 	}
 
-	/*
-	 * A null paint has the special meaning to remove overridden paint.
-	void overrideSegmentPaint(int edge, Paint paint) {
-		if ((paint == null) || paint.equals(super.segmentPaint(edge)))
-			m_segmentPaints.remove(new Integer(edge));
-		else
-			m_segmentPaints.put(new Integer(edge), paint);
-	}
-	 */
+
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideSegmentStroke(int edge, Stroke stroke) {
 		if ((stroke == null) || stroke.equals(super.segmentStroke(edge)))
-			m_segmentStrokes.remove(new Integer(edge));
+			m_segmentStrokes.remove(edge);
 		else
-			m_segmentStrokes.put(new Integer(edge), stroke);
+			m_segmentStrokes.put(edge, stroke);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	public float segmentDashLength(int edge) {
-		final Object o = m_segmentDashLengths.get(new Integer(edge));
-
-		if (o == null)
-			return super.segmentDashLength(edge);
-
-		return ((Float) o).floatValue();
-	}
-	 */
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public Paint segmentPaint(int edge) {
-		final Object o = m_segmentPaints.get(new Integer(edge));
-
-		if (o == null)
+	@Override
+	public Paint segmentPaint(final int edge) {
+		final Paint paint = m_segmentPaints.get(edge);
+		if (paint == null)
 			return super.segmentPaint(edge);
 
-		return (Paint) o;
+		return paint;
 	}
-
-	/*
-	 * A negative length value has the special meaning to remove overridden
-	 * length.
-	void overrideSegmentDashLength(int edge, float length) {
-		if ((length < 0.0f) || (length == super.segmentDashLength(edge)))
-			m_segmentDashLengths.remove(new Integer(edge));
-		else
-			m_segmentDashLengths.put(new Integer(edge), new Float(length));
-	}
-	 */
 
 
 	/*
 	 * A negative length value has the special meaning to remove overridden
 	 * length.
 	 */
-	void overrideSegmentPaint(int edge, Paint paint) {
+	void overrideSegmentPaint(final int edge, final Paint paint) {
 		if ((paint == null) || (paint == super.segmentPaint(edge)))
-			m_segmentPaints.remove(new Integer(edge));
+			m_segmentPaints.remove(edge);
 		else
-			m_segmentPaints.put(new Integer(edge), paint);
+			m_segmentPaints.put(edge, paint);
 	}
 
+	
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public int labelCount(int edge) {
-		final Object o = m_labelCounts.get(new Integer(edge));
-
-		if (o == null)
+	@Override
+	public int labelCount(final int edge) {
+		final Integer i = m_labelCounts.get(edge);
+		if (i == null)
 			return super.labelCount(edge);
 
-		return ((Integer) o).intValue();
+		return i;
 	}
+
 
 	/*
 	 * A negative labelCount has the special meaning to remove overridden count.
 	 */
-	void overrideLabelCount(int edge, int labelCount) {
+	void overrideLabelCount(final int edge, final int labelCount) {
 		if ((labelCount < 0) || (labelCount == super.labelCount(edge)))
-			m_labelCounts.remove(new Integer(edge));
+			m_labelCounts.remove(edge);
 		else
-			m_labelCounts.put(new Integer(edge), new Integer(labelCount));
+			m_labelCounts.put(edge, labelCount);
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public String labelText(int edge, int labelInx) {
+	@Override
+	public String labelText(final int edge, final int labelInx) {
 		final long key = (((long) edge) << 32) | ((long) labelInx);
-		final Object o = m_labelTexts.get(new Long(key));
+		final String text = m_labelTexts.get(key);
 
-		if (o == null)
+		if (text == null)
 			return super.labelText(edge, labelInx);
 
-		return (String) o;
+		return text;
 	}
 
+	
 	/*
 	 * A null text has the special meaning to remove overridden text.
 	 */
-	void overrideLabelText(int edge, int labelInx, String text) {
+	void overrideLabelText(final int edge, final int labelInx, final String text) {
 		final long key = (((long) edge) << 32) | ((long) labelInx);
 
 		if ((text == null) || text.equals(super.labelText(edge, labelInx)))
-			m_labelTexts.remove(new Long(key));
+			m_labelTexts.remove(key);
 		else
-			m_labelTexts.put(new Long(key), text);
+			m_labelTexts.put((int) key, text);
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public Font labelFont(int edge, int labelInx) {
+	@Override
+	public Font labelFont(final int edge, final int labelInx) {
 		final long key = (((long) edge) << 32) | ((long) labelInx);
-		final Object o = m_labelFonts.get(new Long(key));
+		final Font font = m_labelFonts.get(key);
 
-		if (o == null)
+		if (font == null)
 			return super.labelFont(edge, labelInx);
 
-		return (Font) o;
+		return font;
 	}
 
 	/*
 	 * A null font has the special meaning to remove overridden font.
 	 */
-	void overrideLabelFont(int edge, int labelInx, Font font) {
+	void overrideLabelFont(final int edge, final int labelInx, final Font font) {
 		final long key = (((long) edge) << 32) | ((long) labelInx);
 
 		if ((font == null) || font.equals(super.labelFont(edge, labelInx)))
-			m_labelFonts.remove(new Long(key));
+			m_labelFonts.remove(key);
 		else
-			m_labelFonts.put(new Long(key), font);
+			m_labelFonts.put((int) key, font);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Paint labelPaint(int edge, int labelInx) {
-		final long key = (((long) edge) << 32) | ((long) labelInx);
-		final Object o = m_labelPaints.get(new Long(key));
 
-		if (o == null)
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Paint labelPaint(final int edge, final int labelInx) {
+		final long key = (((long) edge) << 32) | ((long) labelInx);
+		final Paint paint = m_labelPaints.get(key);
+
+		if (paint == null)
 			return super.labelPaint(edge, labelInx);
 
-		return (Paint) o;
+		return paint;
 	}
 
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideLabelPaint(int edge, int labelInx, Paint paint) {
+	void overrideLabelPaint(final int edge, final int labelInx, final Paint paint) {
 		final long key = (((long) edge) << 32) | ((long) labelInx);
 
 		if ((paint == null) || paint.equals(super.labelPaint(edge, labelInx)))
-			m_labelPaints.remove(new Long(key));
+			m_labelPaints.remove(key);
 		else
-			m_labelPaints.put(new Long(key), paint);
+			m_labelPaints.put((int) key, paint);
 	}
 
 	/**
-	 * The arrow size will scale with the edge width.
+	 * {@inheritDoc}
 	 */
-	public float sourceArrowSize(int edge) {
+	@Override
+	public float sourceArrowSize(final int edge) {
 		// For the half arrows, we need to scale multiplicatively
 		// so that the arrow matches the line.
-		int arrowType = sourceArrow(edge);
-		if ( arrowType == GraphGraphics.ARROW_HALF_TOP ||
+		final int arrowType = sourceArrow(edge);
+		if (arrowType == GraphGraphics.ARROW_HALF_TOP ||
 		     arrowType == GraphGraphics.ARROW_HALF_BOTTOM )
 			 return (segmentThickness(edge) * DEdgeView.DEFAULT_ARROW_SIZE);
 
@@ -715,12 +602,15 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
 	 * The arrow size will scale with the edge width.
 	 */
-	public float targetArrowSize(int edge) {
+	@Override
+	public float targetArrowSize(final int edge) {
 		// For the half arrows, we need to scale multiplicatively
 		// so that the arrow matches the line.
-		int arrowType = targetArrow(edge);
+		final int arrowType = targetArrow(edge);
 		if ( arrowType == GraphGraphics.ARROW_HALF_TOP ||
 		     arrowType == GraphGraphics.ARROW_HALF_BOTTOM )
 			 return (segmentThickness(edge) * DEdgeView.DEFAULT_ARROW_SIZE);
@@ -730,30 +620,27 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			return (segmentThickness(edge) + DEdgeView.DEFAULT_ARROW_SIZE);
 	}
 
+	
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
-	public double labelWidth(int edge) {
-		final Object o = m_labelWidths.get(new Integer(edge));
-
-		if (o == null)
+	@Override
+	public double labelWidth(final int edge) {
+		final Double width = m_labelWidths.get(edge);
+		if (width == null)
 			return super.labelWidth(edge);
 
-		return ((Double) o).doubleValue();
+		return width;
 	}
 
 	/*
 	 * A negative width value has the special meaning to remove overridden width.
 	 */
-	void overrideLabelWidth(int edge, double width) {
+	void overrideLabelWidth(final int edge, final double width) {
 		if ((width < 0.0) || (width == super.labelWidth(edge)))
-			m_labelWidths.remove(new Integer(edge));
+			m_labelWidths.remove(edge);
 		else
-			m_labelWidths.put(new Integer(edge), new Double(width));
+			m_labelWidths.put(edge, width);
 	}
 
 }

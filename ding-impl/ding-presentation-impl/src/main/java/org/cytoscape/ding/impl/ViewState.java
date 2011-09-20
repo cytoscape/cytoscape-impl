@@ -36,18 +36,18 @@
 
 package org.cytoscape.ding.impl;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.NodeView;
-import org.cytoscape.ding.ViewChangeEdit;
-
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.cytoscape.ding.EdgeView;
+import org.cytoscape.ding.GraphView;
+import org.cytoscape.ding.NodeView;
+import org.cytoscape.ding.ViewChangeEdit;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
 
 
 /**
