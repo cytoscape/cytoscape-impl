@@ -6,7 +6,7 @@
         default-lazy-init="false">
 
 	<!-- imports -->
-	<osgi:reference id="compilerServiceRef" interface="org.cytoscape.equations.EqnCompiler" />
+	<osgi:reference id="compilerServiceRef" interface="org.cytoscape.equations.EquationCompiler" />
 	<osgi:reference id="applicationManagerServiceRef" interface="org.cytoscape.application.CyApplicationManager" />
 
 
