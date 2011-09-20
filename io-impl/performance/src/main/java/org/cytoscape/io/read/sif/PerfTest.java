@@ -2,7 +2,35 @@ package org.cytoscape.io.read.sif;
 
 
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.FileInputStream;
+
+import java.util.List;
+import java.util.Properties;
+
+import org.cytoscape.io.internal.util.ReadUtils;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.io.internal.util.StreamUtilImpl;
+import org.cytoscape.io.internal.read.sif.SIFNetworkReader;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.property.BasicCyProperty;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.CyProperty.SavePolicy;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.view.model.NetworkViewTestSupport;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 
 public class PerfTest {
 
@@ -11,9 +39,99 @@ public class PerfTest {
 		new PerfTest().runTestLoop();
 	}
 
+    protected static final int DEF_THRESHOLD = 10000;
+    
+    protected TaskMonitor taskMonitor;
+    protected CyNetworkFactory netFactory;
+    protected CyNetworkViewFactory viewFactory;
+    protected ReadUtils readUtil;
+    protected CyLayoutAlgorithmManager layouts;
+
+	private Properties properties;
+
 	public PerfTest() {
+		taskMonitor = mock(TaskMonitor.class);
+
+		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
+		when(def.getTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
+
+		layouts = mock(CyLayoutAlgorithmManager.class);
+		when(layouts.getDefaultLayout()).thenReturn(def);
+
+		NetworkTestSupport nts = new NetworkTestSupport();
+		netFactory = nts.getNetworkFactory();
+
+		properties = new Properties();
+		CyProperty<Properties> cyProperties = new BasicCyProperty(properties, SavePolicy.DO_NOT_SAVE);	
+		NetworkViewTestSupport nvts = new NetworkViewTestSupport(cyProperties);
+		setViewThreshold(DEF_THRESHOLD);
+	
+		viewFactory = nvts.getNetworkViewFactory();
+
+		readUtil = new ReadUtils(new StreamUtilImpl());
+	}
+
+	private  SIFNetworkReader readFile(String file) throws Exception {
+		File f = new File("./src/main/resources/testData/sif/" + file);
+		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, eventHelper);
+		new TaskIterator(snvp);
+		snvp.run(taskMonitor);
+
+		return snvp;
+	}
+
+	private CyNetwork[] getNetworks(String file) throws Exception {
+		final SIFNetworkReader snvp = readFile(file);
+		return snvp.getCyNetworks();
+	}
+
+	private CyNetworkView[] getViews(String file) throws Exception {
+		final SIFNetworkReader snvp = readFile(file);
+		final CyNetwork[] networks = snvp.getCyNetworks(); 
+		final CyNetworkView[] views = new CyNetworkView[networks.length];
+		int i = 0;
+		for(CyNetwork network: networks) {
+			views[i] = snvp.buildCyNetworkView(network);
+			i++;
+		}
+		
+		return views;
 	}
 
 	public void runTestLoop() {
+		try {
+			justNetworkPerf("A200-200.sif");
+			justNetworkPerf("A50-100.sif");
+			justNetworkPerf("A50-50.sif");
+			networkAndViewPerf("A200-200.sif");
+			networkAndViewPerf("A50-100.sif");
+			networkAndViewPerf("A50-50.sif");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
+
+	private void justNetworkPerf(String name) throws Exception {
+		long start = System.currentTimeMillis();
+		CyNetwork[] nets = getNetworks(name);
+		long end = System.currentTimeMillis();
+		System.out.println("LOADING SIF file (" + name + ") no view duration: " + (end - start));
+	}
+
+	private void networkAndViewPerf(String name) throws Exception {
+		long start = System.currentTimeMillis();
+		CyNetworkView[] views = getViews(name);
+		long end = System.currentTimeMillis();
+		System.out.println("LOADING SIF file (" + name + ") with view duration: " + (end - start));
+	}
+
+	static class SimpleTask extends AbstractTask {
+		public void run(final TaskMonitor tm) { }
+	}
+
+	protected void setViewThreshold(int threshold) {
+		properties.setProperty("viewThreshold", String.valueOf(threshold));
+	}
+
 }
