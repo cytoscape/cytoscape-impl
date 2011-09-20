@@ -29,7 +29,8 @@ public class ServiceConfigurationTest extends ServiceTestSupport {
 
     @Test
     public void testExpectedServices() {
-	checkService(CyNetworkViewFactory.class, 5000);
+    	// No longer in use.  DING provides both View Model AND Presentation
+	//checkService(CyNetworkViewFactory.class, 5000);
 	checkService(CyNetworkViewManager.class, 5000);
     }
 }
