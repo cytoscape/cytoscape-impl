@@ -3,7 +3,6 @@ package org.cytoscape.cpath2.internal.task;
 import javax.swing.JDialog;
 
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.schemas.summary_response.SummaryResponseType;
 import org.cytoscape.cpath2.internal.view.InteractionBundlePanel;
@@ -52,7 +51,7 @@ public class GetParentInteractions implements Task {
             CySwingApplication application = factory.getCySwingApplication();
             JDialog dialog = new JDialog(application.getJFrame());
 
-            String nodeLabel = node.getCyRow().get(BioPaxVisualStyleUtil.BIOPAX_NODE_LABEL, String.class);
+            String nodeLabel = node.getCyRow().get(CyNode.NAME, String.class);
             if (nodeLabel != null) {
                 dialog.setTitle(nodeLabel);
             } else {

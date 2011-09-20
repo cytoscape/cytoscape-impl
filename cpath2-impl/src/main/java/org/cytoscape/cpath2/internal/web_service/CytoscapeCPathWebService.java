@@ -27,7 +27,9 @@ import org.cytoscape.work.Tunable;
 /**
  * CPath Web Service, integrated into the Cytoscape Web Services Framework.
  */
-public class CytoscapeCPathWebService extends AbstractWebServiceClient implements NetworkImportWebServiceClient, SearchWebServiceClient<Object> {
+public class CytoscapeCPathWebService extends AbstractWebServiceClient 
+	implements NetworkImportWebServiceClient, SearchWebServiceClient<Object> 
+{
     // Display name of this client.
     private static final String DISPLAY_NAME = CPathProperties.getInstance().getCPathServerName() +
             " Web Service Client";
@@ -101,9 +103,6 @@ public class CytoscapeCPathWebService extends AbstractWebServiceClient implement
     	super(CPathProperties.getInstance().getCPathUrl(), DISPLAY_NAME, makeDescription());
     	this.factory = factory;
     	
-        // Set properties for this client.
-        setProperty();
-
         mainPanel = new JPanel();
         mainPanel.setPreferredSize(new Dimension (500,400));
         mainPanel.setLayout (new BorderLayout());
@@ -126,15 +125,5 @@ public class CytoscapeCPathWebService extends AbstractWebServiceClient implement
         return "<html><body>" + desc + "</body></html>";
 	}
 
-	/**
-     * Set props for this client.
-     */
-    private void setProperty() {
-//        props = new ModulePropertiesImpl(clientID, "wsc");
-//        props.add(new Tunable(NCBI_TAXONOMY_ID_FILTER, "Filter by Organism - NCBI Taxonomy ID",
-//                Tunable.INTEGER, new Integer(-1)));
-//        props.add(new Tunable(RESPONSE_FORMAT, "Response Format",
-//                Tunable.INTEGER, CPathResponseFormat.BINARY_SIF.getFormatString()));
-    }
 }
 

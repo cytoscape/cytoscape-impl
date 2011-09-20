@@ -14,17 +14,16 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.biopax.paxtools.converter.OneTwoThree;
 import org.biopax.paxtools.io.SimpleIOHandler;
-import org.biopax.paxtools.model.BioPAXElement;
+import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
-import org.biopax.paxtools.model.level2.physicalEntity;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.cytoscape.biopax.BioPaxContainer;
 import org.cytoscape.biopax.MapBioPaxToCytoscape;
 import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
 import org.cytoscape.biopax.NetworkListener;
 import org.cytoscape.biopax.util.BioPaxUtil;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.cytoscape.BinarySifVisualStyleUtil;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
@@ -73,55 +72,32 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	private final NetworkListener networkListener;
 	private final VisualMappingManager mappingManager;
 
-	/**.
-	 * Constructor.
-	 * 
-	 * @param webApi
-	 *            cPath Web API.
-	 * @param ids
-	 *            Array of cPath IDs.
-	 * @param format
-	 *            CPathResponseFormat Object.
-	 * @param networkTitle
-	 *            Tentative Network Title.
-	 * @param bpContainer
-	 * @param application
-	 */
-	public ExecuteGetRecordByCPathId(CPathWebService webApi, long ids[], CPathResponseFormat format,
-			String networkTitle, CPath2Factory cPathFactory, BioPaxContainer bpContainer,
-			MapBioPaxToCytoscapeFactory mapperFactory, NetworkListener networkListener, VisualMappingManager mappingManager) {
-		this.webApi = webApi;
-		this.ids = ids;
-		this.format = format;
-		this.networkTitle = networkTitle;
-		this.cPathFactory = cPathFactory;
-		this.bpContainer = bpContainer;
-		this.mapperFactory = mapperFactory;
-		this.networkListener = networkListener;
-		this.mappingManager = mappingManager;
-	}
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param webApi
-	 *            cPath Web API.
-	 * @param ids
-	 *            Array of cPath IDs.
-	 * @param format
-	 *            CPathResponseFormat Object.
-	 * @param networkTitle
-	 *            Tentative Network Title.
-	 * @param mergedNetwork
-	 *            Network to merge into.
+	 * @param webApi cPath Web API.
+	 * @param ids Array of cPath IDs.
+	 * @param format CPathResponseFormat Object.
+	 * @param networkTitle Tentative Network Title.
+	 * @param mergedNetwork Network to merge into.
 	 * @param mapperFactory
 	 * @param mapBioPaxToCytoscape
 	 * @param viewManager
 	 * @param application
 	 */
-	public ExecuteGetRecordByCPathId(CPathWebService webApi, long ids[], CPathResponseFormat format,
-			String networkTitle, CyNetwork mergedNetwork, CPath2Factory cPathFactory, BioPaxContainer bpContainer,
-			MapBioPaxToCytoscapeFactory mapperFactory, NetworkListener networkListener, VisualMappingManager mappingManager) {
+	public ExecuteGetRecordByCPathId(
+			CPathWebService webApi, 
+			long ids[], 
+			CPathResponseFormat format,
+			String networkTitle, 
+			CyNetwork mergedNetwork, 
+			CPath2Factory cPathFactory, 
+			BioPaxContainer bpContainer,
+			MapBioPaxToCytoscapeFactory mapperFactory, 
+			NetworkListener networkListener, 
+			VisualMappingManager mappingManager) 
+	{
 		this.webApi = webApi;
 		this.ids = ids;
 		this.format = format;
@@ -188,9 +164,9 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			// the biopax graph reader is going to be called
 			// it will look for the network view title
 			// via system properties, so lets set it now
-			if (networkTitle != null && networkTitle.length() > 0) {
-				System.setProperty("biopax.network_view_title", networkTitle);
-			}
+//			if (networkTitle != null && networkTitle.length() > 0) {
+//				System.setProperty("biopax.network_view_title", networkTitle);
+//			}
 
 			CyNetworkReader reader = cPathFactory.getCyNetworkViewReaderManager().getReader(tmpFile.toURI(),
 					tmpFile.getName());
@@ -201,6 +177,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 
 			reader.run(taskMonitor);
 			final CyNetwork cyNetwork = reader.getCyNetworks()[0];
+			AttributeUtil.set(cyNetwork, CyNetwork.NAME, networkTitle, String.class);
+			
             final CyNetworkView view = reader.buildCyNetworkView(cyNetwork);
 
             cPathFactory.getCyNetworkManager().addNetwork(cyNetwork);
@@ -312,16 +290,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 					taskMonitor.setStatusMessage("Creating Network View...");
 					taskMonitor.setProgress(0);
 				}
-
-				// Set up the right layout algorithm.
-				// LayoutUtil layoutAlgorithm = new LayoutUtil();
-
-				// Now, create the view.
-				// Use local create view option, so that we don't mess up the
-				// visual style.
-				// final CyNetworkView view = createNetworkView
-				// (cyNetwork, cyNetwork.getCyRow().get(CyNetwork.NAME,
-				// String.class), layoutAlgorithm, null);
 
 				VisualStyle visualStyle = cPathFactory.getBinarySifVisualStyleUtil().getVisualStyle();
 				mappingManager.setVisualStyle(visualStyle, view);
@@ -474,7 +442,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		if (batchList.size() == 0) {
 			logger.info("Skipping node details.  Already have all the details new need.");
 		}
-		MapBioPaxToCytoscape mapBioPaxToCytoscape = mapperFactory.getInstance(cyNetwork, taskMonitor);
+		MapBioPaxToCytoscape mapBioPaxToCytoscape = mapperFactory.getInstance(null, taskMonitor);
 		for (int i = 0; i < batchList.size(); i++) {
 			if (haltFlag == true) {
 				break;
@@ -491,21 +459,17 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			}
 			try {
 				final String xml = webApi.getRecordsByIds(ids, CPathResponseFormat.BIOPAX, new NullTaskMonitor());
-				// StringReader reader = new StringReader(xml);
-				// BioPaxUtil bpUtil = new BioPaxUtil(reader, new
-				// NullTaskMonitor());
-				Model model = new SimpleIOHandler().convertFromOWL(new ByteArrayInputStream(xml.getBytes()));
-				// ArrayList peList = bpUtil.getPhysicalEntityList();
-				// Namespace ns =
-				// Namespace.getNamespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-				// for (int j=0; j<peList.size(); j++) {
-				for (BioPAXElement pe : BioPaxUtil.getObjects(model, physicalEntity.class, PhysicalEntity.class)) {
-					// Element element = (Element) peList.get(j);
-					// String id = element.getAttributeValue("ID", ns);
+				Model model = (new SimpleIOHandler()).convertFromOWL(new ByteArrayInputStream(xml.getBytes()));
+				// convert L2 to L3 if required (L1 is converted to L2 always anyway - by the handler)
+				if(BioPAXLevel.L2.equals(model.getLevel())) { // 
+					model = (new OneTwoThree()).filter(model);
+				}
+				
+				for (PhysicalEntity pe : model.getObjects(PhysicalEntity.class)) {
 					String id = BioPaxUtil.getLocalPartRdfId(pe);
 					if (id != null) {
-						id = id.replaceAll("CPATH-", "");
-						mapBioPaxToCytoscape.mapNodeAttribute(pe, model, cyNetwork, nodes.get(id));
+						//id = id.replaceAll("CPATH-", ""); // why??
+						mapBioPaxToCytoscape.createAttributesFromProperties(pe, nodes.get(id));
 					}
 				}
 				double percentComplete = i / (double) batchList.size();
@@ -527,7 +491,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		int counter = 0;
 		for (CyNode node : cyNetwork.getNodeList()) {
 			CyRow row = node.getCyRow();
-			String label = row.get(BioPaxVisualStyleUtil.BIOPAX_NODE_LABEL, String.class);
+			String label = row.get(CyNode.NAME, String.class);
 
 			// If we already have details on this node, skip it.
 			if (label == null) {
@@ -579,6 +543,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	// view.redrawGraph(false, true);
 	// return view;
 	// }
+	
 }
 
 class NullTaskMonitor implements TaskMonitor {

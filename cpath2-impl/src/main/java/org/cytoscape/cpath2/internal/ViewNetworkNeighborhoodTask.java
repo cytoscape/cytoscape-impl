@@ -5,7 +5,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 import org.cytoscape.biopax.MapBioPaxToCytoscape;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -46,7 +45,7 @@ public class ViewNetworkNeighborhoodTask implements Task {
         CyRow nodeRow = cyNode.getCyRow();
         String biopaxID = nodeRow.get(MapBioPaxToCytoscape.BIOPAX_RDF_ID, String.class);
         biopaxID = biopaxID.replace("CPATH-", "");
-        String neighborhoodParam = "Neighborhood: " + nodeRow.get(BioPaxVisualStyleUtil.BIOPAX_NODE_LABEL, String.class);
+        String neighborhoodParam = "Neighborhood: " + nodeRow.get(CyNode.NAME, String.class);
 
         // encode some parts of the url
         try {
@@ -58,7 +57,7 @@ public class ViewNetworkNeighborhoodTask implements Task {
             neighborhoodParam = neighborhoodParam.replaceAll(" ", "%20");
         }
 
-        final String urlString = "http://127.0.0.1:27182/" + webServicesURL +
+        final String urlString = webServicesURL +
                 PC_WEB_SERVICE_URL + biopaxID + "&neighborhood_title=" + neighborhoodParam +
                 "&data_source=" + dataSources;
         
