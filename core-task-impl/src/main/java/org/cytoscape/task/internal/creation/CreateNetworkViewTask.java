@@ -41,9 +41,14 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class CreateNetworkViewTask extends AbstractNetworkTask {
+	
+	private static final Logger logger = LoggerFactory.getLogger(CreateNetworkViewTask.class);
+	
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyNetworkViewFactory viewFactory;
@@ -66,6 +71,8 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		final long start = System.currentTimeMillis();
+
 		taskMonitor.setStatusMessage("Creating network view...");
 		taskMonitor.setProgress(-1.0);
 
@@ -92,5 +99,7 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 		taskMonitor.setProgress(1.0);
 		taskMonitor.setStatusMessage("Network view successfully create for:  "
 				+ network.getCyRow().get(CyTableEntry.NAME, String.class));
+		
+		logger.info("Network view creation finished in " + (System.currentTimeMillis() -start) + " msec.");
 	}
 }
