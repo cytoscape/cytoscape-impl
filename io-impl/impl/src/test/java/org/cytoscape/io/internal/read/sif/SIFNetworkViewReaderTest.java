@@ -99,28 +99,4 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 		
 		return views;
 	}
-
-	@Test
-	public void testReadLargeSIFFiles() throws Exception {
-		//justNetworkPerf("A200-200.sif");
-		justNetworkPerf("A50-100.sif");
-		//justNetworkPerf("A50-50.sif");
-		//networkAndViewPerf("A200-200.sif");
-		//networkAndViewPerf("A50-100.sif");
-		//networkAndViewPerf("A50-50.sif");
-	}
-
-	private void justNetworkPerf(String name) throws Exception {
-		long start = System.currentTimeMillis();
-		CyNetwork[] nets = getNetworks(name);
-		long end = System.currentTimeMillis();
-		System.out.println("LOADING SIF file (" + name + ") no view duration: " + (end - start));
-	}
-
-	private void networkAndViewPerf(String name) throws Exception {
-		long start = System.currentTimeMillis();
-		CyNetworkView[] views = getViews(name);
-		long end = System.currentTimeMillis();
-		System.out.println("LOADING SIF file (" + name + ") with view duration: " + (end - start));
-	}
 }
