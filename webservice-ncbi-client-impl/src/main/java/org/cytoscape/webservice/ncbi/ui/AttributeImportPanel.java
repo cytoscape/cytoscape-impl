@@ -37,7 +37,6 @@ package org.cytoscape.webservice.ncbi.ui;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -53,9 +52,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -118,17 +115,15 @@ public abstract class AttributeImportPanel extends JPanel implements
 	// Attribute panel border title
 	protected String attributePanelTitle;
 	
-	protected final CyTableManager tblManager;
 	protected final CyNetworkManager netManager;
 
 
-	protected AttributeImportPanel(final CyTableManager tblManager, final CyNetworkManager netManager,
+	protected AttributeImportPanel(final CyNetworkManager netManager,
 			Icon logo, String title,
 			String attrPanelTitle) {
 		this.logo = logo;
 		this.panelTitle = title;
 		this.attributePanelTitle = attrPanelTitle;
-		this.tblManager = tblManager;
 		this.netManager = netManager;
 
 		initComponents();
@@ -429,8 +424,7 @@ public abstract class AttributeImportPanel extends JPanel implements
 		final Set<CyNetwork> networks = this.netManager.getNetworkSet();
 		
 		for(CyNetwork network: networks) {
-			final Map<String, CyTable> tables = this.tblManager.getTableMap(CyNode.class, network);
-			final CyTable nodeTable = tables.get(CyNetwork.DEFAULT_ATTRS);
+			final CyTable nodeTable = network.getDefaultNodeTable();
 			//final Map<String, Class<?>> columns = nodeTable.getColumnTypeMap();
 			Collection<CyColumn> columns = nodeTable.getColumns();
 			for (CyColumn col : columns)

@@ -45,7 +45,6 @@
 	<bean id="ncbiTableImportAction" class="org.cytoscape.webservice.ncbi.NCBITableImportAction">
 		<constructor-arg ref="ncbiTableImportClient" />
 		<constructor-arg ref="taskManagerServiceRef" />
-		<constructor-arg ref="cyTableManagerServiceRef" />
 		<constructor-arg ref="cyNetworkManagerServiceRef" />
 		<constructor-arg ref="cyApplicationManagerRef" />
 	</bean>

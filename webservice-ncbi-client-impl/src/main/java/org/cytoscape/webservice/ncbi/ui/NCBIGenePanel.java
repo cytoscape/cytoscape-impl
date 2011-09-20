@@ -47,7 +47,6 @@ import javax.swing.ImageIcon;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.webservice.ncbi.NCBIQuery;
 import org.cytoscape.webservice.ncbi.NCBITableImportClient;
 import org.cytoscape.work.TaskManager;
@@ -71,8 +70,8 @@ public class NCBIGenePanel extends AttributeImportPanel {
 	private final TaskManager taskManager;
 
 	public NCBIGenePanel(final NCBITableImportClient client, final TaskManager taskManager,
-			final CyTableManager tblManager, final CyNetworkManager netManager, String attrPanelName) {
-		super(tblManager, netManager, LOGO, "NCBI Client", attrPanelName);
+			final CyNetworkManager netManager, String attrPanelName) {
+		super(netManager, LOGO, "NCBI Client", attrPanelName);
 		this.client = client;
 		this.taskManager = taskManager;
 
