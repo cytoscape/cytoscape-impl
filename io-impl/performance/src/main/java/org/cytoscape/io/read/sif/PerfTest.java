@@ -5,8 +5,7 @@ package org.cytoscape.io.read.sif;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 
 import java.util.List;
 import java.util.Properties;
@@ -72,9 +71,9 @@ public class PerfTest {
 	}
 
 	private  SIFNetworkReader readFile(String file) throws Exception {
-		File f = new File("./src/main/resources/testData/sif/" + file);
+		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, eventHelper);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, eventHelper);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
@@ -104,9 +103,9 @@ public class PerfTest {
 			justNetworkPerf("A200-200.sif");
 			justNetworkPerf("A50-100.sif");
 			justNetworkPerf("A50-50.sif");
-			networkAndViewPerf("A200-200.sif");
-			networkAndViewPerf("A50-100.sif");
-			networkAndViewPerf("A50-50.sif");
+			//networkAndViewPerf("A200-200.sif");
+			//networkAndViewPerf("A50-100.sif");
+			//networkAndViewPerf("A50-50.sif");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
