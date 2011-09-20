@@ -10,19 +10,16 @@ import java.util.Set;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.model.CyTableEntry;
 
 
 public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 	private String DEGREE_ATTR_NAME = "degree";
-	private CyTableManager tableMgr;
 	private CyNetwork network;
 
 	/**
@@ -31,12 +28,11 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 	public DegreeSortedCircleLayoutTask(
 		final CyNetworkView networkView, final String name, final boolean selectedOnly,
 		final Set<View<CyNode>> staticNodes, final String DEGREE_ATTR_NAME,
-		final CyTableManager tableMgr, final boolean singlePartition)
+		final boolean singlePartition)
 	{
 		super(networkView, name, singlePartition, selectedOnly, staticNodes);
 
 		this.DEGREE_ATTR_NAME= DEGREE_ATTR_NAME;
-		this.tableMgr = tableMgr;
 		this.network = networkView.getModel();
 	}
 
@@ -47,7 +43,7 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 	 */
 	public void layoutPartion(LayoutPartition partition) {
 		// Create attribute
-		CyTable table = tableMgr.getTableMap(CyNode.class, network).get(CyNetwork.DEFAULT_ATTRS);
+		CyTable table = network.getDefaultNodeTable();
 		if (table.getColumn(DEGREE_ATTR_NAME) == null)
 			table.createColumn(DEGREE_ATTR_NAME, Double.class, false);
 

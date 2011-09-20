@@ -40,7 +40,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
@@ -84,20 +83,16 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
 	//@Tunable(description="The namespace of the attribute to use for the layout")
 	public String attributeNamespace;
 	
-	private CyTableManager tableMgr;
-	
 	/**
 	 * Creates a new GroupAttributesLayout object.
 	 */
-	public GroupAttributesLayout(UndoSupport undoSupport, CyTableManager tableMgr) {
+	public GroupAttributesLayout(UndoSupport undoSupport) {
 		super(undoSupport, "attributes-layout", "Group Attributes Layout", true);
-		this.tableMgr = tableMgr;
-		
 	}
 
 	public TaskIterator getTaskIterator() {
 		return new TaskIterator(new GroupAttributesLayoutTask(networkView, getName(), selectedOnly, staticNodes,
-				spacingx,spacingy,maxwidth,minrad,radmult,attributeName,attributeNamespace, tableMgr));
+				spacingx,spacingy,maxwidth,minrad,radmult,attributeName,attributeNamespace));
 	}
 	
 	@Override

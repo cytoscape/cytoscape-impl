@@ -11,7 +11,6 @@ import java.util.TreeMap;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -35,12 +34,10 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 	
 	private TaskMonitor taskMonitor;	
 	private CyNetwork network;
-	private CyTableManager tableMgr;
 	
 	public GroupAttributesLayoutTask(final CyNetworkView networkView, final String name, final boolean selectedOnly,
 			final Set<View<CyNode>> staticNodes, final double spacingx, final double spacingy, final double maxwidth,
-			final double minrad, final double radmult, final String attributeName, final String attributeNamespace,
-			CyTableManager tableMgr) {
+			final double minrad, final double radmult, final String attributeName, final String attributeNamespace) {
 		
 		super(networkView, name, selectedOnly, staticNodes);
 		
@@ -55,7 +52,6 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 
 		this.attributeName = attributeName;
 		this.attributeNamespace = attributeNamespace;
-		this.tableMgr = tableMgr;
 	}
 
 
@@ -97,7 +93,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 		
 		taskMonitor.setStatusMessage("Initializing");
 
-		CyTable dataTable = tableMgr.getTableMap(CyNode.class, network).get(CyNetwork.DEFAULT_ATTRS);
+		CyTable dataTable = network.getDefaultNodeTable();
 		Class<?> klass = dataTable.getColumn(attributeName).getType();
 		
 		if (Comparable.class.isAssignableFrom(klass)){
