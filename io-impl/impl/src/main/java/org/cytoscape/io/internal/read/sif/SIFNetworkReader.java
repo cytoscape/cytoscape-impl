@@ -67,6 +67,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 
 	private final CyEventHelper eventHelper;
 	private final CyLayoutAlgorithmManager layouts;
+	private final StringBuilder edgeNameBuilder = new StringBuilder();
 	
 	private TaskMonitor parentTaskMonitor;
 
@@ -161,9 +162,19 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 				nMap.put(target, targetNode);
 			}
 			final CyEdge edge = network.addEdge(sourceNode, targetNode, true);
-			edge.getCyRow().set(CyTableEntry.NAME, itr.getSource() + " (" + itr.getType() + ") " + target);
+			edge.getCyRow().set(CyTableEntry.NAME, getEdgeName(itr,target));
 			edge.getCyRow().set(CyEdge.INTERACTION, itr.getType());
 		}
+	}
+
+	private String getEdgeName(Interaction itr, String target) {
+		edgeNameBuilder.delete(0,edgeNameBuilder.length());
+		edgeNameBuilder.append(itr.getSource());
+		edgeNameBuilder.append(" (");
+		edgeNameBuilder.append(itr.getType());
+		edgeNameBuilder.append(") ");
+		edgeNameBuilder.append(target);
+		return edgeNameBuilder.toString();
 	}
 	
 
