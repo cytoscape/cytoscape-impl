@@ -43,8 +43,6 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
 
-import javax.swing.SwingUtilities;
-
 /**
  * Icon generator for Stroke objects.
  *

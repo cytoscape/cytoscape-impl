@@ -452,15 +452,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param width
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean setWidth(double width) {
+	public boolean setWidth(final double width) {
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
 				return false;
@@ -655,15 +650,17 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 
-	public void setYPosition(double yPos) {
+	public void setYPosition(final double yPos) {
+		final double hDiv2;
+		
 		synchronized (graphView.m_lock) {
-			final double hDiv2;
+			
 			final boolean nodeVisible = graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0);
 
 			if (nodeVisible)
-				hDiv2 = (((double) graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1]) / 2.0d;
+				hDiv2 = ((graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1]) / 2.0d;
 			else
-				hDiv2 = (double) (m_hiddenYMax - m_hiddenYMin) / 2.0d;
+				hDiv2 = (m_hiddenYMax - m_hiddenYMin) / 2.0d;
 
 			final float yMin = (float) (yPos - hDiv2);
 			final float yMax = (float) (yPos + hDiv2);
@@ -678,10 +675,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				graphView.m_contentChanged = true;
 
 				// If the node is NOT visible (hidden), then update the hidden
-				// extents. Doing
-				// this will mean that the node view will be properly scaled and
-				// rotated
-				// relative to the other nodes.
+				// extents. Doing this will mean that the node view will be properly scaled and
+				// rotated relative to the other nodes.
 			} else {
 				m_hiddenYMax = yMax;
 				m_hiddenYMin = yMin;
@@ -693,9 +688,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	public double getYPosition() {
 		synchronized (graphView.m_lock) {
 			if (graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
-				return (((double) graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
+				return ((graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
 			else
-				return ((double) (m_hiddenYMin + m_hiddenYMax)) / 2.0d;
+				return ((m_hiddenYMin + m_hiddenYMax)) / 2.0d;
 		}
 	}
 
@@ -1197,7 +1192,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	@Override
-	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vpOriginal, final V value) {
+	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		
 		final VisualProperty<?> vp;
 		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
@@ -1224,13 +1219,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			return;
 		} else
 			vp = vpOriginal;
+		
+		// Null means set value to VP's default.
+		if(value == null)
+			value = (V) vp.getDefault();
 
 		if (vp == DVisualLexicon.NODE_SHAPE) {
 			setShape(((NodeShape) value));
 		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
-			if(value == null)
-				return;
-			
 			setSelectedPaint((Paint) value);
 		} else if (vp == MinimalVisualLexicon.NODE_SELECTED) {
 			setSelected((Boolean) value);
@@ -1240,9 +1236,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			else
 				graphView.hideGraphObject(this);
 		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
-			if(value == null)
-				return;
-			
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			setBorderPaint((Paint) value);

@@ -843,18 +843,12 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param text
-	 *            DOCUMENT ME!
-	 */
-	public void setText(String text) {
+	@Override
+	public void setText(final String text) {
 		synchronized (m_view.m_lock) {
 			m_view.m_edgeDetails.overrideLabelText(m_inx, 0, text);
 
-			if (DEFAULT_LABEL_TEXT.equals(m_view.m_edgeDetails.labelText(m_inx,
-					0)))
+			if (DEFAULT_LABEL_TEXT.equals(m_view.m_edgeDetails.labelText(m_inx, 0)))
 				m_view.m_edgeDetails.overrideLabelCount(m_inx, 0);
 			else
 				m_view.m_edgeDetails.overrideLabelCount(m_inx, 1);
@@ -1425,11 +1419,11 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			vp = vpOriginal;
 		}
 		
+		if(value == null)
+			value = (V) vp.getDefault();
+		
 		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
-			if(value == null)
-				return;
-			else
-				setSelectedPaint((Paint) value);
+			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
 			if(value == null)
 				return;

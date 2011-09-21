@@ -3,49 +3,42 @@
 
 package org.cytoscape.ding;
 
-import org.cytoscape.work.TaskManager;
+import java.util.Properties;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.dependency.CustomGraphicsSizeDependency;
+import org.cytoscape.ding.dependency.EdgePaintToArrowHeadPaintDependency;
+import org.cytoscape.ding.impl.AddEdgeNodeViewTaskFactoryImpl;
+import org.cytoscape.ding.impl.DVisualLexicon;
+import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
+import org.cytoscape.ding.impl.DingRenderingEngineFactory;
+import org.cytoscape.ding.impl.DingViewModelFactory;
+import org.cytoscape.ding.impl.ShowGraphicsDetailTaskFactory;
+import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
+import org.cytoscape.dnd.DropNetworkViewTaskFactory;
+import org.cytoscape.dnd.DropNodeViewTaskFactory;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
-
-import org.cytoscape.ding.impl.ShowGraphicsDetailTaskFactory;
-import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
-import org.cytoscape.ding.impl.DVisualLexicon;
-import org.cytoscape.ding.impl.AddEdgeNodeViewTaskFactoryImpl;
-import org.cytoscape.ding.dependency.CustomGraphicsSizeDependency;
-import org.cytoscape.ding.ObjectPositionValueEditor;
-import org.cytoscape.ding.impl.DingRenderingEngineFactory;
-import org.cytoscape.ding.dependency.EdgePaintToArrowHeadPaintDependency;
-import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
-import org.cytoscape.ding.impl.DingViewModelFactory;
-
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
-
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.EdgeViewTaskFactory;
-
-import org.osgi.framework.BundleContext;
-
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.spacial.SpacialIndex2DFactory;
+import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.undo.UndoSupport;
+import org.osgi.framework.BundleContext;
 
 
 

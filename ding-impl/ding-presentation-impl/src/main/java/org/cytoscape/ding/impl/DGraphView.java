@@ -126,7 +126,6 @@ import org.cytoscape.view.model.events.FitSelectedEventListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TunableInterceptor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,8 +233,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	PrintLOD m_printLOD;
 
-	HashMap<Integer, NodeView> m_nodeViewMap;
-	HashMap<Integer, EdgeView> m_edgeViewMap;
+	private final Map<Integer, NodeView> m_nodeViewMap;
+	private final Map<Integer, EdgeView> m_edgeViewMap;
 
 	/**
 	 *
@@ -290,17 +289,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * BTree of selected nodes.
 	 */
-	IntBTree m_selectedNodes; // Positive.
+	final IntBTree m_selectedNodes; // Positive.
 
 	/**
 	 * BTree of selected edges.
 	 */
-	IntBTree m_selectedEdges; // Positive.
+	final IntBTree m_selectedEdges; // Positive.
 
 	/**
 	 * BTree of selected anchors.
 	 */
-	IntBTree m_selectedAnchors;
+	final IntBTree m_selectedAnchors;
 
 	/**
 	 * State variable for when nodes have moved.
@@ -363,17 +362,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	private boolean latest;
 
-	Map<NodeViewTaskFactory, Map> nodeViewTFs;
-	Map<EdgeViewTaskFactory, Map> edgeViewTFs;
-	Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
-	Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
-	Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
+	final Map<NodeViewTaskFactory, Map> nodeViewTFs;
+	final Map<EdgeViewTaskFactory, Map> edgeViewTFs;
+	final Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
+	final Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
+	final Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
 
-	TunableInterceptor<?> interceptor;
-	TaskManager manager;
+	final TaskManager manager;
 
 	// Will be injected.
-	private VisualLexicon dingLexicon;
+	private final VisualLexicon dingLexicon;
 	
 	private final Properties props;
 
@@ -382,7 +380,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Create presentation from View Model
 	 * 
 	 */
-	public DGraphView(final CyNetworkView view, CyTableFactory dataFactory,
+	public DGraphView(final CyNetworkView view, final CyTableFactory dataFactory,
 			CyRootNetworkFactory cyRoot, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
@@ -478,14 +476,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		logger.debug("Phase 2: Canvas created: time = "
 				+ (System.currentTimeMillis() - start));
 
-		// from DingNetworkView
-		this.title = model.getCyRow().get("name", String.class);
+		this.title = model.getCyRow().get(CyTableEntry.NAME, String.class);
 
-		// Create presentations for the graph objects
-		for (CyNode nn : model.getNodeList())
+		// Create view model / presentations for the graph
+		for (final CyNode nn : model.getNodeList())
 			addNodeView(nn);
 
-		for (CyEdge ee : model.getEdgeList())
+		for (final CyEdge ee : model.getEdgeList())
 			addEdgeView(ee);
 
 		logger.debug("Phase 3: All views created: time = " + (System.currentTimeMillis() - start));
@@ -753,11 +750,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *
 	 * @return The NodeView object that is added to the GraphView.
 	 */
+	@Override
 	public NodeView addNodeView(CyNode node) {
 		DNodeView newView = null;
 
 		synchronized (m_lock) {
-			newView = (DNodeView) addNodeViewInternal(node);
+			newView = addNodeViewInternal(node);
 
 			// View already exists.
 			if (newView == null)
@@ -779,7 +777,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * Should synchronize around m_lock.
 	 */
-	private NodeView addNodeViewInternal(final CyNode node) {
+	private DNodeView addNodeViewInternal(final CyNode node) {
 		final int nodeInx = node.getIndex();
 		final NodeView oldView = m_nodeViewMap.get(nodeInx);
 
@@ -816,9 +814,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final int edgeInx = edge.getIndex();
 			final EdgeView oldView = m_edgeViewMap.get(edgeInx);
 
-			if (oldView != null) {
+			if (oldView != null)
 				return oldView;
-			}
 
 			sourceNode = addNodeViewInternal(edge.getSource());
 			targetNode = addNodeViewInternal(edge.getTarget());
@@ -827,7 +824,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			dEdgeView = new DEdgeView(dingLexicon, this, edgeInx, edge);
 
-			m_edgeViewMap.put(Integer.valueOf(edgeInx), dEdgeView);
+			m_edgeViewMap.put(edgeInx, dEdgeView);
 			m_contentChanged = true;
 		}
 
@@ -912,7 +909,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			if (hiddenEdgeInx == null)
 				return null;
 
-			for (CyEdge ee : hiddenEdgeInx)
+			for (final CyEdge ee : hiddenEdgeInx)
 				removeEdgeViewInternal(ee.getIndex());
 
 			returnThis = (DNodeView) m_nodeViewMap.remove(Integer.valueOf(nodeInx));
@@ -1509,14 +1506,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param objects
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public boolean hideGraphObjects(List<? extends GraphViewObject> objects) {
 		final Iterator<? extends GraphViewObject> it = objects.iterator();
 
@@ -1910,9 +1900,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 */
+	@Override
 	public void fitSelected() {
 		synchronized (m_lock) {
 			IntEnumerator selectedElms = m_selectedNodes.searchRange(
@@ -2911,6 +2899,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} else if (vp == MinimalVisualLexicon.NETWORK_SCALE_FACTOR) {
 			setZoom(((Double) value).doubleValue());
 		}
+		
+		visualProperties.put(vp, value);
 	}
 
 	@Override
@@ -2940,13 +2930,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
-	public View<CyNode> getNodeView(CyNode node) {
+	public View<CyNode> getNodeView(final CyNode node) {
 		return (View<CyNode>) getDNodeView(node.getIndex());
 	}
 
 
 	@Override
-	public View<CyEdge> getEdgeView(CyEdge edge) {
+	public View<CyEdge> getEdgeView(final CyEdge edge) {
 		return (View<CyEdge>) getDEdgeView(edge.getIndex());
 	}
 
