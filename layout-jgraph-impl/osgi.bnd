@@ -3,4 +3,4 @@
 #-----------------------------------------------------------------
 
 Private-Package: csplugins.*
-
+Bundle-Activator: csplugins.layout.CyActivator

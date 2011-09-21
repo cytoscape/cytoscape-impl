@@ -21,6 +21,14 @@ public class PropertiesFileFilter extends BasicCyFileFilter {
 	 	matcher = p.matcher("");
 	}
 
+	public PropertiesFileFilter(String[] extensions, String[] contentTypes,
+			String description, DataCategory category, StreamUtil streamUtil) {
+		super(extensions, contentTypes, description, category, streamUtil);
+
+		Pattern p = Pattern.compile("^.+=.+$", Pattern.DOTALL);
+	 	matcher = p.matcher("");
+	}
+
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
 

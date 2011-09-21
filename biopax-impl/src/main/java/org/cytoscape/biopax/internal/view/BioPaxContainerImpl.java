@@ -85,7 +85,7 @@ public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
      * @param factory 
      * @param applicationManager 
 	 */
-	private BioPaxContainerImpl(LaunchExternalBrowser browser, CyApplicationManager applicationManager, CyNetworkViewManager viewManager, BioPaxDetailsPanel bpDetailsPanel, CySwingApplication application) {
+	public BioPaxContainerImpl(LaunchExternalBrowser browser, CyApplicationManager applicationManager, CyNetworkViewManager viewManager, BioPaxDetailsPanel bpDetailsPanel, CySwingApplication application) {
 		this.applicationManager = applicationManager;
 		
         cards = new JPanel(new CardLayout());

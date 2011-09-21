@@ -14,7 +14,7 @@ public class ShowGraphicsDetailTaskFactory implements TaskFactory {
     private final CyApplicationManager appManager;
     private final CyProperty<Properties> defaultProps;
     
-    ShowGraphicsDetailTaskFactory(final CyApplicationManager appManager, final CyProperty<Properties> defaultProps) {
+    public ShowGraphicsDetailTaskFactory(final CyApplicationManager appManager, final CyProperty<Properties> defaultProps) {
 	    this.appManager   = DIUtil.stripProxy(appManager);
 	    this.defaultProps = DIUtil.stripProxy(defaultProps);
     }

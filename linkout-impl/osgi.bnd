@@ -3,3 +3,4 @@
 #-----------------------------------------------------------------
 
 Private-Package: org.cytoscape.linkout.*
+Bundle-Activator: org.cytoscape.linkout.internal.CyActivator

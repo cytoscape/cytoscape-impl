@@ -66,7 +66,7 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 	private ObjectPlacerGraphic graphic;
 	private ObjectPlacerControl control;
 	
-	private ObjectPositionValueEditor() {
+	public ObjectPositionValueEditor() {
 		super();
 		this.label = "Object";
 		

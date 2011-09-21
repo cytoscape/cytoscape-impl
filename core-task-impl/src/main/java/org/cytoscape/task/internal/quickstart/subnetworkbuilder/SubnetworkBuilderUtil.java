@@ -120,7 +120,7 @@ public class SubnetworkBuilderUtil {
 		}
 	}
 
-	void removeFactory(VisualMappingFunctionFactory factory, Map props) {
+	public void removeFactory(VisualMappingFunctionFactory factory, Map props) {
 
 	}
 

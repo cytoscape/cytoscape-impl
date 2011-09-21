@@ -125,13 +125,17 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	 * @param editorFactory
 	 */
 	public VizMapperMainPanel(final VisualStyleFactory vsFactory,
-			DefaultViewEditor defViewEditor, IconManager iconMgr,
-			ColorManager colorMgr, VisualMappingManager vmm,
-			VizMapperMenuManager menuMgr, EditorManager editorFactory,
+			DefaultViewEditor defViewEditor, 
+			IconManager iconMgr,
+			ColorManager colorMgr, 
+			VisualMappingManager vmm,
+			VizMapperMenuManager menuMgr, 
+			EditorManager editorFactory,
 			final PropertySheetPanel propertySheetPanel,
 			VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
 			EditorWindowManager editorWindowManager,
-			CyApplicationManager applicationManager, CyEventHelper eventHelper,
+			CyApplicationManager applicationManager, 
+			CyEventHelper eventHelper,
 			final SelectedVisualStyleManager manager,
 			final ImportDefaultVizmapTaskFactory taskFactory,
 			final TaskManager tManager) {

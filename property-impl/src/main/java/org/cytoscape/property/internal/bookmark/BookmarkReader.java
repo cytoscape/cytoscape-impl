@@ -38,7 +38,7 @@ public final class BookmarkReader implements CyProperty<Bookmarks>, SessionLoade
 			if (is == null)
 				throw new IllegalArgumentException("Failed to open resource: " + resourceLocation);
 
-			final JAXBContext jaxbContext = JAXBContext.newInstance(BOOKMARK_PACKAGE);
+			final JAXBContext jaxbContext = JAXBContext.newInstance(BOOKMARK_PACKAGE,getClass().getClassLoader());
 
 			final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 

@@ -5,3 +5,4 @@
 Import-package: *
 Private-Package: org.cytoscape.ding.impl, org.cytoscape.ding.impl.*
 Export-Package: org.cytoscape.ding.*;-noimport:=true
+Bundle-Activator: org.cytoscape.ding.CyActivator

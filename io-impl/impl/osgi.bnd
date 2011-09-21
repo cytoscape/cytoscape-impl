@@ -4,3 +4,4 @@
 
 Import-Package: *
 Private-Package: org.cytoscape.io.internal, org.cytoscape.io.internal.*
+Bundle-Activator: org.cytoscape.io.internal.CyActivator

@@ -2,5 +2,5 @@
 # Use this file to add customized Bnd instructions for the bundle
 #-----------------------------------------------------------------
 
-Spring-Context: META-INF/spring/*.xml
+Bundle-Activator: org.cytoscape.ding.impl.customgraphics.CyActivator
 Import-Package: *, org.cytoscape.work.swing

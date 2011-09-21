@@ -146,10 +146,14 @@ public class VizMapperMenuManager {
 	public void addTaskFactory(final TaskFactory taskFactory,
 			@SuppressWarnings("rawtypes") Map properties) {
 
-		final Object serviceType = properties.get(METADATA_MENU_KEY);
-		if (serviceType == null)
-			throw new NullPointerException(
-					"Service Type metadata is null.  This value is required.");
+		// first filter the service...
+		final Object serviceType = properties.get("service.type");
+		if ( serviceType == null || !(serviceType instanceof String) || !((String)serviceType).equals("vizmapUI.taskFactory") )
+			return;
+
+		final Object menuDef = properties.get(METADATA_MENU_KEY);
+		if (menuDef == null)
+			throw new NullPointerException("Menu metadata is missing.");
 
 		// This is a menu item for Main Command Button.
 		final Object title = properties.get(METADATA_TITLE_KEY);
@@ -166,9 +170,9 @@ public class VizMapperMenuManager {
 			}
 		});
 
-		if(serviceType.toString().equals(MAIN_MENU))
+		if(menuDef.toString().equals(MAIN_MENU))
 			mainMenu.add(menuItem);
-		else if(serviceType.toString().equals(CONTEXT_MENU))
+		else if(menuDef.toString().equals(CONTEXT_MENU))
 			edit.add(menuItem);
 
 	}

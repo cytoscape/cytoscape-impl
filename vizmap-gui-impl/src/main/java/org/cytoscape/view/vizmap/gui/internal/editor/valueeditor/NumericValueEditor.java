@@ -6,13 +6,13 @@ import java.math.BigInteger;
 
 import javax.swing.JOptionPane;
 
-public class NumericValueEditor extends
-		AbstractValueEditor<Number> {
+public class NumericValueEditor<T extends Number> extends
+		AbstractValueEditor<T> {
 
 	private static final String MESSAGE = "Please enter new number";
 	private static final String ERR_MESSAGE = "Not a valid number.";
 
-	public NumericValueEditor(final Class<Number> type) {
+	public NumericValueEditor(final Class<T> type) {
 		super(type);
 	}
 
@@ -20,7 +20,7 @@ public class NumericValueEditor extends
 	/**
 	 * Generic editor for all kinds of numbers.
 	 */
-	@Override public <S extends Number> Number showEditor(Component parent, S initialValue) {
+	@Override public <S extends T> T showEditor(Component parent, S initialValue) {
 		if(initialValue == null)
 			throw new NullPointerException("Initial value is null.");
 		
@@ -43,7 +43,7 @@ public class NumericValueEditor extends
 			}
 		}
 		
-		return result;
+		return type.cast(result);
 	}
 	
 	/**

@@ -3,3 +3,4 @@
 #-----------------------------------------------------------------
 
 Private-Package: ${bundle.namespace},${bundle.namespace}.*
+Bundle-Activator: ${bundle.namespace}.CyActivator

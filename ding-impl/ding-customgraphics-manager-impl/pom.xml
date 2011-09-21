@@ -84,5 +84,9 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-swing-api</artifactId>
+		</dependency>
 	</dependencies>
 </project>

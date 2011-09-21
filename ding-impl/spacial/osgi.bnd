@@ -3,5 +3,5 @@
 #-----------------------------------------------------------------
 
 
-Spring-Context: META-INF/spring/*.xml
+Bundle-Activator: org.cytoscape.spacial.CyActivator
 

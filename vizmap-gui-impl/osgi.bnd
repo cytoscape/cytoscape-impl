@@ -5,3 +5,4 @@
 Import-Package: *
 Private-Package: org.cytoscape.view.vizmap.gui.internal.*
 Export-Package: org.cytoscape.view.vizmap.gui.dependency
+Bundle-Activator: org.cytoscape.view.vizmap.gui.internal.CyActivator

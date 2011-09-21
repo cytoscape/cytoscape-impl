@@ -56,7 +56,7 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
  * selected, but since toolbars are always visible, we need to listen for the
  * actual events. This is less than ideal.
  */
-class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener,
+public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener,
 		NetworkViewAddedListener, NetworkViewDestroyedListener, SetCurrentNetworkListener,
 		SetCurrentNetworkViewListener, RowsSetListener {
 

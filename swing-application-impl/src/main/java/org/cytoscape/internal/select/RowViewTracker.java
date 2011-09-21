@@ -22,7 +22,7 @@ import org.cytoscape.view.model.events.AddedNodeViewsListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 
-class RowViewTracker implements NetworkViewAddedListener, 
+public class RowViewTracker implements NetworkViewAddedListener, 
 	AddedNodeViewsListener, AddedEdgeViewsListener, 
 	AboutToRemoveNodeViewsListener, AboutToRemoveEdgeViewsListener {
 

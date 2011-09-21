@@ -4,3 +4,4 @@
 
 Import-Package: *;resolution:=optional
 Private-Package: org.cytoscape.log.internal.*
+Bundle-Activator: org.cytoscape.log.internal.CyActivator

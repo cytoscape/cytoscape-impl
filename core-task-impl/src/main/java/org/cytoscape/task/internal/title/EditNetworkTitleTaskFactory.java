@@ -38,7 +38,7 @@ import org.cytoscape.work.undo.UndoSupport;
 public class EditNetworkTitleTaskFactory extends AbstractNetworkTaskFactory {
 	private final UndoSupport undoSupport;
 
-	EditNetworkTitleTaskFactory(final UndoSupport undoSupport) {
+	public EditNetworkTitleTaskFactory(final UndoSupport undoSupport) {
 		this.undoSupport = undoSupport;
 	}
 

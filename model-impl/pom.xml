@@ -12,8 +12,8 @@
 
 	<modules>
 		<module>impl</module>
-		<module>it</module>
 		<!--		
+		<module>it</module>
 		<module>performance</module> 
 		 -->
 	</modules>
@@ -67,11 +67,11 @@
 	should be kept in the it/pom.xml
 	-->
 	<dependencies>
-                <dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>di-util-api</artifactId>
-                        <scope>provided</scope>
-                </dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>di-util-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>

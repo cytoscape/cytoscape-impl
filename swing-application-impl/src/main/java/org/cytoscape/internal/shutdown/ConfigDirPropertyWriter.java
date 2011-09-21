@@ -25,7 +25,7 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 	private final CyApplicationConfiguration config;
 	private static final Logger logger = LoggerFactory.getLogger(ConfigDirPropertyWriter.class);
 
-	ConfigDirPropertyWriter(final TaskManager taskManager,
+	public ConfigDirPropertyWriter(final TaskManager taskManager,
 				final CyPropertyWriterManager propertyWriterManager, final CyApplicationConfiguration config)
 	{
 		this.taskManager = taskManager;

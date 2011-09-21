@@ -58,19 +58,19 @@ import org.cytoscape.work.TaskManager;
  * A class that encapsulates the creation of JPopupMenus based
  * on TaskFactory services.
  */
-class PopupMenuHelper {
+public class PopupMenuHelper {
 	private final TaskManager taskManager;
 	private final Map<TableCellTaskFactory, Map> tableCellFactoryMap;
 	private final Map<TableColumnTaskFactory, Map> tableColumnFactoryMap;
 
-	PopupMenuHelper(final TaskManager taskManager) {
+	public PopupMenuHelper(final TaskManager taskManager) {
 		this.taskManager = taskManager;
 
 		tableCellFactoryMap   = new HashMap<TableCellTaskFactory, Map>();
 		tableColumnFactoryMap = new HashMap<TableColumnTaskFactory, Map>();
 	}
 
-	void createColumnHeaderMenu(final CyColumn column, final Component invoker, final int x,
+	public void createColumnHeaderMenu(final CyColumn column, final Component invoker, final int x,
 				    final int y)
 	{
 		if (tableColumnFactoryMap.isEmpty())
@@ -87,7 +87,7 @@ class PopupMenuHelper {
 		menu.show(invoker, x, y);
 	}
 
-	void createTableCellMenu(final CyColumn column, final Object primaryKeyValue,
+	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue,
 				 final Component invoker, final int x, final int y)
 	{
 		if (tableCellFactoryMap.isEmpty())

@@ -49,19 +49,6 @@
 	</repositories>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>.</directory>
-				<includes>
-					<include>plugin.xml</include>
-					<include>plugin.properties</include>
-					<include>icons/**</include>
-				</includes>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -133,7 +120,6 @@
 			<artifactId>application-api</artifactId>
 		</dependency>
 
-
 		<!-- Test Dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -192,11 +178,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>service-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

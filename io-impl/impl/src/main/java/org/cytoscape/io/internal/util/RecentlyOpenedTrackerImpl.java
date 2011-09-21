@@ -15,15 +15,18 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	
 	private static final int MAX_TRACK_COUNT = 5;
 	private static final String USER_HOME_DIR = System.getProperty("user.home");
+	private static final Logger logger = LoggerFactory.getLogger(RecentlyOpenedTrackerImpl.class); 
 	
 	private final String trackerFileName;
 	private final LinkedList<URL> trackerURLs;
-	
 	private final File propDir;
 	
 	/**
@@ -33,21 +36,25 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	 *            the name of the file in the Cytoscape config directory to read
 	 *            saved file names from.
 	 */
-	public RecentlyOpenedTrackerImpl(final String trackerFileName, final CyApplicationConfiguration config) throws IOException {
+	public RecentlyOpenedTrackerImpl(final String trackerFileName, final CyApplicationConfiguration config) {
 		this.trackerFileName = trackerFileName;
 		this.propDir = config.getSettingLocation();
-		trackerURLs = new LinkedList<URL>();
+		this.trackerURLs = new LinkedList<URL>();
 
-		final File input = new File(propDir, trackerFileName);
-		if (!input.exists())
-			input.createNewFile();
-
-		final BufferedReader reader = new BufferedReader(new FileReader(input));
-		String line;
-		while ((line = reader.readLine()) != null && trackerURLs.size() < MAX_TRACK_COUNT) {
-			final String newURL = line.trim();
-			if (newURL.length() > 0)
-				trackerURLs.addLast(new URL(newURL));
+		try {
+			final File input = new File(propDir, trackerFileName);
+			if (!input.exists())
+				input.createNewFile();
+	
+			final BufferedReader reader = new BufferedReader(new FileReader(input));
+			String line;
+			while ((line = reader.readLine()) != null && trackerURLs.size() < MAX_TRACK_COUNT) {
+				final String newURL = line.trim();
+				if (newURL.length() > 0)
+					trackerURLs.addLast(new URL(newURL));
+			}
+		} catch (IOException ioe) {
+			logger.warn("problem reading Recently Opened File list",ioe); 	
 		}
 	}
 

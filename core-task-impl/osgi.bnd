@@ -2,7 +2,6 @@
 # Use this file to add customized Bnd instructions for the bundle
 #-----------------------------------------------------------------
 
-
-Spring-Context: META-INF/spring/*.xml
 Private-Package: org.cytoscape.task.internal.*
+Bundle-Activator: org.cytoscape.task.internal.CyActivator
 

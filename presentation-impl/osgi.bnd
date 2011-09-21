@@ -4,3 +4,4 @@
 
 Import-Package: *
 Private-Package: org.cytoscape.view.presentation.internal.*
+Bundle-Activator: org.cytoscape.view.presentation.internal.CyActivator

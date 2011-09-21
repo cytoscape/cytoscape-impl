@@ -24,7 +24,6 @@
        <constructor-arg ref="cyEventHelperServiceRef" />
        <constructor-arg ref="cyNetworkManagerServiceRef" />
        <constructor-arg ref="cyTableManagerServiceRef" />
-       <constructor-arg ref="cyNetworkTableManagerServiceRef" />
        <constructor-arg ref="visualMappingManagerServiceRef" />
        <constructor-arg ref="cyNetworkViewManagerServiceRef" />
     </bean>

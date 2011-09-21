@@ -23,6 +23,12 @@ public class GMLFileFilter extends BasicCyFileFilter {
 		this.streamUtil = streamUtil;
 	}
 
+	public GMLFileFilter(String[] extensions, String[] contentTypes,
+			String description, DataCategory category, StreamUtil streamUtil) {
+		super(extensions, contentTypes, description, category, streamUtil);
+		this.streamUtil = streamUtil;
+	}
+
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
 		if (!category.equals(DataCategory.NETWORK)) {

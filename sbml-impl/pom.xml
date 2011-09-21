@@ -108,11 +108,6 @@
         </dependency>
         <dependency>
             <groupId>org.cytoscape</groupId>
-            <artifactId>service-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
             <artifactId>event-api</artifactId>
             <type>test-jar</type>
             <scope>test</scope>

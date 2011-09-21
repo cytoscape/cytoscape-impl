@@ -30,7 +30,8 @@
 package org.cytoscape.internal.view.help;
 
 
-import org.cytoscape.internal.view.CytoscapeDesktop; 
+import org.cytoscape.internal.view.CyDesktopManager.Arrange;
+import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -38,9 +39,9 @@ import org.cytoscape.work.TaskIterator;
 public class ArrangeTaskFactory implements TaskFactory {
 
 	private CytoscapeDesktop desk;
-	private String arrange;
+	private Arrange arrange;
 
-	public ArrangeTaskFactory(CytoscapeDesktop desk, String arrange) {
+	public ArrangeTaskFactory(CytoscapeDesktop desk, Arrange arrange) {
 		this.desk = desk;
 		this.arrange = arrange;
 	}

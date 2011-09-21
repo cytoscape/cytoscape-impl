@@ -3,4 +3,5 @@
 #-----------------------------------------------------------------
 
 Private-Package: org.cytoscape.application.internal,org.cytoscape.application.internal.*
+Bundle-Activator: org.cytoscape.application.internal.CyActivator
 

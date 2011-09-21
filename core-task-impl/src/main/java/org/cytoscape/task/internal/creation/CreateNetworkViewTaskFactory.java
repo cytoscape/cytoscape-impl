@@ -46,7 +46,7 @@ public class CreateNetworkViewTaskFactory extends AbstractNetworkTaskFactory {
 	private final CyLayoutAlgorithmManager layouts;
 	private final CyEventHelper eventHelper;
 
-	CreateNetworkViewTaskFactory(final UndoSupport undoSupport,
+	public CreateNetworkViewTaskFactory(final UndoSupport undoSupport,
 	                             final CyNetworkViewFactory viewFactory,
 	                             final CyNetworkViewManager networkViewManager,
 	                             final CyLayoutAlgorithmManager layouts,

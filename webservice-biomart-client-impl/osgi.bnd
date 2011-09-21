@@ -3,5 +3,6 @@
 #-----------------------------------------------------------------
 
 Import-Package: *
-Private-Package: org.cytoscape.io.webservice.biomart.*
-Export-Package: !org.cytoscape.io.webservice.biomart.*
+Private-Package: org.cytoscape.io.webservice.biomart, org.cytoscape.io.webservice.biomart.*
+Bundle-Activator: org.cytoscape.io.webservice.biomart.CyActivator
+

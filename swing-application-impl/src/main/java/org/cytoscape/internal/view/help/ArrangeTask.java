@@ -31,22 +31,23 @@ package org.cytoscape.internal.view.help;
 
 
 import org.cytoscape.internal.view.CyDesktopManager;
+import org.cytoscape.internal.view.CyDesktopManager.Arrange;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 
 public class ArrangeTask extends AbstractTask {
-	private String arrange;
+	private Arrange arrange;
 	private CytoscapeDesktop desktop;
 
-	public ArrangeTask(CytoscapeDesktop desktop, String arrange) {
+	public ArrangeTask(CytoscapeDesktop desktop, Arrange arrange) {
 		this.desktop = desktop;
 		this.arrange = arrange;
 	}
 
 	public void run(TaskMonitor tm) {
-		CyDesktopManager.arrangeFrames(desktop, CyDesktopManager.Arrange.valueOf(arrange));
+		CyDesktopManager.arrangeFrames(desktop, arrange);
 	}
 
 	@Override

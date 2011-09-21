@@ -104,7 +104,7 @@
 	</osgi:set>
 	
 	<osgi:set id="tunableHandlerFactories" 
-	    interface="org.cytoscape.work.swing.GUITunableHandlerFactory"
+	    interface="org.cytoscape.work.swing.TunableHandlerFactory"
 	    cardinality="0..N">
 		<osgi:listener bind-method="addTunableHandlerFactory"
 		               unbind-method="removeTunableHandlerFactory" 

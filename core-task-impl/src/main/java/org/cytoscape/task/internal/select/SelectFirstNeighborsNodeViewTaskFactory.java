@@ -37,7 +37,7 @@ public class SelectFirstNeighborsNodeViewTaskFactory extends AbstractNodeViewTas
 
     private final CyEventHelper eventHelper;
 
-    SelectFirstNeighborsNodeViewTaskFactory(final CyEventHelper eventHelper) {
+    public SelectFirstNeighborsNodeViewTaskFactory(final CyEventHelper eventHelper) {
 	this.eventHelper = eventHelper;
     }
 

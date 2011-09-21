@@ -20,6 +20,11 @@ public class BookmarkFileFilter extends BasicCyFileFilter {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
 
+	public BookmarkFileFilter(String[] extensions, String[] contentTypes,
+			String description, DataCategory category, StreamUtil streamUtil) {
+		super(extensions, contentTypes, description, category, streamUtil);
+	}
+
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
 

@@ -64,8 +64,7 @@ import org.xml.sax.SAXException;
  */
 public class BiomartRestClient {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(BiomartRestClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(BiomartRestClient.class);
 
 	private static final int CONNECTION_TIMEOUT = 3000;
 	private static final int READ_TIMEOUT = 5000;
@@ -90,14 +89,18 @@ public class BiomartRestClient {
 	 *            DOCUMENT ME!
 	 * @throws IOException
 	 */
-	public BiomartRestClient(final String baseURL) throws IOException {
+	public BiomartRestClient(final String baseURL) {
 
 		if (baseURL == null)
 			throw new NullPointerException("Biomart base URL is missing.");
 
 		this.baseURL = baseURL + "?";
 
+		try {
 		loadConversionFile();
+		} catch (IOException ioe) {
+			throw new RuntimeException("Couldn't initialize BiomartRestClient",ioe);
+		}
 
 		logger.debug("Biomart REST client initialized.");
 	}

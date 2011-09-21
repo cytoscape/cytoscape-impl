@@ -3,4 +3,5 @@
 #-----------------------------------------------------------------
 
 Import-Package: *
-
+Private-Package: org.cytoscape.editor.internal.*
+Bundle-Activator: org.cytoscape.editor.internal.CyActivator 

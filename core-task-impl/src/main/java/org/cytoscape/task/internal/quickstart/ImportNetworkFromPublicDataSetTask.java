@@ -50,7 +50,7 @@ public class ImportNetworkFromPublicDataSetTask extends AbstractLoadNetworkTask 
 
 		this.processors = processors;
 		if (processors.size() == 0)
-			throw new NullPointerException("Could not found data preprocessor.");
+			throw new NullPointerException("No data processors available.");
 
 		final List<String> sourceList = new ArrayList<String>();
 		for (InteractionFilePreprocessor processor : processors) {

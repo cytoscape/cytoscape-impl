@@ -32,7 +32,7 @@
 		<constructor-arg ref="dVisualLexicon" />
 		<constructor-arg ref="taskManagerServiceRef" />
 		<constructor-arg ref="cyServiceRegistrarRef" />
-		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
+		<constructor-arg ref="cyTableManagerServiceRef" />
 		<constructor-arg ref="cyEventHelperServiceRef" />
 		<constructor-arg ref="renderingEngineManagerServiceRef" />
 	</bean>
@@ -62,20 +62,6 @@
 	<bean id="showGraphicsDetailTaskFactory" class="org.cytoscape.ding.impl.ShowGraphicsDetailTaskFactory">
 		<constructor-arg ref="applicationManagerManagerServiceRef" />
 		<constructor-arg ref="cyPropertyServiceRef" />
-	</bean>
-	
-	
-	
-	<bean id="dingNetworkViewFactory" class="org.cytoscape.ding.impl.DingViewModelFactory">
-		<constructor-arg ref="cyDataTableFactoryServiceRef" />
-		<constructor-arg ref="cyRootNetworkFactoryServiceRef" />
-		<constructor-arg ref="undoSupportServiceRef" />
-		<constructor-arg ref="spacialIndex2DFactoryServiceRef" />
-		<constructor-arg ref="dVisualLexicon" />
-		<constructor-arg ref="taskManagerServiceRef" />
-		<constructor-arg ref="cyServiceRegistrarRef" />
-		<constructor-arg ref="cyNetworkTableManagerServiceRef" />
-		<constructor-arg ref="cyEventHelperServiceRef" />
 	</bean>
 
 </beans>

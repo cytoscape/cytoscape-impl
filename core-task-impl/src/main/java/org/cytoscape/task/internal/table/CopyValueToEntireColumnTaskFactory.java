@@ -34,7 +34,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-final class CopyValueToEntireColumnTaskFactory extends AbstractTableCellTaskFactory {
+public final class CopyValueToEntireColumnTaskFactory extends AbstractTableCellTaskFactory {
 	private final UndoSupport undoSupport;
 
 	public CopyValueToEntireColumnTaskFactory(final UndoSupport undoSupport) {
