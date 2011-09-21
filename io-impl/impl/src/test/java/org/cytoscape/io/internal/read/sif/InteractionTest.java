@@ -36,7 +36,7 @@ import org.junit.Test;
 
 
 public class InteractionTest {
-	private Pattern delim = Pattern.compile(" ");
+	private String delim = " ";
 	
 	@Test
 	public void test3ArgCtor() throws Exception {

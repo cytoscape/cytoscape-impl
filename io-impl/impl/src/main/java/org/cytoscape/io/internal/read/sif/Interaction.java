@@ -33,30 +33,34 @@ package org.cytoscape.io.internal.read.sif;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.StringTokenizer;
 
 
 /**
  * Utility class for representing one line of SIF file.
  */
 final class Interaction {
-	private final String source;
+	private String source;
 	private List<String> targets;
 	private String interactionType;
 
-	Interaction(final String rawText, final Pattern delimiterPattern) {
-		final String[] values = delimiterPattern.split(rawText);
-		if (values.length < 1)
-			throw new IllegalArgumentException("Invalid entry.");
-
-		source = values[0].trim();
+	Interaction(final String rawText, final String delimiter) {
+        final StringTokenizer strtok = new StringTokenizer(rawText, delimiter);
+        int counter = 0;
 		targets = new ArrayList<String>();
 
-		if (values.length > 2) {
-			interactionType = values[1].trim();
-			for (int i = 2; i < values.length; i++)
-				targets.add(values[i].trim());
-		}
+        while (strtok.hasMoreTokens()) {
+            if (counter == 0)
+                source = strtok.nextToken().trim();
+            else if (counter == 1)
+                interactionType = strtok.nextToken().trim();
+            else 
+                targets.add(strtok.nextToken().trim());
+
+            counter++;
+        }
 	}
+
 
 	/**
 	 * @return The source node identifier string.

@@ -62,9 +62,8 @@ import org.slf4j.LoggerFactory;
 public class SIFNetworkReader extends AbstractNetworkReader {
 	private static final Logger logger = LoggerFactory.getLogger(SIFNetworkReader.class);
 
-	private static final String DEF_DELIMITER = "\\s+";
 	private static final String TAB = "\t";
-	private String delimiter = DEF_DELIMITER;
+	private String delimiter = " "; // single space
 
 	private final CyEventHelper eventHelper;
 	private final CyLayoutAlgorithmManager layouts;
@@ -109,8 +108,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		final String firstLine = br.readLine();
 		if (firstLine.contains(TAB))
 			delimiter = TAB;
-		final Pattern delimiterPattern = Pattern.compile(delimiter);
-		createEdge(new Interaction(firstLine.trim(), delimiterPattern), network, nMap);
+		createEdge(new Interaction(firstLine.trim(), delimiter), network, nMap);
 
 		while ((line = br.readLine()) != null) {
 			if (cancelled) {
@@ -126,7 +124,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 				continue;
 
 			try {
-				final Interaction itr = new Interaction(line, delimiterPattern);
+				final Interaction itr = new Interaction(line, delimiter);
 				createEdge(itr, network, nMap);
 			} catch (Exception e) {
 				// Simply ignore invalid lines.
