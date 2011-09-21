@@ -33,9 +33,12 @@ package org.cytoscape.session.internal;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class CyNetworkNamingImpl implements CyNetworkNaming {
+	private static final Logger logger = LoggerFactory.getLogger(CyNetworkNamingImpl.class);
 	private final CyNetworkManager networkManager;
 
 	public CyNetworkNamingImpl(final CyNetworkManager networkManager) {
@@ -53,6 +56,12 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	}
 
 	public String getSuggestedNetworkTitle(String desiredTitle) {
+		if(desiredTitle == null || "".equals(desiredTitle.trim())) {
+			desiredTitle = "Network";
+			logger.warn("getSuggestedNetworkTitle: desiredTitle " +
+				"was '" + desiredTitle + "'");
+		}
+		
 		for (int i = 0; true; i++) {
 			String titleCandidate = desiredTitle + ((i == 0) ? "" : ("." + i));
 
@@ -62,9 +71,16 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	}
 
 	private boolean isNetworkTitleTaken(final String titleCandidate) {
-		for (CyNetwork existingNetwork : networkManager.getNetworkSet() ) 
-			if (existingNetwork.getCyRow().get("name", String.class).equals(titleCandidate))
-				return true;
+		for (CyNetwork existingNetwork : networkManager.getNetworkSet() ) {
+			String name = existingNetwork.getCyRow().get(CyNetwork.NAME, String.class);
+			if(name != null) {
+				if (name.equals(titleCandidate))
+					return true;
+			} else {
+				logger.error("isNetworkTitleTaken: CyNetwork " 
+					+ existingNetwork.getSUID() + " 'name' is NULL!");
+			}
+		}
 
 		return false;
 	}
