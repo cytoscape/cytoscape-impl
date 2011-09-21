@@ -38,22 +38,27 @@ import org.cytoscape.model.CyNode;
 final class NodePointer {
 	final CyNode cyNode;
 	final int index;
-	NodePointer[] nextNode = new NodePointer[1];
-	NodePointer[] prevNode = new NodePointer[1];
-	EdgePointer[] firstOutEdge = new EdgePointer[1];
-	EdgePointer[] firstInEdge = new EdgePointer[1];
+
+	// In general, there will always be the root network,
+	// the base network, and a subnetwork for visualization,
+	// so we use 3 as a sensible default.
+	final static int INITIAL_ALLOCATION = 3;
+	NodePointer[] nextNode = new NodePointer[INITIAL_ALLOCATION];
+	NodePointer[] prevNode = new NodePointer[INITIAL_ALLOCATION];
+	EdgePointer[] firstOutEdge = new EdgePointer[INITIAL_ALLOCATION];
+	EdgePointer[] firstInEdge = new EdgePointer[INITIAL_ALLOCATION];
 
 	// The number of directed edges whose source is this node.
-	int[] outDegree = new int[1];
+	int[] outDegree = new int[INITIAL_ALLOCATION];
 
 	// The number of directed edges whose target is this node.
-	int[] inDegree = new int[1];
+	int[] inDegree = new int[INITIAL_ALLOCATION];
 
 	// The number of undirected edges which touch this node.
-	int[] undDegree = new int[1];
+	int[] undDegree = new int[INITIAL_ALLOCATION];
 
 	// The number of directed self-edges on this node.
-	int[] selfEdges = new int[1];
+	int[] selfEdges = new int[INITIAL_ALLOCATION];
 
 	NodePointer(final int nodeIndex, final CyNode cyn) {
 		index = nodeIndex;

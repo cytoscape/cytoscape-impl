@@ -42,10 +42,11 @@ final class EdgePointer {
 	final NodePointer source;
 	final NodePointer target;
 
-	EdgePointer[] nextOutEdge = new EdgePointer[1];
-	EdgePointer[] prevOutEdge = new EdgePointer[1];
-	EdgePointer[] nextInEdge = new EdgePointer[1];
-	EdgePointer[] prevInEdge = new EdgePointer[1];
+	// See comments in NodePointer for explanation of INITIAL_ALLOCATION
+	EdgePointer[] nextOutEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
+	EdgePointer[] prevOutEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
+	EdgePointer[] nextInEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
+	EdgePointer[] prevInEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
 
 	EdgePointer(final NodePointer s, final NodePointer t, final boolean dir, final int ind, final CyEdge edge) {
 		index = ind;
