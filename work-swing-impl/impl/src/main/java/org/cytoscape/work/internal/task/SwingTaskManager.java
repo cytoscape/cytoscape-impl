@@ -132,6 +132,7 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 
 	@Override
 	public void execute(final TaskFactory factory) {
+
 		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent);
 		
 		TaskIterator taskIterator;
@@ -162,15 +163,16 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 			logger.warn("Caught exception getting and validating task. ", exception);	
 			taskMonitor.showException(exception);
 			return;
-		}
+		} 
 
 		// create the task thread
-		final Runnable tasks = new TaskThread(first, taskMonitor, taskIterator); 
+		final Runnable tasks = new TaskThread(first, taskMonitor, taskIterator, factory.getClass().getName()); 
 
 		// submit the task thread for execution
 		final Future<?> executorFuture = taskExecutorService.submit(tasks);
 
 		openTaskMonitorOnDelay(taskMonitor, executorFuture);
+
 	}
 
 	// This creates a thread on delay that conditionally displays the task monitor gui
@@ -193,14 +195,17 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
 		private final Task first;
+		private final String name;
 
-		TaskThread(final Task first, final SwingTaskMonitor tm, final TaskIterator ti) {
+		TaskThread(final Task first, final SwingTaskMonitor tm, final TaskIterator ti, final String name) {
 			this.first = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
+			this.name = name;
 		}
 		
 		public void run() {
+			final long start = System.currentTimeMillis();
 			try {
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
@@ -231,6 +236,9 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 			// clean up the task monitor
 			if (taskMonitor.isOpened() && !taskMonitor.isShowingException())
 				taskMonitor.close();
+
+			final long end = System.currentTimeMillis();
+			logger.info("TASK (" + name + ") completed in: " + (end - start) + " ms");
 		}
 	}
 
