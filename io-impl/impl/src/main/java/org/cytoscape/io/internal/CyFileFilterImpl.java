@@ -112,7 +112,7 @@ public class CyFileFilterImpl implements CyFileFilter {
 
 			// Check for matching content type
 			if ((contentType != null) && contentTypes.contains(contentType)) {
-				logger.info("content type matches: " + contentType);
+				logger.debug("content type matches: " + contentType);
 				return true;
 			}
 

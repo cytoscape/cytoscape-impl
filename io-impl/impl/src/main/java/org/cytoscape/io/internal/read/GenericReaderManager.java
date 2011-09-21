@@ -39,7 +39,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		if (factory == null)
 			logger.warn("Specified factory is null!");
 		else if (factory.getCyFileFilter().getDataCategory() == category) {
-			logger.info("adding IO taskFactory (factory = " + factory + 
+			logger.debug("adding IO taskFactory (factory = " + factory + 
 			            ", category = " + category + ")");
 			factories.add(factory);
 		}
