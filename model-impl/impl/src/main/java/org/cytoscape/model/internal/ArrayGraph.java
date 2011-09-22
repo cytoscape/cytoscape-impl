@@ -387,16 +387,16 @@ final public class ArrayGraph implements CyRootNetwork {
 		// This is the root network.
 		// Adding a node to the base subnetwork is handled in ArraySubGraph.
 		// Likewise we don't fire a added node event here.
-		return nodeAdd();
+		return nodeAdd(SUIDFactory.getNextSUID());
 	}
 
-	CyNodeImpl nodeAdd() {
+	CyNodeImpl nodeAdd(long nodeSUID) {
 		final NodePointer n;
 		final CyNodeImpl rootNode; 
 
 		synchronized (this) {
 			final int index = nodePointers.size();
-			rootNode = new CyNodeImpl(index, nodeTables, eventHelper);
+			rootNode = new CyNodeImpl(nodeSUID, index, nodeTables, eventHelper);
 			n = new NodePointer(index, rootNode);
 			nodePointers.add(n);
 			nodeCount++;
@@ -444,11 +444,11 @@ final public class ArrayGraph implements CyRootNetwork {
 		// This is the root network.
 		// Adding an edge to the base subnetwork is handled in ArraySubGraph.
 		// Likewise we don't fire a added edge event here.
-		return edgeAdd(s,t,directed,this);
+		return edgeAdd(SUIDFactory.getNextSUID(),s,t,directed,this);
 	}
 
 	// Will be called from ArraySubGraph.
-	CyEdgeImpl edgeAdd(final CyNode s, final CyNode t, final boolean directed, final CyNetwork net) {
+	CyEdgeImpl edgeAdd(long edgeSUID, final CyNode s, final CyNode t, final boolean directed, final CyNetwork net) {
 
 		final EdgePointer e;
 		final CyEdgeImpl rootEdge;
@@ -469,7 +469,7 @@ final public class ArrayGraph implements CyRootNetwork {
 			final NodePointer target = getNodePointer(rootT);
 
 			final int index = edgePointers.size();
-			rootEdge = new CyEdgeImpl(rootS, rootT, directed, index, edgeTables);
+			rootEdge = new CyEdgeImpl(edgeSUID,rootS, rootT, directed, index, edgeTables);
 			e = new EdgePointer(source, target, directed, index, rootEdge); 
 
 			// adds to the root network, adding to the subnetwork is handled in ArraySubGraph 

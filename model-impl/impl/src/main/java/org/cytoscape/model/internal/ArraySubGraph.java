@@ -30,6 +30,10 @@ package org.cytoscape.model.internal;
 
 import org.cytoscape.event.CyEventHelper;
 
+//import org.cytoscape.model.builder.CyNetworkBuilder;
+//import org.cytoscape.model.builder.CyNodeBuilder;
+//import org.cytoscape.model.builder.CyEdgeBuilder;
+
 import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -96,6 +100,33 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		internalEdgeCount = 0;
 		fireAddedNodesAndEdgesEvents = false;
 	}
+//
+//	public synchronized void initialize(CyNetworkBuilder networkBuilder) {
+//		Map<CyNodeBuilder,CyNode> nodeMap = new HashMap<CyNodeBuilder,CyNode>();
+//
+//		for ( CyNodeBuilder nb : networkBuilder.getNodes() ) {
+//			CyNodeImpl rootNode = parent.nodeAdd(nb.getSUID());
+//			updateNode(rootNode);
+//			internalNodeCount++;
+//			CySubNodeImpl ret = new CySubNodeImpl(rootNode,nodeTables);
+//			subNodeMap.put(rootNode,ret);
+//			nodeMap.put(nb,ret);
+//		}
+//
+//		for ( CyEdgeBuilder eb : networkBuilder.getEdges() ) {
+//			CyEdgeImpl rootEdge = parent.edgeAdd(eb.getSUID(),nodeMap.get(eb.getSource()), nodeMap.get(eb.getTarget()), eb.isDirected(), this); 
+//			updateEdge(rootEdge);
+//			internalEdgeCount++;
+//			CySubEdgeImpl ret = new CySubEdgeImpl(rootEdge,edgeTables,subNodeMap);
+//			subEdgeMap.put(rootEdge,ret);
+//		}	
+//
+//		((CyTableImpl)(nodeTables.get(CyNetwork.DEFAULT_ATTRS))).loadData( networkBuilder.getNodeTable() );
+//		((CyTableImpl)(edgeTables.get(CyNetwork.DEFAULT_ATTRS))).loadData( networkBuilder.getEdgeTable() );
+//		((CyTableImpl)(netTables.get(CyNetwork.DEFAULT_ATTRS))).loadData( networkBuilder.getNetworkTable() );
+//	}
+//
+
 
 	private void updateNode(final CyNode n) {
 		final NodePointer node = parent.getNodePointer(n);
@@ -137,7 +168,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	public CyNode addNode() {
 		final CyNode ret;
 		synchronized (this) {
-			CyNodeImpl rootNode = parent.nodeAdd();
+			CyNodeImpl rootNode = parent.nodeAdd(SUIDFactory.getNextSUID());
 			updateNode(rootNode);
 			internalNodeCount++;
 			ret = new CySubNodeImpl(rootNode,nodeTables);
@@ -158,7 +189,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		final CyEdge ret;
 			
 		synchronized (this) {
-			CyEdgeImpl rootEdge = parent.edgeAdd(source, target, isDirected, this); 
+			CyEdgeImpl rootEdge = parent.edgeAdd(SUIDFactory.getNextSUID(),source, target, isDirected, this); 
 			updateEdge(rootEdge);
 			internalEdgeCount++;
 			ret = new CySubEdgeImpl(rootEdge,edgeTables,subNodeMap);
