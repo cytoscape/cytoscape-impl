@@ -43,6 +43,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableBuilder;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.events.ColumnCreatedEvent;
@@ -54,6 +55,9 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.HashMultimap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +67,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	private Set<String> currentlyActiveAttributes;
 	private Map<String, Map<Object, Object>> attributes; // Maps column names to (key,value) pairs, where "key" is the primary key.
-	private Map<String, Map<Object, Set<Object>>> reverse;
+
+	private Map<String, SetMultimap<Object,Object>> reverse;
 	private Map<Object, CyRow> rows; // Maps the primary key to CyRow.
 
 	private Map<String, CyColumn> types;
@@ -112,7 +117,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		currentlyActiveAttributes = new HashSet<String>();
 		attributes = new HashMap<String, Map<Object, Object>>();
-		reverse =  new HashMap<String, Map<Object, Set<Object>>>();
+		reverse =  new HashMap<String, SetMultimap<Object,Object>>();
 		rows = new HashMap<Object, CyRow>(10000, 0.5f);
 		types = new HashMap<String, CyColumn>();
 
@@ -125,11 +130,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 						       /* isPrimaryKey = */ true,
 						       /* isImmutable = */ true));
 		attributes.put(primaryKey, new HashMap<Object, Object>());
-		reverse.put(primaryKey, new HashMap<Object, Set<Object>>());
+		reverse.put(primaryKey, HashMultimap.create());
 
 		virtualColumnMap = new HashMap<String, VirtualColumn>();
 		virtualColumnReferenceCount = 0;
 	}
+
 
 	@Override
 	public synchronized void swap(final CyTable otherTable) {
@@ -143,7 +149,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		attributes = other.attributes;
 		other.attributes = tempAttributes;
 
-		final Map<String, Map<Object, Set<Object>>> tempReverse = reverse;
+		final Map<String, SetMultimap<Object,Object>> tempReverse = reverse;
 		reverse = other.reverse;
 		other.reverse = tempReverse;
 
@@ -204,7 +210,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				attributes.put(newColumnName, keyValuePairs);
 			}
 
-			final Map<Object, Set<Object>> valueKeysPairs = reverse.get(oldColumnName);
+			final SetMultimap<Object,Object> valueKeysPairs = reverse.get(oldColumnName);
 			if (valueKeysPairs != null) {
 				reverse.remove(oldColumnName);
 				reverse.put(newColumnName, valueKeysPairs);
@@ -357,8 +363,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       virtualInfo ,
 							       /* isPrimaryKey = */ false,
 							       isImmutable));
-			attributes.put(columnName, new HashMap<Object, Object>());
-			reverse.put(columnName, new HashMap<Object, Set<Object>>());
+			attributes.put(columnName, new HashMap<Object, Object>(10000));
+			reverse.put(columnName, HashMultimap.create());
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
@@ -388,8 +394,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       virtualInfo,
 							       /* isPrimaryKey = */ false,
 							       isImmutable));
-			attributes.put(columnName, new HashMap<Object, Object>());
-			reverse.put(columnName, new HashMap<Object, Set<Object>>());
+			attributes.put(columnName, new HashMap<Object, Object>(10000));
+			reverse.put(columnName, HashMultimap.create());
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
@@ -505,7 +511,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return matchingRows;
 		}
 
-		final Map<Object, Set<Object>> valueToKeysMap = reverse.get(columnName);
+		final SetMultimap<Object,Object> valueToKeysMap = reverse.get(columnName);
 
 		final Set<Object> keys = valueToKeysMap.get(value);
 		if (keys == null)
@@ -588,26 +594,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private void addToReverseMap(final String columnName, final Object key,
 				     final Object oldValue, final Object newValue)
 	{
-		final Map<Object, Set<Object>> valueTokeysMap = reverse.get(columnName);
-		Set<Object> keys;
-		if (oldValue != null) {
-			keys = valueTokeysMap.get(oldValue);
-			if (keys != null) {
-				keys.remove(key);
-				if (keys.isEmpty())
-					valueTokeysMap.remove(oldValue);
-				else
-					valueTokeysMap.put(oldValue, keys);
-			}
-		}
-
-		keys = valueTokeysMap.get(newValue);
-		if (keys == null) {
-			keys = new HashSet<Object>();
-			valueTokeysMap.put(newValue, keys);
-		}
-
-		keys.add(key);
+		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(columnName);
+		valueTokeysMap.remove(oldValue,key);
+		valueTokeysMap.put(newValue,key);
 	}
 
 	private void setListX(final Object key, final String columnName, final Object value) {
@@ -685,11 +674,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	private void removeFromReverseMap(final String columnName, final Object key, final Object value) {
-		final Map<Object, Set<Object>> valueTokeysMap = reverse.get(columnName);
-		Set<Object> keys = valueTokeysMap.get(value);
-		keys.remove(key);
-		if (keys.isEmpty())
-			valueTokeysMap.remove(value);
+		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(columnName);
+		valueTokeysMap.remove(key,value);
 	}
 
 	synchronized Object getValueOrEquation(final Object key, final String columnName) {
