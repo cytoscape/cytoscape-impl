@@ -41,14 +41,11 @@ import org.cytoscape.model.SUIDFactory;
 class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	private final long suid;
 	private final Map<String, CyTable> attrMgr;
-	private final CyRow defaultRow;
+	private CyRow defaultRow;
 
 	CyTableEntryImpl(final Map<String, CyTable> attrMgr, long suid) {
 		this.suid = suid;
 		this.attrMgr = attrMgr;
-		this.defaultRow = attrMgr.get(CyNetwork.DEFAULT_ATTRS).getRow(suid);
-		defaultRow.set(CyTableEntry.NAME, "");
-		defaultRow.set(CyNetwork.SELECTED, Boolean.FALSE);
 	}
 
 	CyTableEntryImpl(final Map<String, CyTable> attrMgr) {
@@ -83,7 +80,9 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	 */
 	@Override
 	final public CyRow getCyRow() {
-		return defaultRow; 
+		if ( defaultRow == null )
+			defaultRow = attrMgr.get(CyNetwork.DEFAULT_ATTRS).getRow(suid);
+		return defaultRow;
 	}
 	
 	@Override

@@ -55,7 +55,6 @@ class CyEdgeImpl extends CyTableEntryImpl implements CyEdge {
 		target = tgt;
 		directed = dir;
 		index = ind;
-		getCyRow().set("interaction","");
 	}
 
 	/**
