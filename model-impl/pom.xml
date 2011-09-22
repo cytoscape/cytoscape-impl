@@ -15,8 +15,8 @@
 		<!--		
 		<module>it</module>
 		<module>performance</module> 
-		 -->
 		<module>performance-debug</module> 
+		 -->
 	</modules>
 
 

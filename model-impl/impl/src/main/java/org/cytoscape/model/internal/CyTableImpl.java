@@ -43,7 +43,6 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableBuilder;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.events.ColumnCreatedEvent;
