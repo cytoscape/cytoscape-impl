@@ -130,7 +130,8 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 import java.util.Properties;
-
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.internal.select.RowsSetViewUpdater;
 
 /**
  *
@@ -191,6 +192,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		TaskFactory quickStartRef = getService(bc, TaskFactory.class, "(id=QuickStart2)");
+		
+		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
 
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef, cyApplicationManagerServiceRef);
 		RedoAction redoAction = new RedoAction(undoSupportServiceRef, cyApplicationManagerServiceRef);
@@ -278,6 +281,11 @@ public class CyActivator extends AbstractCyActivator {
 		RowViewTracker rowViewTracker = new RowViewTracker();
 		SelectEdgeViewUpdater selecteEdgeViewUpdater = new SelectEdgeViewUpdater(rowViewTracker);
 		SelectNodeViewUpdater selecteNodeViewUpdater = new SelectNodeViewUpdater(rowViewTracker);
+		
+		RowsSetViewUpdater rowsSetViewUpdater = new RowsSetViewUpdater(cyApplicationManagerServiceRef, 
+				cyNetworkViewManagerServiceRef, visualMappingManagerServiceRef, rowViewTracker);
+		
+		
 		QuickStartStartup quickStartStartup = new QuickStartStartup(quickStartRef,
 		                                                            taskManagerServiceRef,
 		                                                            cytoscapeDesktop);
@@ -286,7 +294,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cySessionManagerServiceRef,
 		                                                                     sessionReaderManagerServiceRef,
 		                                                                     cyApplicationManagerServiceRef);
-
+		                                         
 		registerService(bc, undoAction, CyAction.class, new Properties());
 		registerService(bc, redoAction, CyAction.class, new Properties());
 		registerService(bc, printAction, CyAction.class, new Properties());
@@ -356,6 +364,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, rowViewTracker, new Properties());
 		registerAllServices(bc, selecteEdgeViewUpdater, new Properties());
 		registerAllServices(bc, selecteNodeViewUpdater, new Properties());
+
+		registerAllServices(bc, rowsSetViewUpdater, new Properties());
+		
 		registerService(bc, sessionShutdownHandler, CytoscapeShutdownListener.class,
 		                new Properties());
 		registerAllServices(bc, toolBarEnableUpdater, new Properties());
