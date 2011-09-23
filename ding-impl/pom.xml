@@ -19,6 +19,7 @@
 		<module>graph-render</module>
 		<module>ding-presentation-impl</module>
 		<module>ding-customgraphics-manager-impl</module>
+		<module>performance-debug</module>
 	</modules>
 
 </project> 
