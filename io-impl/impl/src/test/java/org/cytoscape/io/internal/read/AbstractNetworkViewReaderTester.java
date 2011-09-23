@@ -30,85 +30,85 @@ import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
 
 public class AbstractNetworkViewReaderTester {
-    static class SimpleTask extends AbstractTask {
-	public void run(final TaskMonitor tm) {
+	static class SimpleTask extends AbstractTask {
+		public void run(final TaskMonitor tm) {
+		}
 	}
-    }
 
-    protected static final int DEF_THRESHOLD = 10000;
-    
-    protected TaskMonitor taskMonitor;
-    protected CyNetworkFactory netFactory;
-    protected CyNetworkViewFactory viewFactory;
-    protected ReadUtils readUtil;
-    protected CyLayoutAlgorithmManager layouts;
+	protected static final int DEF_THRESHOLD = 10000;
+	
+	protected TaskMonitor taskMonitor;
+	protected CyNetworkFactory netFactory;
+	protected CyNetworkViewFactory viewFactory;
+	protected ReadUtils readUtil;
+	protected CyLayoutAlgorithmManager layouts;
 
 	private Properties properties;
 
-    @Before
-    public void setUp() throws Exception {
-	taskMonitor = mock(TaskMonitor.class);
+	@Before
+	public void setUp() throws Exception {
+		taskMonitor = mock(TaskMonitor.class);
 
-	CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
-	when(def.getTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
+		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
+		when(def.getTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
 
-	layouts = mock(CyLayoutAlgorithmManager.class);
-	when(layouts.getDefaultLayout()).thenReturn(def);
+		layouts = mock(CyLayoutAlgorithmManager.class);
+		when(layouts.getDefaultLayout()).thenReturn(def);
 
-	NetworkTestSupport nts = new NetworkTestSupport();
-	netFactory = nts.getNetworkFactory();
+		NetworkTestSupport nts = new NetworkTestSupport();
+		netFactory = nts.getNetworkFactory();
 
-	properties = new Properties();
-	CyProperty<Properties> cyProperties = new BasicCyProperty(properties, SavePolicy.DO_NOT_SAVE);	
-	NetworkViewTestSupport nvts = new NetworkViewTestSupport(cyProperties);
-	setViewThreshold(DEF_THRESHOLD);
-	
-	viewFactory = nvts.getNetworkViewFactory();
+		properties = new Properties();
+		CyProperty<Properties> cyProperties = new BasicCyProperty(properties, SavePolicy.DO_NOT_SAVE);		
+		NetworkViewTestSupport nvts = new NetworkViewTestSupport(cyProperties);
+		setViewThreshold(DEF_THRESHOLD);
+		
+		viewFactory = nvts.getNetworkViewFactory();
 
-	readUtil = new ReadUtils(new StreamUtilImpl());
-    }
-
-    protected void setViewThreshold(int threshold) {
-	properties.setProperty("viewThreshold", String.valueOf(threshold));
-    }
-    
-    /**
-     * Will fail if it doesn't find the specified interaction.
-     */
-    protected void findInteraction(CyNetwork net, String source, String target, String interaction, int count) {
-	for (CyNode n : net.getNodeList()) {
-	    if (n.getCyRow().get("name", String.class).equals(source)) {
-		List<CyNode> neigh = net.getNeighborList(n, CyEdge.Type.ANY);
-		assertEquals(count, neigh.size());
-		for (CyNode nn : neigh) {
-		    if (nn.getCyRow().get("name", String.class).equals(target)) {
-			List<CyEdge> con = net.getConnectingEdgeList(n, nn, CyEdge.Type.ANY);
-			for (CyEdge e : con) {
-			    if (e.getCyRow().get("interaction", String.class).equals(interaction)) {
-				return;
-			    }
-			}
-		    }
-		}
-	    }
+		readUtil = new ReadUtils(new StreamUtilImpl());
 	}
-	fail("couldn't find interaction: " + source + " " + interaction + " " + target);
-    }
 
-    /**
-     * Assuming we only create one network.
-     */
-    protected CyNetwork checkSingleNetwork(CyNetworkView[] views, int numNodes, int numEdges) {
-	assertNotNull(views);
-	assertEquals(1, views.length);
+	protected void setViewThreshold(int threshold) {
+		properties.setProperty("viewThreshold", String.valueOf(threshold));
+	}
+	
+	/**
+	 * Will fail if it doesn't find the specified interaction.
+	 */
+	protected void findInteraction(CyNetwork net, String source, String target, String interaction, int count) {
+		for (CyNode n : net.getNodeList()) {
+			if (n.getCyRow().get("name", String.class).equals(source)) {
+				List<CyNode> neigh = net.getNeighborList(n, CyEdge.Type.ANY);
+				assertEquals("wrong number of neighbors", count, neigh.size());
+				for (CyNode nn : neigh) {
+					if (nn.getCyRow().get("name", String.class).equals(target)) {
+						List<CyEdge> con = net.getConnectingEdgeList(n, nn, CyEdge.Type.ANY);
+						for (CyEdge e : con) {
+							if (e.getCyRow().get("interaction", String.class).equals(interaction)) {
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
+		fail("couldn't find interaction: " + source + " " + interaction + " " + target);
+	}
 
-	CyNetwork net = views[0].getModel();
+	/**
+	 * Assuming we only create one network.
+	 */
+	protected CyNetwork checkSingleNetwork(CyNetworkView[] views, int numNodes, int numEdges) {
+		assertNotNull(views);
+		assertEquals(1, views.length);
 
-	assertNotNull(net);
+		CyNetwork net = views[0].getModel();
 
-	assertEquals(numNodes, net.getNodeCount());
-	assertEquals(numEdges, net.getEdgeCount());
+		assertNotNull(net);
 
-	return net;
-    }
+		assertEquals(numNodes, net.getNodeCount());
+		assertEquals(numEdges, net.getEdgeCount());
+
+		return net;
+	}
 }
