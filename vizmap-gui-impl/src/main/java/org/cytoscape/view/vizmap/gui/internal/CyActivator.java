@@ -228,6 +228,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,vpDependencyManager,"addDependency","removeDependency",VisualPropertyDependency.class);
 		registerServiceListener(bc,editorManager,"addRenderingEngineFactory","removeRenderingEngineFactory",RenderingEngineFactory.class);
 		registerServiceListener(bc,bypassManager,"addBypass","removeBypass",RenderingEngineFactory.class);
+		
+		registerServiceListener(bc,vizMapEventHandlerManager,"registerPCL","unregisterPCL", RenderingEngineFactory.class);
 	}
 }
 

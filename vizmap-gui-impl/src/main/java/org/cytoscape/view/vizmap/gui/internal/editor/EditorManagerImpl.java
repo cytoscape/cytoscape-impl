@@ -52,7 +52,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.Range;
@@ -167,6 +166,7 @@ public class EditorManagerImpl implements EditorManager {
 	public void addVisualPropertyEditor(VisualPropertyEditor<?> ve, @SuppressWarnings("rawtypes") Map properties) {
 		logger.debug("### Got VP Editor " + ve.toString() + ", this is for " + ve.getType());
 		this.editors.put(ve.getType(), ve);
+		logger.debug("Total editor count = " + editors.size());
 	}
 
 
@@ -312,7 +312,6 @@ public class EditorManagerImpl implements EditorManager {
 	}
 
 	public void addRenderingEngineFactory(RenderingEngineFactory<?> factory, Map props) {
-
 		final VisualLexicon lexicon = factory.getVisualLexicon();
 		buildDiscreteEditors(lexicon);
 	}

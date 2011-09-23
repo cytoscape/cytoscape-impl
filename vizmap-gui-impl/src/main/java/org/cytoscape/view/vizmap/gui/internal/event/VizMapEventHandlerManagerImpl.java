@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
@@ -69,26 +70,9 @@ public class VizMapEventHandlerManagerImpl implements
 	private void createHandlers(PropertySheetPanel propertySheetPanel) {
 		AbstractVizMapEventHandler windowEventHandler = new EditorWindowEventHandler();
 		
-		//FIXME
-		eventHandlers.put(EditorManager.EDITOR_WINDOW_CLOSED,
-				windowEventHandler);
-		eventHandlers.put(EditorManager.EDITOR_WINDOW_OPENED,
-				windowEventHandler);
-
-//		eventHandlers.put(Cytoscape.CYTOSCAPE_INITIALIZED,
-//				new InitializedEventHandler());
-
-//		AbstractVizMapEventHandler loadHandler = new DataLoadedEventHandler();
-//		eventHandlers.put(Cytoscape.VIZMAP_LOADED, loadHandler);
-
-		// TODO: create session event handler
-		// eventHandlers.put(Cytoscape.SESSION_LOADED, loadHandler);
-
-//		AbstractVizMapEventHandler attrHandler = new AttributeUpdateEventHandler(
-//				vizMapPropertySheetBuilder);
-//		eventHandlers.put(Cytoscape.ATTRIBUTES_CHANGED, attrHandler);
-//		eventHandlers.put(Cytoscape.NETWORK_LOADED, attrHandler);
-
+		// FIXME
+		eventHandlers.put(EditorManager.EDITOR_WINDOW_CLOSED, windowEventHandler);
+		eventHandlers.put(EditorManager.EDITOR_WINDOW_OPENED, windowEventHandler);
 		
 		// Create handler for local property editor event.
 		eventHandlers.put(VALUE, new CellEditorEventHandler(manager,
@@ -103,10 +87,9 @@ public class VizMapEventHandlerManagerImpl implements
 		// FIXME
 		for (PropertyEditor p : editorManager.getCellEditors()) {
 			p.addPropertyChangeListener(this);
-
-			// if (p instanceof PropertyChangeListener)
-			// spcs.addPropertyChangeListener((PropertyChangeListener) p);
 		}
+		
+		logger.debug("********** Editor registered: " + editorManager.getCellEditors().size());
 
 		for (PropertyEditor p : editorManager.getAttributeSelectors()) {
 			p.addPropertyChangeListener(this);
@@ -117,20 +100,25 @@ public class VizMapEventHandlerManagerImpl implements
 		mappingSelector.addPropertyChangeListener(this);
 
 	}
+	
+	
+	// Called through OSGi service listener mechanism.
+	public void registerPCL(RenderingEngineFactory<?> factory, Map props) {
+		registerCellEditorListeners();
+	}
+	
+	public void unregisterPCL(RenderingEngineFactory<?> factory, Map props) {
+		// TODO implement this
+	}
+	
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.cytoscape.application.swing.vizmap.gui.event.VizMapEventHandlerManager#getHandler(java
-	 * .lang.String)
-	 */
 	public VizMapEventHandler getHandler(String name) {
 		return eventHandlers.get(name);
 	}
 
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
+		
 		logger.debug("###################### VizMap local property change event called: "
 				+ e.getPropertyName());
 
