@@ -58,6 +58,20 @@ final class CyRowProjection implements CyRow {
 		return underlyingRow.get(columnName, type);
 	}
 
+	/**
+	 * Returns the value found for this row in the specified column
+	 * with the specified type.
+	 * @param columnName The name identifying the attribute.
+	 * @param type The type of the column.
+	 * @param defValue A default value to be returned if the row has not been set. 
+	 * @return the value found for this row in the specified column
+	 * Please not that this method cannot be used to retrieve values that are Lists!
+	 */
+	public <T> T get(final String columnName, final Class<?extends T> type, T defValue) {
+		checkColumnName(columnName);
+		return underlyingRow.get(columnName, type,defValue);
+	}
+
 	private void checkColumnName(final String columnName) {
 		if (!tableProjection.getColumnNames().contains(columnName))
 			throw new IllegalArgumentException("\"" + columnName
@@ -76,6 +90,20 @@ final class CyRowProjection implements CyRow {
 	public <T> List<T> getList(final String columnName, final Class<T> listElementType) {
 		checkColumnName(columnName);
 		return underlyingRow.getList(columnName, listElementType);
+	}
+
+	/**
+	 * Returns the value found for this row in the specified column
+	 * with the specified type.
+	 * @param columnName The name identifying the attribute.
+	 * @param listElementType  The type of the elements of the list that we wish to retrieve.
+	 * @param defValue A default value to be returned if the row has not been set. 
+	 * @return the value found for this row in the specified column
+	 * Please not that this method can only be used to retrieve values that are Lists!
+	 */
+	public <T> List<T> getList(final String columnName, final Class<T> listElementType, final List<T> defValue) {
+		checkColumnName(columnName);
+		return underlyingRow.getList(columnName, listElementType,defValue);
 	}
 
 	/**

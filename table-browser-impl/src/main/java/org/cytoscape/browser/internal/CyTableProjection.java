@@ -188,6 +188,21 @@ public final class CyTableProjection implements CyTable {
 	}
 
 	/**
+	 * Create a column of the specified name and the specified type. The column
+	 * type is limited to Integer, Long, Double, String, and Boolean.
+	 * @param columnName The name identifying the attribute.
+	 * @param type The type of the column.
+	 * @param isImmutable  if true, this column can never be deleted
+	 * @param defValue Default value for column 
+	 */
+	@Override
+	public <T> void createColumn(String columnName, Class<?extends T> type,
+	                             boolean isImmutable, T defValue)
+	{
+		throw new UnsupportedOperationException("createColumn() method not supported!");
+	}
+
+	/**
 	 * Create a column of Lists with the specified name and the specified element type.
 	 * The column type is limited to Integer, Long, Double, String, and Boolean.
 	 * @param columnName The name identifying the attribute.
@@ -197,6 +212,21 @@ public final class CyTableProjection implements CyTable {
 	@Override
 	public <T> void createListColumn(String columnName, Class<T> listElementType,
 	                                 boolean isImmutable)
+	{
+		throw new UnsupportedOperationException("createListColumn() method not supported!");
+	}
+
+	/**
+	 * Create a column of Lists with the specified name and the specified element type.
+	 * The column type is limited to Integer, Long, Double, String, and Boolean.
+	 * @param columnName The name identifying the attribute.
+	 * @param listElementType The type of the elements of the list.
+	 * @param isImmutable  if true, this column can never be deleted
+	 * @param defValue Default value for column 
+	 */
+	@Override
+	public <T> void createListColumn(String columnName, Class<T> listElementType,
+	                                 boolean isImmutable, List<T> defValue)
 	{
 		throw new UnsupportedOperationException("createListColumn() method not supported!");
 	}
