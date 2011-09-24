@@ -127,7 +127,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 						       /* listElementType = */ null,
 						       virtualInfo,
 						       /* isPrimaryKey = */ true,
-						       /* isImmutable = */ true));
+						       /* isImmutable = */ true, 
+							   null));
 		attributes.put(primaryKey, new HashMap<Object, Object>());
 		reverse.put(primaryKey, HashMultimap.create());
 
@@ -335,7 +336,14 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	public <T> void createColumn(final String columnName, final Class<? extends T> type,
-				     final boolean isImmutable)
+				     final boolean isImmutable) 
+	{
+		createColumn(columnName,type,isImmutable,null);
+	}
+
+	@Override
+	public <T> void createColumn(final String columnName, final Class<? extends T> type,
+				     final boolean isImmutable, final T defaultValue)
 	{
 		synchronized(this) {
 			if (columnName == null)
@@ -361,7 +369,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       /* listElementType = */ null,
 							       virtualInfo ,
 							       /* isPrimaryKey = */ false,
-							       isImmutable));
+							       isImmutable,
+								   defaultValue));
 			attributes.put(columnName, new HashMap<Object, Object>(10000));
 			reverse.put(columnName, HashMultimap.create());
 		}
@@ -372,6 +381,14 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	@Override
 	public <T> void createListColumn(final String columnName, final Class<T> listElementType,
 					 final boolean isImmutable)
+	{
+		createListColumn(columnName,listElementType,isImmutable,null);
+	}
+
+
+	@Override
+	public <T> void createListColumn(final String columnName, final Class<T> listElementType,
+					 final boolean isImmutable, final List<T> defaultValue)
 	{
 		synchronized(this) {
 			if (columnName == null)
@@ -392,7 +409,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       listElementType,
 							       virtualInfo,
 							       /* isPrimaryKey = */ false,
-							       isImmutable));
+							       isImmutable,
+								   defaultValue));
 			attributes.put(columnName, new HashMap<Object, Object>(10000));
 			reverse.put(columnName, HashMultimap.create());
 		}
@@ -692,7 +710,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		return keyToValueMap.get(key);
 	}
 
-	synchronized private <T> T getX(final Object key, final String columnName, final Class<? extends T> type) {
+	synchronized private <T> T getX(final Object key, final String columnName, final Class<? extends T> type, final T defaultValue) {
 		if (type.isAssignableFrom(List.class))
 			logger.debug("risky use of get() instead of getList() for retrieving list");
 		lastInternalError = null;
@@ -703,7 +721,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		final Object vl = getValueOrEquation(key, columnName);
 		if (vl == null)
-			return null;
+			return getDefaultValue(columnName,defaultValue);
 
 		if (vl instanceof Equation) {
 			final StringBuilder errorMsg = new StringBuilder();
@@ -712,9 +730,21 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							currentlyActiveAttributes, columnName,
 							errorMsg, this);
 			lastInternalError = errorMsg.toString();
-			return result == null ? null : (T)EqnSupport.convertEqnResultToColumnType(type, result);
+			return result == null ? getDefaultValue(columnName,defaultValue) : (T)EqnSupport.convertEqnResultToColumnType(type, result);
 		} else
 			return type.cast(vl);
+	}
+
+	private <T> T getDefaultValue(final String columnName, final T defaultValue) {
+		if ( defaultValue == null ) {
+			final CyColumn column = types.get(columnName);
+			if ( column == null )
+				return null;
+			else
+				return (T)(column.getDefaultValue());
+		} else {
+			return defaultValue;
+		}
 	}
 
 	Object getValue(Object key, String columnName) {
@@ -739,7 +769,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	synchronized private <T> List<T> getListX(final Object key, final String columnName,
-							   final Class<? extends T> listElementType)
+							   final Class<? extends T> listElementType, final List<T> defaultValue)
 	{
 		if (!types.containsKey(columnName))
 			throw new IllegalArgumentException("'" + columnName + "' does not yet exist!");
@@ -760,7 +790,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		final Object vl = getValueOrEquation(key, columnName);
 		if (vl == null)
-			return null;
+			return getDefaultValue(columnName,defaultValue);
 
 		if (vl instanceof Equation) {
 			final StringBuilder errorMsg = new StringBuilder();
@@ -854,7 +884,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 						 sourceColumn.getListElementType(),
 						 virtualInfo,
 						 /* isPrimaryKey = */ false,
-						 isImmutable);
+						 isImmutable,
+						 null);
 			types.put(targetName, targetColumn);
 			virtualColumnMap.put(targetName,
 					     new VirtualColumn(sourceTable, sourceColumnName, this,
@@ -965,12 +996,22 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		@Override
 		public <T> T get(String attributeName, Class<? extends T> c) {
-			return getX(key, attributeName, c);
+			return getX(key, attributeName, c, null);
+		}
+
+		@Override
+		public <T> T get(String attributeName, Class<? extends T> c, T defValue) {
+			return getX(key, attributeName, c, defValue);
 		}
 
 		@Override
 		public <T> List<T> getList(String attributeName, Class<T> c) {
-			return getListX(key, attributeName, c);
+			return getListX(key, attributeName, c, null);
+		}
+
+		@Override
+		public <T> List<T> getList(String attributeName, Class<T> c, List<T> defValue) {
+			return getListX(key, attributeName, c, defValue);
 		}
 
 		@Override
@@ -991,9 +1032,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				final Class<?> type = column.getType();
 				if (type == List.class) {
 					final Class<?> elementType = column.getListElementType();
-					nameToValueMap.put(columnName, getListX(key, columnName, elementType));
+					nameToValueMap.put(columnName, getListX(key, columnName, elementType, null));
 				} else
-					nameToValueMap.put(columnName, getX(key, columnName, type));
+					nameToValueMap.put(columnName, getX(key, columnName, type, null));
 			}
 
 			return nameToValueMap;

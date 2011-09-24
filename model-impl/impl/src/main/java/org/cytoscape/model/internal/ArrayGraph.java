@@ -164,7 +164,7 @@ final public class ArrayGraph implements CyRootNetwork {
         nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
                                       String.class, true);
         nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
-                                      Boolean.class, true);
+                                      Boolean.class, true, Boolean.FALSE);
 
 		return nodeAttrMgr;
 
@@ -182,7 +182,7 @@ final public class ArrayGraph implements CyRootNetwork {
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
                                       String.class, true);
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
-                                      Boolean.class, true);
+                                      Boolean.class, true, Boolean.FALSE);
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyEdge.INTERACTION,
                                       String.class, true);
 

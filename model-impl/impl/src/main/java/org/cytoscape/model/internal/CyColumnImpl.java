@@ -44,10 +44,11 @@ final class CyColumnImpl implements CyColumn {
 	private final VirtualColumnInfo virtualInfo;
 	private final boolean isPrimaryKey;
 	private final boolean isImmutable;
+	private final Object defaultValue;
 
 	CyColumnImpl(final CyTableImpl table, final String columnName, final Class<?> columnType,
 		     final Class<?> listElementType, final VirtualColumnInfo virtualInfo,
-		     final boolean isPrimaryKey, final boolean isImmutable)
+		     final boolean isPrimaryKey, final boolean isImmutable, final Object defaultValue)
 	{
 		this.table           = table;
 		this.columnName      = columnName;
@@ -56,6 +57,13 @@ final class CyColumnImpl implements CyColumn {
 		this.virtualInfo     = virtualInfo;
 		this.isPrimaryKey    = isPrimaryKey;
 		this.isImmutable     = isImmutable;
+
+		if ( defaultValue != null && !columnType.isAssignableFrom(defaultValue.getClass()) )
+			throw new IllegalArgumentException("The type of the defaultValue (" + 
+			                                   defaultValue.getClass().getName() + 
+											   ") cannot be assigned to type of this column (" +
+											   columnType.getName() + ")" );
+		this.defaultValue    = defaultValue;
 	}
 
 	@Override
@@ -107,5 +115,9 @@ final class CyColumnImpl implements CyColumn {
 	@Override
 	public VirtualColumnInfo getVirtualColumnInfo() {
 		return virtualInfo;
+	}
+
+	public Object getDefaultValue() {
+		return defaultValue;
 	}
 }
