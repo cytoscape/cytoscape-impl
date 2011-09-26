@@ -50,17 +50,11 @@ public class DingRenderingEngineFactory implements
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 	
-	private final Map<CyNetworkView, DGraphView> viewMap;
-
-	private Map<NodeViewTaskFactory, Map> nodeViewTFs;
-	private Map<EdgeViewTaskFactory, Map> edgeViewTFs;
-	private Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
-	private Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
-	private Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
-
 	private TaskManager tm;
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
+	
+	private ViewTaskFactoryListener vtfListener;
 	
 	
 	public DingRenderingEngineFactory(CyTableFactory dataTableFactory,
@@ -69,7 +63,8 @@ public class DingRenderingEngineFactory implements
 			TaskManager tm, CyServiceRegistrar registrar,
 			CyNetworkTableManager tableMgr,
 			CyEventHelper eventHelper,
-			RenderingEngineManager renderingEngineManager) {
+			RenderingEngineManager renderingEngineManager,
+			ViewTaskFactoryListener vtfListener) {
 		
 		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
 		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);
@@ -82,12 +77,7 @@ public class DingRenderingEngineFactory implements
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
 		this.renderingEngineManager = DIUtil.stripProxy(renderingEngineManager);
 
-		viewMap = new HashMap<CyNetworkView, DGraphView>();
-		nodeViewTFs = new HashMap<NodeViewTaskFactory, Map>();
-		edgeViewTFs = new HashMap<EdgeViewTaskFactory, Map>();
-		emptySpaceTFs = new HashMap<NetworkViewTaskFactory, Map>();
-		dropNodeViewTFs = new HashMap<DropNodeViewTaskFactory, Map>();
-		dropEmptySpaceTFs = new HashMap<DropNetworkViewTaskFactory, Map>();
+		this.vtfListener = vtfListener;
 	}
 
 	/**
@@ -120,18 +110,18 @@ public class DingRenderingEngineFactory implements
 
 			
 			if(view instanceof DGraphView) {
-				dgv = (DGraphView) view;
+				dgv = (DGraphView) view;				
 				logger.info("%%%%%%% This view is DGV.");
 			}
 			else
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkFactory, undo, spacialFactory, dingLexicon,
-					nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs,
-					dropEmptySpaceTFs, tm, eventHelper, tableMgr);
+					vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs,
+					vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());
-			viewMap.put(targetView, dgv);
+			vtfListener.viewMap.put(targetView, dgv);
 
 			if (presentationContainer instanceof JInternalFrame) {
 				final JInternalFrame inFrame = (JInternalFrame) presentationContainer;
@@ -172,7 +162,7 @@ public class DingRenderingEngineFactory implements
 	 */
 	@Override
 	public void handleEvent(UpdateNetworkPresentationEvent nvce) {
-		DGraphView gv = viewMap.get(nvce.getSource());
+		DGraphView gv = vtfListener.viewMap.get(nvce.getSource());
 		logger.debug("NetworkViewChangedEvent listener got view update request: "
 				+ nvce.getSource().getSUID());
 		if (gv != null)
@@ -180,84 +170,12 @@ public class DingRenderingEngineFactory implements
 	}
 
 	public DGraphView getGraphView(CyNetworkView cnv) {
-		return viewMap.get(cnv);
+		return vtfListener.viewMap.get(cnv);
 	}
-
-	public void addNodeViewTaskFactory(NodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		nodeViewTFs.put(nvtf, props);
-	}
-
-	public void removeNodeViewTaskFactory(NodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		nodeViewTFs.remove(nvtf);
-	}
-
-	public void addEdgeViewTaskFactory(EdgeViewTaskFactory evtf, Map props) {
-		if (evtf == null)
-			return;
-
-		edgeViewTFs.put(evtf, props);
-	}
-
-	public void removeEdgeViewTaskFactory(EdgeViewTaskFactory evtf, Map props) {
-		if (evtf == null)
-			return;
-
-		edgeViewTFs.remove(evtf);
-	}
-
-	public void addNetworkViewTaskFactory(NetworkViewTaskFactory evtf, Map props) {
-		if (evtf == null)
-			return;
-
-		emptySpaceTFs.put(evtf, props);
-	}
-
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory evtf,
-			Map props) {
-		if (evtf == null)
-			return;
-
-		emptySpaceTFs.remove(evtf);
-	}
-
-	public void addDropNetworkViewTaskFactory(DropNetworkViewTaskFactory evtf,
-			Map props) {
-		if (evtf == null)
-			return;
-
-		dropEmptySpaceTFs.put(evtf, props);
-	}
-
-	public void removeDropNetworkViewTaskFactory(
-			DropNetworkViewTaskFactory evtf, Map props) {
-		if (evtf == null)
-			return;
-
-		dropEmptySpaceTFs.remove(evtf);
-	}
-
-	public void addDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		dropNodeViewTFs.put(nvtf, props);
-	}
-
-	public void removeDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		dropNodeViewTFs.remove(nvtf);
-	}
-
+	
+	
 	@Override
 	public VisualLexicon getVisualLexicon() {
 		return dingLexicon;
-	}
+	}	
 }

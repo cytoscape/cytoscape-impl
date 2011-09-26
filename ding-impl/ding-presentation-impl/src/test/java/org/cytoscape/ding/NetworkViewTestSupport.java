@@ -20,6 +20,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.DVisualLexicon;
+import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 
 import static org.mockito.Mockito.*;
 
@@ -28,6 +29,7 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 	protected CyNetworkViewFactory viewFactory;
 
 	public NetworkViewTestSupport() {
+		
         DVisualLexicon dVisualLexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
 
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
@@ -41,7 +43,8 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 		                                       mock(TaskManager.class),
 		                                       mock(CyServiceRegistrar.class),
 		                                       mock(CyNetworkTableManager.class),
-		                                       mock(CyEventHelper.class));
+		                                       mock(CyEventHelper.class),
+		                                       mock(ViewTaskFactoryListener.class));
 	}
 	
 	public CyNetworkView getNetworkView() {

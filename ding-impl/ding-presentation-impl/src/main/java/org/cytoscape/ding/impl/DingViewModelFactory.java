@@ -1,12 +1,7 @@
 package org.cytoscape.ding.impl;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-
 import org.cytoscape.di.util.DIUtil;
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -14,9 +9,6 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.VisualLexicon;
@@ -36,20 +28,15 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 
-
-	private Map<NodeViewTaskFactory, Map> nodeViewTFs;
-	private Map<EdgeViewTaskFactory, Map> edgeViewTFs;
-	private Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
-	private Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
-	private Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
-
 	private TaskManager tm;
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
+	private ViewTaskFactoryListener vtfListener;
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkFactory rootNetworkFactory,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, TaskManager tm,
-			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper) {
+			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
+			ViewTaskFactoryListener vtfListener) {
 
 		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
 		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);
@@ -60,12 +47,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.registrar = DIUtil.stripProxy(registrar);
 		this.tableMgr = DIUtil.stripProxy(tableMgr);
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
-
-		nodeViewTFs = new HashMap<NodeViewTaskFactory, Map>();
-		edgeViewTFs = new HashMap<EdgeViewTaskFactory, Map>();
-		emptySpaceTFs = new HashMap<NetworkViewTaskFactory, Map>();
-		dropNodeViewTFs = new HashMap<DropNodeViewTaskFactory, Map>();
-		dropEmptySpaceTFs = new HashMap<DropNetworkViewTaskFactory, Map>();
+		this.vtfListener = vtfListener;
 	}
 
 	@Override
@@ -80,7 +62,8 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkFactory, undo, spacialFactory, dingLexicon,
-				nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, dropEmptySpaceTFs, tm, eventHelper, tableMgr);
+				vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs, 
+				vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr);
 
 		registrar.registerAllServices(dgv, new Properties());
 
