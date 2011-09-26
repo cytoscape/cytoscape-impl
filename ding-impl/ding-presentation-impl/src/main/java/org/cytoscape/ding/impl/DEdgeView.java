@@ -107,29 +107,19 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_lineType = EdgeView.STRAIGHT_LINES;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public int getGraphPerspectiveIndex() {
 		return m_inx;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
+	@Override
 	public int getRootGraphIndex() {
 		return m_inx;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
+	@Override
 	public CyEdge getEdge() {
 		return m_view.getNetwork().getEdge(m_inx);
 	}
@@ -832,11 +822,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	public void setGreekThreshold(double threshold) {
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public String getText() {
 		synchronized (m_view.m_lock) {
 			return m_view.m_edgeDetails.labelText(m_inx, 0);
@@ -849,7 +835,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			m_view.m_edgeDetails.overrideLabelText(m_inx, 0, text);
 
 			if (DEFAULT_LABEL_TEXT.equals(m_view.m_edgeDetails.labelText(m_inx, 0)))
-				m_view.m_edgeDetails.overrideLabelCount(m_inx, 0);
+				m_view.m_edgeDetails.overrideLabelCount(m_inx, 0); // TODO is this correct?
 			else
 				m_view.m_edgeDetails.overrideLabelCount(m_inx, 1);
 
@@ -1318,22 +1304,12 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		return 0;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param x
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setLabelOffsetX(double x) {
 		// System.out.println("setLabelOffsetX");
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param y
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setLabelOffsetY(double y) {
 		// System.out.println("setLabelOffsetY");
 	}

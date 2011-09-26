@@ -60,9 +60,9 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	final Map<Integer, Paint> m_targetArrowPaints = new HashMap<Integer, Paint>();
 	final Map<Integer, Paint> m_segmentPaints = new HashMap<Integer, Paint>();
 	final Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
-	final Map<Integer, String> m_labelTexts = new HashMap<Integer, String>();
-	final Map<Integer, Font> m_labelFonts = new HashMap<Integer, Font>();
-	final Map<Integer, Paint> m_labelPaints = new HashMap<Integer, Paint>();
+	final Map<Long, String> m_labelTexts = new HashMap<Long, String>();
+	final Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
+	final Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
 	final Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
 	
 	private final MinIntHeap m_heap = new MinIntHeap();
@@ -510,10 +510,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	public String labelText(final int edge, final int labelInx) {
 		final long key = (((long) edge) << 32) | ((long) labelInx);
 		final String text = m_labelTexts.get(key);
-
 		if (text == null)
 			return super.labelText(edge, labelInx);
-
 		return text;
 	}
 
@@ -527,7 +525,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		if ((text == null) || text.equals(super.labelText(edge, labelInx)))
 			m_labelTexts.remove(key);
 		else
-			m_labelTexts.put((int) key, text);
+			m_labelTexts.put(key, text);
 	}
 
 	/**
@@ -553,7 +551,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		if ((font == null) || font.equals(super.labelFont(edge, labelInx)))
 			m_labelFonts.remove(key);
 		else
-			m_labelFonts.put((int) key, font);
+			m_labelFonts.put(key, font);
 	}
 
 
@@ -580,7 +578,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		if ((paint == null) || paint.equals(super.labelPaint(edge, labelInx)))
 			m_labelPaints.remove(key);
 		else
-			m_labelPaints.put((int) key, paint);
+			m_labelPaints.put(key, paint);
 	}
 
 	/**
