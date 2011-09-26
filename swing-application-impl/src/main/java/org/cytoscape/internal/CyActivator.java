@@ -399,15 +399,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, networkViewManager, "addPresentationFactory",
 		                        "removePresentationFactory", RenderingEngineFactory.class);
 		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",
-		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class);
+		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class, "(scope=limited)");
 		registerServiceListener(bc, networkPanel, "addNetworkTaskFactory",
-		                        "removeNetworkTaskFactory", NetworkTaskFactory.class);
+		                        "removeNetworkTaskFactory", NetworkTaskFactory.class, "(scope=limited)");
 		registerServiceListener(bc, networkPanel, "addNetworkViewCollectionTaskFactory",
 		                        "removeNetworkViewCollectionTaskFactory",
-		                        NetworkViewCollectionTaskFactory.class);
+		                        NetworkViewCollectionTaskFactory.class, "(scope=limited)");
 		registerServiceListener(bc, networkPanel, "addNetworkCollectionTaskFactory",
 		                        "removeNetworkCollectionTaskFactory",
-		                        NetworkCollectionTaskFactory.class);
+		                        NetworkCollectionTaskFactory.class, "(scope=limited)");
 		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty",
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
