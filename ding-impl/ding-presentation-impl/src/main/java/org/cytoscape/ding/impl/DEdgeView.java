@@ -81,6 +81,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	String m_toolTipText = null;
 	
 	private LineType lineType;
+	private Float fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault().floatValue();
 	
 	// Visual Properties used in this node view.
 	private final VisualLexicon lexicon;
@@ -843,24 +844,16 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Font getFont() {
 		synchronized (m_view.m_lock) {
 			return m_view.m_edgeDetails.labelFont(m_inx, 0);
 		}
 	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param font
-	 *            DOCUMENT ME!
-	 */
-	public void setFont(Font font) {
+	
+	
+	@Override
+	public void setFont(final Font font) {
 		synchronized (m_view.m_lock) {
 			m_view.m_edgeDetails.overrideLabelFont(m_inx, 0, font);
 			m_view.m_contentChanged = true;
@@ -1453,9 +1446,15 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		} else if (vp == DVisualLexicon.EDGE_TOOLTIP) {
 			setToolTip(value.toString());
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {
-			setFont((Font) value);
+			final Font newFont = ((Font) value).deriveFont(fontSize);
+			setFont(newFont);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
-			setFont(getFont().deriveFont(((Integer) value).floatValue()));
+			float newSize = ((Number) value).floatValue();
+			if (newSize != this.fontSize) {
+				final Font newFont = getFont().deriveFont(newSize);
+				setFont(newFont);
+				fontSize = newSize;
+			}
 		} else if (vp == MinimalVisualLexicon.EDGE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
 		} else if (vp == MinimalVisualLexicon.EDGE_VISIBLE) {
