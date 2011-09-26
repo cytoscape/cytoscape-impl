@@ -87,10 +87,8 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 		}
 
-		System.out.println("inserting generate network task");
 		insertTasksAfterCurrentTask(viewReader, new GenerateNetworkViewsTask(name, viewReader, networkManager,
 				networkViewManager, namingUtil, viewThreshold));
-		System.out.println("finished inserting generate network task");
 		if (taskMonitor != null)
 			taskMonitor.setProgress(1.0);
 	}
