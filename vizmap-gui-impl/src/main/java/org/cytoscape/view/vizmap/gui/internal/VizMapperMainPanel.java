@@ -236,8 +236,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		}
 
 		// Apply style to the current network view.
-		final CyNetworkView currentView = applicationManager
-				.getCurrentNetworkView();
+		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
 
 		if (currentView != null) {
 			vmm.setVisualStyle((VisualStyle) visualStyleComboBox.getModel()
@@ -263,13 +262,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		// Set the default view to the panel.
 		setDefaultViewImagePanel(defImg);
-
-		// TODO: Fix lock state
-		// // Sync. lock state
-		// final boolean lockState = vmm.getVisualStyle()
-		// .getNodeAppearanceCalculator().getNodeSizeLocked();
-		// spcs.firePropertyChange("UPDATE_LOCK", null, lockState);
-
 		propertySheetPanel.setSorting(true);
 	}
 
@@ -358,8 +350,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		final JButton defaultImageButton = new JButton();
 		defaultImageButton.setUI(new BlueishButtonUI());
-		defaultImageButton.setCursor(Cursor
-				.getPredefinedCursor(Cursor.HAND_CURSOR));
+		defaultImageButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
 		defaultImageButton.setIcon(new ImageIcon(defImage));
 		final VisualStyle currentStyle = manager.getCurrentVisualStyle();
@@ -368,6 +359,9 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		defaultViewImagePanel.add(defaultImageButton, BorderLayout.CENTER);
 		defaultImageButton.addMouseListener(defaultViewMouseListener);
+		
+		defaultViewImagePanel.repaint(1);
+		defaultImageButton.repaint(1);
 		this.repaint();
 	}
 
