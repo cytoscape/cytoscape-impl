@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
@@ -59,6 +60,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	
 	private static final Logger logger = LoggerFactory.getLogger(VisualMappingManagerImpl.class);
 	
+	// title for the default visual style.
 	public static final String DEFAULT_STYLE_NAME = "default";
 	
 	// Default Style
@@ -73,7 +75,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	private static final Double NODE_HEIGHT = 35d;
 	private static final Color EDGE_LABEL_COLOR = Color.BLACK;
 
-	private final VisualStyle defaultStyle;
+	private VisualStyle defaultStyle;
 
 	private final Map<CyNetworkView, VisualStyle> network2VisualStyleMap;
 	private final Set<VisualStyle> visualStyles;
@@ -95,6 +97,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 		this.defaultStyle = buildGlobalDefaultStyle(factory);
 		this.visualStyles.add(defaultStyle);
 	}
+	
 	
 	private VisualStyle buildGlobalDefaultStyle(final VisualStyleFactory factory) {
 		final VisualStyle defStyle = factory.getInstance(DEFAULT_STYLE_NAME);
@@ -132,12 +135,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param vs
-	 *            DOCUMENT ME!
-	 * @param nv
-	 *            DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setVisualStyle(final VisualStyle vs, final CyNetworkView nv) {
@@ -194,20 +192,22 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	 */
 	@Override
 	public void addVisualStyle(final VisualStyle vs) {
-		if(vs == null)
-			throw new NullPointerException("Visual Style is null.");
+		if(vs == null) {
+			logger.warn("Tried to add null to VMM.");
+			return;
+		}
 		
 		this.visualStyles.add(vs);
 		logger.info("New visual Style registered to VMM: " + vs.getTitle());
 		logger.info("Total Number of VS in VMM = " + visualStyles.size());
+		if(vs.getTitle() != null && vs.getTitle().equals(DEFAULT_STYLE_NAME))
+			defaultStyle = vs;
 		
 		cyEventHelper.fireEvent(new VisualStyleAddedEvent(this, vs));
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Set<VisualStyle> getAllVisualStyles() {
