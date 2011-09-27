@@ -41,6 +41,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
@@ -86,8 +87,9 @@ public class DefaultViewMouseListener extends MouseAdapter {
 					.getCurrentVisualStyle(), ((DefaultViewPanel) defViewEditor
 					.getDefaultView(manager.getCurrentVisualStyle()))
 					.getRenderingEngine(), new Dimension(newWidth, newHeight));
+			final VisualStyle style = manager.getCurrentVisualStyle();
 			vizMapperMainPanel.setDefaultViewImagePanel(vizMapperMainPanel
-					.getDefaultImageManager().get(manager.getCurrentVisualStyle()));
+					.getDefaultImageManager().get(style), style);
 		}
 	}
 }

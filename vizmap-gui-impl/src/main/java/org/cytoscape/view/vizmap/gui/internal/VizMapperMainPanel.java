@@ -261,7 +261,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		}
 
 		// Set the default view to the panel.
-		setDefaultViewImagePanel(defImg);
+		setDefaultViewImagePanel(defImg, style);
 		propertySheetPanel.setSorting(true);
 	}
 
@@ -340,7 +340,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	 * 
 	 * @param defImage
 	 */
-	public void setDefaultViewImagePanel(final Image defImage) {
+	void setDefaultViewImagePanel(final Image defImage, final VisualStyle newStyle) {
 		if (defImage == null) {
 			logger.debug("Default image is null!");
 			return;
@@ -353,8 +353,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		defaultImageButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
 		defaultImageButton.setIcon(new ImageIcon(defImage));
-		final VisualStyle currentStyle = manager.getCurrentVisualStyle();
-		defaultImageButton.setBackground((Color) currentStyle
+		defaultImageButton.setBackground((Color) newStyle
 				.getDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT));
 
 		defaultViewImagePanel.add(defaultImageButton, BorderLayout.CENTER);
