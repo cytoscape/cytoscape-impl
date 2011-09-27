@@ -46,6 +46,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -190,7 +191,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 	private void switchVS(final VisualStyle style, boolean forceUpdate) {
 
-		logger.debug("######## Switching start: " + style.getTitle());
+		logger.debug("######## Switching VS start: " + style.getTitle());
 
 		// If new VS name is the same, ignore.
 		if (!forceUpdate && style.equals(manager.getCurrentVisualStyle()))
@@ -199,8 +200,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// Close editor windows
 		editorWindowManager.closeAllEditorWindows();
 
-		final List<Property> props = vizMapPropertySheetBuilder
-				.getPropertyList(style);
+		final List<Property> props = vizMapPropertySheetBuilder.getPropertyList(style);
 		if (props.size() != 0) {
 			logger.debug("######## Style exists in buffer: " + style.getTitle());
 
@@ -239,10 +239,15 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
 
 		if (currentView != null) {
-			vmm.setVisualStyle((VisualStyle) visualStyleComboBox.getModel().getSelectedItem(), currentView);
-			style.apply(currentView);
-			// Update view
-			currentView.updateView();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					vmm.setVisualStyle((VisualStyle) visualStyleComboBox.getModel().getSelectedItem(), currentView);
+					style.apply(currentView);
+					// Update view
+					currentView.updateView();
+				}
+			});
+			
 		}
 
 		/*
