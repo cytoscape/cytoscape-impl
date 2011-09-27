@@ -20,6 +20,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 
@@ -45,8 +46,9 @@ public class CyActivator extends AbstractCyActivator {
 		NewEmptyNetworkViewFactory newEmptyNetworkViewFactoryServiceRef = getService(bc,NewEmptyNetworkViewFactory.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		
+		VisualMappingManager vmm = getService(bc,VisualMappingManager.class);
 		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
-		DropNetworkViewTaskFactoryImpl dropNetworkViewTaskFactory = new DropNetworkViewTaskFactoryImpl(cyEventHelperServiceRef);
+		DropNetworkViewTaskFactoryImpl dropNetworkViewTaskFactory = new DropNetworkViewTaskFactoryImpl(cyEventHelperServiceRef, vmm);
 		DropNodeViewTaskFactoryImpl dropNodeViewTaskFactory = new DropNodeViewTaskFactoryImpl(cyNetworkManagerServiceRef);
 		EditorCytoPanelComponent editorCytoPanelComponent = new EditorCytoPanelComponent(cySwingApplicationServiceRef);
 		CurrentNetworkViewListener currentNetworkViewListener = new CurrentNetworkViewListener(cySwingApplicationServiceRef,editorCytoPanelComponent);

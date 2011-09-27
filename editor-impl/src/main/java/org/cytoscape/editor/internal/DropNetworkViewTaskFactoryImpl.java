@@ -7,6 +7,7 @@ import java.awt.datatransfer.Transferable;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -16,9 +17,11 @@ public class DropNetworkViewTaskFactoryImpl implements DropNetworkViewTaskFactor
 	private Point2D javaPt;
 	private Point2D xformPt;
 	private final CyEventHelper eh;
+	private final VisualMappingManager vmm;
 	
-	public DropNetworkViewTaskFactoryImpl(CyEventHelper eh) {
+	public DropNetworkViewTaskFactoryImpl(CyEventHelper eh, VisualMappingManager vmm) {
 		this.eh = eh;
+		this.vmm = vmm;
 	}
 
 	public void setNetworkView(CyNetworkView view) {
@@ -32,6 +35,6 @@ public class DropNetworkViewTaskFactoryImpl implements DropNetworkViewTaskFactor
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new DropNetworkViewTask(view, t, xformPt, eh));
+		return new TaskIterator(new DropNetworkViewTask(vmm, view, t, xformPt, eh));
 	}
 }

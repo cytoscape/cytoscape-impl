@@ -19,20 +19,26 @@ import org.cytoscape.event.CyEventHelper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+
 
 public class DropNetworkViewTask extends AbstractNetworkViewTask {
 
 	private final Transferable t;
 	private final Point2D xformPt;
 	private final CyEventHelper eh;
+	private static int new_node_index =1;
+	private VisualMappingManager vmm;
 
 	private static final Logger logger = LoggerFactory.getLogger(DropNetworkViewTask.class);
 	
-	public DropNetworkViewTask(CyNetworkView view, Transferable t, Point2D xformPt, CyEventHelper eh) {
+	public DropNetworkViewTask(VisualMappingManager vmm, CyNetworkView view, Transferable t, Point2D xformPt, CyEventHelper eh) {
 		super(view);
 		this.t = t;
 		this.xformPt = xformPt;
 		this.eh = eh;
+		this.vmm = vmm;
 	}
 
 	@Override
@@ -44,10 +50,22 @@ public class DropNetworkViewTask extends AbstractNetworkViewTask {
 
 		CyNetwork net = view.getModel();
 		CyNode n = net.addNode();
+		
+		// set the name attribute for the new node
+		String nodeName = "Node_"+ new_node_index;
+		new_node_index++;
+		n.getCyRow().set("name", nodeName);
+		
 		eh.flushPayloadEvents();
 		View<CyNode> nv = view.getNodeView(n);
 		nv.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,xformPt.getX());
 		nv.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION,xformPt.getY());
 		view.updateView();
+		
+		
+		// Apply visual style
+		VisualStyle vs = vmm.getVisualStyle(view);
+		vs.apply(view);
+
 	}
 }
