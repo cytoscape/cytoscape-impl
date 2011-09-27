@@ -15,13 +15,14 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
 import org.cytoscape.dnd.DropUtil;
+import org.cytoscape.editor.internal.gui.ShapePalette;
 import org.cytoscape.event.CyEventHelper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-
+import javax.swing.JOptionPane;
 
 public class DropNetworkViewTask extends AbstractNetworkViewTask {
 
@@ -32,6 +33,7 @@ public class DropNetworkViewTask extends AbstractNetworkViewTask {
 	private VisualMappingManager vmm;
 
 	private static final Logger logger = LoggerFactory.getLogger(DropNetworkViewTask.class);
+	
 	
 	public DropNetworkViewTask(VisualMappingManager vmm, CyNetworkView view, Transferable t, Point2D xformPt, CyEventHelper eh) {
 		super(view);
@@ -52,8 +54,16 @@ public class DropNetworkViewTask extends AbstractNetworkViewTask {
 		CyNode n = net.addNode();
 		
 		// set the name attribute for the new node
-		String nodeName = "Node_"+ new_node_index;
-		new_node_index++;
+		String nodeName = "";
+		
+		if (ShapePalette.specifyIdentifier){
+			nodeName = JOptionPane.showInputDialog("Please specify a name");
+		}
+		else {
+			nodeName = "Node_"+ new_node_index;		
+			new_node_index++;
+		}
+
 		n.getCyRow().set("name", nodeName);
 		
 		eh.flushPayloadEvents();
@@ -61,7 +71,6 @@ public class DropNetworkViewTask extends AbstractNetworkViewTask {
 		nv.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,xformPt.getX());
 		nv.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION,xformPt.getY());
 		view.updateView();
-		
 		
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);

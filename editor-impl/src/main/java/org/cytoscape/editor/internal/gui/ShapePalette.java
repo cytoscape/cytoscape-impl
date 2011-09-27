@@ -131,7 +131,7 @@ public class ShapePalette extends JPanel {
 		pnlSpecifyIdentifier.setBackground(Color.white);
 
 		pnlSpecifyIdentifier.setMaximumSize(new java.awt.Dimension(32767, 100));
-		JLabel chkSpecifyLabel = new JLabel("Specify Identifier:");
+		JLabel chkSpecifyLabel = new JLabel("Specify Name:");
 		chkSpecifyIdentifier = new javax.swing.JCheckBox();
 		chkSpecifyIdentifier.setToolTipText("Checking the box will allow you to choose the identifier for added nodes and edges.");
 		pnlSpecifyIdentifier.setLayout(new java.awt.GridBagLayout());
