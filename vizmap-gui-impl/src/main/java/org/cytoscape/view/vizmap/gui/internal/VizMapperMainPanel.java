@@ -345,7 +345,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 			logger.debug("Default image is null!");
 			return;
 		}
-
+		
 		defaultViewImagePanel.removeAll();
 
 		final JButton defaultImageButton = new JButton();
@@ -360,9 +360,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		defaultViewImagePanel.add(defaultImageButton, BorderLayout.CENTER);
 		defaultImageButton.addMouseListener(defaultViewMouseListener);
 		
-		defaultViewImagePanel.repaint(1);
-		defaultImageButton.repaint(1);
-		this.repaint();
+		defaultViewImagePanel.revalidate();
 	}
 
 
