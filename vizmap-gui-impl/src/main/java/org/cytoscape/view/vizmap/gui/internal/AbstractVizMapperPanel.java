@@ -272,15 +272,16 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 		// TODO why do we have to do this?
 		mainSplitPane.setSize(new Dimension(100, 120));
 
-		defaultViewImagePanel.setMinimumSize(new Dimension(100, 100));
-		defaultViewImagePanel.setPreferredSize(new Dimension(mainSplitPane
-				.getWidth(), mainSplitPane.getDividerLocation()));
-		defaultViewImagePanel.setSize(defaultViewImagePanel.getPreferredSize());
-		defaultViewImagePanel.setLayout(new BorderLayout());
-
 		listSplitPane.setDividerLocation(400);
 		listSplitPane.setDividerSize(5);
 		listSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+		
+		// Default View Panel
+		defaultViewImagePanel.setMinimumSize(new Dimension(200, 200));
+		defaultViewImagePanel.setPreferredSize(new Dimension(mainSplitPane.getWidth(), mainSplitPane
+				.getDividerLocation()));
+		defaultViewImagePanel.setSize(defaultViewImagePanel.getPreferredSize());
+		defaultViewImagePanel.setLayout(new BorderLayout());
 
 		noMapListScrollPane = new javax.swing.JScrollPane();
 		noMapListScrollPane.setBorder(javax.swing.BorderFactory

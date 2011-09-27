@@ -42,11 +42,11 @@
             <visualProperty name="NODE_CUSTOMGRAPHICS_SIZE_7" default="50.0"/>
             <visualProperty name="NODE_CUSTOMPAINT_7" default="org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty$VisualizableImpl@210713c7"/>
             <visualProperty name="NODE_CUSTOMPAINT_3" default="org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty$VisualizableImpl@210713c7"/>
-            <visualProperty name="NODE_FILL_COLOR" default="#ffffff"/>
-            <visualProperty name="NODE_PAINT" default="#787878"/>
+            <visualProperty name="NODE_FILL_COLOR" default="#1E90FF"/>
+            <visualProperty name="NODE_PAINT" default="#1E90FF"/>
             <visualProperty name="NODE_CUSTOMGRAPHICS_POSITION_4" default="C,C,c,0.00,0.00"/>
             <visualProperty name="NODE_DEPTH" default="0.0"/>
-            <visualProperty name="NODE_WIDTH" default="70.0"/>
+            <visualProperty name="NODE_WIDTH" default="60.0"/>
             <visualProperty name="NODE_BORDER_WIDTH" default="1.0"/>
             <visualProperty name="NODE_CUSTOMGRAPHICS_3"/>
             <visualProperty name="NODE_CUSTOMGRAPHICS_8"/>
@@ -68,7 +68,7 @@
             <visualProperty name="NODE_LABEL" default="">
                 <passthroughMapping attributeType="string" attributeName="name"/>
             </visualProperty>
-            <visualProperty name="NODE_HEIGHT" default="30.0"/>
+            <visualProperty name="NODE_HEIGHT" default="35.0"/>
             <visualProperty name="NODE_VISIBLE" default="true"/>
             <visualProperty name="NODE_CUSTOMGRAPHICS_4"/>
             <visualProperty name="NODE_SELECTED" default="false"/>

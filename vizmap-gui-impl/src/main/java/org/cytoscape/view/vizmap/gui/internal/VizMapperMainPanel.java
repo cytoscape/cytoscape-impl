@@ -239,8 +239,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
 
 		if (currentView != null) {
-			vmm.setVisualStyle((VisualStyle) visualStyleComboBox.getModel()
-					.getSelectedItem(), currentView);
+			vmm.setVisualStyle((VisualStyle) visualStyleComboBox.getModel().getSelectedItem(), currentView);
 			style.apply(currentView);
 			// Update view
 			currentView.updateView();
@@ -253,9 +252,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		if (defImg == null) {
 			// Default image is not available in the buffer. Create a new one.
-			updateDefaultImage(style,
-					((DefaultViewPanel) defViewEditor.getDefaultView(style))
-							.getRenderingEngine(),
+			updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style)).getRenderingEngine(),
 					defaultViewImagePanel.getSize());
 			defImg = defaultImageManager.get(style);
 		}
@@ -269,8 +266,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		final List<VisualStyle> visualStyles = new ArrayList<VisualStyle>(
 				vmm.getAllVisualStyles());
-		// final VisualStyle selectedStyle = (VisualStyle)
-		// vsComboBox.getModel().getSelectedItem();
 
 		// Disable action listeners
 		final ActionListener[] li = visualStyleComboBox.getActionListeners();
@@ -363,12 +358,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	}
 
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param arg0
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void popupMenuCanceled(PopupMenuEvent arg0) {
 		// TODO: replace this to firePropertyChange
 		// disableAllPopup();
