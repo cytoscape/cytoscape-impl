@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -32,34 +34,54 @@ public class RowViewTracker implements NetworkViewAddedListener,
 		rowViewMap = new HashMap<CyRow,View<?>>();
 	}
 
-	public void handleEvent(NetworkViewAddedEvent e) {
-		final CyNetworkView view = e.getNetworkView();
+	public void handleEvent(final NetworkViewAddedEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				final CyNetworkView view = e.getNetworkView();
 
-		for ( View<CyNode> nv : view.getNodeViews() )
-			rowViewMap.put( nv.getModel().getCyRow(), nv);
+				for ( View<CyNode> nv : view.getNodeViews() )
+					rowViewMap.put( nv.getModel().getCyRow(), nv);
 		
-		for ( View<CyEdge> ev : view.getEdgeViews() ) 
-			rowViewMap.put( ev.getModel().getCyRow(), ev);
+				for ( View<CyEdge> ev : view.getEdgeViews() ) 
+					rowViewMap.put( ev.getModel().getCyRow(), ev);
+			}
+		});
 	}
 	
-	public void handleEvent(AddedNodeViewsEvent e) {
-		for ( View<CyNode> v : e.getNodeViews()) 
-			rowViewMap.put( v.getModel().getCyRow(), v );
+	public void handleEvent(final AddedNodeViewsEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				for ( View<CyNode> v : e.getNodeViews()) 
+					rowViewMap.put( v.getModel().getCyRow(), v );
+			}
+		});
 	}
 	
-	public void handleEvent(AddedEdgeViewsEvent e) {
-		for ( View<CyEdge> v : e.getEdgeViews()) 
-			rowViewMap.put( v.getModel().getCyRow(), v );
+	public void handleEvent(final AddedEdgeViewsEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				for ( View<CyEdge> v : e.getEdgeViews()) 
+					rowViewMap.put( v.getModel().getCyRow(), v );
+			}
+		});
 	}
 	
-	public void handleEvent(AboutToRemoveNodeViewsEvent e) {
-		for ( View<CyNode> v : e.getNodeViews()) 
-			rowViewMap.remove( v.getModel().getCyRow() );
+	public void handleEvent(final AboutToRemoveNodeViewsEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				for ( View<CyNode> v : e.getNodeViews()) 
+					rowViewMap.remove( v.getModel().getCyRow() );
+			}
+		});
 	}
 	
-	public void handleEvent(AboutToRemoveEdgeViewsEvent e) {
-		for ( View<CyEdge> v : e.getEdgeViews()) 
-			rowViewMap.remove( v.getModel().getCyRow() );
+	public void handleEvent(final AboutToRemoveEdgeViewsEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				for ( View<CyEdge> v : e.getEdgeViews()) 
+					rowViewMap.remove( v.getModel().getCyRow() );
+			}
+		});
 	}
 	
 	public Map<CyRow,View<?>> getRowViewMap() {
