@@ -7,7 +7,6 @@ import java.util.Set;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;

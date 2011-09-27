@@ -1,20 +1,23 @@
 package org.cytoscape.view.vizmap.gui.internal.util;
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.*;
+import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.EDGE_LABEL;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.EDGE_LABEL_COLOR;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.EDGE_PAINT;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_HEIGHT;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_LABEL;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_LABEL_COLOR;
+import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_WIDTH;
 
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

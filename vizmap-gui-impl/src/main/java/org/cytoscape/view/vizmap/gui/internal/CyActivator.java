@@ -1,79 +1,62 @@
 
 package org.cytoscape.view.vizmap.gui.internal;
 
-import org.cytoscape.io.read.VizmapReaderManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.work.swing.GUITaskManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import org.cytoscape.view.vizmap.gui.dependency.NodeSizeDependency;
-import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.StringValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.util.DefaultVisualStyleBuilder;
-import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.DefaultViewEditorImpl;
-import org.cytoscape.view.vizmap.gui.internal.VisualPropertyDependencyManagerImpl;
-import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.VizMapPropertySheetBuilder;
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import org.cytoscape.view.vizmap.gui.internal.VizMapperMainPanel;
-import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
-import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
-import org.cytoscape.view.vizmap.gui.internal.task.ImportDefaultVizmapTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
-import org.cytoscape.view.vizmap.gui.internal.editor.EditorManagerImpl;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.bypass.BypassManager;
-import org.cytoscape.view.vizmap.gui.internal.task.DeleteMappingFunctionTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
-import java.lang.Class;
-import org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.editor.ColorVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.VizMapperMenuManager;
-import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
-import javax.swing.table.DefaultTableCellRenderer;
-import org.cytoscape.view.vizmap.gui.internal.SelectedVisualStyleManagerImpl;
-import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.FontEditor;
-import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.NumericValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.CyColorChooser;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.DefaultViewPanelImpl;
-import org.cytoscape.view.vizmap.gui.internal.MappingFunctionFactoryManagerImpl;
-import org.cytoscape.view.vizmap.gui.internal.EditorWindowManager;
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.Properties;
 
-import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
+import javax.swing.table.DefaultTableCellRenderer;
 
+import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
-import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.gui.action.VizMapUIAction;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.gui.VisualPropertyDependency;
-
+import org.cytoscape.view.vizmap.gui.action.VizMapUIAction;
+import org.cytoscape.view.vizmap.gui.dependency.NodeSizeDependency;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.bypass.BypassManager;
+import org.cytoscape.view.vizmap.gui.internal.editor.ColorVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.EditorManagerImpl;
+import org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.CyColorChooser;
+import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.FontEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.NumericValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.StringValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
+import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.DeleteMappingFunctionTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.ImportDefaultVizmapTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.util.DefaultVisualStyleBuilder;
+import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
+import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.GUITaskManager;
 import org.osgi.framework.BundleContext;
 
-import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
+import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
 
 
