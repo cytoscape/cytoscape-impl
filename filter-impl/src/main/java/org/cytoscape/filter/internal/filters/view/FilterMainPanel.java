@@ -263,29 +263,32 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		updateFeedbackTableModel();
 	}
 	
-	public void handleNetworkFocused(CyNetworkView view) {
-		if (view == null) {
-			return;
-		}
-		
-		// If FilterPanel is not selected, do nothing
-		if (cmbSelectFilter.getSelectedItem() == null) {
-			return;
-		}
-					
-		//Refresh indices for UI widgets after network switch			
-		CompositeFilter selectedFilter = (CompositeFilter) cmbSelectFilter.getSelectedItem();
-		selectedFilter.setNetwork(view.getModel());
-		FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
-		theSettingPanel.refreshIndicesForWidgets();
-		
-		updateFeedbackTableModel();
+	public void handleNetworkFocused(final CyNetworkView view) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				if (view == null) {
+					return;
+				}
+				
+				// If FilterPanel is not selected, do nothing
+				if (cmbSelectFilter.getSelectedItem() == null) {
+					return;
+				}
+							
+				//Refresh indices for UI widgets after network switch			
+				CompositeFilter selectedFilter = (CompositeFilter) cmbSelectFilter.getSelectedItem();
+				selectedFilter.setNetwork(view.getModel());
+				FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
+				theSettingPanel.refreshIndicesForWidgets();
+				
+				updateFeedbackTableModel();
+			}
+		});
 	}
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		handleNetworkFocused(e.getNetworkView());
-		updateFeedbackTableModel();
 	}
 
 	@Override
