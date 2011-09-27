@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -77,14 +78,18 @@ public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor
 	}
 
 	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		final CyNetworkView networkView = e.getNetworkView();
-		if ( networkView == null ) {
-			logger.debug("Current network view switched to null");
-			updateComboBox(null);
-		} else {
-			logger.debug("Current network view switched to " + networkView.getModel());
-			updateComboBox(networkView.getModel());
-		}
+	public void handleEvent(final SetCurrentNetworkViewEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				final CyNetworkView networkView = e.getNetworkView();
+				if ( networkView == null ) {
+					logger.debug("Current network view switched to null");
+					updateComboBox(null);
+				} else {
+					logger.debug("Current network view switched to " + networkView.getModel());
+					updateComboBox(networkView.getModel());
+				}
+			}
+		});
 	}
 }
