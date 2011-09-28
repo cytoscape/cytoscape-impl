@@ -13,7 +13,6 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>io-impl-performance</artifactId>
 
 	<name>${bundle.symbolicName}</name>
@@ -94,6 +93,19 @@
 			<version>${project.version}</version>
 			<type>test-jar</type>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>ding-presentation-impl</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>ding-presentation-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>
             <artifactId>pax-logging-api</artifactId>
