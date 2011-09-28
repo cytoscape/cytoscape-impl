@@ -195,7 +195,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	private final VisualLexicon lexicon;
 
 	
-	DNodeView(final VisualLexicon lexicon, final DGraphView graphView, int inx, final CyNode model) {
+	public DNodeView(final VisualLexicon lexicon, final DGraphView graphView, int inx, final CyNode model) {
 		super(model);
 		
 		if (graphView == null)
