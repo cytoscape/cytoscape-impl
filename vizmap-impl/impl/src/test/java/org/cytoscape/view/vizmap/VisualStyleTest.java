@@ -1,28 +1,22 @@
 package org.cytoscape.view.vizmap;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Properties;
+import java.util.Set;
 
+import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
-import org.cytoscape.view.model.NetworkViewTestSupport;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-
-import org.junit.After;
 import org.junit.Before;
 
 public class VisualStyleTest extends AbstractVisualStyleTest {
@@ -31,7 +25,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 	public void setUp() throws Exception {
 		final Class<String> type = String.class;
         CyProperty<Properties> cyProperties = mock(CyProperty.class);
-        NetworkViewTestSupport nvts = new NetworkViewTestSupport(cyProperties);
+        NetworkViewTestSupport nvts = new NetworkViewTestSupport();
         network = nvts.getNetworkFactory().getInstance();
 
         node1 = network.addNode();
