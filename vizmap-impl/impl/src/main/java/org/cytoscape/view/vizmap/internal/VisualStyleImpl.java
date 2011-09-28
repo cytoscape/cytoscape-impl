@@ -181,6 +181,9 @@ public class VisualStyleImpl implements VisualStyle {
 		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
 		networkViewSet.add(networkView);
 
+		applyNodeViewDefaults(networkView, lexManager.getNodeVisualProperties());
+		applyEdgeViewDefaults(networkView, lexManager.getEdgeVisualProperties());
+
 		// Current visual prop tree.
 		applyImpl(nodeViews, lexManager.getNodeVisualProperties());
 		applyImpl(edgeViews, lexManager.getEdgeVisualProperties());
@@ -223,33 +226,34 @@ public class VisualStyleImpl implements VisualStyle {
 				if (view.getVisualProperty(vp) == vpDefault)
 					view.setVisualProperty(vp, styleDefaultValue);
 			}
-		} else if (!vp.shouldIgnoreDefault()) {
-			// Ignore defaults flag is OFF. Apply defaults.
-			applyStyleDefaults((Collection<View<?>>) views, vp);
+		} 
+	}
+
+	private void applyNodeViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
+
+		for ( VisualProperty<?> vp : vps ) {
+			Object defaultValue = getDefaultValue(vp);
+
+			if (defaultValue == null) {
+				this.perVSDefaults.put(vp, vp.getDefault());
+				defaultValue = getDefaultValue(vp);
+			}
+
+			view.setNodeViewDefault(vp,defaultValue);
 		}
 	}
 
-	private void applyStyleDefaults(final Collection<View<?>> views, final VisualProperty<?> vp) {
+	private void applyEdgeViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
 
-		Object defaultValue = getDefaultValue(vp);
+		for ( VisualProperty<?> vp : vps ) {
+			Object defaultValue = getDefaultValue(vp);
 
-		if (defaultValue == null) {
-			this.perVSDefaults.put(vp, vp.getDefault());
-			defaultValue = getDefaultValue(vp);
-		}
-		// reset all rows to allow usage of default value:
-		for (final View<?> viewModel : views) {
+			if (defaultValue == null) {
+				this.perVSDefaults.put(vp, vp.getDefault());
+				defaultValue = getDefaultValue(vp);
+			}
 
-			// Not a leaf VP. We can ignore those.
-			if (vp.getDefault() instanceof Visualizable)
-				continue;
-
-			// If equals, it is not necessary to set new value.
-			if (viewModel.getVisualProperty(vp) == defaultValue)
-				continue;
-
-			// This is a leaf, and need to be updated.
-			viewModel.setVisualProperty(vp, defaultValue);
+			view.setEdgeViewDefault(vp,defaultValue);
 		}
 	}
 

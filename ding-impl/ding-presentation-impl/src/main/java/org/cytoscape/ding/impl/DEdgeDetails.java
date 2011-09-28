@@ -68,6 +68,21 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	private final MinIntHeap m_heap = new MinIntHeap();
 	private final float[] m_extentsBuff = new float[4];
 
+	private Paint m_colorLowDetailDefault ;
+	private Byte m_sourceArrowDefault ;
+	private Paint m_sourceArrowPaintDefault ;
+	private Byte m_targetArrowDefault ;
+	private Paint m_targetArrowPaintDefault ;
+	private Float m_segmentThicknessDefault ;
+	private Stroke m_segmentStrokeDefault ;
+	private Paint m_segmentPaintDefault ;
+	private Integer m_labelCountDefault ;
+	private String m_labelTextDefault ;
+	private Font m_labelFontDefault ;
+	private Paint m_labelPaintDefault ;
+	private Double m_labelWidthDefault ;
+
+
 	DEdgeDetails(final DGraphView view) {
 		m_view = view;
 	}
@@ -96,9 +111,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		final Object o = m_colorsLowDetail.get(edge);
 
 		if ((o == null) || (o == m_deletedEntry))
-			return super.colorLowDetail(edge);
+			if ( m_colorLowDetailDefault == null )
+				return super.colorLowDetail(edge);
+			else
+				return (Color)m_colorLowDetailDefault;
 
 		return (Color) o;
+	}
+
+	void setColorLowDetailDefault(Paint c) {
+		m_colorLowDetailDefault = c;
 	}
 
 	/*
@@ -118,9 +140,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	public byte sourceArrow(final int edge) {
 		final Byte arrow = m_sourceArrows.get(edge);
 		if (arrow == null)
-			return super.sourceArrow(edge);
+			if ( m_sourceArrowDefault == null )
+				return super.sourceArrow(edge);
+			else
+				return m_sourceArrowDefault.byteValue();
 
 		return arrow;
+	}
+
+	void setSourceArrowDefault(byte arrow) {
+		m_sourceArrowDefault = Byte.valueOf(arrow);
 	}
 
 	/*
@@ -138,9 +167,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	public Paint sourceArrowPaint(final int edge) {
 		final Paint arrowPaint = m_sourceArrowPaints.get(edge);
 		if (arrowPaint == null)
-			return super.sourceArrowPaint(edge);
+			if ( m_sourceArrowPaintDefault == null )
+				return super.sourceArrowPaint(edge);
+			else
+				return m_sourceArrowPaintDefault;
 
 		return arrowPaint;
+	}
+
+	void setSourceArrowPaintDefault(Paint p) {
+		m_sourceArrowPaintDefault = p;
 	}
 
 	/*
@@ -162,9 +198,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		final Byte arrow = m_targetArrows.get(edge);
 
 		if (arrow == null)
-			return super.targetArrow(edge);
+			if ( m_targetArrowDefault == null )
+				return super.targetArrow(edge);
+			else
+				return m_targetArrowDefault.byteValue();
 
 		return arrow;
+	}
+
+	void setTargetArrowDefault(byte arrow) {
+		m_targetArrowDefault = Byte.valueOf(arrow);
 	}
 
 	/*
@@ -185,9 +228,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	public Paint targetArrowPaint(final int edge) {
 		final Paint arrowPaint = m_targetArrowPaints.get(edge);
 		if (arrowPaint == null)
-			return super.targetArrowPaint(edge);
+			if ( m_targetArrowPaintDefault == null )
+				return super.targetArrowPaint(edge);
+			else
+				return m_targetArrowPaintDefault;
 
 		return arrowPaint;
+	}
+
+	void setTargetArrowPaintDefault(Paint p) {
+		m_targetArrowPaintDefault = p;
 	}
 
 	/*
@@ -205,218 +255,19 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EdgeAnchors anchors(final int edge) {
-		final EdgeAnchors returnThis = (EdgeAnchors) m_view.getDEdgeView(edge);
-
-		if (returnThis.numAnchors() > 0) 
-			return returnThis;
-
-		final CyNetwork graph = m_view.model;
-		final CyEdge edgeObj = graph.getEdge(edge);
-		if (edgeObj == null) {
-			System.err.println("in DEdgeDetails.anchors(): Warning: non-existent edge="+edge);
-			return returnThis;
-		}
-
-		final CyNode source = edgeObj.getSource();
-		if (source == null) {
-			System.err.println("in DEdgeDetails.anchors(): Warning: non-existent source!");
-			return returnThis;
-		}
-		final int srcNode = source.getIndex();
-
-		final CyNode target = edgeObj.getTarget();
-		if (target == null) {
-			System.err.println("in DEdgeDetails.anchors(): Warning: non-existent target!");
-			return returnThis;
-		}
-		final int trgNode = target.getIndex();
-
-		// Calculate anchors necessary for self edges.
-		if (srcNode == trgNode) { // Self-edge.
-			final CyNode nodeObj = edgeObj.getSource();
-			final int node = nodeObj.getIndex(); 
-			m_view.m_spacial.exists(node, m_extentsBuff, 0);
-
-			final double w = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
-			final double h = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
-			final double x = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
-			final double y = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
-			final double nodeSize = Math.max(w, h);
-			int i = 0;
-			
-			final List<CyEdge> selfEdges = graph.getConnectingEdgeList(nodeObj, nodeObj, CyEdge.Type.ANY);
-
-			for ( CyEdge e2obj : selfEdges ) {
-				final int e2 = e2obj.getIndex();
-
-				if (e2 == edge)
-					break;
-
-				if (((EdgeAnchors) m_view.getDEdgeView(e2)).numAnchors() == 0)
-					i++;
-			}
-
-			final int inx = i;
-			return new EdgeAnchors() {
-					public int numAnchors() {
-						return 2;
-					}
-
-					public void getAnchor(int anchorInx, float[] anchorArr, int offset) {
-						if (anchorInx == 0) {
-							anchorArr[offset] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
-							anchorArr[offset + 1] = (float) y;
-						} else if (anchorInx == 1) {
-							anchorArr[offset] = (float) x;
-							anchorArr[offset + 1] = (float) (y - (((inx + 3) * nodeSize) / 2.0d));
-						}
-					}
-				};
-		}
-
-		// Now add "invisible" anchors to edges for the case where multiple edges
-		// exist between two nodes. This has no effect if user specified anchors
-		// exist on the edge.
-		while (true) {
-			// By consistently ordering the source and target nodes, dx and dy will always
-			// be calculated according to the same orientation. This allows the offset
-			// calculation to toggle the edges from side to side without any overlap.
-			final int tmpSrc = Math.min( srcNode, trgNode ); 
-			final int tmpTrg = Math.max( srcNode, trgNode ); 
-
-			// Sort the connecting edges.
-			final List<CyEdge> selfEdges = graph.getConnectingEdgeList(edgeObj.getSource(), edgeObj.getTarget(), CyEdge.Type.ANY);
-
-			m_heap.empty();
-
-			for ( CyEdge e : selfEdges ) 
-				m_heap.toss(e.getIndex());
-
-			final IntEnumerator otherEdges = m_heap.orderedElements(false);
-
-			int otherEdge = otherEdges.nextInt();
-
-			// If the first other edge is the same as this edge, 
-			// (i.e. we're at the end of the list?).
-			if (otherEdge == edge)
-				break;
-
-			// So we don't count the other edge twice?
-			int i = (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0) ? 1 : 0;
-
-			// Count the number of other edges.
-			while (true) {
-				if (edge == (otherEdge = otherEdges.nextInt()))
-					break;
-
-				if (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0)
-					i++;
-			}
-
-			final int inx = i;
-
-			// Get source node size and position.
-			m_view.m_spacial.exists(tmpSrc, m_extentsBuff, 0);
-			final double srcW = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
-			final double srcH = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
-			final double srcX = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
-			final double srcY = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
-
-			// Get target node size and position.
-			m_view.m_spacial.exists(tmpTrg, m_extentsBuff, 0);
-			final double trgW = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
-			final double trgH = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
-			final double trgX = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
-			final double trgY = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
-
-			// Used for determining the space between the edges.
-			final double nodeSize = Math.max(Math.max(Math.max(srcW, srcH), trgW), trgH);
-
-			// Midpoint between nodes.
-			final double midX = (srcX + trgX) / 2;
-			final double midY = (srcY + trgY) / 2;
-
-			// Distance in X and Y dimensions.
-			// Note that dx and dy may be negative.  This is OK, because this will ensure
-			// that the handle is always correctly placed offset from the midpoint of, 
-			// and perpendicular to, the original edge.
-			final double dx = trgX - srcX;
-			final double dy = trgY - srcY;
-
-			// Distance or length between nodes.
-			final double len = Math.sqrt((dx * dx) + (dy * dy));
-
-			if (((float) len) == 0.0f) 
-				break;
-
-			// This determines which side of the first edge and how far from the first
-			// edge the other edge should be placed.
-			// -  Divide by 2 puts consecutive edges at the same distance from the center
-			//    because of integer math.
-			// -  Modulo puts consecutive edges on opposite sides.
-			// -  Node size is for consistent scaling.
-			final double offset = ((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize;
-
-			// Depending on orientation sine or cosine. This adjusts the length
-			// of the offset according the appropriate X and Y dimensions.
-			final double normX = dx / len;
-			final double normY = dy / len;
-
-			// Calculate the anchor points.
-			final double anchorX = midX + (offset * normY);
-			final double anchorY = midY - (offset * normX);
-
-			return new EdgeAnchors() {
-					public int numAnchors() {
-						return 1;
-					}
-
-					public void getAnchor(int inx, float[] arr, int off) {
-						arr[off] = (float) anchorX;
-						arr[off + 1] = (float) anchorY;
-					}
-				};
-		}
-
-		return returnThis;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public float anchorSize(final int edge, final int anchorInx) {
-		if (m_view.getDEdgeView(edge).isSelected() && (((DEdgeView) m_view.getDEdgeView(edge)).numAnchors() > 0))
-			return m_view.getAnchorSize();
-		else
-			return 0.0f;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Paint anchorPaint(final int edge, int anchorInx) {
-		if (((DEdgeView) (m_view.getDEdgeView(edge))).m_lineType == DEdgeView.STRAIGHT_LINES)
-			anchorInx = anchorInx / 2;
-
-		if (m_view.m_selectedAnchors.count((edge << 6) | anchorInx) > 0)
-			return m_view.getAnchorSelectedPaint();
-		else
-			return m_view.getAnchorUnselectedPaint();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public float segmentThickness(final int edge) {
 		final Float thickness = m_segmentThicknesses.get(edge);
 		if (thickness == null)
-			return super.segmentThickness(edge);
+			if ( m_segmentThicknessDefault == null )
+				return super.segmentThickness(edge);
+			else
+				return m_segmentThicknessDefault.floatValue();
 
 		return thickness;
+	}
+
+	void setSegmentThicknessDefault(float thick) {
+		m_segmentThicknessDefault = Float.valueOf(thick);
 	}
 
 	/*
@@ -438,11 +289,17 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	public Stroke segmentStroke(final int edge) {
 		final Stroke stroke = m_segmentStrokes.get(edge);
 		if (stroke == null)
-			return super.segmentStroke(edge);
+			if ( m_segmentStrokeDefault == null )
+				return super.segmentStroke(edge);
+			else
+				return m_segmentStrokeDefault;
 
 		return stroke;
 	}
 
+	void setSegmentStrokeDefault(Stroke s) {
+		m_segmentStrokeDefault = s;
+	}
 
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
@@ -462,11 +319,17 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	public Paint segmentPaint(final int edge) {
 		final Paint paint = m_segmentPaints.get(edge);
 		if (paint == null)
-			return super.segmentPaint(edge);
+			if ( m_segmentPaintDefault == null )
+				return super.segmentPaint(edge);
+			else
+				return m_segmentPaintDefault;
 
 		return paint;
 	}
 
+	void setSegmentPaintDefault(Paint p) {
+		m_segmentPaintDefault = p;
+	}
 
 	/*
 	 * A negative length value has the special meaning to remove overridden
@@ -487,11 +350,17 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	public int labelCount(final int edge) {
 		final Integer i = m_labelCounts.get(edge);
 		if (i == null)
-			return super.labelCount(edge);
+			if ( m_labelCountDefault == null )
+				return super.labelCount(edge);
+			else
+				m_labelCountDefault.intValue();
 
 		return i;
 	}
 
+	void setLabelCountDefault(int count) {
+		m_labelCountDefault = Integer.valueOf(count);
+	}
 
 	/*
 	 * A negative labelCount has the special meaning to remove overridden count.
@@ -511,10 +380,17 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		final long key = (((long) edge) << 32) | ((long) labelInx);
 		final String text = m_labelTexts.get(key);
 		if (text == null)
-			return super.labelText(edge, labelInx);
+			if ( m_labelTextDefault == null )
+				return super.labelText(edge, labelInx);
+			else
+				return m_labelTextDefault;
+
 		return text;
 	}
 
+	void setLabelTextDefault(String text) {
+		m_labelTextDefault = text;
+	}
 	
 	/*
 	 * A null text has the special meaning to remove overridden text.
@@ -537,9 +413,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		final Font font = m_labelFonts.get(key);
 
 		if (font == null)
-			return super.labelFont(edge, labelInx);
+			if ( m_labelFontDefault == null )
+				return super.labelFont(edge, labelInx);
+			else
+				return m_labelFontDefault;
 
 		return font;
+	}
+
+	void setLabelFontDefault(Font f) {
+		m_labelFontDefault = f;
 	}
 
 	/*
@@ -564,9 +447,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		final Paint paint = m_labelPaints.get(key);
 
 		if (paint == null)
-			return super.labelPaint(edge, labelInx);
+			if ( m_labelPaintDefault == null )
+				return super.labelPaint(edge, labelInx);
+			else
+				return m_labelPaintDefault;
 
 		return paint;
+	}
+
+	void setLabelPaintDefault(Paint p) {
+		m_labelPaintDefault = p;
 	}
 
 	/*
@@ -585,50 +475,19 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public float sourceArrowSize(final int edge) {
-		// For the half arrows, we need to scale multiplicatively
-		// so that the arrow matches the line.
-		final int arrowType = sourceArrow(edge);
-		if (arrowType == GraphGraphics.ARROW_HALF_TOP ||
-		     arrowType == GraphGraphics.ARROW_HALF_BOTTOM )
-			 return (segmentThickness(edge) * DEdgeView.DEFAULT_ARROW_SIZE);
-
-		// For all other arrows we can scale additively.  This produces
-		// less egregiously big arrows.
-		else
-			return (segmentThickness(edge) + DEdgeView.DEFAULT_ARROW_SIZE);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * The arrow size will scale with the edge width.
-	 */
-	@Override
-	public float targetArrowSize(final int edge) {
-		// For the half arrows, we need to scale multiplicatively
-		// so that the arrow matches the line.
-		final int arrowType = targetArrow(edge);
-		if ( arrowType == GraphGraphics.ARROW_HALF_TOP ||
-		     arrowType == GraphGraphics.ARROW_HALF_BOTTOM )
-			 return (segmentThickness(edge) * DEdgeView.DEFAULT_ARROW_SIZE);
-		// For all other arrows we can scale additively.  This produces
-		// less egregiously big arrows.
-		else
-			return (segmentThickness(edge) + DEdgeView.DEFAULT_ARROW_SIZE);
-	}
-
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public double labelWidth(final int edge) {
 		final Double width = m_labelWidths.get(edge);
 		if (width == null)
-			return super.labelWidth(edge);
+			if ( m_labelWidthDefault == null )
+				return super.labelWidth(edge);
+			else
+				return m_labelWidthDefault.doubleValue();
 
 		return width;
+	}
+
+	void setLabelWidthDefault(double width) {
+		m_labelWidthDefault = Double.valueOf(width);
 	}
 
 	/*

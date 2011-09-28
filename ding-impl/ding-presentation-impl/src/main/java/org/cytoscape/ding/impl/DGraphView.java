@@ -375,6 +375,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	
 	private final Properties props;
 
+	private final NodeViewDefaultSupport m_nodeViewDefaultSupport;
+	private final EdgeViewDefaultSupport m_edgeViewDefaultSupport;
+
 	
 	/**
 	 * Create presentation from View Model
@@ -455,6 +458,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_spacialA = spacialFactory.createSpacialIndex2D();
 		m_nodeDetails = new DNodeDetails(this);
 		m_edgeDetails = new DEdgeDetails(this);
+		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
+		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
 		m_nodeViewMap = new HashMap<Integer, NodeView>();
 		m_edgeViewMap = new HashMap<Integer, EdgeView>();
 		m_printLOD = new PrintLOD();
@@ -2957,5 +2962,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			logger.info("Fit Content called by event.");
 			fitContent();
 		}
+	}
+
+	public <T, V extends T> void setNodeViewDefault(final VisualProperty<? extends T> vp, final V defaultValue) {
+		m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
+	}
+
+	public <T, V extends T> void setEdgeViewDefault(final VisualProperty<? extends T> vp, final V defaultValue) {
+		m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
 	}
 }

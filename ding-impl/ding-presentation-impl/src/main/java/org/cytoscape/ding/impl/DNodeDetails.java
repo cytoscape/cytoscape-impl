@@ -71,6 +71,22 @@ class DNodeDetails extends IntermediateNodeDetails {
 	final Map<Integer, Double> m_labelOffsetXs = new HashMap<Integer, Double>();
 	final Map<Integer, Double> m_labelOffsetYs = new HashMap<Integer, Double>();
 
+	private Color m_colorLowDetailDefault;
+	private DNodeShape m_shapeDefault; 
+	private Paint m_fillPaintDefault; 
+	private Float m_borderWidthDefault; 
+	private Paint m_borderPaintDefault; 
+	private Integer m_labelCountDefault; 
+	private String m_labelTextDefault; 
+	private Font m_labelFontDefault; 
+	private Paint m_labelPaintDefault; 
+	private Byte m_labelTextAnchorDefault; 
+	private Byte m_labelNodeAnchorDefault; 
+	private Double m_labelOffsetVectorXDefault; 
+	private Double m_labelOffsetVectorYDefault;
+	private Byte m_labelJustifyDefault; 
+	private Double m_labelWidthDefault; 
+
 	DNodeDetails(final DGraphView view) {
 		m_view = view;
 	}
@@ -108,9 +124,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Object o = m_colorsLowDetail.get(node);
 
 		if ((o == null) || (o == m_deletedEntry))
-			return super.colorLowDetail(node);
+			if ( m_colorLowDetailDefault == null )
+				return super.colorLowDetail(node);
+			else
+				return m_colorLowDetailDefault;
 
 		return (Color) o;
+	}
+
+	void setColorLowDetailDefault(Color c) {
+		m_colorLowDetailDefault = c;
 	}
 
 	/*
@@ -131,9 +154,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Byte shape = m_shapes.get(node);
 
 		if (shape == null)
-			return super.shape(node);
+			if ( m_shapeDefault == null )
+				return super.shape(node);
+			else 
+				return m_shapeDefault.getNativeShape();
 
 		return shape;
+	}
+
+	void setShapeDefault(DNodeShape shape) {
+		m_shapeDefault = shape;
 	}
 
 	/*
@@ -149,9 +179,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Paint o = m_fillPaints.get(node);
 
 		if (o == null)
-			return super.fillPaint(node);
+			if ( m_fillPaintDefault == null ) 
+				return super.fillPaint(node);
+			else
+				return m_fillPaintDefault;
 
 		return o;
+	}
+
+	void setFillPaintDefault(Paint p) {
+		m_fillPaintDefault = p;
 	}
 
 	/*
@@ -170,9 +207,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Float o = m_borderWidths.get(node);
 
 		if (o == null)
-			return super.borderWidth(node);
+			if ( m_borderWidthDefault == null )
+				return super.borderWidth(node);
+			else 
+				return m_borderWidthDefault.floatValue();
 
 		return o;
+	}
+
+	void setBorderWidthDefault(float width) {
+		m_borderWidthDefault = Float.valueOf(width);
 	}
 
 	/*
@@ -190,9 +234,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Paint o = m_borderPaints.get(node);
 
 		if (o == null)
-			return super.borderPaint(node);
+			if ( m_borderPaintDefault == null ) 
+				return super.borderPaint(node);
+			else
+				return m_borderPaintDefault;
 
 		return o;
+	}
+
+	void setBorderPaintDefault(Paint p) {
+		m_borderPaintDefault = p;
 	}
 
 	/*
@@ -210,9 +261,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Integer o = m_labelCounts.get(node);
 
 		if (o == null)
-			return super.labelCount(node);
+			if ( m_labelCountDefault == null ) 
+				return super.labelCount(node);
+			else 
+				return m_labelCountDefault.intValue();
 
 		return o;
+	}
+
+	void setLabelCountDefault(int lc) {
+		m_labelCountDefault = Integer.valueOf(lc);
 	}
 
 	/*
@@ -231,9 +289,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final String o = m_labelTexts.get(key);
 
 		if (o == null)
-			return super.labelText(node, labelInx);
+			if ( m_labelTextDefault == null )
+				return super.labelText(node, labelInx);
+			else
+				return m_labelTextDefault;
 
 		return o;
+	}
+
+	void setLabelTextDefault(String text) {
+		m_labelTextDefault = text;
 	}
 
 	/*
@@ -254,9 +319,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Font o = m_labelFonts.get(key);
 
 		if (o == null)
-			return super.labelFont(node, labelInx);
+			if ( m_labelFontDefault == null )
+				return super.labelFont(node, labelInx);
+			else
+				return m_labelFontDefault;
 
 		return o;
+	}
+
+	void setLabelFontDefault(Font f) {
+		m_labelFontDefault = f;
 	}
 
 	/*
@@ -277,9 +349,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Object o = m_labelPaints.get(Long.valueOf(key));
 
 		if (o == null)
-			return super.labelPaint(node, labelInx);
+			if ( m_labelPaintDefault == null )
+				return super.labelPaint(node, labelInx);
+			else 
+				return m_labelPaintDefault;
 
 		return (Paint) o;
+	}
+
+	void setLabelPaintDefault(Paint p) {
+		m_labelPaintDefault = p;
 	}
 
 	/*
@@ -324,9 +403,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Integer p = m_labelTextAnchors.get(node);
 
 		if (p == null)
-			return super.labelTextAnchor(node, labelInx);
-		else
-			return convertG2ND(p);
+			if ( m_labelTextAnchorDefault == null )
+				return super.labelTextAnchor(node, labelInx);
+			else 
+				return m_labelTextAnchorDefault.byteValue();
+		
+		return convertG2ND(p);
+	}
+
+	void setLabelTextAnchorDefault(int anchor) {
+		m_labelTextAnchorDefault = Byte.valueOf(convertG2ND(anchor));
 	}
 
 	void overrideLabelTextAnchor(final int node, final int inx, final int anchor) {
@@ -348,9 +434,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Integer o = m_labelNodeAnchors.get(node);
 
 		if (o == null)
-			return super.labelNodeAnchor(node, labelInx);
+			if ( m_labelNodeAnchorDefault == null )
+				return super.labelNodeAnchor(node, labelInx);
+			else 
+				return m_labelNodeAnchorDefault.byteValue();
 
 		return convertG2ND(o);
+	}
+
+	void setLabelNodeAnchorDefault(int anchor) {
+		m_labelNodeAnchorDefault = Byte.valueOf(convertG2ND(anchor));
 	}
 
 	void overrideLabelNodeAnchor(final int node, final int inx, final int anchor) {
@@ -372,9 +465,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Object o = m_labelOffsetXs.get(Integer.valueOf(node));
 
 		if (o == null)
-			return super.labelOffsetVectorX(node, labelInx);
+			if ( m_labelOffsetVectorXDefault == null )
+				return super.labelOffsetVectorX(node, labelInx);
+			else
+				return m_labelOffsetVectorXDefault.floatValue();
 
 		return ((Double) o).floatValue();
+	}
+
+	void setLabelOffsetVectorXDefault(double x) {
+		m_labelOffsetVectorXDefault = Double.valueOf(x);
 	}
 
 	void overrideLabelOffsetVectorX(final int node, final int inx, final double x) {
@@ -396,9 +496,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Object o = m_labelOffsetYs.get(Integer.valueOf(node));
 
 		if (o == null)
-			return super.labelOffsetVectorY(node, labelInx);
+			if ( m_labelOffsetVectorYDefault == null )
+				return super.labelOffsetVectorY(node, labelInx);
+			else
+				return m_labelOffsetVectorYDefault.floatValue();
 
 		return ((Double) o).floatValue();
+	}
+
+	void setLabelOffsetVectorYDefault(double y) {
+		m_labelOffsetVectorYDefault = Double.valueOf(y);
 	}
 
 	void overrideLabelOffsetVectorY(final int node, final int inx, final double y) {
@@ -420,9 +527,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		Integer o = m_labelJustifys.get(node);
 
 		if (o == null)
-			return super.labelJustify(node, labelInx);
+			if ( m_labelJustifyDefault == null )
+				return super.labelJustify(node, labelInx);
+			else
+				return m_labelJustifyDefault.byteValue();
 
 		return convertG2ND(o);
+	}
+
+	void setLabelJustifyDefault(int justify) {
+		m_labelJustifyDefault = Byte.valueOf(convertG2ND(justify));
 	}
 
 	void overrideLabelJustify(final int node, final int inx, final int justify) {
@@ -443,15 +557,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 		final Double o = m_labelWidths.get(node);
 
 		if (o == null)
-			return super.labelWidth(node);
+			if ( m_labelWidthDefault == null )
+				return super.labelWidth(node);
+			else
+				return m_labelWidthDefault.doubleValue();
 
 		return o;
 	}
-	
-	@Override
-	public TexturePaint getNestedNetworkTexturePaint(final int node) {
-		final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
-		return dNodeView.getNestedNetworkTexturePaint();
+
+	void setLabelWidthDefault(double width) {
+		m_labelWidthDefault = Double.valueOf(width);
 	}
 	
 	/*
@@ -464,6 +579,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 			m_labelWidths.put(node, width);
 	}
 
+	@Override
+	public TexturePaint getNestedNetworkTexturePaint(final int node) {
+		final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
+		return dNodeView.getNestedNetworkTexturePaint();
+	}
 	
 	static byte convertG2ND(final int giny) {
 		switch (giny) {
