@@ -36,9 +36,12 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.Icon;
@@ -60,10 +63,12 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -147,12 +152,19 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		// Initialize all components
 		this.defaultViewMouseListener = new DefaultViewMouseListener(defViewEditor, this, manager);
-		initPanel();
 		
-		// Load default style
+		// Load default styles
 		tManager.execute(taskFactory);
 		
-		logger.info("######### Vzmap GUI initialized #########");
+		try{
+			// TODO: To remove this, we need a new event: VizmapFileLoadedEvent
+			Thread.sleep(1000);  // Wait until styles are loaded
+			initPanel();
+			switchVS(vmm.getDefaultVisualStyle(), true);
+		} catch(Exception ex) {
+			logger.warn("Initialization failed!");
+			switchVS(vmm.getDefaultVisualStyle(), true);
+		}
 	}
 
 	private void initPanel() {
@@ -161,28 +173,27 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// By default, force to sort property by prop name.
 		propertySheetPanel.setSorting(true);
 		refreshUI();
-
-		// Switch to the default style.
-		switchVS(manager.getDefaultStyle(), true);
 	}
 	
 	
 	private void addVisualStyleChangeAction() {
 		visualStyleComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				final VisualStyle lastStyle = manager.getCurrentVisualStyle();
-				final VisualStyle style = (VisualStyle) visualStyleComboBox
-						.getSelectedItem();
-				if (style.equals(lastStyle))
-					return;
-
-				switchVS(style);
-				eventHelper
-						.fireEvent(new SelectedVisualStyleSwitchedEvent(
-								this, lastStyle, style));
-				logger.debug("######## Event:  new selected style: " + style);
+				switchSelected();
 			}
 		});
+	}
+	
+	private void switchSelected() {
+		final VisualStyle lastStyle = manager.getCurrentVisualStyle();
+		final VisualStyle style = (VisualStyle) visualStyleComboBox
+				.getSelectedItem();
+		if (style.equals(lastStyle))
+			return;
+
+		switchVS(style);
+		eventHelper.fireEvent(new SelectedVisualStyleSwitchedEvent(this, lastStyle, style));
+		logger.debug("######## Event:  new selected style: " + style);
 	}
 
 	private void switchVS(final VisualStyle style) {
@@ -192,7 +203,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	private void switchVS(final VisualStyle style, boolean forceUpdate) {
 
 		logger.debug("######## Switching VS start: " + style.getTitle());
-
+		
 		// If new VS name is the same, ignore.
 		if (!forceUpdate && style.equals(manager.getCurrentVisualStyle()))
 			return;
@@ -204,33 +215,53 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		if (props.size() != 0) {
 			logger.debug("######## Style exists in buffer: " + style.getTitle());
 
-			final Map<String, Property> unused = new TreeMap<String, Property>();
+			// Validate consistency
+			Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
+			final Set<VisualProperty<?>> hasMap = new HashSet<VisualProperty<?>>();
+			for(VisualMappingFunction map: mappings)
+				hasMap.add(map.getVisualProperty());
 
-			// Remove all from current table
-			for (Property item : propertySheetPanel.getProperties())
-				propertySheetPanel.removeProperty(item);
-
-			/*
-			 * Add properties to current property sheet.
-			 */
+			boolean needUpdate = false;
+			int unusedCount = 0;
 			for (Property prop : props) {
-				logger.debug("<Prop> " + prop.getDisplayName());
-				if (prop.getCategory().startsWith(CATEGORY_UNUSED) == false) {
-					propertySheetPanel.addProperty(prop);
-				} else {
-					unused.put(prop.getDisplayName(), prop);
-				}
+				if (prop.getCategory().startsWith(CATEGORY_UNUSED)) {
+					logger.debug("######## unused Prop VAL = " + ((VizMapperProperty)prop).getInternalValue());
+					unusedCount++;
+				}				
 			}
+			
+			if (unusedCount == props.size()) {
+				vizMapPropertySheetBuilder.setPropertyTable(style);
+				updateAttributeList();
+			} else {
 
-			final List<String> keys = new ArrayList<String>(unused.keySet());
-			Collections.sort(keys);
+				final Map<String, Property> unused = new TreeMap<String, Property>();
 
-			for (Object key : keys)
-				propertySheetPanel.addProperty(unused.get(key));
+				// Remove all from current table
+				for (Property item : propertySheetPanel.getProperties())
+					propertySheetPanel.removeProperty(item);
 
+				/*
+				 * Add properties to current property sheet.
+				 */
+				for (Property prop : props) {
+					logger.debug("<Prop> " + prop.getDisplayName());
+					if (prop.getCategory().startsWith(CATEGORY_UNUSED) == false) {
+						propertySheetPanel.addProperty(prop);
+					} else {
+						unused.put(prop.getDisplayName(), prop);
+					}
+				}
+
+				final List<String> keys = new ArrayList<String>(unused.keySet());
+				Collections.sort(keys);
+
+				for (Object key : keys)
+					propertySheetPanel.addProperty(unused.get(key));
+
+			}
 		} else {
-			logger.debug("######## Need to create new prop sheet: "
-					+ style.getTitle());
+			logger.debug("######## Need to create new prop sheet: " + style.getTitle());
 			vizMapPropertySheetBuilder.setPropertyTable(style);
 			updateAttributeList();
 		}
@@ -489,11 +520,15 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	@Override
 	public void handleEvent(final VisualStyleAddedEvent e) {
 		final VisualStyle newStyle = e.getVisualStyleAdded();
-		if(newStyle == null)
-			throw new NullPointerException("New Visual Style is null.");
+		
+		if(newStyle == null) {
+			logger.warn("New Visual Style is null.");
+			return;
+		}
 		
 		if(vsComboBoxModel.getIndexOf(newStyle) != -1) {
 			logger.info(newStyle.getTitle() + " is already in the combobox.");
+			switchVS(newStyle, true);
 			return;
 		}
 
@@ -513,6 +548,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		
 		logger.info("New Visual Style registered to combo box: " + newStyle.getTitle());
 		// TODO: switch only if it is necessary
+		//switchVS(newStyle, true);
 	}
 
 	@Override
