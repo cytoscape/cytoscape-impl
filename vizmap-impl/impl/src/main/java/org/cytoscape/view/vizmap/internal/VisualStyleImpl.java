@@ -112,14 +112,7 @@ public class VisualStyleImpl implements VisualStyle {
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param <V>
-	 *            DOCUMENT ME!
-	 * @param t
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -144,14 +137,7 @@ public class VisualStyleImpl implements VisualStyle {
 	}
 
 	/**
-	 * Set the default value for a Visual Property
-	 * 
-	 * @param <T>
-	 *            Default value data type.
-	 * @param vp
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public <V, S extends V> void setDefaultValue(final VisualProperty<V> vp, final S value) {
@@ -181,8 +167,8 @@ public class VisualStyleImpl implements VisualStyle {
 		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
 		networkViewSet.add(networkView);
 
-		applyNodeViewDefaults(networkView, lexManager.getNodeVisualProperties());
-		applyEdgeViewDefaults(networkView, lexManager.getEdgeVisualProperties());
+		applyViewDefaults(networkView, lexManager.getNodeVisualProperties());
+		applyViewDefaults(networkView, lexManager.getEdgeVisualProperties());
 
 		// Current visual prop tree.
 		applyImpl(nodeViews, lexManager.getNodeVisualProperties());
@@ -229,7 +215,7 @@ public class VisualStyleImpl implements VisualStyle {
 		} 
 	}
 
-	private void applyNodeViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
+	private void applyViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
 
 		for ( VisualProperty<?> vp : vps ) {
 			Object defaultValue = getDefaultValue(vp);
@@ -239,23 +225,23 @@ public class VisualStyleImpl implements VisualStyle {
 				defaultValue = getDefaultValue(vp);
 			}
 
-			view.setNodeViewDefault(vp,defaultValue);
+			view.setViewDefault(vp,defaultValue);
 		}
 	}
 
-	private void applyEdgeViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
-
-		for ( VisualProperty<?> vp : vps ) {
-			Object defaultValue = getDefaultValue(vp);
-
-			if (defaultValue == null) {
-				this.perVSDefaults.put(vp, vp.getDefault());
-				defaultValue = getDefaultValue(vp);
-			}
-
-			view.setEdgeViewDefault(vp,defaultValue);
-		}
-	}
+//	private void applyEdgeViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
+//
+//		for ( VisualProperty<?> vp : vps ) {
+//			Object defaultValue = getDefaultValue(vp);
+//
+//			if (defaultValue == null) {
+//				this.perVSDefaults.put(vp, vp.getDefault());
+//				defaultValue = getDefaultValue(vp);
+//			}
+//
+//			view.setEdgeViewDefault(vp,defaultValue);
+//		}
+//	}
 
 	/**
 	 * DOCUMENT ME!

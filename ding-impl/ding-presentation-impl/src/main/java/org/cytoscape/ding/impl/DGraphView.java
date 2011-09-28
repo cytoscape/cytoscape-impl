@@ -2964,11 +2964,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	public <T, V extends T> void setNodeViewDefault(final VisualProperty<? extends T> vp, final V defaultValue) {
-		m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
-	}
 
-	public <T, V extends T> void setEdgeViewDefault(final VisualProperty<? extends T> vp, final V defaultValue) {
-		m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
+	@Override
+	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
+		final Class<?> targetType = vp.getTargetDataType();
+		if(targetType == CyNode.class)
+			m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
+		else if(targetType == CyEdge.class)
+			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
+		
 	}
 }
