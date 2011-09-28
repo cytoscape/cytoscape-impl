@@ -55,6 +55,9 @@ public class CyListenerAdapter {
 	private final Map<Class<?>,ServiceTracker> serviceTrackers; 
 	private final BundleContext bc;
 	private final Set<Object> silencedSources;
+	private final StringBuilder traceString; 
+	private final boolean printEventTrace;
+	private int fireCount;
 
 	/**
 	 * Creates a new CyListenerAdapter object.
@@ -65,6 +68,11 @@ public class CyListenerAdapter {
 		this.bc = bc;
 		serviceTrackers = new HashMap<Class<?>,ServiceTracker>();
 		silencedSources = new HashSet<Object>();
+
+		// used only for printing a coherent event trace
+		fireCount = 0;
+		traceString = new StringBuilder();
+		printEventTrace = Boolean.parseBoolean( (String)(System.getProperty("printEventTrace","false")) );
 	}
 
 	/**
@@ -86,8 +94,15 @@ public class CyListenerAdapter {
 		final Object[] listeners = getListeners(listenerClass);
 		if ( listeners == null ) 
 			return;
-		
+	
+	
 		Object lastListener = null;
+		long begin = 0;
+
+		if ( printEventTrace ) {
+			fireCount++;
+			printTrace(fireCount,"EVENT START: " + event.getClass().getName());
+		}
 		
 		try {
 			final Method method = listenerClass.getMethod("handleEvent", event.getClass());
@@ -98,7 +113,17 @@ public class CyListenerAdapter {
 				if ( logger.isDebugEnabled() )
 					logger.debug("event: " + event.getClass().getName() + "  listener: " + listener.getClass().getName());
 
+				if ( printEventTrace ) {
+					printTrace(fireCount,"listener: " + listener.getClass().getName());
+					begin = System.currentTimeMillis();
+				}
+
 				method.invoke(listenerClass.cast(listener), event);
+
+				if ( printEventTrace ) {
+					final long end = System.currentTimeMillis();
+					printTrace(fireCount,"listener: " + listener.getClass().getName() + " duration: " + (end - begin));
+				}
 			}
 		} catch (NoSuchMethodException e) {
 			logger.error("Listener doesn't implement \"handleEvent\" method: "
@@ -110,6 +135,11 @@ public class CyListenerAdapter {
 		} catch (IllegalAccessException e) {
 			logger.error("Listener can't execute \"handleEvent\" method: "
 				     + listenerClass.getName(), e);
+		}
+
+		if ( printEventTrace ) {
+			printTrace(fireCount,"EVENT END  : " + event.getClass().getName());
+			fireCount--;
 		}
 	}
 
@@ -138,4 +168,11 @@ public class CyListenerAdapter {
 		silencedSources.remove(eventSource);
 	}
 
+	private void printTrace(int indent, String message) {
+		traceString.delete(0,traceString.length());
+		for (int i = 0; i < indent; i++ )
+			traceString.append("    ");
+		traceString.append(message);
+		System.out.println( traceString.toString() );
+	}
 }
