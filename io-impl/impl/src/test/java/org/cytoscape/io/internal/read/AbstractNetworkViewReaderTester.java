@@ -9,17 +9,17 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Properties;
 
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.property.BasicCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -60,7 +60,7 @@ public class AbstractNetworkViewReaderTester {
 
 		properties = new Properties();
 		CyProperty<Properties> cyProperties = new BasicCyProperty(properties, SavePolicy.DO_NOT_SAVE);		
-		NetworkViewTestSupport nvts = new NetworkViewTestSupport(cyProperties);
+		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		setViewThreshold(DEF_THRESHOLD);
 		
 		viewFactory = nvts.getNetworkViewFactory();
