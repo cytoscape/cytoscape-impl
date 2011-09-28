@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.cytoscape.model.CyColumn;
-
 import org.junit.Test;
 
 

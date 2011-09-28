@@ -1,17 +1,18 @@
 package org.cytoscape.task.internal.title;
 
 
-import javax.swing.undo.UndoableEditSupport;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import javax.swing.undo.UndoableEditSupport;
+
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.Test;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
-import static org.mockito.Mockito.*;
+import org.junit.Test;
 
 
 public class EditNetworkTitleTaskTest {

@@ -4,19 +4,17 @@ package org.cytoscape.task.internal.zoom;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_SCALE_FACTOR;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
 import org.junit.Test;
-
-import static org.mockito.Mockito.*;
 
 
 public class FitContentTaskTest {

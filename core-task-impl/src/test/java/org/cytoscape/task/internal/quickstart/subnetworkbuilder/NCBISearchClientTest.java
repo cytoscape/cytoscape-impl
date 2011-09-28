@@ -1,9 +1,5 @@
 package org.cytoscape.task.internal.quickstart.subnetworkbuilder;
 
-import static org.junit.Assert.*;
-
-import java.util.Set;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

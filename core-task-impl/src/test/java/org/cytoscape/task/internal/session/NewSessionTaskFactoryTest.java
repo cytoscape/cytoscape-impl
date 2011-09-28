@@ -2,7 +2,8 @@ package org.cytoscape.task.internal.session;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;

@@ -1,13 +1,13 @@
 package org.cytoscape.task.internal.creation;
 
+import static org.mockito.Mockito.mock;
+
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskMonitor;
-
-import static org.mockito.Mockito.mock;
 import org.junit.Test;
 
 

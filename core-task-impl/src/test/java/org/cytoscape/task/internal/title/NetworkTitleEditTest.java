@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-
 import org.junit.Test;
 
 

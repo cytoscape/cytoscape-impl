@@ -1,14 +1,18 @@
 package org.cytoscape.task.internal.setcurren;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.task.internal.setcurrent.SetCurrentNetworkTask;
+import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
-import java.util.HashSet;
 
 public class SetCurrentNetworkTaskTest {
 

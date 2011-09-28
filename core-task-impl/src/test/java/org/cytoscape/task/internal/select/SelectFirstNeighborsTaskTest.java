@@ -28,8 +28,6 @@
 package org.cytoscape.task.internal.select;
 
 
-import javax.swing.undo.UndoableEditSupport;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,12 +36,13 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.undo.UndoableEditSupport;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
-
 import org.junit.Before;
 import org.junit.Test;
 

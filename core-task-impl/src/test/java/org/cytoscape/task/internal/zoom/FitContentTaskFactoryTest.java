@@ -1,17 +1,18 @@
 package org.cytoscape.task.internal.zoom;
 
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 
 public class FitContentTaskFactoryTest {

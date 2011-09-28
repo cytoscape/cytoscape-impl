@@ -1,7 +1,8 @@
 package org.cytoscape.task.internal.creation;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,21 +13,19 @@ import java.util.List;
 import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.undo.UndoSupport;
-
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,7 +1,9 @@
 package org.cytoscape.task.internal.destruction;
 
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.HashSet;
 import java.util.Set;

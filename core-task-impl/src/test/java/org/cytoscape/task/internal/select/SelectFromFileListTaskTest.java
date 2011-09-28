@@ -28,29 +28,21 @@
 package org.cytoscape.task.internal.select;
 
 
-import javax.swing.undo.UndoableEditSupport;
-
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import org.junit.Test;
-import org.junit.Before;
-
-import java.util.List;
-import java.util.ArrayList;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
+
+import javax.swing.undo.UndoableEditSupport;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.work.undo.UndoSupport;
+import org.junit.Before;
+import org.junit.Test;
 
 
 public class SelectFromFileListTaskTest extends AbstractSelectTaskTester {

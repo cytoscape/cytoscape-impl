@@ -1,21 +1,19 @@
 package org.cytoscape.task.internal.hide;
 
 
-import javax.swing.undo.UndoableEditSupport;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import javax.swing.undo.UndoableEditSupport;
+
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNetworkViewTaskTest;
-import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 

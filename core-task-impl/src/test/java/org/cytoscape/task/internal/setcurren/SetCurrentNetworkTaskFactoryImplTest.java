@@ -2,14 +2,14 @@ package org.cytoscape.task.internal.setcurren;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.task.internal.setcurrent.SetCurrentNetworkTaskFactoryImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
-import org.cytoscape.task.internal.setcurrent.SetCurrentNetworkTaskFactoryImpl;
 
 
 public class SetCurrentNetworkTaskFactoryImplTest {

@@ -30,9 +30,7 @@ package org.cytoscape.task.internal.select;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -43,7 +41,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
-
 import org.junit.Before;
 import org.junit.Test;
 

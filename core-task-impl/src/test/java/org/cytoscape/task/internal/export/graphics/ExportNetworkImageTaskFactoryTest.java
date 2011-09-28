@@ -13,7 +13,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.task.internal.export.ViewWriter;
-import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.Task;

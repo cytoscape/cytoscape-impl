@@ -10,10 +10,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.AbstractCyWriterTest;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.view.model.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.junit.Before;
 import org.junit.Test;
