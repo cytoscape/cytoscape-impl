@@ -1,8 +1,5 @@
 package org.cytoscape.view;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +12,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
@@ -29,7 +25,8 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
-import org.mockito.*;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 

@@ -2968,10 +2968,23 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		final Class<?> targetType = vp.getTargetDataType();
+		
+		// Filter some special cases here: In DING, there is no default W, H, and D.
+		if (vp == MinimalVisualLexicon.NODE_SIZE || vp == MinimalVisualLexicon.NODE_WIDTH
+				|| vp == MinimalVisualLexicon.NODE_HEIGHT) {
+			applyToAll(vp, defaultValue);
+			return;
+		}
+		
 		if(targetType == CyNode.class)
 			m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
 		else if(targetType == CyEdge.class)
 			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
-		
+	}
+	
+	private <T, V extends T> void applyToAll(VisualProperty<? extends T> vp, final V defaultValue) {
+		final Collection<NodeView> nodes = this.m_nodeViewMap.values();
+		for (NodeView node : nodes)
+			((DNodeView) node).setVisualProperty(vp, defaultValue);
 	}
 }

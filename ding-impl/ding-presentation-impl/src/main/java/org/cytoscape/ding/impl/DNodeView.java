@@ -414,10 +414,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param trans
-	 *            DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setTransparency(int trans) {
@@ -442,9 +439,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public int getTransparency() {
@@ -483,11 +478,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
+	
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	public double getWidth() {
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
@@ -498,13 +493,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param height
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean setHeight(double height) {
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
@@ -528,10 +519,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
+	
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public double getHeight() {
@@ -544,9 +534,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Label getLabel() {

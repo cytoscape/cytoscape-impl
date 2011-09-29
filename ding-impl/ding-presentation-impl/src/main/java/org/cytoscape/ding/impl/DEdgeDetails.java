@@ -33,15 +33,8 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.graph.render.immed.EdgeAnchors;
-import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.util.intr.MinIntHeap;
 

@@ -28,27 +28,11 @@
 package org.cytoscape.ding.impl;
 
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import org.cytoscape.ding.ArrowShape;
-import org.cytoscape.ding.Bend;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.Label;
-import org.cytoscape.graph.render.immed.EdgeAnchors;
-import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;

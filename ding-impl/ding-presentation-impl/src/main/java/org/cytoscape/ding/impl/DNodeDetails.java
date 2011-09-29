@@ -70,7 +70,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 	final Map<Integer, Integer> m_labelJustifys = new HashMap<Integer, Integer>();
 	final Map<Integer, Double> m_labelOffsetXs = new HashMap<Integer, Double>();
 	final Map<Integer, Double> m_labelOffsetYs = new HashMap<Integer, Double>();
+	
+	
+	final Map<Integer, Double> m_width = new HashMap<Integer, Double>();
 
+	// Default values
 	private Color m_colorLowDetailDefault;
 	private DNodeShape m_shapeDefault; 
 	private Paint m_fillPaintDefault; 
@@ -86,6 +90,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 	private Double m_labelOffsetVectorYDefault;
 	private Byte m_labelJustifyDefault; 
 	private Double m_labelWidthDefault; 
+	
 
 	DNodeDetails(final DGraphView view) {
 		m_view = view;
@@ -118,7 +123,8 @@ class DNodeDetails extends IntermediateNodeDetails {
 			m_labelPaints.remove(lKey);
 		}
 	}
-
+	
+	
 	@Override
 	public Color colorLowDetail(int node) {
 		final Object o = m_colorsLowDetail.get(node);

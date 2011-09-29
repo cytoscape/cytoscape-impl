@@ -28,48 +28,13 @@
  */
 package org.cytoscape.ding.impl;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.TexturePaint;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.DNodeShape;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.Label;
-import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
-import org.cytoscape.ding.customgraphics.Layer;
-import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.ding.impl.customgraphics.CustomGraphicsPositionCalculator;
-import org.cytoscape.ding.impl.customgraphics.vector.VectorCustomGraphics;
-import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
-import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -81,29 +46,70 @@ class NodeViewDefaultSupport {
 	private final DNodeDetails nodeDetails;
 	private final Object lock;
 
+	
+	// Default values
 	private int transparency = 255;
 	private Paint unselectedPaint;
 	private Paint selectedPaint;
 	private float fontSize = 12f;
 	private Font font;
+	
+	private double width;
+	
+	
+	private Boolean selected = false;
 
 	
-	NodeViewDefaultSupport(DNodeDetails nodeDetails, Object lock) {
+	NodeViewDefaultSupport(final DNodeDetails nodeDetails, final Object lock) {
 		this.nodeDetails = nodeDetails;
 		this.lock = lock;
 	}
 
+//	<T, V extends T> void setNodeViewDefault(final VisualProperty<? extends T> vp, V value) {
+//		
+//		if(value == null)
+//			value = (V) vp.getDefault();
+//
+//		if (vp == DVisualLexicon.NODE_SHAPE) {
+//			setShape(((NodeShape) value));
+//		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
+//			setUnselectedPaint((Paint) value);
+//		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
+//			setSelectedPaint((Paint) value);
+//		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
+//			setBorderPaint((Paint) value);
+//		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
+//			setBorderWidth(((Number) value).floatValue());
+//		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
+//			setTransparency(((Integer) value));
+//		} else if (vp == MinimalVisualLexicon.NODE_LABEL) {
+//			setText(value.toString());
+//		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
+//			setTextPaint((Paint) value);
+//		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
+//			final Font newFont = ((Font) value).deriveFont(fontSize);
+//			setFont(newFont,fontSize);
+//		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_SIZE) {
+//			float newSize = ((Number) value).floatValue();
+//			setFont(font,newSize);
+//		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
+//			setLabelPosition((ObjectPosition) value);
+//		} 
+//	}
+	
 	<T, V extends T> void setNodeViewDefault(final VisualProperty<? extends T> vp, V value) {
 		
+		
+		// Null means set value to VP's default.
 		if(value == null)
 			value = (V) vp.getDefault();
 
 		if (vp == DVisualLexicon.NODE_SHAPE) {
 			setShape(((NodeShape) value));
-		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
-			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
 			setSelectedPaint((Paint) value);
+		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
+			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			setBorderPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
@@ -112,18 +118,26 @@ class NodeViewDefaultSupport {
 			setTransparency(((Integer) value));
 		} else if (vp == MinimalVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
-		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
-			setTextPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
 			final Font newFont = ((Font) value).deriveFont(fontSize);
 			setFont(newFont,fontSize);
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_SIZE) {
 			float newSize = ((Number) value).floatValue();
 			setFont(font,newSize);
+		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
+			setToolTip((String) value);
+		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
+			setTextPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
-			setLabelPosition((ObjectPosition) value);
-		} 
+			this.setLabelPosition((ObjectPosition) value);
+		}
 	}
+
+	private void setToolTip(String value) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 	void setShape(final NodeShape shape) {
 		synchronized (lock) {
@@ -217,4 +231,5 @@ class NodeViewDefaultSupport {
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
 		}
 	}
+	
 }

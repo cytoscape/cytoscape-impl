@@ -2,16 +2,12 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.BorderLayout;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
 import org.cytoscape.di.util.DIUtil;
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -19,9 +15,6 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;

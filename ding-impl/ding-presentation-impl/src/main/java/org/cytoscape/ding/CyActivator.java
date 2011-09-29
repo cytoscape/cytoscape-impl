@@ -12,6 +12,7 @@ import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.ShowGraphicsDetailTaskFactory;
+import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
@@ -36,7 +37,6 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
-import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 
 
 
