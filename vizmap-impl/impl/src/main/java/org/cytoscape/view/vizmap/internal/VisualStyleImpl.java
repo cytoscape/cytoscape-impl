@@ -229,24 +229,9 @@ public class VisualStyleImpl implements VisualStyle {
 		}
 	}
 
-//	private void applyEdgeViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
-//
-//		for ( VisualProperty<?> vp : vps ) {
-//			Object defaultValue = getDefaultValue(vp);
-//
-//			if (defaultValue == null) {
-//				this.perVSDefaults.put(vp, vp.getDefault());
-//				defaultValue = getDefaultValue(vp);
-//			}
-//
-//			view.setEdgeViewDefault(vp,defaultValue);
-//		}
-//	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public String getTitle() {
