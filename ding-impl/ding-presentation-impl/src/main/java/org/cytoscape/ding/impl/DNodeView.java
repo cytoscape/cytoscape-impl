@@ -137,7 +137,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	// Node color
 	private Paint m_unselectedPaint;
-	private Paint m_selectedPaint;
+	//private Paint m_selectedPaint;
 	private Paint m_borderPaint;
 
 	// Opacity
@@ -216,7 +216,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		m_selected = false;
 
 		m_unselectedPaint = graphView.m_nodeDetails.fillPaint(m_inx);
-		m_selectedPaint = DEFAULT_NODE_SELECTED_PAINT;
+		//m_selectedPaint = DEFAULT_NODE_SELECTED_PAINT;
 		m_borderPaint = graphView.m_nodeDetails.borderPaint(m_inx);
 
 		transparency = DEFAULT_TRANSPARENCY;
@@ -256,13 +256,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			m_selectedPaint = paint;
+			//m_selectedPaint = paint;
 
 			if (isSelected()) {
-				graphView.m_nodeDetails.overrideFillPaint(m_inx, m_selectedPaint);
+				graphView.m_nodeDetails.overrideFillPaint(m_inx, paint);
 
-				if (m_selectedPaint instanceof Color)
-					graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_selectedPaint);
+				if (paint instanceof Color)
+					graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) paint);
 
 				graphView.m_contentChanged = true;
 			}
@@ -272,12 +272,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public Paint getSelectedPaint() {
-		return m_selectedPaint;
+		return graphView.m_nodeDetails.selectedPaint(m_inx);
 	}
 
 
 	@Override
-	public void setUnselectedPaint(Paint paint) {
+	public void setUnselectedPaint(final Paint paint) {
 		synchronized (graphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
@@ -704,10 +704,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			return false;
 
 		m_selected = true;
-		graphView.m_nodeDetails.overrideFillPaint(m_inx, m_selectedPaint);
+		graphView.m_nodeDetails.overrideFillPaint(m_inx, graphView.m_nodeDetails.selectedPaint(m_inx));
 
-		if (m_selectedPaint instanceof Color)
-			graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_selectedPaint);
+		//if (m_selectedPaint instanceof Color)
+		graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) graphView.m_nodeDetails.selectedPaint(m_inx));
 
 		graphView.m_selectedNodes.insert(m_inx);
 

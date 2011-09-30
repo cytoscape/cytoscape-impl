@@ -73,11 +73,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	
 	final Map<Integer, Double> m_width = new HashMap<Integer, Double>();
+	
+	final Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
 
 	// Default values
 	private Color m_colorLowDetailDefault;
-	private DNodeShape m_shapeDefault; 
 	private Paint m_fillPaintDefault; 
+	private Paint m_selectedPaintDefault;
+
+	
+	private DNodeShape m_shapeDefault; 
 	private Float m_borderWidthDefault; 
 	private Paint m_borderPaintDefault; 
 	private Integer m_labelCountDefault; 
@@ -112,6 +117,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 		m_labelJustifys.remove(nodeIdx);
 		m_labelOffsetXs.remove(nodeIdx);
 		m_labelOffsetYs.remove(nodeIdx);
+		m_selectedPaints.remove(nodeIdx);
 
 		final Integer intr = m_labelCounts.remove(nodeIdx);
 		final int labelCount = ((intr == null) ? 0 : intr);
@@ -141,6 +147,25 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void setColorLowDetailDefault(Color c) {
 		m_colorLowDetailDefault = c;
 	}
+	
+	
+	public Paint selectedPaint(int node) {
+		final Paint o = m_selectedPaints.get(node);
+
+		if (o == null)
+			if ( m_selectedPaintDefault == null ) 
+				return Color.RED;
+			else
+				return m_selectedPaintDefault;
+
+		return o;
+	}
+
+	void setSelectedPaintDefault(Paint c) {
+		m_selectedPaintDefault = c;
+	}
+	
+	
 
 	/*
 	 * A null color has the special meaning to remove overridden color.
@@ -180,6 +205,12 @@ class DNodeDetails extends IntermediateNodeDetails {
 		m_shapes.put(node, shape.getNativeShape());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Note: this will be used for BOTH unselected and selected.
+	 * 
+	 */
 	@Override
 	public Paint fillPaint(final int node) {
 		final Paint o = m_fillPaints.get(node);
@@ -203,9 +234,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideFillPaint(final int node, final Paint paint) {
 		if ((paint == null) || paint.equals(super.fillPaint(node)))
 			m_fillPaints.remove(node);
-		else
+		else {
 			m_fillPaints.put(node, paint);
+		}
 	}
+	
 
 	
 	@Override

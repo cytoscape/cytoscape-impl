@@ -71,7 +71,6 @@ class EdgeViewDefaultSupport {
 			setTargetEdgeEndPaint((Paint) value);
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
-			
 			final float newWidth = ((Number) value).floatValue();			
 			if(strokeWidth != newWidth) {
 				setStrokeWidth(newWidth);
@@ -122,12 +121,13 @@ class EdgeViewDefaultSupport {
 	void setUnselectedPaint(final Paint paint) {
 		synchronized (lock) {
 			edgeDetails.setSegmentPaintDefault(paint);
+			edgeDetails.setColorLowDetailDefault(paint);
 		}
 	}
 
-	void setSelectedPaint(Paint paint) {
+	void setSelectedPaint(final Paint paint) {
 		synchronized (lock) {
-			edgeDetails.setColorLowDetailDefault(paint);
+			edgeDetails.setSelectedPaintDefault(paint);
 		}
 	}
 

@@ -57,6 +57,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	final Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
 	final Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
 	final Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
+
+	// For selected paint default
+	final Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
+
 	
 	private final MinIntHeap m_heap = new MinIntHeap();
 	private final float[] m_extentsBuff = new float[4];
@@ -74,6 +78,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	private Font m_labelFontDefault ;
 	private Paint m_labelPaintDefault ;
 	private Double m_labelWidthDefault ;
+	
+	private Paint m_selectedPaintDefault;
 
 
 	DEdgeDetails(final DGraphView view) {
@@ -97,6 +103,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_labelFonts.remove(edgeIdx);
 		m_labelPaints.remove(edgeIdx);
 		m_labelWidths.remove(edgeIdx);
+		
+		m_selectedPaints.remove(edgeIdx);
 	}
 
 
@@ -144,6 +152,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void setSourceArrowDefault(byte arrow) {
 		m_sourceArrowDefault = Byte.valueOf(arrow);
 	}
+	
 
 	/*
 	 * A non-negative arrowType has the special meaning to remove overridden
@@ -199,8 +208,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		return arrow;
 	}
 
-	void setTargetArrowDefault(byte arrow) {
-		m_targetArrowDefault = Byte.valueOf(arrow);
+	void setTargetArrowDefault(final byte arrow) {
+		m_targetArrowDefault = arrow;
 	}
 
 	/*
@@ -254,13 +263,13 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			if ( m_segmentThicknessDefault == null )
 				return super.segmentThickness(edge);
 			else
-				return m_segmentThicknessDefault.floatValue();
+				return m_segmentThicknessDefault;
 
 		return thickness;
 	}
 
 	void setSegmentThicknessDefault(float thick) {
-		m_segmentThicknessDefault = Float.valueOf(thick);
+		m_segmentThicknessDefault = thick;
 	}
 
 	/*
@@ -323,6 +332,22 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void setSegmentPaintDefault(Paint p) {
 		m_segmentPaintDefault = p;
 	}
+	
+	public Paint selectedPaint(final int edge) {
+		final Paint paint = m_selectedPaints.get(edge);
+		if (paint == null)
+			if ( m_selectedPaintDefault == null )
+				return super.segmentPaint(edge);
+			else
+				return m_selectedPaintDefault;
+
+		return paint;
+	}
+
+	void setSelectedPaintDefault(final Paint p) {
+		m_selectedPaintDefault = p;
+	}
+
 
 	/*
 	 * A negative length value has the special meaning to remove overridden
