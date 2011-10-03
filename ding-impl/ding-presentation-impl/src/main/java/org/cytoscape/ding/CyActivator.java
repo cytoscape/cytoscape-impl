@@ -107,7 +107,7 @@ public class CyActivator extends AbstractCyActivator {
 		showGraphicsDetailTaskFactoryProps.setProperty("preferredMenu","View");
 		showGraphicsDetailTaskFactoryProps.setProperty("accelerator","fn1");
 		showGraphicsDetailTaskFactoryProps.setProperty("menuGravity","5.0");
-		showGraphicsDetailTaskFactoryProps.setProperty("title","Switch Graphics Details");
+		showGraphicsDetailTaskFactoryProps.setProperty("title","Show Graphics Details");
 		registerAllServices(bc,showGraphicsDetailTaskFactory, showGraphicsDetailTaskFactoryProps);
 
 		Properties dingNetworkViewFactoryServiceProps = new Properties();
