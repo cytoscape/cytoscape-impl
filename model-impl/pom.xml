@@ -60,6 +60,18 @@
 			<name>Cytoscape Releases</name>
 			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
 		</repository>
+		<repository>
+			<!-- For guava-osgi -->
+			<id>sonatype</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Sonatype Releases</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/sonatype/</url>
+		</repository>
 	</repositories>
 
 	<!--
