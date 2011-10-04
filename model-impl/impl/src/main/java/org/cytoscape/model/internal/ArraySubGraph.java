@@ -35,11 +35,13 @@ import org.cytoscape.event.CyEventHelper;
 //import org.cytoscape.model.builder.CyEdgeBuilder;
 
 import org.cytoscape.di.util.DIUtil;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AddedNodesEvent;
@@ -385,9 +387,29 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			subNodeMap.put(rootNode,subNode);
 			updateNode(rootNode);
 		}
+		
+		
+		copyTableEntry(node, subNode);
+		
 		eventHelper.addEventPayload((CyNetwork)this, subNode, AddedNodesEvent.class);
 
 		return true;
+	}
+	
+	private void copyTableEntry(final CyTableEntry original, final CyTableEntry copy) {
+		final CyRow originalRow = original.getCyRow();
+		final CyRow copyRow = copy.getCyRow();
+		
+		final Collection<CyColumn> columns = originalRow.getTable().getColumns();
+		for(CyColumn column: columns) {
+			final String colName = column.getName();
+			final Class<?> colType = column.getType();
+			if(copyRow.getTable().getColumn(colName) == null)
+				copyRow.getTable().createColumn(colName, colType, column.isImmutable());
+			
+			copyRow.set(column.getName(), originalRow.get(column.getName(), column.getType()));
+		}
+		
 	}
 
 	public boolean addEdge(final CyEdge edge) {
@@ -416,6 +438,8 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			subEdgeMap.put(rootEdge,subEdge);
 			updateEdge(rootEdge);
 		}
+		
+		copyTableEntry(edge, subEdge);
 		eventHelper.addEventPayload((CyNetwork)this, subEdge, AddedEdgesEvent.class);
 
 		return true;
