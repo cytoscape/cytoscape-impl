@@ -158,6 +158,10 @@
 			<artifactId>session-api</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+		</dependency>
 
 		<!-- Testing -->
 		<dependency>
