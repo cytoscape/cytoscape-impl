@@ -37,6 +37,7 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
+import org.cytoscape.ding.action.GraphicsDetailAction;
 
 
 
@@ -102,14 +103,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,edgeColor2arrowColorDependency, new Properties());
 		registerAllServices(bc,nodeCustomGraphicsSizeDependency, new Properties());
 
-		Properties showGraphicsDetailTaskFactoryProps = new Properties();
-		showGraphicsDetailTaskFactoryProps.setProperty("enableFor","networkAndView");
-		showGraphicsDetailTaskFactoryProps.setProperty("preferredMenu","View");
-		showGraphicsDetailTaskFactoryProps.setProperty("accelerator","fn1");
-		showGraphicsDetailTaskFactoryProps.setProperty("menuGravity","5.0");
-		showGraphicsDetailTaskFactoryProps.setProperty("title","Show Graphics Details");
-		registerAllServices(bc,showGraphicsDetailTaskFactory, showGraphicsDetailTaskFactoryProps);
-
 		Properties dingNetworkViewFactoryServiceProps = new Properties();
 		dingNetworkViewFactoryServiceProps.setProperty("service.type","factory");
 		registerService(bc,dingNetworkViewFactory,CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
@@ -120,7 +113,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,vtfListener,"addDropNodeViewTaskFactory","removeDropNodeViewTaskFactory",DropNodeViewTaskFactory.class);
 		registerServiceListener(bc,vtfListener,"addDropNetworkViewTaskFactory","removeDropNetworkViewTaskFactory",DropNetworkViewTaskFactory.class);
 
-
+		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef, taskManagerServiceRef,
+				 cyPropertyServiceRef);
+		registerAllServices(bc,graphicsDetailAction, new Properties());
 	}
+	
 }
 
