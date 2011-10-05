@@ -52,10 +52,14 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 
 		tableChooser = new TableChooser();
 		tableChooser.addActionListener(this);
-		tableChooser.setSize(new Dimension(100, 20));
+		tableChooser.setMaximumSize(SELECTOR_SIZE);
+		tableChooser.setMinimumSize(SELECTOR_SIZE);
+		tableChooser.setPreferredSize(SELECTOR_SIZE);
+		tableChooser.setSize(SELECTOR_SIZE);
 		tableChooser.setFont(GLOBAL_FONT);
 		tableChooser.setForeground(GLOBAL_TABLE_COLOR);
 		tableChooser.setToolTipText("\"Global Tables\" are data tables not associated with specific networks.");
+		tableChooser.setEnabled(false);
 		
 		browserTable.setForeground(GLOBAL_TABLE_ENTRY_COLOR);
 		browserTable.setEnabled(false);
@@ -86,6 +90,9 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 		comboBoxModel.removeItem(cyTable);
 		tableToMetadataMap.remove(cyTable);
+		
+		if(comboBoxModel.getSize() == 0)
+			tableChooser.setEnabled(false);
 	}
 
 	
@@ -102,6 +109,9 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		
 		if(isGlobalTable(newTable))
 			comboBoxModel.addAndSetSelectedItem(newTable);
+		
+		if(tableChooser.getItemCount() != 0)
+			tableChooser.setEnabled(true);
 	}
 	
 	

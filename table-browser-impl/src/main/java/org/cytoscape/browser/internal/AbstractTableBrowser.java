@@ -4,6 +4,7 @@ package org.cytoscape.browser.internal;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,10 +41,13 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 	private static final long serialVersionUID = 1968196123280466989L;
 	
-	// Color theme for table browser.
+	static final Dimension SELECTOR_SIZE = new Dimension(350, 20);
 	
+	// Color theme for table browser.
 	static final Color NETWORK_COLOR = new Color(0xA5, 0x2A, 0x2A);
 	static final Color SELECTED_ITEM_BACKGROUND_COLOR = new Color(0xA0, 0xA0, 0xA0, 80);
+	
+	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
 	protected final CyNetworkTableManager networkTableManager;
 	protected final CyServiceRegistrar serviceRegistrar;
@@ -83,6 +87,9 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
 		add(new JScrollPane(browserTable), BorderLayout.CENTER);
+		
+		this.setPreferredSize(PANEL_SIZE);
+		this.setSize(PANEL_SIZE);
 	}
 
 	/**

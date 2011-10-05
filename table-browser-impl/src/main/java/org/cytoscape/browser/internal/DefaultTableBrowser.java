@@ -1,10 +1,17 @@
 package org.cytoscape.browser.internal;
 
+import static org.cytoscape.browser.internal.AbstractTableBrowser.SELECTED_ITEM_BACKGROUND_COLOR;
+
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -44,8 +51,14 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		this.objType = objType;
 
 		networkChooser = new JComboBox();
+		networkChooser.setRenderer(new NetworkChooserCustomRenderer());
 		networkChooser.addActionListener(this);
-		networkChooser.setSize(new Dimension(100, 20));
+		networkChooser.setMaximumSize(SELECTOR_SIZE);
+		networkChooser.setMinimumSize(SELECTOR_SIZE);
+		networkChooser.setPreferredSize(SELECTOR_SIZE);
+		networkChooser.setSize(SELECTOR_SIZE);
+		networkChooser.setEnabled(false);
+		
 		this.attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser);
 
@@ -76,7 +89,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			currentTable = currentNetwork.getDefaultNetworkTable();
 		networkChooser.setSelectedItem(currentNetwork);
 		showSelectedTable();
-		return;
 	}
 	
 	
@@ -85,12 +97,44 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		final CyNetwork network = e.getNetwork();
 		this.networkChooser.addItem(network);
 		this.networkChooser.setSelectedItem(network);
+		
+		if(networkChooser.isEnabled() == false)
+			networkChooser.setEnabled(true);
 	}
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
 		final CyNetwork network = e.getNetwork();
 		this.networkChooser.removeItem(network);
+		
+		if(networkChooser.getItemCount() == 0)
+			networkChooser.setEnabled(false);
+	}
+	
+	private static final class NetworkChooserCustomRenderer extends JLabel implements ListCellRenderer {
+
+		private static final long serialVersionUID = 7103666112352192698L;
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Object item, int index, boolean isSelected,
+				boolean hasFocus) {
+			
+			if(item instanceof CyNetwork == false) {
+				this.setText("No Network");
+				return this;
+			}
+			
+			final CyNetwork network = (CyNetwork) item;
+			if(isSelected || hasFocus) {
+				setBackground(SELECTED_ITEM_BACKGROUND_COLOR);
+			} else {
+				setBackground(Color.WHITE);
+			}
+			
+			this.setText(network.getCyRow().get(CyTableEntry.NAME, String.class));
+			return this;
+		}
+
 	}
 
 }
