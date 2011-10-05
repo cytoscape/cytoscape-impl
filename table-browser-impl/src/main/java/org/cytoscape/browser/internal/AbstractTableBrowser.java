@@ -19,7 +19,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.equations.EquationCompiler;
@@ -27,23 +26,22 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.model.events.TableAboutToBeDeletedListener;
-import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.GUITaskManager;
 
 
-public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent, ActionListener, TableAboutToBeDeletedListener,
-		SetCurrentNetworkListener, TableAddedListener, NetworkAddedListener {
-	
+/**
+ * Base class for all Table Browsers.
+ *
+ */
+public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent, ActionListener {
+
 	private static final long serialVersionUID = 1968196123280466989L;
 	
 	// Color theme for table browser.
-	static final Color GLOBAL_TABLE_COLOR = new Color(0x1E, 0x90, 0xFF);
-	static final Color GLOBAL_TABLE_BACKGROUND_COLOR = new Color(0x87, 0xCE, 0xFA, 50);
+	
 	static final Color NETWORK_COLOR = new Color(0xA5, 0x2A, 0x2A);
 	static final Color SELECTED_ITEM_BACKGROUND_COLOR = new Color(0xA0, 0xA0, 0xA0, 80);
 	
@@ -59,8 +57,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	protected final Map<CyTable, TableMetadata> tableToMetadataMap;
 	protected final CyApplicationManager applicationManager;
 	protected final CyNetworkManager networkManager;
-	
-	
 
 	// Tab title for the CytoPanel
 	private final String tabTitle;

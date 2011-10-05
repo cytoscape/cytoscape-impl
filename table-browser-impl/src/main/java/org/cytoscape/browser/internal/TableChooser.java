@@ -1,7 +1,6 @@
 package org.cytoscape.browser.internal;
 
-import static org.cytoscape.browser.internal.AbstractTableBrowser.GLOBAL_TABLE_COLOR;
-import static org.cytoscape.browser.internal.AbstractTableBrowser.NETWORK_COLOR;
+import static org.cytoscape.browser.internal.GlobalTableBrowser.*;
 import static org.cytoscape.browser.internal.AbstractTableBrowser.SELECTED_ITEM_BACKGROUND_COLOR;
 
 import java.awt.Color;
@@ -33,14 +32,12 @@ public class TableChooser extends JComboBox {
 
 	private final Map<CyTable, String> tableToStringMap;
 	
-	private static final Font GLOBAL_FONT = new Font("Serif", Font.BOLD, 12);
+	
 
 	TableChooser() {
 		tableToStringMap = new HashMap<CyTable, String>();
 		setModel(new GlobalTableComboBoxModel(tableToStringMap));
 		setRenderer(new TableChooserCellRenderer(tableToStringMap));
-		this.setForeground(GLOBAL_TABLE_COLOR);
-		this.setFont(GLOBAL_FONT);
 	}
 
 	final class GlobalTableComboBoxModel extends DefaultComboBoxModel {
@@ -130,6 +127,8 @@ public class TableChooser extends JComboBox {
 				final boolean cellHasFocus) // does the cell have focus
 		{
 			final CyTable table = (CyTable) value;
+			this.setFont(GLOBAL_FONT);
+			
 			if (tableToStringMap.containsKey(table))
 				setText(tableToStringMap.get(table));
 			else

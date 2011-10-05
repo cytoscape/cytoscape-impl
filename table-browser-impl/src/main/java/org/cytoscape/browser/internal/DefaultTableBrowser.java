@@ -8,6 +8,7 @@ import javax.swing.JComboBox;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -16,15 +17,16 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
-import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.GUITaskManager;
 
-public class DefaultTableBrowser extends AbstractTableBrowser {
+public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener, NetworkAddedListener, NetworkAboutToBeDestroyedListener {
 
 	private static final long serialVersionUID = 627394119637512735L;
 
@@ -38,7 +40,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 			CyApplicationManager applicationManager) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager);
-		// TODO Auto-generated constructor stub
+
 		this.objType = objType;
 
 		networkChooser = new JComboBox();
@@ -55,18 +57,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 		final CyNetwork network = (CyNetwork) networkChooser.getSelectedItem();
 		if (network == null || currentNetwork == network)
 			return;
-
-//		if (browserTableModel != null)
-//			serviceRegistrar.unregisterAllServices(browserTableModel);
-//
-//		if (objType == CyNode.class)
-//			currentTable = network.getDefaultNodeTable();
-//		else if (objType == CyEdge.class)
-//			currentTable = network.getDefaultEdgeTable();
-//		else
-//			currentTable = network.getDefaultNetworkTable();
-
-		//showSelectedTable();
 		
 		applicationManager.setCurrentNetwork(network.getSUID());
 	}
@@ -90,25 +80,17 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 	}
 	
 	
-	
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
-		CyNetwork network = e.getNetwork();
-		System.out.println("Adding New Network: " + network);
+		final CyNetwork network = e.getNetwork();
 		this.networkChooser.addItem(network);
 		this.networkChooser.setSelectedItem(network);
 	}
 
 	@Override
-	public void handleEvent(TableAboutToBeDeletedEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void handleEvent(TableAddedEvent e) {
-		// TODO Auto-generated method stub
-		
+	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
+		final CyNetwork network = e.getNetwork();
+		this.networkChooser.removeItem(network);
 	}
 
 }
