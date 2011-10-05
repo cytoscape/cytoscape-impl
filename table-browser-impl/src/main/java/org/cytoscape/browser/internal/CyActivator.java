@@ -1,7 +1,3 @@
-
-
-
-
 package org.cytoscape.browser.internal;
 
 import org.cytoscape.util.swing.OpenBrowser;
@@ -10,11 +6,14 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.work.swing.GUITaskManager;
 
-import org.cytoscape.browser.internal.TableBrowser;
+import org.cytoscape.browser.internal.AbstractTableBrowser;
 import org.cytoscape.browser.internal.PopupMenuHelper;
 
 
@@ -26,8 +25,6 @@ import org.osgi.framework.BundleContext;
 import org.cytoscape.service.util.AbstractCyActivator;
 
 import java.util.Properties;
-
-
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -48,9 +45,18 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
 
 		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(guiTaskManagerServiceRef);
-		TableBrowser tableBrowser = new TableBrowser(cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef);
 		
-		registerAllServices(bc,tableBrowser, new Properties());
+		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef);
+		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef);
+		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef);
+		
+		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Global Table", cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef);
+
+		
+		registerAllServices(bc,nodeTableBrowser, new Properties());
+		registerAllServices(bc,edgeTableBrowser, new Properties());
+		registerAllServices(bc,networkTableBrowser, new Properties());
+		registerAllServices(bc,globalTableBrowser, new Properties());
 
 		registerServiceListener(bc,popupMenuHelper,"addTableColumnTaskFactory","removeTableColumnTaskFactory",TableColumnTaskFactory.class);
 		registerServiceListener(bc,popupMenuHelper,"addTableCellTaskFactory","removeTableCellTaskFactory",TableCellTaskFactory.class);

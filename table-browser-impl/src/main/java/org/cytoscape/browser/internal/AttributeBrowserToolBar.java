@@ -32,18 +32,18 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -53,24 +53,15 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle;
-import javax.swing.LayoutStyle.ComponentPlacement;
-
-import java.util.HashMap;
-
-import org.cytoscape.browser.internal.AttributeListModel;
-import org.cytoscape.browser.internal.BrowserTableModel;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
@@ -81,7 +72,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private static final long serialVersionUID = -508393701912596399L;
 
 	private BrowserTableModel browserTableModel = null;
-	private String attributeType = null;
 
 	/**
 	 *  GUI components
@@ -108,8 +98,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JButton deleteTableButton = null;
 	private JButton selectAllAttributesButton = null;
 	private JButton unselectAllAttributesButton = null;
-	private JButton matrixButton = null;
-	private JButton importButton = null;
+	
+	private final JComboBox tableChooser;
 
 	private AttributeListModel attrListModel;
 	private final EquationCompiler compiler;
@@ -117,13 +107,11 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private final TableTaskFactory deleteTableTaskFactoryService;
 	private final GUITaskManager guiTaskManagerServiceRef;
 	
-	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar,
-				       final EquationCompiler compiler, final 
-				       TableTaskFactory deleteTableTaskFactoryService,
-				       GUITaskManager guiTaskManagerServiceRef)
-	{
+	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
+			final TableTaskFactory deleteTableTaskFactoryService, GUITaskManager guiTaskManagerServiceRef, final JComboBox tableChooser) {
 		this.compiler = compiler;
-		//this.tableManager = tableManager;
+		
+		this.tableChooser = tableChooser;
 		this.deleteTableTaskFactoryService = deleteTableTaskFactoryService;
 		this.guiTaskManagerServiceRef = guiTaskManagerServiceRef;
 		this.attrListModel = new AttributeListModel(null);
@@ -446,10 +434,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getDeleteTableButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(getFunctionBuilderButton(),
-								     GroupLayout.PREFERRED_SIZE,
-								     28,
-								     GroupLayout.PREFERRED_SIZE)));
+								.addComponent(getFunctionBuilderButton(), GroupLayout.PREFERRED_SIZE, 28,
+											GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(this.tableChooser)));
 			buttonBarLayout.setVerticalGroup(buttonBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 							 .addComponent(selectButton,
 								       javax.swing.GroupLayout.Alignment.CENTER,
@@ -474,6 +462,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
 								       27, Short.MAX_VALUE)
 							 .addComponent(deleteTableButton,
+								       javax.swing.GroupLayout.Alignment.CENTER,
+								       javax.swing.GroupLayout.DEFAULT_SIZE,
+								       27, Short.MAX_VALUE)
+							 .addComponent(this.tableChooser,
 								       javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
 								       27, Short.MAX_VALUE)
