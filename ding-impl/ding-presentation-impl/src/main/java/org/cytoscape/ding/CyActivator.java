@@ -11,7 +11,6 @@ import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;
-import org.cytoscape.ding.impl.ShowGraphicsDetailTaskFactory;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
@@ -74,7 +73,6 @@ public class CyActivator extends AbstractCyActivator {
 		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor);
 		EdgePaintToArrowHeadPaintDependency edgeColor2arrowColorDependency = new EdgePaintToArrowHeadPaintDependency();
 		CustomGraphicsSizeDependency nodeCustomGraphicsSizeDependency = new CustomGraphicsSizeDependency();
-		ShowGraphicsDetailTaskFactory showGraphicsDetailTaskFactory = new ShowGraphicsDetailTaskFactory(applicationManagerManagerServiceRef,cyPropertyServiceRef);
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,taskManagerServiceRef,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef, vtfListener);
 		
 		Properties dingRenderingEngineFactoryProps = new Properties();
