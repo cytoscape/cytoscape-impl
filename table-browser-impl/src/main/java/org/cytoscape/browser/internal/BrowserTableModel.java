@@ -1,21 +1,21 @@
 package org.cytoscape.browser.internal;
 
 
-import java.io.IOException;
-import java.io.StringReader;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
 
-import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.browser.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -31,16 +31,12 @@ import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import java.util.Vector;
-import org.cytoscape.browser.util.TableBrowserUtil;
-import javax.swing.JOptionPane;
 
 
 public final class BrowserTableModel extends AbstractTableModel implements ColumnCreatedListener,
 		ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedListener {
 	private static final long serialVersionUID = -517521404005631245L;
 	
-	private static final int EOF = -1;
 	private static final int MAX_INITIALLY_VSIBLE_ATTRS = 10;
 	private final JTable table;
 	

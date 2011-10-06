@@ -1,16 +1,20 @@
 package org.cytoscape.browser.internal;
 
-import static org.cytoscape.browser.internal.AbstractTableBrowser.SELECTED_ITEM_BACKGROUND_COLOR;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.HashSet;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -37,6 +41,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private static final long serialVersionUID = 627394119637512735L;
 
+	private final JToggleButton selectionModeButton;
+	
 	private final JComboBox networkChooser;
 	private final Class<? extends CyTableEntry> objType;
 
@@ -59,12 +65,29 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		networkChooser.setSize(SELECTOR_SIZE);
 		networkChooser.setEnabled(false);
 		
+		selectionModeButton = new JToggleButton();
+		selectionModeButton.addActionListener(this);
+		selectionModeButton.setBorder(null);
+		selectionModeButton.setMargin(new Insets(0, 0, 0, 0));
+		selectionModeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_selection_mode.png")));
+		selectionModeButton.setToolTipText("Change Selection Mode");
+
+		selectionModeButton.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					
+				}
+			});
+		
+		
+		
 		this.attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
 
+	
+	@Override
 	public void actionPerformed(final ActionEvent e) {
 		final CyNetwork currentNetwork = this.applicationManager.getCurrentNetwork();
 		final CyNetwork network = (CyNetwork) networkChooser.getSelectedItem();

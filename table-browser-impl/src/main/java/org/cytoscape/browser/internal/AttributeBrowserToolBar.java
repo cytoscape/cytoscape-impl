@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
@@ -72,6 +73,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private static final long serialVersionUID = -508393701912596399L;
 
 	private BrowserTableModel browserTableModel = null;
+	
+	private static final Dimension TOOLBAR_SIZE = new Dimension(400, 40);
 
 	/**
 	 *  GUI components
@@ -103,13 +106,20 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private AttributeListModel attrListModel;
 	private final EquationCompiler compiler;
-	//private final CyTableManager tableManager;
 	private final TableTaskFactory deleteTableTaskFactoryService;
 	private final GUITaskManager guiTaskManagerServiceRef;
 	
+	private final JToggleButton selectionModeButton;
+	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
 			final TableTaskFactory deleteTableTaskFactoryService, GUITaskManager guiTaskManagerServiceRef, final JComboBox tableChooser) {
+		this(serviceRegistrar, compiler, deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, new JToggleButton());
+	}
+	
+	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
+			final TableTaskFactory deleteTableTaskFactoryService, GUITaskManager guiTaskManagerServiceRef, final JComboBox tableChooser, final JToggleButton selectionModeButton) {
 		this.compiler = compiler;
+		this.selectionModeButton = selectionModeButton;
 		
 		this.tableChooser = tableChooser;
 		this.deleteTableTaskFactoryService = deleteTableTaskFactoryService;
@@ -135,7 +145,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private void initializeGUI() {
 		this.setLayout(new BorderLayout());
 
-		this.setPreferredSize(new Dimension(210, 32));
 		this.add(getJToolBar(), java.awt.BorderLayout.CENTER);
 
 		getAttributeSelectionPopupMenu();
@@ -408,7 +417,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				}
 			});
 			browserToolBar.setMargin(new java.awt.Insets(0, 0, 3, 0));
-			browserToolBar.setPreferredSize(new Dimension(200, 30));
+			browserToolBar.setPreferredSize(TOOLBAR_SIZE);
+			browserToolBar.setSize(TOOLBAR_SIZE);
 			browserToolBar.setFloatable(false);
 			browserToolBar.setOrientation(JToolBar.HORIZONTAL);
 
@@ -419,31 +429,31 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			buttonBarLayout.setHorizontalGroup(buttonBarLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
 							   .addGroup(buttonBarLayout.createSequentialGroup()
 								.addPreferredGap(ComponentPlacement.RELATED)
-
+								.addComponent(selectionModeButton)
+								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getSelectButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
-
 								.addComponent(getNewButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getSelectAllButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getUnselectAllButton())
-
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getDeleteButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getDeleteTableButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(getFunctionBuilderButton(), GroupLayout.PREFERRED_SIZE, 28,
-											GroupLayout.PREFERRED_SIZE)
+								.addComponent(getFunctionBuilderButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(this.tableChooser)));
 			buttonBarLayout.setVerticalGroup(buttonBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-							 .addComponent(selectButton,
+							.addComponent(selectionModeButton, javax.swing.GroupLayout.Alignment.CENTER,
+									javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
+							.addComponent(selectButton,
 								       javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.PREFERRED_SIZE,
 								       27,
-								       javax.swing.GroupLayout.PREFERRED_SIZE)
+								       Short.MAX_VALUE)
 							 .addComponent(createNewAttributeButton,
 								       javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
@@ -465,15 +475,14 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								       javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
 								       27, Short.MAX_VALUE)
-							 .addComponent(this.tableChooser,
-								       javax.swing.GroupLayout.Alignment.CENTER,
+							.addComponent(formulaBuilderButton,
+									javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
 								       27, Short.MAX_VALUE)
-							 .addGroup(buttonBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-							      .addComponent(formulaBuilderButton,
-								   javax.swing.GroupLayout.PREFERRED_SIZE,
-								   27,
-								   javax.swing.GroupLayout.PREFERRED_SIZE)));
+							.addComponent(tableChooser,
+									javax.swing.GroupLayout.Alignment.CENTER,
+								       javax.swing.GroupLayout.DEFAULT_SIZE,
+								       27, Short.MAX_VALUE));
 		}
 
 		return browserToolBar;
