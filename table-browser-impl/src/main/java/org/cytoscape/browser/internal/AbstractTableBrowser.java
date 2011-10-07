@@ -23,6 +23,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
@@ -70,7 +71,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler, final OpenBrowser openBrowser,
 			final CyNetworkManager networkManager, final TableTaskFactory deleteTableTaskFactoryService,
 			final GUITaskManager guiTaskManagerServiceRef, final PopupMenuHelper popupMenuHelper,
-			final CyApplicationManager applicationManager) {
+			final CyApplicationManager applicationManager, final CyEventHelper eventHelper) {
 		this.networkTableManager = networkTableManager;
 		this.serviceRegistrar = serviceRegistrar;
 		this.compiler = compiler;
@@ -80,7 +81,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		this.tableToMetadataMap = new HashMap<CyTable, TableMetadata>();
 		this.applicationManager = applicationManager;
 
-		this.browserTable = new BrowserTable(openBrowser, compiler, popupMenuHelper);
+		this.browserTable = new BrowserTable(openBrowser, compiler, popupMenuHelper, applicationManager, eventHelper);
 		
 		this.setLayout(new BorderLayout());
 		
@@ -120,6 +121,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	
 	void showSelectedTable() {
 		browserTableModel = new BrowserTableModel(browserTable, currentTable, compiler);
+		
 		serviceRegistrar.registerAllServices(browserTableModel, new Properties());
 		browserTable.setUpdateComparators(false);
 		browserTable.setModel(browserTableModel);

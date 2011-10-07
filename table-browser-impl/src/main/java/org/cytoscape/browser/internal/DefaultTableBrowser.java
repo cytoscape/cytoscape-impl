@@ -16,16 +16,19 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
@@ -45,14 +48,15 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	
 	private final JComboBox networkChooser;
 	private final Class<? extends CyTableEntry> objType;
+	
 
 	public DefaultTableBrowser(String tabTitle, Class<? extends CyTableEntry> objType, CyTableManager tableManager,
 			CyNetworkTableManager networkTableManager, CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
 			OpenBrowser openBrowser, CyNetworkManager networkManager, TableTaskFactory deleteTableTaskFactoryService,
 			GUITaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
-			CyApplicationManager applicationManager) {
+			CyApplicationManager applicationManager, final CyEventHelper eventHelper) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
 
 		this.objType = objType;
 
@@ -74,16 +78,18 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 		selectionModeButton.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					
+					changeSelectionMode();
 				}
 			});
-		
-		
 		
 		this.attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
+	}
+	
+	private void changeSelectionMode() {
+		browserTableModel.setShowAll(selectionModeButton.isSelected());
 	}
 
 	
@@ -100,16 +106,23 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
 		final CyNetwork currentNetwork = e.getNetwork();
-
+		final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
+		
+		
 		if (browserTableModel != null)
 			serviceRegistrar.unregisterAllServices(browserTableModel);
 
-		if (objType == CyNode.class)
+		if (objType == CyNode.class) {
 			currentTable = currentNetwork.getDefaultNodeTable();
-		else if (objType == CyEdge.class)
+		} else if (objType == CyEdge.class) {
 			currentTable = currentNetwork.getDefaultEdgeTable();
-		else
+		} else {
 			currentTable = currentNetwork.getDefaultNetworkTable();
+		}
+		
+//		if(this.browserTableModel != null && browserTableModel.getDataTable() == currentTable)
+//			return;
+
 		networkChooser.setSelectedItem(currentNetwork);
 		showSelectedTable();
 	}

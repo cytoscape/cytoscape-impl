@@ -3,13 +3,14 @@ package org.cytoscape.browser.internal;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -17,20 +18,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -52,28 +50,30 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.browser.util.TableBrowserUtil;
 import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import org.cytoscape.browser.util.TableBrowserUtil;
 
+public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener {
+	
+	
+	private static final long serialVersionUID = 4415856756184765301L;
 
-public class BrowserTable extends JTable
-	implements MouseListener, ActionListener, MouseMotionListener
-{
+	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
+	
 	private static final Font BORDER_FONT = new Font("Sans-serif", Font.BOLD, 12);
 	private static final TableCellRenderer cellRenderer = new BrowserTableCellRenderer();
 	private static final String MAC_OS_ID = "mac";
+	
 	private Clipboard systemClipboard;
 	private CellEditorRemover editorRemover = null;
 	private Map<String, Map<String, String>> linkoutProps;
@@ -89,18 +89,20 @@ public class BrowserTable extends JTable
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
 	private boolean updateColumnComparators;
-	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
 	
+	private final CyApplicationManager applicationManager;
+	private final CyEventHelper eventHelper;
 
 	public BrowserTable(final OpenBrowser openBrowser, final EquationCompiler compiler,
-			    final PopupMenuHelper popupMenuHelper)
-	{
+			final PopupMenuHelper popupMenuHelper, final CyApplicationManager applicationManager,
+			final CyEventHelper eventHelper) {
 		this.openBrowser     = openBrowser;
 		this.compiler        = compiler;
 		this.popupMenuHelper = popupMenuHelper;
 		this.updateColumnComparators = false;
+		this.applicationManager = applicationManager;
+		this.eventHelper = eventHelper;
 
-//		setColumnModel(new MyTableColumnModel());
 		initHeader();
 		setCellSelectionEnabled(true);
 		setDefaultEditor(Object.class, new MultiLineTableCellEditor());
@@ -133,9 +135,8 @@ public class BrowserTable extends JTable
 
 		final BrowserTable table = this;
 
-		//
+
 		// Event handler. Define actions when mouse is clicked.
-		//
 		addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					final int column = getColumnModel().getColumnIndexAtX(e.getX());
@@ -190,32 +191,57 @@ public class BrowserTable extends JTable
 					}
 				} // mouseClicked
 
+				@Override
 				public void mouseReleased(MouseEvent e) {
-					// When the mouse is released, fire signal to pass the selected
-					// objects in the table.
-					// Get selected object names
-					final int[] rowsSelected = getSelectedRows();
-
-					if (rowsSelected.length == 0) {
-						return;
-					}
-
-					final int columnCount = getColumnCount();
-					int idLocation = 0;
-/*
-					// Initialize internal selection table
-					((DataTableModel) dataModel).resetSelectionFlags();
-
-					setSelectedColor(SELECTED_NODE);
-					setSelectedColor(REV_SELECTED_NODE);
-					setSelectedColor(SELECTED_EDGE);
-					setSelectedColor(REV_SELECTED_EDGE);
-
-					resetObjectColor(idLocation);
-					paintNodesAndEdges(idLocation);
-*/
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							selectFromTable();
+						}
+					});
 				}
 			});
+	}
+	
+	
+	private void selectFromTable() {
+		final TableModel model = this.getModel();
+		if(model instanceof BrowserTableModel == false)
+			return;
+		
+		BrowserTableModel btModel = (BrowserTableModel) model;
+		if(btModel.isShowAll() == false)
+			return;
+		
+		final int[] rowsSelected = getSelectedRows();
+		if (rowsSelected.length == 0)
+			return;
+		
+		final int selectedRowCount = getSelectedRowCount();
+		
+		//TODO: performance tuning
+		final Set<CyRow> targetRows = new HashSet<CyRow>();
+		for(int i=0; i<selectedRowCount; i++)
+			targetRows.add(btModel.getRow(rowsSelected[i]));
+		
+		// Clear selection
+		List<CyRow> allRows = btModel.getDataTable().getAllRows();
+		for(CyRow row: allRows) {
+			final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
+			if(targetRows.contains(row)) {
+				if(!val)
+					row.set(CyNetwork.SELECTED, true);
+				continue;
+			}
+			if(val)
+				row.set(CyNetwork.SELECTED, false);
+		}
+		
+		final CyNetworkView curView = applicationManager.getCurrentNetworkView();
+		if(curView != null) {
+			eventHelper.flushPayloadEvents();
+			curView.updateView();
+		}
 	}
 
 	private void setKeyStroke() {
@@ -498,7 +524,7 @@ public class BrowserTable extends JTable
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent event) {
+	public void mouseReleased(MouseEvent event) {		
 	}
 
 	@Override

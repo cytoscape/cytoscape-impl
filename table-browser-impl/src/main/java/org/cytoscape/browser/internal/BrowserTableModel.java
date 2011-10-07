@@ -35,6 +35,7 @@ import org.cytoscape.model.events.RowsSetListener;
 
 public final class BrowserTableModel extends AbstractTableModel implements ColumnCreatedListener,
 		ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedListener {
+	
 	private static final long serialVersionUID = -517521404005631245L;
 	
 	private static final int MAX_INITIALLY_VSIBLE_ATTRS = 10;
@@ -43,19 +44,31 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private final CyTable dataTable;
 	
 	private final EquationCompiler compiler;
-	private boolean tableHasBooleanSelected;
+
+	// If this is FALSE, it's a Global.
+	private boolean regularViewMode;
+	
+	//private boolean showAll = false;
 	private List<AttrNameAndVisibility> attrNamesAndVisibilities;
+	
 	private Collection<CyRow> selectedRows = null;
+
 
 	public BrowserTableModel(final JTable table, final CyTable dataTable, final EquationCompiler compiler) {
 		this.table = table;
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		final CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
-		this.tableHasBooleanSelected = selectedColumn != null && selectedColumn.getType() == Boolean.class;
+		this.regularViewMode = selectedColumn != null && selectedColumn.getType() == Boolean.class;
 
 		initAttrNamesAndVisibilities();
 	}
+	
+	CyTable getDataTable() {
+		return dataTable;
+	}
+	
+
 
 	private void initAttrNamesAndVisibilities() {
 		attrNamesAndVisibilities = new ArrayList<AttrNameAndVisibility>(dataTable.getColumns().size());
@@ -125,7 +138,8 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		if (columns.isEmpty())
 			return 0;
 
-		if (!tableHasBooleanSelected)
+		// Show Global Table OR selection mode is table-oriented
+		if (!regularViewMode)
 			return dataTable.getRowCount();
 
 		return dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.valueOf(true)).size();
@@ -156,7 +170,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	}
 
 	private CyRow mapRowIndexToRow(final int rowIndex) {
-		if (tableHasBooleanSelected) {
+		if (regularViewMode) {
 			if (selectedRows == null)
 				selectedRows = dataTable.getMatchingRows(CyNetwork.SELECTED, true);
 
@@ -187,7 +201,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		final Class<?> primaryKeyType = dataTable.getPrimaryKey().getType();
 
 		int index = 0;
-		if (tableHasBooleanSelected) {
+		if (regularViewMode) {
 			if (selectedRows == null)
 				selectedRows = dataTable.getMatchingRows(CyNetwork.SELECTED, true);
 
@@ -301,9 +315,9 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
 		if (e.getSource() != dataTable)
-			return;
-
-		if (tableHasBooleanSelected) {
+			return;		
+		
+		if (regularViewMode) {
 			selectedRows = null;
 			boolean foundANonSelectedColumnName = false;
 			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
@@ -320,13 +334,32 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		}
 
 		for (final RowSetRecord rowSet : e.getPayloadCollection())
-			handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(),
-			                     rowSet.getValue(), rowSet.getRawValue());
+			handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
+	}
+	
+	/**
+	 * Switch view mode.
+	 * 
+	 * 
+	 * @param showAll
+	 */
+	void setShowAll(boolean showAll) {
+		if(showAll) {
+			regularViewMode = false;
+		} else {
+			regularViewMode = true;
+		}
+		fireTableDataChanged();
+	}
+	
+	boolean isShowAll() {
+		return !regularViewMode;
 	}
 
 	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
 				  final Object newRawValue)
 	{
+		
 		final int rowIndex = mapRowToRowIndex(row);
 		if (rowIndex == -1)
 			return;
@@ -335,7 +368,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		if (columnIndex == -1)
 			return;
 
-		if (tableHasBooleanSelected && columnName.equals(CyNetwork.SELECTED)) {
+		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
 /*
 			final boolean selected = (Boolean)newValue;
 			final int rowIndex = mapRowToRowIndex(row);
@@ -413,6 +446,10 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		cellVect.add( mapColumnIndexToColumnName(columnIndex));
 		
 		return cellVect;
+	}
+	
+	CyRow getRow(final int rowIndex) {
+		return mapRowIndexToRow(rowIndex);
 	}
 	
 	@Override

@@ -127,6 +127,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		this.attrListModel = new AttributeListModel(null);
 		serviceRegistrar.registerAllServices(attrListModel, new Properties());
 
+		selectionModeButton.setEnabled(false);
 		initializeGUI();
 	}
 
@@ -140,6 +141,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		deleteAttributeButton.setEnabled(browserTableModel != null);
 		deleteTableButton.setEnabled(browserTableModel != null);
 		formulaBuilderButton.setEnabled(browserTableModel != null);
+		selectionModeButton.setEnabled(browserTableModel != null);
 	}
 
 	private void initializeGUI() {

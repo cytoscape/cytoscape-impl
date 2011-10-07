@@ -12,6 +12,7 @@ import java.util.Set;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.TableChooser.GlobalTableComboBoxModel;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -46,9 +47,9 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 			CyServiceRegistrar serviceRegistrar, EquationCompiler compiler, OpenBrowser openBrowser,
 			CyNetworkManager networkManager, TableTaskFactory deleteTableTaskFactoryService,
 			GUITaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
-			CyApplicationManager applicationManager) {
+			CyApplicationManager applicationManager, CyEventHelper eventHelper) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
 
 		tableChooser = new TableChooser();
 		tableChooser.addActionListener(this);
