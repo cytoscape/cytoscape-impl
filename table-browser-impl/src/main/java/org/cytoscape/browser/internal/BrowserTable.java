@@ -57,6 +57,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
@@ -220,17 +221,26 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final int selectedRowCount = getSelectedRowCount();
 		
 		//TODO: performance tuning
-		final Set<CyRow> targetRows = new HashSet<CyRow>();
-		for(int i=0; i<selectedRowCount; i++)
-			targetRows.add(btModel.getRow(rowsSelected[i]));
+		final int columnCount = this.getColumnCount();
+		int colIdx;
+		for(colIdx=0; colIdx<columnCount; colIdx++) {
+			final String colName = this.getColumnName(colIdx);
+			if(colName.equals(CyTableEntry.SUID))
+				break;
+		}
 		
+		final Set<CyRow> targetRows = new HashSet<CyRow>();
+		for(int i=0; i<selectedRowCount; i++) {
+			ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) this.getValueAt(rowsSelected[i], colIdx);
+			targetRows.add(btModel.getRow(selected.getValidatedObject()));
+		}
 		// Clear selection
 		List<CyRow> allRows = btModel.getDataTable().getAllRows();
 		for(CyRow row: allRows) {
 			final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
 			if(targetRows.contains(row)) {
-				if(!val)
-					row.set(CyNetwork.SELECTED, true);
+//				System.out.println("=======> selected: " + row.get(CyTableEntry.NAME, String.class));
+				row.set(CyNetwork.SELECTED, true);
 				continue;
 			}
 			if(val)

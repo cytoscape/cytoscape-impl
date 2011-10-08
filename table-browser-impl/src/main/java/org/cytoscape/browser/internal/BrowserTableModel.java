@@ -181,7 +181,6 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 					cyRow = selectedRow;
 					break;
 				}
-
 				++count;
 			}
 
@@ -448,8 +447,8 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		return cellVect;
 	}
 	
-	CyRow getRow(final int rowIndex) {
-		return mapRowIndexToRow(rowIndex);
+	CyRow getRow(final Object suid) {
+		return dataTable.getRow(suid);
 	}
 	
 	@Override
