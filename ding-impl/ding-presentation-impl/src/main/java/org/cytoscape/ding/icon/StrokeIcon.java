@@ -70,45 +70,39 @@ public class StrokeIcon extends VisualPropertyIcon<Stroke> {
 		super(stroke, width, height, name);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param c DOCUMENT ME!
-	 * @param g DOCUMENT ME!
-	 * @param x DOCUMENT ME!
-	 * @param y DOCUMENT ME!
-	 */
+	
 	@Override public void paintIcon(Component c, Graphics g, int x, int y) {
 		g2d = (Graphics2D) g;
 		g2d.setColor(color);
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		g2d.translate(leftPad, bottomPad);
+		//g2d.translate(leftPad, bottomPad);
 		g2d.setStroke(value);
-		g2d.draw(new Line2D.Double(20, (height + 20) / 2, width*2, (height + 20) / 2));
+		final int yPosition = (height + 20) / 2;
+		g2d.draw(new Line2D.Double(leftPad, yPosition, width*1.5, yPosition));
 
-		/*
-		 * Superimpose text if text object is not empty.
-		 */
-		if (superimposedText != null) {
-
-			if (textColor == null) {
-				g2d.setColor(Color.DARK_GRAY);
-			} else
-				g2d.setColor(textColor);
-
-			if (textFont == null) {
-				g2d.setFont(new Font("SansSerif", Font.BOLD, 24));
-			} else {
-				g2d.setFont(textFont);
-			}
-
-			g2d.drawString(superimposedText, 20, (height + 40) / 2);
-		}
-
-		g2d.translate(-leftPad, -bottomPad);
-		g2d.setFont(new Font("SansSerif", Font.BOLD, 14));
+//		/*
+//		 * Superimpose text if text object is not empty.
+//		 */
+//		if (superimposedText != null) {
+//
+//			if (textColor == null) {
+//				g2d.setColor(Color.DARK_GRAY);
+//			} else
+//				g2d.setColor(textColor);
+//
+//			if (textFont == null) {
+//				g2d.setFont(new Font("SansSerif", Font.BOLD, 24));
+//			} else {
+//				g2d.setFont(textFont);
+//			}
+//
+//			g2d.drawString(superimposedText, 20, (height + 40) / 2);
+//		}
+//
+//		//g2d.translate(-leftPad, -bottomPad);
+//		g2d.setFont(new Font("SansSerif", Font.BOLD, 14));
 	}
 
 	/**

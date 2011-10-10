@@ -116,9 +116,6 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		g2d.translate(0, bottomPad);
-
-		newShape = value;
 
 		af.setToTranslation(leftPad, (c.getHeight() - newShape.getBounds2D().getHeight()) / 2);
 		newShape = af.createTransformedShape(newShape);
@@ -127,7 +124,6 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 		g2d.setStroke(new BasicStroke(2.0f));
 		g2d.draw(newShape);
 
-		g2d.translate(0, -bottomPad);
 	}
 
 	/**

@@ -66,7 +66,7 @@ public abstract class VisualPropertyIcon<T> extends ImageIcon {
 	final protected T value;
 	final protected String name;
 
-	protected int leftPad = 0;
+	protected int leftPad = 20;
 	protected int bottomPad = 0;
 
 	/**

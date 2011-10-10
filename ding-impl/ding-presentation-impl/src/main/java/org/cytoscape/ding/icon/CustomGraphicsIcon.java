@@ -23,9 +23,7 @@ public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> 
 
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.translate(0, bottomPad);
-		g2d.drawImage(getImage(), 0, (c.getHeight() - height) / 2, width, height, c);
-		g2d.translate(0, -bottomPad);
+		g2d.drawImage(getImage(), leftPad, (c.getHeight() - height) / 2, width, height, c);
 	}
 
 }

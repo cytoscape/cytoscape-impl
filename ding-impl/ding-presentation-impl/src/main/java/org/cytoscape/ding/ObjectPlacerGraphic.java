@@ -120,8 +120,7 @@ public class ObjectPlacerGraphic extends JPanel implements
 	 * @param fullDetail
 	 *            whether or not to render at full detail or not
 	 */
-	public ObjectPlacerGraphic(final Integer windowSize,
-			boolean fullDetail, final String objectName) {
+	public ObjectPlacerGraphic(final Integer windowSize, boolean fullDetail, final String objectName) {
 		super();
 		
 		this.p = new ObjectPositionImpl();
@@ -189,8 +188,7 @@ public class ObjectPlacerGraphic extends JPanel implements
 	public void paint(Graphics gin) {
 		final Graphics2D g = (Graphics2D) gin;
 
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		// calculate the font
 		if (labelLen <= 0) {
@@ -232,14 +230,12 @@ public class ObjectPlacerGraphic extends JPanel implements
 			for (int i = 0; i < npoints.length; i++)
 				for (int j = 0; j < npoints.length; j++) {
 					g.setColor(transparentMagenta);
-					g.fillOval(npoints[i] - (gd / 2), npoints[j] - (gd / 2),
-							gd, gd);
+					g.fillOval(npoints[i] - (gd / 2), npoints[j] - (gd / 2), gd, gd);
 					if ((i == bestNodeX) && (j == bestNodeY) && !beenDragged)
 						g.setColor(Color.yellow);
 					else
 						g.setColor(Color.black);
-					g.fillOval(npoints[i] - (dot / 2), npoints[j] - (dot / 2),
-							dot, dot);
+					g.fillOval(npoints[i] - (dot / 2), npoints[j] - (dot / 2), dot, dot);
 				}
 		}
 
@@ -248,53 +244,40 @@ public class ObjectPlacerGraphic extends JPanel implements
 		g.fillRect(xOffset + xPos, yOffset + yPos, lx, ly);
 
 		g.setColor(Color.red);
-		g.drawLine(xOffset + xPos, yOffset + yPos, xOffset + xPos + lx, yOffset
-				+ yPos);
-		g.drawLine(xOffset + xPos + lx, yOffset + yPos, xOffset + xPos + lx,
-				yOffset + yPos + ly);
-		g.drawLine(xOffset + xPos + lx, yOffset + yPos + ly, xOffset + xPos,
-				yOffset + yPos + ly);
-		g.drawLine(xOffset + xPos, yOffset + yPos + ly, xOffset + xPos, yOffset
-				+ yPos);
+		g.drawLine(xOffset + xPos, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos);
+		g.drawLine(xOffset + xPos + lx, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos + ly);
+		g.drawLine(xOffset + xPos + lx, yOffset + yPos + ly, xOffset + xPos, yOffset + yPos + ly);
+		g.drawLine(xOffset + xPos, yOffset + yPos + ly, xOffset + xPos, yOffset + yPos);
 
 		// draw the string in the justified location
 		if (renderDetail) {
 			int vspace = (ly - ascent - ascent) / 3;
 
 			if (justify == JUSTIFY_LEFT) {
-				g.drawString(objectLabel, xOffset + xPos + detailStrokeWidth, yOffset
-						+ yPos + vspace + ascent);
-				g.drawString(click, xOffset + xPos + detailStrokeWidth, yOffset
-						+ yPos + (2 * (vspace + ascent)));
+				g.drawString(objectLabel, xOffset + xPos + detailStrokeWidth, yOffset + yPos + vspace + ascent);
+				g.drawString(click, xOffset + xPos + detailStrokeWidth, yOffset + yPos + (2 * (vspace + ascent)));
 			} else if (justify == JUSTIFY_RIGHT) {
-				g.drawString(objectLabel, xOffset + xPos + (lx - labelLen), yOffset
-						+ yPos + vspace + ascent);
+				g.drawString(objectLabel, xOffset + xPos + (lx - labelLen), yOffset + yPos + vspace + ascent);
 				;
-				g.drawString(click, xOffset + xPos + (lx - clickLen), yOffset
-						+ yPos + (2 * (vspace + ascent)));
+				g.drawString(click, xOffset + xPos + (lx - clickLen), yOffset + yPos + (2 * (vspace + ascent)));
 			} else { // center
-				g.drawString(objectLabel, (xOffset + xPos + ((lx - labelLen) / 2))
-						- detailStrokeWidth, yOffset + yPos + vspace + ascent);
-				g.drawString(click, (xOffset + xPos + ((lx - clickLen) / 2))
-						- detailStrokeWidth, yOffset + yPos
+				g.drawString(objectLabel, (xOffset + xPos + ((lx - labelLen) / 2)) - detailStrokeWidth, yOffset + yPos
+						+ vspace + ascent);
+				g.drawString(click, (xOffset + xPos + ((lx - clickLen) / 2)) - detailStrokeWidth, yOffset + yPos
 						+ (2 * (vspace + ascent)));
 			}
 		} else {
 			g.setColor(Color.gray);
 
 			if (justify == JUSTIFY_LEFT)
-				g.drawLine(xOffset + xPos + lowStrokeWidth, yOffset + yPos
-						+ (ly / 2), xOffset + xPos + (lx / 3), yOffset + yPos
-						+ (ly / 2));
-			else if (justify == JUSTIFY_RIGHT)
-				g.drawLine(xOffset + xPos + ((2 * lx) / 3), yOffset + yPos
-						+ (ly / 2), xOffset + xPos + lx, yOffset + yPos
-						+ (ly / 2));
-			else
-				g.drawLine(xOffset + xPos + (lx / 3),
-						yOffset + yPos + (ly / 2),
-						(xOffset + xPos + ((2 * lx) / 3)) - lowStrokeWidth,
+				g.drawLine(xOffset + xPos + lowStrokeWidth, yOffset + yPos + (ly / 2), xOffset + xPos + (lx / 3),
 						yOffset + yPos + (ly / 2));
+			else if (justify == JUSTIFY_RIGHT)
+				g.drawLine(xOffset + xPos + ((2 * lx) / 3), yOffset + yPos + (ly / 2), xOffset + xPos + lx, yOffset
+						+ yPos + (ly / 2));
+			else
+				g.drawLine(xOffset + xPos + (lx / 3), yOffset + yPos + (ly / 2), (xOffset + xPos + ((2 * lx) / 3))
+						- lowStrokeWidth, yOffset + yPos + (ly / 2));
 		}
 
 		if (renderDetail) {
@@ -306,9 +289,8 @@ public class ObjectPlacerGraphic extends JPanel implements
 					if ((i == bestLabelX) && (j == bestLabelY) && !beenDragged)
 						g.setColor(Color.yellow);
 
-					g.fillOval((xPos + xOffset + lxpoints[i]) - (dot / 2),
-							(yPos + yOffset + lypoints[j]) - (dot / 2), dot,
-							dot);
+					g.fillOval((xPos + xOffset + lxpoints[i]) - (dot / 2), (yPos + yOffset + lypoints[j]) - (dot / 2),
+							dot, dot);
 
 					if ((i == bestLabelX) && (j == bestLabelY))
 						g.setColor(Color.black);
