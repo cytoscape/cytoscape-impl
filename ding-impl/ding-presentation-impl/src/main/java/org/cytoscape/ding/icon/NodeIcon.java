@@ -82,20 +82,6 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 
 		final AffineTransform af = new AffineTransform();
 
-		final Rectangle2D bound = value.getBounds2D();
-		final double minx = bound.getMinX();
-		final double miny = bound.getMinY();
-
-		if (minx < 0) {
-			af.setToTranslation(Math.abs(minx), 0);
-			newShape = af.createTransformedShape(value);
-		}
-
-		if (miny < 0) {
-			af.setToTranslation(0, Math.abs(miny));
-			newShape = af.createTransformedShape(value);
-		}
-
 		af.setToScale(xRatio, yRatio);
 		newShape = af.createTransformedShape(value);
 	}
@@ -111,18 +97,14 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 	@Override public void paintIcon(Component c, Graphics g, int x, int y) {		
 		g2d = (Graphics2D) g;
 
-		final AffineTransform af = new AffineTransform();
-
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-
-		af.setToTranslation(leftPad, (c.getHeight() - newShape.getBounds2D().getHeight()) / 2);
-		newShape = af.createTransformedShape(newShape);
-
+		g2d.translate(leftPad, (c.getHeight() - newShape.getBounds2D().getHeight()) / 2);
 		g2d.setColor(color);
 		g2d.setStroke(new BasicStroke(2.0f));
 		g2d.draw(newShape);
+		g2d.translate(-leftPad, -((c.getHeight() - newShape.getBounds2D().getHeight()) / 2));
 
 	}
 

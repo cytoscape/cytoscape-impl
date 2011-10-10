@@ -39,7 +39,6 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		lp.applyPosition();
 		lp.paint(g2d);
 		
-		
 		// Transform to fit to the component
 		g2d.translate(-(x+leftPad), -y);
 	}

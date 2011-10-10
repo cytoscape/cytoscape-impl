@@ -59,6 +59,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.VisualPropertyValue;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.jdesktop.swingx.border.DropShadowBorder;
 
@@ -77,7 +78,6 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	private final static long serialVersionUID = 1202339876950593L;
 	
 	// Default icon size.
-	private static final int ICON_SIZE = 32;
 	private static final int ICON_SIZE_LARGE = 64;
 
 	// Value data type for this chooser.
@@ -90,30 +90,28 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	private final CyApplicationManager appManager;
 	
 	private Map<T, Icon> iconMap;
-//	
-//	private List<T> orderedKeyList;
-//	private T defaultValue;
+
 	private boolean canceled = false;
 
-	public DiscreteValueEditor(final CyApplicationManager appManager, final Class<T> type, final DiscreteRange<T> dRange, final VisualProperty<T> vp) {
+	public DiscreteValueEditor(final CyApplicationManager appManager, final Class<T> type,
+			final DiscreteRange<T> dRange, final VisualProperty<T> vp) {
 		super();
 		
-		if(dRange == null)
+		if (dRange == null)
 			throw new NullPointerException("Range object is null.");
-		
-		this.range = dRange;		
+
+		this.range = dRange;
 		this.type = type;
 		this.appManager = appManager;
 		this.vp = vp;
-		
+
 		this.iconMap = new HashMap<T, Icon>();
-		
+
 		this.setModal(true);
 		this.setTitle("Select a value");
 
 		initComponents();
 		setListItems();
-		
 	}
 	
 	/**
@@ -238,14 +236,6 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 			return null;
 		
 		return (T) iconList.getSelectedValue();
-
-//		final int selectedIndex = iconList.getSelectedIndex();
-//
-//		if ((0 <= selectedIndex) && (selectedIndex < orderedKeyList.size()))
-//			return orderedKeyList.get(selectedIndex);
-//		else
-//
-//			return defaultValue;
 	}
 
 	
@@ -271,10 +261,11 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	}
 
 	// TODO: optimize icon layout
-	public class IconCellRenderer extends JLabel implements ListCellRenderer {
+	private final class IconCellRenderer extends JLabel implements ListCellRenderer {
+		
 		private final static long serialVersionUID = 1202339876940871L;
-		private final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC,
-				18);
+		
+		private final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC, 18);
 		private final Font NORMAL_FONT = new Font("SansSerif", Font.BOLD, 14);
 		private final Color SELECTED_COLOR = new Color(30, 30, 80, 25);
 		private final Color SELECTED_FONT_COLOR = new Color(0, 150, 255, 120);
@@ -288,30 +279,27 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 			// Get icon for the target value
 			
 			final Icon icon = iconMap.get(value);
-
-			
-			//icon.setLeftPadding(15);
 			setIcon(icon);
 			setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
 
 			this.setVerticalTextPosition(SwingConstants.CENTER);
 			this.setVerticalAlignment(SwingConstants.CENTER);
-			this.setIconTextGap(45);
+			this.setIconTextGap(55);
 
 			setBackground(isSelected ? SELECTED_COLOR : list.getBackground());
-			setForeground(isSelected ? SELECTED_FONT_COLOR : list
-					.getForeground());
+			setForeground(isSelected ? SELECTED_FONT_COLOR : list.getForeground());
 			
-			this.setHorizontalTextPosition(LEFT);
-			this.setHorizontalAlignment(LEFT);
-				
-			if(icon != null) {
-				
-				setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight() + 20));
-			} else {
-				setText(value.toString());
-				setPreferredSize(new Dimension(100, 60));
-			}
+			
+			if(icon != null)
+				setPreferredSize(new Dimension(icon.getIconWidth() + 230, icon.getIconHeight() + 24));
+			else
+				setPreferredSize(new Dimension(230, 60));
+			
+			if(value instanceof VisualPropertyValue)
+				setText(((VisualPropertyValue) value).getDisplayName());
+			else
+				setText("("+ value.toString() +")");
+			
 			this.setBorder(new DropShadowBorder());
 
 			return this;
