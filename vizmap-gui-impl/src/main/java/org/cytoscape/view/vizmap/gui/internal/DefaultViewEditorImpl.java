@@ -31,6 +31,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -338,11 +340,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 
 		jXTitledPanel1.setTitle("Default Visual Properties");
-		// TODO: fix gradient
-		// jXTitledPanel1.setTitlePainter(new BasicGradientPainter(
-		// new Point2D.Double(.2d, 0), new Color(Color.gray.getRed(),
-		// Color.gray.getGreen(), Color.gray.getBlue(), 100),
-		// new Point2D.Double(.8d, 0), Color.WHITE));
+		
 		jXTitledPanel1.setTitleFont(new java.awt.Font("SansSerif", 1, 12));
 		jXTitledPanel1.setMinimumSize(new java.awt.Dimension(300, 27));
 		jXTitledPanel1.setPreferredSize(new java.awt.Dimension(300, 27));
@@ -595,32 +593,27 @@ public class DefaultViewEditorImpl extends JDialog implements
 		// repaint();
 	}
 
-	/**
-	 * Create cells for each Visual Properties.
-	 * 
-	 * @author kono
-	 * 
-	 */
-	class VisualPropCellRenderer extends JLabel implements ListCellRenderer {
+	
+	private final class VisualPropCellRenderer extends JLabel implements ListCellRenderer {
 
 		private static final long serialVersionUID = -1325179272895141114L;
 
-		private final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC,
-				14);
+		private final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC, 14);
 		private final Font NORMAL_FONT = new Font("SansSerif", Font.BOLD, 12);
 		private final Color SELECTED_COLOR = new Color(10, 50, 180, 20);
 		private final Color SELECTED_FONT_COLOR = new Color(0, 150, 255, 150);
 
-		public VisualPropCellRenderer() {
+		private final int ICON_GAP = 55;
+		
+		VisualPropCellRenderer() {
 			setOpaque(true);
 		}
 
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
 
-			final VisualStyle selectedStyle = selectedManager
-					.getCurrentVisualStyle();
+			final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
 
 			Icon icon = null;
 			VisualProperty<Object> vp = null;
@@ -628,34 +621,29 @@ public class DefaultViewEditorImpl extends JDialog implements
 			if (value instanceof VisualProperty<?>) {
 				vp = (VisualProperty<Object>) value;
 
-				final RenderingEngine<?> presentation = cyApplicationManager
-						.getCurrentRenderingEngine();
+				final RenderingEngine<?> presentation = cyApplicationManager.getCurrentRenderingEngine();
 
-				if (presentation != null) {
-					icon = presentation.createIcon(vp,
-							selectedStyle.getDefaultValue(vp), ICON_WIDTH,
-							ICON_HEIGHT);
-				}
+				if (presentation != null)
+					icon = presentation.createIcon(vp, selectedStyle.getDefaultValue(vp), ICON_WIDTH, ICON_HEIGHT);
 			}
+			
 			setText(vp.getDisplayName());
 			setToolTipText(vp.getDisplayName());
 			setIcon(icon);
 			setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
 
-			this.setVerticalTextPosition(SwingConstants.CENTER);
-			this.setVerticalAlignment(SwingConstants.CENTER);
-			this.setIconTextGap(55);
+			this.setVerticalTextPosition(CENTER);
+			this.setVerticalAlignment(CENTER);
+			this.setIconTextGap(ICON_GAP);
 
-			if (vp != null && vp.getRange().getType() != null
-					&& vp.getRange().getType().equals(String.class))
+			if (vp != null && vp.getRange().getType() != null && vp.getRange().getType().equals(String.class))
 				this.setToolTipText(vp.getDefault().toString());
 
 			setBackground(isSelected ? SELECTED_COLOR : list.getBackground());
-			setForeground(isSelected ? SELECTED_FONT_COLOR : list
-					.getForeground());
+			setForeground(isSelected ? SELECTED_FONT_COLOR : list.getForeground());
 
 			if (icon != null) {
-				setPreferredSize(new Dimension(250, icon.getIconHeight() + 12));
+				setPreferredSize(new Dimension(250, icon.getIconHeight() + 24));
 			} else {
 				setPreferredSize(new Dimension(250, 55));
 			}
@@ -664,6 +652,8 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 			return this;
 		}
+		
+		
 	}
 
 	// /*
