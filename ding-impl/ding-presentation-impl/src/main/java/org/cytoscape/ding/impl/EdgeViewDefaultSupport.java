@@ -71,8 +71,9 @@ class EdgeViewDefaultSupport {
 			setTargetEdgeEndPaint((Paint) value);
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
-			final float newWidth = ((Number) value).floatValue();			
+			final float newWidth = ((Number) value).floatValue();	
 			if(strokeWidth != newWidth) {
+				strokeWidth = newWidth;
 				setStrokeWidth(newWidth);
 				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth));
 			}

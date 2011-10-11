@@ -1411,14 +1411,20 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
 			
 			final float currentWidth = this.getStrokeWidth();
+			
+			System.out.println(this.getEdgeView().getModel().getSUID() + " EW before = " + currentWidth);
+
+			
 			final float newWidth = ((Number) value).floatValue();			
 			if(currentWidth != newWidth) {
 				setStrokeWidth(newWidth);
 				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth));
 			}
+			
+			System.out.println("EW After = " + getStrokeWidth());
 		} else if (vp == DVisualLexicon.EDGE_LINE_TYPE) {
-			if(lineType == value)
-				return;
+//			if(lineType == value)
+//				return;
 			
 			lineType = (LineType) value;
 			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(getStrokeWidth());

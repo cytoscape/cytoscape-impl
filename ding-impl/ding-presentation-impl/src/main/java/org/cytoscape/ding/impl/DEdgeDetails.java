@@ -32,11 +32,15 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.impl.strokes.WidthStroke;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.util.intr.MinIntHeap;
+import org.cytoscape.view.model.View;
 
 
 class DEdgeDetails extends IntermediateEdgeDetails {
@@ -84,6 +88,13 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 	DEdgeDetails(final DGraphView view) {
 		m_view = view;
+	}
+	
+	void clear() {
+		Collection<View<CyEdge>> edgeViews = m_view.getEdgeViews();
+		for(View<CyEdge> edgeView: edgeViews){
+			unregisterEdge(edgeView.getModel().getIndex());
+		}
 	}
 
 	void unregisterEdge(final int edgeIdx) {
@@ -265,6 +276,9 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			else
 				return m_segmentThicknessDefault;
 
+		
+		System.out.println(edge + ": Path width in renderer = " + thickness);
+
 		return thickness;
 	}
 
@@ -290,12 +304,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	@Override
 	public Stroke segmentStroke(final int edge) {
 		final Stroke stroke = m_segmentStrokes.get(edge);
+		
 		if (stroke == null)
 			if ( m_segmentStrokeDefault == null )
 				return super.segmentStroke(edge);
 			else
 				return m_segmentStrokeDefault;
 
+		if(stroke instanceof WidthStroke)
+			System.out.println("Segment Stroke called: Stroke width = " + stroke.toString());
+		
 		return stroke;
 	}
 
