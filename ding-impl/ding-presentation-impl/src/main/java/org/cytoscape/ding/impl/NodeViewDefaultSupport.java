@@ -97,9 +97,10 @@ class NodeViewDefaultSupport {
 		}
 	}
 
-	private void setToolTip(String value) {
-		// TODO Auto-generated method stub
-		
+	private void setToolTip(String tooltip) {
+		synchronized (lock) {
+			nodeDetails.setTooltipTextDefault(tooltip);
+		}
 	}
 
 

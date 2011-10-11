@@ -155,9 +155,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	float m_hiddenXMax = Float.MAX_VALUE;
 	float m_hiddenYMax = Float.MAX_VALUE;
 
-	// Tool Tip text
-	private String m_toolTipText;
-
 	// Nested Network View
 	private DGraphView nestedNetworkView;
 
@@ -780,13 +777,18 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public void setToolTip(final String tip) {
-		m_toolTipText = tip;
+		synchronized (graphView.m_lock) {
+			graphView.m_nodeDetails.overrideTooltipText(m_inx, tip);
+			graphView.m_contentChanged = true;
+		}
 	}
 
 
 	@Override
 	public String getToolTip() {
-		return m_toolTipText;
+		synchronized (graphView.m_lock) {
+			return graphView.m_nodeDetails.tooltipText(m_inx);
+		}
 	}
 
 

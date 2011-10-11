@@ -59,7 +59,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	Map<Integer, Float> m_borderWidths = new HashMap<Integer, Float>();
 	Map<Integer, Paint> m_borderPaints = new HashMap<Integer, Paint>();
 	Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
+	
 	Map<Long, String> m_labelTexts = new HashMap<Long, String>();
+	Map<Integer, String> m_tooltipTexts = new HashMap<Integer, String>();
+
 	Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
 	Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
 	Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
@@ -84,7 +87,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	private Float m_borderWidthDefault; 
 	private Paint m_borderPaintDefault; 
 	private Integer m_labelCountDefault; 
-	private String m_labelTextDefault; 
+	
+	private String m_labelTextDefault;
+	private String m_tooltipTextDefault;
+	
 	private Font m_labelFontDefault; 
 	private Paint m_labelPaintDefault; 
 	private Byte m_labelTextAnchorDefault; 
@@ -112,6 +118,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 		m_borderPaints = new HashMap<Integer, Paint>();
 		m_labelCounts = new HashMap<Integer, Integer>();
 		m_labelTexts = new HashMap<Long, String>();
+		m_tooltipTexts = new HashMap<Integer, String>();
 		m_labelFonts = new HashMap<Long, Font>();
 		m_labelPaints = new HashMap<Long, Paint>();
 		m_labelWidths = new HashMap<Integer, Double>();
@@ -145,6 +152,8 @@ class DNodeDetails extends IntermediateNodeDetails {
 		m_labelOffsetXs.remove(nodeIdx);
 		m_labelOffsetYs.remove(nodeIdx);
 		m_selectedPaints.remove(nodeIdx);
+		
+		m_tooltipTexts.remove(nodeIdx);
 
 		final Integer intr = m_labelCounts.remove(nodeIdx);
 		final int labelCount = ((intr == null) ? 0 : intr);
@@ -389,6 +398,38 @@ class DNodeDetails extends IntermediateNodeDetails {
 			isCleared = false;
 		}
 	}
+	
+	
+	public String tooltipText(final int node) {
+		final String o = m_tooltipTexts.get(node);
+
+		if (o == null)
+			if ( m_tooltipTextDefault == null )
+				return "";
+			else
+				return m_tooltipTextDefault;
+
+		return o;
+	}
+
+	void setTooltipTextDefault(String tooltip) {
+		m_tooltipTextDefault = tooltip;
+	}
+
+	/*
+	 * A null text has the special meaning to remove overridden text.
+	 */
+	void overrideTooltipText(final int node, final String text) {
+
+		if ((text == null) || text.equals(""))
+			m_tooltipTexts.remove(node);
+		else {
+			m_tooltipTexts.put(node, text);
+			isCleared = false;
+		}
+	}
+	
+	
 
 	@Override
 	public Font labelFont(int node, int labelInx) {
