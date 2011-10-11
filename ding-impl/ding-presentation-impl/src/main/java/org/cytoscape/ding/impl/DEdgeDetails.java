@@ -32,39 +32,36 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.strokes.WidthStroke;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.util.intr.IntObjHash;
-import org.cytoscape.util.intr.MinIntHeap;
-import org.cytoscape.view.model.View;
 
 
 class DEdgeDetails extends IntermediateEdgeDetails {
 	
 	final DGraphView m_view;
-	final IntObjHash m_colorsLowDetail = new IntObjHash();
 	final Object m_deletedEntry = new Object();
 	
-	final Map<Integer, Float> m_segmentThicknesses = new HashMap<Integer, Float>();
-	final Map<Integer, Stroke> m_segmentStrokes = new HashMap<Integer, Stroke>();
-	final Map<Integer, Byte> m_sourceArrows = new HashMap<Integer, Byte>();
-	final Map<Integer, Paint> m_sourceArrowPaints = new HashMap<Integer, Paint>();
-	final Map<Integer, Byte> m_targetArrows = new HashMap<Integer, Byte>();
-	final Map<Integer, Paint> m_targetArrowPaints = new HashMap<Integer, Paint>();
-	final Map<Integer, Paint> m_segmentPaints = new HashMap<Integer, Paint>();
-	final Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
-	final Map<Long, String> m_labelTexts = new HashMap<Long, String>();
-	final Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
-	final Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
-	final Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
-
-	// For selected paint default
-	final Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
-
+	IntObjHash m_colorsLowDetail = new IntObjHash();
+	
+	Map<Integer, Float> m_segmentThicknesses = new HashMap<Integer, Float>();
+	Map<Integer, Stroke> m_segmentStrokes = new HashMap<Integer, Stroke>();
+	
+	Map<Integer, Byte> m_sourceArrows = new HashMap<Integer, Byte>();
+	Map<Integer, Paint> m_sourceArrowPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Byte> m_targetArrows = new HashMap<Integer, Byte>();
+	Map<Integer, Paint> m_targetArrowPaints = new HashMap<Integer, Paint>();
+	
+	Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
+	Map<Long, String> m_labelTexts = new HashMap<Long, String>();
+	Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
+	Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
+	Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
+	
+	Map<Integer, Paint> m_segmentPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
+	
 	private Paint m_colorLowDetailDefault ;
 	private Byte m_sourceArrowDefault ;
 	private Paint m_sourceArrowPaintDefault ;
@@ -80,6 +77,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	private Double m_labelWidthDefault ;
 	
 	private Paint m_selectedPaintDefault;
+	
+	private boolean isCleared = false; 
 
 
 	DEdgeDetails(final DGraphView view) {
@@ -87,10 +86,29 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 	
 	void clear() {
-		Collection<View<CyEdge>> edgeViews = m_view.getEdgeViews();
-		for(View<CyEdge> edgeView: edgeViews){
-			unregisterEdge(edgeView.getModel().getIndex());
-		}
+		if(isCleared)
+			return;
+		
+		m_segmentThicknesses = new HashMap<Integer, Float>();
+		m_segmentStrokes = new HashMap<Integer, Stroke>();
+		
+		m_sourceArrows = new HashMap<Integer, Byte>();
+		m_sourceArrowPaints = new HashMap<Integer, Paint>();
+		m_targetArrows = new HashMap<Integer, Byte>();
+		m_targetArrowPaints = new HashMap<Integer, Paint>();
+		
+		m_labelCounts = new HashMap<Integer, Integer>();
+		m_labelTexts = new HashMap<Long, String>();
+		m_labelFonts = new HashMap<Long, Font>();
+		m_labelPaints = new HashMap<Long, Paint>();
+		m_labelWidths = new HashMap<Integer, Double>();
+		
+		m_segmentPaints = new HashMap<Integer, Paint>();
+		m_selectedPaints = new HashMap<Integer, Paint>();
+		
+		m_colorsLowDetail = new IntObjHash();
+		
+		isCleared = true;
 	}
 
 	void unregisterEdge(final int edgeIdx) {
@@ -157,7 +175,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 	void setSourceArrowDefault(byte arrow) {
-		m_sourceArrowDefault = Byte.valueOf(arrow);
+		m_sourceArrowDefault = arrow;
 	}
 	
 
@@ -168,8 +186,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideSourceArrow(final int edge, final byte arrowType) {
 		if ((arrowType >= 0) || (arrowType == super.sourceArrow(edge)))
 			m_sourceArrows.remove(edge);
-		else
+		else {
 			m_sourceArrows.put(edge, arrowType);
+			isCleared = false;
+		}
 	}
 
 
@@ -194,8 +214,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideSourceArrowPaint(final int edge, final Paint paint) {
 		if ((paint == null) || paint.equals(super.sourceArrowPaint(edge)))
 			m_sourceArrowPaints.remove(edge);
-		else
+		else {
 			m_sourceArrowPaints.put(edge, paint);
+			isCleared = false;
+		}
 	}
 
 	
@@ -226,8 +248,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideTargetArrow(final int edge, final byte arrowType) {
 		if ((arrowType >= 0) || (arrowType == super.targetArrow(edge)))
 			m_targetArrows.remove(edge);
-		else
+		else {
 			m_targetArrows.put(edge, arrowType);
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -255,8 +279,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideTargetArrowPaint(final int edge, final Paint paint) {
 		if ((paint == null) || paint.equals(super.targetArrowPaint(edge)))
 			m_targetArrowPaints.remove(edge);
-		else
+		else {
 			m_targetArrowPaints.put(edge, paint);
+			isCleared = false;
+		}
 	}
 
 
@@ -286,8 +312,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideSegmentThickness(final int edge, final float thickness) {
 		if ((thickness < 0.0f) || (thickness == super.segmentThickness(edge)))
 			m_segmentThicknesses.remove(edge);
-		else
+		else {
 			m_segmentThicknesses.put(edge, thickness);
+			isCleared = false;
+		}
 	}
 
 
@@ -317,8 +345,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideSegmentStroke(int edge, Stroke stroke) {
 		if ((stroke == null) || stroke.equals(super.segmentStroke(edge)))
 			m_segmentStrokes.remove(edge);
-		else
+		else {
 			m_segmentStrokes.put(edge, stroke);
+			isCleared = false;
+		}
 	}
 
 
@@ -364,8 +394,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideSegmentPaint(final int edge, final Paint paint) {
 		if ((paint == null) || (paint == super.segmentPaint(edge)))
 			m_segmentPaints.remove(edge);
-		else
+		else {
 			m_segmentPaints.put(edge, paint);
+			isCleared = false;
+		}
 	}
 
 	
@@ -394,8 +426,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideLabelCount(final int edge, final int labelCount) {
 		if ((labelCount < 0) || (labelCount == super.labelCount(edge)))
 			m_labelCounts.remove(edge);
-		else
+		else {
 			m_labelCounts.put(edge, labelCount);
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -426,8 +460,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 		if ((text == null) || text.equals(super.labelText(edge, labelInx)))
 			m_labelTexts.remove(key);
-		else
+		else {
 			m_labelTexts.put(key, text);
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -459,8 +495,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 		if ((font == null) || font.equals(super.labelFont(edge, labelInx)))
 			m_labelFonts.remove(key);
-		else
+		else {
 			m_labelFonts.put(key, font);
+			isCleared = false;
+		}
 	}
 
 
@@ -493,8 +531,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 		if ((paint == null) || paint.equals(super.labelPaint(edge, labelInx)))
 			m_labelPaints.remove(key);
-		else
+		else {
 			m_labelPaints.put(key, paint);
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -513,7 +553,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 	void setLabelWidthDefault(double width) {
-		m_labelWidthDefault = Double.valueOf(width);
+		m_labelWidthDefault = width;
 	}
 
 	/*
@@ -522,8 +562,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	void overrideLabelWidth(final int edge, final double width) {
 		if ((width < 0.0) || (width == super.labelWidth(edge)))
 			m_labelWidths.remove(edge);
-		else
+		else {
 			m_labelWidths.put(edge, width);
+			isCleared = false;
+		}
 	}
 
 }
