@@ -169,7 +169,8 @@ public class VisualStyleImpl implements VisualStyle {
 
 		applyViewDefaults(networkView, lexManager.getNodeVisualProperties());
 		applyViewDefaults(networkView, lexManager.getEdgeVisualProperties());
-
+		applyViewDefaults(networkView, lexManager.getNetworkVisualProperties());
+		
 		// Current visual prop tree.
 		applyImpl(nodeViews, lexManager.getNodeVisualProperties());
 		applyImpl(edgeViews, lexManager.getEdgeVisualProperties());
@@ -177,7 +178,8 @@ public class VisualStyleImpl implements VisualStyle {
 
 		logger.info(title + ": Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
 	}
-
+	
+	
 	/**
 	 * DOCUMENT ME!
 	 * 
