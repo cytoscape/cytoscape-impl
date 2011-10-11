@@ -18,7 +18,7 @@ import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
  */
 public class NullCustomGraphics extends AbstractDCustomGraphics {
 	
-	private static final String DEF_IMAGE_FILE = "images/stock_dialog-warning-32.png";
+	private static final String DEF_IMAGE_FILE = "images/no_image.png";
 	private static BufferedImage DEF_IMAGE;
 	
 	static  {
