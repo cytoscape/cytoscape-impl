@@ -2516,7 +2516,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	public boolean setSelected(final CyNode[] nodes) {
 		
-		System.out.println("@@@@@@@@@@@@ Node selected called!!! @@@@@@@@@");
 		final int size = nodes.length;
 		for (int i = 0; i < size; i++)
 			getDNodeView(nodes[i]).select();
@@ -2527,7 +2526,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	
 	public boolean setSelected(final CyEdge[] edges) {
 		
-		System.out.println("@@@@@@@@@@@@ Edge selected called!!! @@@@@@@@@");
 		final int size = edges.length;
 		for (int i = 0; i < size; i++)
 			getDEdgeView(edges[i]).select();

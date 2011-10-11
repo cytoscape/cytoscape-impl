@@ -65,10 +65,6 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	// For selected paint default
 	final Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
 
-	
-	private final MinIntHeap m_heap = new MinIntHeap();
-	private final float[] m_extentsBuff = new float[4];
-
 	private Paint m_colorLowDetailDefault ;
 	private Byte m_sourceArrowDefault ;
 	private Paint m_sourceArrowPaintDefault ;
@@ -275,10 +271,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 				return super.segmentThickness(edge);
 			else
 				return m_segmentThicknessDefault;
-
 		
-		System.out.println(edge + ": Path width in renderer = " + thickness);
-
 		return thickness;
 	}
 
@@ -310,9 +303,6 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 				return super.segmentStroke(edge);
 			else
 				return m_segmentStrokeDefault;
-
-		if(stroke instanceof WidthStroke)
-			System.out.println("Segment Stroke called: Stroke width = " + stroke.toString());
 		
 		return stroke;
 	}
