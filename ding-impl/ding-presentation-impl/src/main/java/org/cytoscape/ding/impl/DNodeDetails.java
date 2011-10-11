@@ -50,31 +50,29 @@ import org.cytoscape.util.intr.IntObjHash;
 class DNodeDetails extends IntermediateNodeDetails {
 	
 	final DGraphView m_view;
-	final IntObjHash m_colorsLowDetail = new IntObjHash();
+	
 	final Object m_deletedEntry = new Object();
 
-	// The values are Byte objects; the bytes are shapes defined in
-	// cytoscape.render.immed.GraphGraphics.
-	final Map<Integer, Byte> m_shapes = new HashMap<Integer, Byte>();
-	final Map<Integer, Paint> m_fillPaints = new HashMap<Integer, Paint>();
-	final Map<Integer, Float> m_borderWidths = new HashMap<Integer, Float>();
-	final Map<Integer, Paint> m_borderPaints = new HashMap<Integer, Paint>();
-	final Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
-	final Map<Long, String> m_labelTexts = new HashMap<Long, String>();
-	final Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
-	final Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
-	final Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
+	IntObjHash m_colorsLowDetail = new IntObjHash();
+	Map<Integer, Byte> m_shapes = new HashMap<Integer, Byte>();
+	Map<Integer, Paint> m_fillPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Float> m_borderWidths = new HashMap<Integer, Float>();
+	Map<Integer, Paint> m_borderPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
+	Map<Long, String> m_labelTexts = new HashMap<Long, String>();
+	Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
+	Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
+	Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
 	
-	final Map<Integer, Integer> m_labelTextAnchors = new HashMap<Integer, Integer>();
-	final Map<Integer, Integer> m_labelNodeAnchors = new HashMap<Integer, Integer>();
-	final Map<Integer, Integer> m_labelJustifys = new HashMap<Integer, Integer>();
-	final Map<Integer, Double> m_labelOffsetXs = new HashMap<Integer, Double>();
-	final Map<Integer, Double> m_labelOffsetYs = new HashMap<Integer, Double>();
+	Map<Integer, Integer> m_labelTextAnchors = new HashMap<Integer, Integer>();
+	Map<Integer, Integer> m_labelNodeAnchors = new HashMap<Integer, Integer>();
+	Map<Integer, Integer> m_labelJustifys = new HashMap<Integer, Integer>();
+	Map<Integer, Double> m_labelOffsetXs = new HashMap<Integer, Double>();
+	Map<Integer, Double> m_labelOffsetYs = new HashMap<Integer, Double>();
 	
+	Map<Integer, Double> m_width = new HashMap<Integer, Double>();
 	
-	final Map<Integer, Double> m_width = new HashMap<Integer, Double>();
-	
-	final Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
 
 	// Default values
 	private Color m_colorLowDetailDefault;
@@ -97,8 +95,37 @@ class DNodeDetails extends IntermediateNodeDetails {
 	private Double m_labelWidthDefault; 
 	
 
+	private boolean isCleared = false;
+	
 	DNodeDetails(final DGraphView view) {
 		m_view = view;
+	}
+	
+	void clear() {
+		if(isCleared)
+			return;
+		
+		m_colorsLowDetail = new IntObjHash();
+		m_shapes = new HashMap<Integer, Byte>();
+		m_fillPaints = new HashMap<Integer, Paint>();
+		m_borderWidths = new HashMap<Integer, Float>();
+		m_borderPaints = new HashMap<Integer, Paint>();
+		m_labelCounts = new HashMap<Integer, Integer>();
+		m_labelTexts = new HashMap<Long, String>();
+		m_labelFonts = new HashMap<Long, Font>();
+		m_labelPaints = new HashMap<Long, Paint>();
+		m_labelWidths = new HashMap<Integer, Double>();
+		
+		m_labelTextAnchors = new HashMap<Integer, Integer>();
+		m_labelNodeAnchors = new HashMap<Integer, Integer>();
+		m_labelJustifys = new HashMap<Integer, Integer>();
+		m_labelOffsetXs = new HashMap<Integer, Double>();
+		m_labelOffsetYs = new HashMap<Integer, Double>();
+		m_width = new HashMap<Integer, Double>();
+		
+		m_selectedPaints = new HashMap<Integer, Paint>();
+		
+		isCleared = true;
 	}
 
 	void unregisterNode(final int nodeIdx) {
@@ -164,8 +191,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void setSelectedPaintDefault(Paint c) {
 		m_selectedPaintDefault = c;
 	}
-	
-	
+
 
 	/*
 	 * A null color has the special meaning to remove overridden color.
@@ -176,8 +202,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 			if ((val != null) && (val != m_deletedEntry))
 				m_colorsLowDetail.put(node, m_deletedEntry);
-		} else
+		} else {
 			m_colorsLowDetail.put(node, color);
+			isCleared = false;
+		}
 	}
 
 	@Override
@@ -203,6 +231,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 	 */
 	void overrideShape(int node, DNodeShape shape) {
 		m_shapes.put(node, shape.getNativeShape());
+		isCleared = false;
 	}
 
 	/**
@@ -236,6 +265,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 			m_fillPaints.remove(node);
 		else {
 			m_fillPaints.put(node, paint);
+			isCleared = false;
 		}
 	}
 	
@@ -264,8 +294,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideBorderWidth(final int node, final float width) {
 		if ((width < 0.0f) || (width == super.borderWidth(node)))
 			m_borderWidths.remove(node);
-		else
+		else {
 			m_borderWidths.put(node, width);
+			isCleared = false;
+		}
 	}
 
 	@Override
@@ -291,8 +323,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideBorderPaint(final int node, final Paint paint) {
 		if ((paint == null) || paint.equals(super.borderPaint(node)))
 			m_borderPaints.remove(node);
-		else
+		else {
 			m_borderPaints.put(node, paint);
+			isCleared = false;
+		}
 	}
 
 	@Override
@@ -318,8 +352,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideLabelCount(final int node, final int labelCount) {
 		if ((labelCount < 0) || (labelCount == super.labelCount(node)))
 			m_labelCounts.remove(node);
-		else
+		else {
 			m_labelCounts.put(node, labelCount);
+			isCleared = false;
+		}
 	}
 
 	@Override
@@ -348,8 +384,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 		if ((text == null) || text.equals(super.labelText(node, labelInx)))
 			m_labelTexts.remove(key);
-		else
+		else {
 			m_labelTexts.put(key, text);
+			isCleared = false;
+		}
 	}
 
 	@Override
@@ -378,8 +416,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 		if ((font == null) || font.equals(super.labelFont(node, labelInx)))
 			m_labelFonts.remove(key);
-		else
+		else {
 			m_labelFonts.put(key, font);
+			isCleared = false;
+		}
 	}
 
 	@Override
@@ -408,8 +448,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 		if ((paint == null) || paint.equals(super.labelPaint(node, labelInx)))
 			m_labelPaints.remove(Long.valueOf(key));
-		else
+		else {
 			m_labelPaints.put(Long.valueOf(key), paint);
+			isCleared = false;
+		}
 	}
 
 	// overrides NodeDetails.customGraphicCount():
@@ -457,8 +499,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideLabelTextAnchor(final int node, final int inx, final int anchor) {
 		if (convertG2ND(anchor) == super.labelTextAnchor(node, inx))
 			m_labelTextAnchors.remove(Integer.valueOf(node));
-		else
+		else {
 			m_labelTextAnchors.put(Integer.valueOf(node), Integer.valueOf(anchor));
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -488,8 +532,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideLabelNodeAnchor(final int node, final int inx, final int anchor) {
 		if (convertG2ND(anchor) == super.labelNodeAnchor(node, inx))
 			m_labelNodeAnchors.remove(Integer.valueOf(node));
-		else
+		else {
 			m_labelNodeAnchors.put(Integer.valueOf(node), Integer.valueOf(anchor));
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -519,8 +565,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideLabelOffsetVectorX(final int node, final int inx, final double x) {
 		if (((float) x) == super.labelOffsetVectorX(node, inx))
 			m_labelOffsetXs.remove(Integer.valueOf(node));
-		else
+		else {
 			m_labelOffsetXs.put(Integer.valueOf(node), new Double(x));
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -550,8 +598,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideLabelOffsetVectorY(final int node, final int inx, final double y) {
 		if (((float) y) == super.labelOffsetVectorY(node, inx))
 			m_labelOffsetYs.remove(Integer.valueOf(node));
-		else
+		else {
 			m_labelOffsetYs.put(Integer.valueOf(node), new Double(y));
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -581,8 +631,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideLabelJustify(final int node, final int inx, final int justify) {
 		if (convertG2ND(justify) == super.labelJustify(node, inx))
 			m_labelJustifys.remove(Integer.valueOf(node));
-		else
+		else {
 			m_labelJustifys.put(Integer.valueOf(node), Integer.valueOf(justify));
+			isCleared = false;
+		}
 	}
 
 	/**
@@ -605,7 +657,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 	}
 
 	void setLabelWidthDefault(double width) {
-		m_labelWidthDefault = Double.valueOf(width);
+		m_labelWidthDefault = width;
 	}
 	
 	/*
@@ -614,8 +666,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void overrideLabelWidth(final int node, final double width) {
 		if ((width < 0.0) || (width == super.labelWidth(node)))
 			m_labelWidths.remove(node);
-		else
+		else {
 			m_labelWidths.put(node, width);
+			isCleared = false;
+		}
 	}
 
 	@Override

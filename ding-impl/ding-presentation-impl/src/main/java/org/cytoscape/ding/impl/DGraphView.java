@@ -2974,9 +2974,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			return;
 		}
 		
-		if(targetType == CyNode.class)
+		if(targetType == CyNode.class) {
+			m_nodeDetails.clear();
 			m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
-		else if(targetType == CyEdge.class) {
+		} else if(targetType == CyEdge.class) {
 			m_edgeDetails.clear();
 			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
 		}
