@@ -293,36 +293,30 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 	
-	
-
-//	//@Override
+	//@Override
 	public Paint targetArrowSelectedPaint(final int edge) {
-		
-		//System.out.println("DEdgeDetails.targetArrowSelectedPaint()...ZZZZ");
 		
 		final Paint arrowPaint = this.m_targetArrowSelectedPaints.get(edge);
 		if (arrowPaint == null)
-			if ( m_targetArrowSelectedPaintDefault == null )
+			if ( m_targetArrowSelectedPaintDefault == null ){
 				return super.targetArrowPaint(edge);
+			}
 			else
 				return m_targetArrowSelectedPaintDefault;
 
+
 		return arrowPaint;
 	}
-//
-//	
-	void setTargetArrowSelectedPaintDefault(Paint p) {
+
+	
+	void setTargetArrowSelectedPaintDefault(Paint p) {	
 		m_targetArrowSelectedPaintDefault = p;
 	}
-//
-//
-//	/*
-//	 * A null paint has the special meaning to remove overridden paint.
-//	 */
+
+	/*
+	 * A null paint has the special meaning to remove overridden paint.
+	 */
 	void overrideTargetArrowSelectedPaint(final int edge, final Paint paint) {
-
-		System.out.println("DEdgeDetails.overrideTargetArrowSelectedPaint()...");
-
 		if ((paint == null) || paint.equals(super.targetArrowPaint(edge)))
 			this.m_targetArrowSelectedPaints.remove(edge);
 		else {
@@ -330,10 +324,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			isCleared = false;
 		}
 	}
-//	
-//	
-//=================
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

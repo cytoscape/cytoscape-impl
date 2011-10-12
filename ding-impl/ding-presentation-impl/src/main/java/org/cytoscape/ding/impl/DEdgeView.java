@@ -78,8 +78,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	Paint m_sourceSelectedPaint;
 	Paint m_targetUnselectedPaint;
 	Paint m_targetSelectedPaint;
-	Paint m_targetArrowSelectedPaint;
-	Paint m_targetArrowUnselectedPaint;
 	int m_sourceEdgeEnd; // One of the EdgeView edge end constants.
 	int m_targetEdgeEnd; // Ditto.
 	ArrayList<Point2D> m_anchors; // A list of Point2D objects.
@@ -106,9 +104,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_sourceUnselectedPaint = m_view.m_edgeDetails.sourceArrowPaint(m_inx);
 		m_sourceSelectedPaint = Color.red;
 		m_targetUnselectedPaint = m_view.m_edgeDetails.targetArrowPaint(m_inx);
-		m_targetSelectedPaint = Color.red;
-		m_targetArrowSelectedPaint = m_view.m_edgeDetails.targetArrowSelectedPaint(m_inx);;
-		m_targetArrowUnselectedPaint = m_view.m_edgeDetails.targetArrowPaint(m_inx);;
+		m_targetSelectedPaint = m_view.m_edgeDetails.targetArrowSelectedPaint(m_inx); //Color.red;
 		m_sourceEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_targetEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_anchors = null;
@@ -307,9 +303,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 * @return DOCUMENT ME!
 	 */
 	public Paint getTargetEdgeEndPaint() {
-		//System.out.println("\n\nDEdgeView.getTargetArrorPaint()...");
-
-		return m_targetArrowUnselectedPaint;
+		return m_targetUnselectedPaint;
 	}
 
 	/**
@@ -318,10 +312,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 * @return DOCUMENT ME!
 	 */
 	public Paint getTargetEdgeEndSelectedPaint() {
-		
-		//System.out.println("\n\nDEdgeView.getTargetArrowSelectedPaint()...ABC");
-
-		return m_targetArrowSelectedPaint;
+		return m_targetSelectedPaint;
 	}
 
 	/**
@@ -353,19 +344,15 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 */
 	public void setTargetEdgeEndSelectedPaint(Paint paint) {
 		
-		//System.out.println("\n\nDEdgeView.setTargetEdgeEndSelectedPaint()...");
-		
 		synchronized (m_view.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			//System.out.println("\tAAAAAAAA\n");
-
-			m_targetArrowSelectedPaint = paint;
+			m_targetSelectedPaint = paint;
 
 			if (isSelected()) {
 				m_view.m_edgeDetails.overrideTargetArrowSelectedPaint(m_inx,
-						m_targetArrowSelectedPaint);
+						m_targetSelectedPaint);
 				m_view.m_contentChanged = true;
 			}
 		}
