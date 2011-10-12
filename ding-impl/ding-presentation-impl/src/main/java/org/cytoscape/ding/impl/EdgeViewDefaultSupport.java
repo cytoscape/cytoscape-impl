@@ -64,6 +64,9 @@ class EdgeViewDefaultSupport {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
 			setSourceEdgeEndSelectedPaint((Paint) value);
+			
+			//System.out.println("EdgeViewDefaultSupport: vp == DVisualLexicon.EDGE_SELECTED_PAINT");
+			
 			setTargetEdgeEndSelectedPaint((Paint) value);
 			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
@@ -84,11 +87,14 @@ class EdgeViewDefaultSupport {
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
 			setSourceEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {
+			
+			//System.out.println("EdgeViewDefaultSupport: vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT");
+
 			setTargetEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
 			setSourceEdgeEndPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
-			setTargetEdgeEndPaint((Paint) value);
+			setTargetEdgeEndUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
 			setTargetEdgeEnd(((ArrowShape) value).getRendererTypeID());
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
@@ -140,10 +146,15 @@ class EdgeViewDefaultSupport {
 
 	public void setTargetEdgeEndSelectedPaint(Paint paint) {
 		synchronized (lock) {
-			edgeDetails.setTargetArrowPaintDefault(paint);
+			edgeDetails.setTargetArrowSelectedPaintDefault(paint);
 		}
 	}
 
+	public void setTargetEdgeEndUnselectedPaint(Paint paint) {
+		synchronized (lock) {
+			edgeDetails.setTargetArrowPaintDefault(paint);
+		}
+	}
 
 	public void setSourceEdgeEndPaint(Paint paint) {
 		synchronized (lock) {

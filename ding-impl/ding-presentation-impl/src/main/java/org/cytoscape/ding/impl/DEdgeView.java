@@ -75,6 +75,8 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	Paint m_sourceSelectedPaint;
 	Paint m_targetUnselectedPaint;
 	Paint m_targetSelectedPaint;
+	Paint m_targetArrowSelectedPaint;
+	Paint m_targetArrowUnselectedPaint;
 	int m_sourceEdgeEnd; // One of the EdgeView edge end constants.
 	int m_targetEdgeEnd; // Ditto.
 	ArrayList<Point2D> m_anchors; // A list of Point2D objects.
@@ -102,6 +104,8 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_sourceSelectedPaint = Color.red;
 		m_targetUnselectedPaint = m_view.m_edgeDetails.targetArrowPaint(m_inx);
 		m_targetSelectedPaint = Color.red;
+		m_targetArrowSelectedPaint = m_view.m_edgeDetails.targetArrowSelectedPaint(m_inx);;
+		m_targetArrowUnselectedPaint = m_view.m_edgeDetails.targetArrowPaint(m_inx);;
 		m_sourceEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_targetEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_anchors = null;
@@ -301,7 +305,9 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 * @return DOCUMENT ME!
 	 */
 	public Paint getTargetEdgeEndPaint() {
-		return m_targetUnselectedPaint;
+		//System.out.println("\n\nDEdgeView.getTargetArrorPaint()...");
+
+		return m_targetArrowUnselectedPaint;
 	}
 
 	/**
@@ -310,7 +316,10 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 * @return DOCUMENT ME!
 	 */
 	public Paint getTargetEdgeEndSelectedPaint() {
-		return m_targetSelectedPaint;
+		
+		//System.out.println("\n\nDEdgeView.getTargetArrowSelectedPaint()...ABC");
+
+		return m_targetArrowSelectedPaint;
 	}
 
 	/**
@@ -341,15 +350,20 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 *            DOCUMENT ME!
 	 */
 	public void setTargetEdgeEndSelectedPaint(Paint paint) {
+		
+		//System.out.println("\n\nDEdgeView.setTargetEdgeEndSelectedPaint()...");
+		
 		synchronized (m_view.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			m_targetSelectedPaint = paint;
+			//System.out.println("\tAAAAAAAA\n");
+
+			m_targetArrowSelectedPaint = paint;
 
 			if (isSelected()) {
-				m_view.m_edgeDetails.overrideTargetArrowPaint(m_inx,
-						m_targetSelectedPaint);
+				m_view.m_edgeDetails.overrideTargetArrowSelectedPaint(m_inx,
+						m_targetArrowSelectedPaint);
 				m_view.m_contentChanged = true;
 			}
 		}
@@ -1397,10 +1411,10 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
 			if(value == null)
 				return;
-			
+			setSelectedPaint((Paint) value);			
 			setSourceEdgeEndSelectedPaint((Paint) value);
 			setTargetEdgeEndSelectedPaint((Paint) value);
-			setSelectedPaint((Paint) value);
+
 		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
 			if(value == null)
 				return;
@@ -1427,11 +1441,17 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
 			setSourceEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {
+			
+			//System.out.println("\nDEdgeView.setVisualProperty()...vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT");
+			
 			setTargetEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
 			setSourceEdgeEndPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
+			//System.out.println("\nDEdgeView.setVisualProperty()...DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT");
+
 			setTargetEdgeEndPaint((Paint) value);
+			
 		} else if (vp == MinimalVisualLexicon.EDGE_SELECTED) {
 			setSelected((Boolean) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {

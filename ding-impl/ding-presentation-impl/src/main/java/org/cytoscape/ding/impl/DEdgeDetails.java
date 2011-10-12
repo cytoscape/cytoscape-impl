@@ -53,6 +53,9 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	Map<Integer, Byte> m_targetArrows = new HashMap<Integer, Byte>();
 	Map<Integer, Paint> m_targetArrowPaints = new HashMap<Integer, Paint>();
 	
+	Map<Integer, Paint> m_targetArrowSelectedPaints = new HashMap<Integer, Paint>();
+	
+	
 	Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
 	Map<Long, String> m_labelTexts = new HashMap<Long, String>();
 	Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
@@ -67,6 +70,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	private Paint m_sourceArrowPaintDefault ;
 	private Byte m_targetArrowDefault ;
 	private Paint m_targetArrowPaintDefault ;
+	private Paint m_targetArrowSelectedPaintDefault;
+
 	private Float m_segmentThicknessDefault ;
 	private Stroke m_segmentStrokeDefault ;
 	private Paint m_segmentPaintDefault ;
@@ -96,7 +101,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_sourceArrowPaints = new HashMap<Integer, Paint>();
 		m_targetArrows = new HashMap<Integer, Byte>();
 		m_targetArrowPaints = new HashMap<Integer, Paint>();
-		
+		m_targetArrowSelectedPaints = new HashMap<Integer, Paint>();
 		m_labelCounts = new HashMap<Integer, Integer>();
 		m_labelTexts = new HashMap<Long, String>();
 		m_labelFonts = new HashMap<Long, Font>();
@@ -122,6 +127,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_sourceArrowPaints.remove(edgeIdx);
 		m_targetArrows.remove(edgeIdx);
 		m_targetArrowPaints.remove(edgeIdx);
+		m_targetArrowSelectedPaints.remove(edgeIdx);
 		m_segmentPaints.remove(edgeIdx);
 		m_labelCounts.remove(edgeIdx);
 		m_labelTexts.remove(edgeIdx);
@@ -285,7 +291,48 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		}
 	}
 
+	
+	
 
+//	//@Override
+	public Paint targetArrowSelectedPaint(final int edge) {
+		
+		//System.out.println("DEdgeDetails.targetArrowSelectedPaint()...ZZZZ");
+		
+		final Paint arrowPaint = this.m_targetArrowSelectedPaints.get(edge);
+		if (arrowPaint == null)
+			if ( m_targetArrowSelectedPaintDefault == null )
+				return super.targetArrowPaint(edge);
+			else
+				return m_targetArrowSelectedPaintDefault;
+
+		return arrowPaint;
+	}
+//
+//	
+	void setTargetArrowSelectedPaintDefault(Paint p) {
+		m_targetArrowSelectedPaintDefault = p;
+	}
+//
+//
+//	/*
+//	 * A null paint has the special meaning to remove overridden paint.
+//	 */
+	void overrideTargetArrowSelectedPaint(final int edge, final Paint paint) {
+
+		System.out.println("DEdgeDetails.overrideTargetArrowSelectedPaint()...");
+
+		if ((paint == null) || paint.equals(super.targetArrowPaint(edge)))
+			this.m_targetArrowSelectedPaints.remove(edge);
+		else {
+			m_targetArrowSelectedPaints.put(edge, paint);
+			isCleared = false;
+		}
+	}
+//	
+//	
+//=================
+	
 	/**
 	 * {@inheritDoc}
 	 */
