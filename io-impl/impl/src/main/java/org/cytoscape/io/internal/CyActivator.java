@@ -92,6 +92,7 @@ import org.cytoscape.io.read.CyTableReaderManager;
 
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyTableWriterFactory;
+import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.PresentationWriterFactory;
 import org.cytoscape.io.write.CyPropertyWriterFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
@@ -233,7 +234,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,streamUtil,StreamUtil.class, new Properties());
 		registerService(bc,unrecognizedVisualPropertyManager,NetworkViewAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,recentlyOpenedTracker,RecentlyOpenedTracker.class, new Properties());
-
+		
 		registerServiceListener(bc,cyNetworkReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
 		registerServiceListener(bc,cyDataTableReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
 		registerServiceListener(bc,cySessionReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
@@ -246,6 +247,20 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,tableWriterManager,"addCyWriterFactory","removeCyWriterFactory",CyTableWriterFactory.class,CyWriterFactory.class);
 		registerServiceListener(bc,vizmapWriterManager,"addCyWriterFactory","removeCyWriterFactory",VizmapWriterFactory.class,CyWriterFactory.class);
 
+		registerAllServices(bc, pngWriterFactory, new Properties());
+		registerAllServices(bc, jpegWriterFactory, new Properties());
+		registerAllServices(bc, pdfWriterFactory, new Properties());
+		registerAllServices(bc, psWriterFactory, new Properties());
+		registerAllServices(bc, svgWriterFactory, new Properties());
+		registerAllServices(bc, sifNetworkViewWriterFactory, new Properties());
+		registerAllServices(bc, xgmmlNetworkViewWriterFactory, new Properties());
+		registerAllServices(bc, cysessionWriterFactory, new Properties());
+		registerAllServices(bc, bookmarksWriterFactory, new Properties());
+		registerAllServices(bc, propertiesWriterFactory, new Properties());
+		registerAllServices(bc, csvTableWriterFactory, new Properties());
+		registerAllServices(bc, sessionTableWriterFactory, new Properties());
+		registerAllServices(bc, vizmapWriterFactory, new Properties());
+		registerAllServices(bc, sessionWriterFactory, new Properties());
 	}
 }
 
