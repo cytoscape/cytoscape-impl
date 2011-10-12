@@ -66,10 +66,13 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	static final Paint DEFAULT_LABEL_PAINT = Color.black;
 	
 	DGraphView m_view;
+	
 	final int m_inx; // Positive.
 	boolean m_selected;
 	
 	Paint m_unselectedPaint;
+	
+	private Integer transparency;
 
 	Paint m_sourceUnselectedPaint;
 	Paint m_sourceSelectedPaint;
@@ -223,14 +226,13 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 				throw new NullPointerException("paint is null");
 
 			m_unselectedPaint = paint;
+			m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
+					((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), transparency);
 
 			if (!isSelected()) {
-				m_view.m_edgeDetails.overrideSegmentPaint(m_inx,
-						m_unselectedPaint);
-
+				m_view.m_edgeDetails.overrideSegmentPaint(m_inx, m_unselectedPaint);
 				if (m_unselectedPaint instanceof Color)
-					m_view.m_edgeDetails.overrideColorLowDetail(m_inx,
-							(Color) m_unselectedPaint);
+					m_view.m_edgeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
 
 				m_view.m_contentChanged = true;
 			}
@@ -1367,6 +1369,41 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			return m_view.m_edgeDetails.labelWidth(m_inx);
 		}
 	}
+	
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int getTransparency() {
+		return transparency;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void setTransparency(int trans) {
+		synchronized (m_view.m_lock) {
+			if (trans < 0 || trans > 255)
+				throw new IllegalArgumentException("Transparency is out of range.");
+			
+			transparency = trans;
+
+			if (m_unselectedPaint instanceof Color) {
+
+				m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
+						((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), trans);
+
+				m_view.m_edgeDetails.overrideSegmentPaint(m_inx, m_unselectedPaint);
+				m_view.m_edgeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
+			}
+			m_view.m_contentChanged = true;
+		}
+
+	}
+
+	
 
 	@Override
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vpOriginal, V value) {
@@ -1432,12 +1469,11 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth));
 			}			
 		} else if (vp == DVisualLexicon.EDGE_LINE_TYPE) {
-//			if(lineType == value)
-//				return;
-			
 			lineType = (LineType) value;
 			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(getStrokeWidth());
 			setStroke(newStroke);
+		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
+			setTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
 			setSourceEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {

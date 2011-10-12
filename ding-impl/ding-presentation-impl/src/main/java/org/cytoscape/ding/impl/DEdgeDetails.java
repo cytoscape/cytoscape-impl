@@ -109,6 +109,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_labelWidths = new HashMap<Integer, Double>();
 		
 		m_segmentPaints = new HashMap<Integer, Paint>();
+		
 		m_selectedPaints = new HashMap<Integer, Paint>();
 		
 		m_colorsLowDetail = new IntObjHash();
@@ -446,7 +447,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			isCleared = false;
 		}
 	}
-
+	
 	
 	/**
 	 * {@inheritDoc}

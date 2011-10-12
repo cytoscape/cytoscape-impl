@@ -28,6 +28,7 @@
 package org.cytoscape.ding.impl;
 
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
@@ -52,6 +53,11 @@ class EdgeViewDefaultSupport {
 	private float fontSize;
 	private LineType lineType;
 	private float strokeWidth;
+	
+	private int transparency;
+	
+	private Paint unselectedPaint;
+	private Paint selectedPaint;
 
 	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vp, V value) {
 		
@@ -59,7 +65,10 @@ class EdgeViewDefaultSupport {
 			value = (V) vp.getDefault();
 		
 		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
+			
 			setSelectedPaint((Paint) value);
+		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
+			setTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
@@ -113,6 +122,13 @@ class EdgeViewDefaultSupport {
 	}
 		
 
+	void setTransparency(int trans) {
+		transparency = trans;
+		setSelectedPaint(selectedPaint);
+		setUnselectedPaint(unselectedPaint);
+	}
+
+
 	void setStrokeWidth(float width) {
 		synchronized (lock) {
 			edgeDetails.setSegmentThicknessDefault(width);
@@ -127,15 +143,25 @@ class EdgeViewDefaultSupport {
 
 	void setUnselectedPaint(final Paint paint) {
 		synchronized (lock) {
-			edgeDetails.setSegmentPaintDefault(paint);
-			edgeDetails.setColorLowDetailDefault(paint);
+			unselectedPaint = paint;
+			final Paint transColor = getTransparentColor(paint);
+			edgeDetails.setSegmentPaintDefault(transColor);
+			edgeDetails.setColorLowDetailDefault(transColor);
 		}
 	}
 
 	void setSelectedPaint(final Paint paint) {
 		synchronized (lock) {
-			edgeDetails.setSelectedPaintDefault(paint);
+			selectedPaint = paint;
+			edgeDetails.setSelectedPaintDefault(getTransparentColor(paint));
 		}
+	}
+	
+	private Paint getTransparentColor(Paint p) {
+		if (p != null && p instanceof Color) 
+			return new Color(((Color) p).getRed(), ((Color) p).getGreen(), ((Color) p).getBlue(), transparency);
+		else
+			return p;
 	}
 
 	public void setSourceEdgeEndSelectedPaint(Paint paint) {

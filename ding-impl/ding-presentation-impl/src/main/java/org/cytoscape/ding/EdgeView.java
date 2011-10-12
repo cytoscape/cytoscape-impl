@@ -265,4 +265,8 @@ public interface EdgeView  extends GraphViewObject {
 	public double getLabelOffsetX();
 	public double getLabelOffsetY();
 	public int getEdgeLabelAnchor();
+
+	
+	int getTransparency();
+	void setTransparency(final int transparency);
 }

@@ -282,13 +282,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			m_unselectedPaint = paint;
 
 			if (!isSelected()) {
+				m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
+						((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), transparency);
+				
 				graphView.m_nodeDetails.overrideFillPaint(m_inx, m_unselectedPaint);
 
-				if (m_unselectedPaint instanceof Color) {
-					m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
-							((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), transparency);
+				if (m_unselectedPaint instanceof Color)
 					graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
-				}
 
 				graphView.m_contentChanged = true;
 			}
