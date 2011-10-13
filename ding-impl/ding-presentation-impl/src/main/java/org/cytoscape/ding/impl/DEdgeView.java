@@ -100,6 +100,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_view = view;
 		m_inx = inx;
 		m_selected = false;
+		transparency = 255;
 		m_unselectedPaint = m_view.m_edgeDetails.segmentPaint(m_inx);
 		m_sourceUnselectedPaint = m_view.m_edgeDetails.sourceArrowPaint(m_inx);
 		m_sourceSelectedPaint = Color.red;

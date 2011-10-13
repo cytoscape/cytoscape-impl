@@ -111,7 +111,6 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_segmentPaints = new HashMap<Integer, Paint>();
 		
 		m_selectedPaints = new HashMap<Integer, Paint>();
-		
 		m_colorsLowDetail = new IntObjHash();
 		
 		isCleared = true;
@@ -165,8 +164,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 			if ((val != null) && (val != m_deletedEntry))
 				m_colorsLowDetail.put(edge, m_deletedEntry);
-		} else
+		} else {
 			m_colorsLowDetail.put(edge, color);
+			isCleared = false;
+		}
 	}
 
 	@Override
@@ -397,12 +398,14 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	@Override
 	public Paint segmentPaint(final int edge) {
 		final Paint paint = m_segmentPaints.get(edge);
-		if (paint == null)
+		
+		if (paint == null) {
 			if ( m_segmentPaintDefault == null )
 				return super.segmentPaint(edge);
 			else
 				return m_segmentPaintDefault;
-
+		}
+		
 		return paint;
 	}
 
