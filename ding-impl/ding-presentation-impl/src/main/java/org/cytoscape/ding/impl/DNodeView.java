@@ -136,8 +136,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	private boolean m_selected;
 
 	// Node color
-	private Paint m_unselectedPaint;
-	private Paint m_selectedPaint;
+//	private Paint m_unselectedPaint;
+//	private Paint m_selectedPaint;
+	
 	private Paint m_borderPaint;
 
 	// Opacity
@@ -212,8 +213,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		m_selected = false;
 
-		m_unselectedPaint = graphView.m_nodeDetails.fillPaint(m_inx);
-		m_selectedPaint = DEFAULT_NODE_SELECTED_PAINT;
 		m_borderPaint = graphView.m_nodeDetails.borderPaint(m_inx);
 
 		transparency = DEFAULT_TRANSPARENCY;
@@ -253,13 +252,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			m_selectedPaint = paint;
+			graphView.m_nodeDetails.setSelectedPaint(m_inx, paint);
 			
 			if (isSelected()) {
-				graphView.m_nodeDetails.overrideFillPaint(m_inx, paint);
-
-				if (paint instanceof Color)
-					graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) paint);
+//				graphView.m_nodeDetails.overrideFillPaint(m_inx, paint);
+//
+//				if (paint instanceof Color)
+//					graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) paint);
 
 				graphView.m_contentChanged = true;
 			}
@@ -269,8 +268,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public Paint getSelectedPaint() {
-		return m_selectedPaint;
-//		return graphView.m_nodeDetails.selectedPaint(m_inx);
+		return graphView.m_nodeDetails.selectedPaint(m_inx);
 	}
 
 
@@ -280,16 +278,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			m_unselectedPaint = paint;
-
+			graphView.m_nodeDetails.setUnselectedPaint(m_inx, paint);
+			
 			if (!isSelected()) {
-				m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
-						((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), transparency);
-				
-				graphView.m_nodeDetails.overrideFillPaint(m_inx, m_unselectedPaint);
-
-				if (m_unselectedPaint instanceof Color)
-					graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
+//				Color transPaint = new Color(((Color) paint).getRed(),
+//						((Color) paint).getGreen(), ((Color) paint).getBlue(), transparency);
+//				
+//				graphView.m_nodeDetails.overrideFillPaint(m_inx, transPaint);
+//				graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) transPaint);
 
 				graphView.m_contentChanged = true;
 			}
@@ -299,7 +295,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	
 	@Override
 	public Paint getUnselectedPaint() {
-		return m_unselectedPaint;
+		return graphView.m_nodeDetails.unselectedPaint(m_inx);
 	}
 
 
@@ -420,15 +416,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				throw new IllegalArgumentException("Transparency is out of range.");
 			transparency = trans;
 
-			if (m_unselectedPaint instanceof Color) {
-
-				m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
-						((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), trans);
-
-				graphView.m_nodeDetails.overrideFillPaint(m_inx, m_unselectedPaint);
-
-				graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
-			}
+//			Paint originalColor = graphView.m_nodeDetails.fillPaint(m_inx);
+//				m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
+//						((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), trans);
+//
+//				graphView.m_nodeDetails.overrideFillPaint(m_inx, m_unselectedPaint);
+//				graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
 
 			graphView.m_contentChanged = true;
 		}
@@ -701,10 +694,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			return false;
 
 		m_selected = true;
-		graphView.m_nodeDetails.overrideFillPaint(m_inx, graphView.m_nodeDetails.selectedPaint(m_inx));
-
-		//if (m_selectedPaint instanceof Color)
-		graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) graphView.m_nodeDetails.selectedPaint(m_inx));
+		graphView.m_nodeDetails.select(m_inx);
+		
+//		graphView.m_nodeDetails.overrideFillPaint(m_inx, graphView.m_nodeDetails.selectedPaint(m_inx));
+//		graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) graphView.m_nodeDetails.selectedPaint(m_inx));
 
 		graphView.m_selectedNodes.insert(m_inx);
 
@@ -729,10 +722,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			return false;
 
 		m_selected = false;
-		graphView.m_nodeDetails.overrideFillPaint(m_inx, m_unselectedPaint);
-
-		if (m_unselectedPaint instanceof Color)
-			graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
+		graphView.m_nodeDetails.unselect(m_inx);
+//		graphView.m_nodeDetails.overrideFillPaint(m_inx, graphView.m_nodeDetails.fillPaint(m_inx));
+//		graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) graphView.m_nodeDetails.fillPaint(m_inx));
 
 		graphView.m_selectedNodes.delete(m_inx);
 

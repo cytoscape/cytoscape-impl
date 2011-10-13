@@ -33,8 +33,10 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.TexturePaint;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.Label;
@@ -54,8 +56,12 @@ class DNodeDetails extends IntermediateNodeDetails {
 	final Object m_deletedEntry = new Object();
 
 	IntObjHash m_colorsLowDetail = new IntObjHash();
+	IntObjHash m_selectedColorsLowDetail = new IntObjHash();
+	
 	Map<Integer, Byte> m_shapes = new HashMap<Integer, Byte>();
-	Map<Integer, Paint> m_fillPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Paint> m_unselectedPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
+	
 	Map<Integer, Float> m_borderWidths = new HashMap<Integer, Float>();
 	Map<Integer, Paint> m_borderPaints = new HashMap<Integer, Paint>();
 	Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
@@ -75,11 +81,14 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	Map<Integer, Double> m_width = new HashMap<Integer, Double>();
 	
-	Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
+	
+	
+	private Set<Integer> selected = new HashSet<Integer>();
 
 	// Default values
 	private Color m_colorLowDetailDefault;
-	private Paint m_fillPaintDefault; 
+	private Color m_selectedColorLowDetailDefault;
+	private Paint m_unselectedPaintDefault; 
 	private Paint m_selectedPaintDefault;
 
 	
@@ -112,8 +121,10 @@ class DNodeDetails extends IntermediateNodeDetails {
 			return;
 		
 		m_colorsLowDetail = new IntObjHash();
+		m_selectedColorsLowDetail = new IntObjHash();
+		
 		m_shapes = new HashMap<Integer, Byte>();
-		m_fillPaints = new HashMap<Integer, Paint>();
+		m_unselectedPaints = new HashMap<Integer, Paint>();
 		m_borderWidths = new HashMap<Integer, Float>();
 		m_borderPaints = new HashMap<Integer, Paint>();
 		m_labelCounts = new HashMap<Integer, Integer>();
@@ -131,18 +142,21 @@ class DNodeDetails extends IntermediateNodeDetails {
 		m_width = new HashMap<Integer, Double>();
 		
 		m_selectedPaints = new HashMap<Integer, Paint>();
-		
+				
 		isCleared = true;
 	}
 
 	void unregisterNode(final int nodeIdx) {
 		final Object o = m_colorsLowDetail.get(nodeIdx);
-
 		if ((o != null) && (o != m_deletedEntry))
 			m_colorsLowDetail.put(nodeIdx, m_deletedEntry);
+		
+		final Object os = m_selectedColorsLowDetail.get(nodeIdx);
+		if ((os != null) && (os != m_deletedEntry))
+			m_selectedColorsLowDetail.put(nodeIdx, m_deletedEntry);
 
 		m_shapes.remove(nodeIdx);
-		m_fillPaints.remove(nodeIdx);
+		m_unselectedPaints.remove(nodeIdx);
 		m_borderWidths.remove(nodeIdx);
 		m_borderPaints.remove(nodeIdx);
 		m_labelWidths.remove(nodeIdx);
@@ -154,6 +168,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 		m_selectedPaints.remove(nodeIdx);
 		
 		m_tooltipTexts.remove(nodeIdx);
+		selected.remove(nodeIdx);
 
 		final Integer intr = m_labelCounts.remove(nodeIdx);
 		final int labelCount = ((intr == null) ? 0 : intr);
@@ -169,6 +184,16 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	@Override
 	public Color colorLowDetail(int node) {
+		boolean isSelected = selected.contains(node);
+		
+		if(isSelected)
+			return selectedColorLowDetail(node);
+		else
+			return unselectedColorLowDetail(node);
+		
+	}
+	
+	public Color unselectedColorLowDetail(int node) {
 		final Object o = m_colorsLowDetail.get(node);
 
 		if ((o == null) || (o == m_deletedEntry))
@@ -182,6 +207,22 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	void setColorLowDetailDefault(Color c) {
 		m_colorLowDetailDefault = c;
+	}
+	
+	public Color selectedColorLowDetail(int node) {
+		final Object o = m_selectedColorsLowDetail.get(node);
+
+		if ((o == null) || (o == m_deletedEntry))
+			if ( m_selectedColorLowDetailDefault == null )
+				return (Color) DNodeView.DEFAULT_NODE_SELECTED_PAINT;
+			else
+				return m_selectedColorLowDetailDefault;
+
+		return (Color) o;
+	}
+
+	void setSelectedColorLowDetailDefault(Color c) {
+		m_selectedColorLowDetailDefault = c;
 	}
 	
 	
@@ -202,20 +243,20 @@ class DNodeDetails extends IntermediateNodeDetails {
 	}
 
 
-	/*
-	 * A null color has the special meaning to remove overridden color.
-	 */
-	void overrideColorLowDetail(int node, Color color) {
-		if ((color == null) || color.equals(super.colorLowDetail(node))) {
-			final Object val = m_colorsLowDetail.get(node);
-
-			if ((val != null) && (val != m_deletedEntry))
-				m_colorsLowDetail.put(node, m_deletedEntry);
-		} else {
-			m_colorsLowDetail.put(node, color);
-			isCleared = false;
-		}
-	}
+//	/*
+//	 * A null color has the special meaning to remove overridden color.
+//	 */
+//	void overrideColorLowDetail(int node, Color color) {
+//		if ((color == null) || color.equals(super.colorLowDetail(node))) {
+//			final Object val = m_colorsLowDetail.get(node);
+//
+//			if ((val != null) && (val != m_deletedEntry))
+//				m_colorsLowDetail.put(node, m_deletedEntry);
+//		} else {
+//			m_colorsLowDetail.put(node, color);
+//			isCleared = false;
+//		}
+//	}
 
 	@Override
 	public byte shape(final int node) {
@@ -249,34 +290,56 @@ class DNodeDetails extends IntermediateNodeDetails {
 	 * Note: this will be used for BOTH unselected and selected.
 	 * 
 	 */
-	@Override
-	public Paint fillPaint(final int node) {
-		final Paint o = m_fillPaints.get(node);
+	public Paint unselectedPaint(final int node) {
+		final Paint o = m_unselectedPaints.get(node);
 
 		if (o == null)
-			if ( m_fillPaintDefault == null ) 
+			if ( m_unselectedPaintDefault == null ) 
 				return super.fillPaint(node);
 			else
-				return m_fillPaintDefault;
+				return m_unselectedPaintDefault;
 
 		return o;
 	}
 
-	void setFillPaintDefault(Paint p) {
-		m_fillPaintDefault = p;
+	void setUnselectedPaintDefault(Paint p) {
+		m_unselectedPaintDefault = p;
 	}
 
-	/*
-	 * A null paint has the special meaning to remove overridden paint.
-	 */
-	void overrideFillPaint(final int node, final Paint paint) {
-		if ((paint == null) || paint.equals(super.fillPaint(node)))
-			m_fillPaints.remove(node);
-		else {
-			m_fillPaints.put(node, paint);
-			isCleared = false;
-		}
+	
+	void setUnselectedPaint(final int node, final Paint paint) {
+		m_unselectedPaints.put(node, paint);
+		if(paint instanceof Color)
+			m_colorsLowDetail.put(node, paint);
+		isCleared = false;
 	}
+	
+	void setSelectedPaint(final int node, final Paint paint) {
+		m_selectedPaints.put(node, paint);
+		if(paint instanceof Color)
+			m_selectedColorsLowDetail.put(node, paint);
+
+		isCleared = false;
+	}
+	
+	@Override
+	public Paint fillPaint(final int node) {
+		boolean isSelected = selected.contains(node);
+		
+		if(isSelected)
+			return selectedPaint(node);
+		else
+			return unselectedPaint(node);
+	}
+	
+	void select(final int node) {
+		selected.add(node);
+	}
+	
+	void unselect(final int node) {
+		selected.remove(node);
+	}
+	
 	
 
 	

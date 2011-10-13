@@ -71,6 +71,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	boolean m_selected;
 	
 	Paint m_unselectedPaint;
+	Paint m_selectedPaint;
 	
 	private Integer transparency;
 

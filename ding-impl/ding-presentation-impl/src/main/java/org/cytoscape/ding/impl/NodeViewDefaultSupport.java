@@ -120,13 +120,14 @@ class NodeViewDefaultSupport {
 		synchronized (lock) {
 			selectedPaint = paint;
 			nodeDetails.setSelectedPaintDefault(getTransparentColor(paint));
+			nodeDetails.setSelectedColorLowDetailDefault((Color)getTransparentColor(paint));
 		}
 	}
 
 	void setUnselectedPaint(Paint paint) {
 		synchronized (lock) {
 			unselectedPaint = paint;
-			nodeDetails.setFillPaintDefault(getTransparentColor(paint));
+			nodeDetails.setUnselectedPaintDefault(getTransparentColor(paint));
 			nodeDetails.setColorLowDetailDefault((Color)getTransparentColor(paint));
 		}
 	}

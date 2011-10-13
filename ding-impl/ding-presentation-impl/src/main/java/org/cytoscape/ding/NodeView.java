@@ -208,4 +208,5 @@ public interface NodeView extends GraphViewObject {
 	
 	ObjectPosition getLabelPosition();
 	void setLabelPosition(final ObjectPosition p);
+	
 }
