@@ -190,7 +190,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 		if (o == null)
 			if ( m_selectedPaintDefault == null ) 
-				return Color.RED;
+				return DNodeView.DEFAULT_NODE_SELECTED_PAINT;
 			else
 				return m_selectedPaintDefault;
 

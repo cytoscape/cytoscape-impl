@@ -137,7 +137,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	// Node color
 	private Paint m_unselectedPaint;
-	//private Paint m_selectedPaint;
+	private Paint m_selectedPaint;
 	private Paint m_borderPaint;
 
 	// Opacity
@@ -213,7 +213,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		m_selected = false;
 
 		m_unselectedPaint = graphView.m_nodeDetails.fillPaint(m_inx);
-		//m_selectedPaint = DEFAULT_NODE_SELECTED_PAINT;
+		m_selectedPaint = DEFAULT_NODE_SELECTED_PAINT;
 		m_borderPaint = graphView.m_nodeDetails.borderPaint(m_inx);
 
 		transparency = DEFAULT_TRANSPARENCY;
@@ -248,13 +248,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 
 	@Override
-	public void setSelectedPaint(Paint paint) {
+	public void setSelectedPaint(final Paint paint) {
 		synchronized (graphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			//m_selectedPaint = paint;
-
+			m_selectedPaint = paint;
+			
 			if (isSelected()) {
 				graphView.m_nodeDetails.overrideFillPaint(m_inx, paint);
 
@@ -269,7 +269,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public Paint getSelectedPaint() {
-		return graphView.m_nodeDetails.selectedPaint(m_inx);
+		return m_selectedPaint;
+//		return graphView.m_nodeDetails.selectedPaint(m_inx);
 	}
 
 
@@ -404,7 +405,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if ((m_borderDash == 0.0f) && (m_borderDash2 == 0.0f))
 				return new BasicStroke(getBorderWidth());
 			else
-
 				return new BasicStroke(getBorderWidth(), BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f,
 						new float[] { m_borderDash, m_borderDash2 }, 0.0f);
 		}
