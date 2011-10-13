@@ -124,8 +124,8 @@ class EdgeViewDefaultSupport {
 
 	void setTransparency(int trans) {
 		transparency = trans;
-//		setSelectedPaint(selectedPaint);
-//		setUnselectedPaint(unselectedPaint);
+		setSelectedPaint(selectedPaint);
+		setUnselectedPaint(unselectedPaint);
 	}
 
 
