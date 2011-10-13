@@ -557,6 +557,13 @@ public class DefaultViewEditorImpl extends JDialog implements
 			list.setModel(model);
 			Set<VisualProperty<?>> vps = vpSets.get(key);
 			for (VisualProperty<?> vp : vps) {
+				
+				//Do not allow editing of the following two VP 
+				if (vp.getDisplayName().contains("Edge Target Arrow Selected Paint") ||
+						vp.getDisplayName().contains("Edge Source Arrow Selected Paint")){
+					continue;
+				}
+				
 				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
 				if(treeNode != null && treeNode.isDepend() == false)
 					model.addElement(vp);
