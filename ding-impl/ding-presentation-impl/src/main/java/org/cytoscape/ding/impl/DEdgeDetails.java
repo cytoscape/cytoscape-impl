@@ -70,6 +70,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	private Paint m_sourceArrowPaintDefault ;
 	private Byte m_targetArrowDefault ;
 	private Paint m_targetArrowPaintDefault ;
+	private Paint m_targetArrowSelectedPaintDefault;
 
 	private Float m_segmentThicknessDefault ;
 	private Stroke m_segmentStrokeDefault ;
@@ -293,6 +294,38 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 	
+	//@Override
+	public Paint targetArrowSelectedPaint(final int edge) {
+		
+		final Paint arrowPaint = this.m_targetArrowSelectedPaints.get(edge);
+		if (arrowPaint == null)
+			if ( m_targetArrowSelectedPaintDefault == null ){
+				return super.targetArrowPaint(edge);
+			}
+			else
+				return m_targetArrowSelectedPaintDefault;
+
+
+		return arrowPaint;
+	}
+
+	
+	void setTargetArrowSelectedPaintDefault(Paint p) {	
+		m_targetArrowSelectedPaintDefault = p;
+	}
+
+	/*
+	 * A null paint has the special meaning to remove overridden paint.
+	 */
+	void overrideTargetArrowSelectedPaint(final int edge, final Paint paint) {
+		if ((paint == null) || paint.equals(super.targetArrowPaint(edge)))
+			this.m_targetArrowSelectedPaints.remove(edge);
+		else {
+			m_targetArrowSelectedPaints.put(edge, paint);
+			isCleared = false;
+		}
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
