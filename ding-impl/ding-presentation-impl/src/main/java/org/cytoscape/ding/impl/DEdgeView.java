@@ -359,25 +359,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
-	public void setSourceEdgeEndStrokePaint(Paint paint) {
-		// No-op.
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
-	public void setTargetEdgeEndStrokePaint(Paint paint) {
-		// No-op.
-	}
 
 	/**
 	 * DOCUMENT ME!

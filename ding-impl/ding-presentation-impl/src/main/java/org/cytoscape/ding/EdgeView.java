@@ -122,15 +122,6 @@ public interface EdgeView  extends GraphViewObject {
 	 */
 	public void setTargetEdgeEndSelectedPaint ( Paint paint );
 
-	/**
-	 * @param paint the new paint for the stroke of the source eged end
-	 */
-	public void setSourceEdgeEndStrokePaint ( Paint paint );
-
-	/**
-	 * @param paint the new paint for the stroke of the target eged end
-	 */
-	public void setTargetEdgeEndStrokePaint ( Paint paint );
 
 	/**
 	 * @param paint set the value for the source edge end 
