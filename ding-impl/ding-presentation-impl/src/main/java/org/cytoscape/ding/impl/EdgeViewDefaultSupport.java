@@ -65,19 +65,18 @@ class EdgeViewDefaultSupport {
 			value = (V) vp.getDefault();
 		
 		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
-			
 			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
 			setTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
+			setSelectedPaint((Paint) value);
 			setSourceEdgeEndSelectedPaint((Paint) value);			
 			setTargetEdgeEndSelectedPaint((Paint) value);
-			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
-			setSourceEdgeEndPaint((Paint) value);
-			setTargetEdgeEndPaint((Paint) value);
+			setSourceEdgeEndUnselectedPaint((Paint) value);
+			setTargetEdgeEndUnselectedPaint((Paint) value);
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
 			final float newWidth = ((Number) value).floatValue();	
@@ -95,7 +94,7 @@ class EdgeViewDefaultSupport {
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {
 			setTargetEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
-			setSourceEdgeEndPaint((Paint) value);
+			setSourceEdgeEndUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
 			setTargetEdgeEndUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
@@ -160,7 +159,7 @@ class EdgeViewDefaultSupport {
 
 	public void setSourceEdgeEndSelectedPaint(Paint paint) {
 		synchronized (lock) {
-			edgeDetails.setSourceArrowPaintDefault(paint);
+			edgeDetails.setSourceArrowSelectedPaintDefault(paint);
 		}
 	}
 
@@ -176,15 +175,9 @@ class EdgeViewDefaultSupport {
 		}
 	}
 
-	public void setSourceEdgeEndPaint(Paint paint) {
+	public void setSourceEdgeEndUnselectedPaint(Paint paint) {
 		synchronized (lock) {
 			edgeDetails.setSourceArrowPaintDefault(paint);
-		}
-	}
-
-	public void setTargetEdgeEndPaint(Paint paint) {
-		synchronized (lock) {
-			edgeDetails.setTargetArrowPaintDefault(paint);
 		}
 	}
 
