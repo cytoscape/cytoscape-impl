@@ -72,8 +72,8 @@ class EdgeViewDefaultSupport {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
 			setSelectedPaint((Paint) value);
-			setSourceEdgeEndSelectedPaint((Paint) value);			
-			setTargetEdgeEndSelectedPaint((Paint) value);
+//			setSourceEdgeEndSelectedPaint((Paint) value);			
+//			setTargetEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
 			setSourceEdgeEndUnselectedPaint((Paint) value);
 			setTargetEdgeEndUnselectedPaint((Paint) value);
@@ -90,9 +90,9 @@ class EdgeViewDefaultSupport {
 			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(strokeWidth);
 			setStroke(newStroke);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
-			setSourceEdgeEndSelectedPaint((Paint) value);
+			//setSourceEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {
-			setTargetEdgeEndSelectedPaint((Paint) value);
+			//setTargetEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
 			setSourceEdgeEndUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
@@ -139,14 +139,16 @@ class EdgeViewDefaultSupport {
 			unselectedPaint = paint;
 			final Paint transColor = getTransparentColor(paint);
 			edgeDetails.setSegmentPaintDefault(transColor);
-			edgeDetails.setColorLowDetailDefault(transColor);
+			edgeDetails.setColorLowDetailDefault((Color) transColor);			
 		}
 	}
 
 	void setSelectedPaint(final Paint paint) {
 		synchronized (lock) {
 			selectedPaint = paint;
-			edgeDetails.setSelectedPaintDefault(getTransparentColor(paint));
+			final Paint transColor = getTransparentColor(paint);
+			edgeDetails.setSelectedPaintDefault(transColor);
+			edgeDetails.setSelectedColorLowDetailDefault((Color) transColor);
 		}
 	}
 	
@@ -157,17 +159,17 @@ class EdgeViewDefaultSupport {
 			return p;
 	}
 
-	public void setSourceEdgeEndSelectedPaint(Paint paint) {
-		synchronized (lock) {
-			edgeDetails.setSourceArrowSelectedPaintDefault(paint);
-		}
-	}
-
-	public void setTargetEdgeEndSelectedPaint(Paint paint) {
-		synchronized (lock) {
-			edgeDetails.setTargetArrowSelectedPaintDefault(paint);
-		}
-	}
+//	public void setSourceEdgeEndSelectedPaint(Paint paint) {
+//		synchronized (lock) {
+//			edgeDetails.setSourceArrowSelectedPaintDefault(paint);
+//		}
+//	}
+//
+//	public void setTargetEdgeEndSelectedPaint(Paint paint) {
+//		synchronized (lock) {
+//			edgeDetails.setTargetArrowSelectedPaintDefault(paint);
+//		}
+//	}
 
 	public void setTargetEdgeEndUnselectedPaint(Paint paint) {
 		synchronized (lock) {

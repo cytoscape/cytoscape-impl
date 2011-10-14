@@ -70,9 +70,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	final int m_inx; // Positive.
 	boolean m_selected;
 	
-	Paint m_unselectedPaint;
-	Paint m_selectedPaint;
-	
 	private Integer transparency;
 
 	Paint m_sourceUnselectedPaint;
@@ -102,11 +99,10 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_inx = inx;
 		m_selected = false;
 		transparency = 255;
-		m_unselectedPaint = m_view.m_edgeDetails.segmentPaint(m_inx);
 		m_sourceUnselectedPaint = m_view.m_edgeDetails.sourceArrowPaint(m_inx);
 		m_sourceSelectedPaint = Color.red;
 		m_targetUnselectedPaint = m_view.m_edgeDetails.targetArrowPaint(m_inx);
-		m_targetSelectedPaint = m_view.m_edgeDetails.targetArrowSelectedPaint(m_inx); //Color.red;
+		m_targetSelectedPaint = Color.red;
 		m_sourceEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_targetEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_anchors = null;
@@ -223,17 +219,10 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			m_unselectedPaint = paint;
-			m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
-					((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), transparency);
+			m_view.m_edgeDetails.setUnselectedPaint(m_inx, paint);
 
-			if (!isSelected()) {
-				m_view.m_edgeDetails.overrideSegmentPaint(m_inx, m_unselectedPaint);
-				if (m_unselectedPaint instanceof Color)
-					m_view.m_edgeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
-
+			if (!isSelected())
 				m_view.m_contentChanged = true;
-			}
 
 			setSourceEdgeEnd(m_sourceEdgeEnd);
 			setTargetEdgeEnd(m_targetEdgeEnd);
@@ -246,29 +235,22 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 * @return DOCUMENT ME!
 	 */
 	public Paint getUnselectedPaint() {
-		return m_unselectedPaint;
+		return m_view.m_edgeDetails.unselectedPaint(m_inx);
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	public void setSelectedPaint(Paint paint) {
 		synchronized (m_view.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
+			m_view.m_edgeDetails.setSelectedPaint(m_inx, paint);
 
-			if (isSelected()) {
-				m_view.m_edgeDetails.overrideSegmentPaint(m_inx,
-						m_view.m_edgeDetails.selectedPaint(m_inx));
-
-				m_view.m_edgeDetails.overrideColorLowDetail(m_inx, (Color) m_view.m_edgeDetails.selectedPaint(m_inx));
-
+			if (isSelected())
 				m_view.m_contentChanged = true;
-			}
 		}
 	}
 
@@ -421,13 +403,12 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			return false;
 
 		m_selected = true;
-		m_view.m_edgeDetails.overrideSegmentPaint(m_inx, m_view.m_edgeDetails.selectedPaint(m_inx));
+		m_view.m_edgeDetails.select(m_inx);
+		
 		m_view.m_edgeDetails.overrideSourceArrowPaint(m_inx,
 				m_sourceSelectedPaint);
 		m_view.m_edgeDetails.overrideTargetArrowPaint(m_inx,
 				m_targetSelectedPaint);
-
-		m_view.m_edgeDetails.overrideColorLowDetail(m_inx, (Color) m_view.m_edgeDetails.selectedPaint(m_inx));
 
 		m_view.m_selectedEdges.insert(m_inx);
 
@@ -469,15 +450,12 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			return false;
 
 		m_selected = false;
-		m_view.m_edgeDetails.overrideSegmentPaint(m_inx, m_unselectedPaint);
+		m_view.m_edgeDetails.unselect(m_inx);
+		
 		m_view.m_edgeDetails.overrideSourceArrowPaint(m_inx,
 				m_sourceUnselectedPaint);
 		m_view.m_edgeDetails.overrideTargetArrowPaint(m_inx,
 				m_targetUnselectedPaint);
-
-		if (m_unselectedPaint instanceof Color)
-			m_view.m_edgeDetails.overrideColorLowDetail(m_inx,
-					(Color) m_unselectedPaint);
 
 		m_view.m_selectedEdges.delete(m_inx);
 
@@ -1360,17 +1338,25 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			
 			transparency = trans;
 
-			if (m_unselectedPaint instanceof Color) {
+			if (m_view.m_edgeDetails.m_unselectedPaints.get(m_inx) != null) {
+				final Paint unselectedPaint = m_view.m_edgeDetails.unselectedPaint(m_inx);
+				final Color transUnselected = new Color(((Color) unselectedPaint).getRed(),
+						((Color) unselectedPaint).getGreen(), ((Color) unselectedPaint).getBlue(), trans);
 
-				m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
-						((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), trans);
-
-				m_view.m_edgeDetails.overrideSegmentPaint(m_inx, m_unselectedPaint);
-				m_view.m_edgeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
+				m_view.m_edgeDetails.setUnselectedPaint(m_inx, transUnselected);
 			}
+			
+			if (m_view.m_edgeDetails.m_selectedPaints.get(m_inx) != null) {
+				final Paint selectedPaint = m_view.m_edgeDetails.selectedPaint(m_inx);
+
+				final Color transSelected = new Color(((Color) selectedPaint).getRed(),
+						((Color) selectedPaint).getGreen(), ((Color) selectedPaint).getBlue(), trans);
+
+				m_view.m_edgeDetails.setSelectedPaint(m_inx, transSelected);
+			}
+			
 			m_view.m_contentChanged = true;
 		}
-
 	}
 
 	

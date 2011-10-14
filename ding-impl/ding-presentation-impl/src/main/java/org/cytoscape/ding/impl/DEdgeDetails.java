@@ -33,7 +33,9 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.util.intr.IntObjHash;
 
@@ -44,6 +46,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	final Object m_deletedEntry = new Object();
 	
 	IntObjHash m_colorsLowDetail = new IntObjHash();
+	IntObjHash m_selectedColorsLowDetail = new IntObjHash();
 	
 	Map<Integer, Float> m_segmentThicknesses = new HashMap<Integer, Float>();
 	Map<Integer, Stroke> m_segmentStrokes = new HashMap<Integer, Stroke>();
@@ -62,19 +65,17 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
 	Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
 	
-	Map<Integer, Paint> m_segmentPaints = new HashMap<Integer, Paint>();
+	Map<Integer, Paint> m_unselectedPaints = new HashMap<Integer, Paint>();
 	Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
 	
-	private Paint m_colorLowDetailDefault ;
+	
 	private Byte m_sourceArrowDefault ;
 	private Paint m_sourceArrowPaintDefault ;
 	private Byte m_targetArrowDefault ;
 	private Paint m_targetArrowPaintDefault ;
-	private Paint m_targetArrowSelectedPaintDefault;
 
 	private Float m_segmentThicknessDefault ;
 	private Stroke m_segmentStrokeDefault ;
-	private Paint m_segmentPaintDefault ;
 	private Integer m_labelCountDefault ;
 	private String m_labelTextDefault ;
 	private Font m_labelFontDefault ;
@@ -82,8 +83,15 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	private Double m_labelWidthDefault ;
 	
 	private Paint m_selectedPaintDefault;
+	private Paint m_unselectedPaintDefault ;
+
+	
+	private Paint m_colorLowDetailDefault;
+	private Color m_selectedColorLowDetailDefault;
 	
 	private boolean isCleared = false; 
+	
+	private Set<Integer> selected = new HashSet<Integer>();
 
 
 	DEdgeDetails(final DGraphView view) {
@@ -108,10 +116,13 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_labelPaints = new HashMap<Long, Paint>();
 		m_labelWidths = new HashMap<Integer, Double>();
 		
-		m_segmentPaints = new HashMap<Integer, Paint>();
-		
+		m_unselectedPaints = new HashMap<Integer, Paint>();
 		m_selectedPaints = new HashMap<Integer, Paint>();
+		
 		m_colorsLowDetail = new IntObjHash();
+		m_selectedColorsLowDetail = new IntObjHash();
+		
+		selected = new HashSet<Integer>();
 		
 		isCleared = true;
 	}
@@ -120,6 +131,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		final Object colorDetail = m_colorsLowDetail.get(edgeIdx);
 		if ((colorDetail != null) && (colorDetail != m_deletedEntry))
 			m_colorsLowDetail.put(edgeIdx, m_deletedEntry);
+		
+		final Object selectedColorDetail = m_selectedColorsLowDetail.get(edgeIdx);
+		if ((selectedColorDetail != null) && (selectedColorDetail != m_deletedEntry))
+			m_selectedColorsLowDetail.put(edgeIdx, m_deletedEntry);
 
 		m_segmentThicknesses.remove(edgeIdx);
 		m_segmentStrokes.remove(edgeIdx);
@@ -128,7 +143,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_targetArrows.remove(edgeIdx);
 		m_targetArrowPaints.remove(edgeIdx);
 		m_targetArrowSelectedPaints.remove(edgeIdx);
-		m_segmentPaints.remove(edgeIdx);
+		
 		m_labelCounts.remove(edgeIdx);
 		m_labelTexts.remove(edgeIdx);
 		m_labelFonts.remove(edgeIdx);
@@ -136,10 +151,23 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_labelWidths.remove(edgeIdx);
 		
 		m_selectedPaints.remove(edgeIdx);
+		m_unselectedPaints.remove(edgeIdx);
+		
+		selected.remove(edgeIdx);
 	}
 
 
+	@Override
 	public Color colorLowDetail(final int edge) {
+		boolean isSelected = selected.contains(edge);
+
+		if (isSelected)
+			return selectedColorLowDetail(edge);
+		else
+			return unselectedColorLowDetail(edge);
+	}
+	
+	public Color unselectedColorLowDetail(final int edge) {
 		final Object o = m_colorsLowDetail.get(edge);
 
 		if ((o == null) || (o == m_deletedEntry))
@@ -150,25 +178,27 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 		return (Color) o;
 	}
+	
+	public Color selectedColorLowDetail(final int edge) {
+		final Object o = m_selectedColorsLowDetail.get(edge);
 
-	void setColorLowDetailDefault(Paint c) {
+		if ((o == null) || (o == m_deletedEntry))
+			if ( m_selectedColorLowDetailDefault == null )
+				return super.colorLowDetail(edge);
+			else
+				return (Color)m_selectedColorLowDetailDefault;
+
+		return (Color) o;
+	}
+
+	void setSelectedColorLowDetailDefault(Color c) {
+		m_selectedColorLowDetailDefault = c;
+	}
+	
+	void setColorLowDetailDefault(Color c) {
 		m_colorLowDetailDefault = c;
 	}
 
-	/*
-	 * A null color has the special meaning to remove overridden color.
-	 */
-	void overrideColorLowDetail(final int edge, final Color color) {
-		if ((color == null) || color.equals(super.colorLowDetail(edge))) {
-			final Object val = m_colorsLowDetail.get(edge);
-
-			if ((val != null) && (val != m_deletedEntry))
-				m_colorsLowDetail.put(edge, m_deletedEntry);
-		} else {
-			m_colorsLowDetail.put(edge, color);
-			isCleared = false;
-		}
-	}
 
 	@Override
 	public byte sourceArrow(final int edge) {
@@ -294,25 +324,25 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 	
-	//@Override
-	public Paint targetArrowSelectedPaint(final int edge) {
-		
-		final Paint arrowPaint = this.m_targetArrowSelectedPaints.get(edge);
-		if (arrowPaint == null)
-			if ( m_targetArrowSelectedPaintDefault == null ){
-				return super.targetArrowPaint(edge);
-			}
-			else
-				return m_targetArrowSelectedPaintDefault;
-
-
-		return arrowPaint;
-	}
-
-	
-	void setTargetArrowSelectedPaintDefault(Paint p) {	
-		m_targetArrowSelectedPaintDefault = p;
-	}
+//	//@Override
+//	public Paint targetArrowSelectedPaint(final int edge) {
+//		
+//		final Paint arrowPaint = this.m_targetArrowSelectedPaints.get(edge);
+//		if (arrowPaint == null)
+//			if ( m_targetArrowSelectedPaintDefault == null ){
+//				return super.targetArrowPaint(edge);
+//			}
+//			else
+//				return m_targetArrowSelectedPaintDefault;
+//
+//
+//		return arrowPaint;
+//	}
+//
+//	
+//	void setTargetArrowSelectedPaintDefault(Paint p) {	
+//		m_targetArrowSelectedPaintDefault = p;
+//	}
 
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
@@ -397,27 +427,37 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 */
 	@Override
 	public Paint segmentPaint(final int edge) {
-		final Paint paint = m_segmentPaints.get(edge);
-		
-		if (paint == null) {
-			if ( m_segmentPaintDefault == null )
-				return super.segmentPaint(edge);
-			else
-				return m_segmentPaintDefault;
+		boolean isSelected = selected.contains(edge);
+
+		if (isSelected)
+			return selectedPaint(edge);
+		else {
+			return unselectedPaint(edge);
 		}
-		
-		return paint;
 	}
 
 	void setSegmentPaintDefault(Paint p) {
-		m_segmentPaintDefault = p;
+		m_unselectedPaintDefault = p;
+	}
+	
+	public Paint unselectedPaint(final int edge) {
+		final Paint paint = m_unselectedPaints.get(edge);
+		
+		if (paint == null) {
+			if ( m_unselectedPaintDefault == null )
+				return DEdgeView.DEFAULT_EDGE_PAINT;
+			else
+				return m_unselectedPaintDefault;
+		}
+		
+		return paint;
 	}
 	
 	public Paint selectedPaint(final int edge) {
 		final Paint paint = m_selectedPaints.get(edge);
 		if (paint == null)
 			if ( m_selectedPaintDefault == null )
-				return super.segmentPaint(edge);
+				return Color.red;
 			else
 				return m_selectedPaintDefault;
 
@@ -428,18 +468,29 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_selectedPaintDefault = p;
 	}
 
+	
+	void select(final int edge) {
+		selected.add(edge);
+	}
+	
+	void unselect(final int edge) {
+		selected.remove(edge);
+	}
+	
+	
+	void setUnselectedPaint(final int edge, final Paint paint) {
+		m_unselectedPaints.put(edge, paint);
+		if(paint instanceof Color)
+			m_colorsLowDetail.put(edge, paint);
+		isCleared = false;
+	}
+	
+	void setSelectedPaint(final int edge, final Paint paint) {
+		m_selectedPaints.put(edge, paint);
+		if(paint instanceof Color)
+			m_selectedColorsLowDetail.put(edge, paint);
 
-	/*
-	 * A negative length value has the special meaning to remove overridden
-	 * length.
-	 */
-	void overrideSegmentPaint(final int edge, final Paint paint) {
-		if ((paint == null) || (paint == super.segmentPaint(edge)))
-			m_segmentPaints.remove(edge);
-		else {
-			m_segmentPaints.put(edge, paint);
-			isCleared = false;
-		}
+		isCleared = false;
 	}
 	
 	
