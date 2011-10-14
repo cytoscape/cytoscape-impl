@@ -231,17 +231,34 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 
 
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public Paint sourceArrowPaint(final int edge) {
-		final Paint arrowPaint = m_sourceArrowPaints.get(edge);
-		if (arrowPaint == null)
-			if ( m_sourceArrowPaintDefault == null )
-				return super.sourceArrowPaint(edge);
-			else
-				return m_sourceArrowPaintDefault;
 
-		return arrowPaint;
+		boolean isSelected = selected.contains(edge);
+		
+		if (isSelected)
+			return selectedPaint(edge);
+		else {
+			return sourceArrowUnselectedPaint(edge);
+		}
 	}
 
+	
+	public Paint sourceArrowUnselectedPaint(final int edge){
+		final Paint paint = this.m_sourceArrowPaints.get(edge);
+
+		if (paint == null){
+			return this.m_sourceArrowPaintDefault;
+		}
+		
+		return paint;
+	}
+	
+	
 	void setSourceArrowPaintDefault(Paint p) {
 		m_sourceArrowPaintDefault = p;
 	}
@@ -297,16 +314,28 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 */
 	@Override
 	public Paint targetArrowPaint(final int edge) {
-		final Paint arrowPaint = m_targetArrowPaints.get(edge);
-		if (arrowPaint == null)
-			if ( m_targetArrowPaintDefault == null )
-				return super.targetArrowPaint(edge);
-			else
-				return m_targetArrowPaintDefault;
 
-		return arrowPaint;
+		boolean isSelected = selected.contains(edge);
+		
+		if (isSelected)
+			return selectedPaint(edge);
+		else {
+			return targetArrowUnselectedPaint(edge);
+		}
 	}
 
+	
+	public Paint targetArrowUnselectedPaint(final int edge){
+		final Paint paint = this.m_targetArrowPaints.get(edge);
+
+		if (paint == null){
+			return this.m_targetArrowPaintDefault;
+		}
+		
+		return paint;
+	}
+	
+	
 	void setTargetArrowPaintDefault(Paint p) {
 		m_targetArrowPaintDefault = p;
 	}

@@ -357,8 +357,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			m_sourceUnselectedPaint = paint;
 
 			if (!isSelected()) {
-				m_view.m_edgeDetails.overrideSourceArrowPaint(m_inx,
-						m_sourceUnselectedPaint);
 				m_view.m_contentChanged = true;
 			}
 		}
@@ -378,8 +376,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			m_targetUnselectedPaint = paint;
 
 			if (!isSelected()) {
-				m_view.m_edgeDetails.overrideTargetArrowPaint(m_inx,
-						m_targetUnselectedPaint);
 				m_view.m_contentChanged = true;
 			}
 		}
@@ -405,11 +401,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_selected = true;
 		m_view.m_edgeDetails.select(m_inx);
 		
-		m_view.m_edgeDetails.overrideSourceArrowPaint(m_inx,
-				m_sourceSelectedPaint);
-		m_view.m_edgeDetails.overrideTargetArrowPaint(m_inx,
-				m_targetSelectedPaint);
-
 		m_view.m_selectedEdges.insert(m_inx);
 
 		for (int j = 0; j < numHandles(); j++) {
@@ -452,11 +443,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_selected = false;
 		m_view.m_edgeDetails.unselect(m_inx);
 		
-		m_view.m_edgeDetails.overrideSourceArrowPaint(m_inx,
-				m_sourceUnselectedPaint);
-		m_view.m_edgeDetails.overrideTargetArrowPaint(m_inx,
-				m_targetUnselectedPaint);
-
 		m_view.m_selectedEdges.delete(m_inx);
 
 		for (int j = 0; j < numHandles(); j++) {
