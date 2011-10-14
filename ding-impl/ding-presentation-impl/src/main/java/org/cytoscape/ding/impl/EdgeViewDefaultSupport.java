@@ -70,14 +70,6 @@ class EdgeViewDefaultSupport {
 			setTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
-			setSelectedPaint((Paint) value);
-//			setSourceEdgeEndSelectedPaint((Paint) value);			
-//			setTargetEdgeEndSelectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
-			setSourceEdgeEndUnselectedPaint((Paint) value);
-			setTargetEdgeEndUnselectedPaint((Paint) value);
-			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
 			final float newWidth = ((Number) value).floatValue();	
 			if(strokeWidth != newWidth) {
