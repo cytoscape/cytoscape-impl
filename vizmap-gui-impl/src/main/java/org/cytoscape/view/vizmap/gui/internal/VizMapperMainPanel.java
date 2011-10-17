@@ -36,13 +36,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -63,12 +57,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -200,7 +192,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		switchVS(style, false);
 	}
 
-	private void switchVS(final VisualStyle style, boolean forceUpdate) {
+	protected void switchVS(final VisualStyle style, boolean forceUpdate) {
 
 		logger.debug("######## Switching VS start: " + style.getTitle());
 		
@@ -211,65 +203,14 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// Close editor windows
 		editorWindowManager.closeAllEditorWindows();
 
-		final List<Property> props = vizMapPropertySheetBuilder.getPropertyList(style);
-		if (props.size() != 0) {
-			logger.debug("######## Style exists in buffer: " + style.getTitle());
-
-			// Validate consistency
-			Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
-			final Set<VisualProperty<?>> hasMap = new HashSet<VisualProperty<?>>();
-			for(VisualMappingFunction map: mappings)
-				hasMap.add(map.getVisualProperty());
-
-			boolean needUpdate = false;
-			int unusedCount = 0;
-			for (Property prop : props) {
-				if (prop.getCategory().startsWith(CATEGORY_UNUSED)) {
-					logger.debug("######## unused Prop VAL = " + ((VizMapperProperty)prop).getInternalValue());
-					unusedCount++;
-				}				
-			}
-			
-			if (unusedCount == props.size()) {
-				vizMapPropertySheetBuilder.setPropertyTable(style);
-				updateAttributeList();
-			} else {
-
-				final Map<String, Property> unused = new TreeMap<String, Property>();
-
-				// Remove all from current table
-				for (Property item : propertySheetPanel.getProperties())
-					propertySheetPanel.removeProperty(item);
-
-				/*
-				 * Add properties to current property sheet.
-				 */
-				for (Property prop : props) {
-					logger.debug("<Prop> " + prop.getDisplayName());
-					if (prop.getCategory().startsWith(CATEGORY_UNUSED) == false) {
-						propertySheetPanel.addProperty(prop);
-					} else {
-						unused.put(prop.getDisplayName(), prop);
-					}
-				}
-
-				final List<String> keys = new ArrayList<String>(unused.keySet());
-				Collections.sort(keys);
-
-				for (Object key : keys)
-					propertySheetPanel.addProperty(unused.get(key));
-
-			}
-		} else {
-			logger.debug("######## Need to create new prop sheet: " + style.getTitle());
-			vizMapPropertySheetBuilder.setPropertyTable(style);
-			updateAttributeList();
-		}
+		logger.debug("######## Need to create new prop sheet: " + style.getTitle());
+		vizMapPropertySheetBuilder.setPropertyTable(style);
+		updateAttributeList();
 
 		// Apply style to the current network view.
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
 
-		if (currentView != null) {
+		if (currentView != null && style.equals(manager.getCurrentVisualStyle()) == false) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					vmm.setVisualStyle((VisualStyle) visualStyleComboBox.getModel().getSelectedItem(), currentView);

@@ -79,9 +79,7 @@ public abstract class AbstractVizMapperAction extends AbstractAction implements 
 	
 	protected PropertySheetPanel propertySheetPanel;
 	
-	
 	protected EditorWindowManager editorWindowManager;
-	
 	
 	protected Properties vizmapUIResource;
 	

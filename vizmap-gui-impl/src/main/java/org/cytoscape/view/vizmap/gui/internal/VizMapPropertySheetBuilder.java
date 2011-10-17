@@ -232,11 +232,33 @@ public class VizMapPropertySheetBuilder {
 		final Collection<VisualProperty<?>> edgeVP = util.getVisualPropertySet(CyEdge.class);
 		//final Collection<VisualProperty<?>> networkVP = style.getVisualLexicon().getVisualLexiconNode(TwoDVisualLexicon.NETWORK).getChildren();
 		
-		final List<Property> nodeProps = getProps(style, MinimalVisualLexicon.NODE.getDisplayName(), nodeVP);
-		final List<Property> edgeProps = getProps(style, MinimalVisualLexicon.EDGE.getDisplayName(), edgeVP);
+		Collection<VisualProperty<?>> nodeVPSelected = new ArrayList<VisualProperty<?>>();
+		Collection<VisualProperty<?>> edgeVPSelected = new ArrayList<VisualProperty<?>>();
+
+		if (PropertySheetUtil.isAdvancedMode()) {
+			nodeVPSelected = nodeVP;
+			edgeVPSelected = edgeVP;
+		} else {
+
+			for (VisualProperty<?> vp : nodeVP) {
+				if (PropertySheetUtil.isBasic(vp))
+					nodeVPSelected.add(vp);
+			}
+
+			for (VisualProperty<?> vp : edgeVP) {
+				if (PropertySheetUtil.isBasic(vp))
+					edgeVPSelected.add(vp);
+			}
+		}
+		
+		
+		final List<Property> nodeProps = getProps(style, MinimalVisualLexicon.NODE.getDisplayName(), nodeVPSelected);
+		final List<Property> edgeProps = getProps(style, MinimalVisualLexicon.EDGE.getDisplayName(), edgeVPSelected);
 		//final List<Property> networkProps = setProps(style, TwoDVisualLexicon.NETWORK);
 		
 		final List<Property> result = new ArrayList<Property>();
+		
+		
 		result.addAll(nodeProps);
 		result.addAll(edgeProps);
 		//result.addAll(networkProps);
@@ -315,6 +337,11 @@ public class VizMapPropertySheetBuilder {
 		for(VisualLexicon lex: lexSet) {
 
 			for (VisualProperty<?> type : lex.getAllVisualProperties()) {
+				if (PropertySheetUtil.isAdvancedMode() == false) {
+					if (PropertySheetUtil.isBasic(type) == false)
+						continue;
+				}
+				
 				mapping = style.getVisualMappingFunction(type);
 	
 				if (mapping == null && lex.getVisualLexiconNode(type).getChildren().size() == 0)

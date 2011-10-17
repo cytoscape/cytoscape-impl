@@ -128,6 +128,9 @@ public class CyActivator extends AbstractCyActivator {
 		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(selectedVisualStyleManager,editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
 		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager,selectedVisualStyleManager);
 		
+		SetViewModeAction viewModeAction = new SetViewModeAction(cyApplicationManagerServiceRef, vizMapperMainPanel, selectedVisualStyleManager);
+		registerAllServices(bc,viewModeAction, new Properties());
+		
 		registerAllServices(bc,selectedVisualStyleManager, new Properties());
 		registerAllServices(bc,attributeSetManager, new Properties());
 		registerAllServices(bc,vizMapperMainPanel, new Properties());
