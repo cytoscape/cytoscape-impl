@@ -487,21 +487,18 @@ public class DefaultViewEditorImpl extends JDialog implements
 			final V defaultVal = selectedStyle.getDefaultValue(vp);
 			try {
 				if (defaultVal != null)
-					newValue = editorFactory.showVisualPropertyValueEditor(
-							this, vp, defaultVal);
+					newValue = editorFactory.showVisualPropertyValueEditor(this, vp, defaultVal);
 				else
-					newValue = editorFactory.showVisualPropertyValueEditor(
-							this, vp, vp.getDefault());
+					newValue = editorFactory.showVisualPropertyValueEditor(this, vp, vp.getDefault());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-
+			
 			if (newValue != null) {
 				// Got new value.  Apply to the dummy view.
 				selectedStyle.setDefaultValue(vp, newValue);
 				mainView.updateView();
 				mainView.repaint();
-				//selectedStyle.apply(mainView.updateView());
 			}
 
 			repaint();

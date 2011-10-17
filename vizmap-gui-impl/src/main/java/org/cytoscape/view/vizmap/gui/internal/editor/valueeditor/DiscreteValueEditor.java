@@ -311,7 +311,14 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		setListItems();
 		setLocationRelativeTo(parent);
 		setVisible(true);
-		return getValue();
+		
+		final T newValue = getValue();
+		canceled = false;
+		
+		if(newValue == null)
+			return initialValue;
+		else
+			return newValue;
 	}
 
 	@Override

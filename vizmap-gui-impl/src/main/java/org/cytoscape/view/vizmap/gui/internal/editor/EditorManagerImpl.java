@@ -189,17 +189,20 @@ public class EditorManagerImpl implements EditorManager {
 
 		while (true) {
 			final V newValue = editor.showEditor(parentComponent, initialValue);
+			// Null is valid return value.  It's from "Cancel" button.
+			if(newValue == null)
+				return null;
+			
 			if (type.getRange().inRange(newValue))
 				return newValue;
 			else {
-				String message = "Please evter valid value";
-				if(type.getRange() instanceof ContinuousRange)
-					message = message + ": " + ((ContinuousRange)type.getRange()).getMin() + " to " + ((ContinuousRange)type.getRange()).getMax();
-				JOptionPane.showMessageDialog(parentComponent, message, "Invalid Value",
-						JOptionPane.ERROR_MESSAGE);
+				String message = "Value is out-of-range.  Please evter valid value.";
+				if (type.getRange() instanceof ContinuousRange)
+					message = message + ": " + ((ContinuousRange) type.getRange()).getMin() + " to "
+							+ ((ContinuousRange) type.getRange()).getMax();
+				JOptionPane.showMessageDialog(parentComponent, message, "Invalid Value", JOptionPane.ERROR_MESSAGE);
 			}
 		}
-		
 	}
 
 	/*
