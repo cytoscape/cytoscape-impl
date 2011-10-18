@@ -1,4 +1,5 @@
 /*
+copy
  Copyright (c) 2008, 2011, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
@@ -389,32 +390,32 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		}
 		
 		
-		copyTableEntry(node, subNode);
+		//copyTableEntry(node, subNode);
 		
 		eventHelper.addEventPayload((CyNetwork)this, subNode, AddedNodesEvent.class);
 
 		return true;
 	}
 	
-	private void copyTableEntry(final CyTableEntry original, final CyTableEntry copy) {
-		final CyRow originalRow = original.getCyRow();
-		final CyRow copyRow = copy.getCyRow();
-		
-		final Collection<CyColumn> columns = originalRow.getTable().getColumns();
-		for(CyColumn column: columns) {
-			final String colName = column.getName();
-			final Class<?> colType = column.getType();
-			if(copyRow.getTable().getColumn(colName) == null) {
-				if(colType == List.class)
-					copyRow.getTable().createListColumn(colName, column.getListElementType(), column.isImmutable());
-				else
-					copyRow.getTable().createColumn(colName, colType, column.isImmutable());
-			}
-			
-			copyRow.set(column.getName(), originalRow.get(column.getName(), column.getType()));
-		}
-		
-	}
+//	private void copyTableEntry(final CyTableEntry original, final CyTableEntry copy) {
+//		final CyRow originalRow = original.getCyRow();
+//		final CyRow copyRow = copy.getCyRow();
+//		
+//		final Collection<CyColumn> columns = originalRow.getTable().getColumns();
+//		for(CyColumn column: columns) {
+//			final String colName = column.getName();
+//			final Class<?> colType = column.getType();
+//			if(copyRow.getTable().getColumn(colName) == null) {
+//				if(colType == List.class)
+//					copyRow.getTable().createListColumn(colName, column.getListElementType(), column.isImmutable());
+//				else
+//					copyRow.getTable().createColumn(colName, colType, column.isImmutable());
+//			}
+//			
+//			copyRow.set(column.getName(), originalRow.get(column.getName(), column.getType()));
+//		}
+//		
+//	}
 
 	public boolean addEdge(final CyEdge edge) {
 		if (edge == null)
@@ -443,7 +444,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			updateEdge(rootEdge);
 		}
 		
-		copyTableEntry(edge, subEdge);
+		//copyTableEntry(edge, subEdge);
 		eventHelper.addEventPayload((CyNetwork)this, subEdge, AddedEdgesEvent.class);
 
 		return true;
