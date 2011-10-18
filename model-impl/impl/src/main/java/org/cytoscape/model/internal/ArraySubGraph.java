@@ -404,8 +404,12 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		for(CyColumn column: columns) {
 			final String colName = column.getName();
 			final Class<?> colType = column.getType();
-			if(copyRow.getTable().getColumn(colName) == null)
-				copyRow.getTable().createColumn(colName, colType, column.isImmutable());
+			if(copyRow.getTable().getColumn(colName) == null) {
+				if(colType == List.class)
+					copyRow.getTable().createListColumn(colName, column.getListElementType(), column.isImmutable());
+				else
+					copyRow.getTable().createColumn(colName, colType, column.isImmutable());
+			}
 			
 			copyRow.set(column.getName(), originalRow.get(column.getName(), column.getType()));
 		}
