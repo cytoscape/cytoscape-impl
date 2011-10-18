@@ -80,6 +80,8 @@ import org.cytoscape.ding.impl.events.GraphViewNodesRestoredEvent;
 import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
@@ -377,6 +379,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private final NodeViewDefaultSupport m_nodeViewDefaultSupport;
 	private final EdgeViewDefaultSupport m_edgeViewDefaultSupport;
+	private final CyAnnotator cyAnnotator;
 
 	
 	/**
@@ -393,10 +396,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
 			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
 			TaskManager manager, CyEventHelper eventHelper,
-			CyNetworkTableManager tableMgr) {
+			CyNetworkTableManager tableMgr,
+			AnnotationFactoryManager annMgr) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, nodeViewTFs, edgeViewTFs,
-				emptySpaceTFs, dropNodeViewTFs, dropEmptySpaceTFs, manager, eventHelper, tableMgr);
+				emptySpaceTFs, dropNodeViewTFs, dropEmptySpaceTFs, manager, eventHelper, tableMgr, annMgr);
 	}
 
 	
@@ -428,7 +432,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
 			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
 			TaskManager manager, CyEventHelper eventHelper,
-			CyNetworkTableManager tableMgr) {
+			CyNetworkTableManager tableMgr,
+			AnnotationFactoryManager annMgr) {
 		super(model);
 		this.props = new Properties();
 		
@@ -492,6 +497,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		logger.debug("Phase 3: All views created: time = " + (System.currentTimeMillis() - start));
 		new FlagAndSelectionHandler(this, eventHelper);
+		cyAnnotator = new CyAnnotator(this,annMgr);
 		logger.debug("Phase 4: Everything created: time = " + (System.currentTimeMillis() - start));
 	}
 
@@ -2990,5 +2996,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final Collection<NodeView> nodes = this.m_nodeViewMap.values();
 		for (NodeView node : nodes)
 			((DNodeView) node).setVisualProperty(vp, defaultValue);
+	}
+
+	public CyAnnotator getCyAnnotator() {
+		return cyAnnotator;
 	}
 }

@@ -295,6 +295,16 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return isPrinting; 
 	}
 
+    /**
+     * This method exposes the JComponent processMouseEvent so that
+     * canvases on top of us can pass events they don't want down.
+     *
+     * @param e the MouseEvent to process
+     */
+    public void processMouseEvent(MouseEvent e) {
+        super.processMouseEvent(e);
+    }
+
 	/**
 	 * 
 	 */
@@ -867,7 +877,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		if ( nview != null ) 
 			popup.createDropNodeViewMenu(nview,rawPt,xformPt,t,action);
 		else
-			popup.createDropEmptySpaceMenu(rawPt,xformPt,t); 
+			popup.createDropEmptySpaceMenu(rawPt,xformPt,t,action); 
 
 		dte.dropComplete(true);
 	}
@@ -1417,4 +1427,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			repaint();
 		}
 	}
+
+	public double getScaleFactor(){
+		return m_scaleFactor;
+	}
+
 }

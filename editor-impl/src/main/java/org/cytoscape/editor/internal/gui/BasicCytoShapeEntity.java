@@ -98,10 +98,9 @@ import org.cytoscape.dnd.GraphicalEntity;
  *
  */
 public class BasicCytoShapeEntity extends JComponent implements DragGestureListener, GraphicalEntity {
-	// MLC 07/27/06:
+
 	private static final long serialVersionUID = -5229827235046946347L;
 
-	// MLC 12/16/06 BEGIN:
 	private static DragSourceContextCursorSetter defaultCursorSetter = new DragSourceContextCursorSetter() {
 		// The default shows that a drop is possible anywhere on the netView:
 		public Cursor computeCursor(Point netViewLoc, DragSourceDragEvent dsde) {
@@ -112,7 +111,7 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 	/**
 	* used for setting tooltip text
 	*/
-	private JLabel _cytoShape;
+	private JLabel label;
 
 	/**
 	 * the title of the shape
@@ -134,7 +133,7 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 	/**
 	 * the icon associated with the shape
 	 */
-	private Icon _image;
+	private Icon icon;
 
 	/**
 	 * the source of a drag event
@@ -146,9 +145,11 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 	/**
 	 * the image associated with the Icon for the shape
 	 */
-	private Image _img;
+	private Image image;
 
 	private final CySwingApplication app;
+
+	private final String description;
 
 	/**
 	 *
@@ -161,54 +162,54 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 	 *                     If null, a default cursor setter is used shows its ok
 	 *                     to drop anywhere on the network view.
 	 */
-	public BasicCytoShapeEntity(CySwingApplication app, String attributeName, String attributeValue, Icon image, String title) {
-		super();
-		this.setTitle(title);
-		this.app = app;
-		_image = image;
+	public BasicCytoShapeEntity(CySwingApplication app, String attributeName, String attributeValue, Icon icon, String title, String tooltipText) {
 
+		super();
+
+		this.app = app;
+		this.title = title; 
+		this.icon = icon; 
 		this.attributeName = attributeName;
 		this.attributeValue = attributeValue;
+		if ( icon instanceof ImageIcon )
+			this.image = ((ImageIcon)icon).getImage();
+		else
+			this.image = null;
+		this.description = tooltipText; 
+		this.myDragSource = new DragSource();
+		
+		init();
+	}
 
-		if (image instanceof ImageIcon) {
-			_img = ((ImageIcon) image).getImage();
-		}
+	public BasicCytoShapeEntity(CySwingApplication app, GraphicalEntity ge) {
 
-		_cytoShape = new JLabel(image);
+		super();
 
-		if (this.attributeName != null) {
-			if (this.attributeName.equals("NODE_TYPE")) {
-				_cytoShape.setToolTipText("<html>To add a node to a network,<br>"
-				                              + "drag and drop a shape<br>"
-										      + "from the palette onto the canvas<br>"
-											  + "OR<br>"
-										      + "simply CTRL-click on the canvas.</html>");
-			} else if (this.attributeName.equals("EDGE_TYPE")) {
-				_cytoShape.setToolTipText("<html>To connect two nodes with an edge<br>"
-				                          + "drag and drop the arrow onto a node<br>"
-										  + "on the canvas, then move the cursor<br>"
-										  + "over a second node and click the mouse.<br>"
-										  + "OR<br>"
-										  + "CTRL-click on the first node and then<br>"
-										  + "click on the second node. </html>");
-			} else if (this.attributeName.equals("NETWORK_TYPE")) {
-				_cytoShape.setToolTipText("<html>To create a nested network<br>"
-				                          + "drag and drop the network onto a node<br>"
-										  + "to assign a nested network,<br>" 
-										  + "or on the canvas to create a new node and<br>"
-										  + "assign a nested network. </html>");
-			}
-		}
+		this.app = app;
+		this.title = ge.getTitle();
+		this.icon = ge.getIcon();
+		this.attributeName = ge.getAttributeName();
+		this.attributeValue = ge.getAttributeValue();
+		this.image = ge.getImage();
+		this.description = ge.getDescription();
+		this.myDragSource = ge.getMyDragSource(); 
+
+		init();
+	}
+
+	private void init() {
+
+		this.label = new JLabel(icon);
+		label.setToolTipText(description); 
 
 		this.setLayout(new GridLayout(1, 1));
 
 		TitledBorder t2 = BorderFactory.createTitledBorder(title);
-		this.add(_cytoShape);
+		this.add(label);
 		this.setBorder(t2);
 
-		myDragSource = new DragSource();
 		myDragSource.addDragSourceListener(new EntityDragSourceListener());
-		myDragSource.createDefaultDragGestureRecognizer(_cytoShape, DnDConstants.ACTION_COPY, this);
+		myDragSource.createDefaultDragGestureRecognizer(label, DnDConstants.ACTION_COPY, this);
 		handler = (new BasicCytoShapeTransferHandler(this, null));
 		this.setTransferHandler(handler);
 	}
@@ -221,14 +222,6 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 	}
 
 	/**
-	 * @param title The title to set.
-	 *
-	 */
-	private void setTitle(String title) {
-		this.title = title;
-	}
-
-	/**
 	 * @return Returns the DragSource.
 	 */
 	public DragSource getMyDragSource() {
@@ -236,39 +229,17 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 	}
 
 	/**
-	 * @param myDragSource The DragSource to set.
-	 */
-	private void setMyDragSource(DragSource myDragSource) {
-		this.myDragSource = myDragSource;
-	}
-
-	/**
 	 * @return Returns the icon associated with the shape
 	 */
 	public Icon getIcon() {
-		return _image;
-	}
-
-	/**
-	 * @param _image the icon to set for the shape
-	 *
-	 */
-	private void setIcon(Icon _image) {
-		this._image = _image;
+		return icon;
 	}
 
 	/**
 	 * @return Returns the image associated with the shape's icon
 	 */
 	public Image getImage() {
-		return _img;
-	}
-
-	/**
-	 * @param _img The _img to set.
-	 */
-	private void setImage(Image _img) {
-		this._img = _img;
+		return image;
 	}
 
 	/**
@@ -278,25 +249,12 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 		return attributeName;
 	}
 
-	/**
-	 * @param attributeName The attributeName to set.
-	 */
-	private void setAttributeName(String attributeName) {
-		this.attributeName = attributeName;
-	}
 
 	/**
 	 * @return Returns the attributeValue.
 	 */
 	public String getAttributeValue() {
 		return attributeValue;
-	}
-
-	/**
-	 * @param attributeValue The attributeValue to set.
-	 */
-	private void setAttributeValue(String attributeValue) {
-		this.attributeValue = attributeValue;
 	}
 
 	/**
@@ -363,4 +321,9 @@ public class BasicCytoShapeEntity extends JComponent implements DragGestureListe
 			dse.getDragSourceContext().setCursor(DragSource.DefaultCopyNoDrop);
 		}
 	}
+
+	public String getDescription() {
+		return description;
+	}
+
 }

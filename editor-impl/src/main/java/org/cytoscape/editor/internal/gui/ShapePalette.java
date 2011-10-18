@@ -75,6 +75,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.dnd.GraphicalEntity;
 
 /**
  *
@@ -108,11 +109,15 @@ public class ShapePalette extends JPanel {
 	protected JScrollPane scrollPane;
 	protected JPanel shapePane;
 
+	private final CySwingApplication app;
+
 	/**
 	 * Creates a new ShapePalette object.
 	 */
-	public ShapePalette() {
+	public ShapePalette(CySwingApplication app) {
 		super();
+
+		this.app = app;
 
 		controlPane = new JPanel();
 		controlPane.setLayout(new BoxLayout(controlPane, BoxLayout.Y_AXIS));
@@ -212,21 +217,14 @@ public class ShapePalette extends JPanel {
 		shapePane.removeAll();
 	}
 
-    public void addShape(CySwingApplication app, String attributeName, String attributeValue, Icon img, String name) {
-        BasicCytoShapeEntity cytoShape = new BasicCytoShapeEntity(app, attributeName, attributeValue,
-                                                                  img, name);
-        cytoShape.setTransferHandler(new BasicCytoShapeTransferHandler(cytoShape, null));
-        shapeMap.put(cytoShape.getTitle(), cytoShape);
-/*
-        if (attributeName.equals(CytoscapeEditorManager.EDGE_TYPE)) {
-            CytoscapeEditorManager.addEdgeTypeForVisualStyle(Cytoscape.getCurrentNetworkView()
-                                     .getVisualStyle(), attributeValue);
-        }
-		*/
-
-        shapePane.add(cytoShape);
+	public void addGraphicalEntity(GraphicalEntity cytoShape, Map props) {
+        shapeMap.put(cytoShape.getTitle(), new BasicCytoShapeEntity(app,cytoShape));
+        shapePane.add( shapeMap.get( cytoShape.getTitle() ) );
     }
 
+	public void removeGraphicalEntity(GraphicalEntity cytoShape, Map props) {
+		shapePane.remove( shapeMap.remove(cytoShape.getTitle()) );
+    }
 
 	/**
 	 * show the palette in the WEST cytopanel

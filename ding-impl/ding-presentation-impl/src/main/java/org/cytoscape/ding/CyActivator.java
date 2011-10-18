@@ -15,6 +15,7 @@ import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
+import org.cytoscape.dnd.GraphicalEntity;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -37,8 +38,15 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 import org.cytoscape.ding.action.GraphicsDetailAction;
-
-
+import org.cytoscape.ding.impl.cyannotator.tasks.BasicGraphicalEntity;
+import org.cytoscape.ding.impl.cyannotator.tasks.DropAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.BoundedAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -65,15 +73,35 @@ public class CyActivator extends AbstractCyActivator {
 		DVisualLexicon dVisualLexicon = new DVisualLexicon(customGraphicsManagerServiceRef);
 		
 		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener();
+
+		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 		
-		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,taskManagerServiceRef,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef,renderingEngineManagerServiceRef, vtfListener);
+		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,taskManagerServiceRef,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef,renderingEngineManagerServiceRef, vtfListener,annotationFactoryManager);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(dVisualLexicon,renderingEngineManagerServiceRef,applicationManagerManagerServiceRef);
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(cyNetworkManagerServiceRef);
 		ObjectPositionValueEditor objectPositionValueEditor = new ObjectPositionValueEditor();
 		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor);
 		EdgePaintToArrowHeadPaintDependency edgeColor2arrowColorDependency = new EdgePaintToArrowHeadPaintDependency();
 		CustomGraphicsSizeDependency nodeCustomGraphicsSizeDependency = new CustomGraphicsSizeDependency();
-		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,taskManagerServiceRef,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef, vtfListener);
+		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,taskManagerServiceRef,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef, vtfListener,annotationFactoryManager);
+
+		BasicGraphicalEntity imageGraphicalEntity = new BasicGraphicalEntity("Image","Image Attr","Image Value", "An Image annotation", "/images/imageIcon.png");
+//		BasicGraphicalEntity arrowGraphicalEntity = new BasicGraphicalEntity("Arrow","Arrow Attr","Arrow Value", "An Arrow annotation", "/images/arrowIcon.png");
+//		BasicGraphicalEntity boundedGraphicalEntity = new BasicGraphicalEntity("Bounded","Bounded Attr","Bounded Value", "A Bounded annotation", "/images/boundedIcon.png");
+		BasicGraphicalEntity shapeGraphicalEntity = new BasicGraphicalEntity("Shape","Shape Attr","Shape Value", "A Shape annotation", "/images/shapeIcon.png");
+		BasicGraphicalEntity textGraphicalEntity = new BasicGraphicalEntity("Text","Text Attr","Text Value", "A Text annotation", "/images/textIcon.png");
+
+		AnnotationFactory imageAnnotationFactory = new ImageAnnotationFactory(customGraphicsManagerServiceRef);
+//		AnnotationFactory arrowAnnotationFactory = new ArrowAnnotationFactory();
+//		AnnotationFactory boundedAnnotationFactory = new BoundedAnnotationFactory();
+		AnnotationFactory shapeAnnotationFactory = new ShapeAnnotationFactory();
+		AnnotationFactory textAnnotationFactory = new TextAnnotationFactory();
+
+		DropAnnotationTaskFactory dropImageTaskFactory = new DropAnnotationTaskFactory(imageGraphicalEntity,imageAnnotationFactory);
+//		DropAnnotationTaskFactory dropArrowTaskFactory = new DropAnnotationTaskFactory(arrowGraphicalEntity,arrowAnnotationFactory);
+//		DropAnnotationTaskFactory dropBoundedTaskFactory = new DropAnnotationTaskFactory(boundedGraphicalEntity,boundedAnnotationFactory);
+		DropAnnotationTaskFactory dropShapeTaskFactory = new DropAnnotationTaskFactory(shapeGraphicalEntity,shapeAnnotationFactory);
+		DropAnnotationTaskFactory dropTextTaskFactory = new DropAnnotationTaskFactory(textGraphicalEntity,textAnnotationFactory);
 		
 		Properties dingRenderingEngineFactoryProps = new Properties();
 		dingRenderingEngineFactoryProps.setProperty("serviceType","presentationFactory");
@@ -105,11 +133,45 @@ public class CyActivator extends AbstractCyActivator {
 		dingNetworkViewFactoryServiceProps.setProperty("service.type","factory");
 		registerService(bc,dingNetworkViewFactory,CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
+
+		registerService(bc,imageGraphicalEntity,GraphicalEntity.class,new Properties());
+		registerService(bc,shapeGraphicalEntity,GraphicalEntity.class,new Properties());
+//		registerService(bc,arrowGraphicalEntity,GraphicalEntity.class,new Properties());
+		registerService(bc,textGraphicalEntity,GraphicalEntity.class,new Properties());
+//		registerService(bc,boundedGraphicalEntity,GraphicalEntity.class,new Properties());
+
+		Properties dropImageTaskFactoryProps = new Properties();
+		dropImageTaskFactoryProps.setProperty("preferredAction","Image");
+		dropImageTaskFactoryProps.setProperty("title","Drop Image");
+		registerService(bc,dropImageTaskFactory,DropNetworkViewTaskFactory.class,dropImageTaskFactoryProps);
+
+//		Properties dropArrowTaskFactoryProps = new Properties();
+//		dropArrowTaskFactoryProps.setProperty("preferredAction","Arrow");
+//		dropArrowTaskFactoryProps.setProperty("title","Drop Arrow");
+//		registerService(bc,dropArrowTaskFactory,DropNetworkViewTaskFactory.class,dropArrowTaskFactoryProps);
+
+//		Properties dropBoundedTaskFactoryProps = new Properties();
+//		dropBoundedTaskFactoryProps.setProperty("preferredAction","Bounded");
+//		dropBoundedTaskFactoryProps.setProperty("title","Drop Bounded");
+//		registerService(bc,dropBoundedTaskFactory,DropNetworkViewTaskFactory.class,dropBoundedTaskFactoryProps);
+
+		Properties dropShapeTaskFactoryProps = new Properties();
+		dropShapeTaskFactoryProps.setProperty("preferredAction","Shape");
+		dropShapeTaskFactoryProps.setProperty("title","Drop Shape");
+		registerService(bc,dropShapeTaskFactory,DropNetworkViewTaskFactory.class,dropShapeTaskFactoryProps);
+
+		Properties dropTextTaskFactoryProps = new Properties();
+		dropTextTaskFactoryProps.setProperty("preferredAction","Text");
+		dropTextTaskFactoryProps.setProperty("title","Drop Text");
+		registerService(bc,dropTextTaskFactory,DropNetworkViewTaskFactory.class,dropTextTaskFactoryProps);
+
 		registerServiceListener(bc,vtfListener,"addNodeViewTaskFactory","removeNodeViewTaskFactory",NodeViewTaskFactory.class);
 		registerServiceListener(bc,vtfListener,"addEdgeViewTaskFactory","removeEdgeViewTaskFactory",EdgeViewTaskFactory.class);
 		registerServiceListener(bc,vtfListener,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
 		registerServiceListener(bc,vtfListener,"addDropNodeViewTaskFactory","removeDropNodeViewTaskFactory",DropNodeViewTaskFactory.class);
 		registerServiceListener(bc,vtfListener,"addDropNetworkViewTaskFactory","removeDropNetworkViewTaskFactory",DropNetworkViewTaskFactory.class);
+
+		registerServiceListener(bc,annotationFactoryManager,"addAnnotationFactory","removeAnnotationFactory",AnnotationFactory.class);
 
 		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef, taskManagerServiceRef,
 				 cyPropertyServiceRef);

@@ -174,9 +174,9 @@ class PopupMenuHelper {
 	/**
 	 * Creates a menu based on the NetworkView.
 	 */
-	void createDropEmptySpaceMenu(Point rawPt, Point xformPt, Transferable t) {
+	void createDropEmptySpaceMenu(Point rawPt, Point xformPt, Transferable t,String action) {
 		// build a menu of actions if more than factory exists
-		Collection<DropNetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.dropEmptySpaceTFs,null);
+		Collection<DropNetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.dropEmptySpaceTFs,action);
 		if ( usableTFs.size() > 1 ) {
 			JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
 			JMenuTracker tracker = new JMenuTracker(menu);

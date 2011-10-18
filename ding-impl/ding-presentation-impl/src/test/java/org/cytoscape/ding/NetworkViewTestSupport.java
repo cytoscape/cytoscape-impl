@@ -3,6 +3,7 @@ package org.cytoscape.ding;
 
 import static org.mockito.Mockito.mock;
 
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.ding.impl.DingViewModelFactory;
@@ -38,7 +39,8 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 		                                       mock(CyServiceRegistrar.class),
 		                                       mock(CyNetworkTableManager.class),
 		                                       mock(CyEventHelper.class),
-		                                       mock(ViewTaskFactoryListener.class));
+		                                       mock(ViewTaskFactoryListener.class),
+											   mock(AnnotationFactoryManager.class));
 	}
 	
 	public CyNetworkView getNetworkView() {

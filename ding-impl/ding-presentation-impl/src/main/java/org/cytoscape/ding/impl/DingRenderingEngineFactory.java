@@ -28,6 +28,8 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+
 
 public class DingRenderingEngineFactory implements
 		RenderingEngineFactory<CyNetwork>,
@@ -42,6 +44,7 @@ public class DingRenderingEngineFactory implements
 	private final UndoSupport undo;
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
+	private final AnnotationFactoryManager annMgr;
 	
 	private TaskManager tm;
 	private final CyNetworkTableManager tableMgr;
@@ -57,7 +60,8 @@ public class DingRenderingEngineFactory implements
 			CyNetworkTableManager tableMgr,
 			CyEventHelper eventHelper,
 			RenderingEngineManager renderingEngineManager,
-			ViewTaskFactoryListener vtfListener) {
+			ViewTaskFactoryListener vtfListener,
+			AnnotationFactoryManager annMgr) {
 		
 		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
 		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);
@@ -69,6 +73,7 @@ public class DingRenderingEngineFactory implements
 		this.tableMgr = DIUtil.stripProxy(tableMgr);
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
 		this.renderingEngineManager = DIUtil.stripProxy(renderingEngineManager);
+		this.annMgr = annMgr;
 
 		this.vtfListener = vtfListener;
 	}
@@ -110,7 +115,7 @@ public class DingRenderingEngineFactory implements
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkFactory, undo, spacialFactory, dingLexicon,
 					vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs,
-					vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr);
+					vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr, annMgr);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());

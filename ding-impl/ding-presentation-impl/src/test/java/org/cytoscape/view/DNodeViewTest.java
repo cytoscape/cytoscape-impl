@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
@@ -82,6 +83,8 @@ public class DNodeViewTest {
 	private CyEventHelper eventHelper;
 	@Mock
 	private CyNetworkTableManager tableMgr;
+	@Mock
+	private AnnotationFactoryManager annMgr;
 	
 	private final TableTestSupport tableSupport = new TableTestSupport();
 	private final NetworkTestSupport netSupport = new NetworkTestSupport();
@@ -111,7 +114,7 @@ public class DNodeViewTest {
 		buildNetwork();
 		networkView = new DGraphView(network, dataFactory, cyRoot, undo, spacialFactory, lexicon,
 				nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
-				dropEmptySpaceTFs, manager, eventHelper, tableMgr);
+				dropEmptySpaceTFs, manager, eventHelper, tableMgr, annMgr);
 		
 		dnv1 = (DNodeView) networkView.getDNodeView(node1);
 		dnv2 = (DNodeView) networkView.getDNodeView(node2);

@@ -2,6 +2,8 @@ package org.cytoscape.ding.impl;
 
 import java.util.Properties;
 
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+
 import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -33,11 +35,13 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
 	private ViewTaskFactoryListener vtfListener;
+	private final AnnotationFactoryManager annMgr;
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkFactory rootNetworkFactory,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, TaskManager tm,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
-			ViewTaskFactoryListener vtfListener) {
+			ViewTaskFactoryListener vtfListener,
+			AnnotationFactoryManager annMgr) {
 
 		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
 		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);
@@ -49,6 +53,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.tableMgr = DIUtil.stripProxy(tableMgr);
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
 		this.vtfListener = vtfListener;
+		this.annMgr = annMgr;
 	}
 
 	@Override
@@ -64,7 +69,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkFactory, undo, spacialFactory, dingLexicon,
 				vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs, 
-				vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr);
+				vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr, annMgr);
 
 		registrar.registerAllServices(dgv, new Properties());
 
