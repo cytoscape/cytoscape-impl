@@ -26,6 +26,8 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 	private final PsiMiTabParser parser;
 	
 	private CyNetwork network;
+	
+	private TaskMonitor parentTaskMonitor;
 
 	public PsiMiTabReader(InputStream is,
 			CyNetworkViewFactory cyNetworkViewFactory,
@@ -41,6 +43,7 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.parentTaskMonitor = taskMonitor;
 		try {
 			createNetwork(taskMonitor);
 		} finally {
@@ -68,13 +71,20 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
+
 		final CyNetworkView view = cyNetworkViewFactory.getNetworkView(network);
 
-		CyLayoutAlgorithm tf = layouts.getDefaultLayout();
-		tf.setNetworkView(view);
-		TaskIterator ti = tf.getTaskIterator();
-		Task task = ti.next();
-		insertTasksAfterCurrentTask(task);
+		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
+		layout.setNetworkView(view);
+		
+		// Force to run this task here to avoid concurrency problem.
+		TaskIterator itr = layout.getTaskIterator();
+		Task nextTask = itr.next();
+		try {
+			nextTask.run(parentTaskMonitor);
+		} catch (Exception e) {
+			throw new RuntimeException("Could not finish layout", e);
+		}
 
 		return view;
 	}
