@@ -88,7 +88,7 @@ public class ImportAttributeTableTask extends AbstractTask implements CyTableRea
 							CytoscapeServices.netMgr, CytoscapeServices.appMgr);
 					insertTasksAfterCurrentTask(task);
 			} else { /* Case 2: use an attribute as the key. */
-				final MapNetworkAttrTask task = new MapNetworkAttrTask(type, table, primaryKey, mappingKey,
+				final MapNetworkAttrTask task = new MapNetworkAttrTask(type, table, mappingKey,
 						CytoscapeServices.netMgr, CytoscapeServices.appMgr);
 				insertTasksAfterCurrentTask(task);
 			}
