@@ -6,6 +6,8 @@ import org.cytoscape.task.internal.quickstart.subnetworkbuilder.CreateSubnetwork
 import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SearchRelatedGenesTask;
 import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SubnetworkBuilderState;
 import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SubnetworkBuilderUtil;
+import org.cytoscape.task.internal.welcome.ShowWelcomeScreenTask;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -37,7 +39,7 @@ public class StartTask extends ImportNetworkFromPublicDataSetTask {
 	
 	public StartTask(final QuickStartState state, final ImportTaskUtil importTaskUtil,
 	                 final CyNetworkManager networkManager,
-	                 final SubnetworkBuilderUtil subnetworkUtil)
+	                 final SubnetworkBuilderUtil subnetworkUtil, OpenBrowser openBrowserServiceRef)
 	{
 		super(importTaskUtil.processors, importTaskUtil.mgr, networkManager,
 		      importTaskUtil.networkViewManager, importTaskUtil.props,

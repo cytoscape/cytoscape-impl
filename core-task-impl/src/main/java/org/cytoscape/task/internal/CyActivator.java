@@ -8,6 +8,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.write.PresentationWriterManager;
@@ -77,6 +78,9 @@ import org.cytoscape.task.internal.hide.UnHideAllNodesTaskFactory;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.internal.select.SelectConnectedNodesTaskFactory;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactory;
+import org.cytoscape.task.internal.welcome.LoadMitabFileTaskFactory;
+import org.cytoscape.task.internal.welcome.OpenSpecifiedSessionTaskFactory;
+import org.cytoscape.task.internal.welcome.ShowWelcomeScreenTask;
 import org.cytoscape.task.internal.loaddatatable.LoadAttributesFileTaskFactoryImpl;
 import org.cytoscape.task.internal.select.InvertSelectedNodesTaskFactory;
 import org.cytoscape.task.internal.loadvizmap.LoadVizmapFileTaskFactoryImpl;
@@ -122,6 +126,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		OpenBrowser openBrowserServiceRef = getService(bc,OpenBrowser.class);
 		CyEventHelper cyEventHelperRef = getService(bc,CyEventHelper.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc,RecentlyOpenedTracker.class);
@@ -209,7 +214,13 @@ public class CyActivator extends AbstractCyActivator {
 		SubnetworkBuilderUtil subnetworkBuilderUtil = new SubnetworkBuilderUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyEventHelperRef,cyApplicationManagerServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,visualMappingManagerServiceRef,visualStyleFactoryServiceRef,cyLayoutsServiceRef,undoSupportServiceRef);
 		ImportTaskUtil importTaskUtil = new ImportTaskUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyTableManagerServiceRef,cyDataTableReaderManagerServiceRef,cyApplicationManagerServiceRef);
 		QuickStartTaskFactory quickStartTaskFactory = new QuickStartTaskFactory(importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil);
-		QuickStartTaskFactory2 quickStartTaskFactory2 = new QuickStartTaskFactory2(importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil);
+		
+		OpenSpecifiedSessionTaskFactory openSpecifiedSessionTaskFactory = new OpenSpecifiedSessionTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef);
+
+		
+		LoadMitabFileTaskFactory loadMitabFileTaskFactory = new LoadMitabFileTaskFactory(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef);
+
+		QuickStartTaskFactory2 quickStartTaskFactory2 = new QuickStartTaskFactory2(openBrowserServiceRef, importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil, recentlyOpenedTrackerServiceRef, taskManagerServiceRef, openSpecifiedSessionTaskFactory, openSessionTaskFactory, loadMitabFileTaskFactory, cyApplicationConfigurationServiceRef, applyPreferredLayoutTaskFactory);
 		BioGridPreprocessor bioGridPreprocessor = new BioGridPreprocessor(cyPropertyServiceRef,cyApplicationConfigurationServiceRef);
 		ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactory(undoSupportServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
 		
@@ -617,6 +628,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,copyValueToEntireColumnTaskFactory,TableCellTaskFactory.class, copyValueToEntireColumnTaskFactoryProps);
 		registerService(bc,deleteTableTaskFactory,TableTaskFactory.class, new Properties());
 
+		
 		Properties quickStartTaskFactoryProps = new Properties();
 		quickStartTaskFactoryProps.setProperty("scope","startup");
 		quickStartTaskFactoryProps.setProperty("title","QuickStart");
@@ -640,7 +652,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,subnetworkBuilderUtil,"addProcessor","removeProcessor",InteractionFilePreprocessor.class);
 		registerServiceListener(bc,subnetworkBuilderUtil,"addFactory","removeFactory",VisualMappingFunctionFactory.class);
 
-
+		//ShowWelcomeScreenTask ws = new ShowWelcomeScreenTask();
+		//registerAllServices(bc, ws, new Properties());
+		
 	}
 }
 

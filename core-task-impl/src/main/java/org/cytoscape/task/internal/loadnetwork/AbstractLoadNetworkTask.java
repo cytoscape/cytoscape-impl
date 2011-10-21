@@ -53,7 +53,7 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	private final String VIEW_THRESHOLD = "viewThreshold";
 	private static final int DEF_VIEW_THRESHOLD = 3000;
 	
-	private int viewThreshold;
+	protected int viewThreshold;
 	
 	protected CyNetworkReader reader;
 	protected URI uri;
@@ -86,9 +86,9 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			taskMonitor.setProgress(0.0);
 			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 		}
-
 		insertTasksAfterCurrentTask(viewReader, new GenerateNetworkViewsTask(name, viewReader, networkManager,
 				networkViewManager, namingUtil, viewThreshold));
+		
 		if (taskMonitor != null)
 			taskMonitor.setProgress(1.0);
 	}
@@ -104,72 +104,75 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 
 		return threshold;
 	}
-}
-
-class GenerateNetworkViewsTask extends AbstractTask {
-	private final String name;
-	private final CyNetworkReader viewReader;
-	private final CyNetworkManager networkManager;
-	private final CyNetworkViewManager networkViewManager;
-	private final CyNetworkNaming namingUtil;
-	private final int viewThreshold;
 	
+	protected class GenerateNetworkViewsTask extends AbstractTask {
+		private final String name;
+		private final CyNetworkReader viewReader;
+		private final CyNetworkManager networkManager;
+		private final CyNetworkViewManager networkViewManager;
+		private final CyNetworkNaming namingUtil;
+		private final int viewThreshold;
+		
 
-	GenerateNetworkViewsTask(final String name, final CyNetworkReader viewReader,
-			final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager,
-			final CyNetworkNaming namingUtil, final int viewThreshold) {
-		this.name = name;
-		this.viewReader = viewReader;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.namingUtil = namingUtil;
-		this.viewThreshold = viewThreshold;
-	}
+		public GenerateNetworkViewsTask(final String name, final CyNetworkReader viewReader,
+				final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager,
+				final CyNetworkNaming namingUtil, final int viewThreshold) {
+			this.name = name;
+			this.viewReader = viewReader;
+			this.networkManager = networkManager;
+			this.networkViewManager = networkViewManager;
+			this.namingUtil = namingUtil;
+			this.viewThreshold = viewThreshold;		
+		}
 
-	public void run(final TaskMonitor taskMonitor) throws Exception {
-		if (taskMonitor != null)
-			taskMonitor.setProgress(0.0);
+		public void run(final TaskMonitor taskMonitor) throws Exception {
+			if (taskMonitor != null)
+				taskMonitor.setProgress(0.0);
 
-		final CyNetwork[] networks = viewReader.getCyNetworks();
+			final CyNetwork[] networks = viewReader.getCyNetworks();
 
-		for (CyNetwork network : networks) {
+			for (CyNetwork network : networks) {
 
-			network.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle(name));
-			networkManager.addNetwork(network);
+				network.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle(name));
+				networkManager.addNetwork(network);
 
-			final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
-			if (numGraphObjects < viewThreshold) {
-				final CyNetworkView view = viewReader.buildCyNetworkView(network);
-				networkViewManager.addNetworkView(view);
-				view.fitContent();
+				final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
+				if (numGraphObjects < viewThreshold) {
+					final CyNetworkView view = viewReader.buildCyNetworkView(network);
+					networkViewManager.addNetworkView(view);
+					view.fitContent();
+				}
+
+				informUserOfGraphStats(network, numGraphObjects, taskMonitor);
+			}
+		}
+
+		/**
+		 * Inform User of Network Stats.
+		 */
+		private void informUserOfGraphStats(final CyNetwork newNetwork, final int objectCount,
+				final TaskMonitor taskMonitor) {
+			NumberFormat formatter = new DecimalFormat("#,###,###");
+			StringBuffer sb = new StringBuffer();
+
+			// Give the user some confirmation
+			sb.append("Successfully loaded network from:  ");
+			sb.append(name);
+			sb.append("\n\nNetwork contains " + formatter.format(newNetwork.getNodeCount()));
+			sb.append(" nodes and " + formatter.format(newNetwork.getEdgeCount()));
+			sb.append(" edges.\n\n");
+
+			if (objectCount < viewThreshold) {
+				sb.append("Network is under " + viewThreshold
+						+ " graph objects.  A view will be automatically created.");
+			} else {
+				sb.append("Network is over " + viewThreshold + " graph objects.  A view has not been created."
+						+ "  If you wish to view this network, use " + "\"Create View\" from the \"Edit\" menu.");
 			}
 
-			informUserOfGraphStats(network, numGraphObjects, taskMonitor);
+			if (taskMonitor != null)
+				taskMonitor.setStatusMessage(sb.toString());
 		}
 	}
 
-	/**
-	 * Inform User of Network Stats.
-	 */
-	private void informUserOfGraphStats(final CyNetwork newNetwork, final int objectCount, final TaskMonitor taskMonitor) {
-		NumberFormat formatter = new DecimalFormat("#,###,###");
-		StringBuffer sb = new StringBuffer();
-
-		// Give the user some confirmation
-		sb.append("Successfully loaded network from:  ");
-		sb.append(name);
-		sb.append("\n\nNetwork contains " + formatter.format(newNetwork.getNodeCount()));
-		sb.append(" nodes and " + formatter.format(newNetwork.getEdgeCount()));
-		sb.append(" edges.\n\n");
-
-		if (objectCount < viewThreshold) {
-			sb.append("Network is under " + viewThreshold + " graph objects.  A view will be automatically created.");
-		} else {
-			sb.append("Network is over " + viewThreshold + " graph objects.  A view has not been created."
-					+ "  If you wish to view this network, use " + "\"Create View\" from the \"Edit\" menu.");
-		}
-
-		if (taskMonitor != null)
-			taskMonitor.setStatusMessage(sb.toString());
-	}
 }
