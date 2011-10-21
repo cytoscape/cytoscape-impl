@@ -5,6 +5,9 @@ import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,11 +36,13 @@ public class CreateNewNetworkPanel extends JPanel {
 	private Window parent;
 
 	private DownloadBiogridDataTaskFactory taskFactory;
+	private final TaskFactory loadNetworkFileTF;
 
 	CreateNewNetworkPanel(Window parent, final TaskManager guiTaskManager, final LoadMitabFileTaskFactory loadTF,
-			final CyApplicationConfiguration config, final TaskFactory layoutTF) {
+			final CyApplicationConfiguration config, final TaskFactory loadNetworkFileTF) {
 		this.loadTF = loadTF;
 		this.parent = parent;
+		this.loadNetworkFileTF = loadNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
 		this.networkList = new JComboBox();
 		taskFactory = new DownloadBiogridDataTaskFactory(networkList, config);
@@ -52,6 +57,15 @@ public class CreateNewNetworkPanel extends JPanel {
 		layout.setToolTipText("Note: This option may take minutes to finish for large networks!");
 
 		this.loadNetwork = new JLabel("From file...");
+		loadNetwork.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				// Load network from file.
+				parent.dispose();
+				guiTaskManager.execute(loadNetworkFileTF);
+			}
+		});
 		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
 
 		this.fromDB = new JLabel("From public data:");

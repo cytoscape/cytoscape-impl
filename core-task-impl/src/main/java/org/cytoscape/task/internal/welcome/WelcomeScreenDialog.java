@@ -52,7 +52,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 	private final LoadMitabFileTaskFactory loadTF;
 	private final CyApplicationConfiguration config;
-	private final TaskFactory layoutTF;
+	private final TaskFactory loadNetworkTF;
 
 	WelcomeScreenDialog(Component parent, OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker,
 			TaskManager guiTaskManager, OpenSpecifiedSessionTaskFactory taskFactory,
@@ -62,7 +62,7 @@ public class WelcomeScreenDialog extends JDialog {
 		this.loadTF = loadTF;
 		this.fileTracker = fileTracker;
 		this.config = config;
-		this.layoutTF = layoutTF;
+		this.loadNetworkTF = layoutTF;
 
 		this.guiTaskManager = guiTaskManager;
 		this.taskFactory = taskFactory;
@@ -141,7 +141,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, taskFactory, openTaskFactory),
 				"Open a Recent Session");
-		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, guiTaskManager, loadTF, config, layoutTF), "Create New Network");
+		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, guiTaskManager, loadTF, config, loadNetworkTF), "Create New Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
 
