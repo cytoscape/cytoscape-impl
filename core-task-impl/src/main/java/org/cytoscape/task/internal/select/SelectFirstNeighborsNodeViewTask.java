@@ -43,31 +43,29 @@ import org.cytoscape.work.TaskMonitor;
 
 public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 
-    private View<CyNode> nodeView;
-    private CyNetworkView netView;
+	private View<CyNode> nodeView;
+	private CyNetworkView netView;
 
-    private final SelectUtils selectUtils;
+	private final SelectUtils selectUtils;
 
-    public SelectFirstNeighborsNodeViewTask(View<CyNode> nodeView, CyNetworkView netView,
-	    final CyEventHelper eventHelper) {
-	this.nodeView = nodeView;
-	this.netView = netView;
-	this.selectUtils = new SelectUtils();
-    }
+	public SelectFirstNeighborsNodeViewTask(View<CyNode> nodeView, CyNetworkView netView) {
+		this.nodeView = nodeView;
+		this.netView = netView;
+		this.selectUtils = new SelectUtils();
+	}
 
-    public void run(TaskMonitor tm) throws Exception {
-	if (nodeView == null)
-	    throw new NullPointerException("node view is null");
-	if (netView == null)
-	    throw new NullPointerException("network view is null");
+	public void run(TaskMonitor tm) throws Exception {
+		if (nodeView == null)
+			throw new NullPointerException("node view is null");
+		if (netView == null)
+			throw new NullPointerException("network view is null");
 
-	final Set<CyNode> selNodes = new HashSet<CyNode>();
-	final CyNode node = nodeView.getModel();
-	final CyNetwork net = netView.getModel();
-	selNodes.add(node);
-	selNodes.addAll(net.getNeighborList(node, CyEdge.Type.ANY));
-	selectUtils.setSelectedNodes(selNodes, true);
-
-	netView.updateView();
-    }
+		final Set<CyNode> selNodes = new HashSet<CyNode>();
+		final CyNode node = nodeView.getModel();
+		final CyNetwork net = netView.getModel();
+		selNodes.add(node);
+		selNodes.addAll(net.getNeighborList(node, CyEdge.Type.ANY));
+		selectUtils.setSelectedNodes(selNodes, true);
+		netView.updateView();
+	}
 }

@@ -53,46 +53,46 @@ import org.junit.Test;
 
 public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTester {
 
-    @Before
-    public void setUp() throws Exception {
-	super.setUp();
-    }
+	@Before
+	public void setUp() throws Exception {
+		super.setUp();
+	}
 
-    @Test
-    public void testRun() throws Exception {
-	// more setup
-	List<CyNode> nl = new ArrayList<CyNode>();
-	nl.add(e4);
-	when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
+	@Test
+	public void testRun() throws Exception {
+		// more setup
+		List<CyNode> nl = new ArrayList<CyNode>();
+		nl.add(e4);
+		when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
 
-	View<CyNode> nv = (View<CyNode>) mock(View.class);
-	when(nv.getModel()).thenReturn(e3);
-	CyNetworkView netView = mock(CyNetworkView.class);
-	when(netView.getModel()).thenReturn(net);
+		View<CyNode> nv = (View<CyNode>) mock(View.class);
+		when(nv.getModel()).thenReturn(e3);
+		CyNetworkView netView = mock(CyNetworkView.class);
+		when(netView.getModel()).thenReturn(net);
 
-	// run the task
-	Task t = new SelectFirstNeighborsNodeViewTask(nv, netView, eventHelper);
-	t.run(tm);
+		// run the task
+		Task t = new SelectFirstNeighborsNodeViewTask(nv, netView);
+		t.run(tm);
 
-	// check that the expected rows were set
-	verify(r4, times(1)).set("selected", true);
-    }
+		// check that the expected rows were set
+		verify(r4, times(1)).set("selected", true);
+	}
 
-    @Test(expected = NullPointerException.class)
-    public void testNullNetworkView() throws Exception {
-	View<CyNode> nv = (View<CyNode>) mock(View.class);
+	@Test(expected = NullPointerException.class)
+	public void testNullNetworkView() throws Exception {
+		View<CyNode> nv = (View<CyNode>) mock(View.class);
 
-	// run the task
-	Task t = new SelectFirstNeighborsNodeViewTask(nv, null, eventHelper);
-	t.run(tm);
-    }
+		// run the task
+		Task t = new SelectFirstNeighborsNodeViewTask(nv, null);
+		t.run(tm);
+	}
 
-    @Test(expected = NullPointerException.class)
-    public void testNullNodeView() throws Exception {
-	CyNetworkView netView = mock(CyNetworkView.class);
+	@Test(expected = NullPointerException.class)
+	public void testNullNodeView() throws Exception {
+		CyNetworkView netView = mock(CyNetworkView.class);
 
-	// run the task
-	Task t = new SelectFirstNeighborsNodeViewTask(null, netView, eventHelper);
-	t.run(tm);
-    }
+		// run the task
+		Task t = new SelectFirstNeighborsNodeViewTask(null, netView);
+		t.run(tm);
+	}
 }

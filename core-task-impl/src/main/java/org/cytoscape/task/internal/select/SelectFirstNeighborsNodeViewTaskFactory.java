@@ -29,19 +29,12 @@
  */
 package org.cytoscape.task.internal.select;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class SelectFirstNeighborsNodeViewTaskFactory extends AbstractNodeViewTaskFactory {
 
-    private final CyEventHelper eventHelper;
-
-    public SelectFirstNeighborsNodeViewTaskFactory(final CyEventHelper eventHelper) {
-	this.eventHelper = eventHelper;
-    }
-
     public TaskIterator getTaskIterator() {
-	return new TaskIterator(new SelectFirstNeighborsNodeViewTask(nodeView, netView, eventHelper));
+		return new TaskIterator(new SelectFirstNeighborsNodeViewTask(nodeView, netView));
     }
 }
