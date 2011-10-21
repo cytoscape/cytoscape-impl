@@ -6,6 +6,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiNetworkViewTaskFactory;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReaderFactory;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiCyFileFilter;
@@ -33,6 +34,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
 		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc,CyNetworkViewFactory.class);
 		StreamUtil streamUtilRef = getService(bc,StreamUtil.class);
+		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
+
 		
 		PsiMiCyFileFilter psiMiFilter = new PsiMiCyFileFilter("PSI-MI files (*.xml)",streamUtilRef);
 		PsiMiCyFileFilter psiMi1Filter = new PsiMiCyFileFilter("PSI-MI Level 1",streamUtilRef);
@@ -41,7 +44,7 @@ public class CyActivator extends AbstractCyActivator {
 		PsiMiNetworkViewTaskFactory psiMiNetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(psiMiFilter,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyLayoutsServiceRef);
 		PsiMiNetworkWriterFactory psiMi1NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_1,psiMi1Filter);
 		PsiMiNetworkWriterFactory psiMi25NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_2_5,psiMi25Filter);
-		PsiMiTabReaderFactory psiMiTabReaderFactory = new PsiMiTabReaderFactory(psiMiTabFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyLayoutsServiceRef);
+		PsiMiTabReaderFactory psiMiTabReaderFactory = new PsiMiTabReaderFactory(psiMiTabFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyLayoutsServiceRef, cyPropertyServiceRef);
 		
 		
 		Properties psiMiNetworkViewTaskFactoryProps = new Properties();

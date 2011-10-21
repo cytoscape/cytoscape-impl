@@ -8,12 +8,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -36,6 +38,9 @@ public class PsiMiTabReaderTest {
 	TaskMonitor taskMonitor;
 	@Mock
 	Task task;
+	
+	@Mock
+	CyProperty<Properties> props;
 
 	private CyNetworkFactory networkFactory;
 	private CyNetworkViewFactory networkViewFactory;
@@ -79,7 +84,7 @@ public class PsiMiTabReaderTest {
 	private CyNetworkReader createReader(File file) throws IOException {
 		final InputStream is = new FileInputStream(file);
 		PsiMiTabReader reader = new PsiMiTabReader(is, networkViewFactory,
-				networkFactory, layouts);
+				networkFactory, layouts, props);
 		reader.setTaskIterator(new TaskIterator(reader));
 		return reader;
 	}
