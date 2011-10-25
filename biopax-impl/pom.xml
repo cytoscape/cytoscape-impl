@@ -76,45 +76,7 @@
 			<version>4.0.0b3</version>
 		</dependency>
 	</dependencies>
-	
-	<repositories>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
-		</repository>
-		<repository>
-			<id>cytoscape_thirdparty</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Wrapped Third Party Libraries</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/thirdparty/</url>
-		</repository>
-	</repositories>
-	
+		
 	<build>
 		<plugins>
 			<plugin>
