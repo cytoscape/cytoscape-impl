@@ -14,6 +14,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.work.TaskManager;
@@ -92,8 +93,13 @@ public class CyActivator extends AbstractCyActivator {
 		CyProperty bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
+
+		VisualMappingFunctionFactory vmfFactoryC = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+		VisualMappingFunctionFactory vmfFactoryD = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+		VisualMappingFunctionFactory vmfFactoryP = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+
 		
-		CyPluginAdapterImpl cyPluginAdapter = new CyPluginAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutsRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,dialogTaskManagerRef,panelTaskManagerRef,submenuTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef,visualMappingManagerRef,visualStyleFactoryRef);
+		CyPluginAdapterImpl cyPluginAdapter = new CyPluginAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutsRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,dialogTaskManagerRef,panelTaskManagerRef,submenuTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef, vmfFactoryC, vmfFactoryD, vmfFactoryP, visualMappingManagerRef,visualStyleFactoryRef);
 		PluginLoaderTaskFactory pluginLoaderTaskFactory = new PluginLoaderTaskFactory(cyPluginAdapter);
 		PluginManagerAction pluginManagerAction = new PluginManagerAction(cySwingApplicationRef,cyApplicationManagerRef,cytoscapeVersionService,bookmarkServiceRef,bookmarksUtilServiceRef,dialogTaskManagerRef,cyPropertyRef,cyPluginAdapter,pluginLoaderTaskFactory,cyApplicationConfigurationServiceRef);
 		StartupMostlyFinished startupMostlyFinished = new StartupMostlyFinished(cyEventHelperRef);

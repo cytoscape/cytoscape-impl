@@ -51,6 +51,7 @@ import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsListener;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
 import org.cytoscape.view.presentation.property.AbstractVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
@@ -155,6 +156,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	private DataImportFinishedEvent dataImportFinishedEvent;
 	private DropNetworkViewTaskFactory dropNetworkViewTaskFactory;
 	private CyPlugin cyPlugin;
+	private final VisualMappingFunctionFactory visualMappingFunctionContinuousFactory;
+	private final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory;
+	private final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory;
 
 	//
 	// Since this is implementation code, there shouldn't be a
@@ -190,6 +194,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	                     final RenderingEngineManager renderingEngineManager,
 	                     final TaskManager taskManager,
 	                     final UndoSupport undoSupport,
+	                     final VisualMappingFunctionFactory visualMappingFunctionContinuousFactory,
+	                     final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory,
+	                     final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory,
 	                     final VisualMappingManager visualMappingManager,
 	                     final VisualStyleFactory visualStyleFactory
 					    )
@@ -223,6 +230,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 		this.renderingEngineManager = renderingEngineManager;
 		this.taskManager = taskManager;
 		this.undoSupport = undoSupport;
+		this.visualMappingFunctionContinuousFactory = visualMappingFunctionContinuousFactory;
+		this.visualMappingFunctionDiscreteFactory = visualMappingFunctionDiscreteFactory;
+		this.visualMappingFunctionPassthroughFactory = visualMappingFunctionPassthroughFactory;
 		this.visualMappingManager = visualMappingManager;
 		this.visualStyleFactory = visualStyleFactory;
 	}
@@ -259,6 +269,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	public RenderingEngineManager getRenderingEngineManager() { return renderingEngineManager; }
 	public TaskManager getTaskManager() { return taskManager; }
 	public UndoSupport getUndoSupport() { return undoSupport; }
+	@Override public VisualMappingFunctionFactory getVisualMappingFunctionContinuousFactory() { return visualMappingFunctionContinuousFactory; }
+	@Override public VisualMappingFunctionFactory getVisualMappingFunctionDiscreteFactory() { return visualMappingFunctionDiscreteFactory; }
+	@Override public VisualMappingFunctionFactory getVisualMappingFunctionPassthroughFactory() { return visualMappingFunctionPassthroughFactory; }
 	public VisualMappingManager getVisualMappingManager() { return visualMappingManager; }
 	public VisualStyleFactory getVisualStyleFactory() { return visualStyleFactory; }
 }

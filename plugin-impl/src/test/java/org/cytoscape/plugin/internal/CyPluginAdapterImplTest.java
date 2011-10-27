@@ -29,6 +29,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskManager;
@@ -72,6 +73,9 @@ public class CyPluginAdapterImplTest extends CyPluginAdapterTest {
 			mock(RenderingEngineManager.class),
 			mock(TaskManager.class),
 			mock(UndoSupport.class),
+			mock(VisualMappingFunctionFactory.class),
+			mock(VisualMappingFunctionFactory.class),
+			mock(VisualMappingFunctionFactory.class),
 			mock(VisualMappingManager.class),
 			mock(VisualStyleFactory.class)
 		    );
