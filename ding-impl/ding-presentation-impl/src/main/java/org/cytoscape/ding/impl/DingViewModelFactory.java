@@ -15,7 +15,8 @@ import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +32,16 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 
-	private TaskManager tm;
+	private DialogTaskManager dialogTaskManager;
+	private SubmenuTaskManager menuTaskManager;
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
 	private ViewTaskFactoryListener vtfListener;
 	private final AnnotationFactoryManager annMgr;
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkFactory rootNetworkFactory,
-			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, TaskManager tm,
+			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
+			DialogTaskManager dialogTaskManager, SubmenuTaskManager menuTaskManager,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
 			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr) {
@@ -48,12 +51,13 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.spacialFactory = DIUtil.stripProxy(spacialFactory);
 		this.undo = DIUtil.stripProxy(undo);
 		this.dingLexicon = DIUtil.stripProxy(dingLexicon);
-		this.tm = DIUtil.stripProxy(tm);
+		this.dialogTaskManager = DIUtil.stripProxy(dialogTaskManager);
 		this.registrar = DIUtil.stripProxy(registrar);
 		this.tableMgr = DIUtil.stripProxy(tableMgr);
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
 		this.vtfListener = vtfListener;
 		this.annMgr = annMgr;
+		this.menuTaskManager = menuTaskManager;
 	}
 
 	@Override
@@ -69,7 +73,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkFactory, undo, spacialFactory, dingLexicon,
 				vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs, 
-				vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr, annMgr);
+				vtfListener.dropEmptySpaceTFs, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
 
 		registrar.registerAllServices(dgv, new Properties());
 

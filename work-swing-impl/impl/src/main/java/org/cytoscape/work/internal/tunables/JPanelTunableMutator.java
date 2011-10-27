@@ -19,12 +19,12 @@ import javax.swing.border.TitledBorder;
 import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.internal.tunables.utils.CollapsablePanel;
 import org.cytoscape.work.internal.tunables.utils.XorPanel;
 import org.cytoscape.work.swing.GUITunableHandler;
-import org.cytoscape.work.swing.GUITunableInterceptor;
 import org.cytoscape.work.swing.TunableDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,139 +51,61 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class GUITunableInterceptorImpl extends AbstractTunableInterceptor<GUITunableHandler> implements GUITunableInterceptor<GUITunableHandler> {
+public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableHandler> implements TunableMutator<GUITunableHandler,JPanel> {
 	private Map<List<GUITunableHandler>, JPanel> panelMap;
-	private boolean newValuesSet;
 	
 	/** A reference to the parent <code>JPanel</code>, if any. */
 	private JPanel tunablePanel = null;
 
-	/** The list of handlers associated with this interceptor. */
-	private List<GUITunableHandler> handlers;
-
-	/** The actual/original objects whose tunables this interceptor manages. */
-	private Object[] objectsWithTunables;
-
 	/** Provides an initialised logger. */
-	private Logger logger = LoggerFactory.getLogger(GUITunableInterceptorImpl.class);
-
-	private Window parent = null;
-	
-	private TunableDialog tunnableDialog = null;
-
+	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
 
 	/**
 	 * Constructor.
 	 */
-	public GUITunableInterceptorImpl() {
+	public JPanelTunableMutator() {
 		super();
 		panelMap = new HashMap<List<GUITunableHandler>, JPanel>();
 	}
 	
 	/** {@inheritDoc} */
-	public void setParent(Window win){
-		parent = win;
+	public void setConfigurationContext(final Object tPanel){
+		if ( tPanel instanceof JPanel )
+			this.tunablePanel = (JPanel)tPanel;
+		else
+			throw new IllegalArgumentException("this tunable mutator only works with JPanels - set the configuration context to a JPanel");
 	}
 	
 	/** {@inheritDoc} */
-	public void setTunablePanel(final JPanel tPanel){
-		this.tunablePanel = tPanel;
-	}
-	
-	/** {@inheritDoc} */
-	final public JPanel getUI(final Object... proxyObjs) {
-		this.objectsWithTunables = DIUtil.stripProxies(proxyObjs);
-		handlers = new ArrayList<GUITunableHandler>();
-		return constructUI();
-	}
-
-	/**
-	 * Creates a GUI for the detected <code>Tunables</code>, following the graphic rules specified in <code>Tunable</code>s annotations
-	 * or uses the JPanel provided by the method annotated with <code>@ProvidesGUI</code>
-	 *
-	 * The new values that have been entered for the Object contained in <code>GUITunableHandlers</code> are also set if the user clicks on <i>"OK"</i>
-	 *
-	 * @param proxyObjs an array of objects with <code>Tunables</code>s
-	 *
-	 * @return if new values have been successfully set
-	 */
-	final public boolean execUI(Object... proxyObjs) {
-		final JPanel panel = getUI(proxyObjs);
-		if (panel == null)
-			return true;
-
-		return displayGUI(panel, proxyObjs);
-	}
-
-	/** {@inheritDoc} */
-	final public boolean hasTunables(final Object o) {
+	public boolean hasTunables(final Object o) {
 		return super.hasTunables(DIUtil.stripProxy(o));
 	}
 
-        /**                                                                                                                          
-         * This method calls {@link AbstractTunableInterceptor.loadTunables} with the                                                
-         * unwrapped object instead of the Spring proxy object, which is provided as                                                 
-         * an argument.                                                                                                              
-         * @param obj The Spring proxy object from which we'd like the raw object.                                                   
-         */
-        final public void loadTunables(final Object obj) {
-		super.loadTunables(DIUtil.stripProxy(obj));
-        }
-	
+	/** {@inheritDoc} */
+	public boolean validateAndWriteBack(Object proxyObj) {
+		final Object objectWithTunables = DIUtil.stripProxy(proxyObj);
 
-	/** This implements the final action in execUI() and executes the UI.
-	 *  @param optionPanel  the panel containing the various UI elements corresponding to individual tunables
-	 *  @param proxyObjs    represents the objects annotated with tunables
-	 */
-	private boolean displayGUI(final JPanel optionPanel, Object... proxyObjs) {
-		tunnableDialog = new TunableDialog(parent);
-		tunnableDialog.setLocationRelativeTo(parent);
-		tunnableDialog.setTitle("Set Parameters");
-		tunnableDialog.setModal(true);
-		tunnableDialog.setAlwaysOnTop(true);
+		List<GUITunableHandler> handlers = findHandlers(objectWithTunables); 
 
-		tunnableDialog.addComponent(optionPanel);
-		tunnableDialog.setVisible(true);
-		
-		String userInput = tunnableDialog.getUserInput();
-		
-		if (userInput.equalsIgnoreCase("OK")){
-			return validateAndWriteBackTunables(proxyObjs);			
-		}
-		else { // CANCEL
-			return false;			
-		}
+		for (final GUITunableHandler h : handlers)
+			h.handleDependents();
+
+		return validateTunableInput(objectWithTunables); 
 	}
 
-	private JPanel constructUI() {
+	/** {@inheritDoc} */
+	public JPanel buildConfiguration(final Object proxyObj) {
+		final Object objectWithTunables = DIUtil.stripProxy(proxyObj);
+
 		JPanel providedGUI = null;
 		int factoryCount = 0; // # of descendents of TaskFactory...
 		int otherCount = 0;   // ...everything else.  (Presumeably descendents of Task.)
-		if (handlers == null)
-			handlers = new ArrayList<GUITunableHandler>();
-		for (final Object objectWithTunables : objectsWithTunables) {
-			if (objectWithTunables instanceof TaskFactory)
-				++factoryCount;
-			else
-				++otherCount;
+		if (objectWithTunables instanceof TaskFactory)
+			++factoryCount;
+		else
+			++otherCount;
 
-			if (guiProviderMap.containsKey(objectWithTunables)) {
-				if (providedGUI != null)
-					throw new IllegalStateException("Found more than one provided GUI!");
-				try {
-					providedGUI = (JPanel)guiProviderMap.get(objectWithTunables).invoke(objectWithTunables);
-				} catch (final Exception e) {
-					logger.error("Can't retrieve @ProvidesGUI JPanel: " + e);
-					return null;
-				}
-			} else if (handlerMap.containsKey(objectWithTunables))
-				handlers.addAll(handlerMap.get(objectWithTunables).values());
-			else
-				// TODO For task tunableHandlerFactories throwing an exception is wrong because
-				// their tunables simply haven't been loaded yet. 
-				//throw new IllegalArgumentException("No Tunables and no provided GUI exists for Object yet!");
-				logger.warn("No Tunables and no provided GUI exists for Object yet!");
-		}
+		List<GUITunableHandler> handlers = findHandlers(objectWithTunables); 
 
 		// Sanity check:
 		if (factoryCount > 0) {
@@ -197,10 +119,10 @@ public class GUITunableInterceptorImpl extends AbstractTunableInterceptor<GUITun
 		}
 
 		if (providedGUI != null) {
-			//if no parentPanel is defined, then create a new JDialog to display the Tunables' panels
+			//if no tunablePanel is defined, then create a new JDialog to display the Tunables' panels
 			if (tunablePanel == null)
 				return providedGUI;
-			else { // add them to the "parentPanel" JPanel
+			else { // add them to the "tunablePanel" JPanel
 				tunablePanel.removeAll();
 				tunablePanel.add(providedGUI);
 				final JPanel retVal = tunablePanel;
@@ -302,10 +224,10 @@ public class GUITunableInterceptorImpl extends AbstractTunableInterceptor<GUITun
 		for (GUITunableHandler h : handlers)
 			h.notifyDependents();
 
-		//if no parentPanel is defined, then create a new JDialog to display the Tunables' panels
+		//if no tunablePane is defined, then create a new JDialog to display the Tunables' panels
 		if (tunablePanel == null)
 			return panelMap.get(handlers);
-		else { // add them to the "parentPanel" JPanel
+		else { // add them to the "tunablePanel" JPanel
 			tunablePanel.removeAll();
 			tunablePanel.add(panelMap.get(handlers));
 			final JPanel retVal = tunablePanel;
@@ -335,8 +257,7 @@ public class GUITunableInterceptorImpl extends AbstractTunableInterceptor<GUITun
 		if (gh.controlsMutuallyExclusiveNestedChildren()) {
 			JPanel p = new XorPanel(title, gh);
 			return p;
-		}
-		else {
+		} else {
 			// Figure out if the collapsable flag is set
 			final String displayState = gh.getParams().getProperty("displayState");
 			if (displayState != null) {
@@ -385,90 +306,50 @@ public class GUITunableInterceptorImpl extends AbstractTunableInterceptor<GUITun
 	 *
 	 * @return success(true) or failure(false) for the validation
 	 */
-	private boolean validateTunableInput() {
-		for (final Object objectWithTunables : objectsWithTunables) {
-			if (!(objectWithTunables instanceof TunableValidator))
-				continue;
+	private boolean validateTunableInput(final Object objectWithTunables) {
+		if (!(objectWithTunables instanceof TunableValidator))
+			return true;
 
-			final Appendable errMsg = new StringBuilder();
-			try {
-				final ValidationState validationState =
-					((TunableValidator)objectWithTunables).getValidationState(errMsg);
-				if (validationState == ValidationState.INVALID) {
-					JOptionPane.showMessageDialog(new JFrame(), errMsg.toString(),
-					                              "Input Validation Problem",
-					                              JOptionPane.ERROR_MESSAGE);
-					if (tunablePanel == null)
-						displayGUI(panelMap.get(handlers));
+		final Appendable errMsg = new StringBuilder();
+		try {
+			final ValidationState validationState =
+				((TunableValidator)objectWithTunables).getValidationState(errMsg);
+			if (validationState == ValidationState.INVALID) {
+				JOptionPane.showMessageDialog(new JFrame(), errMsg.toString(),
+				                              "Input Validation Problem",
+				                              JOptionPane.ERROR_MESSAGE);
+				return false;
+			} else if (validationState == ValidationState.REQUEST_CONFIRMATION) {
+				if (JOptionPane.showConfirmDialog(new JFrame(), errMsg.toString(),
+								  "Confirmation",
+								  JOptionPane.YES_NO_OPTION)
+				    == JOptionPane.NO_OPTION)
+				{
 					return false;
-				} else if (validationState == ValidationState.REQUEST_CONFIRMATION) {
-					if (JOptionPane.showConfirmDialog(new JFrame(), errMsg.toString(),
-									  "Confirmation",
-									  JOptionPane.YES_NO_OPTION)
-					    == JOptionPane.NO_OPTION)
-					{
-						if (tunablePanel == null)
-							displayGUI(panelMap.get(handlers));
-						return false;
-					}
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		tunablePanel = null;
-		newValuesSet = true;
 		return true;
 	}
 
-	//get the value(Handle) of the Tunable if its JPanel is enabled(Dependency) and check if we have to validate the values of tunables                      
-	/**
-	 * get the <i>value,item,string,state...</i> from the GUI component, and check with the dependencies, if it can be set as the new one 
-	 *
-	 * <p><pre>
-	 * If the <code>TunableValidator</code> interface is implemented by the class that contains the <code>Tunables</code> :
-	 * <ul>
-	 * <li>a validate method has to be applied</li>
-	 * <li>it checks the conditions that have been declared about the chosen <code>Tunable(s)</code> </li>
-	 * <li>if validation fails, it displays an error to the user, and new values are not set</li>
-	 * </ul>
-	 * </pre></p>
-	 * @return success or not of the <code>TunableValidator</code> validate method
-	 */
-	final public boolean validateAndWriteBackTunables(Object... proxyObjs) {
-		final Object objectsWithTunables[] = DIUtil.stripProxies(proxyObjs);
+	private List<GUITunableHandler> findHandlers(Object objectWithTunables) {
+		List<GUITunableHandler> handlers = new ArrayList<GUITunableHandler>();
 
-		// Update handler list:
-		if (handlers == null)
-			handlers = new ArrayList<GUITunableHandler>();
-		else
-			handlers.clear();
 		JPanel providedGUI = null;
-		for (final Object objectWithTunables : objectsWithTunables) {
-			if (guiProviderMap.containsKey(objectWithTunables)) {
-				if (providedGUI != null)
-					throw new IllegalStateException("Found more than one provided GUI!");
-				try {
-					providedGUI = (JPanel)guiProviderMap.get(objectWithTunables).invoke(objectWithTunables);
-				} catch (final Exception e) {
-					logger.error("Can't retrieve @ProvidesGUI JPanel: " + e);
-					return false;
-				}
-			} else if (handlerMap.containsKey(objectWithTunables))
-				handlers.addAll(handlerMap.get(objectWithTunables).values());
-			else
-				// TODO For task tunableHandlerFactories throwing an exception is wrong because
-				// their tunables simply haven't been loaded yet. 
-				//throw new IllegalArgumentException("No Tunables and no provided GUI exists for Object yet!");
-				logger.warn("No Tunables and no provided GUI exists for Object yet!");
-		}
+		if (guiProviderMap.containsKey(objectWithTunables)) {
+			if (providedGUI != null)
+				throw new IllegalStateException("Found more than one provided GUI!");
+			try {
+				providedGUI = (JPanel)guiProviderMap.get(objectWithTunables).invoke(objectWithTunables);
+			} catch (final Exception e) {
+				logger.error("Can't retrieve @ProvidesGUI JPanel: ", e);
+			}
+		} else 
+			handlers.addAll(getHandlers(objectWithTunables).values());
 
-		for (final GUITunableHandler h : handlers)
-			h.handleDependents();
-
-		return validateTunableInput();
+		return handlers;
 	}
-	
-
 }

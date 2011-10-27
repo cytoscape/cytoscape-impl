@@ -32,7 +32,9 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 
@@ -63,7 +65,9 @@ public class CyPluginAdapterImplTest extends CyPluginAdapterTest {
 			mock(CyTableManager.class),
 			mock(CyTableReaderManager.class),
 //			mock(CyTableWriterManager.class),
-			mock(GUITaskManager.class),
+			mock(DialogTaskManager.class),
+			mock(PanelTaskManager.class),
+			mock(SubmenuTaskManager.class),
 			mock(PresentationWriterManager.class),
 			mock(RenderingEngineManager.class),
 			mock(TaskManager.class),

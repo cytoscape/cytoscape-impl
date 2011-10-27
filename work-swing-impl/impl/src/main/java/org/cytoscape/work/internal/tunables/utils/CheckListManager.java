@@ -56,40 +56,11 @@ public class CheckListManager<T> extends MouseAdapter implements ActionListener,
     }
  
     
-//    public T getValue(){
-//    	return (T) list.getSelectedValue();
-//    }    
-    
-    
-//    public ArrayList<T> getArray(){
-//        arrayOut.removeAll(arrayTest);
-//        arrayTest = new ArrayList<Integer>();
-//    	for(int i=0;i<LMS.getPossibleValues().size();i++){
-//    		if(selectionModel.isSelectedIndex(i))arrayTest.add(i);
-//    	}
-//		if(arrayTest.size()!=0){
-//			for(int i=0;i<arrayTest.size();i++){
-//				list.setSelectedIndex((Integer)arrayTest.get(i));
-//				arrayOut.add(i, (T) list.getSelectedValue());
-//			}
-//    	return arrayOut;
-//		}
-//		else {
-//			return null;
-//		}
-//    }
-   
-    
-    
-   
     public Map<Integer,T> getMap(){
     	if(!map.containsKey(list.getSelectedIndex())){
-    		System.out.println("on ajoute = "+list.getSelectedIndex());
        		map.put(list.getSelectedIndex(),(T)list.getSelectedValue());
-    	}
-    	else if(map.containsKey(list.getSelectedIndex())&& test!=list.getSelectedIndex()){
+    	} else if(map.containsKey(list.getSelectedIndex())&& test!=list.getSelectedIndex()){
     		map.remove(list.getSelectedIndex());
-    		System.out.println("on retire = "+list.getSelectedIndex());
     	}
     	toggleSelection(list.getSelectedIndex());
     	test=list.getSelectedIndex();

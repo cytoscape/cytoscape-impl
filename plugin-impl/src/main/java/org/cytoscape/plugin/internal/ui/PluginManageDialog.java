@@ -58,7 +58,6 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 //import org.cytoscape.work.TaskManager;
 //import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.swing.GUITaskManager;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -85,7 +84,7 @@ import org.cytoscape.plugin.internal.Category;
 import java.awt.Dimension;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.plugin.internal.PluginManagerInquireTaskFactory;
 import java.io.File;
@@ -110,7 +109,7 @@ public class PluginManageDialog extends javax.swing.JDialog implements
 	private TaskFactory pluginLoaderTaskFactory;
 	
 	//private final TaskManager taskManager;
-	private GUITaskManager guiTaskManagerServiceRef;
+	private DialogTaskManager guiTaskManagerServiceRef;
 	
 	public enum PluginInstallStatus {
 		INSTALLED(CURRENTLY_INSTALLED), AVAILABLE(AVAILABLE_FOR_INSTALL);
@@ -161,7 +160,7 @@ public class PluginManageDialog extends javax.swing.JDialog implements
 	}
 */
 	public PluginManageDialog(JFrame owner, Bookmarks bookmarks, BookmarksUtil bookmarksUtil,
-			GUITaskManager guiTaskManagerServiceRef, TaskFactory pluginLoaderTaskFactory) {
+			DialogTaskManager guiTaskManagerServiceRef, TaskFactory pluginLoaderTaskFactory) {
 
 		super(owner, "Manage Plugins");
 		this.desktop = owner;

@@ -66,9 +66,9 @@ import org.cytoscape.plugin.internal.ui.PluginManageDialog;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.GUITaskManager;
 
 /**
  *
@@ -78,7 +78,7 @@ public class PluginManagerAction extends AbstractCyAction {
 	private CySwingApplication desktop;
 	private BookmarksUtil bookmarksUtil;
 	private Bookmarks theBookmarks;
-	private GUITaskManager guiTaskManagerServiceRef;
+	private DialogTaskManager guiTaskManagerServiceRef;
 	private CyProperty cytoscapePropertiesServiceRef;
 	private TaskFactory pluginLoaderTaskFactory;
 
@@ -90,7 +90,7 @@ public class PluginManagerAction extends AbstractCyAction {
 	 * Creates a new BookmarkAction object.
 	 */
 	public PluginManagerAction(CySwingApplication desktop, CyApplicationManager appMgr, CytoscapeVersion version,
-			CyProperty<Bookmarks> bookmarksProp, BookmarksUtil bookmarksUtil, GUITaskManager guiTaskManagerServiceRef
+			CyProperty<Bookmarks> bookmarksProp, BookmarksUtil bookmarksUtil, DialogTaskManager guiTaskManagerServiceRef
 			, CyProperty<Properties> cytoscapePropertiesServiceRef, CyPluginAdapter adapter, TaskFactory pluginLoaderTaskFactory,
 			final CyApplicationConfiguration config) {
 				

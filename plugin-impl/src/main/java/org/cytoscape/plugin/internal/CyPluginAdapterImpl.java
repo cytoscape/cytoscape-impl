@@ -62,7 +62,9 @@ import org.cytoscape.view.vizmap.gui.util.ContinuousMappingGenerator;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
 
@@ -102,7 +104,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	private final CyTableManager cyTableManager;
 	private final CyTableReaderManager cyTableReaderManager;
 //	private final CyTableWriterManager cyTableWriterManager;
-	private final GUITaskManager guiTaskManager;
+	private final DialogTaskManager dialogTaskManager;
+	private final PanelTaskManager panelTaskManager;
+	private final SubmenuTaskManager submenuTaskManager;
 	private final PresentationWriterManager presentationWriterManager;
 	private final RenderingEngineManager renderingEngineManager;
 	private final TaskManager taskManager;
@@ -179,7 +183,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	                     final CyTableManager cyTableManager,
 	                     final CyTableReaderManager cyTableReaderManager,
 //	                     final CyTableWriterManager cyTableWriterManager,
-	                     final GUITaskManager guiTaskManager,
+	                     final DialogTaskManager dialogTaskManager,
+	                     final PanelTaskManager panelTaskManager,
+	                     final SubmenuTaskManager submenuTaskManager,
 	                     final PresentationWriterManager presentationWriterManager,
 	                     final RenderingEngineManager renderingEngineManager,
 	                     final TaskManager taskManager,
@@ -210,7 +216,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 		this.cyTableManager = cyTableManager;
 		this.cyTableReaderManager = cyTableReaderManager;
 //		this.cyTableWriterManager = cyTableWriterManager;
-		this.guiTaskManager = guiTaskManager;
+		this.dialogTaskManager = dialogTaskManager;
+		this.panelTaskManager = panelTaskManager;
+		this.submenuTaskManager = submenuTaskManager;
 		this.presentationWriterManager = presentationWriterManager;
 		this.renderingEngineManager = renderingEngineManager;
 		this.taskManager = taskManager;
@@ -244,7 +252,9 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	public CyTableManager getCyTableManager() { return cyTableManager; }
 	public CyTableReaderManager getCyTableReaderManager() { return cyTableReaderManager; }
 //	public CyTableWriterManager getCyTableWriterManager() { return cyTableWriterManager; }
-	public GUITaskManager getGUITaskManager() { return guiTaskManager; }
+	public DialogTaskManager getDialogTaskManager() { return dialogTaskManager; }
+	public PanelTaskManager getPanelTaskManager() { return panelTaskManager; }
+	public SubmenuTaskManager getSubmenuTaskManager() { return submenuTaskManager; }
 	public PresentationWriterManager getPresentationWriterManager() { return presentationWriterManager; }
 	public RenderingEngineManager getRenderingEngineManager() { return renderingEngineManager; }
 	public TaskManager getTaskManager() { return taskManager; }

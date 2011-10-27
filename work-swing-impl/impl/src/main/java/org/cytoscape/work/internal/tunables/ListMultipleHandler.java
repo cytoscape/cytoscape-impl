@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -28,7 +29,7 @@ import org.cytoscape.work.util.ListMultipleSelection;
  */
 public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
 	private JList itemsContainerList;
-	private List<T> selectedItems;
+	private ListMultipleSelection<T> listMultipleSelection;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListMultipleSelection</code> type
@@ -52,7 +53,19 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
 	}
 
 	private void init() {
+		try {
+			listMultipleSelection = (ListMultipleSelection<T>)getValue();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		//create GUI
+		if ( listMultipleSelection.getPossibleValues().isEmpty() ) {
+			panel = null;
+			itemsContainerList = null;
+			return;
+		}
+
 		panel = new JPanel(new BorderLayout());
 		JTextArea jta = new JTextArea(getDescription());
 		jta.setLineWrap(true);
@@ -62,7 +75,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
 		jta.setEditable(false);
 
 		//put the items in a list
-		itemsContainerList = new JList(getList().getPossibleValues().toArray());
+		itemsContainerList = new JList(listMultipleSelection.getPossibleValues().toArray());
 		itemsContainerList.setFont(new Font("sansserif",Font.PLAIN,11));
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
@@ -72,41 +85,26 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
 		panel.add(scrollpane,BorderLayout.EAST);
 	}
 
-	private ListMultipleSelection<T> getList() {
-		try {
-			return (ListMultipleSelection<T>)getValue();
-		} catch (final Exception e) {
-			e.printStackTrace();
-			return new ListMultipleSelection<T>();
-		}
-	}
-
 	/**
 	 * set the items that are currently selected in the <code>itemsContainerList</code> as the selected items in <code>listMultipleSelection</code>
 	 */
 	public void handle() {
-		selectedItems = convertToList(itemsContainerList.getSelectedValues());
+		if ( itemsContainerList == null )
+			return;
+
+		List selectedItems = Arrays.asList(itemsContainerList.getSelectedValues());
 		if (!selectedItems.isEmpty()) {
-			final ListMultipleSelection<T> listMultipleSelection = getList();
 			listMultipleSelection.setSelectedValues(selectedItems);
 		}
-	}
-
-	//converts the array that contains the selected items into a List to be able to set them in ListMultipleSelection object
-	@SuppressWarnings("unchecked")
-		private List<T> convertToList(Object[] array) {
-		List<T> list = new ArrayList<T>();
-
-		for(int i = 0; i < array.length; i++)
-			list.add(i, (T)array[i]);
-		return list;
 	}
 
 	/**
 	 * returns a string representation of all the selected items of <code>listMultipleSelection</code>
 	 */
 	public String getState() {
-		final ListMultipleSelection<T> listMultipleSelection = getList();
+		if ( itemsContainerList == null )
+			return "";
+
 		final List<T> selection = listMultipleSelection.getSelectedValues();
 		return selection == null ? "" : selection.toString();
 	}

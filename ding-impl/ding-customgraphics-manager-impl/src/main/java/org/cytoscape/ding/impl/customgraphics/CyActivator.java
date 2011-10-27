@@ -5,7 +5,7 @@
 package org.cytoscape.ding.impl.customgraphics;
 
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyApplicationConfiguration;
 
@@ -28,12 +28,12 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		GUITaskManager guiTaskManagerServiceRef = getService(bc,GUITaskManager.class);
+		DialogTaskManager dialogTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyProperty coreCyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		
-		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,guiTaskManagerServiceRef,cyApplicationConfigurationServiceRef);
+		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,dialogTaskManagerServiceRef,cyApplicationConfigurationServiceRef);
 		CustomGraphicsManagerAction customGraphicsManagerAction = new CustomGraphicsManagerAction(customGraphicsManager,cyApplicationManagerServiceRef);
 		
 		registerAllServices(bc,customGraphicsManager, new Properties());

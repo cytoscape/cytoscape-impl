@@ -5,7 +5,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.EnhancedSearch;
 import org.cytoscape.search.internal.SearchTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,13 +17,13 @@ public class EnhancedSearchPanel extends javax.swing.JPanel {
 	
 	private CyApplicationManager appManager;
 	private EnhancedSearch searchMgr;
-	private GUITaskManager taskMgr;
+	private DialogTaskManager taskMgr;
 	
 	private final CyNetworkViewManager viewManager;
 
 	/** Creates new form NewJPanel */
 	public EnhancedSearchPanel(CyApplicationManager appManager, final CyNetworkViewManager viewManager, EnhancedSearch searchMgr,
-			GUITaskManager taskMgr) {
+			DialogTaskManager taskMgr) {
 		initComponents();
 
 		// Turn off this for now, we may need this later

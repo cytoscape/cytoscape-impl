@@ -5,8 +5,6 @@ import java.util.Map;
 import org.cytoscape.application.events.CytoscapeStartEvent;
 import org.cytoscape.application.swing.CySwingApplication; 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.GUITaskManager;
 /**
  * A simple class whose instantiation indicates that startup is
  * largely (but not necessarily 100 percent) complete for Cytoscape.
@@ -18,7 +16,6 @@ import org.cytoscape.work.swing.GUITaskManager;
  */
 class StartupMostlyFinished {
 
-	//public StartupMostlyFinished(CySwingApplication app, final CyEventHelper eventHelper) {
 	public StartupMostlyFinished(final CyEventHelper eventHelper) {
 
 		// fire event "start up mostly finished"

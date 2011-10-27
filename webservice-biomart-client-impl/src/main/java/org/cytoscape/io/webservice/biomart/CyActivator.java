@@ -6,7 +6,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import org.cytoscape.io.webservice.biomart.task.ShowBiomartGUIAction;
 import org.cytoscape.io.webservice.biomart.BiomartClient;
@@ -32,7 +32,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
-		GUITaskManager taskManagerServiceRef = getService(bc,GUITaskManager.class);
+		DialogTaskManager taskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);

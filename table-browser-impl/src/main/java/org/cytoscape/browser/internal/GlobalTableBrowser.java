@@ -28,7 +28,7 @@ import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, TableAddedListener {
 
@@ -46,7 +46,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 	public GlobalTableBrowser(String tabTitle, CyTableManager tableManager, CyNetworkTableManager networkTableManager,
 			CyServiceRegistrar serviceRegistrar, EquationCompiler compiler, OpenBrowser openBrowser,
 			CyNetworkManager networkManager, TableTaskFactory deleteTableTaskFactoryService,
-			GUITaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
+			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
 			CyApplicationManager applicationManager, CyEventHelper eventHelper) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);

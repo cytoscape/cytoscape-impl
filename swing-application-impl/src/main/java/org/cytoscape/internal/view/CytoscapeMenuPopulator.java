@@ -51,7 +51,8 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 
 /**
@@ -64,7 +65,8 @@ import org.cytoscape.work.swing.GUITaskManager;
  */
 public class CytoscapeMenuPopulator {
 	final private CySwingApplication app;
-	final private GUITaskManager taskManager;
+	final private PanelTaskManager panelTaskManager;
+	final private DialogTaskManager dialogTaskManager;
 	final private CyApplicationManager appManager;
 	final private CyServiceRegistrar registrar;
 
@@ -75,11 +77,13 @@ public class CytoscapeMenuPopulator {
 	 * Creates a new CytoscapeMenus object. This will construct the basic bar objects, 
 	 * but won't fill them with menu items and associated action listeners.
 	 */
-	public CytoscapeMenuPopulator(final CySwingApplication app, final GUITaskManager taskManager,
+	public CytoscapeMenuPopulator(final CySwingApplication app, final DialogTaskManager dialogTaskManager,
+	                  final PanelTaskManager panelTaskManager,
 				      final CyApplicationManager appManager, final CyServiceRegistrar registrar)
 	{
 		this.app = app;
-		this.taskManager = taskManager;
+		this.dialogTaskManager = dialogTaskManager;
+		this.panelTaskManager = panelTaskManager;
 		this.appManager = appManager;
 		this.registrar = registrar;
 
@@ -87,10 +91,11 @@ public class CytoscapeMenuPopulator {
 	}
 
 	public void addTaskFactory(TaskFactory factory, Map props) {
-		if (taskManager.hasTunables(factory))
-			addFactory(new CytoPanelTaskFactoryTunableAction(factory, taskManager, props, appManager, registrar), factory, props);
+		String pref = (String)(props.get("preferredTaskManager"));
+		if (pref != null && pref.equals("panel"))
+			addFactory(new CytoPanelTaskFactoryTunableAction(factory, panelTaskManager, props, appManager, registrar), factory, props);
 		else
-			addFactory(new TaskFactoryTunableAction<TaskFactory>(taskManager, factory, props, appManager), factory, props);
+			addFactory(new TaskFactoryTunableAction<TaskFactory>(dialogTaskManager, factory, props, appManager), factory, props);
 	}
 
 	public void removeTaskFactory(TaskFactory factory, Map props) {
@@ -98,7 +103,7 @@ public class CytoscapeMenuPopulator {
 	}
 
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map props) {
-		addFactory(new NetworkTaskFactoryTunableAction(taskManager, factory, props, appManager), factory, props);
+		addFactory(new NetworkTaskFactoryTunableAction(dialogTaskManager, factory, props, appManager), factory, props);
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map props) {
@@ -106,7 +111,7 @@ public class CytoscapeMenuPopulator {
 	}
 
 	public void addNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map props) {
-		addFactory(new NetworkViewTaskFactoryTunableAction(taskManager, factory, props, appManager), factory, props);
+		addFactory(new NetworkViewTaskFactoryTunableAction(dialogTaskManager, factory, props, appManager), factory, props);
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map props) {
@@ -114,7 +119,7 @@ public class CytoscapeMenuPopulator {
 	}
 
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
-		addFactory(new NetworkViewCollectionTaskFactoryTunableAction(taskManager, factory, props, appManager), factory, props);
+		addFactory(new NetworkViewCollectionTaskFactoryTunableAction(dialogTaskManager, factory, props, appManager), factory, props);
 	}
 
 	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
@@ -122,7 +127,7 @@ public class CytoscapeMenuPopulator {
 	}
 	
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
-		addFactory(new NetworkCollectionTaskFactoryTunableAction(taskManager, factory, props, appManager), factory, props);
+		addFactory(new NetworkCollectionTaskFactoryTunableAction(dialogTaskManager, factory, props, appManager), factory, props);
 	}
 
 	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
@@ -130,7 +135,7 @@ public class CytoscapeMenuPopulator {
 	}
 	
 	public void addTableTaskFactory(TableTaskFactory factory, Map props) {
-		addFactory(new TableTaskFactoryTunableAction(taskManager, factory, props, appManager), factory, props);
+		addFactory(new TableTaskFactoryTunableAction(dialogTaskManager, factory, props, appManager), factory, props);
 	}
 	
 	public void removeTableTaskFactory(TableTaskFactory factory, Map props) {

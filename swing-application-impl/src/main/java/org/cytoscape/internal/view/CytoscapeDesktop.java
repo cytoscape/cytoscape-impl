@@ -77,7 +77,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +142,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 	 * Creates a new CytoscapeDesktop object.
 	 */
 	public CytoscapeDesktop(CytoscapeMenus cyMenus, NetworkViewManager networkViewManager, NetworkPanel networkPanel, 
-			CytoscapeShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, GUITaskManager taskManager) {
+			CytoscapeShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager) {
 		super("Cytoscape Desktop (New Session)");
 
 		this.cyMenus = cyMenus;
@@ -152,7 +152,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 		this.cyEventHelper = eh;
 		this.registrar = registrar;
 		
-		taskManager.setParent(this);
+		taskManager.setExecutionContext(this);
 
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
 

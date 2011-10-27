@@ -16,7 +16,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -56,7 +56,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
-		GUITaskManager guiTaskManagerServiceRef = getService(bc,GUITaskManager.class);
+		DialogTaskManager guiTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyProperty bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
 		CyProperty cytoscapePropertiesServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");

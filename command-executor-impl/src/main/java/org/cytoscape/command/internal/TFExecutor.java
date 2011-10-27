@@ -5,7 +5,6 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Task;
-import org.cytoscape.work.TunableInterceptor;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 
 import org.slf4j.Logger;
@@ -31,7 +30,7 @@ class TFExecutor implements Executor {
 			while (ti.hasNext()) {
 				Task t = ti.next();
 				interceptor.setArgString(args);
-				interceptor.loadTunables(t);
+				//interceptor.loadTunables(t);
 				interceptor.execUI(t);
 				t.run(tm);
 			}

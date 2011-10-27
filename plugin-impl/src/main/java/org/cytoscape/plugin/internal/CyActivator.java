@@ -29,7 +29,9 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 
 import org.cytoscape.plugin.internal.CyPluginAdapterImpl;
@@ -77,7 +79,9 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory cyTableFactoryRef = getService(bc,CyTableFactory.class);
 		CyTableManager cyTableManagerRef = getService(bc,CyTableManager.class);
 		CyTableReaderManager cyTableReaderManagerRef = getService(bc,CyTableReaderManager.class);
-		GUITaskManager guiTaskManagerRef = getService(bc,GUITaskManager.class);
+		PanelTaskManager panelTaskManagerRef = getService(bc,PanelTaskManager.class);
+		DialogTaskManager dialogTaskManagerRef = getService(bc,DialogTaskManager.class);
+		SubmenuTaskManager submenuTaskManagerRef = getService(bc,SubmenuTaskManager.class);
 		PresentationWriterManager presentationWriterManagerRef = getService(bc,PresentationWriterManager.class);
 		RenderingEngineManager renderingEngineManagerRef = getService(bc,RenderingEngineManager.class);
 		TaskManager taskManagerRef = getService(bc,TaskManager.class);
@@ -89,9 +93,9 @@ public class CyActivator extends AbstractCyActivator {
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		
-		CyPluginAdapterImpl cyPluginAdapter = new CyPluginAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutsRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,guiTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef,visualMappingManagerRef,visualStyleFactoryRef);
+		CyPluginAdapterImpl cyPluginAdapter = new CyPluginAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutsRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,dialogTaskManagerRef,panelTaskManagerRef,submenuTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef,visualMappingManagerRef,visualStyleFactoryRef);
 		PluginLoaderTaskFactory pluginLoaderTaskFactory = new PluginLoaderTaskFactory(cyPluginAdapter);
-		PluginManagerAction pluginManagerAction = new PluginManagerAction(cySwingApplicationRef,cyApplicationManagerRef,cytoscapeVersionService,bookmarkServiceRef,bookmarksUtilServiceRef,guiTaskManagerRef,cyPropertyRef,cyPluginAdapter,pluginLoaderTaskFactory,cyApplicationConfigurationServiceRef);
+		PluginManagerAction pluginManagerAction = new PluginManagerAction(cySwingApplicationRef,cyApplicationManagerRef,cytoscapeVersionService,bookmarkServiceRef,bookmarksUtilServiceRef,dialogTaskManagerRef,cyPropertyRef,cyPluginAdapter,pluginLoaderTaskFactory,cyApplicationConfigurationServiceRef);
 		StartupMostlyFinished startupMostlyFinished = new StartupMostlyFinished(cyEventHelperRef);
 		
 		

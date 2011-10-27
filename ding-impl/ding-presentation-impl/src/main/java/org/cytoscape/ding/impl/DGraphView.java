@@ -127,7 +127,8 @@ import org.cytoscape.view.model.events.FitSelectedEvent;
 import org.cytoscape.view.model.events.FitSelectedEventListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -370,10 +371,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
 	final Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
 
-	final TaskManager manager;
+	final DialogTaskManager manager;
+	final SubmenuTaskManager menuTaskManager;
 
 	// Will be injected.
-	private final VisualLexicon dingLexicon;
+	final VisualLexicon dingLexicon;
 	
 	private final Properties props;
 
@@ -395,12 +397,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			Map<NetworkViewTaskFactory, Map> emptySpaceTFs,
 			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
 			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
-			TaskManager manager, CyEventHelper eventHelper,
+			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
+			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, nodeViewTFs, edgeViewTFs,
-				emptySpaceTFs, dropNodeViewTFs, dropEmptySpaceTFs, manager, eventHelper, tableMgr, annMgr);
+				emptySpaceTFs, dropNodeViewTFs, dropEmptySpaceTFs, manager, menuTaskManager, eventHelper, tableMgr, annMgr);
 	}
 
 	
@@ -431,7 +434,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			Map<NetworkViewTaskFactory, Map> emptySpaceTFs,
 			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
 			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
-			TaskManager manager, CyEventHelper eventHelper,
+			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
+			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr) {
 		super(model);
@@ -447,6 +451,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.dropNodeViewTFs = dropNodeViewTFs;
 		this.dropEmptySpaceTFs = dropEmptySpaceTFs;
 		this.manager = manager;
+		this.menuTaskManager = menuTaskManager;
 
 		final CyTable nodeCAM = dataFactory.createTable("node view", Identifiable.SUID, Long.class, false, false);
 		nodeCAM.createColumn("hidden", Boolean.class, false);

@@ -43,7 +43,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.search.internal.ui.EnhancedSearchPanel;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 
 public class EnhancedSearchPlugin extends AbstractToolBarComponent
@@ -56,7 +56,7 @@ public class EnhancedSearchPlugin extends AbstractToolBarComponent
 	
 	public EnhancedSearchPlugin(final CySwingApplication desktopApp,
 	                            final CyApplicationManager appManager, 
-	                            final GUITaskManager taskMgr,
+	                            final DialogTaskManager taskMgr,
 	                            final CyEventHelper eventHelper, final CyNetworkViewManager viewManager)
 	{
 		

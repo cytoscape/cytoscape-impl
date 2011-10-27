@@ -23,7 +23,8 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,8 @@ public class DingRenderingEngineFactory implements
 	private final CyServiceRegistrar registrar;
 	private final AnnotationFactoryManager annMgr;
 	
-	private TaskManager tm;
+	private DialogTaskManager dialogTaskManager;
+	private SubmenuTaskManager menuTaskManager;
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
 	
@@ -56,7 +58,9 @@ public class DingRenderingEngineFactory implements
 	public DingRenderingEngineFactory(CyTableFactory dataTableFactory,
 			CyRootNetworkFactory rootNetworkFactory, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
-			TaskManager tm, CyServiceRegistrar registrar,
+			DialogTaskManager dialogTaskManager, 
+			SubmenuTaskManager menuTaskManager, 
+			CyServiceRegistrar registrar,
 			CyNetworkTableManager tableMgr,
 			CyEventHelper eventHelper,
 			RenderingEngineManager renderingEngineManager,
@@ -68,7 +72,8 @@ public class DingRenderingEngineFactory implements
 		this.spacialFactory = DIUtil.stripProxy(spacialFactory);
 		this.undo = DIUtil.stripProxy(undo);
 		this.dingLexicon = DIUtil.stripProxy(dingLexicon);
-		this.tm = DIUtil.stripProxy(tm);
+		this.dialogTaskManager = DIUtil.stripProxy(dialogTaskManager);
+		this.menuTaskManager = DIUtil.stripProxy(menuTaskManager);
 		this.registrar = DIUtil.stripProxy(registrar);
 		this.tableMgr = DIUtil.stripProxy(tableMgr);
 		this.eventHelper = DIUtil.stripProxy(eventHelper);
@@ -115,7 +120,7 @@ public class DingRenderingEngineFactory implements
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkFactory, undo, spacialFactory, dingLexicon,
 					vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs,
-					vtfListener.dropEmptySpaceTFs, tm, eventHelper, tableMgr, annMgr);
+					vtfListener.dropEmptySpaceTFs, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());

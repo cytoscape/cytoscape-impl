@@ -34,7 +34,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
 
 import javax.swing.event.MenuEvent;
 import java.awt.event.ActionEvent;
@@ -45,11 +45,11 @@ public class SettingsAction extends AbstractCyAction {
 
 	private CyLayoutAlgorithmManager cyl;
 	private CySwingApplication desk;
-	private GUITaskManager tm;
+	private PanelTaskManager tm;
 
-	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, final GUITaskManager tm)
+	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, final PanelTaskManager tm)
 	{
-		super("Settings...",appMgr);
+		super("Settings...",appMgr,"networkAndView");
 		setPreferredMenu("Layout");
 		setMenuGravity(3.0f);
 		this.cyl = cyl;
@@ -60,9 +60,5 @@ public class SettingsAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent e) {
 		LayoutSettingsDialog settingsDialog = new LayoutSettingsDialog(cyl, desk, applicationManager, tm);
 		settingsDialog.actionPerformed(e);
-	}
-
-	public void menuSelected(MenuEvent e) {
-		enableForNetworkAndView();
 	}
 }

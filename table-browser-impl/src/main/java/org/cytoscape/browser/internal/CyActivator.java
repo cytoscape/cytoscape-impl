@@ -12,7 +12,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import org.cytoscape.browser.internal.AbstractTableBrowser;
 import org.cytoscape.browser.internal.PopupMenuHelper;
@@ -41,7 +41,7 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowser openBrowserServiceRef = getService(bc,OpenBrowser.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		TableTaskFactory deleteTableTaskFactoryService = getService(bc,TableTaskFactory.class);
-		GUITaskManager guiTaskManagerServiceRef = getService(bc,GUITaskManager.class);
+		DialogTaskManager guiTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
 		

@@ -31,7 +31,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 
 /**
@@ -70,7 +70,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			final CyTableManager tableManager, final CyNetworkTableManager networkTableManager,
 			final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler, final OpenBrowser openBrowser,
 			final CyNetworkManager networkManager, final TableTaskFactory deleteTableTaskFactoryService,
-			final GUITaskManager guiTaskManagerServiceRef, final PopupMenuHelper popupMenuHelper,
+			final DialogTaskManager guiTaskManagerServiceRef, final PopupMenuHelper popupMenuHelper,
 			final CyApplicationManager applicationManager, final CyEventHelper eventHelper) {
 		this.networkTableManager = networkTableManager;
 		this.serviceRegistrar = serviceRegistrar;

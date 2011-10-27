@@ -7,7 +7,7 @@ import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.CyFileFilter;
@@ -30,7 +30,7 @@ public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactor
 			CySwingApplication desktop, CyApplicationManager appMgr,
 			CyNetworkManager netMgr, CyProperty<Bookmarks> bookmarksProp,
 			BookmarksUtil bookmarksUtil,
-			GUITaskManager guiTaskManagerServiceRef,
+			DialogTaskManager guiTaskManagerServiceRef,
 			CyProperty<?> cytoscapePropertiesServiceRef, CyTableManager tblMgr,
 			FileUtil fileUtilService, OpenBrowser openBrowserService,
 			CyTableFactory tableFactory, String fileFormat)

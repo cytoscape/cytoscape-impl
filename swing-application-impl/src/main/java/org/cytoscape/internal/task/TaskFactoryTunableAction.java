@@ -35,7 +35,7 @@ import java.util.Map;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,9 +46,9 @@ public class TaskFactoryTunableAction<T extends TaskFactory> extends AbstractCyA
     private final static Logger logger = LoggerFactory.getLogger(TaskFactoryTunableAction.class);
 
     final protected T factory;
-    final protected TaskManager manager;
+    final protected DialogTaskManager manager;
 
-    public TaskFactoryTunableAction(final TaskManager manager, final T factory, final Map<String, String> serviceProps,
+    public TaskFactoryTunableAction(final DialogTaskManager manager, final T factory, final Map<String, String> serviceProps,
 	    final CyApplicationManager applicationManager) {
 	super(serviceProps, applicationManager);
 	this.manager = manager;

@@ -11,7 +11,7 @@ import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Properties;
@@ -19,13 +19,13 @@ import java.io.FileOutputStream;
 
 
 public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
-	private final TaskManager taskManager;
+	private final DialogTaskManager taskManager;
 	private final CyPropertyWriterManager propertyWriterManager;
 	private final Map<CyProperty, Map> configDirProperties;
 	private final CyApplicationConfiguration config;
 	private static final Logger logger = LoggerFactory.getLogger(ConfigDirPropertyWriter.class);
 
-	public ConfigDirPropertyWriter(final TaskManager taskManager,
+	public ConfigDirPropertyWriter(final DialogTaskManager taskManager,
 				final CyPropertyWriterManager propertyWriterManager, final CyApplicationConfiguration config)
 	{
 		this.taskManager = taskManager;

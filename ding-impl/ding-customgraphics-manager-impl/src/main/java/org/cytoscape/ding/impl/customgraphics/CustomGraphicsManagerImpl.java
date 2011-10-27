@@ -19,7 +19,7 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,17 +38,15 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	private final File imageHomeDirectory;
 	protected final Map<CyCustomGraphics,Boolean> isUsedCustomGraphics;
-	private final TaskManager taskManager;
+	private final DialogTaskManager taskManager;
 
 	/**
 	 * Creates an image pool object and restore existing images from user
 	 * resource directory.
 	 */
-	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties,
-					 final TaskManager taskManager,
-					 final CyApplicationConfiguration config)
-	{
-		this.taskManager = DIUtil.stripProxy(taskManager);
+	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final DialogTaskManager taskManager, final CyApplicationConfiguration config) {
+		
+		this.taskManager = taskManager;
 		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
 
 		if (properties == null)

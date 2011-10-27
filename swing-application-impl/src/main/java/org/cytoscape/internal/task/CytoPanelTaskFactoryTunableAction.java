@@ -52,7 +52,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import org.slf4j.Logger;
@@ -70,9 +70,9 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	 */
 	private static class ExecuteButtonListener implements ActionListener {
 		final private TaskFactory factory;
-		final private GUITaskManager manager;
+		final private PanelTaskManager manager;
 
-		ExecuteButtonListener(final TaskFactory factory, final GUITaskManager manager) {
+		ExecuteButtonListener(final TaskFactory factory, final PanelTaskManager manager) {
 			this.factory = factory;
 			this.manager = manager;
 		}
@@ -109,14 +109,14 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 
 	final private static CytoPanelName DEFAULT_CYTOPANEL = CytoPanelName.WEST;
 	final private TaskFactory factory;
-	final private GUITaskManager manager;
+	final private PanelTaskManager manager;
 	final private Map<String, String> serviceProps;
 	final private CytoPanelName cytoPanelName;
 	final private CyServiceRegistrar registrar;
 	final private static Logger logger = LoggerFactory.getLogger(CytoPanelTaskFactoryTunableAction.class);
 
 	public CytoPanelTaskFactoryTunableAction(final TaskFactory factory, 
-	                                         final GUITaskManager manager,
+	                                         final PanelTaskManager manager,
 	                                         final Map<String, String> serviceProps, 
 	                                         final CyApplicationManager appMgr,
 											 final CyServiceRegistrar registrar)
@@ -149,7 +149,7 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	 *  Creates a new CytoPanel component and adds it to a CytoPanel.
 	 */
 	public void actionPerformed(final ActionEvent a) {
-		final JPanel innerPanel = manager.getConfigurationPanel(factory);
+		final JPanel innerPanel = manager.getConfiguration(factory);
 		if (innerPanel == null)
 			return;
 

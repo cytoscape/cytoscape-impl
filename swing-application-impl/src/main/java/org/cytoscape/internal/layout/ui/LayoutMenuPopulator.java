@@ -38,69 +38,88 @@ package org.cytoscape.internal.layout.ui;
 
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
+import org.cytoscape.work.swing.DynamicSubmenuListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.MenuEnableSupport;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class LayoutMenuPopulator {
 
-	private Map<String, List<CyLayoutAlgorithm>> menuAlgorithmMap;
-	private Map<String, LayoutMenu> menuMap;
 	private CyApplicationManager appMgr;
-	private TaskManager tm;
+	private SubmenuTaskManager tm;
 	private CySwingApplication swingApp;
+	private Map<CyLayoutAlgorithm,MenuListener> listenerMap = new HashMap<CyLayoutAlgorithm,MenuListener>();
+	private Set<JMenu> parentMenuSet = new HashSet<JMenu>(); 
 
-	public LayoutMenuPopulator(CySwingApplication swingApp, CyApplicationManager appMgr, TaskManager tm) {
-		menuAlgorithmMap = new HashMap<String,List<CyLayoutAlgorithm>>();
-		menuMap = new HashMap<String,LayoutMenu>();
+	private static final Logger logger = LoggerFactory.getLogger(LayoutMenuPopulator.class);
+
+	public LayoutMenuPopulator(CySwingApplication swingApp, CyApplicationManager appMgr, SubmenuTaskManager tm) {
 		this.appMgr = appMgr;
 		this.tm = tm;
 		this.swingApp = swingApp;
 	}
 
 	public void addLayout(CyLayoutAlgorithm layout, Map props) {
-		
-		String menuName = (String)props.get("preferredMenu");
-		if (menuName == null )
-			menuName = "Layout";	
+		String prefMenu = getPreferredMenu(props); 
 
-		// make sure the list is set up for this name
-		if ( !menuAlgorithmMap.containsKey(menuName) ) {
-			List<CyLayoutAlgorithm> menuList = new ArrayList<CyLayoutAlgorithm>();
-			menuAlgorithmMap.put(menuName, menuList);
+		String menuName = (String)props.get("title");
+		if (menuName == null) {
+			logger.warn("Failed to find menu title for layout algorithm: " + layout + " NOT adding!");
+			return;
 		}
 
-		// add layout to the list of layouts for this name
-		menuAlgorithmMap.get(menuName).add(layout);
+		// get the submenu listener from the task manager
+		DynamicSubmenuListener submenu = tm.getConfiguration(layout);
+		submenu.setMenuTitle(menuName);
 
-		// make sure the menu is set up
-		if ( !menuMap.containsKey(menuName) ) {
-			LayoutMenu menu = new LayoutMenu(menuName, appMgr, tm);
-			menuMap.put(menuName, menu);
-			swingApp.getJMenu("Layout").add(menu);
+		// now wrap it in a menulistener that sets the current network view for the layout
+		MenuListener ml = new NetworkViewMenuListener( submenu, appMgr, layout, "networkAndView" );
+
+		JMenu parentMenu = swingApp.getJMenu(prefMenu);
+		parentMenu.addMenuListener(ml);
+
+		if ( !parentMenuSet.contains(parentMenu) ) {
+			JMenu layoutMenu = swingApp.getJMenu("Layout");
+			layoutMenu.addMenuListener( new LayoutMenuEnabler(parentMenu,"networkAndView",appMgr) );
+			parentMenuSet.add(parentMenu);
 		}
 
-		// add layout to the menu for this name
-		menuMap.get(menuName).add(layout);
+		listenerMap.put(layout,ml);
 	}
 
 	public void removeLayout(CyLayoutAlgorithm layout, Map props) {
+		String prefMenu = getPreferredMenu(props); 
+		
+		JMenu parentMenu = swingApp.getJMenu(prefMenu);
+		parentMenu.removeMenuListener( listenerMap.get(layout) );
+	}
 
-		for (String menu : menuAlgorithmMap.keySet()) {
+	private String getPreferredMenu(Map props) {
+		String prefMenu = (String)props.get("preferredMenu");
+		if (prefMenu == null )
+			prefMenu = "Layout";	
+		return prefMenu;
+	}
 
-			List<CyLayoutAlgorithm> menuList = menuAlgorithmMap.get(menu);
-
-			if (menuList.indexOf(layout) >= 0) {
-				menuList.remove(layout);
-				menuMap.get(menu).remove(layout);
-				return;
-			}
+	private class LayoutMenuEnabler implements MenuListener {
+		private final MenuEnableSupport parentMenuSupport; 
+		LayoutMenuEnabler(JMenu parentMenu, String enableFor, CyApplicationManager appMgr) {
+			parentMenuSupport = new MenuEnableSupport(parentMenu,enableFor,appMgr);
 		}
+		public void menuSelected(MenuEvent m) {
+			parentMenuSupport.updateEnableState();
+		}
+		public void menuDeselected(MenuEvent m) {}
+		public void menuCanceled(MenuEvent m) {}
 	}
 }

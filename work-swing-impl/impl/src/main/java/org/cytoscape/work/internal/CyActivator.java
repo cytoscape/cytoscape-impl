@@ -8,26 +8,24 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 
-import org.cytoscape.work.internal.task.SwingTaskManager;
+import org.cytoscape.work.internal.task.*;
 import org.cytoscape.work.internal.tunables.*;
+import org.cytoscape.work.internal.submenu.*;
 import org.cytoscape.work.internal.UndoSupportImpl;
-import org.cytoscape.work.internal.tunables.GUITunableInterceptorImpl;
-import org.cytoscape.work.internal.tunables.FileHandlerFactory;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
-import org.cytoscape.work.swing.BasicGUITunableHandlerFactory;
 
+import org.cytoscape.work.swing.BasicGUITunableHandlerFactory;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
-import org.cytoscape.work.TunableInterceptor;
 import org.cytoscape.work.TunableHandlerFactory;
-import org.cytoscape.work.swing.GUITaskManager;
-import org.cytoscape.work.swing.GUITunableInterceptor;
 import org.cytoscape.work.util.*;
+import org.cytoscape.work.swing.*;
 
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.work.TunableInterceptor;
+import org.cytoscape.work.TunableMutator;
+import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 
 import org.osgi.framework.BundleContext;
@@ -51,8 +49,17 @@ public class CyActivator extends AbstractCyActivator {
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
 		
 		UndoSupportImpl undoSupport = new UndoSupportImpl();
-		GUITunableInterceptorImpl guiTunableInterceptor = new GUITunableInterceptorImpl();
-		SwingTaskManager swingTaskManager = new SwingTaskManager(guiTunableInterceptor);
+		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
+		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
+		BasicSubmenuTunableHandlerFactory submenuListSingleSelectionHandlerFactory = new BasicSubmenuTunableHandlerFactory(SubmenuTunableHandlerImpl.class,ListSingleSelection.class);
+
+		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator);
+
+		SubmenuTunableMutator submenuTunableMutator = new SubmenuTunableMutator(jDialogTaskManager);
+
+		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
+		SubmenuTaskManager submenuTaskManager = new SubmenuTaskManagerImpl(submenuTunableMutator,jDialogTaskManager);
+
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
 		BasicGUITunableHandlerFactory booleanHandlerFactory = new BasicGUITunableHandlerFactory(BooleanHandler.class, Boolean.class, boolean.class);
 		BasicGUITunableHandlerFactory integerHandlerFactory = new BasicGUITunableHandlerFactory(IntegerHandler.class, Integer.class, int.class);
@@ -70,10 +77,16 @@ public class CyActivator extends AbstractCyActivator {
 		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager);
 		
 		registerService(bc,undoSupport,UndoSupport.class, new Properties());
-		registerService(bc,guiTunableInterceptor,GUITunableInterceptor.class, new Properties());
-		registerService(bc,guiTunableInterceptor,TunableInterceptor.class, new Properties());
-		registerService(bc,swingTaskManager,GUITaskManager.class, new Properties());
-		registerService(bc,swingTaskManager,TaskManager.class, new Properties());
+
+		registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
+		registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());
+
+		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
+
+		registerService(bc,submenuTaskManager,SubmenuTaskManager.class, new Properties());
+
+		registerService(bc,submenuListSingleSelectionHandlerFactory,SubmenuTunableHandlerFactory.class, new Properties());
+
 		registerService(bc,integerHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,floatHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,doubleHandlerFactory,GUITunableHandlerFactory.class, new Properties());
@@ -91,9 +104,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc,supportedFileTypesManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
 		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
-		registerServiceListener(bc,swingTaskManager,"addTunableInterceptor","removeTunableInterceptor",TunableInterceptor.class);
-		registerServiceListener(bc,guiTunableInterceptor,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 
+		registerServiceListener(bc,jDialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
+
+		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
+		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
+		registerServiceListener(bc,submenuTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SubmenuTunableHandlerFactory.class, TunableHandlerFactory.class);
 
 	}
 }

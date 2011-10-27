@@ -20,6 +20,7 @@ import java.awt.*;
  */
 public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 	private JComboBox combobox;
+	private ListSingleSelection<T> listSingleSelection;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type
@@ -43,11 +44,16 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 	}
 
 	private void init() {
-		ListSingleSelection<T> listSingleSelection = null;
 		try {
 			listSingleSelection = (ListSingleSelection<T>)getValue();
 		} catch(final Exception e) {
 			e.printStackTrace();
+		}
+
+		if ( listSingleSelection.getPossibleValues().isEmpty() ) {
+			panel = null;
+			combobox = null;
+			return;
 		}
 
 		//set Gui
@@ -71,14 +77,12 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	public void handle() {
+		if ( combobox == null )
+			return;
+		
 		final T selectedItem = (T)combobox.getSelectedItem();
 		if (selectedItem != null) {
-			try {
-				final ListSingleSelection<T> listSingleSelection = (ListSingleSelection<T>)getValue();
-				listSingleSelection.setSelectedValue(selectedItem);
-			} catch(final Exception e) {
-				e.printStackTrace();
-			}
+			listSingleSelection.setSelectedValue(selectedItem);
 		}
 	}
 
@@ -86,6 +90,9 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 	 * To get the item that is currently selected
 	 */
 	public String getState() {
+		if ( combobox == null )
+			return "";
+
 		final T selectedItem = (T)combobox.getSelectedItem();
 		return selectedItem == null ? "" : selectedItem.toString();
 	}

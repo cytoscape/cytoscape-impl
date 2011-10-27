@@ -12,30 +12,33 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.JPanel;
+import javax.swing.JDialog;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.GUITaskManager;
-import org.cytoscape.work.swing.GUITunableInterceptor;
-import org.cytoscape.work.TunableInterceptor;
+import org.cytoscape.work.TunableMutator;
+import org.cytoscape.work.TunableRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 
 /**
  * Uses Swing components to create a user interface for the <code>Task</code>.
  *
  * This will not work if the application is running in headless mode.
  */
-public class SwingTaskManager extends AbstractTaskManager implements GUITaskManager {
+public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> implements DialogTaskManager {
 
-	private static final Logger logger = LoggerFactory.getLogger(SwingTaskManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(JDialogTaskManager.class);
 
 	/**
 	 * The delay between the execution of the <code>Task</code> and
 	 * showing its task dialog.
 	 *
-	 * When a <code>Task</code> is executed, <code>SwingTaskManager</code>
+	 * When a <code>Task</code> is executed, <code>JDialogTaskManager</code>
 	 * will not show its task dialog immediately. It will delay for a
 	 * period of time before showing the dialog. This way, short lived
 	 * <code>Task</code>s won't have a dialog box.
@@ -71,9 +74,7 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 	// Parent component of Task Monitor GUI.
 	private Window parent;
 
-	//
-	//
-	private List<TunableInterceptor> secondaryTunableInterceptors;
+	private final JDialogTunableMutator dialogTunableMutator;
 
 	/**
 	 * Construct with default behavior.
@@ -84,11 +85,11 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 	 * <li><code>cancelExecutorService</code> is the same as <code>taskExecutorService</code>.</li>
 	 * </ul>
 	 */
-	public SwingTaskManager(final GUITunableInterceptor tunableInterceptor) {
-		super(tunableInterceptor);
+	public JDialogTaskManager(final JDialogTunableMutator tunableMutator) {
+		super(tunableMutator);
+		this.dialogTunableMutator = tunableMutator;
 
-		secondaryTunableInterceptors = new ArrayList<TunableInterceptor>();
-
+		parent = null;
 		taskExecutorService = Executors.newCachedThreadPool();
 		addShutdownHook(taskExecutorService);
 		
@@ -117,38 +118,41 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 	}
 
 	/**
-	 * @param owner JDialogs created by this <code>TaskManager</code>
-	 * will have its owner set to this parameter.
+	 * @param parent JDialogs created by this TaskManager will use this 
+	 * to set the parent of the dialog. 
 	 */
 	@Override 
-	public void setParent(final Window parent) {
+	public void setExecutionContext(final Window parent) {
 		this.parent = parent;
 	}
 
-	@Override
-	public void setTunablePanel(final JPanel tunablePanel) {
-		((GUITunableInterceptor)tunableInterceptor).setTunablePanel(tunablePanel);
+
+	@Override 
+	public JDialog getConfiguration(TaskFactory tf) {
+		throw new UnsupportedOperationException("There is no configuration available for a DialogTaskManager");	
 	}
+
 
 	@Override
 	public void execute(final TaskFactory factory) {
+		execute(factory, true);
+	}
 
+	/**
+	 * For users of this class.
+	 */
+	public void execute(final TaskFactory factory, boolean displayFactoryTunables) {
 		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent);
 		
 		TaskIterator taskIterator;
 		final Task first; 
 
 		try {
-			if ( tunableInterceptor.hasTunables(factory) && 
-			    !tunableInterceptor.validateAndWriteBackTunables(factory))
-				throw new IllegalArgumentException("Tunables are not valid");
+			dialogTunableMutator.setConfigurationContext(parent);
 
-			// pass the parent (Cytoscape desktop Window) for TunableDialog
-			if (tunableInterceptor instanceof GUITunableInterceptor){
-				GUITunableInterceptor guiTI = (GUITunableInterceptor)tunableInterceptor;				
-				guiTI.setParent(parent);
-			}
-			
+			if ( displayFactoryTunables && !displayTunables(factory) )
+				return;
+
 			taskIterator = factory.getTaskIterator();
 
 			// Get the first task and display its tunables.  This is a bit of a hack.  
@@ -163,16 +167,15 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 			logger.warn("Caught exception getting and validating task. ", exception);	
 			taskMonitor.showException(exception);
 			return;
-		} 
+		}
 
 		// create the task thread
-		final Runnable tasks = new TaskThread(first, taskMonitor, taskIterator, factory.getClass().getName()); 
+		final Runnable tasks = new TaskThread(first, taskMonitor, taskIterator); 
 
 		// submit the task thread for execution
 		final Future<?> executorFuture = taskExecutorService.submit(tasks);
 
 		openTaskMonitorOnDelay(taskMonitor, executorFuture);
-
 	}
 
 	// This creates a thread on delay that conditionally displays the task monitor gui
@@ -192,20 +195,18 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 	}
 
 	private class TaskThread implements Runnable {
+		
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
 		private final Task first;
-		private final String name;
 
-		TaskThread(final Task first, final SwingTaskMonitor tm, final TaskIterator ti, final String name) {
+		TaskThread(final Task first, final SwingTaskMonitor tm, final TaskIterator ti) {
 			this.first = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
-			this.name = name;
 		}
 		
 		public void run() {
-			final long start = System.currentTimeMillis();
 			try {
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
@@ -237,51 +238,17 @@ public class SwingTaskManager extends AbstractTaskManager implements GUITaskMana
 			if (taskMonitor.isOpened() && !taskMonitor.isShowingException())
 				taskMonitor.close();
 
-			final long end = System.currentTimeMillis();
-			logger.info("TASK (" + name + ") completed in: " + (end - start) + " ms");
 		}
 	}
 
-	private boolean displayTunables(final Task task) throws Exception {
-		if (tunableInterceptor == null)
-			return true;
+	private boolean displayTunables(final Object task) throws Exception {
+		boolean ret = dialogTunableMutator.validateAndWriteBack(task);
 
-		// load the tunables from the object
-		tunableInterceptor.loadTunables(task);
-
-		// create the UI based on the object
-		boolean ret = tunableInterceptor.execUI(task);
-
-		// Run any additional tunable interceptors. In general, these
-		// should NOT display a GUI.
-		for ( TunableInterceptor ti : secondaryTunableInterceptors ) {
-			ti.loadTunables(task);
-			ti.execUI(task);
-		}
+		for ( TunableRecorder ti : tunableRecorders ) 
+			ti.recordTunableState(task);
 
 		return ret;
 	}
 
-	@Override
-	public JPanel getConfigurationPanel(final TaskFactory taskFactory) {
-		tunableInterceptor.loadTunables(taskFactory);
-		return ((GUITunableInterceptor)tunableInterceptor).getUI(taskFactory);
-	}
-
-	public void addTunableInterceptor(TunableInterceptor ti, Map props) {
-		// The reason we compare strings instead of the objects directly is
-		// that object provided here is actually a proxy object created by
-		// Spring, not the actual object.  We should really find another
-		// way of handling this.
-		String existing = tunableInterceptor.toString();
-		String tis = ti.toString();
-		if ( ti != null && !tis.equals(existing) ) 
-			secondaryTunableInterceptors.add(ti);
-	}
-
-	public void removeTunableInterceptor(TunableInterceptor ti, Map props) {
-		if ( ti != null )
-			secondaryTunableInterceptors.remove(ti);
-	}	
 }
 

@@ -36,7 +36,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -71,7 +71,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private CyLayoutAlgorithmManager cyLayoutAlgorithmManager;
 	private CySwingApplication desktop;
 	private CyApplicationManager appMgr;
-	private GUITaskManager taskManager;
+	private PanelTaskManager taskManager;
 
 	/**
 	 * Creates a new LayoutSettingsDialog object.
@@ -79,7 +79,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	public LayoutSettingsDialog(final CyLayoutAlgorithmManager cyLayoutAlgorithmManager, 
 	                            final CySwingApplication desktop,
 	                            final CyApplicationManager appMgr,
-	                            final GUITaskManager taskManager)
+	                            final PanelTaskManager taskManager)
 	{
 		super(desktop.getJFrame(), "Layout Settings", false);
 		initializeOnce(); // Initialize the components we only do once
@@ -101,13 +101,11 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		if (command.equals("done"))
 			setVisible(false);
 		else if (command.equals("execute")) {
-			taskManager.setTunablePanel(algorithmPanel);
 			currentLayout.setNetworkView(appMgr.getCurrentNetworkView());
 			taskManager.execute(currentLayout);
 		} else {
 			// OK, initialize and display
 			initialize();
-			pack();
 			setLocationRelativeTo(desktop.getJFrame());
 			setVisible(true);
 		}
@@ -173,11 +171,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			// if it's a string, that means it's the instructions
 			if (!(o instanceof String)) {
 				final CyLayoutAlgorithm newLayout = (CyLayoutAlgorithm)o;
-				taskManager.setTunablePanel(algorithmPanel);
-				if (taskManager.getConfigurationPanel(newLayout) != null) {
-					pack();
-					currentLayout = newLayout; 
-				}
+				JPanel tunablePanel = taskManager.getConfiguration(newLayout);
+				algorithmPanel.add(tunablePanel);
+				currentLayout = newLayout; 
 			}
 		}
 	}

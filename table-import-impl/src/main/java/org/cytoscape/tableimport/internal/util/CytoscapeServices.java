@@ -12,7 +12,7 @@ import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.FileUtil;
@@ -22,7 +22,7 @@ public class  CytoscapeServices {
 	public static CySwingApplication desktop;
 	public static Bookmarks theBookmarks;
 	public static BookmarksUtil bookmarksUtil;
-	public static GUITaskManager guiTaskManagerServiceRef;
+	public static DialogTaskManager guiTaskManagerServiceRef;
 	public static CyProperty cytoscapePropertiesServiceRef;
 	public static CyTableManager tblMgr;
 	public static OpenBrowser openBrowser;

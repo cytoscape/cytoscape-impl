@@ -33,7 +33,7 @@ import java.awt.event.ActionEvent;
 import java.util.Map;
 
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -43,7 +43,7 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 public class NetworkViewCollectionTaskFactoryTunableAction 
 	extends TaskFactoryTunableAction<NetworkViewCollectionTaskFactory> {
 
-	public NetworkViewCollectionTaskFactoryTunableAction(TaskManager manager, 
+	public NetworkViewCollectionTaskFactoryTunableAction(DialogTaskManager manager, 
 							     NetworkViewCollectionTaskFactory factory, Map serviceProps,
 							     final CyApplicationManager applicationManager)
 	{

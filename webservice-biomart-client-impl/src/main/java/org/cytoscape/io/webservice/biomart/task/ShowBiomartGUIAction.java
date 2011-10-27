@@ -11,7 +11,7 @@ import org.cytoscape.io.webservice.biomart.BiomartClient;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class ShowBiomartGUIAction extends AbstractCyAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(ShowBiomartGUIAction.class);
 
-	private final GUITaskManager taskManager;
+	private final DialogTaskManager taskManager;
 	private final CySwingApplication app;
 	
 	private ShowBiomartDialogTask showDialogTask;
@@ -42,7 +42,7 @@ public class ShowBiomartGUIAction extends AbstractCyAction {
 
 		this.appManager = appManager;
 		this.app = app;
-		this.taskManager = (GUITaskManager) taskManager;
+		this.taskManager = (DialogTaskManager) taskManager;
 		
 		this.firstTask = new LoadRepositoryTask(client.getRestClient());
 		this.showDialogTask = new ShowBiomartDialogTask(panel, client, app, firstTask);
@@ -72,8 +72,8 @@ public class ShowBiomartGUIAction extends AbstractCyAction {
 		
 		final BioMartTaskFactory tf = new BioMartTaskFactory(firstTask);
 		tf.getTaskIterator().insertTasksAfter(firstTask, showDialogTask);
-		((GUITaskManager) taskManager).setParent(app.getJFrame());
-		
+
+		taskManager.setExecutionContext(app.getJFrame());
 		taskManager.execute(tf);
 	}
 }

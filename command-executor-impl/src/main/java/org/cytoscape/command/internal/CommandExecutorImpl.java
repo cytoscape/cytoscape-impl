@@ -10,11 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TunableInterceptor;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
-import org.cytoscape.command.internal.tunables.CommandTunableHandlerFactory;
 
 public class CommandExecutorImpl {
 

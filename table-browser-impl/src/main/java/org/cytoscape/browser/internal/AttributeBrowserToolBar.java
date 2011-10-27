@@ -66,7 +66,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 
 public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener {
@@ -107,17 +107,17 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private AttributeListModel attrListModel;
 	private final EquationCompiler compiler;
 	private final TableTaskFactory deleteTableTaskFactoryService;
-	private final GUITaskManager guiTaskManagerServiceRef;
+	private final DialogTaskManager guiTaskManagerServiceRef;
 	
 	private final JToggleButton selectionModeButton;
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final TableTaskFactory deleteTableTaskFactoryService, GUITaskManager guiTaskManagerServiceRef, final JComboBox tableChooser) {
+			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef, final JComboBox tableChooser) {
 		this(serviceRegistrar, compiler, deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, new JToggleButton());
 	}
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final TableTaskFactory deleteTableTaskFactoryService, GUITaskManager guiTaskManagerServiceRef, final JComboBox tableChooser, final JToggleButton selectionModeButton) {
+			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef, final JComboBox tableChooser, final JToggleButton selectionModeButton) {
 		this.compiler = compiler;
 		this.selectionModeButton = selectionModeButton;
 		

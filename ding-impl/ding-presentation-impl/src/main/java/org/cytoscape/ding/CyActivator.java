@@ -34,7 +34,8 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 import org.cytoscape.ding.action.GraphicsDetailAction;
@@ -62,7 +63,8 @@ public class CyActivator extends AbstractCyActivator {
 		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc,CyTableFactory.class);
 		SpacialIndex2DFactory spacialIndex2DFactoryServiceRef = getService(bc,SpacialIndex2DFactory.class);
-		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
+		DialogTaskManager dialogTaskManager = getService(bc,DialogTaskManager.class);
+		SubmenuTaskManager submenuTaskManager = getService(bc,SubmenuTaskManager.class);
 		CyServiceRegistrar cyServiceRegistrarRef = getService(bc,CyServiceRegistrar.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
@@ -76,14 +78,14 @@ public class CyActivator extends AbstractCyActivator {
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 		
-		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,taskManagerServiceRef,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef,renderingEngineManagerServiceRef, vtfListener,annotationFactoryManager);
+		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,dialogTaskManager,submenuTaskManager,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef,renderingEngineManagerServiceRef, vtfListener,annotationFactoryManager);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(dVisualLexicon,renderingEngineManagerServiceRef,applicationManagerManagerServiceRef);
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(cyNetworkManagerServiceRef);
 		ObjectPositionValueEditor objectPositionValueEditor = new ObjectPositionValueEditor();
 		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor);
 		EdgePaintToArrowHeadPaintDependency edgeColor2arrowColorDependency = new EdgePaintToArrowHeadPaintDependency();
 		CustomGraphicsSizeDependency nodeCustomGraphicsSizeDependency = new CustomGraphicsSizeDependency();
-		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,taskManagerServiceRef,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef, vtfListener,annotationFactoryManager);
+		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,dialogTaskManager,submenuTaskManager,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef, vtfListener,annotationFactoryManager);
 
 		BasicGraphicalEntity imageGraphicalEntity = new BasicGraphicalEntity("Image","Image Attr","Image Value", "An Image annotation", "/images/imageIcon.png");
 //		BasicGraphicalEntity arrowGraphicalEntity = new BasicGraphicalEntity("Arrow","Arrow Attr","Arrow Value", "An Arrow annotation", "/images/arrowIcon.png");
@@ -173,7 +175,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc,annotationFactoryManager,"addAnnotationFactory","removeAnnotationFactory",AnnotationFactory.class);
 
-		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef, taskManagerServiceRef,
+		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef, dialogTaskManager,
 				 cyPropertyServiceRef);
 		registerAllServices(bc,graphicsDetailAction, new Properties());
 	}

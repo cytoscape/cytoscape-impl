@@ -9,7 +9,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import org.cytoscape.webservice.ncbi.NCBIWebServiceClient;
 import org.cytoscape.webservice.ncbi.NCBITableImportAction;
@@ -37,7 +37,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
-		GUITaskManager taskManagerServiceRef = getService(bc,GUITaskManager.class);
+		DialogTaskManager taskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc,CyTableFactory.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);

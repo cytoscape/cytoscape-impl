@@ -8,10 +8,12 @@ import org.cytoscape.property.BasicCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
-import org.cytoscape.work.swing.GUITunableInterceptor;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.util.swing.FileUtil;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -39,15 +41,15 @@ public class ServiceConfigurationTest extends ServiceTestSupport {
 		registerMockService(CyProperty.class, cyBookProp, p);
 
 		registerMockService(BookmarksUtil.class);
+		registerMockService(FileUtil.class);
 	}
 
 	@Test
 	public void testExpectedServices() {
-		checkService(GUITaskManager.class);
-		checkService(TaskManager.class);
+		checkService(PanelTaskManager.class);
+		checkService(DialogTaskManager.class);
+		checkService(SubmenuTaskManager.class);
 		checkService(GUITunableHandlerFactory.class);
-		checkService(TunableInterceptor.class);
-		checkService(GUITunableInterceptor.class);
 		checkService(UndoSupport.class);
 	}
 }

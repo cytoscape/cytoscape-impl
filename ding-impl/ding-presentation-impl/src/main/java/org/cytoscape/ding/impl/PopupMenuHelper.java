@@ -47,6 +47,7 @@ import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -55,6 +56,7 @@ import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.DynamicSubmenuListener;
 
 
 // TODO Consider generalizing this class so that it can be used by anyone
@@ -226,13 +228,38 @@ class PopupMenuHelper {
 
 		String title = (String)(props.get("title"));
 		String pref = (String)(props.get("preferredMenu"));
+
+		// check if the menus are created dynamically, and if so add the listener
+		final Object preferredTaskManager = props.get("preferredTaskManager");
+		if ( preferredTaskManager != null && preferredTaskManager.toString().equals("menu")) {
+			if ( title == null )
+				title = "Dynamic";
+			DynamicSubmenuListener submenu = m_view.menuTaskManager.getConfiguration(tf);
+	        submenu.setMenuTitle(title);
+			popup.addPopupMenuListener( submenu );
+			return;
+		}
+
+		// otherwise create our own popup menus 
 		boolean useCheckBoxMenuItem = false;
 
 		final Object useCheckBox = props.get("useCheckBoxMenuItem");
-		final Object targetVP = props.get("targetVP");
+		final Object targetVisualProperty = props.get("targetVP");
 		boolean isSelected = false;
-		if(view != null)
-			isSelected = view.isValueLocked((VisualProperty<?>) targetVP);
+		if(view != null) {
+			if ( targetVisualProperty instanceof String ) {
+				// TODO remove this at first opportunity whenever lookup gets refactored. 
+				Class<?> clazz = CyNetwork.class;
+				if ( view.getModel() instanceof CyNode )
+					clazz = CyNode.class;
+				else if ( view.getModel() instanceof CyEdge )
+					clazz = CyEdge.class;
+
+				isSelected = view.isValueLocked(m_view.dingLexicon.lookup(clazz, (String)targetVisualProperty));
+			} else if ( targetVisualProperty instanceof VisualProperty ) {
+				isSelected = view.isValueLocked((VisualProperty<?>)targetVisualProperty);
+			}
+		}
 
 		if ( useCheckBox != null ) {
 			try {
@@ -273,8 +300,7 @@ class PopupMenuHelper {
 					checkBox.setSelected(isSelected);
 					gravityTracker.addMenuItem(checkBox, ++largeValue);
 				} else
-					gravityTracker.addMenuItem(new JMenuItem(new PopupAction(tf, title)),
-								   ++largeValue);
+					gravityTracker.addMenuItem(new JMenuItem(new PopupAction(tf, title)), ++largeValue);
 			// otherwise just use the preferred menu as the menuitem name
 			} else {
 				title = pref;
@@ -288,11 +314,9 @@ class PopupMenuHelper {
 		} else {
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
 			if (useCheckBoxMenuItem)
-				gravityTracker.addMenuItem(new JCheckBoxMenuItem(new PopupAction(tf, title)),
-							   ++largeValue);
+				gravityTracker.addMenuItem(new JCheckBoxMenuItem(new PopupAction(tf, title)), ++largeValue);
 			else
-				gravityTracker.addMenuItem(new JMenuItem(new PopupAction(tf, title)),
-							   ++largeValue);
+				gravityTracker.addMenuItem(new JMenuItem(new PopupAction(tf, title)), ++largeValue);
 		}
 	}
 

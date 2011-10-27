@@ -11,7 +11,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.CyFileFilter;
@@ -35,19 +35,18 @@ public class ImportNetworkTableReaderFactory extends AbstractNetworkReaderFactor
 	 * Creates a new ImportNetworkTableReaderFactory object.
 	 */
 	public ImportNetworkTableReaderFactory(final CyFileFilter filter,
-					       final CySwingApplication desktop,
-					       final CyApplicationManager appMgr,
-					       final CyNetworkManager netMgr,
-					       final GUITaskManager guiTaskManagerServiceRef,
-					       final CyProperty<?> cytoscapePropertiesServiceRef,
-					       final FileUtil fileUtilService,
-					       final CyNetworkViewFactory cyNetworkViewFactory,
-					       final CyNetworkFactory cyNetworkFactory,
-					       final String fileFormat,
-					       final CyNetworkNaming cyNetworkNaming,
-					       final CyNetworkViewManager networkViewManager,
-					       final CyTableManager tableManager)
-	{
+	                                       final CySwingApplication desktop, 
+	                                       final CyApplicationManager appMgr,
+	                                       final CyNetworkManager netMgr, 
+	                                       final DialogTaskManager guiTaskManagerServiceRef,
+	                                       final CyProperty<?> cytoscapePropertiesServiceRef,
+	                                       final FileUtil fileUtilService, 
+	                                       final CyNetworkViewFactory cyNetworkViewFactory, 
+	                                       final CyNetworkFactory cyNetworkFactory, 
+	                                       final String fileFormat,
+	                                       final CyNetworkNaming cyNetworkNaming, 
+	                                       final CyNetworkViewManager networkViewManager,
+	                                       final CyTableManager tableManager) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
 
 		this.tableManager = tableManager;

@@ -19,9 +19,11 @@ public class CyActivator extends AbstractCyActivator {
 		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
 		
 		ForceDirectedLayout forceDirectedLayout = new ForceDirectedLayout(undoSupportServiceRef);
-		
-		Properties forceDirectedLayoutProps = new Properties();
-		forceDirectedLayoutProps.setProperty("preferredMenu","Prefuse Layouts");
+
+        Properties forceDirectedLayoutProps = new Properties();
+        forceDirectedLayoutProps.setProperty("preferredMenu","Layout.Prefuse Layouts");
+        forceDirectedLayoutProps.setProperty("preferredTaskManager","menu");
+        forceDirectedLayoutProps.setProperty("title",forceDirectedLayout.toString());
 		registerService(bc,forceDirectedLayout,CyLayoutAlgorithm.class, forceDirectedLayoutProps);
 	}
 }

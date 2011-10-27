@@ -53,7 +53,7 @@ import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorM
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
@@ -69,7 +69,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
-		GUITaskManager taskManagerServiceRef = getService(bc,GUITaskManager.class);
+		DialogTaskManager dialogTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
 		VisualLexicon dingVisualLexiconServiceRef = getService(bc,VisualLexicon.class,"(id=ding)");
 		RenderingEngineFactory dingRenderingEngineFactoryServiceRef = getService(bc,RenderingEngineFactory.class,"(id=ding)");
@@ -104,7 +104,7 @@ public class CyActivator extends AbstractCyActivator {
 		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
 		ColorManager colorMgr = new ColorManager();
 		IconManager iconManager = new IconManager();
-		VizMapperMenuManager menuManager = new VizMapperMenuManager(taskManagerServiceRef,propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
+		VizMapperMenuManager menuManager = new VizMapperMenuManager(dialogTaskManagerServiceRef,propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
 		DefaultViewPanelImpl defaultViewPanel = new DefaultViewPanelImpl(cyNetworkFactoryServiceRef,graphViewFactoryServiceRef,presentationFactoryServiceRef,selectedVisualStyleManager);
 		NodeSizeDependency nodeSizeDep = new NodeSizeDependency();
 		VizMapperUtil vizMapperUtil = new VizMapperUtil(vmmServiceRef);
@@ -115,7 +115,7 @@ public class CyActivator extends AbstractCyActivator {
 		ImportDefaultVizmapTaskFactory importDefaultVizmapTaskFactory = new ImportDefaultVizmapTaskFactory(vizmapReaderManagerServiceRef,vmmServiceRef,cyApplicationConfigurationServiceRef);
 		VizMapPropertySheetBuilder vizMapPropertySheetBuilder = new VizMapPropertySheetBuilder(menuManager,cyNetworkManagerServiceRef,propertySheetPanel,editorManager,defaultViewPanel,cyTableManagerServiceRef,vizMapperUtil,vmmServiceRef);
 		EditorWindowManager editorWindowManager = new EditorWindowManager(editorManager,propertySheetPanel);
-		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,taskManagerServiceRef);
+		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef);
 		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(vmmServiceRef,selectedVisualStyleManager,vizMapperUtil,vizMapperMainPanel);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager,vizMapperUtil,vizMapperMainPanel);
 		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(selectedVisualStyleManager,vizMapperMainPanel);

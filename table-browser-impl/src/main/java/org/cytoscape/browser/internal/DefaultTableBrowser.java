@@ -38,7 +38,7 @@ import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener, NetworkAddedListener, NetworkAboutToBeDestroyedListener {
 
@@ -53,7 +53,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	public DefaultTableBrowser(String tabTitle, Class<? extends CyTableEntry> objType, CyTableManager tableManager,
 			CyNetworkTableManager networkTableManager, CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
 			OpenBrowser openBrowser, CyNetworkManager networkManager, TableTaskFactory deleteTableTaskFactoryService,
-			GUITaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
+			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
 			CyApplicationManager applicationManager, final CyEventHelper eventHelper) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);

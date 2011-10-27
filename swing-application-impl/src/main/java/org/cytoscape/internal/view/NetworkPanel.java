@@ -91,7 +91,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Collection;
@@ -126,7 +126,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener,
 	final CyNetworkManager netmgr;
 	final CyNetworkViewManager networkViewManager;
 
-	private final TaskManager taskManager;
+	private final DialogTaskManager taskManager;
 
 	private final JPopupMenu popup;
 	private final Map<TaskFactory, JMenuItem> popupMap;
@@ -140,7 +140,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener,
 	 */
 	public NetworkPanel(final CyApplicationManager applicationManager,
 			final CyNetworkManager netmgr, final CyNetworkViewManager networkViewManager,
-			final BirdsEyeViewHandler bird, final TaskManager taskManager) {
+			final BirdsEyeViewHandler bird, final DialogTaskManager taskManager) {
 		super();
 
 		this.appManager = applicationManager;

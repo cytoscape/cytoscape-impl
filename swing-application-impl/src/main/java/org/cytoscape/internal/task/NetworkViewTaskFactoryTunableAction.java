@@ -34,7 +34,7 @@ import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 public class NetworkViewTaskFactoryTunableAction extends
 		TaskFactoryTunableAction<NetworkViewTaskFactory> {
@@ -42,7 +42,7 @@ public class NetworkViewTaskFactoryTunableAction extends
 	private static final long serialVersionUID = -394071170939169420L;
 
 	public NetworkViewTaskFactoryTunableAction(
-			TaskManager manager,
+			DialogTaskManager manager,
 			NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map serviceProps,
 			final CyApplicationManager applicationManager) {
 		super(manager, factory, serviceProps, applicationManager);

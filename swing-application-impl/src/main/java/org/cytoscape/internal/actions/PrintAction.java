@@ -70,13 +70,12 @@ public class PrintAction extends AbstractCyAction {
 	 * Creates a new PrintAction object.
 	 */
 	public PrintAction(CyApplicationManager appMgr, CyProperty<Properties> coreProp) {
-		super(MENU_LABEL, appMgr );
+		super(MENU_LABEL, appMgr, "networkAndView" );
 		setPreferredMenu("File");
 		setMenuGravity(7.0f);
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		this.props = coreProp.getProperties();
 	}
-	
 	
 	public void actionPerformed(ActionEvent e) {
 		final RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
@@ -97,10 +96,5 @@ public class PrintAction extends AbstractCyAction {
 				exc.printStackTrace();
 			}
 		}
-	}
-
-	@Override
-	public void menuSelected(MenuEvent e) {
-		enableForNetworkAndView();
 	}
 }

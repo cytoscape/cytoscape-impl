@@ -67,7 +67,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.swing.GUITaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
@@ -94,7 +94,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 	// These databases are not compatible with this UI.
 	private static final List<String> databaseFilter = new ArrayList<String>();
 
-	private final GUITaskManager taskManager;
+	private final DialogTaskManager taskManager;
 	private final CyApplicationManager appManager;
 
 	private Window parent;
@@ -113,13 +113,13 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 	 * @throws Exception
 	 */
 	public BiomartAttrMappingPanel(final BiomartClient client,
-			final TaskManager taskManager,
+			final DialogTaskManager taskManager,
 			final CyApplicationManager appManager,
 			final CyTableManager tblManager, final CyNetworkManager netManager) {
 		super(tblManager, netManager, LOGO, "Biomart", "Import Settings");
 
 		this.client = client;
-		this.taskManager = (GUITaskManager) taskManager;
+		this.taskManager = taskManager;
 		this.appManager = appManager;
 
 		this.globalTableCounter = 0;
@@ -197,7 +197,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
 	private void fetchData(final String datasourceName, final SourceType type) {
 
-		taskManager.setParent(parent);
+		taskManager.setExecutionContext(parent);
 
 		if (type.equals(SourceType.ATTRIBUTE)) {
 			final ImportAttributeListTask firstTask = new ImportAttributeListTask(
@@ -322,7 +322,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
 	@Override
 	protected void importAttributes() {
-		taskManager.setParent(parent);
+		//taskManager.setParent(parent);
 		taskManager.execute(client);
 	}
 
