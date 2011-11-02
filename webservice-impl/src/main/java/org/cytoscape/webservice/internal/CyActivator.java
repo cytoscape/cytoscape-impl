@@ -1,7 +1,4 @@
 
-
-
-
 package org.cytoscape.webservice.internal;
 
 import org.cytoscape.application.swing.CySwingApplication;
@@ -20,7 +17,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 
 import java.util.Properties;
 
-
+import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -36,6 +33,7 @@ public class CyActivator extends AbstractCyActivator {
 		ShowNetworkImportDialogAction showNetworkImportDialogAction = new ShowNetworkImportDialogAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,unifiedNetworkImportDialog);
 		
 		registerService(bc,showNetworkImportDialogAction,CyAction.class, new Properties());
+		registerServiceListener(bc, unifiedNetworkImportDialog, "addNetworkImportClient", "removeNetworkImportClient", NetworkImportWebServiceClient.class);	
 	}
 }
 
