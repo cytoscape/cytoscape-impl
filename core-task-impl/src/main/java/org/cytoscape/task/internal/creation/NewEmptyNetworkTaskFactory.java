@@ -33,7 +33,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.ValuedTaskExecutor;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -49,7 +48,6 @@ public class NewEmptyNetworkTaskFactory implements TaskFactory, NewEmptyNetworkV
 	private final CyNetworkNaming namingUtil;
 	private final SynchronousTaskManager syncTaskMgr;
 
-	private ValuedTaskExecutor<CyNetworkView> resultHolder; 
 	private NewEmptyNetworkTask task; 
 
 	public NewEmptyNetworkTaskFactory(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, final CyNetworkManager netmgr, final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil, final SynchronousTaskManager syncTaskMgr)
