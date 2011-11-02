@@ -92,28 +92,35 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	public void run(TaskMonitor tm) {
 		if (parentNetwork == null)
 			throw new NullPointerException("Source network is null.");
+		tm.setProgress(0.0);
 
 		final CyNetworkView curView = networkViewManager.getNetworkView(parentNetwork.getSUID());
+		tm.setProgress(0.1);
 
 		// Get the selected nodes, but only create network if nodes are actually
 		// selected.
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(parentNetwork, CyNetwork.SELECTED, true);
+		tm.setProgress(0.2);
 
 		if (selectedNodes.size() <= 0)
 			throw new IllegalArgumentException("No nodes are selected!");
 
 		// create subnetwork and add selected nodes and appropriate edges
 		final CySubNetwork newNet = rootNetworkFactory.convert(parentNetwork).addSubNetwork();
+		tm.setProgress(0.3);
 
 		for (final CyNode node : selectedNodes)
 			newNet.addNode(node);
 
+		tm.setProgress(0.4);
 		for (final CyEdge edge : getEdges(parentNetwork, selectedNodes))
 			newNet.addEdge(edge);
+		tm.setProgress(0.5);
 
 		newNet.getCyRow().set(CyTableEntry.NAME, cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork));
 
 		networkManager.addNetwork(newNet);
+		tm.setProgress(0.6);
 
 		appManager.setCurrentNetwork(newNet.getSUID());
 
@@ -127,11 +134,13 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			appManager.setCurrentNetworkView(newNet.getSUID());
 			return;
 		}
+		tm.setProgress(0.7);
 
 		// create new view
 		final CyNetworkView newView = viewFactory.getNetworkView(newNet);
 
 		networkViewManager.addNetworkView(newView);
+		tm.setProgress(0.8);
 
 		// copy node location only.
 		for (View<CyNode> newNodeView : newView.getNodeViews()) {
@@ -149,6 +158,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			// origNodeView.getVisualProperty(vp));
 			// }
 		}
+		tm.setProgress(0.9);
 
 		final VisualStyle style = vmm.getVisualStyle(curView);
 		vmm.setVisualStyle(vmm.getVisualStyle(curView), newView);
@@ -156,5 +166,6 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		newView.fitContent();
 
 		appManager.setCurrentNetworkView(newView.getModel().getSUID());
+		tm.setProgress(1.0);
 	}
 }

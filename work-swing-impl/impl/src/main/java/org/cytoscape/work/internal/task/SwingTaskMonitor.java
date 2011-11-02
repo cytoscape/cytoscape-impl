@@ -8,27 +8,45 @@ import java.util.concurrent.Future;
 
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class SwingTaskMonitor implements TaskMonitor {
 	
-	private Task task;
 	final private ExecutorService cancelExecutorService;
 	final private Window parent;
+	final static private Logger logger = LoggerFactory.getLogger(SwingTaskMonitor.class);
 
 	private boolean cancelled = false;
 	private TaskDialog dialog = null;
-	
+	private Task task;
 	private String title = null;
 	private String statusMessage = null;
 	private int progress = 0;
 	private Future<?> future = null;
+	private int expectedNumTasks = 1;
+	private int currentTaskNum = -1; // so that the first task is numbered 0
+
+	/**
+	 * Based on the expected number of tasks, this is the fraction of the overall
+	 * task monitor that a given task is allocated. So, if there are 4 tasks 
+	 * executed with this task monitor, each task is allocated 0.25 of the 
+	 * space in the progress bar.
+	 */
+	private double fractionOfOverall = 1.0;
 
 	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent) {
 		this.cancelExecutorService = cancelExecutorService;
 		this.parent = parent;
 	}
 
+	public void setExpectedNumTasks(int numTasks) {
+		this.expectedNumTasks = numTasks;
+		this.fractionOfOverall = 1.0/(double)expectedNumTasks;
+	}
+
 	public void setTask(final Task newTask) {
+		this.currentTaskNum++;	
 		this.task = newTask;
 	}
 
@@ -97,7 +115,9 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	public void setProgress(double progress) {
-		this.progress = (int) Math.floor(progress * 100);
+		double completed = (double)currentTaskNum/(double)expectedNumTasks;
+		double adjustedProgress = (progress * fractionOfOverall) + completed;
+		this.progress = (int) Math.floor(100.0 * adjustedProgress); 
 		if (dialog != null)
 			dialog.setPercentCompleted(this.progress);
 	}

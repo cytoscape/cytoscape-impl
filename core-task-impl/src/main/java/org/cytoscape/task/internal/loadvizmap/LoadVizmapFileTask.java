@@ -27,10 +27,12 @@ public class LoadVizmapFileTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		if (file == null) 
 			throw new NullPointerException("No file specified!");
 
 		VizmapReader reader = vizmapReaderMgr.getReader(file.toURI(), file.getName());
+		taskMonitor.setProgress(0.9);
 
 		if (reader == null) 
 			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
@@ -38,6 +40,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 		addVSTask = new AddVisualStylesTask(reader, vmMgr);
 
 		insertTasksAfterCurrentTask(reader, addVSTask);
+		taskMonitor.setProgress(1.0);
 	}
 
 	public Set<VisualStyle> getStyles() {
@@ -58,6 +61,7 @@ class AddVisualStylesTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		taskMonitor.setTitle("Loading visual styles...");
 		styles = reader.getVisualStyles();
 
@@ -79,9 +83,9 @@ class AddVisualStylesTask extends AbstractTask {
 					vmMgr.removeVisualStyle(vs);
 				}
 
-				taskMonitor.setProgress(1.0);
 			}
 		}
+		taskMonitor.setProgress(1.0);
 	}
 
 	public Set<VisualStyle> getStyles() {

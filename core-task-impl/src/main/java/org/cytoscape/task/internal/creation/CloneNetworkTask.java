@@ -80,21 +80,26 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	}
 
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final long start = System.currentTimeMillis();
 		logger.debug("Clone Network Task start");
 		
 		// Create copied network model
 		final CyNetwork newNet = cloneNetwork(parentNetwork);
+		tm.setProgress(0.4);
 		final CyNetworkView origView = networkViewManager.getNetworkView(parentNetwork.getSUID());
 		networkManager.addNetwork(newNet);
+		tm.setProgress(0.6);
 
 		if (origView != null)
 			copyView(newNet, origView);
+		tm.setProgress(0.9);
 
 		orig2NewNodeMap.clear();
 		orig2NewNodeMap = null;
 		
 		logger.debug("Cloning finished in " + (System.currentTimeMillis() - start) + " msec.");
+		tm.setProgress(1.0);
 	}
 
 	private CyNetwork cloneNetwork(CyNetwork origNet) {

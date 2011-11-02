@@ -40,15 +40,14 @@ import org.cytoscape.work.AbstractTask;
  */
 public abstract class AbstractCreationTask extends AbstractTask {
 
-    protected final CyNetworkManager networkManager;
-    protected final CyNetworkViewManager networkViewManager;
-    
-    protected final CyNetwork parentNetwork;
+	protected final CyNetworkManager networkManager;
+	protected final CyNetworkViewManager networkViewManager;
+	protected final CyNetwork parentNetwork;
 
-    public AbstractCreationTask(final CyNetwork parentNetwork, final CyNetworkManager networkManager,
-	    final CyNetworkViewManager networkViewManager) {
-	this.parentNetwork = parentNetwork;
-	this.networkManager = networkManager;
-	this.networkViewManager = networkViewManager;
-    }
+	public AbstractCreationTask(final CyNetwork parentNetwork, final CyNetworkManager networkManager,
+	                            final CyNetworkViewManager networkViewManager) {
+		this.parentNetwork = parentNetwork;
+		this.networkManager = networkManager;
+		this.networkViewManager = networkViewManager;
+	}
 }

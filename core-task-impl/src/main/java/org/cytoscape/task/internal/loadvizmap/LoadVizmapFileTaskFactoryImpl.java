@@ -31,7 +31,7 @@ public class LoadVizmapFileTaskFactoryImpl implements TaskFactory, LoadVisualSty
 	@Override
 	public TaskIterator getTaskIterator() {
 		task = new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
-		return new TaskIterator(task);
+		return new TaskIterator(2,task);
 	}
 
 	public Set<VisualStyle> loadStyles(File f) {

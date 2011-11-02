@@ -67,11 +67,17 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final CyNetwork newNet = cnf.getInstance();
+		tm.setProgress(0.2);
 		newNet.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle("Network"));
+		tm.setProgress(0.4);
 		view = cnvf.getNetworkView(newNet);		
+		tm.setProgress(0.6);
 		networkManager.addNetwork(newNet);
+		tm.setProgress(0.8);
 		networkViewManager.addNetworkView(view);
+		tm.setProgress(1.0);
 	}
 
 	@Override

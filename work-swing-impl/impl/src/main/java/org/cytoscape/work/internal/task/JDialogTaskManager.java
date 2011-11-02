@@ -154,6 +154,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				return;
 
 			taskIterator = factory.getTaskIterator();
+			taskMonitor.setExpectedNumTasks( taskIterator.getNumTasks() );
 
 			// Get the first task and display its tunables.  This is a bit of a hack.  
 			// We do this outside of the thread so that the task monitor only gets

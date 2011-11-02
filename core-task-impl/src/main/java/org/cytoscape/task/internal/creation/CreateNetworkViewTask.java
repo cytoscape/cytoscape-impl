@@ -71,15 +71,17 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		final long start = System.currentTimeMillis();
 
 		taskMonitor.setStatusMessage("Creating network view...");
-		taskMonitor.setProgress(-1.0);
 
 		try {
 			// By calling this task, actual view will be created even if it's a
 			// large network.
+			taskMonitor.setProgress(0.4);
 			final CyNetworkView view = viewFactory.getNetworkView(network, false);
+			taskMonitor.setProgress(0.8);
 			networkViewManager.addNetworkView(view);
 			
 			// Apply layout only when it is necessary.
