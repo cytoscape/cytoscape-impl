@@ -32,7 +32,7 @@ package org.cytoscape.task.internal.creation;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.ValuedTaskExecutor;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -47,33 +47,29 @@ public class NewEmptyNetworkTaskFactory implements TaskFactory, NewEmptyNetworkV
 	private final CyNetworkManager netmgr;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyNetworkNaming namingUtil;
-	private final TaskManager taskManager;
+	private final SynchronousTaskManager syncTaskMgr;
 
 	private ValuedTaskExecutor<CyNetworkView> resultHolder; 
+	private NewEmptyNetworkTask task; 
 
-	public NewEmptyNetworkTaskFactory(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, final CyNetworkManager netmgr, final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil, final TaskManager taskManager)
+	public NewEmptyNetworkTaskFactory(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, final CyNetworkManager netmgr, final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil, final SynchronousTaskManager syncTaskMgr)
 	{
 		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.netmgr = netmgr;
 		this.networkViewManager = networkViewManager;
 		this.namingUtil = namingUtil;
-		this.taskManager = taskManager;
+		this.syncTaskMgr = syncTaskMgr;
 	}
 
 	public TaskIterator getTaskIterator() {
-		resultHolder = new ValuedTaskExecutor<CyNetworkView>(
-			new NewEmptyNetworkTask(cnf, cnvf, netmgr, networkViewManager,namingUtil));
-
-		return new TaskIterator(resultHolder);
+		task = new NewEmptyNetworkTask(cnf, cnvf, netmgr, networkViewManager,namingUtil);
+		return new TaskIterator(task);
 	} 
 
 	public CyNetworkView createNewEmptyNetworkView() {
-		taskManager.execute(this);	
-		CyNetworkView view = null; 
-		try {
-			view = resultHolder.get();
-		} catch (Exception ie) { ie.printStackTrace(); return null; }
-		return view;
+		// no tunables, so no need to set the execution context
+		syncTaskMgr.execute(this);	
+		return task.getView(); 
 	}
 }

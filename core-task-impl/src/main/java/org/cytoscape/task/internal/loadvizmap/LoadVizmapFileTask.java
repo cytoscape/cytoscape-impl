@@ -18,6 +18,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 
 	private final VisualMappingManager vmMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
+	private AddVisualStylesTask addVSTask;
 
 	public LoadVizmapFileTask(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
@@ -26,13 +27,21 @@ public class LoadVizmapFileTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		if (file == null) throw new NullPointerException("No file specified!");
+		if (file == null) 
+			throw new NullPointerException("No file specified!");
 
 		VizmapReader reader = vizmapReaderMgr.getReader(file.toURI(), file.getName());
 
-		if (reader == null) throw new NullPointerException("Failed to find appropriate reader for file: " + file);
+		if (reader == null) 
+			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
 
-		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, vmMgr));
+		addVSTask = new AddVisualStylesTask(reader, vmMgr);
+
+		insertTasksAfterCurrentTask(reader, addVSTask);
+	}
+
+	public Set<VisualStyle> getStyles() {
+		return addVSTask.getStyles();
 	}
 }
 
@@ -40,6 +49,7 @@ class AddVisualStylesTask extends AbstractTask {
 
 	private final VizmapReader reader;
 	private final VisualMappingManager vmMgr;
+	private Set<VisualStyle> styles; 
 
 	public AddVisualStylesTask(VizmapReader reader, VisualMappingManager vmMgr) {
 		this.reader = reader;
@@ -49,7 +59,7 @@ class AddVisualStylesTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Loading visual styles...");
-		final Set<VisualStyle> styles = reader.getVisualStyles();
+		styles = reader.getVisualStyles();
 
 		if (styles != null) {
 			int count = 1;
@@ -72,5 +82,9 @@ class AddVisualStylesTask extends AbstractTask {
 				taskMonitor.setProgress(1.0);
 			}
 		}
+	}
+
+	public Set<VisualStyle> getStyles() {
+		return styles; 
 	}
 }

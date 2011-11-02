@@ -8,6 +8,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 
+import org.cytoscape.work.internal.sync.*;
 import org.cytoscape.work.internal.task.*;
 import org.cytoscape.work.internal.tunables.*;
 import org.cytoscape.work.internal.submenu.*;
@@ -16,6 +17,7 @@ import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 
 import org.cytoscape.work.swing.BasicGUITunableHandlerFactory;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.TunableHandlerFactory;
@@ -75,6 +77,10 @@ public class CyActivator extends AbstractCyActivator {
 		BasicGUITunableHandlerFactory listMultipleSelectionHandlerFactory = new BasicGUITunableHandlerFactory(ListMultipleHandler.class,ListMultipleSelection.class);
 		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(bookmarkServiceRef,bookmarksUtilServiceRef);
 		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager);
+
+		SyncTunableMutator syncTunableMutator = new SyncTunableMutator();
+		SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
+		SyncTaskManager syncTaskManager = new SyncTaskManager(syncTunableMutator);
 		
 		registerService(bc,undoSupport,UndoSupport.class, new Properties());
 
@@ -101,15 +107,19 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,listMultipleSelectionHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,fileHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,urlHandlerFactory,GUITunableHandlerFactory.class, new Properties());
+		registerService(bc,syncTaskManager,SynchronousTaskManager.class, new Properties());
+		registerService(bc,syncTunableHandlerFactory,TunableHandlerFactory.class, new Properties());
 
 		registerServiceListener(bc,supportedFileTypesManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
 		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
 
 		registerServiceListener(bc,jDialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
+		registerServiceListener(bc,syncTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
 
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,submenuTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SubmenuTunableHandlerFactory.class, TunableHandlerFactory.class);
+		registerServiceListener(bc,syncTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SyncTunableHandlerFactory.class, TunableHandlerFactory.class);
 
 	}
 }

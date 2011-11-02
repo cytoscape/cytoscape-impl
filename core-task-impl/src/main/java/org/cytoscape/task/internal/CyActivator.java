@@ -17,6 +17,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.io.write.CySessionWriterManager;
@@ -31,6 +32,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.task.creation.LoadVisualStyles;
 
 import org.cytoscape.task.internal.export.vizmap.ExportVizmapTaskFactory;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactory;
@@ -156,10 +158,11 @@ public class CyActivator extends AbstractCyActivator {
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc,RenderingEngineManager.class);
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc,CyLayoutAlgorithmManager.class);
 		CyTableWriterManager cyTableWriterManagerRef = getService(bc,CyTableWriterManager.class);
+		SynchronousTaskManager synchronousTaskManagerServiceRef = getService(bc,SynchronousTaskManager.class);
 		
 		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef,cyTableManagerServiceRef);
 		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef,cyTableManagerServiceRef);
-		LoadVizmapFileTaskFactoryImpl loadVizmapFileTaskFactory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderManagerServiceRef,visualMappingManagerServiceRef);
+		LoadVizmapFileTaskFactoryImpl loadVizmapFileTaskFactory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderManagerServiceRef,visualMappingManagerServiceRef,synchronousTaskManagerServiceRef);
 		LoadNetworkFileTaskFactoryImpl loadNetworkFileTaskFactory = new LoadNetworkFileTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef);
 		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef);
 		SetCurrentNetworkTaskFactoryImpl setCurrentNetworkTaskFactory = new SetCurrentNetworkTaskFactoryImpl(cyApplicationManagerServiceRef,cyNetworkManagerServiceRef);
@@ -183,7 +186,7 @@ public class CyActivator extends AbstractCyActivator {
 		UnHideAllTaskFactory unHideAllTaskFactory = new UnHideAllTaskFactory(undoSupportServiceRef,cyEventHelperRef);
 		UnHideAllNodesTaskFactory unHideAllNodesTaskFactory = new UnHideAllNodesTaskFactory(undoSupportServiceRef,cyEventHelperRef);
 		UnHideAllEdgesTaskFactory unHideAllEdgesTaskFactory = new UnHideAllEdgesTaskFactory(undoSupportServiceRef,cyEventHelperRef);
-		NewEmptyNetworkTaskFactory newEmptyNetworkTaskFactory = new NewEmptyNetworkTaskFactory(cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,taskManagerServiceRef);
+		NewEmptyNetworkTaskFactory newEmptyNetworkTaskFactory = new NewEmptyNetworkTaskFactory(cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,synchronousTaskManagerServiceRef);
 		CloneNetworkTaskFactory cloneNetworkTaskFactory = new CloneNetworkTaskFactory(cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkNamingServiceRef,cyEventHelperRef);
 		NewNetworkSelectedNodesEdgesTaskFactory newNetworkSelectedNodesEdgesTaskFactory = new NewNetworkSelectedNodesEdgesTaskFactory(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
 		NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory = new NewNetworkSelectedNodesOnlyTaskFactory(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
@@ -246,6 +249,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadVizmapFileTaskFactoryProps.setProperty("menuGravity","3.0");
 		loadVizmapFileTaskFactoryProps.setProperty("title","Vizmap File...");
 		registerService(bc,loadVizmapFileTaskFactory,TaskFactory.class, loadVizmapFileTaskFactoryProps);
+		registerService(bc,loadVizmapFileTaskFactory,LoadVisualStyles.class, new Properties());
 
 		Properties loadAttrsFileTaskFactoryProps = new Properties();
 		loadAttrsFileTaskFactoryProps.setProperty("preferredMenu","File.Import.Table");
