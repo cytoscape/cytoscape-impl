@@ -1,51 +1,63 @@
 package org.cytoscape.plugin.internal;
 
 
-import org.cytoscape.plugin.CyPlugin;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Set;
+import java.util.jar.JarFile;
+
 import org.cytoscape.plugin.CyPluginAdapter;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TaskMonitor;
-
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.lang.reflect.Constructor;
-import java.io.File;
-import java.net.URLClassLoader;
-import java.net.URL;
-
+import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class PluginLoaderTask extends AbstractTask {
+	
 	private static final Logger logger = LoggerFactory.getLogger( PluginLoaderTask.class );
-	private CyPluginAdapter adapter;
+	private static final String PLUGIN_TAG = "Cytoscape-Plugin";
+	
+	private final CyPluginAdapter adapter;
 
 	@Tunable(description="Select plugin JAR to load",params="input=true")
 	public File filename;
-
-	PluginLoaderTask(CyPluginAdapter adapter) {
+	
+	// All plugin URLs are saved here.  This means plugin conflict can happen in this ClassLoader.
+	// If plugin developers want to avoid it, they need to try regular bundle plugin.
+	private final Set<URL> urls;
+	
+	PluginLoaderTask(final CyPluginAdapter adapter, final Set<URL> urls) {
 		this.adapter = adapter;
+		this.urls = urls;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		Object o = null; 
-		JarFile jar = null; 
+		Object plugin = null;
+		JarFile jar = null;
+		
 		try {
 			jar = new JarFile(filename);
 			logger.debug("attempting to load simple plugin jar: " + filename);
-			String name = jar.getManifest().getMainAttributes().getValue("Cytoscape-Plugin");
-			logger.debug("attempting to load CyPlugin class: " + name); 	
+			
+			final String name = jar.getManifest().getMainAttributes().getValue(PLUGIN_TAG);
+			logger.debug("attempting to load CyPlugin class: " + name);
 			if ( name == null || name.isEmpty() )
 				throw new IllegalArgumentException("This plugin jar is missing the \"Cytoscape-Plugin: your.package.YourCyPlugin\" entry in the META-INF/MANIFEST.MF file. Without that entry we can't start the plugin!");
-			URL jarurl = filename.toURI().toURL(); 
-			URLClassLoader ucl = URLClassLoader.newInstance( new URL[]{jarurl}, 
-			                                      PluginLoaderTask.class.getClassLoader() );
-			Class c = ucl.loadClass(name);
-			Constructor<CyPlugin> con = c.getConstructor(CyPluginAdapter.class);
-			o = con.newInstance(adapter);
+			
+			final URL jarurl = filename.toURI().toURL();
+			final ClassLoader parentLoader = adapter.getClass().getClassLoader();
+			urls.add(jarurl);
+			final MyClassLoader ucl = new MyClassLoader(parentLoader);
+			final Class<?> c = ucl.loadClass(name);
+			
+			final Constructor<?> con = c.getConstructor(CyPluginAdapter.class);
+			plugin = con.newInstance(adapter);
+			logger.info("Plugin loaded: " + plugin);
 		} finally {
 			if (jar != null) 
 				jar.close();
@@ -54,5 +66,12 @@ public class PluginLoaderTask extends AbstractTask {
 
 	@Override
 	public void cancel() {
+		// TODO: Implement this!
+	}
+	
+	private final class MyClassLoader extends URLClassLoader {
+		MyClassLoader(ClassLoader parent) {
+			super(urls.toArray(new URL[0]), parent);
+		}	
 	}
 }
