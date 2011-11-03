@@ -87,11 +87,11 @@ import org.slf4j.LoggerFactory;
  * The CytoscapeDesktop is the central Window for working with Cytoscape
  */
 public class CytoscapeDesktop extends JFrame implements CySwingApplication, CytoscapeStartListener,
-		                                                SessionLoadedListener, SessionAboutToBeSavedListener {
+		SessionLoadedListener, SessionAboutToBeSavedListener {
 
 	private final static long serialVersionUID = 1202339866271348L;
 	
-	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(950, 720);
+	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1000, 720);
 	private static final String SMALL_ICON = "/images/c16.png";
 	private static final int DEVIDER_SIZE = 4;
 	private static final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<String, CytoPanelName>();

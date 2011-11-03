@@ -38,6 +38,10 @@ package org.cytoscape.internal.view;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -341,6 +345,17 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// it
 		final String title = view.getModel().getCyRow().get(CyTableEntry.NAME, String.class);
 		final JInternalFrame iframe = new JInternalFrame(title, true, true, true, true);
+		
+		// This is for force move title bar to the desktop if it's out of range.
+		iframe.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				final Point originalPoint = iframe.getLocation();
+				if(originalPoint.y < 0)
+					iframe.setLocation(originalPoint.x, 0);
+			}
+		});
+		
 
 		iframe.addInternalFrameListener(new InternalFrameAdapter() {
 			public void internalFrameClosing(InternalFrameEvent e) {
