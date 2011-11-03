@@ -33,9 +33,11 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 
-import org.cytoscape.ding.ArrowShape;
+import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 
@@ -89,10 +91,14 @@ class EdgeViewDefaultSupport {
 			setSourceEdgeEndUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
 			setTargetEdgeEndUnselectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
-			setTargetEdgeEnd(((ArrowShape) value).getRendererTypeID());
-		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
-			setSourceEdgeEnd(((ArrowShape) value).getRendererTypeID());
+		} else if (vp == RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
+			final ArrowShape shape = (ArrowShape) value;
+			final String shapeID = shape.getSerializableString();
+			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
+		} else if (vp == RichVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
+			final ArrowShape shape = (ArrowShape) value;
+			final String shapeID = shape.getSerializableString();
+			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
 		} else if (vp == MinimalVisualLexicon.EDGE_LABEL) {
 			setText((String) value);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {

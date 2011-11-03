@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.di.util.DIUtil;
-import org.cytoscape.ding.ArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -52,7 +51,6 @@ import org.cytoscape.ding.impl.strokes.SeparateArrowStroke;
 import org.cytoscape.ding.impl.strokes.SineWaveStroke;
 import org.cytoscape.ding.impl.strokes.VerticalSlashStroke;
 import org.cytoscape.ding.impl.strokes.ZigzagStroke;
-import org.cytoscape.ding.impl.visualproperty.ArrowShapeTwoDVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -240,13 +238,6 @@ public class DVisualLexicon extends RichVisualLexicon {
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
 
-	public static final VisualProperty<ArrowShape> EDGE_SOURCE_ARROW_SHAPE = new ArrowShapeTwoDVisualProperty(
-			ArrowShape.NONE, "EDGE_SOURCE_ARROW_SHAPE",
-			"Edge Source Arrow Shape");
-	public static final VisualProperty<ArrowShape> EDGE_TARGET_ARROW_SHAPE = new ArrowShapeTwoDVisualProperty(
-			ArrowShape.NONE, "EDGE_TARGET_ARROW_SHAPE",
-			"Edge Target Arrow Shape");
-
 	public static final VisualProperty<ObjectPosition> EDGE_LABEL_POSITION = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION, "EDGE_LABEL_POSITION",
 			"Edge Label Position", CyEdge.class);
@@ -397,13 +388,9 @@ public class DVisualLexicon extends RichVisualLexicon {
 		
 		addVisualProperty(EDGE_SOURCE_ARROW_SELECTED_PAINT, EDGE_SELECTED_PAINT);
 		addVisualProperty(EDGE_TARGET_ARROW_SELECTED_PAINT, EDGE_SELECTED_PAINT);
-		addVisualProperty(EDGE_SOURCE_ARROW_UNSELECTED_PAINT,
-				EDGE_UNSELECTED_PAINT);
-		addVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT,
-				EDGE_UNSELECTED_PAINT);
-		addVisualProperty(EDGE_SOURCE_ARROW_SHAPE, EDGE);
-		addVisualProperty(EDGE_TARGET_ARROW_SHAPE, EDGE);
-		
+		addVisualProperty(EDGE_SOURCE_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
+		addVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
+
 		addVisualProperty(EDGE_LABEL_POSITION, EDGE);
 
 		createLookupMap();
@@ -411,10 +398,6 @@ public class DVisualLexicon extends RichVisualLexicon {
 
 	private void createLookupMap() {
 		// XGMML:
-		addIdentifierMapping(CyEdge.class, "sourceArrow",
-				EDGE_SOURCE_ARROW_SHAPE);
-		addIdentifierMapping(CyEdge.class, "targetArrow",
-				EDGE_TARGET_ARROW_SHAPE);
 		addIdentifierMapping(CyEdge.class, "sourceArrowColor",
 				EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 		addIdentifierMapping(CyEdge.class, "targetArrowColor",
@@ -425,13 +408,9 @@ public class DVisualLexicon extends RichVisualLexicon {
 		// addIdentifierMapping(CyNode.class,"nodeLabelOpacity",NODE_LABEL_TRANSPARENCY);
 		// addIdentifierMapping(CyNode.class,"nodeBorderOpacity",NODE_BORDER_TRANSPARENCY);
 		// addIdentifierMapping(CyNode.class,"nodeLabelWidth",NODE_LABEL_WIDTH);
-
-		addIdentifierMapping(CyEdge.class, "edgeSourceArrowShape",
-				EDGE_SOURCE_ARROW_SHAPE);
+		
 		addIdentifierMapping(CyEdge.class, "edgeSourceArrowColor",
 				EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
-		addIdentifierMapping(CyEdge.class, "edgeTargetArrowShape",
-				EDGE_TARGET_ARROW_SHAPE);
 		addIdentifierMapping(CyEdge.class, "edgeTargetArrowColor",
 				EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 		// TODO: missing edge properties

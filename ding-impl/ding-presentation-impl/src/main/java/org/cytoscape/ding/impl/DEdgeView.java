@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.cytoscape.ding.ArrowShape;
+import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
@@ -51,6 +51,8 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 
@@ -503,72 +505,13 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	public void updateSourceArrow() {
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param type
-	 *            DOCUMENT ME!
-	 */
 	public void setSourceEdgeEnd(final int rendererTypeID) {
 		synchronized (m_view.m_lock) {
-//			switch (type) {
-//			case NO_END:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_NONE);
-//				break;
-//
-//			case WHITE_DELTA:
-//			case BLACK_DELTA:
-//			case EDGE_COLOR_DELTA:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_DELTA);
-//				break;
-//
-//			case WHITE_ARROW:
-//			case BLACK_ARROW:
-//			case EDGE_COLOR_ARROW:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_ARROWHEAD);
-//				break;
-//
-//			case WHITE_DIAMOND:
-//			case BLACK_DIAMOND:
-//			case EDGE_COLOR_DIAMOND:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_DIAMOND);
-//				break;
-//
-//			case WHITE_CIRCLE:
-//			case BLACK_CIRCLE:
-//			case EDGE_COLOR_CIRCLE:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_DISC);
-//				break;
-//
-//			case WHITE_T:
-//			case BLACK_T:
-//			case EDGE_COLOR_T:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_TEE);
-//				break;
-//
-//			case WHITE_HALF_BOTTOM:
-//			case BLACK_HALF_BOTTOM:
-//			case EDGE_HALF_ARROW_BOTTOM:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_HALF_BOTTOM);
-//				break;
-//
-//			case WHITE_HALF_TOP:
-//			case BLACK_HALF_TOP:
-//			case EDGE_HALF_ARROW_TOP:
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_HALF_TOP);
-//				break;
-//
-//			default:
-//				// TODO: is this OK?
-//				m_view.m_edgeDetails.overrideSourceArrow(m_inx, GraphGraphics.ARROW_NONE);
-//				//throw new IllegalArgumentException("unrecognized edge end type: " + type);
-			
 				m_view.m_edgeDetails.overrideSourceArrow(m_inx, (byte) rendererTypeID);
 			}
 
 			m_sourceEdgeEnd = rendererTypeID;
 			m_view.m_contentChanged = true;
-		
 	}
 
 	/**
@@ -1426,10 +1369,14 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			setTargetEdgeEndPaint((Paint) value);
 		} else if (vp == MinimalVisualLexicon.EDGE_SELECTED) {
 			setSelected((Boolean) value);
-		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
-			setTargetEdgeEnd(((ArrowShape) value).getRendererTypeID());
-		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
-			setSourceEdgeEnd(((ArrowShape) value).getRendererTypeID());
+		} else if (vp == RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
+			final ArrowShape shape = (ArrowShape) value;
+			final String shapeID = shape.getSerializableString();
+			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
+		} else if (vp == RichVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
+			final ArrowShape shape = (ArrowShape) value;
+			final String shapeID = shape.getSerializableString();
+			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
 		} else if (vp == MinimalVisualLexicon.EDGE_LABEL) {
 			setText((String) value);
 		} else if (vp == DVisualLexicon.EDGE_TOOLTIP) {

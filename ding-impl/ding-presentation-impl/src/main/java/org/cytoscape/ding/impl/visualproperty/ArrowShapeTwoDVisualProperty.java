@@ -37,36 +37,36 @@ package org.cytoscape.ding.impl.visualproperty;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.ding.ArrowShape;
+import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.AbstractVisualProperty;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.Range;
 
-public class ArrowShapeTwoDVisualProperty extends AbstractVisualProperty<ArrowShape> {
+public class ArrowShapeTwoDVisualProperty extends AbstractVisualProperty<DArrowShape> {
 
-	private static final Range<ArrowShape> ARROW_SHAPE_RANGE;
+	private static final Range<DArrowShape> ARROW_SHAPE_RANGE;
 
 	static {
-		final Set<ArrowShape> arrowSet = new HashSet<ArrowShape>();
+		final Set<DArrowShape> arrowSet = new HashSet<DArrowShape>();
 		
-		for (final ArrowShape arrow : ArrowShape.values())
+		for (final DArrowShape arrow : DArrowShape.values())
 			arrowSet.add(arrow);
 		
-		ARROW_SHAPE_RANGE = new DiscreteRange<ArrowShape>(ArrowShape.class, arrowSet);
+		ARROW_SHAPE_RANGE = new DiscreteRange<DArrowShape>(DArrowShape.class, arrowSet);
 	}
 
-	public ArrowShapeTwoDVisualProperty(final ArrowShape def, final String id,
+	public ArrowShapeTwoDVisualProperty(final DArrowShape def, final String id,
 			final String name) {
 		super(def, ARROW_SHAPE_RANGE, id, name, CyEdge.class);
 	}
 
-	public String toSerializableString(final ArrowShape value) {
+	public String toSerializableString(final DArrowShape value) {
 		return value.toString();
 	}
 
-	public ArrowShape parseSerializableString(final String text) {
-		ArrowShape shape = ArrowShape.parseArrowText(text);
+	public DArrowShape parseSerializableString(final String text) {
+		DArrowShape shape = DArrowShape.parseArrowText(text);
 
 		return shape;
 	}
