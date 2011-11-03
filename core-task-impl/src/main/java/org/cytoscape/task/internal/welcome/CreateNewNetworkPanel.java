@@ -68,7 +68,7 @@ public class CreateNewNetworkPanel extends JPanel {
 		});
 		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
 
-		this.fromDB = new JLabel("From public data:");
+		this.fromDB = new JLabel("From Reference Network Data:");
 
 		this.setLayout(new GridLayout(4, 1));
 		this.add(loadNetwork);

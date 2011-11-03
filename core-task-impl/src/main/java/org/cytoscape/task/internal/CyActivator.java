@@ -43,7 +43,7 @@ import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.internal.hide.UnHideAllEdgesTaskFactory;
 import org.cytoscape.task.internal.session.SaveSessionAsTaskFactory;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTaskFactory;
-import org.cytoscape.task.internal.quickstart.QuickStartTaskFactory2;
+import org.cytoscape.task.internal.quickstart.WelcomeScreenTaskFactory;
 import org.cytoscape.task.internal.export.table.ExportNodeTableTaskFactory;
 import org.cytoscape.task.internal.quickstart.ImportTaskUtil;
 import org.cytoscape.task.internal.select.InvertSelectedEdgesTaskFactory;
@@ -223,7 +223,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		LoadMitabFileTaskFactory loadMitabFileTaskFactory = new LoadMitabFileTaskFactory(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef);
 
-		QuickStartTaskFactory2 quickStartTaskFactory2 = new QuickStartTaskFactory2(openBrowserServiceRef, importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil, recentlyOpenedTrackerServiceRef, taskManagerServiceRef, openSpecifiedSessionTaskFactory, openSessionTaskFactory, loadMitabFileTaskFactory, cyApplicationConfigurationServiceRef, loadNetworkFileTaskFactory);
+		WelcomeScreenTaskFactory welcomeTaskFactory = new WelcomeScreenTaskFactory(openBrowserServiceRef, importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil, recentlyOpenedTrackerServiceRef, taskManagerServiceRef, openSpecifiedSessionTaskFactory, openSessionTaskFactory, loadMitabFileTaskFactory, cyApplicationConfigurationServiceRef, loadNetworkFileTaskFactory);
 		BioGridPreprocessor bioGridPreprocessor = new BioGridPreprocessor(cyPropertyServiceRef,cyApplicationConfigurationServiceRef);
 		ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactory(undoSupportServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
 		
@@ -638,10 +638,11 @@ public class CyActivator extends AbstractCyActivator {
 		quickStartTaskFactoryProps.setProperty("title","QuickStart");
 		registerService(bc,quickStartTaskFactory,TaskFactory.class, quickStartTaskFactoryProps);
 
-		Properties quickStartTaskFactory2Props = new Properties();
-		quickStartTaskFactory2Props.setProperty("scope","startup");
-		quickStartTaskFactory2Props.setProperty("id","QuickStart2");
-		registerService(bc,quickStartTaskFactory2,TaskFactory.class, quickStartTaskFactory2Props);
+		Properties welcomeTaskFactoryProps = new Properties();
+		welcomeTaskFactoryProps.setProperty("scope","startup");
+		welcomeTaskFactoryProps.setProperty("title","Welcome Screen");
+		welcomeTaskFactoryProps.setProperty("id","WelcomeScreen");
+		registerService(bc,welcomeTaskFactory,TaskFactory.class, welcomeTaskFactoryProps);
 
 		registerAllServices(bc,bioGridPreprocessor, new Properties());
 

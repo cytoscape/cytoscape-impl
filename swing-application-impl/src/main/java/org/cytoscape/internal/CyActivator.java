@@ -191,7 +191,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
-		TaskFactory quickStartRef = getService(bc, TaskFactory.class, "(id=QuickStart2)");
+		TaskFactory quickStartRef = getService(bc, TaskFactory.class, "(id=WelcomeScreen)");
 		
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
 
