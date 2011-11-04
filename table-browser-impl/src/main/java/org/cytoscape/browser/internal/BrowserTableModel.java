@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
@@ -20,6 +21,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -192,43 +194,6 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		}
 	}
 
-	/**
-	 *  @return the row index for "cyRow" or -1 if there is no matching row.
-	 */
-	private int mapRowToRowIndex(final CyRow cyRow) {
-		final String primaryKey = dataTable.getPrimaryKey().getName();
-		final Class<?> primaryKeyType = dataTable.getPrimaryKey().getType();
-
-		int index = 0;
-		if (regularViewMode) {
-			if (selectedRows == null)
-				selectedRows = dataTable.getMatchingRows(CyNetwork.SELECTED, true);
-
-			for (final CyRow selectedRow : selectedRows) {
-				if (cyRow.get(primaryKey, primaryKeyType)
-				    .equals(selectedRow.get(primaryKey, primaryKeyType)))
-					return index;
-				++index;
-			}
-
-			return -1; // Most likely the passed in row was not a selected row!
-		} else {
-			final List<?> primaryKeyValues = dataTable.getPrimaryKey().getValues(primaryKeyType);
-			if(primaryKeyValues.size() == 0)
-				return -1;
-			
-			for (final Object primaryKeyValue : primaryKeyValues) {
-				if(cyRow.getAllValues().size() != dataTable.getRow(primaryKeyValue).getAllValues().size())
-					return -1;
-				
-				if (cyRow.get(primaryKey, primaryKeyType).equals(
-						dataTable.getRow(primaryKeyValue).get(primaryKey, primaryKeyType)))
-					return index;
-				++index;
-			}
-			throw new IllegalStateException("we should *never* get here!");
-		}
-	}
 
 	private ValidatedObjectAndEditString getValidatedObjectAndEditString(final CyRow row,
 									     final String columnName)
@@ -325,16 +290,28 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 					break;
 				}
 			}
-
 			if (!foundANonSelectedColumnName) {
 				fireTableDataChanged();
 				return;
 			}
 		}
-
-		for (final RowSetRecord rowSet : e.getPayloadCollection())
-			handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
+		
+		final Collection<RowSetRecord> rows = e.getPayloadCollection();
+		
+		if (!regularViewMode) {
+			table.clearSelection();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					bulkUpdate(rows);
+				}
+			});
+		} else {
+			for (final RowSetRecord rowSet : rows)
+				handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
+		}
 	}
+
 	
 	/**
 	 * Switch view mode.
@@ -355,31 +332,48 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		return !regularViewMode;
 	}
 
-	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
-				  final Object newRawValue)
-	{
-		
-		final int rowIndex = mapRowToRowIndex(row);
-		if (rowIndex == -1)
-			return;
-
-		final int columnIndex = mapColumnNameToColumnIndex(columnName);
-		if (columnIndex == -1)
-			return;
-
-		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
-/*
-			final boolean selected = (Boolean)newValue;
-			final int rowIndex = mapRowToRowIndex(row);
-			if (!selected && rowIndex == -1)
-				return;
-*/
-//			selectedRows = null;
-			fireTableDataChanged();
-		} else {
-			final TableModelEvent event = new TableModelEvent(this, rowIndex, rowIndex, columnIndex);
-			fireTableChanged(event);
+	
+	/**
+	 * Select rows in the table when something selected in the network view.
+	 * @param rows
+	 */
+	private void bulkUpdate(final Collection<RowSetRecord> rows) {
+		final int columnCount = table.getColumnCount();
+		int tablePKeyIndex = 0;
+		// Find SUID index.
+		for (int i = 0; i < columnCount; i++) {
+			final String colName = table.getColumnName(i);
+			if (colName.equals(CyTableEntry.SUID)) {
+				tablePKeyIndex = i;
+				break;
+			}
 		}
+		
+		final Map<Long, Boolean> suidMap = new HashMap<Long, Boolean>();
+		for(RowSetRecord rowSetRecord : rows) {
+			if(rowSetRecord.getColumn().equals(CyNetwork.SELECTED) && ((Boolean)rowSetRecord.getValue()) == true)
+				suidMap.put(rowSetRecord.getRow().get(CyTableEntry.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+		}
+		
+		final int rowCount = table.getRowCount();
+		for(int i=0; i<rowCount; i++) {
+			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) table.getValueAt(i, tablePKeyIndex);
+			if(suidMap.keySet().contains(Long.parseLong(tableKey.getEditString()))) {
+				table.addRowSelectionInterval(i, i);
+				table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
+			}
+		}
+	}
+	
+	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
+			final Object newRawValue) {
+		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
+			fireTableDataChanged();
+		} 
+//		else {
+//			final TableModelEvent event = new TableModelEvent(this, rowIndex, rowIndex, columnIndex);
+//			fireTableChanged(event);
+//		}
 	}
 
 	@Override
