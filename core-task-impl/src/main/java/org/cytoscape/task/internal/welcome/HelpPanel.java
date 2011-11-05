@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.welcome;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -44,10 +45,10 @@ public class HelpPanel extends JPanel {
 
 	private void initComponents() {
 		this.setLayout(new GridLayout(4, 1));
-		about = new JLabel("About Cytoscape >>");
-		manual = new JLabel("User Manual >>");
-		tutorial = new JLabel("Tutorials >>");
-		bugReport = new JLabel("Report a bug >>");
+		about = new JLabel("     About Cytoscape >>");
+		manual = new JLabel("     User Manual >>");
+		tutorial = new JLabel("     Tutorials >>");
+		bugReport = new JLabel("     Report a bug >>");
 		
 		labelSet.add(about);
 		labelSet.add(manual);
@@ -61,63 +62,26 @@ public class HelpPanel extends JPanel {
 		for(final JLabel label: labelSet) {
 			label.setFont(LABEL_FONT);
 			label.setForeground(LABEL_COLOR);
-			label.setHorizontalAlignment(SwingConstants.CENTER);
-			label.setHorizontalTextPosition(SwingConstants.CENTER);
+			label.setHorizontalAlignment(SwingConstants.LEFT);
+			label.setHorizontalTextPosition(SwingConstants.LEFT);
 			label.setOpaque(false);
 			label.addMouseListener(new LabelMouseListener(label, urlMap.get(label), this));
 			add(label);
 		}
 	}
 	
-	private final class LabelMouseListener implements MouseListener {
+	private final class LabelMouseListener extends MouseAdapter {
 		
-		private final JLabel label;
 		private final String url;
-		private final JPanel parent;
 		
 		LabelMouseListener(final JLabel label, final String url, final JPanel parent) {
-			this.label = label;
 			this.url = url;
-			this.parent=parent;
 		}
 
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
 			openBrowserServiceRef.openURL(url);			
 		}
-
-		@Override
-		public void mouseEntered(MouseEvent arg0) {
-//			label.setFont(SELECTED_FONT);
-//			label.setForeground(SELECTED_COLOR);
-//			label.setBackground(WelcomeScreenDialog.PANEL_COLOR);
-//			parent.setBackground(WelcomeScreenDialog.PANEL_COLOR);
-//			label.setOpaque(false);
-//			//parent.setOpaque(false);
-		}
-
-		@Override
-		public void mouseExited(MouseEvent arg0) {
-//			label.setFont(LABEL_FONT);
-//			label.setForeground(LABEL_COLOR);
-//			label.setBackground(WelcomeScreenDialog.PANEL_COLOR);
-//			parent.setBackground(Color.red);
-//			label.setOpaque(false);
-//			//parent.setOpaque(false);
-//			label.repaint();
-			
-		}
-
-		@Override
-		public void mousePressed(MouseEvent arg0) {			
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent arg0) {
-			
-		}
-
-		
 	}
 	
 

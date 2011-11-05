@@ -29,8 +29,8 @@ public class WelcomeScreenDialog extends JDialog {
 
 	private static final String TITLE = "Welcome to Cytoscape 3";
 
-	private static final Color PANEL_COLOR = new Color(0xff, 0xff, 0xff, 200);
-	private static final Color LABEL_COLOR = new Color(0xa0, 0xa0, 0xa0, 220);
+	private static final Color PANEL_COLOR = new Color(0xff, 0xff, 0xff, 220);
+	private static final Color LABEL_COLOR = new Color(0xa0, 0xa0, 0xa0, 230);
 	private static final Color TRANSPARENT_COLOR = new Color(0xc0, 0xc0, 0xc0, 0);
 
 	private static final Font TITLE_FONT = new Font("SansSerif", Font.PLAIN, 14);

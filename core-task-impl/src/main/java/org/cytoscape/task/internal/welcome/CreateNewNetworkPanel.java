@@ -8,10 +8,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -23,7 +27,10 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 
 public class CreateNewNetworkPanel extends JPanel {
-
+	
+	private static final String ICON_OPEN = "images/open.png";
+	private static final String ICON_DATABASE = "images/database.png";
+	
 	private JLabel loadNetwork;
 	private JLabel fromDB;
 
@@ -51,12 +58,25 @@ public class CreateNewNetworkPanel extends JPanel {
 	}
 
 	private void initComponents() {
+		
+		BufferedImage openIconImg = null;
+		BufferedImage databaseIconImg = null;
+		try {
+			openIconImg = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(ICON_OPEN));
+			databaseIconImg = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(ICON_DATABASE));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		ImageIcon openIcon = new ImageIcon(openIconImg);
+		ImageIcon databaseIcon = new ImageIcon(databaseIconImg);
 
 		this.layout = new JCheckBox();
-		layout.setText("Apply default layout?");
+		layout.setText("Apply default layout");
 		layout.setToolTipText("Note: This option may take minutes to finish for large networks!");
 
 		this.loadNetwork = new JLabel("From file...");
+		this.loadNetwork.setIcon(openIcon);
 		loadNetwork.addMouseListener(new MouseAdapter() {
 
 			@Override
@@ -69,6 +89,7 @@ public class CreateNewNetworkPanel extends JPanel {
 		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
 
 		this.fromDB = new JLabel("From Reference Network Data:");
+		this.fromDB.setIcon(databaseIcon);
 
 		this.setLayout(new GridLayout(4, 1));
 		this.add(loadNetwork);
