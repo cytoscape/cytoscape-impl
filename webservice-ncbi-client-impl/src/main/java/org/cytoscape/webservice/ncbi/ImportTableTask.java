@@ -306,7 +306,6 @@ public class ImportTableTask implements Callable<String> {
 		final StringBuilder builder = new StringBuilder();
 
 		for (final String id : ids) {
-			System.out.println("ID = " + id);
 			if (id != null)
 				builder.append(id + ",");
 		}

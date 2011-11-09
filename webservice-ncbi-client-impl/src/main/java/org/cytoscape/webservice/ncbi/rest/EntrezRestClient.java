@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 
 public class EntrezRestClient {
 	private static final Logger logger = LoggerFactory.getLogger(EntrezRestClient.class);
+	
 	private static final String BASE_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
 	public static final String FETCH_URL = BASE_URL + "efetch.fcgi?db=gene&retmode=xml&id=";
 	private static final String SEARCH_URL = BASE_URL + "esearch.fcgi?db=gene&retmax=100000&term=";
@@ -123,7 +124,7 @@ public class EntrezRestClient {
 
 			long endTime = System.currentTimeMillis();
 			double sec = (endTime - startTime) / (1000.0);
-			System.out.println("Finished in " + sec + " sec.");
+			logger.info("EntrezGene import finished in " + sec + " sec.");
 
 //			if ((canceled != null) && canceled) {
 //				canceled = null;
@@ -179,7 +180,7 @@ public class EntrezRestClient {
 
 			long endTime = System.currentTimeMillis();
 			double sec = (endTime - startTime) / (1000.0);
-			System.out.println("Table Import Finished in " + sec + " sec.");
+			logger.info("Table Import Finished in " + sec + " sec.");
 
 //			if ((canceled != null) && canceled) {
 //				canceled = null;
