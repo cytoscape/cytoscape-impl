@@ -115,11 +115,15 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	public void setProgress(double progress) {
-		double completed = (double)currentTaskNum/(double)expectedNumTasks;
-		double adjustedProgress = (progress * fractionOfOverall) + completed;
-		this.progress = (int) Math.floor(100.0 * adjustedProgress); 
-		if (dialog != null)
-			dialog.setPercentCompleted(this.progress);
+		if ( progress < 0 ) {
+			dialog.setPercentCompleted(-1);
+		} else {
+			double completed = (double)currentTaskNum/(double)expectedNumTasks;
+			double adjustedProgress = (progress * fractionOfOverall) + completed;
+			this.progress = (int) Math.floor(100.0 * adjustedProgress); 
+			if (dialog != null)
+				dialog.setPercentCompleted(this.progress);
+		}
 	}
 
 	public synchronized void showException(Exception exception) {
