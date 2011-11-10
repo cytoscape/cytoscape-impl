@@ -26,6 +26,7 @@
 		<module>equations-impl</module>
 		<module>event-impl</module>
 		<module>filter-impl</module>
+		<module>graphml-impl</module>
 		<module>io-impl</module>
 		<module>layout-cytoscape-impl</module>
 		<module>layout-impl</module>
