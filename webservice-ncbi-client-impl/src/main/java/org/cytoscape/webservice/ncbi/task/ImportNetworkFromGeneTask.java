@@ -45,6 +45,8 @@ public class ImportNetworkFromGeneTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		logger.debug("Import Start: Query = " + queryString);
 
+		taskMonitor.setProgress(0.01d);
+		
 		final EntrezRestClient restClient =
 			new EntrezRestClient(networkFactory, tableFactory, tableManager);
 
@@ -56,7 +58,7 @@ public class ImportNetworkFromGeneTask extends AbstractTask {
 			return;
 
 		taskMonitor.setStatusMessage("Creating network from matching genes...");
-		newNetwork = restClient.importNetwork(searchResult);
+		newNetwork = restClient.importNetwork(searchResult, taskMonitor);
 
 		// Register it
 		newNetwork.getCyRow().set(CyTableEntry.NAME, "NCBI");

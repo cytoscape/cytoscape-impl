@@ -47,7 +47,7 @@ public class ImportTableFromNCBITask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		logger.debug("Table Import Task Start.");
 		EntrezRestClient client = new EntrezRestClient(null, tableFactory, tableManager);
-		final CyTable globalTable = client.importDataTable(idList, category);
+		final CyTable globalTable = client.importDataTable(idList, category, taskMonitor);
 
 		final MapNetworkAttrTask localMappingTask =
 			new MapNetworkAttrTask(CyNode.class, globalTable, networkManager,

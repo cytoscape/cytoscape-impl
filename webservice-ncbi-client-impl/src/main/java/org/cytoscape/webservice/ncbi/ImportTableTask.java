@@ -24,7 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class ImportTableTask implements Callable<String> {
+public class ImportTableTask implements Callable<Double> {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportTableTask.class);
 
@@ -82,14 +82,18 @@ public class ImportTableTask implements Callable<String> {
 
 	private Set<String> pathways;
 
-	public ImportTableTask(final String[] ids, final Set<AnnotationCategory> category, final CyTable table) {
+	private final double portion;
+
+	public ImportTableTask(final String[] ids, final Set<AnnotationCategory> category, final CyTable table, double totalSize) {
 		this.ids = ids;
 		this.table = table;
 		this.category = category;
+		
+		portion = (double)ids.length/(double)totalSize;
 	}
 
 	@Override
-	public String call() throws Exception {
+	public Double call() throws Exception {
 
 		final URL url = createURL();
 
@@ -115,7 +119,7 @@ public class ImportTableTask implements Callable<String> {
 		is.close();
 		is = null;
 
-		return null;
+		return portion;
 	}
 
 	private void processEntry(Node entry) {

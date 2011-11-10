@@ -18,20 +18,21 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class ImportNetworkTask<V> implements Callable<V> {
+public class ImportNetworkTask implements Callable<Double> {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportNetworkTask.class);
 
 	private static final String TARGET_ID = "";
 	private static final String TARGET_DB = "";
 	private static final String TARGET_NAMES = "";
-	
+
 	private static final String GENE_ID_TAG = "Gene-track_geneid";
 
 	private final InteractionDocNodeProcessor processor;
@@ -39,22 +40,25 @@ public class ImportNetworkTask<V> implements Callable<V> {
 	final String[] ids;
 
 	private final CyNetwork network;
-	
-	
+
 	private final ConcurrentMap<String, CyNode> nodeName2CyNodeMap;
 	private final Map<String, CyEdge> nodeName2CyEdgeMap;
 
-	public ImportNetworkTask(final String[] ids, final CyNetwork network, final ConcurrentMap<String, CyNode> nodeName2CyNodeMap) {
+	private final Double portion;
+
+	public ImportNetworkTask(final String[] ids, final CyNetwork network,
+			final ConcurrentMap<String, CyNode> nodeName2CyNodeMap, int totalSize) {
 		this.ids = ids;
 		this.network = network;
 		this.processor = new InteractionDocNodeProcessor();
 		this.nodeName2CyNodeMap = nodeName2CyNodeMap;
 		this.nodeName2CyEdgeMap = new HashMap<String, CyEdge>();
+		
+		portion = (double)ids.length/(double)totalSize;
 	}
 
-
 	@Override
-	public V call() throws Exception {
+	public Double call() throws Exception {
 		final URL url = createURL();
 
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -69,15 +73,14 @@ public class ImportNetworkTask<V> implements Callable<V> {
 		NodeList geneID = result.getElementsByTagName(GENE_ID_TAG);
 		final String geneIDString = geneID.item(0).getTextContent();
 		logger.debug("Gene ID ======== " + geneIDString);
-		if(geneIDString == null)
+		if (geneIDString == null)
 			throw new NullPointerException("Could not find NCBI Gene ID for the entry.");
-		
+
 		// This is the center of spokes
 		final CyNode centerNode = network.addNode();
 		centerNode.getCyRow().set(CyTableEntry.NAME, geneIDString);
 		this.nodeName2CyNodeMap.put(geneIDString, centerNode);
-		
-		final Set<String> idSet = new HashSet<String>();
+
 		final NodeList ids = result.getElementsByTagName("Gene-commentary");
 		final int dataSize = ids.getLength();
 
@@ -90,7 +93,8 @@ public class ImportNetworkTask<V> implements Callable<V> {
 			for (int j = 0; j < children.getLength(); j++) {
 				if (children.item(j).getNodeName().equals("Gene-commentary_heading")) {
 
-					//logger.debug("HEADING = " + children.item(j).getTextContent());
+					// logger.debug("HEADING = " +
+					// children.item(j).getTextContent());
 					if (children.item(j).getTextContent().equals("Interactions")) {
 						logger.debug("FOUND interactions");
 						interactionFound = true;
@@ -111,7 +115,8 @@ public class ImportNetworkTask<V> implements Callable<V> {
 			logger.warn("Interacrtion Not found");
 		else
 			processInteraction(interactionNode, centerNode);
-		return null;
+		
+		return portion;
 	}
 
 	private void processInteraction(Node node, CyNode centerNode) {
@@ -142,24 +147,26 @@ public class ImportNetworkTask<V> implements Callable<V> {
 				final String id = processor.getTargetID();
 				if (id != null) {
 					// Create actual nodes and edges here.
-					CyNode targetNode = this.nodeName2CyNodeMap.get(id);;
-					if(targetNode == null) {
+					CyNode targetNode = this.nodeName2CyNodeMap.get(id);
+					;
+					if (targetNode == null) {
 						targetNode = network.addNode();
 						nodeName2CyNodeMap.put(id, targetNode);
 					}
-					
+
 					targetNode.getCyRow().set(CyTableEntry.NAME, id);
 					logger.debug("New Node Name = " + id);
 					final CyEdge newEdge = network.addEdge(centerNode, targetNode, false);
-					newEdge.getCyRow().set(CyTableEntry.NAME, 
-							centerNode.getCyRow().get(CyTableEntry.NAME, String.class) + " (" + processor.getInteractionType() + ") " 
-							+ targetNode.getCyRow().get(CyTableEntry.NAME, String.class));
+					newEdge.getCyRow().set(
+							CyTableEntry.NAME,
+							centerNode.getCyRow().get(CyTableEntry.NAME, String.class) + " ("
+									+ processor.getInteractionType() + ") "
+									+ targetNode.getCyRow().get(CyTableEntry.NAME, String.class));
 				}
 			}
 		}
 
 	}
-
 
 	private URL createURL() throws IOException {
 
