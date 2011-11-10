@@ -31,7 +31,7 @@
 				<enabled>false</enabled>
 			</releases>
 			<name>Cytoscape Snapshots</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
+			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
 		<repository>
@@ -43,7 +43,7 @@
 				<enabled>true</enabled>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
+			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
 		</repository>
 	</repositories>
 

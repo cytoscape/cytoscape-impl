@@ -143,7 +143,7 @@
 				<enabled>false</enabled>
 			</releases>
 			<name>Cytoscape Snapshots</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
+			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
 			<id>cytoscape_releases</id>
@@ -154,7 +154,7 @@
 				<enabled>true</enabled>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
+			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
 		</repository>
 		<repository>
 			<id>cytoscape_thirdparty</id>
@@ -165,7 +165,7 @@
 				<enabled>true</enabled>
 			</releases>
 			<name>Wrapped Third Party Libraries</name>
-			<url>http://cytoscape.wodaklab.org/nexus/content/repositories/thirdparty/</url>
+			<url>http://code.cytoscape.org/nexus/content/repositories/thirdparty/</url>
 		</repository>
 	</repositories>
 	
