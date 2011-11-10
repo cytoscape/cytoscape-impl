@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+	<graph id="RootGraph" edgedefault="undirected">
+		<node id="n7" />
+		<node id="n8" />
+		<node id="group1node">
+			<graph id="group1" edgedefault="undirected">
+				<node id="n6" />
+				<node id="group2node">
+					<graph edgedefault="undirected">
+						<node id="n1" />
+						<node id="n2" />
+						<node id="n4" />
+						<edge source="n1" target="n2" />
+						<edge source="n1" target="n4" />
+						<edge source="n2" target="n4" />
+					</graph>
+				</node>
+				<node id="group3node">
+					<graph edgedefault="undirected">
+						<node id="n3" />
+						<node id="n5" />
+						<edge source="n3" target="n5" />
+					</graph>
+				</node>
+				<edge source="n6" target="n4" />
+				<edge source="n6" target="n5" />
+				<edge source="n2" target="n3" />
+			</graph>
+		</node>
+		<edge source="n7" target="n8" />
+		<edge source="n7" target="n6" />
+		<edge source="n8" target="n5" />
+	</graph>
+</graphml>

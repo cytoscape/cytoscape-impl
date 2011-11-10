@@ -1,0 +1,1880 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<graphml>
+    <graph edgedefault="directed" id="1107222336-129-07298_NetworkDrawer">
+        <node id="At5g09470">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At5g09470</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At5g09470</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g62210">
+            <data key="target_TargetP">S</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">V</data>
+            <data key="label">At5g62210</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At5g62210</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g07990">
+            <data key="target_TargetP">M</data>
+            <data key="symbol">TT7</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At5g07990</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">1</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At5g07990</data>
+            <data key="kegg_2">1</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g01220">
+            <data key="target_TargetP">C</data>
+            <data key="symbol">SQD2</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At5g01220</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">1</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At5g01220</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At4g33770">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At4g33770</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At4g33770</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At4g34490">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">CAP1</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At4g34490</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At4g34490</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At4g04750">
+            <data key="target_TargetP">C</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">P</data>
+            <data key="label">At4g04750</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At4g04750</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g48880">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">PKT2</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At5g48880</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At5g48880</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g13930">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">TT4</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At5g13930</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At5g13930</data>
+            <data key="kegg_2">1</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g61410">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">N</data>
+            <data key="label">At3g61410</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At3g61410</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g44510">
+            <data key="target_TargetP">M</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At3g44510</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At3g44510</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g17050">
+            <data key="target_TargetP">C</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At5g17050</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">1</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At5g17050</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g21560">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">UGT84A2</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">N</data>
+            <data key="label">At3g21560</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At3g21560</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At4g26650">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">N</data>
+            <data key="label">At4g26650</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At4g26650</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g07330">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">CSLC06</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">P</data>
+            <data key="label">At3g07330</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At3g07330</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At2g46880">
+            <data key="target_TargetP">S</data>
+            <data key="symbol">PAP14</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">E</data>
+            <data key="label">At2g46880</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At2g46880</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At2g04460">
+            <data key="query">0</data>
+            <data key="label">At2g04460</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At2g04460</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g65560">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At1g65560</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g65560</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g17010">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">P</data>
+            <data key="label">At5g17010</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At5g17010</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g78570">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">ROL1</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">X</data>
+            <data key="label">At1g78570</data>
+            <data key="kegg_5">1</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g78570</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g55210">
+            <data key="target_TargetP">S</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">S</data>
+            <data key="label">At1g55210</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g55210</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g55120">
+            <data key="target_TargetP">C</data>
+            <data key="symbol">TT5</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At3g55120</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At3g55120</data>
+            <data key="kegg_2">1</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g65060">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">4CL3</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At1g65060</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At1g65060</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g30530">
+            <data key="target_TargetP">S</data>
+            <data key="query">1</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At1g30530</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">1</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At1g30530</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g18580">
+            <data key="target_TargetP">M</data>
+            <data key="symbol">GAUT11</data>
+            <data key="query">1</data>
+            <data key="target_WoLF">M</data>
+            <data key="label">At1g18580</data>
+            <data key="kegg_5">1</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g18580</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g17710">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">N</data>
+            <data key="label">At1g17710</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g17710</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At4g14690">
+            <data key="target_TargetP">C</data>
+            <data key="symbol">ELIP2</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At4g14690</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At4g14690</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g10370">
+            <data key="target_TargetP">S</data>
+            <data key="symbol">GST30B</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At1g10370</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g10370</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g43110">
+            <data key="target_TargetP">S</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At3g43110</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At3g43110</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g08650">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">PPCK1</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At1g08650</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g08650</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At2g11810">
+            <data key="target_TargetP">M</data>
+            <data key="symbol">MGDC</data>
+            <data key="query">1</data>
+            <data key="target_WoLF">M</data>
+            <data key="label">At2g11810</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">1</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At2g11810</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g44520">
+            <data key="query">0</data>
+            <data key="label">At3g44520</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At3g44520</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At2g45130">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">N</data>
+            <data key="label">At2g45130</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At2g45130</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g08310">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At1g08310</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g08310</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At4g33530">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">KUP5</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">P</data>
+            <data key="label">At4g33530</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At4g33530</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g18280">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">ATAPY2</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At5g18280</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At5g18280</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g06850">
+            <data key="target_TargetP">C</data>
+            <data key="symbol">AtbZIP52</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">N</data>
+            <data key="label">At1g06850</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="TF_link">http://arabidopsis.med.ohio-state.edu/AtTFDB/AtTFBrowseResults.jsp?fam=bZIP</data>
+            <data key="canonicalName">At1g06850</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">1</data>
+            <data key="TF_family">bZIP</data>
+        </node>
+        <node id="At5g05270">
+            <data key="target_TargetP">O</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">K</data>
+            <data key="label">At5g05270</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At5g05270</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At3g51240">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">TT6</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At3g51240</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At3g51240</data>
+            <data key="kegg_2">1</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At5g08640">
+            <data key="target_TargetP">O</data>
+            <data key="symbol">FLS</data>
+            <data key="query">0</data>
+            <data key="target_WoLF">Y</data>
+            <data key="label">At5g08640</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">1</data>
+            <data key="canonicalName">At5g08640</data>
+            <data key="kegg_2">1</data>
+            <data key="TF_type">0</data>
+        </node>
+        <node id="At1g06000">
+            <data key="target_TargetP">O</data>
+            <data key="query">1</data>
+            <data key="target_WoLF">C</data>
+            <data key="label">At1g06000</data>
+            <data key="kegg_5">0</data>
+            <data key="kegg_3">0</data>
+            <data key="kegg_4">0</data>
+            <data key="kegg_1">0</data>
+            <data key="canonicalName">At1g06000</data>
+            <data key="kegg_2">0</data>
+            <data key="TF_type">0</data>
+        </node>
+        <edge source="At5g09470" target="At2g45130">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g09470 (pp) At2g45130</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">17.44</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g09470" target="At2g11810">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g09470 (pp) At2g11810</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">11.49</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g62210" target="At5g08640">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g62210 (pp) At5g08640</data>
+            <data key="mr_str">3.46</data>
+            <data key="mr_all">2.45</data>
+            <data key="mr_tis">1.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g62210" target="At5g05270">
+            <data key="mr_bio">7.75</data>
+            <data key="mr_hor">3.46</data>
+            <data key="canonicalName">At5g62210 (pp) At5g05270</data>
+            <data key="mr_str">2.0</data>
+            <data key="mr_all">4.24</data>
+            <data key="mr_tis">4.24</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g62210" target="At3g51240">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">5.83</data>
+            <data key="canonicalName">At5g62210 (pp) At3g51240</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g62210" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g62210 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">3.16</data>
+            <data key="mr_tis">1.41</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g62210" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g62210 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">4.9</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g07990" target="At5g05270">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g07990 (pp) At5g05270</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">5.74</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g07990" target="At4g14690">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g07990 (pp) At4g14690</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">7.35</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g07990" target="At3g55120">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g07990 (pp) At3g55120</data>
+            <data key="mr_str">3.32</data>
+            <data key="mr_all">3.32</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g07990" target="At3g51240">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g07990 (pp) At3g51240</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.69</data>
+            <data key="mr_tis">3.16</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g07990" target="At2g11810">
+            <data key="mr_bio">6.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g07990 (pp) At2g11810</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g01220" target="At4g33770">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">9.06</data>
+            <data key="canonicalName">At5g01220 (pp) At4g33770</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g01220" target="At2g11810">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">1.41</data>
+            <data key="canonicalName">At5g01220 (pp) At2g11810</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">6.93</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g01220" target="At1g08650">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">4.36</data>
+            <data key="canonicalName">At5g01220 (pp) At1g08650</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g01220" target="At1g08310">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g01220 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">8.77</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g33770" target="At3g44510">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">9.8</data>
+            <data key="canonicalName">At4g33770 (pp) At3g44510</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">13.23</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g33770" target="At2g11810">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">5.92</data>
+            <data key="canonicalName">At4g33770 (pp) At2g11810</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g33770" target="At1g08310">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At4g33770 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">10.49</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g34490" target="At4g33530">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At4g34490 (pp) At4g33530</data>
+            <data key="mr_str">1.0</data>
+            <data key="mr_all">1.0</data>
+            <data key="mr_tis">2.83</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g04750" target="At3g51240">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.46</data>
+            <data key="canonicalName">At4g04750 (pp) At3g51240</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g04750" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At4g04750 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">7.87</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At5g17050">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">2.45</data>
+            <data key="canonicalName">At5g48880 (pp) At5g17050</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At5g17010">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At5g17010</data>
+            <data key="mr_str">2.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At5g13930">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At5g13930</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">1.73</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At5g08640">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At5g08640</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At5g07990">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">1.0</data>
+            <data key="canonicalName">At5g48880 (pp) At5g07990</data>
+            <data key="mr_str">3.46</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At5g05270">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At5g05270</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">2.83</data>
+        </edge>
+        <edge source="At5g48880" target="At3g55120">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At3g55120</data>
+            <data key="mr_str">2.65</data>
+            <data key="mr_all">2.83</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At3g51240">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At3g51240</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">3.16</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g48880" target="At1g65560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At1g65560</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">7.94</data>
+        </edge>
+        <edge source="At5g48880" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">5.2</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">1.0</data>
+        </edge>
+        <edge source="At5g48880" target="At1g10370">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g48880 (pp) At1g10370</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">4.9</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g13930" target="At5g08640">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">1.41</data>
+            <data key="canonicalName">At5g13930 (pp) At5g08640</data>
+            <data key="mr_str">1.0</data>
+            <data key="mr_all">3.87</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g13930" target="At5g05270">
+            <data key="mr_bio">3.16</data>
+            <data key="mr_hor">2.45</data>
+            <data key="canonicalName">At5g13930 (pp) At5g05270</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.83</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">2.0</data>
+        </edge>
+        <edge source="At5g13930" target="At3g55120">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g13930 (pp) At3g55120</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">2.45</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g13930" target="At3g51240">
+            <data key="mr_bio">1.73</data>
+            <data key="mr_hor">1.41</data>
+            <data key="canonicalName">At5g13930 (pp) At3g51240</data>
+            <data key="mr_str">1.41</data>
+            <data key="mr_all">1.41</data>
+            <data key="mr_tis">1.41</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g13930" target="At3g21560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">2.0</data>
+            <data key="canonicalName">At5g13930 (pp) At3g21560</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g13930" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g13930 (pp) At1g65060</data>
+            <data key="mr_str">2.83</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g61410" target="At3g44510">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g61410 (pp) At3g44510</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.24</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g61410" target="At2g11810">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g61410 (pp) At2g11810</data>
+            <data key="mr_str">10.68</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g61410" target="At1g08310">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g61410 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">11.4</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g44510" target="At2g11810">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.46</data>
+            <data key="canonicalName">At3g44510 (pp) At2g11810</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g44510" target="At2g04460">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">5.29</data>
+            <data key="canonicalName">At3g44510 (pp) At2g04460</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g44510" target="At1g08310">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g44510 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">3.16</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17050" target="At5g13930">
+            <data key="mr_bio">3.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17050 (pp) At5g13930</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17050" target="At5g05270">
+            <data key="mr_bio">1.41</data>
+            <data key="mr_hor">3.16</data>
+            <data key="canonicalName">At5g17050 (pp) At5g05270</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17050" target="At3g51240">
+            <data key="mr_bio">2.0</data>
+            <data key="mr_hor">2.0</data>
+            <data key="canonicalName">At5g17050 (pp) At3g51240</data>
+            <data key="mr_str">2.0</data>
+            <data key="mr_all">2.65</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17050" target="At3g21560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17050 (pp) At3g21560</data>
+            <data key="mr_str">2.65</data>
+            <data key="mr_all">1.41</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">1.0</data>
+        </edge>
+        <edge source="At5g17050" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17050 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">1.41</data>
+        </edge>
+        <edge source="At3g21560" target="At1g78570">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">4.0</data>
+            <data key="canonicalName">At3g21560 (pp) At1g78570</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g21560" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">1.41</data>
+            <data key="canonicalName">At3g21560 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g21560" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.0</data>
+            <data key="canonicalName">At3g21560 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g26650" target="At3g07330">
+            <data key="mr_bio">3.16</data>
+            <data key="mr_hor">4.58</data>
+            <data key="canonicalName">At4g26650 (pp) At3g07330</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">1.0</data>
+            <data key="mr_tis">1.41</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g46880" target="At2g45130">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.0</data>
+            <data key="canonicalName">At2g46880 (pp) At2g45130</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g04460" target="At1g17710">
+            <data key="mr_bio">7.62</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g04460 (pp) At1g17710</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g04460" target="At1g08310">
+            <data key="mr_bio">1.41</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g04460 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">10.68</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g65560" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At1g65560 (pp) At1g65060</data>
+            <data key="mr_str">5.66</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g65560" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At1g65560 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">5.66</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17010" target="At5g08640">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.32</data>
+            <data key="canonicalName">At5g17010 (pp) At5g08640</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17010" target="At4g04750">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17010 (pp) At4g04750</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.24</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17010" target="At3g55120">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17010 (pp) At3g55120</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">3.46</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17010" target="At1g78570">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17010 (pp) At1g78570</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">3.87</data>
+            <data key="mr_tis">4.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17010" target="At1g65560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17010 (pp) At1g65560</data>
+            <data key="mr_str">2.45</data>
+            <data key="mr_all">2.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g17010" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g17010 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.83</data>
+            <data key="mr_tis">2.83</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g78570" target="At1g65060">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At1g78570 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.65</data>
+            <data key="mr_tis">2.24</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g78570" target="At1g55210">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At1g78570 (pp) At1g55210</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">6.24</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g78570" target="At1g30530">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At1g78570 (pp) At1g30530</data>
+            <data key="mr_str">4.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g78570" target="At1g06000">
+            <data key="mr_bio">2.45</data>
+            <data key="mr_hor">1.0</data>
+            <data key="canonicalName">At1g78570 (pp) At1g06000</data>
+            <data key="mr_str">2.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g55210" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">2.65</data>
+            <data key="canonicalName">At1g55210 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">13.27</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g55120" target="At3g51240">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g55120 (pp) At3g51240</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">1.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g55120" target="At3g21560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g55120 (pp) At3g21560</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">8.12</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g55120" target="At1g65560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">13.64</data>
+            <data key="canonicalName">At3g55120 (pp) At1g65560</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g55120" target="At1g65060">
+            <data key="mr_bio">1.73</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g55120 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g55120" target="At1g30530">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g55120 (pp) At1g30530</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">7.35</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g65060" target="At1g30530">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.74</data>
+            <data key="canonicalName">At1g65060 (pp) At1g30530</data>
+            <data key="mr_str">2.83</data>
+            <data key="mr_all">3.74</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g65060" target="At1g10370">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At1g65060 (pp) At1g10370</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">4.69</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g65060" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.46</data>
+            <data key="canonicalName">At1g65060 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g30530" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">1.41</data>
+            <data key="canonicalName">At1g30530 (pp) At1g06000</data>
+            <data key="mr_str">4.24</data>
+            <data key="mr_all">4.9</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At1g17710" target="At1g08310">
+            <data key="mr_bio">6.32</data>
+            <data key="mr_hor">1.73</data>
+            <data key="canonicalName">At1g17710 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g14690" target="At3g51240">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At4g14690 (pp) At3g51240</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">6.32</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g14690" target="At1g10370">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At4g14690 (pp) At1g10370</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g43110" target="At2g46880">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g43110 (pp) At2g46880</data>
+            <data key="mr_str">1.73</data>
+            <data key="mr_all">3.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g43110" target="At2g45130">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">3.16</data>
+            <data key="canonicalName">At3g43110 (pp) At2g45130</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">3.16</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g43110" target="At1g17710">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g43110 (pp) At1g17710</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.65</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g43110" target="At1g08650">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">6.93</data>
+            <data key="canonicalName">At3g43110 (pp) At1g08650</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">6.63</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g11810" target="At2g04460">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g11810 (pp) At2g04460</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.9</data>
+            <data key="mr_tis">4.9</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g11810" target="At1g17710">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g11810 (pp) At1g17710</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g11810" target="At1g08310">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g11810 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.45</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g44520" target="At3g44510">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g44520 (pp) At3g44510</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">1.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g44520" target="At1g08310">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g44520 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.45</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g45130" target="At2g11810">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g45130 (pp) At2g11810</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">1.41</data>
+            <data key="mr_tis">3.87</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g45130" target="At2g04460">
+            <data key="mr_bio">9.9</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g45130 (pp) At2g04460</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">9.8</data>
+            <data key="mr_tis">2.83</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g45130" target="At1g17710">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">1.0</data>
+            <data key="canonicalName">At2g45130 (pp) At1g17710</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">1.0</data>
+            <data key="mr_tis">2.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g45130" target="At1g08650">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At2g45130 (pp) At1g08650</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">12.85</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At2g45130" target="At1g08310">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">2.0</data>
+            <data key="canonicalName">At2g45130 (pp) At1g08310</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">1.73</data>
+            <data key="mr_tis">5.29</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At4g33530" target="At1g06850">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At4g33530 (pp) At1g06850</data>
+            <data key="mr_str">3.87</data>
+            <data key="mr_all">6.93</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g18280" target="At4g34490">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g18280 (pp) At4g34490</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.0</data>
+            <data key="mr_tis">2.83</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g18280" target="At4g26650">
+            <data key="mr_bio">1.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g18280 (pp) At4g26650</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">2.45</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g18280" target="At3g07330">
+            <data key="mr_bio">8.94</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g18280 (pp) At3g07330</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">1.41</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g18280" target="At1g18580">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g18280 (pp) At1g18580</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">11.09</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g18280" target="At1g06850">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g18280 (pp) At1g06850</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.8</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g05270" target="At4g04750">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">5.48</data>
+            <data key="canonicalName">At5g05270 (pp) At4g04750</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g05270" target="At3g55120">
+            <data key="mr_bio">4.24</data>
+            <data key="mr_hor">1.73</data>
+            <data key="canonicalName">At5g05270 (pp) At3g55120</data>
+            <data key="mr_str">3.16</data>
+            <data key="mr_all">1.73</data>
+            <data key="mr_tis">1.41</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">2.45</data>
+        </edge>
+        <edge source="At5g05270" target="At3g51240">
+            <data key="mr_bio">1.73</data>
+            <data key="mr_hor">1.0</data>
+            <data key="canonicalName">At5g05270 (pp) At3g51240</data>
+            <data key="mr_str">2.45</data>
+            <data key="mr_all">1.0</data>
+            <data key="mr_tis">2.45</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g05270" target="At1g65060">
+            <data key="mr_bio">1.41</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g05270 (pp) At1g65060</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">3.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">4.47</data>
+        </edge>
+        <edge source="At5g05270" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g05270 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.58</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g51240" target="At3g21560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g51240 (pp) At3g21560</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">3.46</data>
+        </edge>
+        <edge source="At3g51240" target="At1g10370">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g51240 (pp) At1g10370</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">4.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At3g51240" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At3g51240 (pp) At1g06000</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">3.46</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g08640" target="At5g05270">
+            <data key="mr_bio">2.83</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g08640 (pp) At5g05270</data>
+            <data key="mr_str">1.73</data>
+            <data key="mr_all">2.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">4.12</data>
+        </edge>
+        <edge source="At5g08640" target="At3g55120">
+            <data key="mr_bio">2.45</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g08640 (pp) At3g55120</data>
+            <data key="mr_str">2.0</data>
+            <data key="mr_all">2.45</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g08640" target="At3g51240">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">2.45</data>
+            <data key="canonicalName">At5g08640 (pp) At3g51240</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g08640" target="At1g78570">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g08640 (pp) At1g78570</data>
+            <data key="mr_str">2.65</data>
+            <data key="mr_all">4.24</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g08640" target="At1g65560">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g08640 (pp) At1g65560</data>
+            <data key="mr_str">8.12</data>
+            <data key="mr_all">4.69</data>
+            <data key="mr_tis">5.48</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g08640" target="At1g65060">
+            <data key="mr_bio">1.0</data>
+            <data key="mr_hor">3.16</data>
+            <data key="canonicalName">At5g08640 (pp) At1g65060</data>
+            <data key="mr_str">1.41</data>
+            <data key="mr_all">1.0</data>
+            <data key="mr_tis">2.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g08640" target="At1g10370">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g08640 (pp) At1g10370</data>
+            <data key="mr_str">99.0</data>
+            <data key="mr_all">99.0</data>
+            <data key="mr_tis">2.83</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+        <edge source="At5g08640" target="At1g06000">
+            <data key="mr_bio">99.0</data>
+            <data key="mr_hor">99.0</data>
+            <data key="canonicalName">At5g08640 (pp) At1g06000</data>
+            <data key="mr_str">2.83</data>
+            <data key="mr_all">2.65</data>
+            <data key="mr_tis">99.0</data>
+            <data key="label">correlation</data>
+            <data key="interaction">pp</data>
+            <data key="mr_lig">99.0</data>
+        </edge>
+    </graph>
+    <key attr.name="hiddenLabel" attr.type="string" for="node" id="hiddenLabel"/>
+    <key attr.name="target_TargetP" attr.type="string" for="node" id="target_TargetP"/>
+    <key attr.name="symbol" attr.type="string" for="node" id="symbol"/>
+    <key attr.name="query" attr.type="string" for="node" id="query"/>
+    <key attr.name="target_WoLF" attr.type="string" for="node" id="target_WoLF"/>
+    <key attr.name="label" attr.type="string" for="node" id="label"/>
+    <key attr.name="kegg_5" attr.type="string" for="node" id="kegg_5"/>
+    <key attr.name="kegg_3" attr.type="string" for="node" id="kegg_3"/>
+    <key attr.name="kegg_4" attr.type="string" for="node" id="kegg_4"/>
+    <key attr.name="kegg_1" attr.type="string" for="node" id="kegg_1"/>
+    <key attr.name="TF_link" attr.type="string" for="node" id="TF_link"/>
+    <key attr.name="canonicalName" attr.type="string" for="node" id="canonicalName"/>
+    <key attr.name="kegg_2" attr.type="string" for="node" id="kegg_2"/>
+    <key attr.name="TF_type" attr.type="string" for="node" id="TF_type"/>
+    <key attr.name="TF_family" attr.type="string" for="node" id="TF_family"/>
+    <key attr.name="mr_bio" attr.type="double" for="node" id="mr_bio"/>
+    <key attr.name="mr_hor" attr.type="double" for="node" id="mr_hor"/>
+    <key attr.name="canonicalName" attr.type="string" for="node" id="canonicalName"/>
+    <key attr.name="mr_str" attr.type="double" for="node" id="mr_str"/>
+    <key attr.name="mr_all" attr.type="double" for="node" id="mr_all"/>
+    <key attr.name="mr_tis" attr.type="double" for="node" id="mr_tis"/>
+    <key attr.name="label" attr.type="string" for="node" id="label"/>
+    <key attr.name="interaction" attr.type="string" for="node" id="interaction"/>
+    <key attr.name="mr_lig" attr.type="double" for="node" id="mr_lig"/>
+    <key attr.name="__layoutAlgorithm" attr.type="string" for="node" id="__layoutAlgorithm"/>
+</graphml>

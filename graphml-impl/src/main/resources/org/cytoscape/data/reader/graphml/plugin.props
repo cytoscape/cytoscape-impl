@@ -1,0 +1,26 @@
+# This props file would be filled out and included in the plugin jar file.  
+# This props file will be used  to put information into the Plugin Manager 
+# about the plugin 
+
+# -- The following properties are REQUIRED -- #
+
+# The plugin name that will be displayed to users
+pluginName=GraphMLReader
+
+# Description used to give users information about the plugin such as what it does.  
+# Html tags are encouraged for formatting purposes.
+pluginDescription=GraphML reader plugin.  You can load basic information (network and attributes) from GraphML files.  Experimental GraphML export function is also available for testing.
+
+# Plugin version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
+pluginVersion=0.11
+
+# Compatible Cytoscape version
+cytoscapeVersion=2.8
+
+# Category, use one of the categories listed on the website or create your own
+pluginCategory=Network and Attribute I/O
+
+# List of authors.  Note each author and institution pair are separated by a : (colon)
+# each additional author institution pair must be separated from other pairs bye a ; (semicolon)
+pluginAuthorsIntsitutions=Kozo Nishida:NAIST;Keiichiro Ono:UCSD
+

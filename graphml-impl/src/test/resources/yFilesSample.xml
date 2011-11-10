@@ -1,0 +1,92 @@
+<!-- Created by yFiles 2.3.1 -->
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml http://www.yworks.com/xml/schema/graphml/1.0/ygraphml.xsd"
+	xmlns:y="http://www.yworks.com/xml/graphml">
+	<key id="d0" for="node" yfiles.type="nodegraphics" />
+	<key id="d1" for="node" attr.name="BooleanValue" attr.type="boolean" />
+	<key id="d2" for="edge" yfiles.type="edgegraphics" />
+	<key id="d3" for="edge" attr.name="IntValue" attr.type="int" />
+	<key id="d4" for="graph" attr.name="StringValue" attr.type="string" />
+	<graph id="G" edgedefault="directed">
+		<data key="d4">Hello!</data>
+		<node id="n0">
+			<data key="d0">
+				<y:ShapeNode>
+					<y:Geometry x="165.0" y="178.0" width="30.0" height="30.0" />
+					<y:Fill color="#CCCCFF" transparent="false" />
+					<y:BorderStyle type="line" width="1.0" color="#000000" />
+					<y:NodeLabel x="9.5" y="5.6494140625" width="11.0"
+						height="18.701171875" visible="true" alignment="center"
+						fontFamily="Dialog" fontSize="12" fontStyle="plain" textColor="#000000"
+						modelName="internal" modelPosition="c" autoSizePolicy="content">1</y:NodeLabel>
+					<y:Shape type="rectangle" />
+				</y:ShapeNode>
+			</data>
+			<data key="d1">false</data>
+		</node>
+		<node id="n1">
+			<data key="d0">
+				<y:ShapeNode>
+					<y:Geometry x="224.0" y="285.0" width="30.0" height="30.0" />
+					<y:Fill color="#CCCCFF" transparent="false" />
+					<y:BorderStyle type="line" width="1.0" color="#000000" />
+					<y:NodeLabel x="9.5" y="5.6494140625" width="11.0"
+						height="18.701171875" visible="true" alignment="center"
+						fontFamily="Dialog" fontSize="12" fontStyle="plain" textColor="#000000"
+						modelName="internal" modelPosition="c" autoSizePolicy="content">2</y:NodeLabel>
+					<y:Shape type="rectangle" />
+				</y:ShapeNode>
+			</data>
+			<data key="d1">true</data>
+		</node>
+		<node id="n2">
+			<data key="d0">
+				<y:ShapeNode>
+					<y:Geometry x="286.0" y="188.0" width="30.0" height="30.0" />
+					<y:Fill color="#CCCCFF" transparent="false" />
+					<y:BorderStyle type="line" width="1.0" color="#000000" />
+					<y:NodeLabel x="9.5" y="5.6494140625" width="11.0"
+						height="18.701171875" visible="true" alignment="center"
+						fontFamily="Dialog" fontSize="12" fontStyle="plain" textColor="#000000"
+						modelName="internal" modelPosition="c" autoSizePolicy="content">3</y:NodeLabel>
+					<y:Shape type="rectangle" />
+				</y:ShapeNode>
+			</data>
+			<data key="d1">true</data>
+		</node>
+		<edge id="e0" source="n0" target="n2">
+			<data key="d2">
+				<y:PolyLineEdge>
+					<y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
+					<y:LineStyle type="line" width="1.0" color="#000000" />
+					<y:Arrows source="none" target="none" />
+					<y:BendStyle smoothed="false" />
+				</y:PolyLineEdge>
+			</data>
+			<data key="d3">333</data>
+		</edge>
+		<edge id="e1" source="n2" target="n1">
+			<data key="d2">
+				<y:PolyLineEdge>
+					<y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
+					<y:LineStyle type="line" width="1.0" color="#000000" />
+					<y:Arrows source="none" target="none" />
+					<y:BendStyle smoothed="false" />
+				</y:PolyLineEdge>
+			</data>
+			<data key="d3">111</data>
+		</edge>
+		<edge id="e2" source="n1" target="n0">
+			<data key="d2">
+				<y:PolyLineEdge>
+					<y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
+					<y:LineStyle type="line" width="1.0" color="#000000" />
+					<y:Arrows source="none" target="none" />
+					<y:BendStyle smoothed="false" />
+				</y:PolyLineEdge>
+			</data>
+			<data key="d3">222</data>
+		</edge>
+	</graph>
+</graphml>
