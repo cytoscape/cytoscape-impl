@@ -46,7 +46,17 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 	}
 
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
+		
+		int i=0;
+		int viewCount = networkViews.size();
 		for (final CyNetworkView n : networkViews)
+		{
 			networkViewManager.destroyNetworkView(n);
+			i++;
+			tm.setProgress((i/(double)viewCount));
+		}
+		
+		tm.setProgress(1.0);
 	}
 }

@@ -47,7 +47,15 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 	}
 
 	public void run(TaskMonitor tm) {
-		for ( CyNetwork n : networks )
+		tm.setProgress(0.0);
+		int i=0;
+		int networkCount = networks.size();
+		
+		for ( CyNetwork n : networks ){
 			netmgr.destroyNetwork(n);
+			i++;
+			tm.setProgress((i/(double)networkCount));
+		}
+		tm.setProgress(1.0);
 	}
 }
