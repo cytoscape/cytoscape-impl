@@ -55,6 +55,7 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		if (nodeView == null)
 			throw new NullPointerException("node view is null");
 		if (netView == null)
@@ -63,9 +64,14 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 		final Set<CyNode> selNodes = new HashSet<CyNode>();
 		final CyNode node = nodeView.getModel();
 		final CyNetwork net = netView.getModel();
+		tm.setProgress(0.1);
 		selNodes.add(node);
+		tm.setProgress(0.4);
 		selNodes.addAll(net.getNeighborList(node, CyEdge.Type.ANY));
+		tm.setProgress(0.6);
 		selectUtils.setSelectedNodes(selNodes, true);
+		tm.setProgress(0.8);
 		netView.updateView();
+		tm.setProgress(1.0);
 	}
 }

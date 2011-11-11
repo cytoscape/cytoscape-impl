@@ -39,5 +39,6 @@ public class SearchRelatedGenesTask extends AbstractTask {
 		state.setSearchTerms(phynotype + "," + go);
 
 		logger.info("NCBI Gene database returns " + idSet.size() + " gene IDs.");
+		tm.setProgress(1.0);
 	}
 }

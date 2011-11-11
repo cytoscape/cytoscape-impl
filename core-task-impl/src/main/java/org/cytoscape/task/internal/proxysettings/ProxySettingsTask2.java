@@ -79,7 +79,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	}
 
 	public void run(TaskMonitor taskMonitor) {
-		
+		taskMonitor.setProgress(0.0);
 		storeProxySettings();
 		oldSettings.clear();
 		

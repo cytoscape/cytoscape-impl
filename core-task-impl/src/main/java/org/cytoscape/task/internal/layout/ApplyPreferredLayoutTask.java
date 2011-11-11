@@ -70,21 +70,24 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 	}
 
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
 		if (undoSupport != null)
 			undoSupport.getUndoableEditSupport().postEdit(new LayoutEdit(eventHelper,
 			                                                             view));
-
+		tm.setProgress(0.1);
 		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
 		if(props != null) 
 			pref = props.getProperty("preferredLayoutAlgorithm", DEF_LAYOUT);
-
+		tm.setProgress(0.2);
 		final CyLayoutAlgorithm layout = layouts.getLayout(pref);
 
 		if (layout != null) {
+			tm.setProgress(0.6);
 			layout.setNetworkView(view);
 			insertTasksAfterCurrentTask(layout.getTaskIterator());
 		} else {
 			throw new IllegalArgumentException("Couldn't find layout algorithm: " + pref);
 		}
+		tm.setProgress(1.0);
 	}
 }

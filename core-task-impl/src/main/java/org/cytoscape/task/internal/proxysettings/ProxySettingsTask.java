@@ -29,7 +29,7 @@ public class ProxySettingsTask extends AbstractTask {
 		
 		this.insertTasksAfterCurrentTask(task);
 
-		taskMonitor.setProgress(0.05);
+		taskMonitor.setProgress(1.0);
 	}
 }
 

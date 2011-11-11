@@ -53,6 +53,6 @@ public class OpenSessionTaskFactory implements TaskFactory {
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new OpenSessionTask(mgr, rmgr, appManager, tracker));
+		return new TaskIterator(2,new OpenSessionTask(mgr, rmgr, appManager, tracker));
 	}
 }

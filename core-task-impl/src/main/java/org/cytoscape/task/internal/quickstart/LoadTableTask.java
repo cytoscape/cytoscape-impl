@@ -62,14 +62,14 @@ public class LoadTableTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor monitor) {
-
+		monitor.setProgress(0.0);
 		if (state.isJobFinished(Job.SELECT_MAPPING_ID_TYPE) == false) {
 			// This is for next step: specify ID type, and pass the preview data
 			insertTasksAfterCurrentTask(new SelectMappingKeyTypeTask(state, util, previewKey, previewData));
 		} else if (state.isJobFinished(Job.LOAD_NETWORK)){
 			insertTasksAfterCurrentTask(new MergeDataTask(state, util));
 		}
-
+		monitor.setProgress(0.3);
 		final String selected = dataSource.getSelectedValue();
 		if (selected == FROM_FILE) {
 			insertTasksAfterCurrentTask(new ReportTableLoadSummaryTask(state, util));
@@ -79,6 +79,8 @@ public class LoadTableTask extends AbstractTask {
 			// Load URL task
 			insertTasksAfterCurrentTask(util.getURLImportTableTask());
 		} 
+		monitor.setProgress(0.6);
 		state.finished(Job.LOAD_TABLE);
+		monitor.setProgress(1.0);
 	}
 }

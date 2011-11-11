@@ -70,7 +70,7 @@ public class ImportNetworkFromPublicDataSetTask extends AbstractLoadNetworkTask 
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		
+		taskMonitor.setProgress(-1);
 		props.setProperty(quickStartPropertyKey, new Boolean(showQuickStartAtStartup).toString());
 
 		taskMonitor.setStatusMessage("Update is done.");

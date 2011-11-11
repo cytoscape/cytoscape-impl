@@ -46,6 +46,7 @@ public class OpenSpecifiedSessionTask extends AbstractTask {
 		taskMonitor.setProgress(0.0);
 		
 		CySessionReader reader = readerMgr.getReader(targetFile, targetFile.toString());
+		taskMonitor.setProgress(0.1);
 		if (reader == null)
 			throw new NullPointerException("Failed to find appropriate reader for URI: " + targetFile);
 		reader.run(taskMonitor);
@@ -53,6 +54,7 @@ public class OpenSpecifiedSessionTask extends AbstractTask {
 		if (cancelled)
 			return;
 		insertTasksAfterCurrentTask(new LoadSessionTask(reader));
+		taskMonitor.setProgress(1.0);
 	}
 	
 	

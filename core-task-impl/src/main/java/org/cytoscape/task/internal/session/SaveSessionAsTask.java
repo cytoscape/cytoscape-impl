@@ -57,6 +57,8 @@ public class SaveSessionAsTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.05);
 	 	insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, sessionMgr.getCurrentSession(), file));
+		taskMonitor.setProgress(1.0);
 	}
 }

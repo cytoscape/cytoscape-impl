@@ -64,11 +64,13 @@ public class SaveSessionTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		final CySession session = sessionMgr.getCurrentSession();
 		if(session == null)
 			throw new NullPointerException("Could not find current session.");
 		
 		final String sessionFileName = sessionMgr.getCurrentSessionFileName();
+		taskMonitor.setProgress(0.3);
 		if(sessionFileName == null) {
 			// Could not find session file.  Save as new file.
 			insertTasksAfterCurrentTask(new SaveSessionAsTask(writerMgr, sessionMgr));
@@ -76,5 +78,6 @@ public class SaveSessionTask extends AbstractTask {
 			final File file = new File(sessionFileName);
 			insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));
 		}
+		taskMonitor.setProgress(1.0);
 	}
 }

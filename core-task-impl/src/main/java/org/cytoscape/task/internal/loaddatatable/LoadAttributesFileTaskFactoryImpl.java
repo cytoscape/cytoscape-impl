@@ -16,6 +16,6 @@ public class LoadAttributesFileTaskFactoryImpl implements TaskFactory {
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new LoadAttributesFileTask(mgr, tableMgr));
+		return new TaskIterator(2, new LoadAttributesFileTask(mgr, tableMgr));
 	}
 }

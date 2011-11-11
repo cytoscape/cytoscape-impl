@@ -24,7 +24,7 @@ public class GetAttributePreviewDataTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-	
+		monitor.setProgress(0.0);
 		CyTable[] tbls = reader.getCyTables();
 		
 		CyColumn keyCol = tbls[0].getPrimaryKey();
@@ -32,7 +32,7 @@ public class GetAttributePreviewDataTask extends AbstractTask {
 		this.previewKey[0] = keyCol.getName();
 		
 		List values = keyCol.getValues(keyCol.getType());
-		
+		monitor.setProgress(0.1);
 		int colCount = this.previewData.length;
 		if (values.size()< colCount){
 			colCount = values.size();
@@ -41,7 +41,7 @@ public class GetAttributePreviewDataTask extends AbstractTask {
 		for (int i=0; i< colCount; i++){
 			this.previewData[i][0] = values.get(i).toString();
 		}
-		
+		monitor.setProgress(0.2);
 		//
 		String msg = "column(s): ";
 		Iterator<CyColumn> it = tbls[0].getColumns().iterator();
@@ -50,7 +50,8 @@ public class GetAttributePreviewDataTask extends AbstractTask {
 			msg += col.getName()+ " ";
 		}
 		msg += "\nTotal rows: "+tbls[0].getRowCount();
-		
+		monitor.setProgress(0.7);
 		state.setTableLoadSummaryMessage(msg);
+		monitor.setProgress(1.0);
 	}
 }

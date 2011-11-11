@@ -67,25 +67,32 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
+		taskMonitor.setProgress(0.0);
 		CyNetworkView myView = applicationManager.getCurrentNetworkView();
 
 		// Delete from the base network so that our changes can be undone:
 		final CySubNetwork network = (CySubNetwork) myView.getModel();
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, "selected", true);
+		taskMonitor.setProgress(0.1);
 		final Set<CyEdge> selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
-
+		taskMonitor.setProgress(0.2);
 		// Make sure we're not loosing any edges for a possible undo!
 		for (CyNode selectedNode : selectedNodes)
 			selectedEdges.addAll(network.getAdjacentEdgeList(selectedNode, CyEdge.Type.ANY));
 
+		taskMonitor.setProgress(0.3);
+		
 		undoSupport.getUndoableEditSupport().postEdit(
 			new DeleteEdit(network, selectedNodes, selectedEdges,
 				       networkViewManager, visualMappingManager, eventHelper));
 
 		// Delete the actual nodes and edges:
 		network.removeNodes(selectedNodes);
+		taskMonitor.setProgress(0.5);
 		network.removeEdges(selectedEdges);
-
+		taskMonitor.setProgress(0.7);
 		myView.updateView();
+		
+		taskMonitor.setProgress(1.0);
 	}
 }

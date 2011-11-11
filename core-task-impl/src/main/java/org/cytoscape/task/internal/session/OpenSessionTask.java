@@ -86,12 +86,14 @@ public class OpenSessionTask extends AbstractTask {
 		CySessionReader reader = readerMgr.getReader(file.toURI(),file.getName());
 		if (reader == null)
 			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
+		taskMonitor.setProgress(0.2);
 		reader.run(taskMonitor);
-
+		taskMonitor.setProgress(0.8);
 		if (cancelled)
 			return;
 
 		insertTasksAfterCurrentTask(new LoadSessionTask(reader));
+		taskMonitor.setProgress(1.0);
 	}
 	
 	

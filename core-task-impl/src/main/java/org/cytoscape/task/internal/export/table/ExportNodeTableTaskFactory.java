@@ -16,7 +16,7 @@ public class ExportNodeTableTaskFactory extends AbstractNetworkViewTaskFactory {
 	@Override
 	public TaskIterator getTaskIterator() {
 		CyTable table = view.getModel().getDefaultNodeTable();
-		return new TaskIterator(new CyTableWriter(writerManager, table));
+		return new TaskIterator(2,new CyTableWriter(writerManager, table));
 	}
 
 }

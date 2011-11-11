@@ -48,6 +48,6 @@ public class SaveSessionTaskFactory implements TaskFactory {
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new SaveSessionTask(writerMgr, sessionMgr));
+		return new TaskIterator(2,new SaveSessionTask(writerMgr, sessionMgr));
 	}
 }

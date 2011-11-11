@@ -14,7 +14,7 @@ public class ExportNetworkViewTaskFactory extends AbstractNetworkViewTaskFactory
 	
 	@Override
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new CyNetworkViewWriter(writerManager, view));
+		return new TaskIterator(2,new CyNetworkViewWriter(writerManager, view));
 	}
 
 }

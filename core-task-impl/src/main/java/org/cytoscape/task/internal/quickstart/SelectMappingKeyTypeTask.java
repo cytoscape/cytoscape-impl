@@ -53,6 +53,7 @@ public class SelectMappingKeyTypeTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
+		monitor.setProgress(0.0);
 		// Check current status and move to next task.
 		if(state.isJobFinished(Job.LOAD_NETWORK) && state.isJobFinished(Job.LOAD_TABLE)) {
 			insertTasksAfterCurrentTask(new MergeDataTask(state, util));
@@ -63,16 +64,17 @@ public class SelectMappingKeyTypeTask extends AbstractTask {
 			// Need to load network.
 			insertTasksAfterCurrentTask(new LoadNetworkTask(state, util));
 		}	
-		
+		monitor.setProgress(0.2);
 		String selected = mappingKeyTypePanel.getSelectedValue();
 		otherIDType = mappingKeyTypePanel.getOtherIDType();
 		if (otherIDType != null && !otherIDType.equalsIgnoreCase("")){
 			selected = otherIDType;
 		}
-		
+		monitor.setProgress(0.5);
 		state.setIDType(this.idTypeMap.get(selected));
 		
 		state.finished(Job.SELECT_MAPPING_ID_TYPE);
+		monitor.setProgress(1.0);
 	}
 
 }

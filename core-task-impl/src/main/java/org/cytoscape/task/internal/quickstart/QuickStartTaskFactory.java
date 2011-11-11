@@ -48,6 +48,6 @@ public class QuickStartTaskFactory implements TaskFactory {
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new QuickStartTask(new QuickStartState(), util, networkManager, subnetworkUtil));
+		return new TaskIterator(3,new QuickStartTask(new QuickStartState(), util, networkManager, subnetworkUtil));
 	} 
 }

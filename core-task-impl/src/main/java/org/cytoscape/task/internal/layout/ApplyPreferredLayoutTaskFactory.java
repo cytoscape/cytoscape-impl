@@ -29,7 +29,7 @@ public class ApplyPreferredLayoutTaskFactory extends AbstractNetworkViewTaskFact
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new ApplyPreferredLayoutTask(undoSupport, eventHelper, view,
+		return new TaskIterator(2, new ApplyPreferredLayoutTask(undoSupport, eventHelper, view,
 		                                                     layouts, props));
 	}
 }

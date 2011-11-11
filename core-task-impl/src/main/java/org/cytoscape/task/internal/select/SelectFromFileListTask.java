@@ -64,6 +64,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 	}
 
 	public void run(final TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		if (file == null)
 			throw new NullPointerException("You must specify a non-null file to load!");
 
@@ -71,32 +72,33 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		final SelectionEdit edit =
 			new SelectionEdit(eventHelper, "Select Nodes From File", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY);
-
+		tm.setProgress(0.1);
 		try {
 			FileReader fin = new FileReader(file);
 			BufferedReader bin = new BufferedReader(fin);
 			Set<String> fileNodes = new HashSet<String>();
 			String s;
-
+			tm.setProgress(0.2);
 			while ((s = bin.readLine()) != null) {
 				final String trimName = s.trim();
 				if (trimName.length() > 0)
 					fileNodes.add(trimName);
 			}
 			fin.close();
-
+			tm.setProgress(0.6);
 			// Loop through all the node of the graph selecting those in the file:
 			List<CyNode> nodeList = network.getNodeList();
 			for (final CyNode node : nodeList) {
 				if (fileNodes.contains(node.getCyRow().get(CyTableEntry.NAME, String.class)))
 					node.getCyRow().set(CyNetwork.SELECTED, true);
 			}
-
+			tm.setProgress(0.8);
 			updateView();
 		} catch (Exception e) {
 			throw new Exception("Error reading file: " + file.getAbsolutePath(), e);
 		}
 
 		undoSupport.getUndoableEditSupport().postEdit(edit);
+		tm.setProgress(1.0);
 	}
 }

@@ -51,12 +51,15 @@ abstract class AbstractZoomTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final double oldFactor = view.getVisualProperty(NETWORK_SCALE_FACTOR).doubleValue();
 		view.setVisualProperty(NETWORK_SCALE_FACTOR, oldFactor * factor);
-
+		tm.setProgress(0.2);
 		view.updateView();
-
+		tm.setProgress(0.4);
 		undoSupport.getUndoableEditSupport().postEdit(
 			new ZoomEdit(view, factor));
+		
+		tm.setProgress(1.0);
 	}
 }

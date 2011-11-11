@@ -28,6 +28,7 @@ public class LoadMitabFileTask extends AbstractLoadNetworkTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(-1);
 		this.taskMonitor = taskMonitor;
 		reader = mgr.getReader(file.toURI(), file.getName());
 
@@ -46,5 +47,6 @@ public class LoadMitabFileTask extends AbstractLoadNetworkTask {
 		name = file.getName();
 		this.viewThreshold = Integer.MAX_VALUE;
 		loadNetwork(reader);
+		taskMonitor.setProgress(1.0);
 	}
 }

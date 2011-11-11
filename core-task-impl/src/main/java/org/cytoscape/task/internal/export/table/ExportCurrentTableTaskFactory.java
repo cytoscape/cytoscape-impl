@@ -14,6 +14,6 @@ public class ExportCurrentTableTaskFactory extends AbstractTableTaskFactory {
 	
 	@Override
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new CyTableWriter(writerManager, table));
+		return new TaskIterator(2,new CyTableWriter(writerManager, table));
 	}
 }

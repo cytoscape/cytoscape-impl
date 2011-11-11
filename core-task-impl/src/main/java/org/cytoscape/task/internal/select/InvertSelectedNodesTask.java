@@ -52,19 +52,21 @@ public class InvertSelectedNodesTask extends AbstractSelectTask {
 
 	@Override
 	public void run(final TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
 		undoSupport.getUndoableEditSupport().postEdit(
 			new SelectionEdit(eventHelper, "Invert Selected Nodes", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));
-
+		tm.setProgress(0.2);
 		for (final CyNode n : network.getNodeList()) {
 			if (n.getCyRow().get(CyNetwork.SELECTED, Boolean.class))
 				n.getCyRow().set(CyNetwork.SELECTED, false);
 			else
 				n.getCyRow().set(CyNetwork.SELECTED, true);
 		}
-
+		tm.setProgress(0.8);
 		eventHelper.flushPayloadEvents();
 		updateView();
+		tm.setProgress(1.0);
 	}
 }

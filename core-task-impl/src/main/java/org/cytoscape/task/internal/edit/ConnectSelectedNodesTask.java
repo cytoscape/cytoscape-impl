@@ -36,10 +36,16 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		final CyTable edgeTable = network.getDefaultEdgeTable();
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 
+		taskMonitor.setProgress(0.1);
+		
+		int selectedNodesCount = selectedNodes.size();
+		int i=0;
+		
 		final List<CyEdge> newEdges = new ArrayList<CyEdge>();
 		for (final CyNode source : selectedNodes) {
 			for (final CyNode target : selectedNodes) {
@@ -57,9 +63,14 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 					}
 				}
 			}
+			
+			i++;
+			taskMonitor.setProgress(0.1+i/(double)selectedNodesCount*0.9);
 		}
 
 		undoSupport.getUndoableEditSupport().postEdit(
 			new ConnectSelectedNodesEdit(network, newEdges));
+		
+		taskMonitor.setProgress(1.0);
 	}
 }

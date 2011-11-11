@@ -36,7 +36,7 @@ public class SubnetworkBuilderTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-
+		monitor.setProgress(0.0);
 		final String selected = selection.getSelectedValue();
 
 		//insertTasksAfterCurrentTask(new SearchRelatedGenesTask(util, state));
@@ -52,6 +52,6 @@ public class SubnetworkBuilderTask extends AbstractTask {
 				insertTasksAfterCurrentTask(util.getWebServiceImportTask());
 			}
 		}
-
+		monitor.setProgress(1.0);
 	}
 }

@@ -16,6 +16,6 @@ public class SubnetworkBuilderTaskFactory implements TaskFactory {
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new SubnetworkBuilderTask(networkManager, util));
+		return new TaskIterator(2,new SubnetworkBuilderTask(networkManager, util));
 	}
 }

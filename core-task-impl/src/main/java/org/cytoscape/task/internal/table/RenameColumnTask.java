@@ -51,9 +51,11 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		undoSupport.getUndoableEditSupport().postEdit(new RenameColumnEdit(column));
-
+		taskMonitor.setProgress(0.4);
 		column.setName(newColumnName);
+		taskMonitor.setProgress(1.0);
 	}
 
 	@Override

@@ -56,7 +56,8 @@ public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 	 */
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
-
+		taskMonitor.setProgress(-1.0);
+		
 		if (file == null)
 			throw new NullPointerException("No file specified!");
 

@@ -16,7 +16,7 @@ public class ExportEdgeTableTaskFactory extends AbstractNetworkViewTaskFactory {
 	@Override
 	public TaskIterator getTaskIterator() {
 		CyTable table = view.getModel().getDefaultEdgeTable();
-		return new TaskIterator(new CyTableWriter(writerManager, table));
+		return new TaskIterator(2, new CyTableWriter(writerManager, table));
 	}
 
 }

@@ -19,6 +19,7 @@ public class GetNetworkPreviewDataTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
+		monitor.setProgress(0.0);
 		//
 		CyNetwork net = this.util.getAppManager().getCurrentNetwork();
 		if (net == null || net.getNodeCount() == 0){
@@ -30,7 +31,7 @@ public class GetNetworkPreviewDataTask extends AbstractTask {
 		if (net.getNodeCount() < 20){
 			nodeCount = net.getNodeCount();
 		}
-		
+		monitor.setProgress(0.3);
 		List<CyNode> nodeList = net.getNodeList();
 		
 		for (int i=0; i<nodeCount; i++ ){
@@ -38,5 +39,6 @@ public class GetNetworkPreviewDataTask extends AbstractTask {
 			String nodeName = node.getCyRow().get("name", String.class);
 			previewData[i][0]= nodeName; 
 		}
+		monitor.setProgress(1.0);
 	}
 }

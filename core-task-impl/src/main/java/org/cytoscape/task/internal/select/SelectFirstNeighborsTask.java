@@ -59,18 +59,21 @@ public class SelectFirstNeighborsTask extends AbstractSelectTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
 		undoSupport.getUndoableEditSupport().postEdit(
 			new SelectionEdit(eventHelper, "Select First-Neighbour Nodes", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));
-
+		tm.setProgress(0.1);
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		final Set<CyNode> nodes = new HashSet<CyNode>();
-
+		tm.setProgress(0.2);
 		for (CyNode currentNode : selectedNodes)
 			nodes.addAll(network.getNeighborList(currentNode, CyEdge.Type.ANY));
-
+		tm.setProgress(0.4);
 		selectUtils.setSelectedNodes(nodes, true);
+		tm.setProgress(0.8);
 		updateView();
+		tm.setProgress(1.0);
 	}
 }

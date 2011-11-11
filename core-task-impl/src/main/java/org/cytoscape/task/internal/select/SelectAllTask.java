@@ -50,13 +50,17 @@ public class SelectAllTask extends AbstractSelectTask {
 	}
 
 	public void run(TaskMonitor monitor) {
+		monitor.setProgress(0.0);
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
 		undoSupport.getUndoableEditSupport().postEdit(
 			new SelectionEdit(eventHelper, "Select All Nodes and Edges", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_AND_EDGES));
-
+		monitor.setProgress(0.2);
 		selectUtils.setSelectedNodes(network.getNodeList(), true);
+		monitor.setProgress(0.5);
 		selectUtils.setSelectedEdges(network.getEdgeList(), true);
+		monitor.setProgress(0.8);
 		updateView();
+		monitor.setProgress(1.0);
 	}
 }

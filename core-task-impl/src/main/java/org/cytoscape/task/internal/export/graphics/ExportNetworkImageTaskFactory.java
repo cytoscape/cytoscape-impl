@@ -47,6 +47,6 @@ public class ExportNetworkImageTaskFactory extends AbstractNetworkViewTaskFactor
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator( new ViewWriter( presentationWriterMgr, view, applicationManager.getCurrentRenderingEngine() ) );
+		return new TaskIterator(2, new ViewWriter( presentationWriterMgr, view, applicationManager.getCurrentRenderingEngine() ) );
 	}
 }

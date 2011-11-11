@@ -50,13 +50,17 @@ public class DeselectAllTask extends AbstractSelectTask {
 	}
 
 	public void run(final TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
 		undoSupport.getUndoableEditSupport().postEdit(
 			new SelectionEdit(eventHelper, "Deselect All Nodes and Edges", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_AND_EDGES));
-
+		tm.setProgress(0.2);
 		selectUtils.setSelectedEdges(network.getEdgeList(), false);
+		tm.setProgress(0.5);
 		selectUtils.setSelectedNodes(network.getNodeList(), false);
+		tm.setProgress(0.7);
 		updateView();
+		tm.setProgress(1.0);
 	}
 }

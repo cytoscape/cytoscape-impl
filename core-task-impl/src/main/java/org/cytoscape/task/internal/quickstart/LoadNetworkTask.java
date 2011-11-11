@@ -67,6 +67,7 @@ public class LoadNetworkTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor monitor) {
+		monitor.setProgress(0.0);
 		if (state.isJobFinished(Job.SELECT_MAPPING_ID_TYPE) == false) {
 			// This is for next step: specify ID type
 			insertTasksAfterCurrentTask(new SelectMappingKeyTypeTask(state,util, previewKeys, previewData));
@@ -74,7 +75,7 @@ public class LoadNetworkTask extends AbstractTask {
 		} else if(state.isJobFinished(Job.LOAD_TABLE)) {
 			insertTasksAfterCurrentTask(new MergeDataTask(state, util));
 		}
-
+		monitor.setProgress(0.2);
 		final String selected = dataSource.getSelectedValue();
 		if (selected == FROM_FILE) {
 			// Load file task
@@ -89,5 +90,6 @@ public class LoadNetworkTask extends AbstractTask {
 		}
 
 		state.finished(Job.LOAD_NETWORK);
+		monitor.setProgress(1.0);
 	}
 }

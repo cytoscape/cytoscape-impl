@@ -18,6 +18,6 @@ public class LoadAttributesURLTaskFactoryImpl implements TaskFactory {
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new LoadAttributesURLTask(mgr, tableMgr));
+		return new TaskIterator(2, new LoadAttributesURLTask(mgr, tableMgr));
 	}
 }

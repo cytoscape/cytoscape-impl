@@ -45,9 +45,11 @@ public class FitSelectedTask extends AbstractNetworkViewTask {
 	}
 
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
 		undoSupport.getUndoableEditSupport().postEdit(new FitContentEdit("Fit Selected",
 		                                                                 view));
-
+		tm.setProgress(0.3);
 		view.fitSelected();
+		tm.setProgress(1.0);
 	}
 }

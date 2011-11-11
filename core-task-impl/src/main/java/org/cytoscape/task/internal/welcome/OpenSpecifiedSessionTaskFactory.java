@@ -31,6 +31,6 @@ public class OpenSpecifiedSessionTaskFactory implements TaskFactory {
 	}
 
 	public TaskIterator getTaskIterator() {
-		return new TaskIterator(new OpenSpecifiedSessionTask(sessionFileURI, mgr, rmgr, appManager));
+		return new TaskIterator(2,new OpenSpecifiedSessionTask(sessionFileURI, mgr, rmgr, appManager));
 	}
 }

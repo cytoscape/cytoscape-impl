@@ -19,11 +19,13 @@ public class SetNetworkNameTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor e) {
+		e.setProgress(0.0);
 		final CyNetwork[] networks = reader.getCyNetworks();
 		
 		if(networks == null || networks.length == 0)
 			throw new IllegalStateException("Could not find network to be renamed.");
-		
+		e.setProgress(0.5);
 		networks[0].getCyRow().set(CyTableEntry.NAME, newName);
+		e.setProgress(1.0);
 	} 
 }

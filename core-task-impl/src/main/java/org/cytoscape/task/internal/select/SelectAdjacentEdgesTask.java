@@ -56,11 +56,12 @@ public class SelectAdjacentEdgesTask extends AbstractSelectTask {
 	}
 
 	public void run(final TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
 		undoSupport.getUndoableEditSupport().postEdit(
 			new SelectionEdit(eventHelper, "Select Adjacent Edges", network, view,
 			                  SelectionEdit.SelectionFilter.EDGES_ONLY));
-
+		tm.setProgress(0.2);
 		final Set<CyEdge> edgeSet = new HashSet<CyEdge>();
 
 		// Get the list of selected nodes
@@ -68,8 +69,9 @@ public class SelectAdjacentEdgesTask extends AbstractSelectTask {
 			// Get the list of edges connected to this node
 			edgeSet.addAll(network.getAdjacentEdgeList(node, CyEdge.Type.ANY));
 		}
-
+		tm.setProgress(0.8);
 		selectUtils.setSelectedEdges(edgeSet, true);
 		updateView();
+		tm.setProgress(1.0);
 	}
 }

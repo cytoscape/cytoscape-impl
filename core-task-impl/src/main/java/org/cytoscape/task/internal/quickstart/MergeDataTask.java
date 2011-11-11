@@ -24,6 +24,7 @@ public class MergeDataTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		// Step 1: Create new column for the network.
 		final IDType type = state.getIDType();
 		if(type == null)
@@ -33,10 +34,11 @@ public class MergeDataTask extends AbstractTask {
 		final CyTable table = state.getImportedTable();
 		final CyNetwork net = util.getTargetNetwork();
 		final CyTable nodeTable = net.getDefaultNodeTable();
-		
+		taskMonitor.setProgress(0.2);
 		// "Copy" Name column to ID type name.
 		final CyColumn pKey = table.getPrimaryKey();
 		table.addVirtualColumn(columnName, pKey.getName(), table, pKey.getName(), pKey.getName(), false);
+		taskMonitor.setProgress(0.5);
 		nodeTable.addVirtualColumn(columnName, pKey.getName(), table, pKey.getName(), pKey.getName(), false);
 				
 		taskMonitor.setStatusMessage("Finished!");

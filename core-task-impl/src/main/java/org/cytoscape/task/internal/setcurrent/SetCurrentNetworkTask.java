@@ -30,7 +30,10 @@ public class SetCurrentNetworkTask extends AbstractTask {
 		// TODO Verify that we want an essentially random network and that this
 		// task shouldn't be NetworkTask instead.
 		this.taskMonitor = taskMonitor;
+		taskMonitor.setProgress(0.0);
 		Object[] setNetworks = networkManager.getNetworkSet().toArray();
+		taskMonitor.setProgress(0.3);
 		applicationManager.setCurrentNetwork(((CyNetwork) setNetworks[setNetworks.length-1]).getSUID());
+		taskMonitor.setProgress(1.0);
 	}
 }

@@ -55,15 +55,17 @@ public class HideSelectedNodesTask extends AbstractNetworkViewTask {
 	}
 
 	public void run(TaskMonitor e) {
+		e.setProgress(0.0);
 		final CyNetwork network = view.getModel();
 		undoSupport.getUndoableEditSupport().postEdit(
 			new HideEdit(eventHelper, "Hide Selected Nodes", network, view));
 
 		final List<CyNode> selectedNodes =
 			CyTableUtil.getNodesInState(network, CyNetwork.SELECTED ,true);
-
+		e.setProgress(0.3);
 		HideUtils.setVisibleNodes(selectedNodes, false, view);
-
+		e.setProgress(0.7);
 		view.updateView();
+		e.setProgress(1.0);
 	} 
 }

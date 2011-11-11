@@ -48,10 +48,12 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		undoSupport.getUndoableEditSupport().postEdit(
 			new DeleteColumnEdit(column));
-
+		taskMonitor.setProgress(0.3);
 		column.getTable().deleteColumn(column.getName());
+		taskMonitor.setProgress(1.0);
 	}
 
 	@Override

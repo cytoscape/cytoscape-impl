@@ -71,6 +71,8 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 			throw new NullPointerException("url is null");
 
 		this.taskMonitor = taskMonitor;
+		taskMonitor.setProgress(-1.0);
+		
 		name = url.toString();
 
 		taskMonitor.setTitle(String.format("Loading Network from \'%s\'", name));

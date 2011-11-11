@@ -51,19 +51,22 @@ public class InvertSelectedEdgesTask extends AbstractSelectTask {
 	}
 
 	public void run(final TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
 		undoSupport.getUndoableEditSupport().postEdit(
 			new SelectionEdit(eventHelper, "Invert Selected Edges", network, view,
 			                  SelectionEdit.SelectionFilter.EDGES_ONLY));
-
+		tm.setProgress(0.2);
 		for (final CyEdge e : network.getEdgeList()) {
 			if (e.getCyRow().get(CyNetwork.SELECTED, Boolean.class))
 				e.getCyRow().set(CyNetwork.SELECTED, false);
 			else
 				e.getCyRow().set(CyNetwork.SELECTED, true);
 		}
-
+		tm.setProgress(0.6);
 		eventHelper.flushPayloadEvents();
+		tm.setProgress(0.8);
 		updateView();
+		tm.setProgress(1.0);
 	}
 }
