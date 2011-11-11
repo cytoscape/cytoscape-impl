@@ -42,11 +42,13 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -91,7 +93,6 @@ final public class ArrayGraph implements CyRootNetwork {
 	private final CyNetworkTableManagerImpl networkTableMgr;
 	private final CyTableFactory tableFactory;
 	private final CyServiceRegistrar serviceRegistrar;
-
 	private final boolean publicTables;
 
 	/**
@@ -103,6 +104,7 @@ final public class ArrayGraph implements CyRootNetwork {
 					  final CyTableFactory tableFactory,
 	                  final CyServiceRegistrar serviceRegistrar, final boolean publicTables)
 	{
+		this.eventHelper = eh;
 		this.tableMgr = tableMgr;
 		this.networkTableMgr = networkTableMgr;
 		this.tableFactory = tableFactory;
@@ -118,15 +120,12 @@ final public class ArrayGraph implements CyRootNetwork {
 
 		netTables = createNetworkTables(suid); 
 		getCyRow().set(CyTableEntry.NAME, "");
-
 		nodeTables = createNodeTables(suid); 
 		edgeTables = createEdgeTables(suid); 
 
         networkTableMgr.setTableMap(CyNetwork.class, this, netTables);
         networkTableMgr.setTableMap(CyNode.class, this, nodeTables);
         networkTableMgr.setTableMap(CyEdge.class, this, edgeTables);
-
-		eventHelper = eh;
 
 		subNetworks = new ArrayList<CySubNetwork>();
 
@@ -144,49 +143,64 @@ final public class ArrayGraph implements CyRootNetwork {
 
 	private Map<String,CyTable> createNetworkTables(long suidx) {
 		Map<String,CyTable> netAttrMgr = new HashMap<String, CyTable>();
-        netAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " network", Identifiable.SUID, Long.class, publicTables, false));
-        netAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " network", Identifiable.SUID, Long.class, false, false));
+        netAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default network", Identifiable.SUID, Long.class, publicTables, false));
+        netAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden network", Identifiable.SUID, Long.class, false, false));
 
         netAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
-        //getCyRow().set(CyTableEntry.NAME, "");
+
+		if ( suidx == suid ) 
+        	netAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared network", Identifiable.SUID, Long.class, publicTables, false));
+			
+		else	
+			linkDefaultTables( netTables.get(CyRootNetwork.SHARED_ATTRS), 
+			                   netAttrMgr.get(CyNetwork.DEFAULT_ATTRS) );
+
 		return netAttrMgr;
 	}
 
 	private Map<String,CyTable> createNodeTables(long suidx) {
         Map<String,CyTable> nodeAttrMgr = new HashMap<String, CyTable>();
-        nodeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-                tableFactory.createTable(suidx + " node", Identifiable.SUID, Long.class,
-                             publicTables, false));
-        nodeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-                tableFactory.createTable(suidx + " node", Identifiable.SUID, Long.class,
-                             false, false));
+        nodeAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default node", Identifiable.SUID, Long.class, publicTables, false));
+        nodeAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden node", Identifiable.SUID, Long.class, false, false));
 
-        nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
-                                      String.class, true);
-        nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
-                                      Boolean.class, true, Boolean.FALSE);
+        nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
+        nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
 
+		if ( suidx == suid ) 
+        	nodeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared node", Identifiable.SUID, Long.class, publicTables, false));
+		else
+			linkDefaultTables( nodeTables.get(CyRootNetwork.SHARED_ATTRS), 
+			                   nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS) );
 		return nodeAttrMgr;
 
 	}
 
 	private Map<String,CyTable> createEdgeTables(long suidx) {
         Map<String,CyTable> edgeAttrMgr = new HashMap<String, CyTable>();
-        edgeAttrMgr.put(CyNetwork.DEFAULT_ATTRS,
-                tableFactory.createTable(suidx + " edge", Identifiable.SUID, Long.class,
-                             publicTables, false));
-        edgeAttrMgr.put(CyNetwork.HIDDEN_ATTRS,
-                tableFactory.createTable(suidx + " edge", Identifiable.SUID, Long.class,
-                             false, false));
+        edgeAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default edge", Identifiable.SUID, Long.class, publicTables, false));
+        edgeAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden edge", Identifiable.SUID, Long.class, false, false));
 
-        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME,
-                                      String.class, true);
-        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED,
-                                      Boolean.class, true, Boolean.FALSE);
-        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyEdge.INTERACTION,
-                                      String.class, true);
+        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
+        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
+        edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyEdge.INTERACTION, String.class, true);
+
+		if ( suidx == suid ) 
+        	edgeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared edge", Identifiable.SUID, Long.class, publicTables, false));
+		else	
+			linkDefaultTables( edgeTables.get(CyRootNetwork.SHARED_ATTRS), 
+			                   edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS) );
 
 		return edgeAttrMgr;
+	}
+
+	private void linkDefaultTables(CyTable srcTable, CyTable tgtTable) {
+		// Add all columns from source table as virtual columns in target table.
+		tgtTable.addVirtualColumns(srcTable,Identifiable.SUID,Identifiable.SUID,true);
+
+		// Now add a listener for column created events to add
+		// virtual columns to any subsequent source columns added.
+		serviceRegistrar.registerService(new VirtualColumnAdder(srcTable,tgtTable), 
+		                                 ColumnCreatedListener.class, new Properties());
 	}
 
 	/**
@@ -980,6 +994,27 @@ final public class ArrayGraph implements CyRootNetwork {
 	 */
 	public CyTable getDefaultEdgeTable() {
 		return edgeTables.get(CyNetwork.DEFAULT_ATTRS); 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public CyTable getSharedNetworkTable() {
+		return netTables.get(CyRootNetwork.SHARED_ATTRS); 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public CyTable getSharedNodeTable() {
+		return nodeTables.get(CyRootNetwork.SHARED_ATTRS); 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public CyTable getSharedEdgeTable() {
+		return edgeTables.get(CyRootNetwork.SHARED_ATTRS); 
 	}
 
 	/**
