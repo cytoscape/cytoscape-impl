@@ -10,6 +10,7 @@ import java.util.Set;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +21,8 @@ public class DestroyNetworkViewTaskTest {
 	private final NetworkViewTestSupport support = new NetworkViewTestSupport();
 	
 	private CyNetworkViewManager viewManager;
-
+	private TaskMonitor tm = mock(TaskMonitor.class);
+	
 	@Before
 	public void setUp() throws Exception {
 		viewManager = mock(CyNetworkViewManager.class);
@@ -39,7 +41,7 @@ public class DestroyNetworkViewTaskTest {
 		views.add(view2);
 		
 		final DestroyNetworkViewTask task = new DestroyNetworkViewTask(views, viewManager);
-		task.run(null);
+		task.run(tm);
 		
 		verify(viewManager, times(1)).destroyNetworkView(view1);
 		verify(viewManager, times(1)).destroyNetworkView(view2);

@@ -11,6 +11,7 @@ import java.util.Set;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +21,8 @@ public class DestroyNetworkTaskTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	
 	private CyNetworkManager netmgr;
-
+	private TaskMonitor tm = mock(TaskMonitor.class);
+	
 	@Before
 	public void setUp() throws Exception {
 		netmgr = mock(CyNetworkManager.class);
@@ -39,7 +41,7 @@ public class DestroyNetworkTaskTest {
 		networks.add(network2);
 		
 		final DestroyNetworkTask task = new DestroyNetworkTask(networks, netmgr);
-		task.run(null);
+		task.run(tm);
 		
 		verify(netmgr, times(1)).destroyNetwork(network1);
 		verify(netmgr, times(1)).destroyNetwork(network2);
