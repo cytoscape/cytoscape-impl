@@ -41,10 +41,12 @@ public class VizmapPropertiesReader extends AbstractVizmapReader {
     }
 
     public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
         Properties props = new Properties();
         props.load(inputStream);
-
+		tm.setProgress(0.3);
         // Convert properties to list of visual visualStyles:
         this.visualStyles = visualStyleSerializer.createVisualStyles(props);
+		tm.setProgress(1.0);
     }
 }

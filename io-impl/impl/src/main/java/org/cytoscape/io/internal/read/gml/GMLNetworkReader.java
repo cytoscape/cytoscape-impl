@@ -180,21 +180,23 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		try {
 			keyVals = (new GMLParser(inputStream)).parseList();
 		} catch (Exception io) {
 			io.printStackTrace();
 			throw new RuntimeException(io.getMessage());
 		}
-
+		taskMonitor.setProgress(0.05);
 		initializeStructures();
-
+		taskMonitor.setProgress(0.1);
 		readGML(keyVals, taskMonitor); // read the GML file
-
+		taskMonitor.setProgress(0.3);
 		network = cyNetworkFactory.getInstance();
 		createGraph(taskMonitor);
-
+		taskMonitor.setProgress(0.8);
 		this.cyNetworks = new CyNetwork[] { network };
+		taskMonitor.setProgress(1.0);
 	}
 
 	@Override

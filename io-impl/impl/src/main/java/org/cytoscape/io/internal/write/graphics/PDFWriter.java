@@ -79,6 +79,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		final PdfWriter writer = PdfWriter.getInstance(document, stream);
 		document.open();
 		
+		taskMonitor.setProgress(0.1);
+		
 		final PdfContentByte canvas = writer.getDirectContent();
 		logger.debug("CB0 created: " + canvas.getClass());
 		
@@ -93,12 +95,16 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		
 		engine.getProperties().setProperty("exportTextAsShape", new Boolean(!exportTextAsFont).toString());
 		
+		taskMonitor.setProgress(0.2);
+		
 		if (exportTextAsFont) {
 			g = canvas.createGraphics(pageWidth, pageHeight, new DefaultFontMapper());
 		} else {
 			g = canvas.createGraphicsShapes(pageWidth, pageHeight);
 		}
-
+		
+		taskMonitor.setProgress(0.4);
+		
 		logger.debug("##### G2D created: " + g);
 		
 		double imageScale = Math.min(pageSize.getWidth() / width, pageSize.getHeight() / height);
@@ -108,6 +114,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		engine.printCanvas(g);
 		logger.debug("##### Canvas Rendering Done: ");
 			
+		taskMonitor.setProgress(0.8);
+		
 		g.dispose();
 		document.close();
 		writer.close();
@@ -115,6 +123,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		stream.close();
 
 		logger.debug("PDF rendering finished.");
+		taskMonitor.setProgress(1.0);
 	}
 	
 }

@@ -98,13 +98,16 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
+		tm.setProgress(0.0);
+
 		final CyTable table = tableFactory.createTable(
 				"Table " + Integer.toString(nextTableNumber++), CyTableEntry.NAME,
 				String.class, true, true);
 		cyTables = new CyTable[] { table };
-
+		tm.setProgress(0.1);
 		try {
 			loadAttributesInternal(table);
+			tm.setProgress(0.3);
 			tableManager.addTable(table);
 		} finally {
 			if (inputStream != null) {
@@ -112,12 +115,13 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 				inputStream = null;
 			}
 		}
-
+		tm.setProgress(0.7);
 		Class<? extends CyTableEntry> type = getMappingClass();
 
 		if (netMgr.getNetworkSet().size() > 0 && type != null)
 			super.insertTasksAfterCurrentTask(new MapNetworkAttrTask(type,
 					table, netMgr, appMgr));
+		tm.setProgress(1.0);
 	}
 
 	private Class<? extends CyTableEntry> getMappingClass() {

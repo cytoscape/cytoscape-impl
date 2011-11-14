@@ -46,15 +46,18 @@ public class VizmapXMLReader extends AbstractVizmapReader {
     }
 
     public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
         // No idea why, but ObjectFactory doesn't get picked up in the default
         // Thread.currentThread().getContextClassLoader() classloader, whereas 
         // that approach works fine for bookmarks.  Anyway, just force the issue
         // by getting this classloader.
         final JAXBContext jaxbContext = JAXBContext.newInstance(VIZMAP_PACKAGE, getClass().getClassLoader());
+		tm.setProgress(0.1);
         final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
+		tm.setProgress(0.2);
         Vizmap vizmap = (Vizmap) unmarshaller.unmarshal(inputStream);
-        
+		tm.setProgress(0.7);
         this.visualStyles = visualStyleSerializer.createVisualStyles(vizmap);
+		tm.setProgress(1.0);
     }
 }

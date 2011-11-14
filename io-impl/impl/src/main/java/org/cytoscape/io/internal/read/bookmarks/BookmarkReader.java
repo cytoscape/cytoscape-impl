@@ -18,9 +18,12 @@ public class BookmarkReader extends AbstractPropertyReader {
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		final JAXBContext jaxbContext = JAXBContext.newInstance(BOOKMARK_PACKAGE, getClass().getClassLoader());
+		tm.setProgress(0.1);
 		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
+		tm.setProgress(0.5);
 		propertyObject = (Bookmarks) unmarshaller.unmarshal(inputStream);
+		tm.setProgress(1.0);
 	}
 }

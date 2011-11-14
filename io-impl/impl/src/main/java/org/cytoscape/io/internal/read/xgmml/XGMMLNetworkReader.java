@@ -114,9 +114,10 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 		readDataMgr.initAllData();
 		readDataMgr.setSessionFormat(sessionFormat);
 		readDataMgr.setNetwork(cyNetworkFactory.getInstance());
-
+		tm.setProgress(0.1);
 		try {
 			readXGMML();
+			tm.setProgress(0.3);
 			this.cyNetworks = new CyNetwork[] { readDataMgr.getNetwork() };
 		} catch (SAXException e) {
 			throw new IOException("Could not parse XGMML file: ");

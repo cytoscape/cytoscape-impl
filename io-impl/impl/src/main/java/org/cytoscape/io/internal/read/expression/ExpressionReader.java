@@ -233,6 +233,7 @@ public class ExpressionReader extends AbstractTableReader {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		final BufferedReader input = new BufferedReader(new InputStreamReader(inputStream));
 
 		try {
@@ -251,7 +252,8 @@ public class ExpressionReader extends AbstractTableReader {
 				taskMonitor.setStatusMessage("Missing header in input file!");
 				return;
 			}
-
+			taskMonitor.setProgress(0.1);
+			
 			if (isHeaderLineMTXHeader(headerLine)) {
 				// for sure we know that the file contains lambdas
 				significanceType = LAMBDA;
@@ -265,7 +267,9 @@ public class ExpressionReader extends AbstractTableReader {
 
 			final boolean hasCOMMON = doesHeaderLineHasCOMMON(headerLine);
 			final boolean expectPvals = doesHeaderLineHaveDuplicates(headerLine, hasCOMMON);
-
+			
+			taskMonitor.setProgress(0.2);
+			
 			if ((significanceType != LAMBDA) && !expectPvals) {
 				// we know that we don't have a lambda header and we don't
 				// have significance values
@@ -329,7 +333,7 @@ public class ExpressionReader extends AbstractTableReader {
 			if (hasCOMMON) {
 				headerTok.nextToken();
 			}
-
+			
 			/* the next numConds tokens are the condition names */
 			Vector<String> cNames = new Vector<String>(numberOfConditions);
 
@@ -352,6 +356,8 @@ public class ExpressionReader extends AbstractTableReader {
 					}
 				}
 			}
+
+			taskMonitor.setProgress(0.25);
 
 			/*
 			 * OK, we have a reasonable header; clobber all old information
@@ -381,8 +387,9 @@ public class ExpressionReader extends AbstractTableReader {
 				if (isCancelled)
 					return;
 			}
-			taskMonitor.setProgress(100.0);
-
+			//taskMonitor.setProgress(100.0);
+			taskMonitor.setProgress(0.9);
+			
 			/* save numGenes and build hash of gene names to indices */
 			numGenes = geneNames.size();
 
@@ -400,6 +407,7 @@ public class ExpressionReader extends AbstractTableReader {
 		} finally {
 			input.close();
 		}
+		taskMonitor.setProgress(1.0);
 	}
 
 	private Map<String,List<String>> getAttributeToIdList(String keyAttributeName) throws IOException {

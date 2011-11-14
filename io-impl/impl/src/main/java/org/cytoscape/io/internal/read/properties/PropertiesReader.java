@@ -13,8 +13,11 @@ public class PropertiesReader extends AbstractPropertyReader {
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		Properties props = new Properties();
+		tm.setProgress(0.1);
 		props.load(inputStream);
 		propertyObject = props; 
+		tm.setProgress(1.0);
 	}
 }

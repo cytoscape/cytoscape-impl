@@ -157,31 +157,33 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
+    	taskMonitor.setProgress(0.0);
         writer = new OutputStreamWriter(outputStream);
 
         // write out the XGMML preamble
         writePreamble();
         depth++;
-
+        taskMonitor.setProgress(0.2);
         // write out our metadata
         writeMetadata();
-
+        taskMonitor.setProgress(0.3);
         // write out network attributes
         writeNetworkAttributes();
-
+        taskMonitor.setProgress(0.4);
         // Output our nodes
         writeNodes();
         // TODO obviously, fix this
         // writeGroups();
-
+        taskMonitor.setProgress(0.6);
         // Create edge objects
         writeEdges();
-
+        taskMonitor.setProgress(0.8);
         depth--;
         // Wwrite final tag
         writeElement("</graph>\n");
 
         writer.flush();
+        taskMonitor.setProgress(1.0);
     }
 
     /**

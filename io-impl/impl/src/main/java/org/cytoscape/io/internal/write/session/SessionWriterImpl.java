@@ -167,20 +167,38 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
+		taskMonitor.setProgress(0.0);
 		
 		zos = new ZipOutputStream(outputStream); 
 
 		for (CyNetworkView netView : session.getNetworkViews())
 			zipNetwork(netView);
+		
+		taskMonitor.setProgress(0.1);
+		taskMonitor.setStatusMessage("Zip tables...");
 		zipTables();
+		taskMonitor.setProgress(0.2);
+		taskMonitor.setStatusMessage("Zip virtual columnz...");
 		zipVirtualColumns();
+		taskMonitor.setProgress(0.3);
+		taskMonitor.setStatusMessage("Zip CySession...");
 		zipCySession();
+		taskMonitor.setProgress(0.4);
+		taskMonitor.setStatusMessage("Zip Vizmap...");
 		zipVizmap();
+		taskMonitor.setProgress(0.5);
+		taskMonitor.setStatusMessage("Zip Cytosape properties...");
 		zipCytoscapeProps();
+		taskMonitor.setProgress(0.6);
+		taskMonitor.setStatusMessage("Zip bookmarks...");
 		zipBookmarks();
+		taskMonitor.setProgress(0.7);
+		taskMonitor.setStatusMessage("Zip File list...");
 		zipFileListMap();
-
+		taskMonitor.setProgress(0.8);
 		zos.close();
+		taskMonitor.setStatusMessage("Done!");
+		taskMonitor.setProgress(1.0);
 	}
 
 	private void zipVirtualColumns() throws IOException {

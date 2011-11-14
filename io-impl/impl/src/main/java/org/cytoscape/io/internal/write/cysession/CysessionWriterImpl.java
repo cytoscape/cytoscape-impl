@@ -64,14 +64,17 @@ public class CysessionWriterImpl extends AbstractTask implements CyWriter {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-
+		taskMonitor.setProgress(0.0);
 		final JAXBContext jc = JAXBContext.newInstance(Cysession.class.getPackage().getName(), this.getClass().getClassLoader());
+		taskMonitor.setProgress(0.2);
 		Marshaller m = jc.createMarshaller();
+		taskMonitor.setProgress(0.4);
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		// TODO wtf?
 		//m.setProperty("com.sun.xml.bind.namespacePrefixMapper",
 		 //             new NamespacePrefixMapperForCysession());
-
+		taskMonitor.setProgress(0.6);
 		m.marshal(cysession, outputStream);
+		taskMonitor.setProgress(1.0);
 	}
 }

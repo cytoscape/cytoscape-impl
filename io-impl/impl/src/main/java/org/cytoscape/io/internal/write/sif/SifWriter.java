@@ -28,6 +28,8 @@ public class SifWriter implements CyWriter {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
+
 		final Writer writer = new OutputStreamWriter(outputStream);
 		try {
 			final String lineSep = System.getProperty("line.separator");
@@ -37,7 +39,7 @@ public class SifWriter implements CyWriter {
 			for ( CyNode node : nodeList ) {
 				if (taskMonitor != null) {
 					//  Report on Progress
-					double percent = ((double) i++ / nodeList.size()) * 100.0;
+					double percent = ((double) i++ / nodeList.size());
 					taskMonitor.setProgress(percent);
 				}
 	
@@ -71,6 +73,7 @@ public class SifWriter implements CyWriter {
 		} finally {
 			writer.close();
 		}
+		taskMonitor.setProgress(1.0);
 	}
 	
 	@Override

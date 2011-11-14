@@ -175,11 +175,16 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 	 */
 	public void run(TaskMonitor tm) throws Exception {
 		taskMonitor = tm;
-
+		tm.setProgress(0.0);
+		
 		extractEntries();
+		tm.setProgress(0.2);
 		processNetworks();
+		tm.setProgress(0.6);
 		mergeNetworkTables();
+		tm.setProgress(0.8);
 		restoreVirtualColumns();
+		tm.setProgress(1.0);
 	}
 
 	public CySession getCySession() {

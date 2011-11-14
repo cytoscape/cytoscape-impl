@@ -56,10 +56,17 @@ public class CSVCyReader implements CyTableReader {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
+
 		CSVReader reader = new CSVReader(new InputStreamReader(stream));
+		taskMonitor.setProgress(0.2);
+
 		TableInfo info = readHeader(reader);
 		table = createTable(reader, info);
+		taskMonitor.setProgress(0.6);
+
 		tableManager.addTable(table);
+		taskMonitor.setProgress(1.0);
 	}
 
 	CyTable createTable(CSVReader reader, TableInfo info) throws IOException, SecurityException {

@@ -93,7 +93,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 
 	private void readInput(TaskMonitor tm) throws IOException {
 		this.parentTaskMonitor = tm;
-//		tm.setProgress(0.0);
+		tm.setProgress(0.0);
 
 		String line;
 		final BufferedReader br =
@@ -104,6 +104,8 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		final CyTable edgeTable = network.getDefaultEdgeTable();
 
+		tm.setProgress(0.1);
+		
 		// Generate bundled event to avoid too many events problem.
 
 		final String firstLine = br.readLine();
@@ -111,6 +113,8 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 			delimiter = TAB;
 		createEdge(new Interaction(firstLine.trim(), delimiter), network, nMap);
 
+		tm.setProgress(0.15);
+		tm.setStatusMessage("Processing the interactions...");
 		while ((line = br.readLine()) != null) {
 			if (cancelled) {
 				// Cancel called. Clean up the garbage.
@@ -141,7 +145,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 
 		this.cyNetworks = new CyNetwork[] {network};
 		
-//		tm.setProgress(1.0);
+		tm.setProgress(1.0);
 
 		logger.debug("SIF file loaded: ID = " + network.getSUID());
 	}

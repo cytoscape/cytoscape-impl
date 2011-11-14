@@ -44,6 +44,8 @@ public class PSWriter extends AbstractTask implements CyWriter {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
+		taskMonitor.setStatusMessage("PS image rendering start...");
 		logger.debug("PS image rendering start.");
 		
 		// TODO should be accomplished with presentation properties
@@ -53,14 +55,19 @@ public class PSWriter extends AbstractTask implements CyWriter {
 		p.setProperty(PSGraphics2D.PAGE_SIZE, "Letter");
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES",
 				Boolean.toString(!exportTextAsFont));
-
+		taskMonitor.setProgress(0.1);
 		PSGraphics2D g = new PSGraphics2D(stream, new Dimension(width.intValue(), height.intValue()));
 		g.setMultiPage(false); // true for PS file
 		g.setProperties(p);
+		
+		taskMonitor.setProgress(0.2);
+		
 		g.startExport();
 		engine.printCanvas(g);
 		g.endExport();
 		
 		logger.debug("PS image created.");
+		taskMonitor.setStatusMessage("PS image created.");
+		taskMonitor.setProgress(1.0);
 	}
 }

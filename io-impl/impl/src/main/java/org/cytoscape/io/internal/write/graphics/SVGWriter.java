@@ -44,7 +44,8 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		
+		taskMonitor.setProgress(0.0);
+		taskMonitor.setStatusMessage("SVG Rendering Start...");
 		logger.debug("SVG Rendering Start.");
 
 		final SVGGraphics2D g = new SVGGraphics2D(stream, new Dimension(width.intValue(), height.intValue()));
@@ -54,13 +55,14 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES",
 				Boolean.toString(!exportTextAsFont));
 		g.setProperties(p);
-
+		taskMonitor.setProgress(0.2);
 		g.startExport();
 		engine.printCanvas(g);
 		g.endExport();
 		
 		logger.debug("SVG Rendering DONE!");
-
+		taskMonitor.setStatusMessage("SVG Rendering DONE!");		
+		taskMonitor.setProgress(1.0);
 	}
 
 }

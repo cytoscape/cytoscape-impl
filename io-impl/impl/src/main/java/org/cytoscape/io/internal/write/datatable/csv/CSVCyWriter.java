@@ -42,6 +42,7 @@ public class CSVCyWriter implements CyWriter {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setProgress(0.0);
 		CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream), ',', '"', "\r\n");
 		try {
 			List<CyColumn> columns = new ArrayList<CyColumn>();
@@ -51,6 +52,7 @@ public class CSVCyWriter implements CyWriter {
 				}
 				columns.add(column);
 			}
+			taskMonitor.setProgress(0.2);
 			Collections.sort(columns, new Comparator<CyColumn>() {
 				@Override
 				public int compare(CyColumn o1, CyColumn o2) {
@@ -64,14 +66,17 @@ public class CSVCyWriter implements CyWriter {
 					return o1.getName().compareToIgnoreCase(o2.getName());
 				}
 			});
+			taskMonitor.setProgress(0.4);
 			writeHeader(writer, columns);
 			if (writeSchema) {
 				writeSchema(writer, columns);
 			}
+			taskMonitor.setProgress(0.6);
 			writeValues(writer, columns);
 		} finally {
 			writer.flush();
 		}
+		taskMonitor.setProgress(1.0);
 	}
 
 	private void writeSchema(CSVWriter writer, List<CyColumn> columns) {

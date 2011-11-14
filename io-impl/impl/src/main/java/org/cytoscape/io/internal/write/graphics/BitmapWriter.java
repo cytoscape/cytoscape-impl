@@ -93,6 +93,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		logger.debug("Bitmap image rendering start.");
 				
 		// Extract size
@@ -103,11 +104,13 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		final double scale =exportBitmapOptionsPanel.getZoom();
 		final int finalW = exportBitmapOptionsPanel.getWidthPixels();
 		final int finalH = exportBitmapOptionsPanel.getHeightPixels();
-		
+		tm.setProgress(0.1);		
 		final BufferedImage image = new BufferedImage(finalW, finalH, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = (Graphics2D) image.getGraphics();
 		g.scale(scale, scale);
+		tm.setProgress(0.2);
 		re.printCanvas(g);
+		tm.setProgress(0.4);
 		g.dispose();
 		
 		try {
@@ -117,5 +120,6 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		}
 		
 		logger.debug("Bitmap image rendering finished.");
+		tm.setProgress(1.0);
 	}	
 }
