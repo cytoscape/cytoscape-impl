@@ -36,18 +36,15 @@
 
 package org.cytoscape.view.vizmap.gui.internal.action;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
-import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
-import org.cytoscape.view.vizmap.gui.action.VizMapUIAction;
 import org.cytoscape.view.vizmap.gui.internal.EditorWindowManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapPropertySheetBuilder;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperMainPanel;
@@ -59,25 +56,18 @@ import com.l2fprod.common.propertysheet.PropertySheetPanel;
 /**
  * Action class to process commands.
  */
-public abstract class AbstractVizMapperAction extends AbstractAction implements VizMapUIAction,
-                                                                                PropertyChangeListener {
+public abstract class AbstractVizMapperAction extends AbstractCyAction {
+
 	private static final long serialVersionUID = 1499424630636172107L;
-	
 	
 	protected DefaultViewEditor defViewEditor;
 	protected VisualMappingManager vmm;
-	
-	protected CyApplicationManager applicationManager;
-	
 	protected VizMapperMainPanel vizMapperMainPanel;
-	
 	protected IconManager iconManager;
-	
 	
 	protected VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
 	
-	
-	protected PropertySheetPanel propertySheetPanel;
+	protected final PropertySheetPanel propertySheetPanel;
 	
 	protected EditorWindowManager editorWindowManager;
 	
@@ -88,12 +78,13 @@ public abstract class AbstractVizMapperAction extends AbstractAction implements 
 	protected JMenuItem menuItem;
 	
 	protected SelectedVisualStyleManager manager;
-	
-	public AbstractVizMapperAction() {
-		
+
+
+	public AbstractVizMapperAction(String name, CyApplicationManager applicationManager, final PropertySheetPanel propertySheetPanel) {
+		super(name, applicationManager);
+		this.propertySheetPanel = propertySheetPanel;
 	}
 	
-
 	/**
 	 *  DOCUMENT ME!
 	 *
@@ -147,33 +138,4 @@ public abstract class AbstractVizMapperAction extends AbstractAction implements 
 	public void setIconManager(IconManager iconManager) {
 		this.iconManager = iconManager;
 	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public JMenuItem getMenu() {
-		if (menuItem == null) {
-			//TODO: where should I set listener?
-			//vizMapperMainPanel.getPropertyChangeSupport().addPropertyChangeListener(this);
-			menuItem = new JMenuItem(menuLabel);
-			//menuItem.setIcon(iconManager.getIcon(iconId));
-			menuItem.addActionListener(this);
-		}
-
-		return menuItem;
-	}
-	
-	public void execute() {
-		// Should be implemented by the action classes.
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 */
-	public void propertyChange(PropertyChangeEvent e) {
-		System.out.println(e.getSource());
-	}
-
 }

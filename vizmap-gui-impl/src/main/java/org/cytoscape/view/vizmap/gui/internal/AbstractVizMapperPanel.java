@@ -59,7 +59,6 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
-import org.cytoscape.view.vizmap.gui.action.VizMapUIAction;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.AttributeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
@@ -119,9 +118,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 	protected VizMapperMenuManager menuMgr;
 	protected EditorManager editorManager;
 	protected VizMapperUtil vizMapperUtil;
-
-	// Action (context menu) manager
-	protected Set<VizMapUIAction> actionList;
 
 	/*
 	 * Combo Box Editors

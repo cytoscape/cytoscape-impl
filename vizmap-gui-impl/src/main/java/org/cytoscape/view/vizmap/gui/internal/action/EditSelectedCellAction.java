@@ -38,119 +38,112 @@ package org.cytoscape.view.vizmap.gui.internal.action;
 
 import java.awt.event.ActionEvent;
 
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.view.vizmap.gui.VizMapGUI;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
-
 
 /**
  *
  */
 public class EditSelectedCellAction extends AbstractVizMapperAction {
 
-	private VizMapGUI vizMapGUI;
-	private CyTableManager tableMgr;
+	private static final long serialVersionUID = 7640977428847967990L;
+
+	private static final Logger logger = LoggerFactory.getLogger(EditSelectedCellAction.class);
 	
-	public EditSelectedCellAction(VizMapGUI vizMapGUI, CyTableManager tableMgr) {
-		super();
-		this.vizMapGUI = vizMapGUI;
-		this.tableMgr = tableMgr;
+	private final SelectedVisualStyleManager selectedVSManager;
+	private final EditorManager editorManager;
+	
+	public EditSelectedCellAction(final EditorManager editorManager, final CyApplicationManager appManager, final SelectedVisualStyleManager selectedVSManager, final PropertySheetPanel propertySheetPanel) {
+		super("Edit selected cells", appManager, propertySheetPanel);
+		this.selectedVSManager = selectedVSManager;
+		this.editorManager = editorManager;
 	}
-
-	private static final long serialVersionUID = -6102797200439573667L;
-
-	private EditorManager editorFactory;
+	
 
 	/**
 	 * Edit all selected cells at once.
 	 * This is for Discrete Mapping only.
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		final PropertySheetTable table = propertySheetPanel.getTable();
 		final int[] selected = table.getSelectedRows();
 
 		Item item = null;
 
-		// FIXME
-//		// If nothing selected, return.
-//		if ((selected == null) || (selected.length == 0))
-//			return;
-//
-//		/*
-//		 * Test with the first selected item
-//		 */
-//		item = (Item) propertySheetPanel.getTable()
-//		                                .getValueAt(selected[0], 0);
-//
-//		VizMapperProperty prop = (VizMapperProperty) item.getProperty();
-//
-//		if ((prop == null) || (prop.getParentProperty() == null)) {
-//			return;
-//		}
-//
-//		final VisualProperty<?> vp = (VisualProperty<?>) ((VizMapperProperty) prop
-//		                                                                                      .getParentProperty())
-//		                                .getHiddenObject();
-//
-//		/*
-//		 * Extract calculator
-//		 */
-//		final VisualMappingFunction<?, ?> mapping;
-//		final CyTable attr;
-//
-//		final CyNetwork targetNetwork = cyNetworkManager.getCurrentNetwork();
-//		mapping = vizMapGUI.getSelectedVisualStyle().getVisualMappingFunction(vp);
-//		attr = tableMgr.getTableMap(vp.getObjectType(),targetNetwork).get(CyNetwork.DEFAULT_ATTRS);
-//		
-//
-//		if (mapping instanceof ContinuousMapping || mapping instanceof PassthroughMapping)
-//			return;
-//
-//		Object newValue = null;
-//
-//		try {
-//			newValue = editorFactory.showVisualPropertyValueEditor(vizMapperMainPanel, vp, null);
-//		} catch (Exception e1) {
-//			e1.printStackTrace();
-//		}
-//
-//		if (newValue == null)
-//			return;
-//
-//		Object key = null;
-//		final Class<?> keyClass = attr.getColumnTypeMap().get(mapping.getMappingAttributeName());
-//
-//		for (int i = 0; i < selected.length; i++) {
-//			/*
-//			 * First, update property sheet
-//			 */
-//			((Item) propertySheetPanel.getTable().getValueAt(selected[i], 0)).getProperty()
-//			 .setValue(newValue);
-//			/*
-//			 * Then update backend.
-//			 */
-//			key = ((Item) propertySheetPanel.getTable().getValueAt(selected[i], 0)).getProperty()
-//			       .getDisplayName();
-//
-//			if (keyClass == Integer.class) {
-//				key = Integer.valueOf((String) key);
-//			} else if (keyClass == Double.class) {
-//				key = Double.valueOf((String) key);
-//			} else if (keyClass == Boolean.class) {
-//				key = Boolean.valueOf((String) key);
-//			}
-//
-//			((DiscreteMapping) mapping).putMapValue(key, newValue);
-//		}
-//
-//		/*
-//		 * Update table and current network view.
-//		 */
-//		table.repaint();
-//		//vmm.setNetworkView(targetView);
-//		//Cytoscape.redrawGraph(targetView);
+		// If nothing selected, return.
+		if ((selected == null) || (selected.length == 0))
+			return;
+
+		// Test with the first selected item
+		item = (Item) propertySheetPanel.getTable().getValueAt(selected[0], 0);
+		VizMapperProperty prop = (VizMapperProperty) item.getProperty();
+
+		if ((prop == null) || (prop.getParentProperty() == null))
+			return;
+		
+		Object internalVal = prop.getInternalValue();
+		if(internalVal == null || internalVal instanceof DiscreteMapping == false)
+			return;
+		final DiscreteMapping dm = (DiscreteMapping) internalVal;
+		final VisualProperty<Object> vp = dm.getVisualProperty();
+
+		final VisualStyle currentStyle = selectedVSManager.getCurrentVisualStyle();
+		Object newValue = null;
+
+		try {
+			newValue = editorManager.showVisualPropertyValueEditor(vizMapperMainPanel, vp, vp.getDefault());
+		} catch (Exception e1) {
+			logger.error("Could not edit value.", e1);
+			return;
+		}
+
+		if (newValue == null)
+			return;
+
+		final Class<?> keyClass =dm.getMappingAttributeType();
+		for (int i = 0; i < selected.length; i++) {
+			final Item currentItem = ((Item) propertySheetPanel.getTable().getValueAt(selected[i], 0));
+			// First, update property sheet
+			currentItem.getProperty().setValue(newValue);
+			// Then update .
+			Object key = currentItem.getProperty().getDisplayName();
+
+			// If not String, need to parse actual value
+			try {
+				if (keyClass == Integer.class)
+					key = Integer.valueOf((String) key);
+				else if (keyClass == Double.class)
+					key = Double.valueOf((String) key);
+				else if (keyClass == Boolean.class)
+					key = Boolean.valueOf((String) key);
+				else if (keyClass == Float.class)
+					key = Float.valueOf((String) key);
+			} catch (Exception ex) {
+				logger.warn("Could not parse discrete mapping key value.  Ignored: " + key, e);
+				continue;
+			}
+
+			dm.putMapValue(key, newValue);
+		}
+		
+		table.repaint();
+		CyNetworkView curView = applicationManager.getCurrentNetworkView();
+		if (curView != null) {
+			currentStyle.apply(curView);
+			curView.updateView();
+		}
 	}
 }

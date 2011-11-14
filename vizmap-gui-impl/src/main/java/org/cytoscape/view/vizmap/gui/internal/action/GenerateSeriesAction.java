@@ -36,8 +36,10 @@ package org.cytoscape.view.vizmap.gui.internal.action;
 
 import java.awt.event.ActionEvent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.vizmap.gui.VizMapGUI;
+
+import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
 /**
  *
@@ -47,11 +49,8 @@ public class GenerateSeriesAction extends AbstractVizMapperAction {
 
 	private final static long serialVersionUID = 121374883715581L;
 
-	private VizMapGUI vizMapGUI;
-
-	public GenerateSeriesAction(VizMapGUI vizMapGUI) {
-		super();
-		this.vizMapGUI = vizMapGUI;
+	public GenerateSeriesAction(CyApplicationManager appManager, final PropertySheetPanel propertySheetPanel) {
+		super("Generate Series", appManager, propertySheetPanel);
 	}
 
 	private <K, V extends Number> void generate(CyNetwork targetNetwork) {

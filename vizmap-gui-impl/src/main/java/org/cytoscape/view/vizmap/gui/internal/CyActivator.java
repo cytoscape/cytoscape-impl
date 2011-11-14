@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyNetworkFactory;
@@ -24,10 +25,10 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.gui.VisualPropertyDependency;
-import org.cytoscape.view.vizmap.gui.action.VizMapUIAction;
 import org.cytoscape.view.vizmap.gui.dependency.NodeSizeDependency;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedCellAction;
 import org.cytoscape.view.vizmap.gui.internal.bypass.BypassManager;
 import org.cytoscape.view.vizmap.gui.internal.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.EditorManagerImpl;
@@ -204,8 +205,17 @@ public class CyActivator extends AbstractCyActivator {
 		randomColorGeneratorProps.setProperty("menu","context");
 		registerService(bc,randomColorGenerator,DiscreteMappingGenerator.class, randomColorGeneratorProps);
 		registerAllServices(bc,nodeSizeDep, new Properties());
+		
+		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, selectedVisualStyleManager, propertySheetPanel);
+		Properties editSelectedProps = new Properties();
+		editSelectedProps.setProperty("service.type","vizmapUI.contextMenu");
+		editSelectedProps.setProperty("title","Edit Selected");
+		editSelectedProps.setProperty("menu","context");
+		registerService(bc,editAction, CyAction.class, editSelectedProps);
 
-		registerServiceListener(bc,menuManager,"onBind","onUnbind",VizMapUIAction.class);
+		// Adding Vizmap-local context menus.
+		registerServiceListener(bc,menuManager,"onBind","onUnbind",CyAction.class);
+		
 		registerServiceListener(bc,mappingFunctionFactoryManager,"addFactory","removeFactory",VisualMappingFunctionFactory.class);
 		registerServiceListener(bc,editorManager,"addValueEditor","removeValueEditor",ValueEditor.class);
 		registerServiceListener(bc,editorManager,"addVisualPropertyEditor","removeVisualPropertyEditor",VisualPropertyEditor.class);

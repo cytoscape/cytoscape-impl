@@ -30,11 +30,10 @@ package org.cytoscape.view.vizmap.gui.internal.action;
 
 import java.awt.event.ActionEvent;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableManager;
 
 
-public class ModifyBrightnessAction extends AbstractVizMapperAction {
+public class ModifyBrightnessAction  {
 	private final static long serialVersionUID = 121374883775182L;
 	protected static final int DARKER = 1;
 	protected static final int BRIGHTER = 2;
@@ -56,7 +55,7 @@ public class ModifyBrightnessAction extends AbstractVizMapperAction {
 	 * User wants to Seed the Discrete Mapper with Random Color Values.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		final CyNetwork targetNetwork = applicationManager.getCurrentNetwork();
+		//final CyNetwork targetNetwork = applicationManager.getCurrentNetwork();
 
 		//FIXME
 //		/*

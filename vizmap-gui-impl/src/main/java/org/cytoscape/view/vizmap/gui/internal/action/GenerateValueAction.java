@@ -37,9 +37,12 @@ package org.cytoscape.view.vizmap.gui.internal.action;
 
 import java.awt.event.ActionEvent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+
+import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
 /**
  * 
@@ -53,8 +56,8 @@ public class GenerateValueAction<K, V> extends AbstractVizMapperAction {
 	/**
 	 * Creates a new GenerateValueAction object.
 	 */
-	public GenerateValueAction(CyTableManager tableMgr) {
-		super();
+	public GenerateValueAction(CyApplicationManager applicationManager, final PropertySheetPanel propertySheetPanel) {
+		super("generate", applicationManager, propertySheetPanel);
 		this.tableMgr = tableMgr;
 	}
 

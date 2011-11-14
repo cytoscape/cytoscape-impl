@@ -9,8 +9,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
-import org.cytoscape.view.vizmap.gui.action.VizMapUIAction;
 import org.cytoscape.view.vizmap.gui.internal.task.generators.GenerateValuesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
@@ -22,15 +22,12 @@ import org.slf4j.LoggerFactory;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
 /**
- * Manager for all Vizmap-local tasks (commands).
- * 
- * @author kono
+ * Manager for all Vizmap-local menu items.
  * 
  */
 public class VizMapperMenuManager {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(VizMapperMenuManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(VizMapperMenuManager.class);
 
 	// Metadata
 	private static final String METADATA_MENU_KEY = "menu";
@@ -109,32 +106,26 @@ public class VizMapperMenuManager {
 		return rightClickMenu;
 	}
 
-	/*
+	/**
 	 * Custom listener for dynamic menu management
 	 * 
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.view.ServiceListener#onBind(java.lang.Object,
-	 * java.util.Map)
 	 */
-	public void onBind(VizMapUIAction action, Map properties) {
-//		if (generateValues == null && iconManager != null) {
-//			// for value generators.
-//			generateValues = new JMenu(generateMenuLabel);
-//			generateValues.setIcon(iconManager.getIcon(generateIconId));
-//			rightClickMenu.add(generateValues);
-//		}
-//
-//		final Object serviceType = properties.get("service.type");
-//		if (serviceType != null
-//				&& serviceType.toString().equals("vizmapUI.contextMenu")) {
-//			edit.add(action.getMenu());
-//		} else {
-//			mainMenu.add(action.getMenu());
-//		}
+	public void onBind(final CyAction action, Map properties) {
+		final Object serviceType = properties.get("service.type");
+		if (serviceType != null
+				&& serviceType.toString().equals("vizmapUI.contextMenu")) {
+			Object menuTitle = properties.get("title");
+			if(menuTitle == null)
+				throw new NullPointerException("Title is missing for a menu item");
+			
+			final JMenuItem menuItem = new JMenuItem(menuTitle.toString());
+			menuItem.addActionListener(action);
+			edit.add(menuItem);
+		}
 	}
 
-	public void onUnbind(VizMapUIAction service, Map properties) {
+	public void onUnbind(final CyAction service, Map properties) {
+		// FIXME: implement this
 	}
 
 	/**
