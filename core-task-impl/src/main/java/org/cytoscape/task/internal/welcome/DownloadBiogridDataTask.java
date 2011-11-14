@@ -64,7 +64,7 @@ public class DownloadBiogridDataTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(-1);
+
 		if (isUp2Date() == false) {
 			source = new URL(DEF_URL);
 			download();
