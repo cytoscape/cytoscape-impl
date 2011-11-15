@@ -715,39 +715,19 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			logger.debug("risky use of get() instead of getList() for retrieving list");
 		lastInternalError = null;
 
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
-		if (virtColumn != null)
-			return (T)virtColumn.getValue(key);
+		final Object value = getValue(key,columnName,type);
 
-		final Object vl = getValueOrEquation(key, columnName);
-		if (vl == null)
+		if ( value == null )
 			return getDefaultValue(columnName,defaultValue);
-
-		if (vl instanceof Equation) {
-			final StringBuilder errorMsg = new StringBuilder();
-			final Object result =
-				EqnSupport.evalEquation((Equation)vl, key, interpreter,
-							currentlyActiveAttributes, columnName,
-							errorMsg, this);
-			lastInternalError = errorMsg.toString();
-			return result == null ? getDefaultValue(columnName,defaultValue) : (T)EqnSupport.convertEqnResultToColumnType(type, result);
-		} else
-			return type.cast(vl);
-	}
-
-	private <T> T getDefaultValue(final String columnName, final T defaultValue) {
-		if ( defaultValue == null ) {
-			final CyColumn column = types.get(columnName);
-			if ( column == null )
-				return null;
-			else
-				return (T)(column.getDefaultValue());
-		} else {
-			return defaultValue;
-		}
+		else
+			return type.cast(value);
 	}
 
 	Object getValue(Object key, String columnName) {
+		return getValue(key,columnName,null);
+	}
+
+	private Object getValue(Object key, String columnName, Class<?> type) {
 		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
 		if (virtColumn != null)
 			return virtColumn.getValue(key);
@@ -763,10 +743,26 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							currentlyActiveAttributes, columnName,
 							errorMsg, this);
 			lastInternalError = errorMsg.toString();
-			return value;
+			if ( type == null )
+				return value;
+			else
+				return EqnSupport.convertEqnResultToColumnType(type, value);
 		} else
 			return vl;
 	}
+
+	private <T> T getDefaultValue(final String columnName, final T defaultValue) {
+		if ( defaultValue == null ) {
+			final CyColumn column = types.get(columnName);
+			if ( column == null )
+				return null;
+			else
+				return (T)(column.getDefaultValue());
+		} else {
+			return defaultValue;
+		}
+	}
+
 
 	synchronized private <T> List<T> getListX(final Object key, final String columnName,
 							   final Class<? extends T> listElementType, final List<T> defaultValue)
@@ -845,8 +841,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	public final String addVirtualColumn(final String virtualColumnName, final String sourceColumnName,
-					     final CyTable sourceTable, final String sourceJoinKeyName,
-					     final String targetJoinKeyName, final boolean isImmutable)
+					     final CyTable sourceTable, final String targetJoinKeyName, final boolean isImmutable)
 	{
 		if (virtualColumnName == null)
 			throw new NullPointerException("\"virtualColumn\" argument must never be null!");
@@ -857,8 +852,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				throw new NullPointerException("\"sourceColumn\" argument must never be null!");
 			if (sourceTable == null)
 				throw new NullPointerException("\"sourceTable\" argument must never be null!");
-			if (sourceJoinKeyName == null)
-				throw new NullPointerException("\"sourceJoinKey\" argument must never be null!");
 			if (targetJoinKeyName == null)
 				throw new NullPointerException("\"targetJoinKey\" argument must never be null!");
 
@@ -866,19 +859,16 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (sourceColumn == null)
 				throw new IllegalArgumentException("\"sourceColumn\" is not a column in \"sourceColumn\"!");
 
-			final CyColumn sourceJoinKeyType = sourceTable.getColumn(sourceJoinKeyName);
-			if (sourceJoinKeyType == null)
-				throw new IllegalArgumentException("\"sourceJoinKey\" is not a known column in \"sourceTable\"!");
-
 			final CyColumn targetJoinKeyType = this.getColumn(targetJoinKeyName);
 			if (targetJoinKeyType == null)
 				throw new IllegalArgumentException("\"targetJoinKey\" is not a known column in this table!");
 
+			final CyColumn sourceJoinKeyType = sourceTable.getPrimaryKey();
 			if (sourceJoinKeyType.getType() != targetJoinKeyType.getType())
 				throw new IllegalArgumentException("\"sourceJoinKey\" has a different type from \"targetJoinKey\"!");
 
 			++((CyTableImpl)sourceTable).virtualColumnReferenceCount;
-			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(true, sourceTable, sourceColumnName, sourceJoinKeyName, targetJoinKeyName, isImmutable);
+			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(true, sourceTable, sourceColumnName, sourceTable.getPrimaryKey().getName(), targetJoinKeyName, isImmutable);
 			final CyColumn targetColumn =
 				new CyColumnImpl(this, virtualColumnName, sourceColumn.getType(),
 						 sourceColumn.getListElementType(),
@@ -889,7 +879,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			types.put(targetName, targetColumn);
 			virtualColumnMap.put(targetName,
 					     new VirtualColumn(sourceTable, sourceColumnName, this,
-							       sourceJoinKeyName, targetJoinKeyName));
+							       sourceTable.getPrimaryKey().getName(), targetJoinKeyName));
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName));
@@ -927,39 +917,33 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	synchronized public final void addVirtualColumns(final CyTable sourceTable,
-							 final String sourceJoinKeyName,
 							 final String targetJoinKeyName,
 							 final boolean isImmutable)
 	{
 		if (sourceTable == null)
 			throw new NullPointerException("\"sourceTable\" argument must never be null!");
-		if (sourceJoinKeyName == null)
-			throw new NullPointerException("\"sourceJoinKeyName\" argument must never be null!");
 		if (targetJoinKeyName == null)
 			throw new NullPointerException("\"targetJoinKeyName\" argument must never be null!");
-
-		final CyColumn sourceJoinKey = sourceTable.getColumn(sourceJoinKeyName);
-		if (sourceJoinKey == null)
-			throw new IllegalArgumentException("\"sourceJoinKey\" is not a known column in \"sourceTable\"!");
 
 		final CyColumn targetJoinKey = this.getColumn(targetJoinKeyName);
 		if (targetJoinKey == null)
 			throw new IllegalArgumentException("\"" + targetJoinKeyName
 							   + "\" is not a known column in this table!");
 
+		final CyColumn sourceJoinKey = sourceTable.getPrimaryKey();
 		if (sourceJoinKey.getType() != targetJoinKey.getType())
-			throw new IllegalArgumentException("\"" + sourceJoinKeyName
+			throw new IllegalArgumentException("\"" + sourceJoinKey.getName()
 							   + "\" has a different type from \""
 							   + targetJoinKeyName + "\"!");
 
 		final Collection<CyColumn> columns = sourceTable.getColumns();
 		for (final CyColumn column : columns) {
 			final String columnName = column.getName();
-			if (columnName.equals(sourceJoinKeyName))
+			// skip the primary key
+			if (columnName.equals(sourceJoinKey.getName()))
 				continue;
 
-			addVirtualColumn(columnName, columnName, sourceTable, sourceJoinKeyName,
-					 targetJoinKeyName, isImmutable);
+			addVirtualColumn(columnName, columnName, sourceTable, targetJoinKeyName, isImmutable);
 		}
 	}
 

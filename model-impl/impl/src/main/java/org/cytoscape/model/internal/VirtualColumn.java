@@ -97,10 +97,11 @@ final class VirtualColumn {
 	}
 
 	private CyRow getSourceRow(final Object targetKey) {
-		final Object joinKey =
-			targetTable.getValue(targetKey, targetJoinColumn.getName());
+		final Object joinKey = targetTable.getValue(targetKey, targetJoinColumn.getName());
 		if (joinKey == null)
 			return null;
+		return sourceTable.getRow(joinKey);
+		/*
 		final Collection<CyRow> sourceRows =
 			sourceTable.getMatchingRows(sourceJoinColumn.getName(),
 						    joinKey);
@@ -108,6 +109,7 @@ final class VirtualColumn {
 			return null;
 
 		return sourceRows.iterator().next();
+		*/
 	}
 
 	Collection<CyRow> getMatchingRows(final Object value) {

@@ -287,7 +287,6 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 			targetTable.addVirtualColumn(columnData.getName(),
 										 columnData.getSourceColumn(),
 										 sourceTable,
-										 columnData.getSourceJoinKey(),
 										 columnData.getTargetJoinKey(),
 										 columnData.isImmutable());
 		}

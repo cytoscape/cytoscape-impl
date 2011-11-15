@@ -98,9 +98,8 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		table.createColumn("x", Long.class, false);
 		CyColumn column = table.getColumn("x");
 		assertNull(column.getVirtualColumnInfo().getSourceTable());
-		table2.createColumn("x2", Long.class, false);
 		table2.createListColumn("b", Boolean.class, false);
-		table.addVirtualColumn("b1", "b", table2, "x2", "x", true);
+		table.addVirtualColumn("b1", "b", table2, "x", true);
 
 		mgrImpl.addTable(table2);
 		boolean caughtException = false;

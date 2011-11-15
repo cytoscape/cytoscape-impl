@@ -317,7 +317,6 @@ public final class CyTableProjection implements CyTable {
 	 *                        "virtualColumn"
 	 *  @param sourceTable    the table that really contains the column that we're adding (all
 	 *                        updates and lookups of this new column will be redirected to here)
-	 *  @param sourceJoinKey  the column in "sourceTable" that will be used for the join
 	 *  @param targetJoinKey  the column in current table that will be used for the join
 	 *  @param isImmutable    if true, this column cannot be deleted
 	 *  @return the actual name of the new virtual column
@@ -325,8 +324,7 @@ public final class CyTableProjection implements CyTable {
 	 */
 	@Override
 	public String addVirtualColumn(String virtualColumn, String sourceColumn,
-				       CyTable sourceTable, String sourceJoinKey,
-				       String targetJoinKey, boolean isImmutable)
+				       CyTable sourceTable, String targetJoinKey, boolean isImmutable)
 	{
 		throw new UnsupportedOperationException("addVirtualColumn() method not supported!");
 	}
@@ -334,17 +332,15 @@ public final class CyTableProjection implements CyTable {
 	/** Adds all columns in another table as "virtual" columns to the the current table.
 	 *  @param sourceTable    the table that really contains the column that we're adding (all
 	 *                        updates and lookups of this new column will be redirected to here)
-	 *  @param sourceJoinKey  the column in "sourceTable" that will be used for the join
 	 *  @param targetJoinKey  the column in current table that will be used for the join
 	 *  @param isImmutable    if true, these columns cannot be deleted
 	 *  Note: The types of "sourceJoinKey" and "targetJoinKey" have to be identical.  Also none
 	 *        of the column names in "sourceTable" must exist in the current table!
 	 */
 	@Override
-	public void addVirtualColumns(CyTable sourceTable, String sourceJoinKey,
-				      String targetJoinKey, boolean isImmutable)
+	public void addVirtualColumns(CyTable sourceTable, String targetJoinKey, boolean isImmutable)
 	{
-		throw new UnsupportedOperationException("addVirtualColumn() method not supported!");
+		throw new UnsupportedOperationException("addVirtualColumns() method not supported!");
 	}
 	
 	/**

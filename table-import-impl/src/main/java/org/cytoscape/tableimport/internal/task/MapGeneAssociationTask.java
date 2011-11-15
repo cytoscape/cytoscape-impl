@@ -87,6 +87,6 @@ public class MapGeneAssociationTask extends AbstractTask {
 			taskMonitor.setProgress(progress);
 		}
 		
-		nodeTable.addVirtualColumns(globalTable, colName, CyTableEntry.NAME, false);
+		nodeTable.addVirtualColumns(globalTable, CyTableEntry.NAME, false);
 	}
 }

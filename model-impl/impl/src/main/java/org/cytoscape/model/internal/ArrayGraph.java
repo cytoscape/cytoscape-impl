@@ -195,7 +195,7 @@ final public class ArrayGraph implements CyRootNetwork {
 
 	private void linkDefaultTables(CyTable srcTable, CyTable tgtTable) {
 		// Add all columns from source table as virtual columns in target table.
-		tgtTable.addVirtualColumns(srcTable,Identifiable.SUID,Identifiable.SUID,true);
+		tgtTable.addVirtualColumns(srcTable,Identifiable.SUID,true);
 
 		// Now add a listener for column created events to add
 		// virtual columns to any subsequent source columns added.

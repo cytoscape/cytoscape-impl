@@ -37,9 +37,9 @@ public class MergeDataTask extends AbstractTask {
 		taskMonitor.setProgress(0.2);
 		// "Copy" Name column to ID type name.
 		final CyColumn pKey = table.getPrimaryKey();
-		table.addVirtualColumn(columnName, pKey.getName(), table, pKey.getName(), pKey.getName(), false);
+		table.addVirtualColumn(columnName, pKey.getName(), table, pKey.getName(), false);
 		taskMonitor.setProgress(0.5);
-		nodeTable.addVirtualColumn(columnName, pKey.getName(), table, pKey.getName(), pKey.getName(), false);
+		nodeTable.addVirtualColumn(columnName, pKey.getName(), table, pKey.getName(), false);
 				
 		taskMonitor.setStatusMessage("Finished!");
 		taskMonitor.setProgress(1.0);

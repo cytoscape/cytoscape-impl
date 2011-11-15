@@ -178,7 +178,7 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 		vpTbl.createColumn("att_id", Long.class, false);
 		vpTbl.createColumn("att_value", String.class, false);
 		vpTbl.createColumn("target_id", Long.class, false);
-		vpTbl.addVirtualColumn("att_name_vc", "att_name", rendererTbl, RENDERER_TABLE_PK, "att_id", false);
+		vpTbl.addVirtualColumn("att_name_vc", "att_name", rendererTbl, "att_id", false);
 
 		// add tables to the internal maps
 		rendererTablesMap.put(netViewId, rendererTbl);

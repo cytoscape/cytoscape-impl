@@ -201,15 +201,11 @@ public class CyTableTest extends AbstractCyTableTest {
 
 	@Test
 	public void testVirtualColumnWithAnEquationReference() {
-		table.createColumn("x", Integer.class, false);
 		table.createColumn("ss", String.class, false);
 		CyRow row1 = table.getRow(1L);
-		row1.set("x", 33);
-		table2.createColumn("x2", Integer.class, false);
 		CyRow row2 =  table2.getRow(1L);
-		row2.set("x2", 33);
 		table2.createColumn("s", String.class, true);
-		table.addVirtualColumn("s1", "s", table2, "x2", "x", true);
+		table.addVirtualColumn("s1", "s", table2, table.getPrimaryKey().getName(), true);
 		row2.set("s", "abc");
 
 		final Map<String, Class<?>> varnameToTypeMap = new HashMap<String, Class<?>>();

@@ -62,7 +62,7 @@ class VirtualColumnAdder implements ColumnCreatedListener {
 		if ( tgt.getColumn(srcName) != null )
 			return;
 		CyColumn srcCol = src.getColumn(srcName);
-		tgt.addVirtualColumn(srcName,srcName,src,Identifiable.SUID, Identifiable.SUID,srcCol.isImmutable());
+		tgt.addVirtualColumn(srcName,srcName,src,Identifiable.SUID,srcCol.isImmutable());
 	}
 }
 
