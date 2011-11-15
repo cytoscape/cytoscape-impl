@@ -51,12 +51,11 @@ final class MyTableHeaderRenderer extends JLabel implements TableCellRenderer {
 	public Component getTableCellRendererComponent(final JTable table, final Object value,
 						       boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex)
 	{
-		if (defaultBackground == null){
-			defaultBackground = this.getBackground();
-		}
-		if (defaultForeground == null){
-			defaultForeground = this.getForeground();
-		}
+		if (defaultBackground == null)
+			defaultBackground = getBackground();
+
+		if (defaultForeground == null)
+			defaultForeground = getForeground();
 		
 		// 'value' is column header value of column 'vColIndex'
 		// rowIndex is always -1
@@ -65,30 +64,27 @@ final class MyTableHeaderRenderer extends JLabel implements TableCellRenderer {
 
 		// Configure the component with the specified value
 		setText(value.toString());
+		setForeground(defaultForeground);
+		setBackground(defaultBackground);
 
-		if (!(table.getModel() instanceof BrowserTableModel)) {
-			this.setForeground(defaultForeground);
-			this.setBackground(defaultBackground);
+		if (!(table.getModel() instanceof BrowserTableModel)) 
 			return this;
-		}
 		
 		BrowserTableModel model = (BrowserTableModel)table.getModel();
 		CyColumn col = model.getAttributes().getColumn(value.toString());
+		if ( col == null ) 
+			return this;
 		
 		String toolTip = col.getType().getName();
 		if(col.getVirtualColumnInfo().isVirtual()){
-			this.setForeground(defaultForeground);
-			this.setBackground(Color.lightGray);
-			this.setOpaque(true);
+			setForeground(defaultForeground);
+			setBackground(Color.lightGray);
+			setOpaque(true);
 			toolTip = "<html>" + col.getType().getName()+ "<br />Virtual Column</html>";
-		}
-		else {
-			this.setForeground(defaultForeground);
-			this.setBackground(defaultBackground);
-		}
+		} 
 		
 		// Set tool tip if desired
-        this.setToolTipText(toolTip);
+        setToolTipText(toolTip);
 		
 		// Since the renderer is a component, return itself
 		return this;
