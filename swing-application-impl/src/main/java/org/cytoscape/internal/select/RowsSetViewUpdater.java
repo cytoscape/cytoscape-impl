@@ -53,7 +53,11 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		CyNetwork network = am.getCurrentNetwork();		
 		if ( network == null )
 			return;
+
 		CyNetworkView networkView = vm.getNetworkView(network.getSUID());
+		if ( networkView == null )
+			return;
+
 		VisualStyle vs = vmm.getVisualStyle(networkView);
 
 		VisualProperty<?> vp = null;
