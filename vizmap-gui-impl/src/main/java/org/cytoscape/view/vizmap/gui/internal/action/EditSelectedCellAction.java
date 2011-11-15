@@ -66,7 +66,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 	private final EditorManager editorManager;
 	
 	public EditSelectedCellAction(final EditorManager editorManager, final CyApplicationManager appManager, final SelectedVisualStyleManager selectedVSManager, final PropertySheetPanel propertySheetPanel) {
-		super("Edit selected cells", appManager, propertySheetPanel);
+		super("Edit all selected cells", appManager, propertySheetPanel);
 		this.selectedVSManager = selectedVSManager;
 		this.editorManager = editorManager;
 	}

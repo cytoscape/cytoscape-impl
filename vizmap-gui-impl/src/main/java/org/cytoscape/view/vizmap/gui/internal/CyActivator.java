@@ -49,9 +49,11 @@ import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.util.DefaultVisualStyleBuilder;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -121,9 +123,13 @@ public class CyActivator extends AbstractCyActivator {
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager,vizMapperUtil,vizMapperMainPanel);
 		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(selectedVisualStyleManager,vizMapperMainPanel);
 		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
+		
 		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
 		RainbowOscColorMappingGenerator rainbowOscGenerator = new RainbowOscColorMappingGenerator(Color.class);
 		RandomColorMappingGenerator randomColorGenerator = new RandomColorMappingGenerator(Color.class);
+		NumberSeriesMappingGenerator<Number> seriesGenerator = new NumberSeriesMappingGenerator<Number>(Number.class);
+		RandomNumberMappingGenerator randomNumberGenerator = new RandomNumberMappingGenerator();
+		
 		DefaultTableCellRenderer emptyBoxRenderer = new DefaultTableCellRenderer();
 		DefaultTableCellRenderer filledBoxRenderer = new DefaultTableCellRenderer();
 		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(selectedVisualStyleManager,editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
@@ -201,9 +207,22 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties randomColorGeneratorProps = new Properties();
 		randomColorGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		randomColorGeneratorProps.setProperty("title","Random");
+		randomColorGeneratorProps.setProperty("title","Random Color");
 		randomColorGeneratorProps.setProperty("menu","context");
 		registerService(bc,randomColorGenerator,DiscreteMappingGenerator.class, randomColorGeneratorProps);
+		
+		Properties numberSeriesGeneratorProps = new Properties();
+		numberSeriesGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		numberSeriesGeneratorProps.setProperty("title","Number Series");
+		numberSeriesGeneratorProps.setProperty("menu","context");
+		registerService(bc,seriesGenerator,DiscreteMappingGenerator.class, numberSeriesGeneratorProps);
+		
+		Properties randomNumberGeneratorProps = new Properties();
+		randomNumberGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		randomNumberGeneratorProps.setProperty("title","Random Numbers");
+		randomNumberGeneratorProps.setProperty("menu","context");
+		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
+		
 		registerAllServices(bc,nodeSizeDep, new Properties());
 		
 		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, selectedVisualStyleManager, propertySheetPanel);

@@ -44,11 +44,10 @@ import javax.swing.JOptionPane;
 /**
  *
  */
-public class RandomNumberMappingGenerator extends
-		AbstractDiscreteMappingGenerator<Number> {
-	
-	public RandomNumberMappingGenerator(Class<Number> type) {
-		super(type);
+public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerator<Number> {
+
+	public RandomNumberMappingGenerator() {
+		super(Number.class);
 	}
 
 	/**
@@ -60,27 +59,28 @@ public class RandomNumberMappingGenerator extends
 	 * @return DOCUMENT ME!
 	 */
 	public <T> Map<T, Number> generateMap(Set<T> attributeSet) {
+		
+		final Map<T, Number> valueMap = new HashMap<T, Number>();
+		
 		// Error if attributeSet is empty or null
 		if ((attributeSet == null) || (attributeSet.size() == 0))
-			return null;
+			return valueMap;
 
 		// Ask user to input number range
-		final String range = JOptionPane.showInputDialog(null,
-				"Please enter the value range (example: 30-100)",
+		final String range = JOptionPane.showInputDialog(null, "Please enter the value range (example: 30-100)",
 				"Assign Random Numbers", JOptionPane.PLAIN_MESSAGE);
 
 		String[] rangeVals = range.split("-");
 
 		if (rangeVals.length != 2)
-			return null;
+			return valueMap;
 
 		final long seed = System.currentTimeMillis();
 		final Random rand = new Random(seed);
-		final Map<T, Number> valueMap = new HashMap<T, Number>();
-
-		Float min = Float.valueOf(rangeVals[0]);
-		Float max = Float.valueOf(rangeVals[1]);
-		Float valueRange = max - min;
+		
+		Double min = Double.valueOf(rangeVals[0]);
+		Double max = Double.valueOf(rangeVals[1]);
+		Double valueRange = max - min;
 
 		for (T key : attributeSet)
 			valueMap.put(key, (rand.nextFloat() * valueRange) + min);

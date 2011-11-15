@@ -54,18 +54,16 @@ public class GenerateValuesTask extends AbstractTask {
 		final Item value = (Item) table.getTable().getValueAt(selectedRow, 0);
 
 		if (value.isProperty()) {
-			final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value
-					.getProperty();
+			final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
 
 			if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
 				final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
-
-				if (vp.getRange().getType()
-						.isAssignableFrom(generator.getDataType())) {
-					
+				final Class<?> vpValueType = vp.getRange().getType();
+				final Class<?> generatorType = generator.getDataType();
+				
+				// TODO: is this safe?
+				if (generatorType.isAssignableFrom(vpValueType) || vpValueType.isAssignableFrom(generatorType))
 					generateMapping(prop, prop.getValue().toString(), vp);
-
-				}
 			}
 		}
 
