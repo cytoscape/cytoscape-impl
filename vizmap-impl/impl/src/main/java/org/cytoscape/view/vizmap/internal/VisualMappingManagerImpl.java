@@ -119,18 +119,17 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	 */
 	@Override
 	public VisualStyle getVisualStyle(CyNetworkView nv) {
-		if (nv == null)
-			throw new NullPointerException("network view is null.");
-
-		if (network2VisualStyleMap.containsKey(nv) == false) {
-			if (this.defaultStyle == null)
-				throw new IllegalStateException(
-						"No rendering engine is available, and cannot create default style!");
-
-			// Not registered yet. Provide default style.
-			network2VisualStyleMap.put(nv, defaultStyle);
-			return defaultStyle;
+		if (nv == null) {
+			logger.warn("Attempting to get the visual style for a null network view; " + 
+			            "returning the default visual style!");
+			return getDefaultVisualStyle();	
 		}
+
+		// Not registered yet. Provide default style.
+		if (network2VisualStyleMap.containsKey(nv) == false) {
+			network2VisualStyleMap.put(nv, getDefaultVisualStyle());
+		}
+
 		return network2VisualStyleMap.get(nv);
 	}
 
@@ -216,6 +215,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 
 	@Override
 	public VisualStyle getDefaultVisualStyle() {
+		if (defaultStyle == null)
+			throw new IllegalStateException("No rendering engine is available, and cannot create default style!");
 		return defaultStyle;
 	}
 
