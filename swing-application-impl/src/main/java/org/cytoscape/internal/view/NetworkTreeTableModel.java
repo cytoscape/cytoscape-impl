@@ -12,11 +12,13 @@ import org.cytoscape.util.swing.TreeTableModel;
 
 
 final class NetworkTreeTableModel extends AbstractTreeTableModel {
-	private final NetworkPanel networkPanel;
-	String[] columns = { "Network", "Nodes", "Edges" };
-	Class[] columns_class = { TreeTableModel.class, String.class, String.class };
+	
+	private static final String[] COLUMNS = { "Network", "Nodes", "Edges" };
+	private static final Class<?>[] COLUMN_CLASSES = { TreeTableModel.class, String.class, String.class };
 
-	public NetworkTreeTableModel(NetworkPanel networkPanel, Object root) {
+	private final NetworkPanel networkPanel;
+	
+	NetworkTreeTableModel(NetworkPanel networkPanel, Object root) {
 		super(root);
 		this.networkPanel = networkPanel;
 	}
@@ -49,23 +51,39 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 	}
 
 	public int getColumnCount() {
-		return columns.length;
+		return COLUMNS.length;
 	}
 
-	public String getColumnName(int column) {
-		return columns[column];
+	
+	@Override
+	public String getColumnName(final int columnIdx) {
+		return COLUMNS[columnIdx];
 	}
 
-	public Class getColumnClass(int column) {
-		return columns_class[column];
+	
+	@Override
+	public Class<?> getColumnClass(int column) {
+		return COLUMN_CLASSES[column];
 	}
 
-	public Object getValueAt(final Object node, final int column) {
+	
+	@Override
+	public Object getValueAt(final Object value, final int column) {
+		if(value instanceof NetworkTreeNode == false)
+			return null;
+		
+		final NetworkTreeNode node = (NetworkTreeNode) value;
+		final Long networkID = node.getNetworkID();
+		
+		if(networkID == null) {
+			// This is root network node
+			return null;
+		}
+		
 		if (column == 0)
-			return ((DefaultMutableTreeNode) node).getUserObject();
+			return node.getUserObject();
 		else if (column == 1) {
-			CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(((NetworkTreeNode) node).getNetworkID());
-
+			final CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(node.getNetworkID());
 			return "" + cyNetwork.getNodeCount() + "("
 				+ cyNetwork.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
 		} else if (column == 2) {

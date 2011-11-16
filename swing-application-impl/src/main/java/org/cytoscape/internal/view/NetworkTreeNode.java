@@ -2,20 +2,25 @@ package org.cytoscape.internal.view;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+/**
+ * Custom Tree node in the JTreeTable
+ * 
+ */
 final class NetworkTreeNode extends DefaultMutableTreeNode {
-    private final static long serialVersionUID = 1213748836736485L;
-    protected Long network_uid;
 
-    public NetworkTreeNode(Object userobj, Long id) {
-        super(userobj.toString());
-        network_uid = id;
-    }
+	private final static long serialVersionUID = 1213748836736485L;
 
-    protected void setNetworkID(Long id) {
-        network_uid = id;
-    }
+	// Immutable network SUID. This can be null if the given tree node is not
+	// associated with a network.
+	private final Long networkID;
 
-    protected Long getNetworkID() {
-        return network_uid;
-    }
+	
+	NetworkTreeNode(final Object userobj, final Long id) {
+		super(userobj.toString());
+		networkID = id;
+	}
+
+	Long getNetworkID() {
+		return networkID;
+	}
 }
