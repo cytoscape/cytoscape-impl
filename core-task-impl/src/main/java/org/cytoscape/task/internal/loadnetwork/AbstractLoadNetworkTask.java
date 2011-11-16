@@ -135,9 +135,13 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 
 				// Use original name if exists
 				String networkName = network.getCyRow().get(CyTableEntry.NAME, String.class);
-				if(networkName == null || networkName.trim().length() == 0)
-					network.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle(name));
-				
+				if(networkName == null || networkName.trim().length() == 0) {
+					networkName = name;
+					if(networkName == null)
+						networkName = "? (Name is missing)";
+					
+					network.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+				}
 				networkManager.addNetwork(network);
 
 				final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();

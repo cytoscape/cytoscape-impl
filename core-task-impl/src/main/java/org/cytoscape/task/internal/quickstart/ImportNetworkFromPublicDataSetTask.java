@@ -81,7 +81,7 @@ public class ImportNetworkFromPublicDataSetTask extends AbstractLoadNetworkTask 
 			throw new NullPointerException("url is null");
 
 		this.taskMonitor = taskMonitor;
-		name = url.toString();
+		name = url.getFile();
 
 		taskMonitor.setTitle(String.format("Loading Network from \'%s\'", name));
 

@@ -117,8 +117,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
 
-	private int networkSetCounter;
-
 	private final JTreeTable treeTable;
 	private final NetworkTreeNode root;
 	private JPanel navigatorPanel;
@@ -148,7 +146,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			final DialogTaskManager taskManager) {
 		super();
 
-		networkSetCounter = 1;
 		this.treeNodeMap = new HashMap<Long, NetworkTreeNode>();
 		this.appManager = applicationManager;
 		this.netmgr = netmgr;
@@ -215,7 +212,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 		split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scroll, navigatorPanel);
 		split.setResizeWeight(1);
-		split.setDividerLocation(300);
+		split.setDividerLocation(400);
 
 		add(split);
 
@@ -442,10 +439,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				parentTreeNode = this.treeNodeMap.get(parentNetwork.getSUID());
 			}
 
-			if (parentTreeNode == null) {
+			if (parentTreeNode == null)
 				parentTreeNode = new NetworkTreeNode("", null);
-				networkSetCounter++;
-			}
 
 			// Actual tree node for this network
 			NetworkTreeNode dmtn = new NetworkTreeNode(network.getCyRow().get(CyTableEntry.NAME, String.class),

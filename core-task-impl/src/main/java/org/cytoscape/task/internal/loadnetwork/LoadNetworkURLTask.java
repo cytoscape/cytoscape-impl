@@ -41,6 +41,7 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.omg.CosNaming.NamingContextExtPackage.URLStringHelper;
 
 
 /**
@@ -72,7 +73,9 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 
 		this.taskMonitor = taskMonitor;
 		
-		name = url.toString();
+		final String urlString = url.getFile();
+		final String[] parts = urlString.split("/");
+		name = parts[parts.length-1];
 
 		taskMonitor.setTitle(String.format("Loading Network from \'%s\'", name));
 

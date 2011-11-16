@@ -69,6 +69,7 @@ public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
 
 		uri = file.toURI();
+		
 		name = file.getName();
 
 		loadNetwork(reader);
