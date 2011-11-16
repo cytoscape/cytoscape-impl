@@ -28,7 +28,7 @@ public class LoadMitabFileTask extends AbstractLoadNetworkTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(-1);
+
 		this.taskMonitor = taskMonitor;
 		reader = mgr.getReader(file.toURI(), file.getName());
 
