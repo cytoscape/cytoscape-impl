@@ -41,7 +41,6 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.omg.CosNaming.NamingContextExtPackage.URLStringHelper;
 
 
 /**
