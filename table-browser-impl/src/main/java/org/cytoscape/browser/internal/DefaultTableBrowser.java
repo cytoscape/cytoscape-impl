@@ -48,6 +48,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	
 	private final JComboBox networkChooser;
 	private final Class<? extends CyTableEntry> objType;
+
+	private boolean rowSelectionMode = false;
 	
 
 	public DefaultTableBrowser(String tabTitle, Class<? extends CyTableEntry> objType, CyTableManager tableManager,
@@ -72,6 +74,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		selectionModeButton = new JToggleButton();
 		selectionModeButton.addActionListener(this);
 		selectionModeButton.setBorder(null);
+		selectionModeButton.setSelected(rowSelectionMode);
 		selectionModeButton.setMargin(new Insets(0, 0, 0, 0));
 		selectionModeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_selection_mode.png")));
 		selectionModeButton.setToolTipText("Change Selection Mode");
@@ -89,9 +92,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	}
 	
 	private void changeSelectionMode() {
-		browserTableModel.setShowAll(selectionModeButton.isSelected());
+		rowSelectionMode = selectionModeButton.isSelected();
+		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
+		getCurrentBrowserTableModel().updateShowAll();
 	}
-
 	
 	@Override
 	public void actionPerformed(final ActionEvent e) {
@@ -109,9 +113,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
 		
 		
-		if (browserTableModel != null)
-			serviceRegistrar.unregisterAllServices(browserTableModel);
-
 		if (objType == CyNode.class) {
 			currentTable = currentNetwork.getDefaultNodeTable();
 		} else if (objType == CyEdge.class) {
@@ -120,14 +121,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			currentTable = currentNetwork.getDefaultNetworkTable();
 		}
 		
-//		if(this.browserTableModel != null && browserTableModel.getDataTable() == currentTable)
-//			return;
-
 		networkChooser.setSelectedItem(currentNetwork);
+
+		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
 		showSelectedTable();
 	}
-	
-	
+
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
 		final CyNetwork network = e.getNetwork();

@@ -62,9 +62,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		tableChooser.setToolTipText("\"Global Tables\" are data tables not associated with specific networks.");
 		tableChooser.setEnabled(false);
 		
-		browserTable.setForeground(GLOBAL_TABLE_ENTRY_COLOR);
-		browserTable.setEnabled(false);
-		
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser);
 
@@ -77,9 +74,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		if (table == currentTable || table == null)
 			return;
 
-		if (browserTableModel != null)
-			serviceRegistrar.unregisterAllServices(browserTableModel);
-
 		currentTable = table;
 
 		showSelectedTable();
@@ -90,7 +84,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		final CyTable cyTable = e.getTable();
 		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 		comboBoxModel.removeItem(cyTable);
-		tableToMetadataMap.remove(cyTable);
 		
 		if(comboBoxModel.getSize() == 0)
 			tableChooser.setEnabled(false);

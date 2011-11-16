@@ -40,14 +40,14 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	
 	private static final long serialVersionUID = -517521404005631245L;
 	
-	private static final int MAX_INITIALLY_VSIBLE_ATTRS = 10;
-	private final JTable table;
+	private static final int MAX_INITIALLY_VISIBLE_ATTRS = 10;
+	private final BrowserTable table;
 	
 	private final CyTable dataTable;
 	
 	private final EquationCompiler compiler;
 
-	// If this is FALSE, it's a Global.
+	// If this is FALSE then we show all rows
 	private boolean regularViewMode;
 	
 	//private boolean showAll = false;
@@ -56,21 +56,17 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private Collection<CyRow> selectedRows = null;
 
 
-	public BrowserTableModel(final JTable table, final CyTable dataTable, final EquationCompiler compiler) {
+	public BrowserTableModel(final BrowserTable table, final CyTable dataTable, final EquationCompiler compiler) {
 		this.table = table;
 		this.dataTable = dataTable;
 		this.compiler = compiler;
-		final CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
-		this.regularViewMode = selectedColumn != null && selectedColumn.getType() == Boolean.class;
-
+		this.regularViewMode = false; 
 		initAttrNamesAndVisibilities();
 	}
 	
 	CyTable getDataTable() {
 		return dataTable;
 	}
-	
-
 
 	private void initAttrNamesAndVisibilities() {
 		attrNamesAndVisibilities = new ArrayList<AttrNameAndVisibility>(dataTable.getColumns().size());
@@ -82,14 +78,15 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			if (column == primaryKey)
 				continue;
 
-			attrNamesAndVisibilities.add(
-				new AttrNameAndVisibility(column.getName(), isVisible));
-			if (++visibleColumnCount == MAX_INITIALLY_VSIBLE_ATTRS)
+			attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), isVisible));
+			if (++visibleColumnCount == MAX_INITIALLY_VISIBLE_ATTRS)
 				isVisible = false;
 		}
 	}
 
 	public JTable getTable() { return table; }
+
+	BrowserTable getBrowserTable() { return table; }
 
 	public CyTable getAttributes() { return dataTable; }
 
@@ -130,8 +127,9 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			}
 		}
 
-		if (changed)
+		if (changed) {
 			fireTableStructureChanged();
+		}
 	}
 
 	@Override
@@ -140,11 +138,12 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		if (columns.isEmpty())
 			return 0;
 
-		// Show Global Table OR selection mode is table-oriented
-		if (!regularViewMode)
+		// Show selection mode OR all rows
+		if (regularViewMode)
+			return dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
+		else
 			return dataTable.getRowCount();
 
-		return dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.valueOf(true)).size();
 	}
 
 	@Override
@@ -298,7 +297,10 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		
 		final Collection<RowSetRecord> rows = e.getPayloadCollection();
 		
-		if (!regularViewMode) {
+		if (regularViewMode) {
+			for (final RowSetRecord rowSet : rows)
+				handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
+		} else {
 			table.clearSelection();
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -306,9 +308,6 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 					bulkUpdate(rows);
 				}
 			});
-		} else {
-			for (final RowSetRecord rowSet : rows)
-				handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
 		}
 	}
 
@@ -320,11 +319,18 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	 * @param showAll
 	 */
 	void setShowAll(boolean showAll) {
-		if(showAll) {
-			regularViewMode = false;
+		// only set to regular view mode if selected column exists
+		if ( !showAll ) {
+			CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
+			this.regularViewMode = selectedColumn != null && selectedColumn.getType() == Boolean.class;
+
+		// otherwise always display everything
 		} else {
-			regularViewMode = true;
+			regularViewMode = false;
 		}
+	}
+
+	void updateShowAll() {
 		fireTableDataChanged();
 	}
 	
@@ -370,10 +376,6 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
 			fireTableDataChanged();
 		} 
-//		else {
-//			final TableModelEvent event = new TableModelEvent(this, rowIndex, rowIndex, columnIndex);
-//			fireTableChanged(event);
-//		}
 	}
 
 	@Override
@@ -428,7 +430,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			++i;
 		}
 
-		throw new IllegalStateException("We should *never* get here! (index="+index+", i="+i);
+		throw new IllegalStateException("We should *never* get here! (index="+index+", i="+i+")");
 	}
 
 	// Because tableModel will disappear if user click on open space on canvas, 
@@ -552,6 +554,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
 		return table.convertColumnIndexToModel(columnIndex) != 0;
 	}
+
 }
 
 

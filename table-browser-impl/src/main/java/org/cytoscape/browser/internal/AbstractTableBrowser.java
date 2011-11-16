@@ -54,17 +54,20 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	protected final CyServiceRegistrar serviceRegistrar;
 	private final EquationCompiler compiler;
 	
-	protected final BrowserTable browserTable;
 	protected AttributeBrowserToolBar attributeBrowserToolBar;
 		
-	protected BrowserTableModel browserTableModel;
 	protected CyTable currentTable;
-	protected final Map<CyTable, TableMetadata> tableToMetadataMap;
 	protected final CyApplicationManager applicationManager;
 	protected final CyNetworkManager networkManager;
+	private final OpenBrowser openBrowser;
+	private final PopupMenuHelper popupMenuHelper; 
+	private final CyEventHelper eventHelper;
 
 	// Tab title for the CytoPanel
 	private final String tabTitle;
+	private final Map<BrowserTableModel,JScrollPane> scrollPanes;
+	private final Map<CyTable,BrowserTableModel> browserTableModels;
+	private JScrollPane currentScrollPane;
 	
 	AbstractTableBrowser(final String tabTitle,
 			final CyTableManager tableManager, final CyNetworkTableManager networkTableManager,
@@ -77,18 +80,16 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		this.compiler = compiler;
 		this.tabTitle = tabTitle;
 		this.networkManager = networkManager;
-
-		this.tableToMetadataMap = new HashMap<CyTable, TableMetadata>();
 		this.applicationManager = applicationManager;
+		this.openBrowser = openBrowser;
+		this.popupMenuHelper = popupMenuHelper;
+		this.eventHelper = eventHelper;
 
-		this.browserTable = new BrowserTable(openBrowser, compiler, popupMenuHelper, applicationManager, eventHelper);
+		this.scrollPanes = new HashMap<BrowserTableModel,JScrollPane>();
+		this.browserTableModels = new HashMap<CyTable,BrowserTableModel>();
+		this.currentScrollPane = null;
 		
 		this.setLayout(new BorderLayout());
-		
-		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
-		add(new JScrollPane(browserTable), BorderLayout.CENTER);
-		
 		this.setPreferredSize(PANEL_SIZE);
 		this.setSize(PANEL_SIZE);
 	}
@@ -118,41 +119,50 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	 */
 	public Icon getIcon() { return null; }
 	
-	
-	void showSelectedTable() {
-		browserTableModel = new BrowserTableModel(browserTable, currentTable, compiler);
-		
-		serviceRegistrar.registerAllServices(browserTableModel, new Properties());
-		browserTable.setUpdateComparators(false);
-		browserTable.setModel(browserTableModel);
-		final TableRowSorter rowSorter = new TableRowSorter(browserTableModel);
-		browserTable.setRowSorter(rowSorter);
-		updateColumnComparators(rowSorter);
-		browserTable.setUpdateComparators(true);
-		attributeBrowserToolBar.setBrowserTableModel(browserTableModel);
-		final TableMetadata tableMetadata = tableToMetadataMap.get(currentTable);
-		if (tableMetadata != null) {
-			final JTable jTable = browserTableModel.getTable();
-			final TableColumnModel columnModel = jTable.getColumnModel();
-			final Iterator<ColumnDescriptor> columnDescIter =
-				tableMetadata.getColumnDescriptors();
-			while (columnDescIter.hasNext()) {
-				final ColumnDescriptor desc = columnDescIter.next();
-				final int savedColumnIndex = desc.getColumnIndex();
-				final TableColumn tableColumn = columnModel.getColumn(savedColumnIndex);
-				tableColumn.setPreferredWidth(desc.getColumnWidth());
-				final int currentColumnIndex =
-					jTable.convertColumnIndexToView(
-						browserTableModel.mapColumnNameToColumnIndex(desc.getColumnName()));
-				if (currentColumnIndex != savedColumnIndex)
-					jTable.moveColumn(currentColumnIndex, savedColumnIndex);
-			}
-		}
-
+	synchronized void showSelectedTable() {
+		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel(); 
+		final JScrollPane newScrollPane = getScrollPane(currentBrowserTableModel);
+		if ( currentScrollPane != null )
+			remove( currentScrollPane );
+		add( newScrollPane, BorderLayout.CENTER );
+		currentScrollPane = newScrollPane;
 		applicationManager.setCurrentTable(currentTable);
+		attributeBrowserToolBar.setBrowserTableModel(currentBrowserTableModel);
 	}
 
-	void updateColumnComparators(final TableRowSorter rowSorter) {
+	private JScrollPane getScrollPane(final BrowserTableModel browserTableModel) {
+		JScrollPane scrollPane = scrollPanes.get(browserTableModel);
+		if ( scrollPane == null ) {
+			final BrowserTable browserTable = browserTableModel.getBrowserTable(); 
+			serviceRegistrar.registerAllServices(browserTableModel, new Properties());
+			browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
+			browserTable.setUpdateComparators(false);
+			browserTable.setModel(browserTableModel);
+			final TableRowSorter rowSorter = new TableRowSorter(browserTableModel);
+			browserTable.setRowSorter(rowSorter);
+			updateColumnComparators(rowSorter,browserTableModel);
+			browserTable.setUpdateComparators(true);
+			scrollPane = new JScrollPane(browserTable);
+			scrollPanes.put(browserTableModel,scrollPane);
+		}
+
+		return scrollPane;
+	}
+
+	protected BrowserTableModel getCurrentBrowserTableModel() {
+		BrowserTableModel btm = browserTableModels.get(currentTable);
+		if ( btm == null ) {
+			final BrowserTable browserTable = new BrowserTable(openBrowser, compiler, 
+			                                                   popupMenuHelper, applicationManager, 
+			                                                   eventHelper);
+			btm = new BrowserTableModel(browserTable, currentTable, compiler);
+			browserTableModels.put(currentTable,btm);
+		}
+		return btm;
+	}
+
+	void updateColumnComparators(final TableRowSorter rowSorter, final BrowserTableModel browserTableModel) {
 		for (int column = 0; column < browserTableModel.getColumnCount(); ++column)
 			rowSorter.setComparator(
 				column,
