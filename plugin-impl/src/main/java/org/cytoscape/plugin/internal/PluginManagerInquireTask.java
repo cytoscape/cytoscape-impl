@@ -71,7 +71,6 @@ public class PluginManagerInquireTask implements Task {
 		List<DownloadableInfo> Results = null;
 
 		taskMonitor.setStatusMessage(actionObj.getProgressBarMessage());
-		taskMonitor.setProgress(-1);
 
 		try {
 			Results = PluginManager.getPluginManager().inquire(url);
