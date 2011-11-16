@@ -40,17 +40,13 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	
 	private static final long serialVersionUID = -517521404005631245L;
 	
-	private static final int MAX_INITIALLY_VISIBLE_ATTRS = 10;
 	private final BrowserTable table;
-	
 	private final CyTable dataTable;
-	
 	private final EquationCompiler compiler;
 
 	// If this is FALSE then we show all rows
 	private boolean regularViewMode;
 	
-	//private boolean showAll = false;
 	private List<AttrNameAndVisibility> attrNamesAndVisibilities;
 	
 	private Collection<CyRow> selectedRows = null;
@@ -69,18 +65,18 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	}
 
 	private void initAttrNamesAndVisibilities() {
-		attrNamesAndVisibilities = new ArrayList<AttrNameAndVisibility>(dataTable.getColumns().size());
+		attrNamesAndVisibilities = new ArrayList<AttrNameAndVisibility>();
+
 		final CyColumn primaryKey = dataTable.getPrimaryKey();
 		attrNamesAndVisibilities.add(new AttrNameAndVisibility(primaryKey.getName(), true));
-		int visibleColumnCount = 1;
-		boolean isVisible = true;
+		
 		for (final CyColumn column : dataTable.getColumns()) {
+			
+			// Ignore p-key (SUID)
 			if (column == primaryKey)
 				continue;
-
-			attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), isVisible));
-			if (++visibleColumnCount == MAX_INITIALLY_VISIBLE_ATTRS)
-				isVisible = false;
+			
+			attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), true));
 		}
 	}
 
@@ -91,12 +87,12 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	public CyTable getAttributes() { return dataTable; }
 
 	@Override
-	public Class getColumnClass(final int columnIndex) {
+	public Class<?> getColumnClass(final int columnIndex) {
 		return ValidatedObjectAndEditString.class;
 	}
 
 	// Note: return value excludes the primary key of the associated CyTable!
-	public List<String> getVisibleAttributeNames() {
+	List<String> getVisibleAttributeNames() {
 		final List<String> visibleAttrNames = new ArrayList<String>();
 
 		for (final AttrNameAndVisibility nameAndVisibility : attrNamesAndVisibilities) {
@@ -559,6 +555,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 
 
 final class AttrNameAndVisibility {
+	
 	private String attrName;
 	private boolean isVisible;
 

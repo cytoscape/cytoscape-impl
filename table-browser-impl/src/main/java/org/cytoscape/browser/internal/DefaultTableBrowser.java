@@ -7,16 +7,13 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashSet;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -28,7 +25,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
@@ -86,7 +82,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			});
 		
 		this.attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}

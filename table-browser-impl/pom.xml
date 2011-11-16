@@ -12,11 +12,9 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>table-browser-impl</artifactId>
 	<name>Cytoscape Table Browser Implementation</name>
 	<packaging>bundle</packaging>
-
 
 	<build>
 		<resources>

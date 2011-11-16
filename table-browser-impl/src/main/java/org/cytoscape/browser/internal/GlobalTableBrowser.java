@@ -2,7 +2,6 @@ package org.cytoscape.browser.internal;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
@@ -63,7 +62,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		tableChooser.setEnabled(false);
 		
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, null);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}

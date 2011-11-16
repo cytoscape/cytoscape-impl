@@ -63,18 +63,24 @@ import javax.swing.event.PopupMenuListener;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 
+/**
+ * Toolbar for the Browser.  All buttons related to this should be placed here.
+ *
+ */
 public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener {
+	
 	private static final long serialVersionUID = -508393701912596399L;
 
 	private BrowserTableModel browserTableModel = null;
 	
-	private static final Dimension TOOLBAR_SIZE = new Dimension(400, 40);
+	private static final Dimension TOOLBAR_SIZE = new Dimension(500, 38);
 
 	/**
 	 *  GUI components
@@ -111,20 +117,27 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private final JToggleButton selectionModeButton;
 	
+	private final Class<? extends CyTableEntry> objType;
+	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef, final JComboBox tableChooser) {
-		this(serviceRegistrar, compiler, deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, new JToggleButton());
+			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
+			final JComboBox tableChooser, final Class<? extends CyTableEntry> objType) {
+		this(serviceRegistrar, compiler, deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser,
+				new JToggleButton(), objType);
 	}
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef, final JComboBox tableChooser, final JToggleButton selectionModeButton) {
+			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
+			final JComboBox tableChooser, final JToggleButton selectionModeButton, Class<? extends CyTableEntry> objType) {
 		this.compiler = compiler;
 		this.selectionModeButton = selectionModeButton;
-		
+
 		this.tableChooser = tableChooser;
 		this.deleteTableTaskFactoryService = deleteTableTaskFactoryService;
 		this.guiTaskManagerServiceRef = guiTaskManagerServiceRef;
 		this.attrListModel = new AttributeListModel(null);
+		this.objType = objType;
+		
 		serviceRegistrar.registerAllServices(attrListModel, new Properties());
 
 		selectionModeButton.setEnabled(false);
@@ -133,13 +146,20 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	public void setBrowserTableModel(final BrowserTableModel browserTableModel) {
 		this.browserTableModel = browserTableModel;
+		
 		attrListModel.setBrowserTableModel(browserTableModel);
 		selectButton.setEnabled(browserTableModel != null);
 		selectAllAttributesButton.setEnabled(browserTableModel != null);
 		unselectAllAttributesButton.setEnabled(browserTableModel != null);
 		createNewAttributeButton.setEnabled(browserTableModel != null);
 		deleteAttributeButton.setEnabled(browserTableModel != null);
-		deleteTableButton.setEnabled(browserTableModel != null);
+		
+		if(browserTableModel != null && objType != null) {
+			deleteTableButton.setEnabled(false);
+		} else {
+			deleteTableButton.setEnabled(browserTableModel != null);
+		}
+		
 		formulaBuilderButton.setEnabled(browserTableModel != null);
 		selectionModeButton.setEnabled(browserTableModel != null);
 	}
@@ -153,11 +173,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		getJPopupMenu();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	
 	public String getToBeDeletedAttribute() {
 		return attrDeletionList.getSelectedValue().toString();
 	}
@@ -502,9 +518,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			selectButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 			selectButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/stock_select-row.png")));
 			selectButton.setToolTipText("Select Attributes");
+			selectButton.setBorder(null);
 
 			selectButton.addMouseListener(new MouseAdapter() {
-					public void mouseClicked(java.awt.event.MouseEvent e) {
+					public void mouseClicked(MouseEvent e) {
 						if (browserTableModel == null)
 							return;
 						attributeList.setSelectedItems(browserTableModel.getVisibleAttributeNames());
@@ -526,6 +543,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			formulaBuilderButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/fx.png")));
 			formulaBuilderButton.setToolTipText("Function Builder");
 			formulaBuilderButton.setMargin(new java.awt.Insets(1, 1, 1, 1));
+			formulaBuilderButton.setBorder(null);
 
 			final JFrame rootFrame = (JFrame)SwingUtilities.getRoot(this);
 
@@ -588,6 +606,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			deleteAttributeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 			deleteAttributeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/stock_delete.png")));
 			deleteAttributeButton.setToolTipText("Delete Attributes...");
+			deleteAttributeButton.setBorder(null);
 
 			// Create pop-up window for deletion
 			deleteAttributeButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -607,9 +626,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			deleteTableButton = new JButton();
 			deleteTableButton.setBorder(null);
 			deleteTableButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-			deleteTableButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_delete.gif")));
+			deleteTableButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_delete.png")));
 			deleteTableButton.setToolTipText("Delete Table...");
-
+			deleteTableButton.setBorder(null);
+			
 			// Create pop-up window for deletion
 			deleteTableButton.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -630,6 +650,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			selectAllAttributesButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 			selectAllAttributesButton.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/select_all.png")));
 			selectAllAttributesButton.setToolTipText("Select All Attributes");
+			selectAllAttributesButton.setBorder(null);
 
 			selectAllAttributesButton.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -657,6 +678,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			unselectAllAttributesButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 			unselectAllAttributesButton.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/unselect_all.png")));
 			unselectAllAttributesButton.setToolTipText("Unselect All Attributes");
+			unselectAllAttributesButton.setBorder(null);
 
 			unselectAllAttributesButton.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -762,6 +784,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			createNewAttributeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 			createNewAttributeButton.setToolTipText("Create New Attribute");
 			createNewAttributeButton.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/stock_new.png")));
+			createNewAttributeButton.setBorder(null);
+			
 			createNewAttributeButton.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
 						if (browserTableModel != null)
@@ -819,20 +843,13 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			throw new IllegalArgumentException("unknown attribute type \"" + type + "\"!");
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
-	 */
+	@Override
 	public void popupMenuCanceled(PopupMenuEvent e) {
 		// TODO Auto-generated method stub
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
-	 */
+	
+	@Override
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 		// Update actual table
 		try {
@@ -849,11 +866,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		}
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
-	 */
+	@Override
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 		// Do nothing
 	}
