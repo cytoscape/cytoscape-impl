@@ -63,7 +63,7 @@ public class FileImportTableTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) {
 		
 		taskMonitor.setStatusMessage("Finding Attribute Data Reader...");
-		taskMonitor.setProgress(-1.0);
+		taskMonitor.setProgress(-1);
 		reader = util.getTableReaderManager().getReader(file.toURI(),file.getName());
 
 		if (reader == null)
