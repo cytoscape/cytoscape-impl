@@ -32,38 +32,47 @@ package org.cytoscape.session.internal;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.session.CyNetworkNaming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class CyNetworkNamingImpl implements CyNetworkNaming {
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyNetworkNamingImpl.class);
+	
+	private static final String SUBNETWORK_SUFFIX = "Subnetwork";
+	private static final String DEF_NETWORK_NAME_PREFIX = "Network";
+	
 	private final CyNetworkManager networkManager;
 
 	public CyNetworkNamingImpl(final CyNetworkManager networkManager) {
 		this.networkManager = networkManager;
 	}
 
-	public String getSuggestedSubnetworkTitle(CyNetwork parentNetwork) {
+	
+	@Override
+	public String getSuggestedSubnetworkTitle(final CyNetwork parentNetwork) {
 		for (int i = 0; true; i++) {
-			String nameCandidate = parentNetwork.getCyRow().get("name", String.class) + "--child"
-			                       + ((i == 0) ? "" : ("." + i));
+			final String parentName = parentNetwork.getCyRow().get(CyTableEntry.NAME, String.class);
+			final String nameCandidate = parentName + " <" + SUBNETWORK_SUFFIX + " " + (i+1) + ">";
 
 			if (!isNetworkTitleTaken(nameCandidate))
 				return nameCandidate;
 		}
 	}
 
+	
+	@Override
 	public String getSuggestedNetworkTitle(String desiredTitle) {
-		if(desiredTitle == null || "".equals(desiredTitle.trim())) {
-			desiredTitle = "Network";
-			logger.warn("getSuggestedNetworkTitle: desiredTitle " +
-				"was '" + desiredTitle + "'");
+		if (desiredTitle == null || "".equals(desiredTitle.trim())) {
+			desiredTitle = DEF_NETWORK_NAME_PREFIX;
+			logger.warn("getSuggestedNetworkTitle: desiredTitle " + "was '" + desiredTitle + "'");
 		}
 		
 		for (int i = 0; true; i++) {
-			String titleCandidate = desiredTitle + ((i == 0) ? "" : ("." + i));
+			String titleCandidate = desiredTitle + ((i == 0) ? "" : (" <" + i + ">"));
 
 			if (!isNetworkTitleTaken(titleCandidate))
 				return titleCandidate;
@@ -72,7 +81,7 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 
 	private boolean isNetworkTitleTaken(final String titleCandidate) {
 		for (CyNetwork existingNetwork : networkManager.getNetworkSet() ) {
-			String name = existingNetwork.getCyRow().get(CyNetwork.NAME, String.class);
+			final String name = existingNetwork.getCyRow().get(CyNetwork.NAME, String.class);
 			if(name != null) {
 				if (name.equals(titleCandidate))
 					return true;

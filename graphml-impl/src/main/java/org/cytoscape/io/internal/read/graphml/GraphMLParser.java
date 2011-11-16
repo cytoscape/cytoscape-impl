@@ -6,18 +6,7 @@
 
 package org.cytoscape.io.internal.read.graphml;
 
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRNAME;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRTYPE;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DATA;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DIRECTED;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGE;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGEDEFAULT;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.GRAPH;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ID;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.KEY;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.NODE;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.SOURCE;
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.TARGET;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +23,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +50,6 @@ public class GraphMLParser extends DefaultHandler {
 	private String currentEdgeTargetName = null;
 	private String currentObjectTarget = null;
 
-	private final TaskMonitor tm;
 	private final CyNetworkFactory networkFactory;
 	private final CyRootNetworkFactory rootNetworkFactory;
 
@@ -84,7 +73,6 @@ public class GraphMLParser extends DefaultHandler {
 	 */
 	GraphMLParser(final TaskMonitor tm, final CyNetworkFactory networkFactory,
 			final CyRootNetworkFactory rootNetworkFactory) {
-		this.tm = tm;
 		this.networkFactory = networkFactory;
 		this.rootNetworkFactory = rootNetworkFactory;
 
@@ -150,6 +138,8 @@ public class GraphMLParser extends DefaultHandler {
 	}
 
 	private void createGraph(final Attributes atts) {
+		final String networkID = atts.getValue(ID.getTag());
+		
 		if (networkStack.size() == 0) {
 			// Root network.
 			currentNetwork = networkFactory.getInstance();
@@ -164,6 +154,8 @@ public class GraphMLParser extends DefaultHandler {
 					network.removeNodes(toBeRemoved);
 			}
 		}
+		currentNetwork.getCyRow().set(CyTableEntry.NAME, networkID);
+		
 		networkStack.push(currentNetwork);
 		cyNetworks.add(currentNetwork);
 		// parse directed or undirected
@@ -240,7 +232,7 @@ public class GraphMLParser extends DefaultHandler {
 		currentAttributeData = new String(ch, start, length);
 
 		if (currentObjectTarget != null) {
-			if (currentObjectTarget.equals(NODE.getTag()) || currentObjectTarget.equals(EDGE.getTag())) {
+			if (currentObjectTarget.equals(NODE.getTag()) || currentObjectTarget.equals(EDGE.getTag()) || currentObjectTarget.equals(GRAPH.getTag())) {
 				if (currentAttributeType != null && currentAttributeData.trim().length() != 0) {
 					final String columnName = datanameMap.get(currentAttributeKey);
 					final CyColumn column = currentObject.getCyRow().getTable().getColumn(columnName);
@@ -248,6 +240,7 @@ public class GraphMLParser extends DefaultHandler {
 					if (attrTag != null && attrTag.getDataType() != null) {
 						if (column == null)
 							currentObject.getCyRow().getTable().createColumn(columnName, attrTag.getDataType(), false);
+						
 						currentObject.getCyRow().set(columnName, attrTag.getObjectValue(currentAttributeData));
 					}
 				}

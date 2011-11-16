@@ -443,7 +443,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			}
 
 			if (parentTreeNode == null) {
-				parentTreeNode = new NetworkTreeNode("Network Set " + networkSetCounter, null);
+				parentTreeNode = new NetworkTreeNode("", null);
 				networkSetCounter++;
 			}
 
