@@ -91,7 +91,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 
 	private final static long serialVersionUID = 1202339866271348L;
 	
-	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1000, 720);
+	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1100, 800);
+	private static final int DEF_DIVIDER_LOATION = 450;
+	
 	private static final String SMALL_ICON = "/images/c16.png";
 	private static final int DEVIDER_SIZE = 4;
 	private static final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<String, CytoPanelName>();
@@ -160,7 +162,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 		main_panel.setLayout(new BorderLayout());
 
 		// create the CytoscapeDesktop
-		BiModalJSplitPane masterPane = setupCytoPanels(networkPanel, networkViewManager);
+		final BiModalJSplitPane masterPane = setupCytoPanels(networkPanel, networkViewManager);
 
 		main_panel.add(masterPane, BorderLayout.CENTER);
 		main_panel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
@@ -213,9 +215,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 	private BiModalJSplitPane setupCytoPanels(NetworkPanel networkPanel,
 	                                            NetworkViewManager networkViewManager) {
 		// bimodals that our Cytopanels Live within
-		BiModalJSplitPane topRightPane = createTopRightPane(networkViewManager);
-		BiModalJSplitPane rightPane = createRightPane(topRightPane);
-		BiModalJSplitPane masterPane = createMasterPane(networkPanel, rightPane);
+		final BiModalJSplitPane topRightPane = createTopRightPane(networkViewManager);
+		final BiModalJSplitPane rightPane = createRightPane(topRightPane);
+		final BiModalJSplitPane masterPane = createMasterPane(networkPanel, rightPane);
 		createBottomLeft();
 
 		return masterPane;
@@ -271,6 +273,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 		cytoPanelSouth.setCytoPanelContainer(splitPane);
 
 		splitPane.setDividerSize(DEVIDER_SIZE);
+		splitPane.setDividerLocation(DEF_DIVIDER_LOATION);
 
 		// set resize weight - top component gets all the extra space.
 		splitPane.setResizeWeight(1.0);
