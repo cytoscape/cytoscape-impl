@@ -60,6 +60,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.cytoscape.browser.internal.util.ColumnResizer;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
@@ -659,6 +660,9 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 							for (final CyColumn column : table.getColumns())
 								allAttrNames.add(column.getName());
 							browserTableModel.setVisibleAttributeNames(allAttrNames);
+							
+							// Resize column
+							ColumnResizer.adjustColumnPreferredWidths(browserTableModel.getTable());
 						} catch (Exception ex) {
 							attributeList.clearSelection();
 						}

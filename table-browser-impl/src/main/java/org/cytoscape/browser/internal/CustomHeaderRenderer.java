@@ -60,7 +60,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 	private static final Color COLUMN_TITLE_COLOR = new Color(0x10, 0x10, 0x10);
 
 	private static final Color BORDER_COLOR = new Color(0x10, 0x10, 0x10, 120);
-	private static final Border BORDER_INSIDE = new EmptyBorder(4, 6, 4, 3);
+	private static final Border BORDER_INSIDE = new EmptyBorder(4, 3, 4, 3);
 	private static final Border BORDER_OUTSIDE = new MatteBorder(0, 0, 1, 1, BORDER_COLOR);
 	private static final Border BORDER = new CompoundBorder(BORDER_OUTSIDE, BORDER_INSIDE);
 
@@ -74,6 +74,9 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 			.getResource("images/datatype_boolean_16.png"));
 	private static final ImageIcon LIST_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
 			"images/datatype_list_16.png"));
+	
+	private static final ImageIcon PRIMARY_KEY_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
+			"images/primary_key.png"));
 
 	CustomHeaderRenderer() {
 		setBorder(BORDER);
@@ -105,9 +108,11 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		if (col == null)
 			return this;
 
+		
 		// Set datatype icon if available
-		this.setIcon(getIcon(col.getType()));
+		this.setIcon(getIcon(col.getType(), col));
 		String toolTip = null;
+		
 		
 		if(col.getType() == List.class) {
 			toolTip = "<html>This is a List column<br />" +
@@ -138,7 +143,11 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		return this;
 	}
 	
-	private Icon getIcon(final Class<?> dataType) {
+	private Icon getIcon(final Class<?> dataType, final CyColumn col) {
+		
+		if(col.isPrimaryKey())
+			return PRIMARY_KEY_ICON;
+		
 		if(dataType == String.class)
 			return STRING_ICON;
 		else if(dataType == Double.class || dataType == Float.class)
@@ -147,8 +156,9 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 			return BOOLEAN_ICON;
 		else if(dataType == List.class)
 			return LIST_ICON;
-		else if (dataType == Integer.class)
+		else if (dataType == Integer.class || dataType == Long.class)
 			return INTEGER_ICON;
+		
 		return null;
 	}
 
