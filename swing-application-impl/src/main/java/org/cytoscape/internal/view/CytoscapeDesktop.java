@@ -91,7 +91,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 
 	private final static long serialVersionUID = 1202339866271348L;
 	
-	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1100, 800);
+	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1150, 850);
 	private static final int DEF_DIVIDER_LOATION = 450;
 	
 	private static final String SMALL_ICON = "/images/c16.png";
@@ -194,6 +194,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 		setContentPane(main_panel);
 		pack();
 		setSize(DEF_DESKTOP_SIZE);
+		
+		// Defines default divider location for the network panel to JDesktop
+		masterPane.setDividerLocation(400);
 		
 		// Move it to the center
 		this.setLocationRelativeTo(null);
