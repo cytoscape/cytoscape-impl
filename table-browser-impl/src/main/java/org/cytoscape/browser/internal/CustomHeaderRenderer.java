@@ -29,11 +29,14 @@ package org.cytoscape.browser.internal;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
+import java.util.List;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -57,14 +60,25 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 	private static final Color COLUMN_TITLE_COLOR = new Color(0x10, 0x10, 0x10);
 
 	private static final Color BORDER_COLOR = new Color(0x10, 0x10, 0x10, 120);
-	private static final Border BORDER_INSIDE = new EmptyBorder(4, 3, 4, 3);
+	private static final Border BORDER_INSIDE = new EmptyBorder(4, 6, 4, 3);
 	private static final Border BORDER_OUTSIDE = new MatteBorder(0, 0, 1, 1, BORDER_COLOR);
 	private static final Border BORDER = new CompoundBorder(BORDER_OUTSIDE, BORDER_INSIDE);
 
+	private static final ImageIcon STRING_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
+			"images/datatype_string_16.png"));
+	private static final ImageIcon INTEGER_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader()
+			.getResource("images/datatype_int_16.png"));
+	private static final ImageIcon DOUBLE_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
+			"images/datatype_float_double_16.png"));
+	private static final ImageIcon BOOLEAN_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader()
+			.getResource("images/datatype_boolean_16.png"));
+	private static final ImageIcon LIST_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
+			"images/datatype_list_16.png"));
+
 	CustomHeaderRenderer() {
 		setBorder(BORDER);
-		this.setHorizontalTextPosition(CENTER);
-		this.setHorizontalAlignment(CENTER);
+		this.setHorizontalAlignment(SwingConstants.CENTER);
+		this.setIconTextGap(7);
 	}
 
 	// This method is called each time a column header
@@ -91,7 +105,18 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		if (col == null)
 			return this;
 
-		String toolTip = col.getType().getName();
+		// Set datatype icon if available
+		this.setIcon(getIcon(col.getType()));
+		String toolTip = null;
+		
+		if(col.getType() == List.class) {
+			toolTip = "<html>This is a List column<br />" +
+					"The lists contain " + col.getListElementType() + "</html>";
+		} else if(text.equals(CyTableEntry.SUID))
+			toolTip = "Session-Unique ID (Primary Key).  This is column is immutable.";
+		else
+			toolTip = "Data type of this column is " + col.getType().getName();
+		
 		if (col.getVirtualColumnInfo().isVirtual()) {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_VIRTUAL_COLOR);
@@ -111,6 +136,20 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 
 		// Since the renderer is a component, return itself
 		return this;
+	}
+	
+	private Icon getIcon(final Class<?> dataType) {
+		if(dataType == String.class)
+			return STRING_ICON;
+		else if(dataType == Double.class || dataType == Float.class)
+			return DOUBLE_ICON;
+		else if(dataType == Boolean.class)
+			return BOOLEAN_ICON;
+		else if(dataType == List.class)
+			return LIST_ICON;
+		else if (dataType == Integer.class)
+			return INTEGER_ICON;
+		return null;
 	}
 
 	//
