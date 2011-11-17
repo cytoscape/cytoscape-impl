@@ -126,16 +126,19 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	protected void initHeader() {
+		this.setBackground(Color.white);
+		
 		final JTableHeader header = getTableHeader();
 		header.addMouseMotionListener(this);
-//		header.setDefaultRenderer(new SortHeaderRenderer());
-		header.setDefaultRenderer(new MyTableHeaderRenderer());
+		header.setBackground(Color.white);
+		header.setOpaque(false);
+		header.setDefaultRenderer(new CustomHeaderRenderer());
 		header.addMouseListener(this);
+		header.getColumnModel().setColumnSelectionAllowed(true);
 
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
 		final BrowserTable table = this;
-
 
 		// Event handler. Define actions when mouse is clicked.
 		addMouseListener(new MouseAdapter() {

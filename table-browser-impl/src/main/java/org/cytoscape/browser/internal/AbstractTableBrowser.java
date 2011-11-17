@@ -19,6 +19,7 @@ import javax.swing.table.TableRowSorter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.browser.internal.util.ColumnResizer;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
@@ -125,6 +126,9 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		currentScrollPane = newScrollPane;
 		applicationManager.setCurrentTable(currentTable);
 		attributeBrowserToolBar.setBrowserTableModel(currentBrowserTableModel);
+		
+		// Resize column
+		ColumnResizer.adjustColumnPreferredWidths(currentBrowserTableModel.getTable());
 	}
 
 	private JScrollPane getScrollPane(final BrowserTableModel browserTableModel) {

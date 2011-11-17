@@ -451,11 +451,11 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getSelectButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(getNewButton())
-								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getSelectAllButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getUnselectAllButton())
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(getNewButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getDeleteButton())
 								.addPreferredGap(ComponentPlacement.RELATED)
@@ -472,10 +472,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								       javax.swing.GroupLayout.PREFERRED_SIZE,
 								       27,
 								       Short.MAX_VALUE)
-							 .addComponent(createNewAttributeButton,
-								       javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE)
 							 .addComponent(selectAllAttributesButton,
 								       javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
@@ -484,7 +480,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								       javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
 								       27, Short.MAX_VALUE)
-
+							.addComponent(createNewAttributeButton,
+								       javax.swing.GroupLayout.Alignment.CENTER,
+								       javax.swing.GroupLayout.DEFAULT_SIZE,
+								       27, Short.MAX_VALUE)
 							 .addComponent(deleteAttributeButton,
 								       javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,

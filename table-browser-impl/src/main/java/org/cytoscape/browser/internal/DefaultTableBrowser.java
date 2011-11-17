@@ -91,6 +91,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		rowSelectionMode = selectionModeButton.isSelected();
 		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
 		getCurrentBrowserTableModel().updateShowAll();
+
 	}
 	
 	@Override

@@ -232,10 +232,11 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	public void handleEvent(final ColumnCreatedEvent e) {
 		if (e.getSource() != dataTable)
 			return;
-
 		attrNamesAndVisibilities.add(new AttrNameAndVisibility(e.getColumnName(), true));
 		fireTableStructureChanged();
 	}
+	
+	
 
 	@Override
 	public void handleEvent(final ColumnDeletedEvent e) {
