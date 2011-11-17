@@ -1307,7 +1307,7 @@ public class PluginManageDialog extends javax.swing.JDialog implements
 			}
 			taskMonitor.setStatusMessage("Installing " + infoObj.getName() + " v"
 					+ infoObj.getObjectVersion());
-			taskMonitor.setProgress(-1);
+			//taskMonitor.setProgress(-1);
 
 			PluginManager Mgr = PluginManager.getPluginManager();
 			
