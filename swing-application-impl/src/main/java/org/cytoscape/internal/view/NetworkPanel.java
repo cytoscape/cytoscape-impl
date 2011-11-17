@@ -33,8 +33,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -46,7 +44,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -86,7 +83,6 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.property.session.Parent;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
@@ -192,7 +188,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		treeTable.setBackground(Color.white);
 		treeTable.setSelectionBackground(new Color(200, 200, 200, 150));
 
-		treeTable.getColumn("Network").setPreferredWidth(120);
+		treeTable.getColumn("Network").setPreferredWidth(250);
 		treeTable.getColumn("Nodes").setPreferredWidth(45);
 		treeTable.getColumn("Edges").setPreferredWidth(45);
 

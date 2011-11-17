@@ -24,8 +24,8 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 	private static final String NETWORK_ICON = "/images/network_32.png";
 	private static final String NETWORK_LEAF_ICON = "/images/network_l_32.png";
 
-	private static final Font TABLE_FONT = new Font("SansSerif", Font.PLAIN, 14);
-	private static final Font TABLE_FONT_SELECTED = new Font("SansSerif", Font.BOLD, 14);
+	private static final Font TABLE_FONT = new Font("SansSerif", Font.PLAIN, 12);
+	private static final Font TABLE_FONT_SELECTED = new Font("SansSerif", Font.BOLD, 12);
 	
 	private static final Dimension CELL_SIZE = new Dimension(1200, 40);
 
