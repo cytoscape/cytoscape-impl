@@ -197,9 +197,11 @@ public abstract class DownloadableInfo {
 	 * @param objVersion
 	 *            Sets the version of this object.
 	 */
-	public void setObjectVersion(double objVersion)
+	//public void setObjectVersion(double objVersion)
+	public void setObjectVersion(String objVersion)
 			throws NumberFormatException {
-		String Version = Double.toString(objVersion);
+		//String Version = Double.toString(objVersion);
+		String Version = objVersion.trim();
 		if (versionOk(Version, true)) {
 			this.objVersion = Version;
 		} else {
@@ -446,10 +448,11 @@ public abstract class DownloadableInfo {
         }
      // logger.debug("Comparing versions: " + Arrays.toString(cyVersion) + " : " + Arrays.toString(plVersion));
 
-      if (compareVersions(cyVersion, plVersion)) {
+      // TODO: we do not compae version for now
+      //if (compareVersions(cyVersion, plVersion)) {
         compatible = true;
         break;
-      }
+      //}
     }
     return compatible;
   }

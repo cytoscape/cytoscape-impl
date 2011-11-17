@@ -382,7 +382,7 @@ public class PluginManager {
 				pluginObj = new PluginInfo();
 				pluginObj.addCytoscapeVersion(cyVersion);
 				pluginObj.setName(plugin.getClass().getName());
-				pluginObj.setObjectVersion(0.1);
+				pluginObj.setObjectVersion("0.1");
 			}
 
 			pluginObj.setPluginClassName(plugin.getClass().getName());

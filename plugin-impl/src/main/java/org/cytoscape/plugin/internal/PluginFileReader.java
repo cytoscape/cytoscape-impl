@@ -296,7 +296,8 @@ public class PluginFileReader {
 		}
 
 		try {
-			obj.setObjectVersion(Double.valueOf(Version));
+			//obj.setObjectVersion(Double.valueOf(Version));
+			obj.setObjectVersion(Version);
 			return obj;
 		} catch (NumberFormatException ie) { // is there a better way to let
 			// people know it's a bad

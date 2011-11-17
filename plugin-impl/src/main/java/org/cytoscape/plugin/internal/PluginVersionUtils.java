@@ -64,6 +64,12 @@ public class PluginVersionUtils {
 
   // this just checks the downloadable object version and the cytoscape version
   protected static boolean versionOk(String version, boolean downloadObj) {
+	  // TODO: do not check the downloadObj for now.
+	  if (downloadObj){
+		  return true;
+	  }
+	  
+	  
     // \d+.\+d ok
     String Match = versionMatch;
     String Split = versionSplit;

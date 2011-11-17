@@ -135,7 +135,7 @@ public class PluginInfo extends DownloadableInfo {
 		authors = new ArrayList<AuthorInfo>();
 		setName("Unknown");
 		setDescription("No description");
-		setObjectVersion(0.1);
+		setObjectVersion("0.1");
 		setCategory(Category.NONE);
 		setPluginClassName("");
 	}

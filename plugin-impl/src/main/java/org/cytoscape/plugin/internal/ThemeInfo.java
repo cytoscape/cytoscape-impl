@@ -69,7 +69,7 @@ public class ThemeInfo extends DownloadableInfo {
 	private void init() {
 		setName("Unknown");
 		setDescription("No description");
-		setObjectVersion(0.1);
+		setObjectVersion("0.1");
 		setCategory(Category.THEME);
 		themePlugins = new HashSet<PluginInfo>();
 	}

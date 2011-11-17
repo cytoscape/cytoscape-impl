@@ -536,7 +536,7 @@ public class PluginTracker {
 				continue;
 			}
 
-			themeInfo.setObjectVersion( Double.valueOf(CurrentTheme.getChildTextTrim(PluginXml.THEME_VERSION.getTag())) );
+			themeInfo.setObjectVersion( CurrentTheme.getChildTextTrim(PluginXml.THEME_VERSION.getTag()));
 			// add plugins
 			Iterator<Element> pluginI = CurrentTheme.getChild(PluginXml.PLUGIN_LIST.getTag()).getChildren(PluginXml.PLUGIN.getTag()).iterator();
 			while (pluginI.hasNext()) {
@@ -615,7 +615,7 @@ public class PluginTracker {
     	
     	Info.setPluginClassName(PluginElement.getChildTextTrim(classTag));
     	Info.setInstallLocation(PluginElement.getChildTextTrim(installLocTag));
-		Info.setObjectVersion(Double.valueOf(PluginElement.getChildTextTrim(pluginVersTag)));
+		Info.setObjectVersion(PluginElement.getChildTextTrim(pluginVersTag));
     	Info.setProjectUrl(PluginElement.getChildTextTrim(projUrlTag));
 
 		

@@ -139,11 +139,11 @@ public class PluginProperties extends Properties {
 		pi.setName(getProperty(PluginProperty.NAME.getPropertyKey()));
 
 		try {
-			pi.setObjectVersion( Double.valueOf(getProperty(PluginProperty.VERSION.getPropertyKey())) );
+			pi.setObjectVersion( getProperty(PluginProperty.VERSION.getPropertyKey()));
 		} catch (java.lang.NumberFormatException ne) { // skip it or set it to a default value??
 			logger.warn(pi.getName() + " version is incorrectly formatted, format is: \\d+.\\d+. Version set to 0.1 to allow plugin to load");
 			// ne.printStackTrace();
-			pi.setObjectVersion(0.1);
+			pi.setObjectVersion("0.1");
 		}
 		
 		pi.setDescription(getProperty(PluginProperty.DESCRIPTION.getPropertyKey()));
