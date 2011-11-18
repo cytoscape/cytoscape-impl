@@ -173,6 +173,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	static final Paint DEFAULT_ANCHOR_UNSELECTED_PAINT = Color.black;
 
 	boolean calledFromGetSnapshot = false;
+	
+	private final CyEventHelper cyEventHelper;
 
 	// Size of snapshot image
 	protected static int DEF_SNAPSHOT_SIZE = 400;
@@ -435,7 +437,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
 			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
 			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
-			CyEventHelper eventHelper,
+			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr) {
 		super(model);
@@ -452,6 +454,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.dropEmptySpaceTFs = dropEmptySpaceTFs;
 		this.manager = manager;
 		this.menuTaskManager = menuTaskManager;
+		this.cyEventHelper = cyEventHelper;
 
 		final CyTable nodeCAM = dataFactory.createTable("node view", Identifiable.SUID, Long.class, false, false);
 		nodeCAM.createColumn("hidden", Boolean.class, false);
@@ -463,7 +466,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// creating empty subnetworks
 		m_drawPersp = cyRoot.convert(model).addSubNetwork();
-		eventHelper.silenceEventSource(m_drawPersp);
+		cyEventHelper.silenceEventSource(m_drawPersp);
 		m_spacial = spacialFactory.createSpacialIndex2D();
 		m_spacialA = spacialFactory.createSpacialIndex2D();
 		m_nodeDetails = new DNodeDetails(this);
@@ -501,7 +504,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			addEdgeView(ee);
 
 		logger.debug("Phase 3: All views created: time = " + (System.currentTimeMillis() - start));
-		new FlagAndSelectionHandler(this, eventHelper);
+		new FlagAndSelectionHandler(this, cyEventHelper);
 		cyAnnotator = new CyAnnotator(this,annMgr);
 		logger.debug("Phase 4: Everything created: time = " + (System.currentTimeMillis() - start));
 	}
@@ -1093,6 +1096,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * DOCUMENT ME!
 	 */
 	private void fitContent(final boolean updateView) {
+		cyEventHelper.flushPayloadEvents();
+
 		synchronized (m_lock) {
 			if (m_spacial.queryOverlap(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
 			                           Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
@@ -1139,6 +1144,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public void updateView() {
 		final long start = System.currentTimeMillis();
+		cyEventHelper.flushPayloadEvents();
 		m_networkCanvas.repaint();
 		logger.debug("Repaint finised in " + (System.currentTimeMillis() - start) + " msec.");
 	}
@@ -1918,6 +1924,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void fitSelected() {
+		cyEventHelper.flushPayloadEvents();
+		
 		synchronized (m_lock) {
 			IntEnumerator selectedElms = m_selectedNodes.searchRange(
 					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
