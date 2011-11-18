@@ -83,6 +83,7 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.property.session.Parent;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
@@ -299,21 +300,27 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	 */
 	public void removeNetwork(final Long network_id) {
 		final NetworkTreeNode node = getNetworkNode(network_id);
-		final Enumeration children = node.children();
+		final Enumeration<?> children = node.children();
 		final List<NetworkTreeNode> removed_children = new ArrayList<NetworkTreeNode>();
 
-		while (children.hasMoreElements()) {
+		while (children.hasMoreElements())
 			removed_children.add((NetworkTreeNode) children.nextElement());
-		}
 
 		for (NetworkTreeNode child : removed_children) {
 			child.removeFromParent();
 			root.add(child);
 		}
 
+		final NetworkTreeNode parentNode = (NetworkTreeNode) node.getParent();
 		node.removeFromParent();
-		treeTable.getTree().updateUI();
+
+		if(parentNode.getChildCount() == 0) {
+			// Remove from root node
+			parentNode.removeFromParent();
+		}
+		
 		treeTable.doLayout();
+		treeTable.getTree().updateUI();
 	}
 
 	/**
@@ -338,13 +345,17 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	// // Event handlers /////
 
+	
+	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent nde) {
-		CyNetwork net = nde.getNetwork();
+		final CyNetwork net = nde.getNetwork();
 		logger.debug("Network about to be destroyed " + net.getSUID());
 		removeNetwork(net.getSUID());
 		nameTables.remove(net.getDefaultNetworkTable());
 	}
 
+	
+	@Override
 	public void handleEvent(NetworkAddedEvent e) {
 		final CyNetwork net = e.getNetwork();
 		logger.debug("Got NetworkAddedEvent.  Model ID = " + net.getSUID());
@@ -385,11 +396,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			logger.warn("Current network view is set to null.");
 			return;
 		}
-
 		logger.debug("Got SetCurrentNetworkViewEvent.  View ID = " + e.getNetworkView().getSUID());
-
 		final long curr = e.getNetworkView().getModel().getSUID();
-
 		focusNetworkNode(curr);
 	}
 
@@ -400,9 +408,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			logger.warn("Got null for current network.");
 			return;
 		}
-
 		logger.debug("Set current network " + cnet.getSUID());
-
 		focusNetworkNode(cnet.getSUID());
 	}
 
@@ -477,7 +483,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		}
 	}
 
-	NetworkTreeNode getNetworkNode(Long network_id) {
+	NetworkTreeNode getNetworkNode(final Long network_id) {
 		final Enumeration<?> tree_node_enum = root.breadthFirstEnumeration();
 
 		while (tree_node_enum.hasMoreElements()) {
