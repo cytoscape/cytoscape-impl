@@ -314,13 +314,13 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		final NetworkTreeNode parentNode = (NetworkTreeNode) node.getParent();
 		node.removeFromParent();
 
-		if(parentNode.getChildCount() == 0) {
+		if(parentNode.isLeaf()) {
 			// Remove from root node
 			parentNode.removeFromParent();
 		}
 		
-		treeTable.doLayout();
 		treeTable.getTree().updateUI();
+		treeTable.doLayout();
 	}
 
 	/**
