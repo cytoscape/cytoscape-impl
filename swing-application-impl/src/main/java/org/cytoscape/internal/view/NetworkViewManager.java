@@ -311,7 +311,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		render(nvae.getNetworkView());
 	}
 
-	protected void removeView(CyNetworkView view) {
+	protected void removeView(final CyNetworkView view) {
 		try {
 			final JInternalFrame frame = presentationContainerMap.get(view.getModel().getSUID());
 			if (frame != null) {

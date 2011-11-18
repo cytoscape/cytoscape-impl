@@ -150,7 +150,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		this.networkViewManager = networkViewManager;
 		this.taskManager = taskManager;
 
-		root = new NetworkTreeNode("Network Root", 0L);
+		root = new NetworkTreeNode("Network Root", null);
 		treeTableModel = new NetworkTreeTableModel(this, root);
 		treeTable = new JTreeTable(treeTableModel);
 		initialize();
@@ -186,7 +186,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 		ToolTipManager.sharedInstance().registerComponent(treeTable);
 
-		treeTable.getTree().setCellRenderer(new TreeCellRenderer(treeTable, netmgr, networkViewManager));
+		treeTable.getTree().setCellRenderer(new TreeCellRenderer(treeTable));
 		treeTable.setBackground(Color.white);
 		treeTable.setSelectionBackground(new Color(200, 200, 200, 150));
 
@@ -327,7 +327,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		
 		treeTable.updateUI();
 		treeTable.doLayout();
-		treeTable.updateUI();
 		treeTable.repaint();
 	}
 
@@ -422,6 +421,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nde) {
 		logger.debug("Network view about to be destroyed " + nde.getNetworkView().getModel().getSUID());
+		this.treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.red);
 		treeTable.getTree().updateUI();
 	}
 
@@ -430,7 +430,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 		// Set current network view to the new one.
 		appManager.setCurrentNetworkView(nde.getNetworkView().getModel().getSUID());
-
+		this.treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.black);
 		treeTable.getTree().updateUI();
 	}
 
@@ -454,7 +454,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 			// Actual tree node for this network
 			NetworkTreeNode dmtn = new NetworkTreeNode(network.getCyRow().get(CyTableEntry.NAME, String.class),
-					network_id);
+					network);
 
 			parentTreeNode.add(dmtn);
 
@@ -465,6 +465,11 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			if (parentNetwork != null)
 				this.treeNodeMap.put(parentNetwork.getSUID(), parentTreeNode);
 
+			if(networkViewManager.viewExists(network_id))
+				dmtn.setNodeColor(Color.black);
+			
+			this.treeNodeMap.put(network.getSUID(), dmtn);
+			
 			// apparently this doesn't fire valueChanged
 			treeTable.getTree().collapsePath(new TreePath(new TreeNode[] { root }));
 
@@ -497,11 +502,11 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		while (tree_node_enum.hasMoreElements()) {
 			final NetworkTreeNode node = (NetworkTreeNode) tree_node_enum.nextElement();
 
-			Long currentID = node.getNetworkID();
-			if (currentID == null)
+			CyNetwork network = node.getNetwork();
+			if (network == null)
 				continue;
 
-			if (node.getNetworkID().equals(network_id))
+			if (network.getSUID() == network_id)
 				return node;
 		}
 
@@ -528,10 +533,10 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		}
 
 		// This is a "network set" node.
-		if (node.getNetworkID() == null)
+		if (node.getNetwork() == null)
 			return;
 
-		appManager.setCurrentNetwork(node.getNetworkID());
+		appManager.setCurrentNetwork(node.getNetwork().getSUID());
 
 		// creates a list of all selected networks
 		List<Long> networkList = new LinkedList<Long>();
@@ -539,7 +544,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			for (int i = mtree.getMinSelectionRow(); i <= mtree.getMaxSelectionRow(); i++) {
 				NetworkTreeNode n = (NetworkTreeNode) mtree.getPathForRow(i).getLastPathComponent();
 				if (n != null && n.getUserObject() != null && mtree.isRowSelected(i))
-					networkList.add(n.getNetworkID());
+					networkList.add(n.getNetwork().getSUID());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -587,7 +592,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				if (row != -1) {
 					JTree tree = treeTable.getTree();
 					TreePath treePath = tree.getPathForRow(row);
-					Long networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetworkID();
+					Long networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork().getSUID();
 
 					CyNetwork cyNetwork = netmgr.getNetwork(networkID);
 

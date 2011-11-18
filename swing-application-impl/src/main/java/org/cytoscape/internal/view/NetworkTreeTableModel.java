@@ -73,9 +73,9 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 			return null;
 		
 		final NetworkTreeNode node = (NetworkTreeNode) value;
-		final Long networkID = node.getNetworkID();
+		final CyNetwork network = node.getNetwork();
 		
-		if(networkID == null) {
+		if(network == null) {
 			// This is root network node
 			return null;
 		}
@@ -83,14 +83,14 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 		if (column == 0)
 			return node.getUserObject();
 		else if (column == 1) {
-			final CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(node.getNetworkID());
+			final CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(node.getNetwork().getSUID());
 			if(cyNetwork == null)
 				return null;
 			
 			return "" + cyNetwork.getNodeCount() + "("
 				+ cyNetwork.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
 		} else if (column == 2) {
-			final CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(((NetworkTreeNode) node).getNetworkID());
+			final CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(((NetworkTreeNode) node).getNetwork().getSUID());
 			if(cyNetwork == null)
 				return null;
 			

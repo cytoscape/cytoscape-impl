@@ -6,10 +6,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.xml.soap.Node;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -29,15 +32,9 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 	
 	private static final Dimension CELL_SIZE = new Dimension(1200, 40);
 
-	private final CyNetworkManager networkManager;
-	private final CyNetworkViewManager networkViewManager;
-
 	private final JTreeTable treeTable;
 
-	TreeCellRenderer(final JTreeTable treeTable, final CyNetworkManager networkManager,
-			final CyNetworkViewManager networkViewManager) {
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
+	TreeCellRenderer(final JTreeTable treeTable) {
 		this.treeTable = treeTable;
 		
 		final Image iconImage = Toolkit.getDefaultToolkit().getImage(getClass().getResource(NETWORK_ICON));
@@ -73,36 +70,15 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 		else
 			this.setFont(TABLE_FONT);
 
-		if(treeNode.getNetworkID() == null) {
+		if(treeNode.getNetwork() == null) {
 			setForeground(treeTable.getForeground());
 			return this;
 		}
 		
-		if (hasView(treeNode))
-			setForeground(treeTable.getForeground());
-		else
-			setForeground(Color.red);
+		setForeground(treeNode.getNodeColor());
+		setForeground(treeNode.getNodeColor());
+		setToolTipText(treeNode.getNetwork().getCyRow().get(CyTableEntry.NAME, String.class));
 
 		return this;
-	}
-
-	private boolean hasView(final NetworkTreeNode node) {
-		final Long networkID = node.getNetworkID();
-		final CyNetwork network = networkManager.getNetwork(networkID);
-
-		if (network != null)
-			setToolTipText(network.getCyRow().get(CyTableEntry.NAME, String.class));
-		else {
-			if (node.getRoot() == node)
-				setToolTipText("Network Root");
-		}
-
-		boolean hasView = false;
-		
-		synchronized(this) {
-			hasView = networkViewManager.viewExists(networkID);
-		}
-		
-		return hasView;
 	}
 }
