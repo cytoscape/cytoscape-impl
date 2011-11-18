@@ -97,6 +97,12 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 				setToolTipText("Network Root");
 		}
 
-		return networkViewManager.viewExists(node.getNetworkID());
+		boolean hasView = false;
+		
+		synchronized(this) {
+			hasView = networkViewManager.viewExists(networkID);
+		}
+		
+		return hasView;
 	}
 }

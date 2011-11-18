@@ -327,6 +327,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		
 		treeTable.updateUI();
 		treeTable.doLayout();
+		treeTable.updateUI();
 		treeTable.repaint();
 	}
 
