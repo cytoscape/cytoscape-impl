@@ -52,6 +52,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -300,15 +301,20 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	 */
 	public void removeNetwork(final Long network_id) {
 		final NetworkTreeNode node = getNetworkNode(network_id);
+		if(node == null)
+			return;
+		
 		final Enumeration<?> children = node.children();
-		final List<NetworkTreeNode> removed_children = new ArrayList<NetworkTreeNode>();
+		if (children.hasMoreElements()) {
+			final List<NetworkTreeNode> removed_children = new ArrayList<NetworkTreeNode>();
 
-		while (children.hasMoreElements())
-			removed_children.add((NetworkTreeNode) children.nextElement());
+			while (children.hasMoreElements())
+				removed_children.add((NetworkTreeNode) children.nextElement());
 
-		for (NetworkTreeNode child : removed_children) {
-			child.removeFromParent();
-			root.add(child);
+			for (NetworkTreeNode child : removed_children) {
+				child.removeFromParent();
+				root.add(child);
+			}
 		}
 
 		final NetworkTreeNode parentNode = (NetworkTreeNode) node.getParent();
@@ -319,8 +325,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			parentNode.removeFromParent();
 		}
 		
-		treeTable.getTree().updateUI();
+		treeTable.updateUI();
 		treeTable.doLayout();
+		treeTable.repaint();
 	}
 
 	/**
