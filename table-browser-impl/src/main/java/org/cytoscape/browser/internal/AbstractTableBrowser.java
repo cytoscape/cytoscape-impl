@@ -40,7 +40,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 	private static final long serialVersionUID = 1968196123280466989L;
 	
-	static final Dimension SELECTOR_SIZE = new Dimension(320, 20);
+	static final Dimension SELECTOR_SIZE = new Dimension(400, 32);
 	
 	// Color theme for table browser.
 	static final Color NETWORK_COLOR = new Color(0xA5, 0x2A, 0x2A);

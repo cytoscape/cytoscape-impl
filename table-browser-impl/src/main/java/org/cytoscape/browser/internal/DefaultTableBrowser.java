@@ -82,7 +82,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			});
 		
 		this.attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType, applicationManager);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
