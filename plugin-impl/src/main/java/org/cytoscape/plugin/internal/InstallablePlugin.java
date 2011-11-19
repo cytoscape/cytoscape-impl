@@ -68,7 +68,6 @@ public class InstallablePlugin implements Installable {
 	public boolean installToDir(File dir, TaskMonitor taskMonitor) 
 		throws java.io.IOException,org.cytoscape.plugin.internal.ManagerException {
 		
-		
 		File PluginDir = dir;
 		if (PluginDir == null) 
 			PluginDir = infoObj.getPluginDirectory();
@@ -84,26 +83,26 @@ public class InstallablePlugin implements Installable {
 			taskMonitor.setStatusMessage(infoObj.toString() + " loading...");
 		URLUtil.download(infoObj.getObjectUrl(), Download, taskMonitor);
 
-		try {
-			String ClassName = JarUtil.getPluginClass(Download.getAbsolutePath(),
-					infoObj.getFileType());
-
-			if (ClassName != null) {
-				infoObj.setPluginClassName(ClassName);
-			} else { // no class name so delete the plugin
-				Download.delete();
-				Download.getParentFile().delete();
-				ManagerException E = new ManagerException(
-						infoObj.getName()
-								+ " does not define the attribute 'Cytoscape-Plugin' in the jar manifest file.\n"
-								+ "This plugin cannot be auto-installed.  Please install manually or contact the plugin author.");
-				throw E;
-			}
-		} catch (IOException ioe) {
-			Download.delete();
-			Download.getParentFile().delete();
-      throw ioe;
-		}
+//		try {
+//
+//			String ClassName = JarUtil.getPluginClass(Download.getAbsolutePath(),
+//					infoObj.getFileType());
+//			if (ClassName != null) {
+//				infoObj.setPluginClassName(ClassName);
+//			} else { // no class name so delete the plugin
+//				Download.delete();
+//				Download.getParentFile().delete();
+//				ManagerException E = new ManagerException(
+//						infoObj.getName()
+//								+ " does not define the attribute 'Cytoscape-Plugin' in the jar manifest file.\n"
+//								+ "This plugin cannot be auto-installed.  Please install manually or contact the plugin author.");
+//				throw E;
+//			}
+//		} catch (IOException ioe) {
+//			Download.delete();
+//			Download.getParentFile().delete();
+//      throw ioe;
+//		}
 
 		switch (infoObj.getFileType()) {
 		case JAR: // do nothing, it's installed
