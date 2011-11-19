@@ -13,13 +13,12 @@ import org.cytoscape.work.TaskIterator;
 public class PluginLoaderTaskFactory implements TaskFactory {
 	
 	private final CyPluginAdapter adapter;
-	
+	 
 	// Plugin Jar file URLs
-	private final Set<URL> urls;
+	public static final Set<URL> urls = new HashSet<URL>();
 
 	PluginLoaderTaskFactory(final CyPluginAdapter adapter) {
 		this.adapter = adapter;
-		urls = new HashSet<URL>();
 	}
 
 	public TaskIterator getTaskIterator() {
