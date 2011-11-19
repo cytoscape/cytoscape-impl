@@ -119,6 +119,7 @@ public class PluginManagerAction extends AbstractCyAction {
 	
 		//Initialize the PluginManager
 		PluginManager Mgr = PluginManager.getPluginManager();
+		Mgr.setTaskManager(this.guiTaskManagerServiceRef);
 		Mgr.setCyPluginAdapter(adapter);
 		
 		// Delete plugins which are marked 'delete' in the track file
