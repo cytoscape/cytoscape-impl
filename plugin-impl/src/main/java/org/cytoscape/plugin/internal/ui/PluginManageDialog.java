@@ -1359,7 +1359,7 @@ public class PluginManageDialog extends javax.swing.JDialog implements
 				taskMonitor.setStatusMessage(cne.getMessage());
 				infoObj = null;
 			} finally {
-				taskMonitor.setProgress(100);
+				taskMonitor.setProgress(1.0);
 			}
 
 			try {
