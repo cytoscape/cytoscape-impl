@@ -42,7 +42,9 @@ import org.cytoscape.plugin.CyPluginAdapter;
 import org.cytoscape.plugin.internal.action.PluginManagerAction;
 import org.cytoscape.plugin.internal.util.FileUtil;
 import org.cytoscape.plugin.internal.util.ZipUtil;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -631,7 +633,6 @@ public class PluginManager {
 				}
 			}
 		}
-
 		Installable installable = obj.getInstallable();
 		installable.install(taskMonitor);
 		pluginTracker.addDownloadable(obj, PluginStatus.INSTALL);
@@ -683,26 +684,33 @@ public class PluginManager {
 		for (String FileName : p.getFileList()) {
 			
 			if (FileName.endsWith(".jar")) {
-								
-				Object o = null; 
-				JarFile jar = null; 
-				try {
-
-					File filename = new File(FileName);
-					
-					jar = new JarFile(filename);
-					String name = jar.getManifest().getMainAttributes().getValue("Cytoscape-Plugin");
-					URL jarurl = filename.toURI().toURL(); 
-					
-					URLClassLoader ucl = URLClassLoader.newInstance( new URL[]{jarurl}, 
-					                                      PluginLoaderTask.class.getClassLoader() );
-					Class c = ucl.loadClass(name);
-					Constructor<CyPlugin> con = c.getConstructor(CyPluginAdapter.class);
-					o = con.newInstance(adapter);
-				}
-				catch (Exception e){
-					e.printStackTrace();
-				}
+//								
+//				Object o = null; 
+//				JarFile jar = null; 
+//				try {
+//
+//					File filename = new File(FileName);
+//					
+//					jar = new JarFile(filename);
+//					String name = jar.getManifest().getMainAttributes().getValue("Cytoscape-Plugin");
+//					URL jarurl = filename.toURI().toURL(); 
+//					
+//					URLClassLoader ucl = URLClassLoader.newInstance( new URL[]{jarurl}, 
+//					                                      PluginLoaderTask.class.getClassLoader() );
+//					Class c = ucl.loadClass(name);
+//					Constructor<CyPlugin> con = c.getConstructor(CyPluginAdapter.class);
+//					o = con.newInstance(adapter);
+//				}
+//				catch (Exception e){
+//					e.printStackTrace();
+//				}
+				
+				PluginLoaderTask2 task = new PluginLoaderTask2(adapter);
+				task.setFile(new File(FileName));
+				
+				PluginLoaderTaskFactory2 factory = new PluginLoaderTaskFactory2();
+				factory.setTask(task);
+				this.guiTaskManagerServiceRef.execute(factory);				
 			}
 		}
 		// don't need to register if we have the info object
@@ -716,6 +724,14 @@ public class PluginManager {
 
 	}
 
+	private DialogTaskManager guiTaskManagerServiceRef;
+	
+	public void setTaskManager(DialogTaskManager guiTaskManagerServiceRef){
+		this.guiTaskManagerServiceRef = guiTaskManagerServiceRef;
+	}
+
+	
+	
 	private void addDuplicateError() {
 		String Msg = "The following plugins were not loaded due to duplicate class definitions:\n";
 		for (String dup : duplicateClasses)
