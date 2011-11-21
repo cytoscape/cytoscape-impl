@@ -276,20 +276,20 @@ public class VisualStyleSerializer {
 
 				if (mapping instanceof PassthroughMapping<?, ?>) {
 					PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) mapping;
-					AttributeType attrType = toAttributeType(pm.getMappingAttributeType());
+					AttributeType attrType = toAttributeType(pm.getMappingColumnType());
 
 					org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping pmModel = new org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping();
-					pmModel.setAttributeName(pm.getMappingAttributeName());
+					pmModel.setAttributeName(pm.getMappingColumnName());
 					pmModel.setAttributeType(attrType);
 
 					vpModel.setPassthroughMapping(pmModel);
 
 				} else if (mapping instanceof DiscreteMapping<?, ?>) {
 					DiscreteMapping<K, V> dm = (DiscreteMapping<K, V>) mapping;
-					AttributeType attrType = toAttributeType(dm.getMappingAttributeType());
+					AttributeType attrType = toAttributeType(dm.getMappingColumnType());
 
 					org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping dmModel = new org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping();
-					dmModel.setAttributeName(dm.getMappingAttributeName());
+					dmModel.setAttributeName(dm.getMappingColumnName());
 					dmModel.setAttributeType(attrType);
 
 					Map<K, V> map = dm.getAll();
@@ -306,10 +306,10 @@ public class VisualStyleSerializer {
 
 				} else if (mapping instanceof ContinuousMapping<?, ?>) {
 					ContinuousMapping<K, V> cm = (ContinuousMapping<K, V>) mapping;
-					AttributeType attrType = toAttributeType(cm.getMappingAttributeType());
+					AttributeType attrType = toAttributeType(cm.getMappingColumnType());
 
 					org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping cmModel = new org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping();
-					cmModel.setAttributeName(cm.getMappingAttributeName());
+					cmModel.setAttributeName(cm.getMappingColumnName());
 					cmModel.setAttributeType(attrType);
 
 					List<ContinuousMappingPoint<K, V>> points = cm.getAllPoints();

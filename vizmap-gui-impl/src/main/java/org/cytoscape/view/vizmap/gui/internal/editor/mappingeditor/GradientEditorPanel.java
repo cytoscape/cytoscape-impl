@@ -295,7 +295,7 @@ public class GradientEditorPanel extends
 
 		CyGradientTrackRenderer gRend = new CyGradientTrackRenderer(
 				(VisualProperty<Color>) type, (Color) below, (Color) above,
-				mapping.getMappingAttributeName(), tracer);
+				mapping.getMappingColumnName(), tracer);
 
 		slider.setThumbRenderer(thumbRend);
 		slider.setTrackRenderer(gRend);
@@ -318,7 +318,7 @@ public class GradientEditorPanel extends
 
 			final CyGradientTrackRenderer gRend = new CyGradientTrackRenderer(
 					(VisualProperty<Color>) type, below, above,
-					mapping.getMappingAttributeName(), tracer);
+					mapping.getMappingColumnName(), tracer);
 			slider.setTrackRenderer(gRend);
 
 			repaint();

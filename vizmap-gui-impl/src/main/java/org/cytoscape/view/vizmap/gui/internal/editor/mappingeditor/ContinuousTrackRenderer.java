@@ -156,7 +156,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		this.style = style;
 
 		cMapping = mapping;
-		title = cMapping.getMappingAttributeName();
+		title = cMapping.getMappingColumnName();
 
 		 Float val;
 		 //TODO: where should I put this property value?

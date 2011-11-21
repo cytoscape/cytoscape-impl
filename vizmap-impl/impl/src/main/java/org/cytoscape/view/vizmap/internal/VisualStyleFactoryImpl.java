@@ -52,7 +52,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		Collection<VisualMappingFunction<?, ?>> allMapping = original.getAllVisualMappingFunctions();
 
 		for (VisualMappingFunction<?, ?> mapping : allMapping) {
-			String attrName = mapping.getMappingAttributeName();
+			String attrName = mapping.getMappingColumnName();
 			VisualProperty<?> vp = mapping.getVisualProperty();
 
 			// TODO: clone mappings

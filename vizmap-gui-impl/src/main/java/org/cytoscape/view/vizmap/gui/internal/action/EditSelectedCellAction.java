@@ -113,7 +113,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 		if (newValue == null)
 			return;
 
-		final Class<?> keyClass =dm.getMappingAttributeType();
+		final Class<?> keyClass =dm.getMappingColumnType();
 		for (int i = 0; i < selected.length; i++) {
 			final Item currentItem = ((Item) propertySheetPanel.getTable().getValueAt(selected[i], 0));
 			// First, update property sheet

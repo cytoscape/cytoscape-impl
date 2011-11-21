@@ -130,7 +130,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.style = style;
 		this.mainPanel = new JPanel();
 		
-		final String controllingAttrName = mapping.getMappingAttributeName();
+		final String controllingAttrName = mapping.getMappingColumnName();
 		final Class<?> attrType = attr.getColumn(controllingAttrName).getType();
 		
 		logger.debug("Selected attr type is " + attrType);
@@ -410,7 +410,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (tracer.getRange(type) == 0) {
 			Double maxValue = Double.NEGATIVE_INFINITY;
 			Double minValue = Double.POSITIVE_INFINITY;
-			final List<K> valueList = dataTable.getColumn(mapping.getMappingAttributeName()).getValues(this.dataType);
+			final List<K> valueList = dataTable.getColumn(mapping.getMappingColumnName()).getValues(this.dataType);
 			for (K val : valueList) {
 				if (val.doubleValue() > maxValue)
 					maxValue = val.doubleValue();

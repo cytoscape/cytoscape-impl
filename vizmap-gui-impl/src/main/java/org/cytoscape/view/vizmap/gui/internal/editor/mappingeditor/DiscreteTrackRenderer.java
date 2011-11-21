@@ -134,7 +134,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		for (V value : values)
 			iconMap.put(value, engine.createIcon(vp, value, ICON_SIZE, ICON_SIZE));
 		
-		this.title = mapping.getMappingAttributeName();
+		this.title = mapping.getMappingColumnName();
 
 		this.setBackground(BACKGROUND_COLOR);
 		this.setMinimumSize(MIN_SIZE);

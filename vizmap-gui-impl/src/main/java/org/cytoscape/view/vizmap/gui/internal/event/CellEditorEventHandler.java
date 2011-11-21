@@ -494,7 +494,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		}
 
 		// If same, do nothing.
-		if (ctrAttrName.equals(mapping.getMappingAttributeName())) {
+		if (ctrAttrName.equals(mapping.getMappingColumnName())) {
 			logger.debug("Same controlling attr.  Do nothing for: "
 					+ ctrAttrName);
 			return;
@@ -507,8 +507,8 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 					dataType, attrForTest, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
 			logger.debug("Changed to new Map from "
-					+ mapping.getMappingAttributeName() + " to "
-					+ newMapping.getMappingAttributeName());
+					+ mapping.getMappingColumnName() + " to "
+					+ newMapping.getMappingColumnName());
 		} else if (mapping instanceof ContinuousMapping) {
 			if ((dataType == Double.class) || (dataType == Integer.class)) {
 				// Do nothing
@@ -528,8 +528,8 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 					dataType, attrForTest, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
 			logger.debug("Changed to new Map from "
-					+ mapping.getMappingAttributeName() + " to "
-					+ newMapping.getMappingAttributeName());
+					+ mapping.getMappingColumnName() + " to "
+					+ newMapping.getMappingColumnName());
 			// final String curMappingName = mapping.toString() + "-" +
 			// mapping.getMappingAttributeName();
 			// final String newMappingName = mapping.toString() + "-" +
@@ -556,7 +556,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		// Create new one.
 
 		logger.debug("Creating new prop sheet objects for "
-				+ newMapping.getMappingAttributeName() + ", "
+				+ newMapping.getMappingColumnName() + ", "
 				+ vp.getDisplayName());
 
 		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyTableEntry>) vp.getTargetDataType());
@@ -617,7 +617,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		logger.debug("New VisualMappingFunction Created: Mapping Type = "
 				+ style.getVisualMappingFunction(vp).toString());
 		logger.debug("New VisualMappingFunction Created: Controlling attr = "
-				+ style.getVisualMappingFunction(vp).getMappingAttributeName());
+				+ style.getVisualMappingFunction(vp).getMappingColumnName());
 
 		// First, remove current property
 		Property parent = prop.getParentProperty();

@@ -120,7 +120,7 @@ public class VizMapPropertyBuilder {
 		topProperty.setDisplayName(vp.getDisplayName());
 		topProperty.setInternalValue(factory);
 
-		final String attrName = visualMapping.getMappingAttributeName();
+		final String attrName = visualMapping.getMappingColumnName();
 		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<K, V>> mappingHeader = new VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<K, V>>(
 				CellType.MAPPING_TYPE, "Mapping Type", VisualMappingFunctionFactory.class);
 
@@ -323,7 +323,7 @@ public class VizMapPropertyBuilder {
 			// In that case "controllerType=-2" means that the attribute type is
 			// List, but we don't know the
 			// type of the list items.
-			if (mapping.getMappingAttributeType() == String.class && !(key instanceof String))
+			if (mapping.getMappingColumnType() == String.class && !(key instanceof String))
 				val = discMapping.get(key.toString());
 			else
 				val = discMapping.get(key);

@@ -108,7 +108,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		while (it.hasNext()){
 			VisualMappingFunction<?,?> f = it.next();
 
-			if (f.getMappingAttributeName().equalsIgnoreCase(columnName)){
+			if (f.getMappingColumnName().equalsIgnoreCase(columnName)){
 				vp = f.getVisualProperty();
 				break;
 			}

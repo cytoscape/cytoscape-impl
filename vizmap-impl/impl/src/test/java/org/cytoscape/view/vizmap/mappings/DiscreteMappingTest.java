@@ -39,8 +39,8 @@ public class DiscreteMappingTest {
 		final String attrName = "sample attr 1";
 		final DiscreteMapping<String, Paint> mapping = createDiscreteMapping(attrName);
 
-		assertEquals(attrName, mapping.getMappingAttributeName());
-		assertEquals(String.class, mapping.getMappingAttributeType());
+		assertEquals(attrName, mapping.getMappingColumnName());
+		assertEquals(String.class, mapping.getMappingColumnType());
 		assertEquals(MinimalVisualLexicon.NODE_FILL_COLOR, mapping.getVisualProperty());
 
 		mapping.putMapValue("r", Color.RED);
