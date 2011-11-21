@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -69,8 +70,8 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	// Contains List of Data Points
 	private List<ContinuousMappingPoint<K, V>> points;
 
-	ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp) {
-		super(attrName, attrType, vp);
+	ContinuousMappingImpl(final String attrName, final Class<K> attrType, final CyTable table, final VisualProperty<V> vp) {
+		super(attrName, attrType, table, vp);
 		
 		// Validate type.  K is always a number.
 		if(Number.class.isAssignableFrom(attrType) == false)
@@ -169,7 +170,11 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	 */
 	private void doMap(final View<? extends CyTableEntry> view) {
 
-		final CyRow row = view.getModel().getCyRow();
+		final CyRow row;
+		if(table == null)
+			row = view.getModel().getCyRow();
+		else
+			row = view.getModel().getCyRow(table.getTitle());
 
 		if (row.isSet(attrName)) {
 			// skip Views where source attribute is not defined;

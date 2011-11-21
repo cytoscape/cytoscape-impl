@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -61,8 +62,8 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	 * @param defObj
 	 *            Default Object.
 	 */
-	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp) {
-		super(attrName, attrType, vp);
+	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final CyTable table, final VisualProperty<V> vp) {
+		super(attrName, attrType, table, vp);
 		attribute2visualMap = new HashMap<K, V>();
 	}
 
@@ -102,10 +103,20 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	 *            the type-parameter of the View
 	 */
 	private void applyDiscreteMapping(final View<? extends CyTableEntry> view) {
-		final CyRow row = view.getModel().getCyRow();
+		final CyRow row;
+		if(table == null)
+			row = view.getModel().getCyRow();
+		else
+			row = view.getModel().getCyRow(table.getTitle());
+		
 		V value = null;
 
-		if (row.isSet(attrName)) {
+		if(attrName.equals(CyTableEntry.SUID)) {
+			// Special case: SUID
+			Object key = Long.valueOf(view.getModel().getSUID());
+			if (key != null)
+				value = attribute2visualMap.get(key);
+		} else if (row.isSet(attrName)) {
 			// skip Views where source attribute is not defined;
 			// ViewColumn will automatically substitute the per-VS or global
 			// default, as appropriate

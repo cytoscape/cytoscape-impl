@@ -28,12 +28,11 @@
 
 package org.cytoscape.view.vizmap.internal.mappings;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -50,9 +49,9 @@ public class PassthroughMappingImpl<K, V> extends
 	 * the same as the VisualProperty; FIXME: allow different once? but how to
 	 * coerce?
 	 */
-	public PassthroughMappingImpl(final String attrName, final Class<K> attrType,
+	public PassthroughMappingImpl(final String attrName, final Class<K> attrType, final CyTable table,
 			final VisualProperty<V> vp) {
-		super(attrName, attrType, vp);
+		super(attrName, attrType, table, vp);
 	}
 
 	/* (non-Javadoc)
@@ -71,9 +70,16 @@ public class PassthroughMappingImpl<K, V> extends
 		if (view == null)
 			return; // empty list, nothing to do
 
-		final CyRow row = view.getModel().getCyRow();
+		final CyRow row;
+		if(table == null)
+			row = view.getModel().getCyRow();
+		else
+			row = view.getModel().getCyRow(table.getTitle());
 		
-		if (row.isSet(attrName)) {
+		if(attrName.equals(CyTableEntry.SUID)) {
+			// Special case: SUID
+			view.setVisualProperty(vp, (V)Long.valueOf(view.getModel().getSUID()));
+		} else if (row.isSet(attrName)) {
 			// skip Views where source attribute is not defined;
 			// ViewColumn will automatically substitute the per-VS or
 			// global default, as appropriate

@@ -489,7 +489,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 				return;
 
 			mapping = factory.createVisualMappingFunction(ctrAttrName,
-					dataType, vp);
+					dataType,attrForTest, vp);
 			currentStyle.addVisualMappingFunction(mapping);
 		}
 
@@ -504,7 +504,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		if (mapping instanceof PassthroughMapping) {
 			// Create new Passthrough mapping and register to current style.
 			newMapping = factory.createVisualMappingFunction(ctrAttrName,
-					dataType, vp);
+					dataType, attrForTest, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
 			logger.debug("Changed to new Map from "
 					+ mapping.getMappingAttributeName() + " to "
@@ -525,7 +525,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 		} else if (mapping instanceof DiscreteMapping) {
 			newMapping = factory.createVisualMappingFunction(ctrAttrName,
-					dataType, vp);
+					dataType, attrForTest, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
 			logger.debug("Changed to new Map from "
 					+ mapping.getMappingAttributeName() + " to "
@@ -607,7 +607,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			// Mapping does not exist.
 			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(), (Class<? extends CyTableEntry>) vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
-			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType,vp);
+			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, null,vp);
 	
 			style.addVisualMappingFunction(newMapping);
 		} else {
