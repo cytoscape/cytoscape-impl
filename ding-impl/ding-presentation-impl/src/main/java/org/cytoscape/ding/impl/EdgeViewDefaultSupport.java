@@ -57,9 +57,12 @@ class EdgeViewDefaultSupport {
 	private float strokeWidth;
 	
 	private int transparency;
+	private Integer labelTransparency = 255;
 	
 	private Paint unselectedPaint;
 	private Paint selectedPaint;
+	
+	private Color labelColor;
 
 	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vp, V value) {
 		
@@ -104,9 +107,14 @@ class EdgeViewDefaultSupport {
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {
 			setFont((Font) value, fontSize);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
-			setFont(font, (((Integer) value).floatValue()));
+			setFont(font, (((Number) value).floatValue()));
 		} else if (vp == MinimalVisualLexicon.EDGE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
+		} else if (vp == RichVisualLexicon.EDGE_LABEL_TRANSPARENCY) {
+			if (labelColor != null && labelTransparency.equals(value) == false) {
+				labelTransparency = ((Number) value).intValue();
+				setTextPaint(labelColor);
+			}
 		} else if (vp == DVisualLexicon.EDGE_LABEL_POSITION) {
 			// FIXME: Not implemented yet.
 		}
@@ -157,18 +165,6 @@ class EdgeViewDefaultSupport {
 			return p;
 	}
 
-//	public void setSourceEdgeEndSelectedPaint(Paint paint) {
-//		synchronized (lock) {
-//			edgeDetails.setSourceArrowSelectedPaintDefault(paint);
-//		}
-//	}
-//
-//	public void setTargetEdgeEndSelectedPaint(Paint paint) {
-//		synchronized (lock) {
-//			edgeDetails.setTargetArrowSelectedPaintDefault(paint);
-//		}
-//	}
-
 	public void setTargetEdgeEndUnselectedPaint(Paint paint) {
 		synchronized (lock) {
 			edgeDetails.setTargetArrowPaintDefault(paint);
@@ -195,7 +191,9 @@ class EdgeViewDefaultSupport {
 
 	public void setTextPaint(Paint textPaint) {
 		synchronized (lock) {
-			edgeDetails.setLabelPaintDefault(textPaint);
+			labelColor = new Color(((Color) textPaint).getRed(), ((Color) textPaint).getGreen(),
+					((Color) textPaint).getBlue(), labelTransparency);
+			edgeDetails.setLabelPaintDefault(labelColor);
 		}
 	}
 

@@ -37,6 +37,7 @@ import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.RichVisualLexicon;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 class NodeViewDefaultSupport {
@@ -46,13 +47,18 @@ class NodeViewDefaultSupport {
 
 	
 	// Default values
-	private int transparency = 255;
+	private Integer transparency = 255;
+	private Integer labelTransparency = 255;
+	private Integer borderTransparency = 255;
 	
 	private Paint unselectedPaint;
 	private Paint selectedPaint;
 	
+	private Color labelColor;
+	
 	private float fontSize = 12f;
 	private Font font;
+	private Color borderColor;
 	
 	
 	NodeViewDefaultSupport(final DNodeDetails nodeDetails, final Object lock) {
@@ -76,10 +82,15 @@ class NodeViewDefaultSupport {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			setBorderPaint((Paint) value);
+		} else if (vp == DVisualLexicon.NODE_BORDER_TRANSPARENCY) {
+			if (borderColor != null && borderTransparency.equals(value) == false) {
+				borderTransparency = ((Number) value).intValue();
+				setBorderPaint(borderColor);
+			}
 		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
 			setBorderWidth(((Number) value).floatValue());
 		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
-			setTransparency(((Integer) value));
+			setTransparency(((Number) value).intValue());
 		} else if (vp == MinimalVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
@@ -92,6 +103,11 @@ class NodeViewDefaultSupport {
 			setToolTip((String) value);
 		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
+		} else if (vp == RichVisualLexicon.NODE_LABEL_TRANSPARENCY) {
+			if (labelColor != null && labelTransparency.equals(value) == false) {
+				labelTransparency = ((Number) value).intValue();
+				setTextPaint(labelColor);
+			}
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
 		}
@@ -148,7 +164,9 @@ class NodeViewDefaultSupport {
 	
 	void setBorderPaint(Paint paint) {
 		synchronized (lock) {
-			nodeDetails.setBorderPaintDefault(paint);
+			borderColor = new Color(((Color) paint).getRed(), ((Color) paint).getGreen(),
+					((Color) paint).getBlue(), borderTransparency);
+			nodeDetails.setBorderPaintDefault(borderColor);
 		}
 	}
 
@@ -160,7 +178,9 @@ class NodeViewDefaultSupport {
 
 	void setTextPaint(Paint textPaint) {
 		synchronized (lock) {
-			nodeDetails.setLabelPaintDefault(textPaint);
+			labelColor = new Color(((Color) textPaint).getRed(), ((Color) textPaint).getGreen(),
+					((Color) textPaint).getBlue(), labelTransparency);
+			nodeDetails.setLabelPaintDefault(labelColor);
 		}
 	}
 

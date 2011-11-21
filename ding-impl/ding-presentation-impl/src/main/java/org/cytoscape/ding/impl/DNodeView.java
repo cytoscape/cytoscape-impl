@@ -72,6 +72,7 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.RichVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -1220,7 +1221,17 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
-			setBorderPaint((Paint) value);
+			final Color borderColor = (Color) value;
+			final int opacity = ((Color)getBorderPaint()).getAlpha();
+			final Color newColor = new Color(borderColor.getRed(), borderColor.getGreen(), borderColor.getBlue(), opacity);
+			setBorderPaint(newColor);
+		} else if (vp == DVisualLexicon.NODE_BORDER_TRANSPARENCY) {
+			final Color borderColor = (Color) getBorderPaint();
+			final Integer opacity = ((Number) value).intValue();
+			if(borderColor.getAlpha() != opacity.intValue()) {
+				Color newColor = new Color(borderColor.getRed(), borderColor.getGreen(), borderColor.getBlue(), opacity);
+				setBorderPaint(newColor);
+			}
 		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
 			setBorderWidth(((Number) value).floatValue());
 		} else if (vp == DVisualLexicon.NODE_BORDER_LINE_TYPE) {
@@ -1244,7 +1255,17 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
 			setToolTip((String) value);
 		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
-			setTextPaint((Paint) value);
+			final Color labelColor = (Color) value;
+			final int opacity = ((Color)getTextPaint()).getAlpha();
+			final Color newColor = new Color(labelColor.getRed(), labelColor.getGreen(), labelColor.getBlue(), opacity);
+			setTextPaint(newColor);
+		} else if (vp == RichVisualLexicon.NODE_LABEL_TRANSPARENCY) {
+			final Color labelColor = (Color) getTextPaint();
+			final Integer opacity = ((Number) value).intValue();
+			if(labelColor.getAlpha() != opacity.intValue()) {
+				Color newColor = new Color(labelColor.getRed(), labelColor.getGreen(), labelColor.getBlue(), opacity);
+				setTextPaint(newColor);
+			}
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
 			final Font newFont = ((Font) value).deriveFont(fontSize);
 			setFont(newFont);

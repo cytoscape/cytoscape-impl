@@ -670,11 +670,11 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	public void setPositionHint(int position) {
 	}
 
+	
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	public Paint getTextPaint() {
 		synchronized (m_view.m_lock) {
 			return m_view.m_edgeDetails.labelPaint(m_inx, 0);
@@ -1359,6 +1359,11 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			setStroke(newStroke);
 		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
 			setTransparency(((Number) value).intValue());
+		} else if (vp == DVisualLexicon.EDGE_LABEL_TRANSPARENCY) {
+			final int opacity = ((Number) value).intValue();
+			final Color labelColor = (Color) getTextPaint();
+			if(labelColor.getAlpha() != opacity)
+				setTextPaint(new Color(labelColor.getRed(), labelColor.getGreen(), labelColor.getBlue(), opacity));
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
 			setSourceEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {
