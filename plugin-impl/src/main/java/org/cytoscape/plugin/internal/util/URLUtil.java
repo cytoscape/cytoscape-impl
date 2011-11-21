@@ -182,11 +182,10 @@ public class URLUtil {
 						progressCount += buffer.length;
 						// Report on Progress
 						if (taskMonitor != null) {
-							percent = ((double) progressCount / maxCount) * 100.0;
+							percent = (double) progressCount / maxCount;
 							if (maxCount == -1) { // file size unknown
 								percent = -1;
 							}
-							TaskMonitor jTask = (TaskMonitor) taskMonitor;
 							
 							//if (jTask.haltRequested()) { // abort
 							//	stop = true;
@@ -194,7 +193,7 @@ public class URLUtil {
 							//	taskMonitor.setPercentCompleted(100);
 							//	break;
 							//}
-							taskMonitor.setProgress((int) percent);
+							taskMonitor.setProgress(percent);
 						}
 						os.write(buffer);
 					}
