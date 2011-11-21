@@ -399,18 +399,26 @@ public abstract class DownloadableInfo {
 	 *         specifies a bugfix version)
 	 */
   private boolean isCytoscapeVersionCurrent(String pluginVersion) {
+	  
   	if (pluginVersion == null )
 		return false;
 
-    String[] cyVersion = PluginManagerAction.cyVersion.getVersion().split(versionSplit);
     String[] plVersion = pluginVersion.split(versionSplit);
 
-	if ( cyVersion.length < plVersion.length )
+	if ( plVersion.length <3)
 		return false;
+	
+	int curCyVersionInt = Integer.valueOf(plVersion[0]).intValue()*100+
+						Integer.valueOf(plVersion[1]).intValue()*10+
+						Integer.valueOf(plVersion[2]).intValue();
 
-    for (int i = 0; i < plVersion.length; i++) 
-      if (Integer.valueOf(cyVersion[i]).intValue() != Integer.valueOf(plVersion[i]).intValue())
-        return false;
+	int minCyVersionInt  = PluginManagerAction.cyVersion.getMajorVersion()*100 + 
+		PluginManagerAction.cyVersion.getMinorVersion()*10+
+		PluginManagerAction.cyVersion.getBugFixVersion();
+
+	if (curCyVersionInt < minCyVersionInt){
+		return false;
+	}
 
     return true;
   }
