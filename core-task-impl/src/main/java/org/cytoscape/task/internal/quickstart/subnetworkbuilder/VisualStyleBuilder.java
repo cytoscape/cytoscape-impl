@@ -84,7 +84,7 @@ public class VisualStyleBuilder {
 
 	// Node Color mapping
 	VisualMappingFunction<String, Paint> nodeColorMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, MinimalVisualLexicon.NODE_FILL_COLOR);
+		QUERY_GENE_ATTR_NAME, String.class, null, MinimalVisualLexicon.NODE_FILL_COLOR);
 
 	if (nodeColorMapping instanceof DiscreteMapping) {
 	    ((DiscreteMapping<String, Paint>) nodeColorMapping).putMapValue("disease", NODE_COLOR_DISEASE);
@@ -95,7 +95,7 @@ public class VisualStyleBuilder {
 
 	// Border color mapping
 	VisualMappingFunction<String, Paint> nodeBorderColorMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, RichVisualLexicon.NODE_BORDER_PAINT);
+		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_BORDER_PAINT);
 
 	((DiscreteMapping<String, Paint>) nodeBorderColorMapping).putMapValue("disease", NODE_BORDER_COLOR_DISEASE);
 	((DiscreteMapping<String, Paint>) nodeBorderColorMapping).putMapValue("query and disease", NODE_BORDER_COLOR_BOTH);
@@ -105,7 +105,7 @@ public class VisualStyleBuilder {
 
 	// Node Label Size mapping
 	VisualMappingFunction<String, Integer> nodeLabelSizeMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, RichVisualLexicon.NODE_LABEL_FONT_SIZE);
+		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_LABEL_FONT_SIZE);
 
 	((DiscreteMapping<String, Integer>) nodeLabelSizeMapping).putMapValue("disease", NODE_LABEL_SIZE_LARGE);
 	((DiscreteMapping<String, Integer>) nodeLabelSizeMapping).putMapValue("query and disease",
@@ -116,9 +116,9 @@ public class VisualStyleBuilder {
 
 	// Node Width & Height mapping
 	final VisualMappingFunction<String, Double> nodeWidthMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, RichVisualLexicon.NODE_WIDTH);
+		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_WIDTH);
 	final VisualMappingFunction<String, Double> nodeHeightMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, RichVisualLexicon.NODE_HEIGHT);
+		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_HEIGHT);
 
 	((DiscreteMapping<String, Double>) nodeWidthMapping).putMapValue("disease", NODE_WIDTH_TARGET);
 	((DiscreteMapping<String, Double>) nodeWidthMapping).putMapValue("query and disease", NODE_WIDTH_BOTH);
@@ -132,7 +132,7 @@ public class VisualStyleBuilder {
 
 	// Label Mapping.
 	final VisualMappingFunction<String, String> nodeLabelMapping = ptFactory.createVisualMappingFunction(
-		CyTableEntry.NAME, String.class, MinimalVisualLexicon.NODE_LABEL);
+		CyTableEntry.NAME, String.class, null, MinimalVisualLexicon.NODE_LABEL);
 	newStyle.addVisualMappingFunction(nodeLabelMapping);
 
 	return newStyle;

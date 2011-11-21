@@ -364,7 +364,7 @@ public class VisualStyleSerializer {
 
 					try {
 						PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) passthroughMappingFactory
-								.createVisualMappingFunction(attrName, String.class, vp);
+								.createVisualMappingFunction(attrName, String.class, null, vp);
 
 						vs.addVisualMappingFunction(pm);
 
@@ -397,7 +397,7 @@ public class VisualStyleSerializer {
 						}
 
 						DiscreteMapping<K, V> dm = (DiscreteMapping<K, V>) discreteMappingFactory
-								.createVisualMappingFunction(attrName, attrClass, vp);
+								.createVisualMappingFunction(attrName, attrClass, null, vp);
 
 						for (DiscreteMappingEntry entryModel : dmModel.getDiscreteMappingEntry()) {
 							String sAttrValue = entryModel.getAttributeValue();
@@ -441,7 +441,7 @@ public class VisualStyleSerializer {
 
 					try {
 						ContinuousMapping<K, V> cm = (ContinuousMapping<K, V>) continuousMappingFactory
-								.createVisualMappingFunction(attrName, Number.class, vp);
+								.createVisualMappingFunction(attrName, Number.class, null, vp);
 
 						for (org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint pModel : cmModel
 								.getContinuousMappingPoint()) {

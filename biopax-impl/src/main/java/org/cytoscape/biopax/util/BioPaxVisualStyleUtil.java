@@ -175,7 +175,7 @@ public class BioPaxVisualStyleUtil {
 		// create a discrete mapper, for mapping a biopax type to a shape
 		DiscreteMapping<String, NodeShape> function = (DiscreteMapping<String, NodeShape>) discreteFactory
 				.createVisualMappingFunction(
-						BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class, null,
 						RichVisualLexicon.NODE_SHAPE);
 
 		// map all physical entities to circles
@@ -211,11 +211,11 @@ public class BioPaxVisualStyleUtil {
 		// to a particular node size.
 		DiscreteMapping<String, Double> width = (DiscreteMapping<String, Double>) discreteFactory
 				.createVisualMappingFunction(
-						BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class, null,
 						MinimalVisualLexicon.NODE_WIDTH);
 		DiscreteMapping<String, Double> height = (DiscreteMapping<String, Double>) discreteFactory
 				.createVisualMappingFunction(
-						BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class, null, 
 						MinimalVisualLexicon.NODE_HEIGHT);
 
 		// map all interactions to required size
@@ -265,7 +265,7 @@ public class BioPaxVisualStyleUtil {
 	private void createNodeLabel(VisualStyle style) {
 		// create pass through mapper for node labels
 		style.addVisualMappingFunction(passthroughFactory
-				.createVisualMappingFunction(CyNode.NAME, String.class,
+				.createVisualMappingFunction(CyNode.NAME, String.class, null,
 						MinimalVisualLexicon.NODE_LABEL));
 	}
 
@@ -278,7 +278,7 @@ public class BioPaxVisualStyleUtil {
 		// to a particular node color
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
-						BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class, null, 
 						MinimalVisualLexicon.NODE_FILL_COLOR);
 
 		// map all complex to black
@@ -295,7 +295,7 @@ public class BioPaxVisualStyleUtil {
 		// to a particular node color
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
-						BIOPAX_ENTITY_TYPE, String.class,
+						BIOPAX_ENTITY_TYPE, String.class, null,
 						RichVisualLexicon.NODE_BORDER_PAINT);
 
 		// map all complex to black

@@ -108,9 +108,11 @@ public class DefaultVisualStyleBuilder {
 		newStyle.setDefaultValue(NETWORK_BACKGROUND_PAINT, DEFAULT_BACKGROUND_COLOR );
 		
 		// Create label mappings
-		final PassthroughMapping<String, String> labelMapping = (PassthroughMapping)passthroughMappingFactory.createVisualMappingFunction(NAME, String.class, null, NODE_LABEL);
-		final PassthroughMapping<String, String> edgeLabelMapping = (PassthroughMapping)passthroughMappingFactory.createVisualMappingFunction(INTERACTION, String.class, null, EDGE_LABEL);
-		
+		final PassthroughMapping<String, String> labelMapping = (PassthroughMapping) passthroughMappingFactory
+				.createVisualMappingFunction(NAME, String.class, null, NODE_LABEL);
+		final PassthroughMapping<String, String> edgeLabelMapping = (PassthroughMapping) passthroughMappingFactory
+				.createVisualMappingFunction(INTERACTION, String.class, null, EDGE_LABEL);
+
 		newStyle.addVisualMappingFunction(labelMapping);
 		newStyle.addVisualMappingFunction(edgeLabelMapping);
 		
