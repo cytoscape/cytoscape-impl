@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.gui.internal;
 import java.awt.Color;
 import java.awt.Font;
 import java.beans.PropertyEditor;
+import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,10 +24,12 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
@@ -67,7 +70,7 @@ public class VizMapPropertySheetBuilder {
 	private final VizMapperUtil util;
 	
 	private final VisualMappingManager vmm;
-
+	
 	/*
 	 * Keeps Properties in the browser.
 	 */
@@ -119,28 +122,22 @@ public class VizMapPropertySheetBuilder {
 		 * Set Tooltiptext for the table.
 		 */
 		propertySheetPanel.setTable(new VizMapPropertySheetTable());
-		propertySheetPanel
-				.getTable()
-				.getColumnModel()
-				.addColumnModelListener(
-						new VizMapPropertySheetTableColumnModelListener(this));
+		propertySheetPanel.getTable().getColumnModel()
+				.addColumnModelListener(new VizMapPropertySheetTableColumnModelListener(this));
 
 		/*
 		 * By default, show category.
 		 */
 		propertySheetPanel.setMode(PropertySheetPanel.VIEW_AS_CATEGORIES);
 
-		// TODO: fix context menu
-		//propertySheetPanel.getTable().setComponentPopupMenu(menuMgr.getContextMenu());
 
 		// TODO: fix listener
 		propertySheetPanel.getTable().addMouseListener(
-				new VizMapPropertySheetMouseAdapter(this.menuMgr, this, propertySheetPanel,
-						style, editorManager));
+				new VizMapPropertySheetMouseAdapter(this.menuMgr, this, propertySheetPanel, style, editorManager));
 
-		PropertySheetTable table = propertySheetPanel.getTable();
+		final PropertySheetTable table = propertySheetPanel.getTable();
 
-		table.setRowHeight(25);
+		table.setRowHeight(27);
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setCategoryBackground(new Color(10, 10, 50, 20));
 		table.setCategoryForeground(Color.black);
@@ -161,69 +158,6 @@ public class VizMapPropertySheetBuilder {
 		filledBoxRenderer = new DefaultTableCellRenderer();
 		filledBoxRenderer.setBackground(Color.white);
 		filledBoxRenderer.setForeground(Color.blue);
-
-		// TODO: fix icon list
-		// VisualPropertyIcon newIcon;
-		//
-		// List<Icon> iconList = new ArrayList<Icon>();
-		// final List<NodeShape> nodeShapes = new ArrayList<NodeShape>();
-		//
-		// for (Object key : nodeShapeIcons.keySet()) {
-		// NodeShape shape = (NodeShape) key;
-		//
-		// if (shape.isSupported()) {
-		// iconList.add(nodeShapeIcons.get(key));
-		// nodeShapes.add(shape);
-		// }
-		// }
-		//
-		// Icon[] iconArray = new Icon[iconList.size()];
-		// String[] shapeNames = new String[iconList.size()];
-		//
-		// for (int i = 0; i < iconArray.length; i++) {
-		// newIcon = ((NodeIcon) iconList.get(i)).clone();
-		// newIcon.setIconHeight(16);
-		// newIcon.setIconWidth(16);
-		// iconArray[i] = newIcon;
-		// shapeNames[i] = nodeShapes.get(i).getShapeName();
-		// }
-		//
-		// // shapeCellEditor.setAvailableValues(nodeShapes.toArray());
-		// // shapeCellEditor.setAvailableIcons(iconArray);
-		// iconList.clear();
-		// iconList.addAll(arrowShapeIcons.values());
-		// iconArray = new Icon[iconList.size()];
-		//
-		// String[] arrowNames = new String[iconList.size()];
-		// Set arrowShapes = arrowShapeIcons.keySet();
-		//
-		// for (int i = 0; i < iconArray.length; i++) {
-		// newIcon = ((ArrowIcon) iconList.get(i));
-		// newIcon.setIconHeight(16);
-		// newIcon.setIconWidth(40);
-		// newIcon.setBottomPadding(-9);
-		// iconArray[i] = newIcon;
-		// arrowNames[i] = newIcon.getName();
-		// }
-		//
-		// // arrowCellEditor.setAvailableValues(arrowShapes.toArray());
-		// // arrowCellEditor.setAvailableIcons(iconArray);
-		// iconList = new ArrayList();
-		// iconList.addAll(lineTypeIcons.values());
-		// iconArray = new Icon[iconList.size()];
-		// shapeNames = new String[iconList.size()];
-		//
-		// Set lineTypes = lineTypeIcons.keySet();
-		//
-		// for (int i = 0; i < iconArray.length; i++) {
-		// newIcon = (VisualPropertyIcon) (iconList.get(i));
-		// newIcon.setIconHeight(16);
-		// newIcon.setIconWidth(16);
-		// iconArray[i] = newIcon;
-		// shapeNames[i] = newIcon.getName();
-		// }
-		// lineCellEditor.setAvailableValues(lineTypes.toArray());
-		// lineCellEditor.setAvailableIcons(iconArray);
 	}
 
 	private List<Property> getPropertyListFromVisualStyle(final VisualStyle style) {
@@ -276,21 +210,33 @@ public class VizMapPropertySheetBuilder {
 		for (VisualMappingFunction<?, ?> mapping : mappings) {
 
 			final VisualProperty<?> targetVP = mapping.getVisualProperty();
-			logger.debug("!!!!!!Checking VP: " + targetVP.getDisplayName() + " for " + categoryName);
 			// execute the following only if category matches.
 			if (vpSet.contains(targetVP) == false)
 				continue;
 			
 			logger.debug("This is a leaf VP: " + targetVP.getDisplayName());
 
+			CyComboBoxPropertyEditor mappingSelector = (CyComboBoxPropertyEditor) editorManager.getDefaultComboBoxEditor("mappingTypeEditor");
+			Set<Object> factories = mappingSelector.getAvailableValues();
+			System.out.println("# Factory Size =  = " + factories.size());
+			
+			VisualMappingFunctionFactory vmfFactory = null;
+			for(Object f: factories) {
+				VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) f;
+				Class<?> type = factory.getMappingFunctionType();				
+				if(type.isAssignableFrom(mapping.getClass())) {
+					vmfFactory = factory;
+					break;
+				}
+			}
+			
 			final VizMapperProperty<?, String, ?> calculatorTypeProp = vizMapPropertyBuilder
-					.buildProperty(mapping, categoryName, propertySheetPanel, null);
+					.buildProperty(mapping, categoryName, propertySheetPanel, vmfFactory);
 
 			logger.debug("Built new PROP: " + calculatorTypeProp.getDisplayName());
 			
 			
-			PropertyEditor editor = ((PropertyEditorRegistry) propertySheetPanel
-					.getTable().getEditorFactory())
+			PropertyEditor editor = ((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory())
 					.getEditor(calculatorTypeProp);
 			
 			
@@ -299,7 +245,6 @@ public class VizMapPropertySheetBuilder {
 					&& (calculatorTypeProp.getCategory().equals(
 							"Unused Properties") == false)) {
 				
-				logger.debug("***** Testing category: " + categoryName);
 				((PropertyEditorRegistry) this.propertySheetPanel
 						.getTable().getEditorFactory())
 						.registerEditor(calculatorTypeProp, editorManager

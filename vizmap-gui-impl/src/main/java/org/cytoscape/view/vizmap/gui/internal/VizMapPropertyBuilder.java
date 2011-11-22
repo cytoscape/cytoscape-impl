@@ -135,11 +135,13 @@ public class VizMapPropertyBuilder {
 		}
 
 		mappingHeader.setDisplayName("Mapping Type");
-
+System.out.println("** Setting mapping type prop: " + visualMapping.getVisualProperty().getDisplayName());
+System.out.println("** Setting mapping factory: " + factory);
+System.out.println("** Setting mapping: " + visualMapping);
 		// Set mapping type as string.
 		mappingHeader.setValue(factory);
 		mappingHeader.setInternalValue(visualMapping);
-
+		
 		// Set parent-child relationship
 		mappingHeader.setParentProperty(topProperty);
 		topProperty.addSubProperty(mappingHeader);

@@ -194,7 +194,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 	protected void switchVS(final VisualStyle style, boolean forceUpdate) {
 
-		logger.debug("######## Switching VS start: " + style.getTitle());
+		logger.debug("Switching VS start: " + style.getTitle());
 		
 		// If new VS name is the same, ignore.
 		if (!forceUpdate && style.equals(manager.getCurrentVisualStyle()))
@@ -203,7 +203,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// Close editor windows
 		editorWindowManager.closeAllEditorWindows();
 
-		logger.debug("######## Need to create new prop sheet: " + style.getTitle());
 		vizMapPropertySheetBuilder.setPropertyTable(style);
 		updateAttributeList();
 
@@ -219,7 +218,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 					currentView.updateView();
 				}
 			});
-			
 		}
 
 		/*
@@ -467,6 +465,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 			return;
 		}
 		
+		// Style already exists
 		if(vsComboBoxModel.getIndexOf(newStyle) != -1) {
 			logger.info(newStyle.getTitle() + " is already in the combobox.");
 			switchVS(newStyle, true);
@@ -489,7 +488,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		
 		logger.info("New Visual Style registered to combo box: " + newStyle.getTitle());
 		// TODO: switch only if it is necessary
-		//switchVS(newStyle, true);
+		switchVS(newStyle, true);
 	}
 
 	@Override

@@ -20,9 +20,13 @@ package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.ItemSelectable;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.management.modelmbean.ModelMBean;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -76,18 +80,11 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 
 				try {
-					if ((combo.getSelectedItem() == null)
-							&& (combo.getItemCount() != 0)) {
+					if ((combo.getSelectedItem() == null) && (combo.getItemCount() != 0)) {
 						combo.setSelectedIndex(0);
-						CyComboBoxPropertyEditor.this.firePropertyChange(
-								oldValue, combo.getItemAt(0));
+						CyComboBoxPropertyEditor.this.firePropertyChange(oldValue, combo.getItemAt(0));
 					} else
-						CyComboBoxPropertyEditor.this.firePropertyChange(
-								oldValue, combo.getSelectedItem());
-
-					System.out
-							.println("!!!!!!!!Event fired from Combobox Editor: "
-									+ combo.getSelectedItem());
+						CyComboBoxPropertyEditor.this.firePropertyChange(oldValue, combo.getSelectedItem());
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -96,11 +93,11 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 			}
 		});
+		
 		combo.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
-					CyComboBoxPropertyEditor.this.firePropertyChange(oldValue,
-							combo.getSelectedItem());
+					CyComboBoxPropertyEditor.this.firePropertyChange(oldValue, combo.getSelectedItem());
 			}
 		});
 		combo.setSelectedIndex(-1);
@@ -158,6 +155,15 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 		if (((JComboBox) editor).getItemCount() != 0) {
 			((JComboBox) editor).setSelectedIndex(0);
 		}
+	}
+	
+	public Set<Object> getAvailableValues() {
+		final int itemCount = ((JComboBox) editor).getModel().getSize();
+		final Set<Object> items = new HashSet<Object>();
+		
+		for(int i=0; i<itemCount; i++)
+			items.add(((JComboBox) editor).getModel().getElementAt(i));
+		return items;
 	}
 
 	/**
