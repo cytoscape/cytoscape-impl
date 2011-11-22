@@ -845,41 +845,40 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	{
 		if (virtualColumnName == null)
 			throw new NullPointerException("\"virtualColumn\" argument must never be null!");
-		final String targetName = getUniqueColumnName(virtualColumnName);
+		if (sourceColumnName == null)
+			throw new NullPointerException("\"sourceColumn\" argument must never be null!");
+		if (sourceTable == null)
+			throw new NullPointerException("\"sourceTable\" argument must never be null!");
+		if (targetJoinKeyName == null)
+			throw new NullPointerException("\"targetJoinKey\" argument must never be null!");
+
+		String targetName = "failed to create column"; 
 
 		synchronized(this) {
-			if (sourceColumnName == null)
-				throw new NullPointerException("\"sourceColumn\" argument must never be null!");
-			if (sourceTable == null)
-				throw new NullPointerException("\"sourceTable\" argument must never be null!");
-			if (targetJoinKeyName == null)
-				throw new NullPointerException("\"targetJoinKey\" argument must never be null!");
-
 			final CyColumn sourceColumn = sourceTable.getColumn(sourceColumnName);
 			if (sourceColumn == null)
-				throw new IllegalArgumentException("\"sourceColumn\" is not a column in \"sourceColumn\"!");
+				throw new IllegalArgumentException("\""+sourceColumnName+"\" is not a column in source table!");
 
 			final CyColumn targetJoinKeyType = this.getColumn(targetJoinKeyName);
 			if (targetJoinKeyType == null)
-				throw new IllegalArgumentException("\"targetJoinKey\" is not a known column in this table!");
+				throw new IllegalArgumentException("\""+ targetJoinKeyName +"\" is not a known column in this table!");
 
 			final CyColumn sourceJoinKeyType = sourceTable.getPrimaryKey();
 			if (sourceJoinKeyType.getType() != targetJoinKeyType.getType())
-				throw new IllegalArgumentException("\"sourceJoinKey\" has a different type from \"targetJoinKey\"!");
+				throw new IllegalArgumentException("\""+sourceColumnName+"\" has a different type from \""+targetJoinKeyName+"\"!");
 
 			++((CyTableImpl)sourceTable).virtualColumnReferenceCount;
-			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(true, sourceTable, sourceColumnName, sourceTable.getPrimaryKey().getName(), targetJoinKeyName, isImmutable);
-			final CyColumn targetColumn =
-				new CyColumnImpl(this, virtualColumnName, sourceColumn.getType(),
-						 sourceColumn.getListElementType(),
-						 virtualInfo,
-						 /* isPrimaryKey = */ false,
-						 isImmutable,
-						 null);
+			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(true, sourceTable, sourceColumnName, 
+			                                                          sourceTable.getPrimaryKey().getName(), 
+			                                                          targetJoinKeyName, isImmutable);
+			final CyColumn targetColumn = new CyColumnImpl(this, virtualColumnName, sourceColumn.getType(),
+			                                               sourceColumn.getListElementType(), virtualInfo,
+			                                               /* isPrimaryKey = */ false, isImmutable, null);
+			targetName = getUniqueColumnName(virtualColumnName);
 			types.put(targetName, targetColumn);
-			virtualColumnMap.put(targetName,
-					     new VirtualColumn(sourceTable, sourceColumnName, this,
-							       sourceTable.getPrimaryKey().getName(), targetJoinKeyName));
+			virtualColumnMap.put(targetName, new VirtualColumn(sourceTable, sourceColumnName, this,
+			                                                   sourceTable.getPrimaryKey().getName(), 
+			                                                   targetJoinKeyName));
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName));
@@ -928,7 +927,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		final CyColumn targetJoinKey = this.getColumn(targetJoinKeyName);
 		if (targetJoinKey == null)
 			throw new IllegalArgumentException("\"" + targetJoinKeyName
-							   + "\" is not a known column in this table!");
+							   + "\" is not a known column in this table (" + getTitle() +")!");
 
 		final CyColumn sourceJoinKey = sourceTable.getPrimaryKey();
 		if (sourceJoinKey.getType() != targetJoinKey.getType())
