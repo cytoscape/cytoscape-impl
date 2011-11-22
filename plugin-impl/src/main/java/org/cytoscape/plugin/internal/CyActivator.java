@@ -106,8 +106,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		Properties pluginLoaderTaskFactoryProps = new Properties();
-		pluginLoaderTaskFactoryProps.setProperty("preferredMenu","File.Import");
-		pluginLoaderTaskFactoryProps.setProperty("title","Plugin...");
+//		pluginLoaderTaskFactoryProps.setProperty("preferredMenu","Plugins");
+//		pluginLoaderTaskFactoryProps.setProperty("title","Import Plugin...");
 		registerService(bc,pluginLoaderTaskFactory,TaskFactory.class, pluginLoaderTaskFactoryProps);
 		registerService(bc,pluginManagerAction,CyAction.class, new Properties());
 	}
