@@ -218,7 +218,6 @@ public class VizMapPropertySheetBuilder {
 
 			CyComboBoxPropertyEditor mappingSelector = (CyComboBoxPropertyEditor) editorManager.getDefaultComboBoxEditor("mappingTypeEditor");
 			Set<Object> factories = mappingSelector.getAvailableValues();
-			System.out.println("# Factory Size =  = " + factories.size());
 			
 			VisualMappingFunctionFactory vmfFactory = null;
 			for(Object f: factories) {

@@ -136,7 +136,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 			CyEventHelper eventHelper,
 			final SelectedVisualStyleManager manager,
 			final ImportDefaultVizmapTaskFactory taskFactory,
-			final TaskManager tManager) {
+			final TaskManager<?, ?> tManager) {
 
 		super(vsFactory, defViewEditor, iconMgr, colorMgr, vmm, menuMgr,
 				editorFactory, propertySheetPanel, vizMapPropertySheetBuilder,
@@ -145,18 +145,10 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// Initialize all components
 		this.defaultViewMouseListener = new DefaultViewMouseListener(defViewEditor, this, manager);
 		
+		initPanel();
+		
 		// Load default styles
 		tManager.execute(taskFactory);
-		
-		try{
-			// TODO: To remove this, we need a new event: VizmapFileLoadedEvent
-			Thread.sleep(1000);  // Wait until styles are loaded
-			initPanel();
-			switchVS(vmm.getDefaultVisualStyle(), true);
-		} catch(Exception ex) {
-			logger.warn("Initialization failed!");
-			switchVS(vmm.getDefaultVisualStyle(), true);
-		}
 	}
 
 	private void initPanel() {
@@ -193,13 +185,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	}
 
 	protected void switchVS(final VisualStyle style, boolean forceUpdate) {
-
-		logger.debug("Switching VS start: " + style.getTitle());
-		
-		// If new VS name is the same, ignore.
-		if (!forceUpdate && style.equals(manager.getCurrentVisualStyle()))
-			return;
-
 		// Close editor windows
 		editorWindowManager.closeAllEditorWindows();
 
@@ -220,25 +205,18 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 			});
 		}
 
-		/*
-		 * Draw default view
-		 */
-		Image defImg = defaultImageManager.get(style);
-
-		if (defImg == null) {
-			// Default image is not available in the buffer. Create a new one.
-			updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style)).getRenderingEngine(),
-					defaultViewImagePanel.getSize());
-			defImg = defaultImageManager.get(style);
-		}
-
+		final Dimension newSize = new Dimension(mainSplitPane.getWidth(), mainSplitPane.getDividerLocation());
+		// Default image is not available in the buffer. Create a new one.
+		updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style)).getRenderingEngine(), newSize);
+		final Image defImg = defaultImageManager.get(style);
 		// Set the default view to the panel.
 		setDefaultViewImagePanel(defImg, style);
+
+		// Set the default view to the panel.
 		propertySheetPanel.setSorting(true);
 	}
 
-	public void refreshUI() {
-
+	void refreshUI() {
 		final List<VisualStyle> visualStyles = new ArrayList<VisualStyle>(
 				vmm.getAllVisualStyles());
 
@@ -253,7 +231,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		Component defPanel;
 
 		final Dimension panelSize = defaultViewImagePanel.getSize();
-		CyNetworkView view;
 
 		// TODO: make sortable!
 		// Collections.sort(visualStyles);
@@ -262,9 +239,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 			logger.info("Adding VS: " + vs.getTitle());
 			vsComboBoxModel.addElement(vs);
 			defPanel = defViewEditor.getDefaultView(vs);
-			RenderingEngine<CyNetwork> engine = ((DefaultViewPanel) defPanel)
-					.getRenderingEngine();
-
+			final RenderingEngine<CyNetwork> engine = ((DefaultViewPanel) defPanel).getRenderingEngine();
 			updateDefaultImage(vs, engine, panelSize);
 		}
 
@@ -273,8 +248,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		// Sync check box and actual lock state
 		spcs.firePropertyChange("UPDATE_LOCK", null, true);
-
-		// switchNodeSizeLock(lockSize.isSelected());
 
 		// Restore listeners
 		for (int i = 0; i < li.length; i++)
@@ -296,14 +269,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	}
 
 	public void updateAttributeList() {
-		// TODO: use new event listener to do this.
 		vizMapPropertySheetBuilder.setAttrComboBox();
-		// final Set mappingTypes =
-		// vmm.getCalculatorCatalog().getMappingNames();
-		//
-		// // mappingTypeEditor.setAvailableValues(mappingTypes.toArray());
-		// spcs.firePropertyChange("UPDATE_AVAILABLE_VAL", "mappingTypeEditor",
-		// mappingTypes.toArray());
 	}
 
 	/**
@@ -563,6 +529,15 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	public void handleEvent(SelectedVisualStyleSwitchedEvent e) {
 		final VisualStyle newStyle = e.getNewVisualStyle();
 		this.visualStyleComboBox.setSelectedItem(newStyle);
+		
+		switchVS(newStyle, true);
+		
+//		final Dimension newSize = new Dimension(mainSplitPane.getWidth(), mainSplitPane.getDividerLocation());
+//		// Default image is not available in the buffer. Create a new one.
+//		updateDefaultImage(newStyle, ((DefaultViewPanel) defViewEditor.getDefaultView(newStyle)).getRenderingEngine(), newSize);
+//		final Image defImg = defaultImageManager.get(newStyle);
+//		// Set the default view to the panel.
+//		setDefaultViewImagePanel(defImg, newStyle);
 	}
 
 	

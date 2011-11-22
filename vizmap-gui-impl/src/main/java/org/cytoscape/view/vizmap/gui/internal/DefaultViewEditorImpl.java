@@ -657,29 +657,9 @@ public class DefaultViewEditorImpl extends JDialog implements
 		
 	}
 
-	// /*
-	// * Draw global color icon
-	// */
-	// class GlobalIcon extends VisualPropertyIcon {
-	// private final static long serialVersionUID = 1202339876659938L;
-	//
-	// public GlobalIcon(String name, Color color) {
-	// super(name, color);
-	// }
-	//
-	// public void paintIcon(Component c, Graphics g, int x, int y) {
-	// Graphics2D g2d = (Graphics2D) g;
-	//
-	// g2d.setColor(color);
-	// g2d.fillRect(5, 3, 50, 32);
-	//
-	// g2d.setStroke(new BasicStroke(1f));
-	// g2d.setColor(Color.DARK_GRAY);
-	// g2d.drawRect(5, 3, 50, 32);
-	// }
-	// }
-
-	public Component getDefaultView(VisualStyle vs) {
+	
+	@Override
+	public Component getDefaultView(final VisualStyle vs) {
 		mainView.updateView(vs);
 		return mainView;
 	}
