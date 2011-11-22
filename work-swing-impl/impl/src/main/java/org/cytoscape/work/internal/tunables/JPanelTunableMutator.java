@@ -56,6 +56,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	
 	/** A reference to the parent <code>JPanel</code>, if any. */
 	private JPanel tunablePanel = null;
+	private JPanel providedGUI = null;
 
 	/** Provides an initialised logger. */
 	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
@@ -97,7 +98,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	public JPanel buildConfiguration(final Object proxyObj) {
 		final Object objectWithTunables = DIUtil.stripProxy(proxyObj);
 
-		JPanel providedGUI = null;
 		int factoryCount = 0; // # of descendents of TaskFactory...
 		int otherCount = 0;   // ...everything else.  (Presumeably descendents of Task.)
 		if (objectWithTunables instanceof TaskFactory)
@@ -129,14 +129,14 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				tunablePanel = null;
 				return retVal;
 			}
-		}
+		} 
 
 		if (handlers.isEmpty()) {
 			if (tunablePanel != null) {
 				tunablePanel.removeAll();
 				return tunablePanel;
 			}
-			return null;
+			return null; 
 		}
 
 		if (!panelMap.containsKey(handlers)) {
@@ -312,8 +312,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 		final Appendable errMsg = new StringBuilder();
 		try {
-			final ValidationState validationState =
-				((TunableValidator)objectWithTunables).getValidationState(errMsg);
+			final ValidationState validationState = ((TunableValidator)objectWithTunables).getValidationState(errMsg);
 			if (validationState == ValidationState.INVALID) {
 				JOptionPane.showMessageDialog(new JFrame(), errMsg.toString(),
 				                              "Input Validation Problem",
@@ -338,17 +337,23 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	private List<GUITunableHandler> findHandlers(Object objectWithTunables) {
 		List<GUITunableHandler> handlers = new ArrayList<GUITunableHandler>();
 
-		JPanel providedGUI = null;
+		// clear any previously set providedGUI panels
+		providedGUI = null;
+
+		// the call to getHandlers will populate guiProviderMap
+		// note that map may be empty!
+		Map<String, GUITunableHandler> tunableHandlerMap = getHandlers(objectWithTunables);
+
 		if (guiProviderMap.containsKey(objectWithTunables)) {
-			if (providedGUI != null)
-				throw new IllegalStateException("Found more than one provided GUI!");
 			try {
 				providedGUI = (JPanel)guiProviderMap.get(objectWithTunables).invoke(objectWithTunables);
 			} catch (final Exception e) {
 				logger.error("Can't retrieve @ProvidesGUI JPanel: ", e);
 			}
-		} else 
-			handlers.addAll(getHandlers(objectWithTunables).values());
+		} else {
+			if ( tunableHandlerMap != null && !tunableHandlerMap.isEmpty() )
+				handlers.addAll(tunableHandlerMap.values());
+		}
 
 		return handlers;
 	}
