@@ -263,17 +263,17 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 		constraints.gridx = 2;
 		constraints.gridy = 0;
 
-		mainSplitPane.setDividerLocation(120);
+		mainSplitPane.setDividerLocation(160);
 		mainSplitPane.setDividerSize(4);
 		// TODO why do we have to do this?
-		mainSplitPane.setSize(new Dimension(100, 120));
+		mainSplitPane.setSize(new Dimension(100, 160));
 
 		listSplitPane.setDividerLocation(400);
 		listSplitPane.setDividerSize(5);
 		listSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 		
 		// Default View Panel
-		defaultViewImagePanel.setMinimumSize(new Dimension(200, 200));
+		//defaultViewImagePanel.setMinimumSize(new Dimension(200, 200));
 		defaultViewImagePanel.setPreferredSize(new Dimension(mainSplitPane.getWidth(), mainSplitPane
 				.getDividerLocation()));
 		defaultViewImagePanel.setSize(defaultViewImagePanel.getPreferredSize());
@@ -406,11 +406,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 	protected JButton addButton;
 	protected JPanel bottomPanel;
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	public PropertyChangeSupport getPropertyChangeSupport() {
 		return this.spcs;
 	}
@@ -418,103 +414,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 	public Map<VisualStyle, Image> getDefaultImageManager() {
 		return this.defaultImageManager;
 	}
-
-	/**
-	 * Setup menu items.<br>
-	 * 
-	 * This includes both icon menu and right-click menu.
-	 * 
-	 */
-	private void setMenu() {
-		// final Font italicMenu = new Font("SansSerif", Font.ITALIC, 14);
-		// rainbow1 = new JMenuItem("Rainbow 1");
-		// rainbow2 = new JMenuItem("Rainbow 2 (w/modulations)");
-		// randomize = new JMenuItem("Randomize");
-		// rainbow1.setFont(italicMenu);
-		// rainbow2.setFont(italicMenu);
-		//
-		// series = new JMenuItem("Series (Number Only)");
-		// fit = new JMenuItem("Fit Node Width to Label");
-		//
-		// brighter = new JMenuItem("Brighter");
-		// darker = new JMenuItem("Darker");
-		//
-		// editAll = new JMenuItem("Edit selected values at once...");
-		//
-		// delete.setIcon(iconMgr.getIcon("delIcon"));
-		// editAll.setIcon(iconMgr.getIcon("editIcon"));
-		//
-		// rainbow1.addActionListener(new GenerateValueListener(
-		// GenerateValueListener.RAINBOW1));
-		// rainbow2.addActionListener(new GenerateValueListener(
-		// GenerateValueListener.RAINBOW2));
-		// randomize.addActionListener(new GenerateValueListener(
-		// GenerateValueListener.RANDOM));
-		//
-		// series.addActionListener(new GenerateSeriesListener());
-		// fit.addActionListener(new FitLabelListener());
-		//
-		// brighter.addActionListener(new BrightnessListener(
-		// BrightnessListener.BRIGHTER));
-		// darker.addActionListener(new BrightnessListener(
-		// BrightnessListener.DARKER));
-		//
-		// delete.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent e) {
-		// removeMapping();
-		// }
-		// });
-		// editAll.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent arg0) {
-		// editSelectedCells();
-		// }
-		// });
-		// add.addActionListener(l)
-		// select.setIcon(vmIcon);
-
-		// generateValues.add(rainbow1);
-		// generateValues.add(rainbow2);
-		// generateValues.add(randomize);
-		// generateValues.add(series);
-		// generateValues.add(fit);
-
-		// modifyValues.add(brighter);
-		// modifyValues.add(darker);
-		//
-		// rainbow1.setEnabled(false);
-		// rainbow2.setEnabled(false);
-		// randomize.setEnabled(false);
-		// series.setEnabled(false);
-		// fit.setEnabled(false);
-		//
-		// brighter.setEnabled(false);
-		// darker.setEnabled(false);
-		//
-		// delete.setEnabled(false);
-		// menuMgr.getContextMenu().addPopupMenuListener(this);
-	}
-
-	// ///////////////// Managing Visual Style Combobox //////////////////
-
-//	public void setSelectedVisualStyle(final VisualStyle vs) {
-//		final int itemCount = vsComboBoxModel.getSize();
-//
-//		for (int i = 0; i < itemCount; i++) {
-//			if (visualStyleComboBox.getItemAt(i).equals(vs)) {
-//
-//				eventHelper
-//						.fireAsynchronousEvent(new SelectedVisualStyleSwitchedEvent(
-//								visualStyleComboBox,
-//								(VisualStyle) visualStyleComboBox.getItemAt(i),
-//								vs));
-//				visualStyleComboBox.setSelectedItem(vs);
-//				return;
-//			}
-//		}
-//
-//		throw new IllegalArgumentException(
-//				"No such Visual Style in the combo box: " + vs);
-//	}
 
 	public JPanel getDefaultViewPanel() {
 		return this.defaultViewImagePanel;

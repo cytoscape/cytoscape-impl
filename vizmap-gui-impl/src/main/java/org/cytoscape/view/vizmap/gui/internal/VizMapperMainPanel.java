@@ -35,6 +35,8 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +80,7 @@ import org.cytoscape.view.vizmap.gui.internal.task.ImportDefaultVizmapTaskFactor
 import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.work.TaskManager;
+import org.omg.CORBA.PRIVATE_MEMBER;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,6 +160,28 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// By default, force to sort property by prop name.
 		propertySheetPanel.setSorting(true);
 		refreshUI();
+		
+		this.addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				resizeImage();
+			}
+		});
+	}
+	
+
+	private void resizeImage() {
+		VisualStyle style = manager.getCurrentVisualStyle();
+		
+		final Dimension panelSize = getDefaultViewPanel().getSize();
+		final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
+		final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
+		
+		final Dimension newSize = new Dimension(newWidth, newHeight);
+		// Default image is not available in the buffer. Create a new one.
+		updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style)).getRenderingEngine(), newSize);
+		final Image defImg = defaultImageManager.get(style);
+		// Set the default view to the panel.
+		setDefaultViewImagePanel(defImg, style);
 	}
 	
 	
@@ -204,8 +229,11 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 				}
 			});
 		}
-
-		final Dimension newSize = new Dimension(mainSplitPane.getWidth(), mainSplitPane.getDividerLocation());
+		
+		final Dimension panelSize = getDefaultViewPanel().getSize();
+		final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
+		final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
+		final Dimension newSize = new Dimension(newWidth, newHeight);
 		// Default image is not available in the buffer. Create a new one.
 		updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style)).getRenderingEngine(), newSize);
 		final Image defImg = defaultImageManager.get(style);
@@ -240,7 +268,11 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 			vsComboBoxModel.addElement(vs);
 			defPanel = defViewEditor.getDefaultView(vs);
 			final RenderingEngine<CyNetwork> engine = ((DefaultViewPanel) defPanel).getRenderingEngine();
-			updateDefaultImage(vs, engine, panelSize);
+			
+			final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
+			final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
+			final Dimension newSize = new Dimension(newWidth, newHeight);
+			updateDefaultImage(vs, engine, newSize);
 		}
 
 		// Switch back to the original style.
@@ -321,7 +353,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	 *            DOCUMENT ME!
 	 */
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-		// disableAllPopup();
 
 		final int selected = propertySheetPanel.getTable().getSelectedRow();
 
@@ -335,49 +366,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 
 		if (curProp == null)
 			return;
-
-		VizMapperProperty prop = ((VizMapperProperty) curProp);
-
-		// FIXME
-		// if (prop.getHiddenObject() instanceof VisualProperty
-		// && (prop.getDisplayName().contains("Mapping Type") == false)
-		// && (prop.getValue() != null)
-		// && (prop.getValue().toString().startsWith("Please select") == false))
-		// {
-		// // Enble delete menu
-		// // delete.setEnabled(true);
-		// Property[] children = prop.getSubProperties();
-		//
-		// for (Property p : children) {
-		// if ((p.getDisplayName() != null)
-		// && p.getDisplayName().contains("Mapping Type")) {
-		// if ((p.getValue() == null)
-		// || (p.getValue().equals("Discrete Mapping") == false)) {
-		// return;
-		// }
-		// }
-		// }
-		//
-		// VisualProperty type = ((VisualProperty) prop.getHiddenObject());
-		//
-		// Class dataType = type.getType();
-		//
-		// // if (dataType == Color.class) {
-		// // rainbow1.setEnabled(true);
-		// // rainbow2.setEnabled(true);
-		// // randomize.setEnabled(true);
-		// // brighter.setEnabled(true);
-		// // darker.setEnabled(true);
-		// // } else if (dataType == Number.class) {
-		// // randomize.setEnabled(true);
-		// // series.setEnabled(true);
-		// // }
-		// //
-		// // if ((type == VisualProperty.NODE_WIDTH)
-		// // || (type == VisualProperty.NODE_HEIGHT)) {
-		// // fit.setEnabled(true);
-		// // }
-		// }
 
 		return;
 	}
@@ -447,11 +435,14 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		// Update default panel
 		final Component defPanel = defViewEditor.getDefaultView(newStyle);
 		final RenderingEngine<CyNetwork> engine = ((DefaultViewPanelImpl) defPanel).getRenderingEngine();
-		final Dimension panelSize = defaultViewImagePanel.getSize();
 
-		if (engine != null)
-			updateDefaultImage(newStyle, engine, panelSize);
-		
+		if (engine != null) {
+			final Dimension panelSize = getDefaultViewPanel().getSize();
+			final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
+			final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
+			final Dimension newSize = new Dimension(newWidth, newHeight);
+			updateDefaultImage(newStyle, engine, newSize);
+		}
 		logger.info("New Visual Style registered to combo box: " + newStyle.getTitle());
 		// TODO: switch only if it is necessary
 		switchVS(newStyle, true);
@@ -531,13 +522,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		this.visualStyleComboBox.setSelectedItem(newStyle);
 		
 		switchVS(newStyle, true);
-		
-//		final Dimension newSize = new Dimension(mainSplitPane.getWidth(), mainSplitPane.getDividerLocation());
-//		// Default image is not available in the buffer. Create a new one.
-//		updateDefaultImage(newStyle, ((DefaultViewPanel) defViewEditor.getDefaultView(newStyle)).getRenderingEngine(), newSize);
-//		final Image defImg = defaultImageManager.get(newStyle);
-//		// Set the default view to the panel.
-//		setDefaultViewImagePanel(defImg, newStyle);
 	}
 
 	
@@ -549,7 +533,5 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		
 		this.visualStyleComboBox.setSelectedItem(newStyle);
 		visualStyleComboBox.repaint();
-
-		logger.info("$$$$$$$$$$$$ Updating VS Combo Box to: " + newStyle.getTitle());
 	}
 }

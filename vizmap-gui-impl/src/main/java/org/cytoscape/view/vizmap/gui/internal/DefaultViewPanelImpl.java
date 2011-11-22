@@ -67,7 +67,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 
 	private final static long serialVersionUID = 1202339876691085L;
 
-	private static final Dimension MIN_SIZE = new Dimension(300, 200);
+	private static final Dimension MIN_SIZE = new Dimension(250, 150);
 	
 	// Space around view.
 	private static final int PADDING = 20;
@@ -96,8 +96,6 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		this.innerPanel.setBorder(new EmptyBorder(PADDING, PADDING, PADDING, PADDING));
 
 		this.setPreferredSize(MIN_SIZE);
-		this.setSize(MIN_SIZE);
-		this.setMinimumSize(MIN_SIZE);
 		this.setBorder(new LineBorder(Color.DARK_GRAY, 2));
 		this.setLayout(new BorderLayout());
 		this.add(innerPanel, BorderLayout.CENTER);
@@ -140,8 +138,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 150d);
 		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 20d);
 
-		final VisualStyle currentStyle = selectedManager
-				.getCurrentVisualStyle();
+		final VisualStyle currentStyle = selectedManager.getCurrentVisualStyle();
 		currentStyle.apply(dummyview);
 
 		this.innerPanel.setBackground((Color) currentStyle.getDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT));
@@ -153,8 +150,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 
 	
 	void updateView(final VisualStyle vs) {
-		final CyNetworkView viewModel = (CyNetworkView) renderingEngine
-				.getViewModel();
+		final CyNetworkView viewModel = (CyNetworkView) renderingEngine.getViewModel();
 		vs.apply(viewModel);
 		this.innerPanel.setBackground((Color) vs.getDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT));
 		// This is necessary to adjust the size of default image.
@@ -163,7 +159,6 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	
 	void updateView() {
 		updateView(selectedManager.getCurrentVisualStyle());
-		
 	}
 
 	@Override
