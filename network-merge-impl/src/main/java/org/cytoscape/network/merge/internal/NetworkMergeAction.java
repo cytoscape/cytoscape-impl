@@ -52,25 +52,25 @@ public class NetworkMergeAction extends AbstractCyAction {
 
 	private static final long serialVersionUID = -597481727043928800L;
 	
+	private static final String PLUGIN_MENU_TITLE ="Merge Networks";
+	private static final String PARENT_MENU ="Tools";
+	
 	private final CySwingApplication swingApp;
-        private final CyNetworkManager cnm;
-        private final CyNetworkFactory cnf;
-        private final CyNetworkNaming cnn;
-        private final TaskManager taskManager;
+	private final CyNetworkManager cnm;
+	private final CyNetworkFactory cnf;
+	private final CyNetworkNaming cnn;
+	private final TaskManager taskManager;
 
-	public NetworkMergeAction(CyApplicationManager appMgr,
-			CySwingApplication swingApp,
-                        CyNetworkManager cnm,
-                        CyNetworkFactory cnf,
-                        CyNetworkNaming cnn,
-                        TaskManager taskManager) {
-		super("CyMerge", appMgr);
-		setPreferredMenu("Plugins");
+	public NetworkMergeAction(CyApplicationManager appMgr, CySwingApplication swingApp, CyNetworkManager cnm,
+			CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager) {
+		super(PLUGIN_MENU_TITLE, appMgr);
+		setPreferredMenu(PARENT_MENU);
+		
 		this.swingApp = swingApp;
-                this.cnm = cnm;
-                this.cnf = cnf;
-                this.cnn = cnn;
-                this.taskManager = taskManager;
+		this.cnm = cnm;
+		this.cnf = cnf;
+		this.cnn = cnn;
+		this.taskManager = taskManager;
 	}
 
 	/**
