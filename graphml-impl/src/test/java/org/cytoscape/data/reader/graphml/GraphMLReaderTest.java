@@ -90,11 +90,9 @@ public class GraphMLReaderTest {
 
 		final CyNode node1 = network.getNode(0);
 		assertNotNull(node1);
-		assertEquals(4, node1.getCyRow().getTable().getColumns().size());
 		
 		final CyEdge edge1 = network.getEdge(0);
 		assertNotNull(edge1);
-		assertEquals(5, edge1.getCyRow().getTable().getColumns().size());
 		
 		final CyColumn colorCol = node1.getCyRow().getTable().getColumn("color");
 		final CyColumn weightCol = edge1.getCyRow().getTable().getColumn("weight");

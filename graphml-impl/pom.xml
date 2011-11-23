@@ -58,7 +58,7 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-						<Bundle-Version>${version}</Bundle-Version>
+						<Bundle-Version>${project.version}</Bundle-Version>
 						<_include>-osgi.bnd</_include>
 					</instructions>
 				</configuration>
