@@ -16,7 +16,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableMutator;
@@ -79,12 +78,11 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	
 	/** {@inheritDoc} */
 	public boolean hasTunables(final Object o) {
-		return super.hasTunables(DIUtil.stripProxy(o));
+		return super.hasTunables(o);
 	}
 
 	/** {@inheritDoc} */
-	public boolean validateAndWriteBack(Object proxyObj) {
-		final Object objectWithTunables = DIUtil.stripProxy(proxyObj);
+	public boolean validateAndWriteBack(Object objectWithTunables) {
 
 		List<GUITunableHandler> handlers = findHandlers(objectWithTunables); 
 
@@ -95,8 +93,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	}
 
 	/** {@inheritDoc} */
-	public JPanel buildConfiguration(final Object proxyObj) {
-		final Object objectWithTunables = DIUtil.stripProxy(proxyObj);
+	public JPanel buildConfiguration(final Object objectWithTunables) {
 
 		int factoryCount = 0; // # of descendents of TaskFactory...
 		int otherCount = 0;   // ...everything else.  (Presumeably descendents of Task.)

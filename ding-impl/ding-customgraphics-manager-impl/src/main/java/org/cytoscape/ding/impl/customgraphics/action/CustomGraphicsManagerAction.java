@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.customgraphics.ui.CustomGraphicsManagerDialog;
 
@@ -17,7 +16,7 @@ public class CustomGraphicsManagerAction extends AbstractCyAction {
 	public CustomGraphicsManagerAction(final CustomGraphicsManager manager,
 	                                   final CyApplicationManager applicationManager)
 	{
-		super("Open Custom Graphics Manager", DIUtil.stripProxy(applicationManager));
+		super("Open Custom Graphics Manager", applicationManager);
 		setPreferredMenu("View");
 		
 		this.dialog = new CustomGraphicsManagerDialog(manager, applicationManager);

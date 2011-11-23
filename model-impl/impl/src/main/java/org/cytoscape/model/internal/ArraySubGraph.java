@@ -35,7 +35,6 @@ import org.cytoscape.event.CyEventHelper;
 //import org.cytoscape.model.builder.CyNodeBuilder;
 //import org.cytoscape.model.builder.CyEdgeBuilder;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -89,7 +88,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		assert(par != null);
 		parent = par;
 		internalId = inId;
-		this.eventHelper = DIUtil.stripProxy(eventHelper);
+		this.eventHelper = eventHelper;
 
 		internalSUID = inSUID; 
 		this.netTables = netTables;

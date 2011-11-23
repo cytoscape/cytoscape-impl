@@ -6,7 +6,6 @@ import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.SubmenuTunableHandler;
-import org.cytoscape.di.util.DIUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -25,8 +24,7 @@ public class SubmenuTunableMutator extends AbstractTunableInterceptor<SubmenuTun
 		// no-op 
 	}
 
-	public JMenuItem buildConfiguration(Object o) {
-		final Object objectWithTunables = DIUtil.stripProxy(o);
+	public JMenuItem buildConfiguration(Object objectWithTunables) {
 		TaskFactory tf;
 		if ( objectWithTunables instanceof TaskFactory )
 			tf = (TaskFactory)objectWithTunables;

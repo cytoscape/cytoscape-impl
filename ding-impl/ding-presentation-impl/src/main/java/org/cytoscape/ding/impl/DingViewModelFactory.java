@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -46,15 +45,15 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr) {
 
-		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
-		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);
-		this.spacialFactory = DIUtil.stripProxy(spacialFactory);
-		this.undo = DIUtil.stripProxy(undo);
-		this.dingLexicon = DIUtil.stripProxy(dingLexicon);
-		this.dialogTaskManager = DIUtil.stripProxy(dialogTaskManager);
-		this.registrar = DIUtil.stripProxy(registrar);
-		this.tableMgr = DIUtil.stripProxy(tableMgr);
-		this.eventHelper = DIUtil.stripProxy(eventHelper);
+		this.dataTableFactory = dataTableFactory;
+		this.rootNetworkFactory = rootNetworkFactory;
+		this.spacialFactory = spacialFactory;
+		this.undo = undo;
+		this.dingLexicon = dingLexicon;
+		this.dialogTaskManager = dialogTaskManager;
+		this.registrar = registrar;
+		this.tableMgr = tableMgr;
+		this.eventHelper = eventHelper;
 		this.vtfListener = vtfListener;
 		this.annMgr = annMgr;
 		this.menuTaskManager = menuTaskManager;

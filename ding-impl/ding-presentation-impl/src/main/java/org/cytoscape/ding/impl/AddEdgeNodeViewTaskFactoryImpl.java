@@ -4,7 +4,6 @@ package org.cytoscape.ding.impl;
 import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -21,7 +20,7 @@ public class AddEdgeNodeViewTaskFactoryImpl implements DropNodeViewTaskFactory {
 	private final CyNetworkManager netMgr;
 
 	public AddEdgeNodeViewTaskFactoryImpl(CyNetworkManager netMgr) {
-		this.netMgr = DIUtil.stripProxy(netMgr);
+		this.netMgr = netMgr;
 	}
 
 	public void setNodeView(View<CyNode> nv, CyNetworkView view) {

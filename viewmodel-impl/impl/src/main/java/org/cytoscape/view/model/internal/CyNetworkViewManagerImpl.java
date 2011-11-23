@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
@@ -64,7 +63,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	 */
 	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper) {
 		networkViewMap = new HashMap<Long, CyNetworkView>();
-		this.cyEventHelper = DIUtil.stripProxy(cyEventHelper);
+		this.cyEventHelper = cyEventHelper;
 	}
 
 	@Override

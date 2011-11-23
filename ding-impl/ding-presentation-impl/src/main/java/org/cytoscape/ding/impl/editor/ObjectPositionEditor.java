@@ -1,7 +1,6 @@
 package org.cytoscape.ding.impl.editor;
 
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.ding.CyObjectPositionPropertyEditor;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.ObjectPositionCellRenderer;
@@ -17,7 +16,7 @@ public class ObjectPositionEditor extends
 	 */
 	public ObjectPositionEditor(final ValueEditor<ObjectPosition> valueEditor) {
 		super(ObjectPosition.class,
-		      new CyObjectPositionPropertyEditor(DIUtil.stripProxy(valueEditor)));
+		      new CyObjectPositionPropertyEditor(valueEditor));
 
 		discreteTableCellRenderer = new ObjectPositionCellRenderer();
 //		continuousTableCellRenderer = new ColorContinuousMappingCellRenderer();

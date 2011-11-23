@@ -16,7 +16,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableValidator;
@@ -76,8 +75,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 	}
 	
 	/** {@inheritDoc} */
-	public boolean validateAndWriteBack(Object proxyObj) {
-		Object objectWithTunables = DIUtil.stripProxy(proxyObj);
+	public boolean validateAndWriteBack(Object objectWithTunables) {
 		final JPanel panel = buildConfiguration(objectWithTunables);
 		if (panel == null)
 			return true;

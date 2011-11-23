@@ -7,7 +7,6 @@ import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -67,17 +66,17 @@ public class DingRenderingEngineFactory implements
 			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr) {
 		
-		this.dataTableFactory = DIUtil.stripProxy(dataTableFactory);
-		this.rootNetworkFactory = DIUtil.stripProxy(rootNetworkFactory);
-		this.spacialFactory = DIUtil.stripProxy(spacialFactory);
-		this.undo = DIUtil.stripProxy(undo);
-		this.dingLexicon = DIUtil.stripProxy(dingLexicon);
-		this.dialogTaskManager = DIUtil.stripProxy(dialogTaskManager);
-		this.menuTaskManager = DIUtil.stripProxy(menuTaskManager);
-		this.registrar = DIUtil.stripProxy(registrar);
-		this.tableMgr = DIUtil.stripProxy(tableMgr);
-		this.eventHelper = DIUtil.stripProxy(eventHelper);
-		this.renderingEngineManager = DIUtil.stripProxy(renderingEngineManager);
+		this.dataTableFactory = dataTableFactory;
+		this.rootNetworkFactory = rootNetworkFactory;
+		this.spacialFactory = spacialFactory;
+		this.undo = undo;
+		this.dingLexicon = dingLexicon;
+		this.dialogTaskManager = dialogTaskManager;
+		this.menuTaskManager = menuTaskManager;
+		this.registrar = registrar;
+		this.tableMgr = tableMgr;
+		this.eventHelper = eventHelper;
+		this.renderingEngineManager = renderingEngineManager;
 		this.annMgr = annMgr;
 
 		this.vtfListener = vtfListener;

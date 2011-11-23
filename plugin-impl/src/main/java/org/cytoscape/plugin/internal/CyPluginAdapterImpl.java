@@ -7,7 +7,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
@@ -121,7 +120,6 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	// thus making it available to any plugin.  All packages in the
 	// Cytoscape API should have at least one object in this class!!!
 	//
-	private DIUtil dIUtil;
 	private SessionAboutToBeSavedEvent sessionAboutToBeSavedEvent;
 	private VisualStyleAboutToBeRemovedEvent visualStyleAboutToBeRemovedEvent;
 	private AboutToRemoveEdgeViewsListener aboutToRemoveEdgeViewsListener;

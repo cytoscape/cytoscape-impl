@@ -3,7 +3,6 @@ package org.cytoscape.command.internal.tunables;
 
 import java.util.Map;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.work.AbstractTunableInterceptor;
 
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
          * @param obj The Spring proxy object from which we'd like the raw object.
          */
         public void loadTunables(final Object obj) {
-		super.loadTunables(DIUtil.stripProxy(obj));
+		super.loadTunables(obj);
         }
 
 	public boolean validateAndWriteBackTunables(Object... objs) {

@@ -8,7 +8,6 @@ import java.util.Map;
 import javax.swing.JComponent;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -38,9 +37,9 @@ public class DingNavigationRenderingEngineFactory implements
 	                                            final RenderingEngineManager renderingEngineManager,
 	                                            final CyApplicationManager appManager)
 	{
-		this.dingLexicon            = DIUtil.stripProxy(dingLexicon);
-		this.renderingEngineManager = DIUtil.stripProxy(renderingEngineManager);
-		this.appManager             = DIUtil.stripProxy(appManager);
+		this.dingLexicon            = dingLexicon;
+		this.renderingEngineManager = renderingEngineManager;
+		this.appManager             = appManager;
 
 		viewMap = new HashMap<CyNetworkView, DGraphView>();
 	}

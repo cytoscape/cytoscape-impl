@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
@@ -109,7 +108,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		this.pub = pub;
 		this.isImmutable = !isMutable;
 		this.suid = SUIDFactory.getNextSUID();
-		this.eventHelper = DIUtil.stripProxy(eventHelper);
+		this.eventHelper = eventHelper;
 		this.interpreter = interpreter;
 		this.savePolicy = savePolicy;
 		this.fireEvents = !pub;

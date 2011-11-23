@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CytoscapeShutdownEvent;
 import org.cytoscape.application.events.CytoscapeShutdownListener;
-import org.cytoscape.di.util.DIUtil;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
