@@ -174,19 +174,47 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 	 * Read a session file.
 	 */
 	public void run(TaskMonitor tm) throws Exception {
-		taskMonitor = tm;
-		tm.setProgress(0.0);
+				
+		taskMonitor = new DummyTaskMonitor();
+		tm.setProgress(0.3);
+		tm.setTitle("Extract entries");
+		tm.setStatusMessage("Extract entries...");
 		
 		extractEntries();
-		tm.setProgress(0.2);
+
+		tm.setProgress(0.4);
+
+		tm.setTitle("Process Networks");
+		tm.setStatusMessage("Process Networks...");
+
 		processNetworks();
 		tm.setProgress(0.6);
+
+		tm.setStatusMessage("Merge network tables...");
+		tm.setTitle("Merge network tables");
+
 		mergeNetworkTables();
 		tm.setProgress(0.8);
+
+		tm.setStatusMessage("Restore virtual columns...");
+
+		tm.setTitle("Restore virtual columns");
 		restoreVirtualColumns();
 		tm.setProgress(1.0);
 	}
 
+	// We need this class to avoid the progress-bar showing back-forth  when extract zipEntries
+	private class DummyTaskMonitor implements TaskMonitor {
+		public void setTitle(String title){
+		}
+
+		public void setProgress(double progress){
+		}
+
+		public void setStatusMessage(String statusMessage){
+		}
+	}
+	
 	public CySession getCySession() {
 
 		HashSet<CyNetworkView> views = new HashSet<CyNetworkView>();
