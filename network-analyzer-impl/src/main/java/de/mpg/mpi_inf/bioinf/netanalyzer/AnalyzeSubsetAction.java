@@ -48,7 +48,7 @@ public class AnalyzeSubsetAction extends NetAnalyzerAction {
 	 */
 	public AnalyzeSubsetAction(CyApplicationManager appMgr, CySwingApplication swingApp) {
 		super(Messages.AC_ANALYZE_SUBSET,appMgr,swingApp);
-		setPreferredMenu("Plugins." + Messages.AC_MENU_ANALYSIS);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 		selected = null;
 	}
 

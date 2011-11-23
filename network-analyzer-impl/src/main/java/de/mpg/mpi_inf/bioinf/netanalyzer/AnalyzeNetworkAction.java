@@ -48,7 +48,7 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 	 */
 	public AnalyzeNetworkAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
 		super(Messages.AC_ANALYZE,appMgr,swingApp);
-		setPreferredMenu("Plugins." + Messages.AC_MENU_ANALYSIS);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
 	/*

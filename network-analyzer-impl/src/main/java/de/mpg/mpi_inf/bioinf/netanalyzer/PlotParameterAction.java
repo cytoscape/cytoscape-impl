@@ -44,7 +44,7 @@ public class PlotParameterAction extends NetAnalyzerAction implements AnalysisLi
 	 */
 	public PlotParameterAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
 		super(Messages.AC_PLOTPARAM,appMgr,swingApp);
-		setPreferredMenu("Plugins." + Messages.AC_MENU_ANALYSIS);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
 	/*

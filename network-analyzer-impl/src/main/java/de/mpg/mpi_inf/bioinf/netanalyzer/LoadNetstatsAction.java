@@ -49,7 +49,7 @@ public class LoadNetstatsAction extends NetAnalyzerAction {
 	 */
 	public LoadNetstatsAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
 		super(Messages.AC_LOAD,appMgr,swingApp);
-		setPreferredMenu("Plugins." + Messages.AC_MENU_ANALYSIS);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
 	/*

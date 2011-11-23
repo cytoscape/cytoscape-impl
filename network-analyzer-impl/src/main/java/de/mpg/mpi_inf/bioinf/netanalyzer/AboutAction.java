@@ -38,7 +38,7 @@ public final class AboutAction extends NetAnalyzerAction {
 	 */
 	public AboutAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
 		super(Messages.AC_ABOUT,appMgr,swingApp);
-		setPreferredMenu("Plugins." + Messages.AC_MENU_ANALYSIS);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
 	/*

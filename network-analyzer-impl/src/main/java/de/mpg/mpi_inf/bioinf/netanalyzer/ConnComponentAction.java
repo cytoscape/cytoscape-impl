@@ -45,7 +45,7 @@ public class ConnComponentAction extends NetAnalyzerAction {
 	 */
 	public ConnComponentAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
 		super(Messages.AC_CONNCOMP,appMgr,swingApp);
-		setPreferredMenu("Plugins." + Messages.AC_MENU_MODIFICATION);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_MODIFICATION);
 	}
 
 	/*

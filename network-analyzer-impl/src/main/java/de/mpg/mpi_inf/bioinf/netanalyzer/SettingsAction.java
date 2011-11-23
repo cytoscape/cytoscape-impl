@@ -41,7 +41,7 @@ public class SettingsAction extends NetAnalyzerAction {
 	 */
 	public SettingsAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
 		super(Messages.AC_SETTINGS,appMgr,swingApp);
-		setPreferredMenu("Plugins." + Messages.AC_MENU_ANALYSIS);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
 	/*

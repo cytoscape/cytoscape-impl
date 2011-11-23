@@ -60,7 +60,7 @@ public class BatchAnalysisAction extends NetAnalyzerAction {
 		super(Messages.AC_BATCH_ANALYSIS,appMgr,swingApp);
 		this.netMgr = netMgr;
 		this.cyNetworkViewReaderMgr = cyNetworkViewReaderMgr;
-		setPreferredMenu("Plugins." + Messages.AC_MENU_ANALYSIS);
+		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
 	/*
