@@ -102,7 +102,7 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  */
 public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
-		PopupMenuListener, NetworkViewAddedListener, NetworkAddedListener,
+		PopupMenuListener, NetworkViewAddedListener,
 		CytoPanelComponent, SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener {
 
 	private final static long serialVersionUID = 1202339867854959L;
@@ -212,31 +212,41 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	protected void switchVS(final VisualStyle style, boolean forceUpdate) {
 		// Close editor windows
 		editorWindowManager.closeAllEditorWindows();
-
+		
 		vizMapPropertySheetBuilder.setPropertyTable(style);
 		updateAttributeList();
 
-		// Apply style to the current network view.
+		// Apply style to the current network view if necessary.
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
-
+		final VisualStyle selectedStyle = (VisualStyle) visualStyleComboBox.getModel().getSelectedItem();
 		if (currentView != null && style.equals(manager.getCurrentVisualStyle()) == false) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					vmm.setVisualStyle((VisualStyle) visualStyleComboBox.getModel().getSelectedItem(), currentView);
-					style.apply(currentView);
-					// Update view
-					currentView.updateView();
+					final VisualStyle currentluyAppliedStyle = vmm.getVisualStyle(currentView);
+					if (currentluyAppliedStyle.equals(selectedStyle) == false) {
+						vmm.setVisualStyle(selectedStyle, currentView);
+						style.apply(currentView);
+						// Update view
+						currentView.updateView();
+					}
 				}
 			});
 		}
 		
-		final Dimension panelSize = getDefaultViewPanel().getSize();
-		final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
-		final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
-		final Dimension newSize = new Dimension(newWidth, newHeight);
-		// Default image is not available in the buffer. Create a new one.
-		updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style)).getRenderingEngine(), newSize);
-		final Image defImg = defaultImageManager.get(style);
+
+		Image defImg = defaultImageManager.get(style);
+		
+		if (defImg == null) {
+
+			final Dimension panelSize = getDefaultViewPanel().getSize();
+			final int newWidth = ((Number) (panelSize.width * 0.8)).intValue();
+			final int newHeight = ((Number) (panelSize.height * 0.8)).intValue();
+			final Dimension newSize = new Dimension(newWidth, newHeight);
+			// Default image is not available in the buffer. Create a new one.
+			updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style)).getRenderingEngine(),
+					newSize);
+			defImg = defaultImageManager.get(style);
+		}
 		// Set the default view to the panel.
 		setDefaultViewImagePanel(defImg, style);
 
@@ -427,46 +437,39 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		}
 
 		vsComboBoxModel.addElement(newStyle);
-		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
-
-		if (currentView != null)
-			vmm.setVisualStyle(newStyle, currentView);
-
-		// Update default panel
-		final Component defPanel = defViewEditor.getDefaultView(newStyle);
-		final RenderingEngine<CyNetwork> engine = ((DefaultViewPanelImpl) defPanel).getRenderingEngine();
-
-		if (engine != null) {
-			final Dimension panelSize = getDefaultViewPanel().getSize();
-			final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
-			final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
-			final Dimension newSize = new Dimension(newWidth, newHeight);
-			updateDefaultImage(newStyle, engine, newSize);
-		}
-		logger.info("New Visual Style registered to combo box: " + newStyle.getTitle());
-		// TODO: switch only if it is necessary
-		switchVS(newStyle, true);
+		//vsComboBoxModel.setSelectedItem(newStyle);
+//		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+//
+//		if (currentView != null)
+//			vmm.setVisualStyle(newStyle, currentView);
+//
+//		// Update default panel
+//		final Component defPanel = defViewEditor.getDefaultView(newStyle);
+//		final RenderingEngine<CyNetwork> engine = ((DefaultViewPanelImpl) defPanel).getRenderingEngine();
+//
+//		if (engine != null) {
+//			final Dimension panelSize = getDefaultViewPanel().getSize();
+//			final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
+//			final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
+//			final Dimension newSize = new Dimension(newWidth, newHeight);
+//			updateDefaultImage(newStyle, engine, newSize);
+//		}
+//		logger.info("New Visual Style registered to combo box: " + newStyle.getTitle());
+//		// TODO: switch only if it is necessary
+		//switchVS(newStyle, true);
 	}
 
 	@Override
-	public void handleEvent(NetworkViewAddedEvent e) {
-
+	public void handleEvent(final NetworkViewAddedEvent e) {
 		final CyNetworkView newView = e.getNetworkView();
 		final VisualStyle targetStyle = manager.getCurrentVisualStyle();
-
-		logger.debug("@@@@@@ Network View added. Apply " + targetStyle);
-
-		vmm.setVisualStyle(targetStyle, newView);
-		targetStyle.apply(newView);
-		newView.updateView();
-	}
-
-	@Override
-	public void handleEvent(NetworkAddedEvent e) {
-		// TODO: is this necessary?
-		logger.debug("!!!!!!!!!! Network added. Need to update prop sheet: "
-				+ e.getNetwork().getSUID());
-
+		final VisualStyle curStyle = vmm.getVisualStyle(newView);
+		
+		if (curStyle == null || curStyle.equals(vmm.getDefaultVisualStyle()) || curStyle.equals(targetStyle) == false ) {
+			vmm.setVisualStyle(targetStyle, newView);
+			targetStyle.apply(newView);
+			newView.updateView();
+		}
 	}
 
 	/**
@@ -476,16 +479,18 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 	public void handleEvent(VisualStyleAboutToBeRemovedEvent e) {
 
 		final VisualStyle toBeRemoved = e.getVisualStyleToBeRemoved();
+		final VisualStyle selectedStyle = manager.getCurrentVisualStyle();
 
-		// Update image
-		getDefaultImageManager().remove(e.getVisualStyleToBeRemoved());
-		vizMapPropertySheetBuilder.removePropertyList(e
-				.getVisualStyleToBeRemoved());
-		this.visualStyleComboBox.removeItem(toBeRemoved);
+		// remove from maps
+		getDefaultImageManager().remove(toBeRemoved);
+		vizMapPropertySheetBuilder.removePropertyList(toBeRemoved);
+		visualStyleComboBox.removeItem(toBeRemoved);
 
-		// Switch to the default style
+		// Switch to the default style if necessary
+		if(toBeRemoved.equals(selectedStyle) == false)
+			return;
+		
 		final VisualStyle defaultStyle = manager.getDefaultStyle();
-
 		switchVS(defaultStyle);
 		// Apply to the current view
 		final CyNetworkView view = applicationManager.getCurrentNetworkView();
@@ -521,7 +526,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements
 		final VisualStyle newStyle = e.getNewVisualStyle();
 		this.visualStyleComboBox.setSelectedItem(newStyle);
 		
-		switchVS(newStyle, true);
+		//switchVS(newStyle, true);
 	}
 
 	
