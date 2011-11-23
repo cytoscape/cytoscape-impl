@@ -124,7 +124,8 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 
 	private Cysession cysession;
 	private Bookmarks bookmarks;
-	private TaskMonitor taskMonitor;
+	private TaskMonitor tm;
+	private DummyTaskMonitor taskMonitor;
 	private Properties cytoscapeProps;
 	private Set<VisualStyle> visualStyles;
 	private Map<String, CyTable> filenameTableMap;
@@ -176,6 +177,7 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 	public void run(TaskMonitor tm) throws Exception {
 				
 		taskMonitor = new DummyTaskMonitor();
+		this.tm = tm; 
 		tm.setProgress(0.3);
 		tm.setTitle("Extract entries");
 		tm.setStatusMessage("Extract entries...");
@@ -238,6 +240,8 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 	private void extractEntries() throws Exception {
 		ZipInputStream zis = new ZipInputStream(sourceInputStream);
 
+		int count =0;
+		
 		try {
 
 			// Extract list of entries
@@ -283,6 +287,8 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 				}
 
 				zis.closeEntry();
+				
+				this.tm.setStatusMessage("Extracting zip entry #"+ ++count);
 			}
 		} finally {
 			if (zis != null) zis.close();
