@@ -36,6 +36,7 @@ import org.cytoscape.event.CyEventHelper;
 //import org.cytoscape.model.builder.CyEdgeBuilder;
 
 import org.cytoscape.di.util.DIUtil;
+import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -539,6 +540,17 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
             tableMgr.addTable(table);
         for (final CyTable table : edgeTables.values())
             tableMgr.addTable(table);
+
+		updateSharedNames( getDefaultNodeTable(), parent.getSharedNodeTable() );
+		updateSharedNames( getDefaultEdgeTable(), parent.getSharedEdgeTable() );
+		updateSharedNames( getDefaultNetworkTable(), parent.getSharedNetworkTable() );
+	}	
+
+	private void updateSharedNames(CyTable src, CyTable tgt) {
+		for ( CyRow sr : src.getAllRows() ) {
+			CyRow tr = tgt.getRow( sr.get(Identifiable.SUID,Long.class) );
+			tr.set( CyRootNetwork.SHARED_NAME, sr.get(CyNetwork.NAME,String.class) );
+		}
 	}
 
 	/**

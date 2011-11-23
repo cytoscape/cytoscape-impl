@@ -49,6 +49,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -132,15 +133,6 @@ final public class ArrayGraph implements CyRootNetwork {
 		base = addSubNetwork(); 
 	}
 
-	private void registerAllTables() {
-        for (final CyTable table : netTables.values())
-            tableMgr.addTable(table);
-        for (final CyTable table : nodeTables.values())
-            tableMgr.addTable(table);
-        for (final CyTable table : edgeTables.values())
-            tableMgr.addTable(table);
-	}
-
 	private Map<String,CyTable> createNetworkTables(long suidx) {
 		Map<String,CyTable> netAttrMgr = new HashMap<String, CyTable>();
         netAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default network", Identifiable.SUID, Long.class, publicTables, false));
@@ -148,10 +140,10 @@ final public class ArrayGraph implements CyRootNetwork {
 
         netAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
 
-		if ( suidx == suid ) 
+		if ( suidx == suid ) { 
         	netAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared network", Identifiable.SUID, Long.class, publicTables, false));
-			
-		else	
+        	netAttrMgr.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
+		} else	
 			linkDefaultTables( netTables.get(CyRootNetwork.SHARED_ATTRS), 
 			                   netAttrMgr.get(CyNetwork.DEFAULT_ATTRS) );
 
@@ -166,9 +158,10 @@ final public class ArrayGraph implements CyRootNetwork {
         nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
         nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
 
-		if ( suidx == suid ) 
+		if ( suidx == suid ) {
         	nodeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared node", Identifiable.SUID, Long.class, publicTables, false));
-		else
+        	nodeAttrMgr.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
+		} else
 			linkDefaultTables( nodeTables.get(CyRootNetwork.SHARED_ATTRS), 
 			                   nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS) );
 		return nodeAttrMgr;
@@ -184,9 +177,10 @@ final public class ArrayGraph implements CyRootNetwork {
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyEdge.INTERACTION, String.class, true);
 
-		if ( suidx == suid ) 
+		if ( suidx == suid ) { 
         	edgeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared edge", Identifiable.SUID, Long.class, publicTables, false));
-		else	
+        	edgeAttrMgr.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
+		} else	
 			linkDefaultTables( edgeTables.get(CyRootNetwork.SHARED_ATTRS), 
 			                   edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS) );
 
@@ -201,6 +195,10 @@ final public class ArrayGraph implements CyRootNetwork {
 		// virtual columns to any subsequent source columns added.
 		serviceRegistrar.registerService(new VirtualColumnAdder(srcTable,tgtTable), 
 		                                 ColumnCreatedListener.class, new Properties());
+
+		// Another listener tracks changes to the NAME column in local tables
+		serviceRegistrar.registerService(new NameSetListener(srcTable,tgtTable),
+		                                 RowsSetListener.class, new Properties());
 	}
 
 	/**
