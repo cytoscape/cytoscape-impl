@@ -4,6 +4,7 @@ package org.cytoscape.task.internal.quickstart.subnetworkbuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -84,7 +85,7 @@ public class CreateSubnetworkFromSearchTask extends AbstractTask {
 
 		SelectFirstNeighborsTask nextTask =
 			new SelectFirstNeighborsTask(util.getUndoSupport(), target, util.networkViewManager,
-			                             util.eventHelper);
+			                             util.eventHelper, CyEdge.Type.ANY);
 		this.insertTasksAfterCurrentTask(nextTask);
 	}
 }

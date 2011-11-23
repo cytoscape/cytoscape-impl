@@ -70,7 +70,7 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 		when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
 
 		// run the task
-		Task t = new SelectFirstNeighborsTask(undoSupport, net, networkViewManager, eventHelper);
+		Task t = new SelectFirstNeighborsTask(undoSupport, net, networkViewManager, eventHelper, CyEdge.Type.ANY);
 		t.run(tm);
 
 		// check that the expected rows were set

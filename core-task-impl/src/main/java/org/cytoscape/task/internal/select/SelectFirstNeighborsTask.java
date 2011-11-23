@@ -34,9 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
@@ -48,13 +47,16 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class SelectFirstNeighborsTask extends AbstractSelectTask {
 	private final UndoSupport undoSupport;
+	
+	private final Type direction;
 
 	public SelectFirstNeighborsTask(final UndoSupport undoSupport, final CyNetwork net,
 	                                final CyNetworkViewManager networkViewManager,
-	                                final CyEventHelper eventHelper)
+	                                final CyEventHelper eventHelper, final Type direction)
 	{
 		super(net, networkViewManager, eventHelper);
 		this.undoSupport = undoSupport;
+		this.direction = direction;
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class SelectFirstNeighborsTask extends AbstractSelectTask {
 		final Set<CyNode> nodes = new HashSet<CyNode>();
 		tm.setProgress(0.2);
 		for (CyNode currentNode : selectedNodes)
-			nodes.addAll(network.getNeighborList(currentNode, CyEdge.Type.ANY));
+			nodes.addAll(network.getNeighborList(currentNode, direction));
 		tm.setProgress(0.4);
 		selectUtils.setSelectedNodes(nodes, true);
 		tm.setProgress(0.8);

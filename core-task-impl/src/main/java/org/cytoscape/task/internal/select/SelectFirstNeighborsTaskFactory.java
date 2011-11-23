@@ -31,6 +31,7 @@ package org.cytoscape.task.internal.select;
 
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
@@ -41,18 +42,21 @@ public class SelectFirstNeighborsTaskFactory extends AbstractNetworkTaskFactory 
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
+	
+	private final Type direction;
 
 	public SelectFirstNeighborsTaskFactory(final UndoSupport undoSupport,
 	                                       final CyNetworkViewManager networkViewManager,
-	                                       final CyEventHelper eventHelper)
+	                                       final CyEventHelper eventHelper, final Type direction)
 	{
 		this.undoSupport        = undoSupport;
 		this.networkViewManager = networkViewManager;
 		this.eventHelper = eventHelper;
+		this.direction = direction;
 	}
 
 	public TaskIterator getTaskIterator() {
 		return new TaskIterator(new SelectFirstNeighborsTask(undoSupport, network,
-		                                                     networkViewManager, eventHelper));
+		                                                     networkViewManager, eventHelper, direction));
 	}
 }

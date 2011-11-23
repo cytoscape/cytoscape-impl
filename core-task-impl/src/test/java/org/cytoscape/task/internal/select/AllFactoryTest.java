@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
@@ -115,7 +116,7 @@ public class AllFactoryTest {
 
 	@Test
 	public void testSelectFirstNeighborsTaskFactory() {
-		executeTest(new SelectFirstNeighborsTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new SelectFirstNeighborsTaskFactory(undoSupport, networkViewManager, eventHelper, CyEdge.Type.ANY));
 	}
 
 	@Test

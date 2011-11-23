@@ -32,8 +32,7 @@ package org.cytoscape.task.internal.select;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -45,12 +44,14 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 
 	private View<CyNode> nodeView;
 	private CyNetworkView netView;
+	private final Type direction;
 
 	private final SelectUtils selectUtils;
 
-	public SelectFirstNeighborsNodeViewTask(View<CyNode> nodeView, CyNetworkView netView) {
+	public SelectFirstNeighborsNodeViewTask(View<CyNode> nodeView, CyNetworkView netView, final Type direction) {
 		this.nodeView = nodeView;
 		this.netView = netView;
+		this.direction = direction;
 		this.selectUtils = new SelectUtils();
 	}
 
@@ -64,14 +65,15 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 		final Set<CyNode> selNodes = new HashSet<CyNode>();
 		final CyNode node = nodeView.getModel();
 		final CyNetwork net = netView.getModel();
-		tm.setProgress(0.1);
+		tm.setProgress(0.1d);
 		selNodes.add(node);
-		tm.setProgress(0.4);
-		selNodes.addAll(net.getNeighborList(node, CyEdge.Type.ANY));
-		tm.setProgress(0.6);
+		tm.setProgress(0.4d);
+		
+		selNodes.addAll(net.getNeighborList(node, direction));
+		tm.setProgress(0.6d);
 		selectUtils.setSelectedNodes(selNodes, true);
-		tm.setProgress(0.8);
+		tm.setProgress(0.8d);
 		netView.updateView();
-		tm.setProgress(1.0);
+		tm.setProgress(1.0d);
 	}
 }

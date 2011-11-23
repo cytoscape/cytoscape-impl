@@ -5,6 +5,7 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
@@ -172,14 +173,21 @@ public class CyActivator extends AbstractCyActivator {
 		SelectAllNodesTaskFactory selectAllNodesTaskFactory = new SelectAllNodesTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory = new SelectAdjacentEdgesTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory = new SelectConnectedNodesTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
-		SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory = new SelectFirstNeighborsTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
+		
+		SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory = new SelectFirstNeighborsTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef, CyEdge.Type.ANY);
+		SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge = new SelectFirstNeighborsTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef, CyEdge.Type.INCOMING);
+		SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge = new SelectFirstNeighborsTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef, CyEdge.Type.OUTGOING);
+		
+		
 		DeselectAllTaskFactory deselectAllTaskFactory = new DeselectAllTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory = new DeselectAllEdgesTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		DeselectAllNodesTaskFactory deselectAllNodesTaskFactory = new DeselectAllNodesTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory = new InvertSelectedEdgesTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory = new InvertSelectedNodesTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		SelectFromFileListTaskFactory selectFromFileListTaskFactory = new SelectFromFileListTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
-		SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory = new SelectFirstNeighborsNodeViewTaskFactory();
+		
+		SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory = new SelectFirstNeighborsNodeViewTaskFactory(CyEdge.Type.ANY);
+		
 		HideSelectedTaskFactory hideSelectedTaskFactory = new HideSelectedTaskFactory(undoSupportServiceRef,cyEventHelperRef);
 		HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory = new HideSelectedNodesTaskFactory(undoSupportServiceRef,cyEventHelperRef);
 		HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory = new HideSelectedEdgesTaskFactory(undoSupportServiceRef,cyEventHelperRef);
@@ -336,14 +344,31 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties selectFirstNeighborsTaskFactoryProps = new Properties();
 		selectFirstNeighborsTaskFactoryProps.setProperty("enableFor","network");
-		selectFirstNeighborsTaskFactoryProps.setProperty("preferredMenu","Select.Nodes");
+		selectFirstNeighborsTaskFactoryProps.setProperty("preferredMenu","Select.Nodes.First Neighbors of Selected Nodes");
 		selectFirstNeighborsTaskFactoryProps.setProperty("menuGravity","6.0");
 		selectFirstNeighborsTaskFactoryProps.setProperty("accelerator","cmd 6");
-		selectFirstNeighborsTaskFactoryProps.setProperty("title","First neighbors of selected nodes");
+		selectFirstNeighborsTaskFactoryProps.setProperty("title","Undirected");
 		selectFirstNeighborsTaskFactoryProps.setProperty("iconName","/images/placehold/selectfirstneighb.png");
 		selectFirstNeighborsTaskFactoryProps.setProperty("inToolBar","true");
-		selectFirstNeighborsTaskFactoryProps.setProperty("tooltip","First Neighbors of Selected Nodes");
+		selectFirstNeighborsTaskFactoryProps.setProperty("tooltip","First Neighbors of Selected Nodes (Undirected)");
 		registerService(bc,selectFirstNeighborsTaskFactory,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
+		Properties selectFirstNeighborsTaskFactoryInEdgeProps = new Properties();
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("enableFor","network");
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("preferredMenu","Select.Nodes.First Neighbors of Selected Nodes");
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("menuGravity","6.1");
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("title","Directed: Incoming");
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("iconName","/images/placehold/selectfirstneighb.png");
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("tooltip","First Neighbors of Selected Nodes (Directed: Incoming)");
+		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
+		Properties selectFirstNeighborsTaskFactoryOutEdgeProps = new Properties();
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("enableFor","network");
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("preferredMenu","Select.Nodes.First Neighbors of Selected Nodes");
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("menuGravity","6.2");
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("title","Directed: Outgoing");
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("iconName","/images/placehold/selectfirstneighb.png");
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("tooltip","First Neighbors of Selected Nodes (Directed: Outgoing)");
+		registerService(bc,selectFirstNeighborsTaskFactoryOutEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryOutEdgeProps);
+		
 
 		Properties deselectAllTaskFactoryProps = new Properties();
 		deselectAllTaskFactoryProps.setProperty("enableFor","network");
@@ -397,7 +422,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,selectFromFileListTaskFactory,NetworkTaskFactory.class, selectFromFileListTaskFactoryProps);
 
 		Properties selectFirstNeighborsNodeViewTaskFactoryProps = new Properties();
-		selectFirstNeighborsNodeViewTaskFactoryProps.setProperty("title","Select First Neighbors");
+		selectFirstNeighborsNodeViewTaskFactoryProps.setProperty("title","Select First Neighbors (Undirected)");
 		registerService(bc,selectFirstNeighborsNodeViewTaskFactory,NodeViewTaskFactory.class, selectFirstNeighborsNodeViewTaskFactoryProps);
 
 		Properties hideSelectedTaskFactoryProps = new Properties();
