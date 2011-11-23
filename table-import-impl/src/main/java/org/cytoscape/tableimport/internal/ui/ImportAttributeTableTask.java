@@ -69,33 +69,41 @@ public class ImportAttributeTableTask extends AbstractTask implements CyTableRea
 
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
+		tm.setProgress(0.0);
 		final Class<? extends CyTableEntry> type = getMappingClass();
 
 		String primaryKey = reader.getMappingParameter().getAttributeNames()[reader.getMappingParameter().getKeyIndex()];
 		String mappingKey = reader.getMappingParameter().getMappingAttribute();
+		tm.setProgress(0.1);
 
 		final CyTable table =
-			CytoscapeServices.tableFactory.createTable("AttrTable "
+			CytoscapeServices.cyTableFactory.createTable("AttrTable "
 			                                           + Integer.toString(numImports++),
 			                                           primaryKey, String.class, true,
 			                                           true);
 		cyTables = new CyTable[] { table };
+		tm.setProgress(0.2);
 
-		if (CytoscapeServices.netMgr.getNetworkSet().size() > 0 && type != null) {
+		if (CytoscapeServices.cyNetworkManager.getNetworkSet().size() > 0 && type != null) {
 			/* Case 1: use node ID as the key. */
 			if (reader.getMappingParameter().getMappingAttribute().equals(AttributeMappingParameters.ID)) {
 					final MapNetworkAttrTask task = new MapNetworkAttrTask(type, table,
-							CytoscapeServices.netMgr, CytoscapeServices.appMgr);
+							CytoscapeServices.cyNetworkManager, CytoscapeServices.cyApplicationManager, 
+							CytoscapeServices.cyRootNetworkFactory);
 					insertTasksAfterCurrentTask(task);
 			} else { /* Case 2: use an attribute as the key. */
 				final MapNetworkAttrTask task = new MapNetworkAttrTask(type, table, mappingKey,
-						CytoscapeServices.netMgr, CytoscapeServices.appMgr);
+						CytoscapeServices.cyNetworkManager, CytoscapeServices.cyApplicationManager,
+						CytoscapeServices.cyRootNetworkFactory);
 				insertTasksAfterCurrentTask(task);
 			}
 		}
 
+		tm.setProgress(0.3);
 		this.reader.readTable(table);
+		tm.setProgress(0.9);
 		tableManager.addTable(table);
+		tm.setProgress(1.0);
 	}
 
 	private Class<? extends CyTableEntry> getMappingClass() {

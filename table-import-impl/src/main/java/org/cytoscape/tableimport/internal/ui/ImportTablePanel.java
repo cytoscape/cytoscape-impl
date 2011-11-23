@@ -102,9 +102,11 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -170,7 +172,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	public static final String NETWORK_IMPORT_TEMPLATE_CHANGED = "networkImportTemplateChanged";
 
 	private static final String[] keyTable = { "Alias?", "Column (Attribute Name)", "Data Type" };
-	private static final String ID = "name";
+	private static final String ID = CyTableEntry.NAME; 
 
 	// Key column index
 	protected int keyInFile;
@@ -267,7 +269,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		this.fileType = fileType;
 		selectedAttributes = null;
 
-		network = CytoscapeServices.appMgr.getCurrentNetwork();
+		network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
 		if (network != null){
 			selectedAttributes = network.getDefaultNodeTable();
 		}
@@ -323,6 +325,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		
 		// Hide the alias Panel, we will do the table join somewhere else, not in this GUI
 		aliasScrollPane.setVisible(false);
+
 	}
 
 
@@ -1306,7 +1309,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	private void attributeRadioButtonActionPerformed(ActionEvent evt) {
-		CyNetwork network = CytoscapeServices.appMgr.getCurrentNetwork();
+		CyNetwork network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
 
 		if (nodeRadioButton.isSelected()) {
 			//selectedAttributes = Cytoscape.getNodeAttributes();
@@ -1324,7 +1327,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			objType = EDGE;
 		} else {
 			//selectedAttributes = Cytoscape.getNetworkAttributes();
-			System.out.println("\nNote: ImportTextTableFDialog.attributeRadioButtonActionPerformed():Import network attribute not implemented yet!\n");
+			logger.info("\nNote: ImportTextTableFDialog.attributeRadioButtonActionPerformed():Import network attribute not implemented yet!\n");
 			objType = NETWORK;
 		}
 
@@ -1566,13 +1569,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				final AttributeMappingParameters mapping;
 				final List<String> del;
 
-				//System.out.println("IsCytoscapeAttributeFile " + previewPanel.isCytoscapeAttributeFile(source));
-				//if (previewPanel.isCytoscapeAttributeFile(source)) {
-				//	del = new ArrayList<String>();
-				//	del.add(" += +");
-				//} else {
-					del = checkDelimiter();
-				//}
+				del = checkDelimiter();
 
 				//TODO -- Need to fix problem in AttributeMappingParameters
 				mapping = new AttributeMappingParameters(objType, del,
@@ -1582,8 +1579,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 									 listDataTypes, importFlag,
 									 caseSensitive);
 
-				//if (source.toString().endsWith(SupportedFileType.EXCEL.getExtension()) ||
-				//		source.toString().endsWith(SupportedFileType.OOXML.getExtension())) {
 				if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 				    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
 				{
@@ -1648,15 +1643,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				                                                                            defaultInteraction);
 				NetworkTableReader reader;
 				String networkName;
-				//boolean multi = false;
-
-				//System.out.println("ImportTablePanel.importTable(): sources.length ="+ sources.length);
-
-				//if (sources.length == 1)
-					//multi = false;
-
-				//for (int i = 0; i < sources.length; i++) {
-				//	if (sources[i].toString().endsWith(SupportedFileType.EXCEL.getExtension()) || sources[i].toString().endsWith(SupportedFileType.OOXML.getExtension())) {
 
 				if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 				    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
@@ -2229,7 +2215,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			return;
 		}
 
-		if (CytoscapeServices.appMgr.getCurrentNetwork() == null){
+		if (CytoscapeServices.cyApplicationManager.getCurrentNetwork() == null){
 			return;
 		}
 
@@ -2243,18 +2229,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (selectedKeyAttribute.equals(ID)) {
 
 			if (objType == NODE) {
-				//it = Cytoscape.getRootGraph().nodesIterator();
-				it = network.getNodeList().iterator();
-				while (it.hasNext()) {
-					CyNode node = (CyNode) it.next();
+				for ( CyNode node : network.getNodeList() ) {
 					valueSet.add(node.getCyRow().get(ID, String.class)); // ID = "name"
 				}
 			} else if (objType == EDGE) {
-				//it = Cytoscape.getRootGraph().edgesIterator();
-
-				//while (it.hasNext()) {
-				//	valueSet.add(((CyEdge) it.next()).getIdentifier());
-				//}
+				for ( CyEdge edge : network.getEdgeList() ) {
+					valueSet.add(edge.getCyRow().get(ID, String.class)); // ID = "name"
+				}
 			} else {
 				//it = Cytoscape.getNetworkSet().iterator();
 
@@ -2475,7 +2456,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		mappingAttributeComboBox.addItem(ID);
 
-		if (CytoscapeServices.appMgr.getCurrentNetwork() == null)
+		if (CytoscapeServices.cyApplicationManager.getCurrentNetwork() == null)
 			return;
 
 		for (final CyColumn column : selectedAttributes.getColumns()) {
@@ -2521,36 +2502,20 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		return rend;
 	}
 
-	/**
-	 * Create task for annotation reader and run it. tablechanged
-	 *
-	 * @param reader
-	 * @param ontology
-	 * @param source
-	 */
-	private void loadAnnotation(TextTableReader reader, String source) {
-
-		// Create loadAnnotation Task
-		final ImportAttributeTableTaskFactory factory =
-			new ImportAttributeTableTaskFactory(reader, tableManager);
-		this.loadTask = factory.getTaskIterator().next();
-		//ImportAttributeTableTaskFactory taskFactory = new ImportAttributeTableTaskFactory(task);
-		//CytoscapeServices.guiTaskManagerServiceRef.execute(taskFactory);
-	}
-
 	private Task loadTask = null;
 
 	public Task getLoadTask(){
 		return loadTask;
 	}
 
+	private void loadAnnotation(TextTableReader reader, String source) {
+		final ImportAttributeTableTask task = new ImportAttributeTableTask(reader, tableManager);
+		this.loadTask = task;
+	}
 
 	private void loadNetwork(final GraphReader reader) {
-		// Create LoadNetwork Task
 		ImportNetworkTask task = new ImportNetworkTask(reader);
 		this.loadTask = task;
-		//ImportNetworkTaskFactory taskFactory = new ImportNetworkTaskFactory(task);
-		//CytoscapeServices.guiTaskManagerServiceRef.execute(taskFactory);
 	}
 
 	private void setStatusBar(String message1, String message2, String message3) {

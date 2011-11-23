@@ -4,6 +4,7 @@
 
 package org.cytoscape.webservice.ncbi;
 
+import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.application.CyApplicationManager;
@@ -41,9 +42,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc,CyTableFactory.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
+		CyRootNetworkFactory cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkFactory.class);
 		
 		NCBIWebServiceClient ncbiClient = new NCBIWebServiceClient("http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl","NCBI Network Import Client","REST version of NCBI Web Service Client.",cyNetworkFactoryServiceRef,cyDataTableFactoryServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef);
-		NCBITableImportClient ncbiTableImportClient = new NCBITableImportClient("http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl","NCBI Table Import Client","REST version of NCBI Web Service Client for importing tables.",cyDataTableFactoryServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerServiceRef,cyTableManagerServiceRef);
+		NCBITableImportClient ncbiTableImportClient = new NCBITableImportClient("http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl","NCBI Table Import Client","REST version of NCBI Web Service Client for importing tables.",cyDataTableFactoryServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerServiceRef,cyTableManagerServiceRef,cyRootNetworkFactoryServiceRef);
 		NCBITableImportAction ncbiTableImportAction = new NCBITableImportAction(ncbiTableImportClient,taskManagerServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerRef);
 		
 		registerAllServices(bc,ncbiClient, new Properties());

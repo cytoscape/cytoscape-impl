@@ -21,6 +21,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,26 +43,19 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableManager;
 
-	public ImportOntologyAndAnnotationAction(final CyApplicationManager appManager,
-	                                         final CyProperty<Bookmarks> bookmarksProp,
-	                                         final BookmarksUtil bkUtil,
-	                                         final TaskManager taskManager,
-	                                         final InputStreamTaskFactory factory,
-	                                         final CyNetworkManager manager,
-	                                         final CyTableFactory tableFactory,
-	                                         final CyTableManager tableManager)
+	public ImportOntologyAndAnnotationAction(final InputStreamTaskFactory factory)
 	{
-		super("Import Ontology and Annotation...", appManager);
+		super("Import Ontology and Annotation...", CytoscapeServices.cyApplicationManager);
 		setPreferredMenu("File.Import");
 
-		this.bookmarksProp = bookmarksProp;
-		this.bkUtil        = bkUtil;
+		this.bookmarksProp = CytoscapeServices.bookmark;
+		this.bkUtil        = CytoscapeServices.bookmarksUtil;
 
-		this.taskManager  = taskManager;
+		this.taskManager  = CytoscapeServices.dialogTaskManager;
 		this.factory      = factory;
-		this.manager      = manager;
-		this.tableFactory = tableFactory;
-		this.tableManager = tableManager;
+		this.manager      = CytoscapeServices.cyNetworkManager;
+		this.tableFactory = CytoscapeServices.cyTableFactory;
+		this.tableManager = CytoscapeServices.cyTableManager;
 	}
 
 	@Override

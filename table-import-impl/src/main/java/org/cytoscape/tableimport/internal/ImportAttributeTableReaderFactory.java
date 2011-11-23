@@ -26,35 +26,15 @@ public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactor
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public ImportAttributeTableReaderFactory(CyFileFilter filter,
-			CySwingApplication desktop, CyApplicationManager appMgr,
-			CyNetworkManager netMgr, CyProperty<Bookmarks> bookmarksProp,
-			BookmarksUtil bookmarksUtil,
-			DialogTaskManager guiTaskManagerServiceRef,
-			CyProperty<?> cytoscapePropertiesServiceRef, CyTableManager tblMgr,
-			FileUtil fileUtilService, OpenBrowser openBrowserService,
-			CyTableFactory tableFactory, String fileFormat)
+	public ImportAttributeTableReaderFactory(CyFileFilter filter, String fileFormat)
 	{
-		super(filter, tableFactory);
-
-		CytoscapeServices.desktop = desktop;
-		CytoscapeServices.bookmarksUtil = bookmarksUtil;
-		CytoscapeServices.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
-		CytoscapeServices.guiTaskManagerServiceRef = guiTaskManagerServiceRef;
-		CytoscapeServices.tblMgr = tblMgr;
-		CytoscapeServices.theBookmarks = bookmarksProp.getProperties();
-		CytoscapeServices.openBrowser = openBrowserService;
-		CytoscapeServices.fileUtil = fileUtilService;
-		CytoscapeServices.appMgr = appMgr;
-		CytoscapeServices.netMgr = netMgr;
-		CytoscapeServices.tableFactory = tableFactory;
+		super(filter, CytoscapeServices.cyTableFactory);
 		this.fileFormat = fileFormat;
 	}
 
 	public TaskIterator getTaskIterator() {
 		return new TaskIterator(
-			new ImportAttributeTableReaderTask(this.inputStream, fileFormat,
-			                                   CytoscapeServices.tblMgr));
+			new ImportAttributeTableReaderTask(this.inputStream, fileFormat, CytoscapeServices.cyTableManager));
 	}
 
 	@Override

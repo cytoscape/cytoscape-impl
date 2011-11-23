@@ -62,10 +62,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 		monitor.setProgress(0.0);
 		monitor.setStatusMessage("Loading network...");
 
-		// Load network data here.
-		this.importTablePanel.importTable();
-
-		//monitor.setStatusMessage("Mapping data table to local ones...");
+		importTablePanel.importTable();
 
 		this.insertTasksAfterCurrentTask(importTablePanel.getLoadTask());
 
@@ -74,7 +71,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
-		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactoryServiceRef.getNetworkView(arg0);
+		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.getNetworkView(arg0);
 		return view;
 	}
 

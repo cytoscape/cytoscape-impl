@@ -170,7 +170,7 @@ public class AttributeMappingParameters implements MappingParameter {
 			networkTitle2ID = new HashMap<String, String>();
 
 			//Set<CyNetwork> networkSet = Cytoscape.getNetworkSet();
-			Set<CyNetwork> networkSet = CytoscapeServices.netMgr.getNetworkSet();
+			Set<CyNetwork> networkSet = CytoscapeServices.cyNetworkManager.getNetworkSet();
 			
 			for (CyNetwork net : networkSet) {
 				//networkTitle2ID.put(net.getTitle(), net.getIdentifier());
@@ -242,7 +242,7 @@ public class AttributeMappingParameters implements MappingParameter {
 
 		Iterator it = null;
 
-		CyNetwork network = CytoscapeServices.appMgr.getCurrentNetwork();
+		CyNetwork network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
 		switch (objectType) {
 			case NODE:
 				//attributes = Cytoscape.getNodeAttributes();

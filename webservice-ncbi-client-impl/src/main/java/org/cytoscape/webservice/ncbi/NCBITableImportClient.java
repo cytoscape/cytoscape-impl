@@ -3,6 +3,7 @@ package org.cytoscape.webservice.ncbi;
 
 import java.util.Set;
 
+import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
@@ -19,13 +20,15 @@ public class NCBITableImportClient extends AbstractWebServiceClient implements T
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;
 	private final CyTableManager tableManager;
+	private final CyRootNetworkFactory cyRootNetworkFactory; 
 
 	public NCBITableImportClient(final String uri, final String displayName,
 	                             final String description,
 	                             final CyTableFactory tableFactory,
 	                             final CyNetworkManager networkManager,
 	                             final CyApplicationManager applicationManager,
-	                             final CyTableManager tableManager)
+	                             final CyTableManager tableManager,
+								 final CyRootNetworkFactory cyRootNetworkFactory)
 	{
 		super(uri, displayName, description);
 
@@ -33,6 +36,7 @@ public class NCBITableImportClient extends AbstractWebServiceClient implements T
 		this.applicationManager = applicationManager;
 		this.networkManager     = networkManager;
 		this.tableManager       = tableManager;
+		this.cyRootNetworkFactory = cyRootNetworkFactory;
 	}
 
 	@Override
@@ -40,7 +44,8 @@ public class NCBITableImportClient extends AbstractWebServiceClient implements T
 		return new TaskIterator(
 			new ImportTableFromNCBITask(tableFactory, ((NCBIQuery) this.currentQuery).getIds(),
 			                            ((NCBIQuery) this.currentQuery).getCategory(),
-			                            networkManager, applicationManager, tableManager));
+			                            networkManager, applicationManager, tableManager,
+										cyRootNetworkFactory));
 	}
 
 	@Override

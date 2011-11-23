@@ -8,6 +8,7 @@ import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
 public class OBONetworkReaderFactory implements InputStreamTaskFactory {
 
@@ -21,12 +22,11 @@ public class OBONetworkReaderFactory implements InputStreamTaskFactory {
 
 	private final CyEventHelper eventHelper;
 
-	public OBONetworkReaderFactory(CyFileFilter filter, CyNetworkViewFactory cyNetworkViewFactory,
-			CyNetworkFactory cyNetworkFactory, final CyEventHelper eventHelper) {
+	public OBONetworkReaderFactory(CyFileFilter filter) {
 		this.filter = filter;
-		this.cyNetworkViewFactory = cyNetworkViewFactory;
-		this.cyNetworkFactory = cyNetworkFactory;
-		this.eventHelper = eventHelper;
+		this.cyNetworkViewFactory = CytoscapeServices.cyNetworkViewFactory;
+		this.cyNetworkFactory = CytoscapeServices.cyNetworkFactory;
+		this.eventHelper = CytoscapeServices.cyEventHelper;
 	}
 
 	public void setInputStream(InputStream is, String in) {

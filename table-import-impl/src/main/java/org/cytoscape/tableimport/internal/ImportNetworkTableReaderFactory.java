@@ -35,33 +35,10 @@ public class ImportNetworkTableReaderFactory extends AbstractNetworkReaderFactor
 	 * Creates a new ImportNetworkTableReaderFactory object.
 	 */
 	public ImportNetworkTableReaderFactory(final CyFileFilter filter,
-	                                       final CySwingApplication desktop, 
-	                                       final CyApplicationManager appMgr,
-	                                       final CyNetworkManager netMgr, 
-	                                       final DialogTaskManager guiTaskManagerServiceRef,
-	                                       final CyProperty<?> cytoscapePropertiesServiceRef,
-	                                       final FileUtil fileUtilService, 
-	                                       final CyNetworkViewFactory cyNetworkViewFactory, 
-	                                       final CyNetworkFactory cyNetworkFactory, 
-	                                       final String fileFormat,
-	                                       final CyNetworkNaming cyNetworkNaming, 
-	                                       final CyNetworkViewManager networkViewManager,
-	                                       final CyTableManager tableManager) {
-		super(filter, cyNetworkViewFactory, cyNetworkFactory);
+	                                       final String fileFormat) {
+		super(filter, CytoscapeServices.cyNetworkViewFactory, CytoscapeServices.cyNetworkFactory);
 
-		this.tableManager = tableManager;
-		CytoscapeServices.networkViewManager = networkViewManager;
-		CytoscapeServices.cyNetworkNaming = cyNetworkNaming;
-		CytoscapeServices.cyNetworkViewFactoryServiceRef = cyNetworkViewFactory;
-		CytoscapeServices.cyNetworkFactoryServiceRef = cyNetworkFactory;
-
-		CytoscapeServices.desktop = desktop;
-		CytoscapeServices.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
-		CytoscapeServices.guiTaskManagerServiceRef = guiTaskManagerServiceRef;
-		CytoscapeServices.fileUtil = fileUtilService;
-		CytoscapeServices.appMgr = appMgr;
-		CytoscapeServices.netMgr = netMgr;
-
+		this.tableManager = CytoscapeServices.cyTableManager;
 		this.fileFormat = fileFormat;
 
 	}

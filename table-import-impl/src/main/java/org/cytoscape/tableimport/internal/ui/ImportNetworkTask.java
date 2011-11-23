@@ -69,7 +69,7 @@ public class ImportNetworkTask extends AbstractTask { //implements CyNetworkView
 	protected VisualStyle[] visualstyles;
 	private final GraphReader reader;
 	
-	final CyNetwork network = CytoscapeServices.cyNetworkFactoryServiceRef.getInstance();
+	final CyNetwork network = CytoscapeServices.cyNetworkFactory.getInstance();
 
 	/**
 	 * Creates a new ImportNetworkTask object.
@@ -99,10 +99,10 @@ public class ImportNetworkTask extends AbstractTask { //implements CyNetworkView
 			return;
 		}
 
-		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactoryServiceRef.getNetworkView(network);
+		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.getNetworkView(network);
 
-		CytoscapeServices.netMgr.addNetwork(network);
-		CytoscapeServices.networkViewManager.addNetworkView(view);
+		CytoscapeServices.cyNetworkManager.addNetwork(network);
+		CytoscapeServices.cyNetworkViewManager.addNetworkView(view);
 
 		//view.fitContent();
 
@@ -126,7 +126,7 @@ public class ImportNetworkTask extends AbstractTask { //implements CyNetworkView
 		sb.append(" nodes and " + formatter.format(newNetwork.getEdgeCount()));
 		sb.append(" edges.\n\n");
 
-		String thresh = "0"; //CytoscapeServices.cytoscapePropertiesServiceRef.getProperties().getProperty("viewThreshold");
+		String thresh = "0"; //CytoscapeServices.cyProperties.getProperties().getProperty("viewThreshold");
 
 		if (newNetwork.getNodeCount() < Integer.parseInt(thresh)) {
 			sb.append("Network is under " + thresh

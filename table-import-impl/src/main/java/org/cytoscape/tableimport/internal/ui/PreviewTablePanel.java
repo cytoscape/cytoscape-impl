@@ -1177,7 +1177,7 @@ public class PreviewTablePanel extends JPanel {
 				 * Right click: This action pops up an dialog to edit the
 				 * attribute type and name.
 				 */
-				AttributeTypeDialog atd = new AttributeTypeDialog(CytoscapeServices.desktop.getJFrame(),
+				AttributeTypeDialog atd = new AttributeTypeDialog(CytoscapeServices.cySwingApplication.getJFrame(),
 						true, targetTable.getColumnModel()
 						.getColumn(column).getHeaderValue().toString(),
 						dataTypes[column], column, listDelimiter);

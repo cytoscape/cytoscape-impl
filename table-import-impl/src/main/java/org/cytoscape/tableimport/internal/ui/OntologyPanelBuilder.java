@@ -326,8 +326,8 @@ public class OntologyPanelBuilder {
 
 	private void browseAnnotationButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		DataSourceSelectDialog dssd = new DataSourceSelectDialog(DataSourceSelectDialog.ANNOTATION_TYPE,
-				CytoscapeServices.desktop.getJFrame(), true);
-		dssd.setLocationRelativeTo(CytoscapeServices.desktop.getJFrame());
+				CytoscapeServices.cySwingApplication.getJFrame(), true);
+		dssd.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
 		dssd.setVisible(true);
 
 		String key = dssd.getSourceName();
@@ -342,8 +342,8 @@ public class OntologyPanelBuilder {
 
 	private void browseOntologyButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		DataSourceSelectDialog dssd = new DataSourceSelectDialog(DataSourceSelectDialog.ONTOLOGY_TYPE,
-				CytoscapeServices.desktop.getJFrame(), true);
-		dssd.setLocationRelativeTo(CytoscapeServices.desktop.getJFrame());
+				CytoscapeServices.cySwingApplication.getJFrame(), true);
+		dssd.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
 		dssd.setVisible(true);
 
 		String key = dssd.getSourceName();
@@ -509,7 +509,7 @@ public class OntologyPanelBuilder {
 
 		// Configure JTask Dialog Pop-Up Box
 		JTaskConfig jTaskConfig = new JTaskConfig();
-		jTaskConfig.setOwner(CytoscapeServices.desktop.getJFrame());
+		jTaskConfig.setOwner(CytoscapeServices.cySwingApplication.getJFrame());
 		jTaskConfig.displayCloseButton(true);
 		jTaskConfig.displayStatus(true);
 		jTaskConfig.setAutoDispose(false);

@@ -44,6 +44,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -60,6 +61,7 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication app;
 	private final CyTableManager tableManager;
+	private final CyRootNetworkFactory cyRootNetworkFactory;
 
 	/**
 	 * Creates a new Biomart Client object.
@@ -71,16 +73,18 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 	                     final BiomartRestClient restClient, final CyTableFactory tableFactory,
 	                     final CyNetworkManager networkManager,
 	                     final CyApplicationManager applicationManager,
-	                     final CySwingApplication app, final CyTableManager tableManager)
+	                     final CySwingApplication app, final CyTableManager tableManager,
+						 final CyRootNetworkFactory cyRootNetworkFactory)
 	{
 		super(restClient.getBaseURL(), displayName, description);
 
-		this.tableFactory       = tableFactory;
-		this.restClient         = restClient;
-		this.networkManager     = networkManager;
-		this.applicationManager = applicationManager;
-		this.app                = app;
-		this.tableManager       = tableManager;
+		this.tableFactory         = tableFactory;
+		this.restClient           = restClient;
+		this.networkManager       = networkManager;
+		this.applicationManager   = applicationManager;
+		this.app                  = app;
+		this.tableManager         = tableManager;
+		this.cyRootNetworkFactory = cyRootNetworkFactory;
 
 		// TODO: set optional parameters (Tunables?)
 	}
@@ -111,7 +115,8 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 		final BiomartQuery query = this.gui.getTableImportQuery();
 
 		importTask = new ImportTableTask(restClient, query, tableFactory, networkManager,
-		                                 applicationManager, app.getJFrame(), tableManager);
+		                                 applicationManager, app.getJFrame(), tableManager,
+										 cyRootNetworkFactory);
 
 		return new TaskIterator(importTask);
 	}

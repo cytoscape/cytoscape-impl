@@ -4,6 +4,7 @@ package org.cytoscape.webservice.ncbi.task;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -28,12 +29,14 @@ public class ImportTableFromNCBITask extends AbstractTask {
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;
 	private final CyTableManager tableManager;
+	private final CyRootNetworkFactory cyRootNetworkFactory;
 
 	public ImportTableFromNCBITask(final CyTableFactory tableFactory, final Set<String> idList,
 	                               final Set<AnnotationCategory> category,
 	                               final CyNetworkManager networkManager,
 	                               final CyApplicationManager applicationManager,
-	                               final CyTableManager tableManager)
+	                               final CyTableManager tableManager,
+								   final CyRootNetworkFactory cyRootNetworkFactory)
 	{
 		this.tableFactory       = tableFactory;
 		this.idList             = idList;
@@ -41,6 +44,7 @@ public class ImportTableFromNCBITask extends AbstractTask {
 		this.applicationManager = applicationManager;
 		this.networkManager     = networkManager;
 		this.tableManager       = tableManager;
+		this.cyRootNetworkFactory = cyRootNetworkFactory;
 	}
 
 	@Override
@@ -51,7 +55,7 @@ public class ImportTableFromNCBITask extends AbstractTask {
 
 		final MapNetworkAttrTask localMappingTask =
 			new MapNetworkAttrTask(CyNode.class, globalTable, networkManager,
-			                       applicationManager);
+			                       applicationManager,cyRootNetworkFactory);
 		this.insertTasksAfterCurrentTask(localMappingTask);
 	}
 

@@ -6,6 +6,8 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -16,23 +18,27 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.io.util.StreamUtil;
 
 public class  CytoscapeServices {
-	
-	public static CySwingApplication desktop;
-	public static Bookmarks theBookmarks;
+
+	public static CyLayoutAlgorithmManager cyLayouts;
+	public static CyRootNetworkFactory cyRootNetworkFactory;
+	public static CyNetworkFactory cyNetworkFactory;
+	public static CySwingApplication cySwingApplication;
+	public static CyApplicationManager cyApplicationManager;
+	public static CyNetworkManager cyNetworkManager;
+	public static CyTableManager cyTableManager;
+	public static DialogTaskManager dialogTaskManager;
+	public static CyProperty bookmark;
 	public static BookmarksUtil bookmarksUtil;
-	public static DialogTaskManager guiTaskManagerServiceRef;
-	public static CyProperty cytoscapePropertiesServiceRef;
-	public static CyTableManager tblMgr;
-	public static OpenBrowser openBrowser;
+	public static CyProperty cyProperties;
 	public static FileUtil fileUtil;
-	public static CyApplicationManager appMgr;
-	public static CyNetworkManager netMgr;
-	public static CyLayoutAlgorithmManager cyLayoutsServiceRef;
-	public static CyNetworkViewFactory cyNetworkViewFactoryServiceRef;
-	public static CyNetworkFactory cyNetworkFactoryServiceRef;
-	public static CyNetworkViewManager networkViewManager;
+	public static OpenBrowser openBrowser;
 	public static CyNetworkNaming cyNetworkNaming;
-	public static CyTableFactory tableFactory;
+	public static CyNetworkViewManager cyNetworkViewManager;
+	public static CyNetworkViewFactory cyNetworkViewFactory;
+	public static CyTableFactory cyTableFactory;
+	public static StreamUtil streamUtil;
+	public static CyEventHelper cyEventHelper;
 }

@@ -49,15 +49,12 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-
 		monitor.setTitle("Loading attribute table data");
 		monitor.setProgress(0.0);
 		monitor.setStatusMessage("Loading table...");
 
-		// Load all table data sets here.
-		this.importTablePanel.importTable();
+		importTablePanel.importTable();
 
-		monitor.setStatusMessage("Mapping data table to local ones...");
 		this.insertTasksAfterCurrentTask(importTablePanel.getLoadTask());
 
 		monitor.setProgress(1.0);

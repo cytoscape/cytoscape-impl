@@ -6,6 +6,7 @@ package org.cytoscape.tableimport.internal;
 
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.io.util.StreamUtil;
@@ -28,6 +29,7 @@ import org.cytoscape.tableimport.internal.ImportNetworkTableReaderFactory;
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationAction;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactory;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.application.swing.CyAction;
@@ -49,36 +51,37 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc,CyLayoutAlgorithmManager.class);
-		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
-		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc,CyNetworkViewFactory.class);
-		CySwingApplication cytoscapeDesktopService = getService(bc,CySwingApplication.class);
-		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
-		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
-		DialogTaskManager guiTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
-		CyProperty bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
-		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
-		CyProperty cytoscapePropertiesServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
-		FileUtil fileUtilService = getService(bc,FileUtil.class);
-		OpenBrowser openBrowserService = getService(bc,OpenBrowser.class);
-		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
-		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,CyNetworkViewManager.class);
-		CyTableFactory cyDataTableFactoryServiceRef = getService(bc,CyTableFactory.class);
-		StreamUtil streamUtilService = getService(bc,StreamUtil.class);
-		CyEventHelper cyEventHelperRef = getService(bc,CyEventHelper.class);
-		
-		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,streamUtilService);
-		BasicCyFileFilter attrsTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,streamUtilService);
-		BasicCyFileFilter oboFilter = new BasicCyFileFilter(new String[]{"obo"}, new String[]{"text/obo"},"OBO Files",NETWORK,streamUtilService);
-		OBONetworkReaderFactory oboReaderFactory = new OBONetworkReaderFactory(oboFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyEventHelperRef);
-		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_txt = new ImportAttributeTableReaderFactory(attrsTableFilter_txt,cytoscapeDesktopService,cyApplicationManagerRef,cyNetworkManagerServiceRef,bookmarkServiceRef,bookmarksUtilServiceRef,guiTaskManagerServiceRef,cytoscapePropertiesServiceRef,cyTableManagerServiceRef,fileUtilService,openBrowserService,cyDataTableFactoryServiceRef,".txt");
-		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_xls = new ImportAttributeTableReaderFactory(attrsTableFilter_xls,cytoscapeDesktopService,cyApplicationManagerRef,cyNetworkManagerServiceRef,bookmarkServiceRef,bookmarksUtilServiceRef,guiTaskManagerServiceRef,cytoscapePropertiesServiceRef,cyTableManagerServiceRef,fileUtilService,openBrowserService,cyDataTableFactoryServiceRef,".xls");
-		ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction(cyApplicationManagerRef,bookmarkServiceRef,bookmarksUtilServiceRef,guiTaskManagerServiceRef,oboReaderFactory,cyNetworkManagerServiceRef,cyDataTableFactoryServiceRef,cyTableManagerServiceRef);
-		BasicCyFileFilter networkTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,streamUtilService);
-		BasicCyFileFilter networkTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",NETWORK,streamUtilService);
-		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_txt = new ImportNetworkTableReaderFactory(networkTableFilter_txt,cytoscapeDesktopService,cyApplicationManagerRef,cyNetworkManagerServiceRef,guiTaskManagerServiceRef,cytoscapePropertiesServiceRef,fileUtilService,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,".txt",cyNetworkNamingServiceRef,cyNetworkViewManagerServiceRef,cyTableManagerServiceRef);
-		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_xls = new ImportNetworkTableReaderFactory(networkTableFilter_xls,cytoscapeDesktopService,cyApplicationManagerRef,cyNetworkManagerServiceRef,guiTaskManagerServiceRef,cytoscapePropertiesServiceRef,fileUtilService,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,".xls",cyNetworkNamingServiceRef,cyNetworkViewManagerServiceRef,cyTableManagerServiceRef);
+		CytoscapeServices.cyLayouts = getService(bc,CyLayoutAlgorithmManager.class);
+		CytoscapeServices.cyNetworkFactory = getService(bc,CyNetworkFactory.class);
+		CytoscapeServices.cyRootNetworkFactory = getService(bc,CyRootNetworkFactory.class);
+		CytoscapeServices.cyNetworkViewFactory = getService(bc,CyNetworkViewFactory.class);
+		CytoscapeServices.cySwingApplication = getService(bc,CySwingApplication.class);
+		CytoscapeServices.cyApplicationManager = getService(bc,CyApplicationManager.class);
+		CytoscapeServices.cyNetworkManager = getService(bc,CyNetworkManager.class);
+		CytoscapeServices.cyTableManager = getService(bc,CyTableManager.class);
+		CytoscapeServices.dialogTaskManager = getService(bc,DialogTaskManager.class);
+		CytoscapeServices.bookmark = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
+		CytoscapeServices.bookmarksUtil = getService(bc,BookmarksUtil.class);
+		CytoscapeServices.cyProperties = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
+		CytoscapeServices.fileUtil = getService(bc,FileUtil.class);
+		CytoscapeServices.openBrowser = getService(bc,OpenBrowser.class);
+		CytoscapeServices.cyNetworkNaming = getService(bc,CyNetworkNaming.class);
+		CytoscapeServices.cyNetworkViewManager = getService(bc,CyNetworkViewManager.class);
+		CytoscapeServices.cyTableFactory = getService(bc,CyTableFactory.class);
+		CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
+		CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
+
+		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
+		BasicCyFileFilter attrsTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,CytoscapeServices.streamUtil);
+		BasicCyFileFilter oboFilter = new BasicCyFileFilter(new String[]{"obo"}, new String[]{"text/obo"},"OBO Files",NETWORK,CytoscapeServices.streamUtil);
+		OBONetworkReaderFactory oboReaderFactory = new OBONetworkReaderFactory(oboFilter);
+		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_txt = new ImportAttributeTableReaderFactory(attrsTableFilter_txt,".txt");
+		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_xls = new ImportAttributeTableReaderFactory(attrsTableFilter_xls,".xls");
+		ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction(oboReaderFactory);
+		BasicCyFileFilter networkTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
+		BasicCyFileFilter networkTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",NETWORK,CytoscapeServices.streamUtil);
+		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_txt = new ImportNetworkTableReaderFactory(networkTableFilter_txt,".txt");
+		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_xls = new ImportNetworkTableReaderFactory(networkTableFilter_xls,".xls");
 		
 		
 		Properties importAttributeTableReaderFactory_xlsProps = new Properties();

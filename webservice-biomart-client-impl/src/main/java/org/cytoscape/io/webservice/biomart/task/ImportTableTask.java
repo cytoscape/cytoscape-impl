@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
+import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -41,20 +42,23 @@ public class ImportTableTask extends AbstractTask {
 	private final CyApplicationManager applicationManager;
 	private final Window parent;
 	private final CyTableManager tableManager;
+	private final CyRootNetworkFactory cyRootNetworkFactory;
 
 	public ImportTableTask(final BiomartRestClient client, final BiomartQuery query,
 			       final CyTableFactory tableFactory,
 			       final CyNetworkManager networkManager,
 			       final CyApplicationManager applicationManager, final Window parent,
-			       final CyTableManager tableManager)
+			       final CyTableManager tableManager,
+				   final CyRootNetworkFactory cyRootNetworkFactory)
 	{
-		this.client             = client;
-		this.query              = query;
-		this.tableFactory       = tableFactory;
-		this.parent             = parent;
-		this.networkManager     = networkManager;
-		this.applicationManager = applicationManager;
-		this.tableManager       = tableManager;
+		this.client               = client;
+		this.query                = query;
+		this.tableFactory         = tableFactory;
+		this.parent               = parent;
+		this.networkManager       = networkManager;
+		this.applicationManager   = applicationManager;
+		this.tableManager         = tableManager;
+		this.cyRootNetworkFactory = cyRootNetworkFactory;
 
 		this.tables = new HashSet<CyTable>();
 	}
@@ -81,7 +85,8 @@ public class ImportTableTask extends AbstractTask {
 		tables.add(newTable);
 
 		final MapNetworkAttrTask localMappingTask = new MapNetworkAttrTask(
-				CyNode.class, newTable, networkManager, applicationManager);
+				CyNode.class, newTable, networkManager, applicationManager,
+				cyRootNetworkFactory);
 		final ShowResultTask messageTask = new ShowResultTask();
 		this.insertTasksAfterCurrentTask(localMappingTask, messageTask);
 	}
