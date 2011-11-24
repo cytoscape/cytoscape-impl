@@ -38,7 +38,7 @@ import org.cytoscape.equations.CodeAndSourceLocation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Equation;
-import org.cytoscape.equations.Node;
+import org.cytoscape.equations.TreeNode;
 
 
 public class EquationCompilerImpl implements EquationCompiler {
@@ -59,7 +59,7 @@ public class EquationCompilerImpl implements EquationCompiler {
 			return false;
 		}
 
-		final Node parseTree = parser.getParseTree();
+		final TreeNode parseTree = parser.getParseTree();
 
 		final Stack<CodeAndSourceLocation> codeStack = new Stack<CodeAndSourceLocation>();
 		try {

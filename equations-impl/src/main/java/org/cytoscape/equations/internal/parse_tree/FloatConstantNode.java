@@ -33,13 +33,14 @@ package org.cytoscape.equations.internal.parse_tree;
 import java.util.Stack;
 
 import org.cytoscape.equations.CodeAndSourceLocation;
-import org.cytoscape.equations.Node;
+import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.TreeNode;
 
 
 /**
  *  A node in the parse tree representing an integer constant.
  */
-public class FloatConstantNode extends Node {
+public class FloatConstantNode extends AbstractNode {
 	private final double value;
 
 	public FloatConstantNode(final int sourceLocation, final double value) {
@@ -55,12 +56,12 @@ public class FloatConstantNode extends Node {
 	/**
 	 *  @return null, This type of node never has any children!
 	 */
-	public Node getLeftChild() { return null; }
+	public TreeNode getLeftChild() { return null; }
 
 	/**
 	 *  @return null, This type of node never has any children!
 	 */
-	public Node getRightChild() { return null; }
+	public TreeNode getRightChild() { return null; }
 
 	public double getValue() { return value; }
 

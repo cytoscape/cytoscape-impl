@@ -33,14 +33,15 @@ package org.cytoscape.equations.internal.parse_tree;
 import java.util.Stack;
 
 import org.cytoscape.equations.CodeAndSourceLocation;
-import org.cytoscape.equations.Node;
+import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.TreeNode;
 import org.cytoscape.equations.internal.interpreter.Instruction;
 
 
 /**
  *  A node in the parse tree representing an attribute reference.
  */
-public class IdentNode extends Node {
+public class IdentNode extends AbstractNode {
 	private final String attribName;
 	private final Object defaultValue;
 	private final Class type;
@@ -66,12 +67,12 @@ public class IdentNode extends Node {
 	/**
 	 *  @return null, This type of node never has any children!
 	 */
-	public Node getLeftChild() { return null; }
+	public TreeNode getLeftChild() { return null; }
 
 	/**
 	 *  @return null, This type of node never has any children!
 	 */
-	public Node getRightChild() { return null; }
+	public TreeNode getRightChild() { return null; }
 
 	public String getAttribName() { return attribName; }
 	public Object getDefaultValue() { return defaultValue; }

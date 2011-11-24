@@ -33,7 +33,8 @@ package org.cytoscape.equations.internal.parse_tree;
 import java.util.Stack;
 
 import org.cytoscape.equations.CodeAndSourceLocation;
-import org.cytoscape.equations.Node;
+import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.TreeNode;
 import org.cytoscape.equations.internal.Token;
 import org.cytoscape.equations.internal.interpreter.Instruction;
 
@@ -41,11 +42,11 @@ import org.cytoscape.equations.internal.interpreter.Instruction;
 /**
  *  A node in the parse tree representing a unary operator application.
  */
-public class UnaryOpNode extends Node {
+public class UnaryOpNode extends AbstractNode {
 	private final Token operator;
-	private final Node operand;
+	private final TreeNode operand;
 
-	public UnaryOpNode(final int sourceLocation, final Token operator, final Node operand) {
+	public UnaryOpNode(final int sourceLocation, final Token operator, final TreeNode operand) {
 		super(sourceLocation);
 
 		if (operand == null)
@@ -62,12 +63,12 @@ public class UnaryOpNode extends Node {
 	/**
 	 *  @return the operand
 	 */
-	public Node getLeftChild() { return operand; }
+	public TreeNode getLeftChild() { return operand; }
 
 	/**
 	 *  @return null, This type of node never has any left children!
 	 */
-	public Node getRightChild() { return null; }
+	public TreeNode getRightChild() { return null; }
 
 	public Token getOperator() { return operator; }
 

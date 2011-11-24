@@ -34,19 +34,20 @@ import java.util.Stack;
 
 import org.cytoscape.equations.CodeAndSourceLocation;
 import org.cytoscape.equations.Function;
-import org.cytoscape.equations.Node;
+import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.TreeNode;
 import org.cytoscape.equations.internal.interpreter.Instruction;
 
 
 /**
  *  A node in the parse tree representing a function call.
  */
-public class FuncCallNode extends Node {
+public class FuncCallNode extends AbstractNode {
 	private final Function func;
 	final Class returnType;
-	private final Node[] args;
+	private final TreeNode[] args;
 
-	public FuncCallNode(final int sourceLocation, final Function func, final Class returnType, final Node[] args) {
+	public FuncCallNode(final int sourceLocation, final Function func, final Class returnType, final TreeNode[] args) {
 		super(sourceLocation);
 
 		if (func == null)
@@ -68,12 +69,12 @@ public class FuncCallNode extends Node {
 	/**
 	 *  @return null, This type of node never has any children!
 	 */
-	public Node getLeftChild() { return null; }
+	public TreeNode getLeftChild() { return null; }
 
 	/**
 	 *  @return null, This type of node never has any children!
 	 */
-	public Node getRightChild() { return null; }
+	public TreeNode getRightChild() { return null; }
 
 	/**
 	 *  @return null, The return value for this node is only known at runtime!

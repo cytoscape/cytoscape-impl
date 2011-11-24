@@ -41,7 +41,8 @@ import java.util.TreeSet;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.FunctionUtil;
-import org.cytoscape.equations.Node;
+import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.TreeNode;
 import org.cytoscape.equations.internal.builtins.*;
 import org.cytoscape.equations.internal.parse_tree.*;
 
@@ -51,7 +52,7 @@ public class EquationParserImpl implements EquationParser {
 	private Tokeniser tokeniser;
 	private Map<String, Function> nameToFunctionMap;
 	private String lastErrorMessage;
-	private Node parseTree;
+	private TreeNode parseTree;
 	private Map<String, Class<?>> variableNameToTypeMap;
 	private Set<String> variableReferences;
 	private Map<String, Object> defaultVariableValues;
@@ -147,7 +148,7 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *  @return the parse tree.  Must only be called if parse() returns true!
 	 */
-	public Node getParseTree() { return parseTree; }
+	public TreeNode getParseTree() { return parseTree; }
 
 	//
 	// The actual parsing takes place here.
@@ -156,21 +157,21 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *   Implements expr --> term | term {+ term } | term {- term} | term {&amp; term} | term compOp term.
 	 */
-	private Node parseExpr() {
-		Node exprNode = parseTerm();
+	private AbstractNode parseExpr() {
+		AbstractNode exprNode = parseTerm();
 
 		for (;;) {
 			final Token token = tokeniser.getToken();
 			final int sourceLocation = tokeniser.getStartPos();
 			if (token == Token.PLUS || token == Token.MINUS || token == Token.AMPERSAND) {
-				final Node term = parseTerm();
+				final TreeNode term = parseTerm();
 				if (token == Token.PLUS || token == Token.MINUS)
 					exprNode = handleBinaryArithmeticOp(token, sourceLocation, exprNode, term);
 				else // String concatenation.
 					exprNode = new BinOpNode(sourceLocation, Token.AMPERSAND, exprNode, term);
 			}
 			else if (token.isComparisonOperator()) {
-				final Node term = parseTerm();
+				final TreeNode term = parseTerm();
 				return handleComparisonOp(token, sourceLocation, exprNode, term); // No chaining for comparison operators!
 			} else {
 				tokeniser.ungetToken(token);
@@ -182,14 +183,14 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *  Implements term --> power {* power} | power {/ power}
 	 */
-	private Node parseTerm() {
-		Node termNode = parsePower();
+	private AbstractNode parseTerm() {
+		AbstractNode termNode = parsePower();
 
 		for (;;) {
 			final Token token = tokeniser.getToken();
 			final int sourceLocation = tokeniser.getStartPos();
 			if (token == Token.MUL || token == Token.DIV) {
-				final Node powerNode = parsePower();
+				final TreeNode powerNode = parsePower();
 				termNode = handleBinaryArithmeticOp(token, sourceLocation, termNode, powerNode);
 			}
 			else {
@@ -202,13 +203,13 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *  Implements power --> factor | factor ^ power
 	 */
-	private Node parsePower() {
-		Node powerNode = parseFactor();
+	private AbstractNode parsePower() {
+		AbstractNode powerNode = parseFactor();
 
 		final Token token = tokeniser.getToken();
 		final int sourceLocation = tokeniser.getStartPos();
 		if (token == Token.CARET) {
-			final Node rhs = parsePower();
+			final TreeNode rhs = parsePower();
 			powerNode = handleBinaryArithmeticOp(token, sourceLocation, powerNode, rhs);
 		}
 		else
@@ -220,7 +221,7 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *  Implements factor --> constant | variable_ref | "(" expr ")" | ("-"|"+") factor  | func_call
 	 */
-	private Node parseFactor() {
+	private AbstractNode parseFactor() {
 		Token token = tokeniser.getToken();
 		int sourceLocation = tokeniser.getStartPos();
 
@@ -288,7 +289,7 @@ public class EquationParserImpl implements EquationParser {
 
 		// 3. a parenthesised expression
 		if (token == Token.OPEN_PAREN) {
-			final Node exprNode = parseExpr();
+			final AbstractNode exprNode = parseExpr();
 			token = tokeniser.getToken();
 			if (token != Token.CLOSE_PAREN)
 				throw new IllegalStateException(sourceLocation + ": '(' expected!");
@@ -298,7 +299,7 @@ public class EquationParserImpl implements EquationParser {
 
 		// 4. a unary operator
 		if (token == Token.PLUS || token == Token.MINUS) {
-			final Node factor = parseFactor();
+			final TreeNode factor = parseFactor();
 			return handleUnaryOp(sourceLocation, token, factor);
 		}
 
@@ -314,7 +315,7 @@ public class EquationParserImpl implements EquationParser {
 		throw new IllegalStateException(sourceLocation + ": unexpected input token: " + token + "!");
 	}
 
-	private Node handleUnaryOp(final int sourceLocation, final Token operator, final Node operand) {
+	private AbstractNode handleUnaryOp(final int sourceLocation, final Token operator, final TreeNode operand) {
 		final Class<?> operandType = operand.getType();
 		if (operandType == Boolean.class || operandType == String.class
 		    || FunctionUtil.isSomeKindOfList(operandType))
@@ -329,7 +330,7 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *   Implements func_call --> ident "(" ")" | ident "(" expr {"," expr} ")".
 	 */
-	private Node parseFunctionCall() {
+	private AbstractNode parseFunctionCall() {
 		Token token = tokeniser.getToken();
 		final int functionNameStartPos = tokeniser.getStartPos();
 		if (token != Token.IDENTIFIER)
@@ -358,7 +359,7 @@ public class EquationParserImpl implements EquationParser {
 
 		// Parse the comma-separated argument list.
 		final ArrayList<Class<?>> argTypes = new ArrayList<Class<?>>();
-		ArrayList<Node> args = new ArrayList<Node>();
+		ArrayList<AbstractNode> args = new ArrayList<AbstractNode>();
 		int sourceLocation;
 		for (;;) {
 			token = tokeniser.getToken();
@@ -367,7 +368,7 @@ public class EquationParserImpl implements EquationParser {
 				break;
 
 			tokeniser.ungetToken(token);
-			final Node exprNode = parseExpr();
+			final AbstractNode exprNode = parseExpr();
 			argTypes.add(exprNode.getType());
 			args.add(exprNode);
 
@@ -386,7 +387,7 @@ public class EquationParserImpl implements EquationParser {
 			throw new IllegalStateException(sourceLocation + ": expected the closing parenthesis of a call to "
 			                                + functionNameCandidate + "!");
 
-		Node[] nodeArray = new Node[args.size()];
+		AbstractNode[] nodeArray = new AbstractNode[args.size()];
 		return new FuncCallNode(functionNameStartPos, func, returnType, args.toArray(nodeArray));
 	}
 
@@ -394,7 +395,7 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *  Implements --> "DEFINED" "(" ident ")".  If the opening brace is found a closing brace is also required.
 	 */
-	private Node parseDefined() {
+	private AbstractNode parseDefined() {
 		Token token = tokeniser.getToken();
 		final int definedStart = tokeniser.getStartPos();
 		if (token != Token.OPEN_PAREN)
@@ -442,7 +443,7 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *  Deals w/ any necessary type conversions for any binary arithmetic operation on numbers.
 	 */
-	private Node handleBinaryArithmeticOp(final Token operator, final int sourceLocation, final Node lhs, final Node rhs) {
+	private AbstractNode handleBinaryArithmeticOp(final Token operator, final int sourceLocation, final TreeNode lhs, final TreeNode rhs) {
 		// First operand is Double:
 		if (lhs.getType() == Double.class && rhs.getType() == Double.class)
 			return new BinOpNode(sourceLocation, operator, lhs, rhs);
@@ -480,7 +481,7 @@ public class EquationParserImpl implements EquationParser {
 	/**
 	 *  Deals w/ any necessary type conversions for any binary comparison operation.
 	 */
-	private Node handleComparisonOp(final Token operator, final int sourceLocation, final Node lhs, final Node rhs) {
+	private AbstractNode handleComparisonOp(final Token operator, final int sourceLocation, final TreeNode lhs, final TreeNode rhs) {
 		// First operand is Double:
 		if (lhs.getType() == Double.class && rhs.getType() == Double.class)
 			return new BinOpNode(sourceLocation, operator, lhs, rhs);

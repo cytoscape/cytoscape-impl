@@ -33,7 +33,8 @@ package org.cytoscape.equations.internal.parse_tree;
 import java.util.Stack;
 
 import org.cytoscape.equations.CodeAndSourceLocation;
-import org.cytoscape.equations.Node;
+import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.TreeNode;
 import org.cytoscape.equations.internal.Token;
 import org.cytoscape.equations.internal.interpreter.Instruction;
 
@@ -41,11 +42,11 @@ import org.cytoscape.equations.internal.interpreter.Instruction;
 /**
  *  A node in the parse tree representing a binary operator.
  */
-public class BinOpNode extends Node {
+public class BinOpNode extends AbstractNode {
 	private final Token operator;
-	private final Node lhs, rhs;
+	private final TreeNode lhs, rhs;
 
-	public BinOpNode(final int sourceLocation, final Token operator, final Node lhs, final Node rhs) {
+	public BinOpNode(final int sourceLocation, final Token operator, final TreeNode lhs, final TreeNode rhs) {
 		super(sourceLocation);
 
 		if (lhs == null)
@@ -65,12 +66,12 @@ public class BinOpNode extends Node {
 	/**
 	 *  @return the left operand
 	 */
-	public Node getLeftChild() { return lhs; }
+	public TreeNode getLeftChild() { return lhs; }
 
 	/**
 	 *  @return the right operand
 	 */
-	public Node getRightChild() { return rhs; }
+	public TreeNode getRightChild() { return rhs; }
 
 	public Token getOperator() { return operator; }
 
