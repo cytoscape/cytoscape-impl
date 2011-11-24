@@ -9,7 +9,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import org.cytoscape.linkout.internal.LinkOut;
-import org.cytoscape.property.BasicCyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 
 import org.cytoscape.property.CyProperty;
 
@@ -46,7 +46,7 @@ public class CyActivator extends AbstractCyActivator {
 			logger.warn("could not properly load linkout.props",e);
 		}
 
-		BasicCyProperty linkoutProps = new BasicCyProperty(linkoutProperties,CyProperty.SavePolicy.CONFIG_DIR);
+		SimpleCyProperty linkoutProps = new SimpleCyProperty(linkoutProperties,CyProperty.SavePolicy.CONFIG_DIR);
 		LinkOut linkout = new LinkOut(linkoutProps,cyServiceRegistrarServiceRef,openBrowserServiceRef,cyApplicationConfigurationServiceRef);
 		
 		Properties linkoutPropsProps = new Properties();

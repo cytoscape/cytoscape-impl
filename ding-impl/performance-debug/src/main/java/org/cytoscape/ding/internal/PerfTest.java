@@ -18,7 +18,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.property.BasicCyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.model.NetworkTestSupport;
@@ -118,7 +118,7 @@ public class PerfTest {
 
 	private CyLayoutAlgorithmManager getLayouts() {
 		Properties p = new Properties();
-		CyProperty<Properties> props = new BasicCyProperty(p,CyProperty.SavePolicy.DO_NOT_SAVE);
+		CyProperty<Properties> props = new SimpleCyProperty(p,CyProperty.SavePolicy.DO_NOT_SAVE);
 		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(props);
 		CyLayoutAlgorithm gridNodeLayout = new GridNodeLayout(mock(UndoSupport.class));
 		cyLayouts.addLayout(gridNodeLayout,p);

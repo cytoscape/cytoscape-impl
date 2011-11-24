@@ -17,7 +17,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.property.BasicCyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -59,7 +59,7 @@ public class AbstractNetworkViewReaderTester {
 		netFactory = nts.getNetworkFactory();
 
 		properties = new Properties();
-		CyProperty<Properties> cyProperties = new BasicCyProperty(properties, SavePolicy.DO_NOT_SAVE);		
+		CyProperty<Properties> cyProperties = new SimpleCyProperty(properties, SavePolicy.DO_NOT_SAVE);		
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		setViewThreshold(DEF_THRESHOLD);
 		

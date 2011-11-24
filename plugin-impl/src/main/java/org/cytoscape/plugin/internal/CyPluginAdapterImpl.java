@@ -33,7 +33,7 @@ import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
 import org.cytoscape.plugin.CyPlugin;
 import org.cytoscape.plugin.CyPluginAdapter;
-import org.cytoscape.property.BasicCyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.property.session.Cysession;
@@ -126,7 +126,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	private AboutToRemoveEdgesEvent aboutToRemoveEdgesEvent;
 	private RenderingEngineAboutToBeRemovedEvent renderingEngineAboutToBeRemovedEvent;
 	private AbstractVisualLexicon abstractVisualLexicon;
-	private BasicCyProperty basicCyProperty;
+	private SimpleCyProperty basicCyProperty;
 	private BookmarksUtil bookmarksUtil;
 	private Cysession cysession;
 	private NetworkTaskFactory networkTaskFactory;
