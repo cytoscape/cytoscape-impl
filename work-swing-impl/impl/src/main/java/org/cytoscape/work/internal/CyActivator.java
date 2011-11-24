@@ -15,7 +15,7 @@ import org.cytoscape.work.internal.submenu.*;
 import org.cytoscape.work.internal.UndoSupportImpl;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 
-import org.cytoscape.work.swing.BasicGUITunableHandlerFactory;
+import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -53,7 +53,7 @@ public class CyActivator extends AbstractCyActivator {
 		UndoSupportImpl undoSupport = new UndoSupportImpl();
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
-		BasicSubmenuTunableHandlerFactory submenuListSingleSelectionHandlerFactory = new BasicSubmenuTunableHandlerFactory(SubmenuTunableHandlerImpl.class,ListSingleSelection.class);
+		SimpleSubmenuTunableHandlerFactory submenuListSingleSelectionHandlerFactory = new SimpleSubmenuTunableHandlerFactory(SubmenuTunableHandlerImpl.class,ListSingleSelection.class);
 
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator);
 
@@ -63,18 +63,18 @@ public class CyActivator extends AbstractCyActivator {
 		SubmenuTaskManager submenuTaskManager = new SubmenuTaskManagerImpl(submenuTunableMutator,jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
-		BasicGUITunableHandlerFactory booleanHandlerFactory = new BasicGUITunableHandlerFactory(BooleanHandler.class, Boolean.class, boolean.class);
-		BasicGUITunableHandlerFactory integerHandlerFactory = new BasicGUITunableHandlerFactory(IntegerHandler.class, Integer.class, int.class);
-		BasicGUITunableHandlerFactory floatHandlerFactory = new BasicGUITunableHandlerFactory(FloatHandler.class, Float.class, float.class);
-		BasicGUITunableHandlerFactory doubleHandlerFactory = new BasicGUITunableHandlerFactory(DoubleHandler.class, Double.class, double.class);
-		BasicGUITunableHandlerFactory longHandlerFactory = new BasicGUITunableHandlerFactory(LongHandler.class, Long.class, long.class);
-		BasicGUITunableHandlerFactory stringHandlerFactory = new BasicGUITunableHandlerFactory(StringHandler.class,String.class);
-		BasicGUITunableHandlerFactory boundedIntegerHandlerFactory = new BasicGUITunableHandlerFactory(BoundedHandler.class,BoundedInteger.class);
-		BasicGUITunableHandlerFactory boundedFloatHandlerFactory = new BasicGUITunableHandlerFactory(BoundedHandler.class,BoundedFloat.class);
-		BasicGUITunableHandlerFactory boundedDoubleHandlerFactory = new BasicGUITunableHandlerFactory(BoundedHandler.class,BoundedDouble.class);
-		BasicGUITunableHandlerFactory boundedLongHandlerFactory = new BasicGUITunableHandlerFactory(BoundedHandler.class,BoundedLong.class);
-		BasicGUITunableHandlerFactory listSingleSelectionHandlerFactory = new BasicGUITunableHandlerFactory(ListSingleHandler.class,ListSingleSelection.class);
-		BasicGUITunableHandlerFactory listMultipleSelectionHandlerFactory = new BasicGUITunableHandlerFactory(ListMultipleHandler.class,ListMultipleSelection.class);
+		SimpleGUITunableHandlerFactory booleanHandlerFactory = new SimpleGUITunableHandlerFactory(BooleanHandler.class, Boolean.class, boolean.class);
+		SimpleGUITunableHandlerFactory integerHandlerFactory = new SimpleGUITunableHandlerFactory(IntegerHandler.class, Integer.class, int.class);
+		SimpleGUITunableHandlerFactory floatHandlerFactory = new SimpleGUITunableHandlerFactory(FloatHandler.class, Float.class, float.class);
+		SimpleGUITunableHandlerFactory doubleHandlerFactory = new SimpleGUITunableHandlerFactory(DoubleHandler.class, Double.class, double.class);
+		SimpleGUITunableHandlerFactory longHandlerFactory = new SimpleGUITunableHandlerFactory(LongHandler.class, Long.class, long.class);
+		SimpleGUITunableHandlerFactory stringHandlerFactory = new SimpleGUITunableHandlerFactory(StringHandler.class,String.class);
+		SimpleGUITunableHandlerFactory boundedIntegerHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedInteger.class);
+		SimpleGUITunableHandlerFactory boundedFloatHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedFloat.class);
+		SimpleGUITunableHandlerFactory boundedDoubleHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedDouble.class);
+		SimpleGUITunableHandlerFactory boundedLongHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedLong.class);
+		SimpleGUITunableHandlerFactory listSingleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory(ListSingleHandler.class,ListSingleSelection.class);
+		SimpleGUITunableHandlerFactory listMultipleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory(ListMultipleHandler.class,ListMultipleSelection.class);
 		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(bookmarkServiceRef,bookmarksUtilServiceRef);
 		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager);
 
