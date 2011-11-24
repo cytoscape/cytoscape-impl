@@ -124,8 +124,8 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
                 return true;
         }
         
-        CyColumn attr1 = matchingAttribute.getAttributeForMatching(n1.getNetwork());
-        CyColumn attr2 = matchingAttribute.getAttributeForMatching(n2.getNetwork());
+        CyColumn attr1 = matchingAttribute.getAttributeForMatching(n1.getNetworkPointer());
+        CyColumn attr2 = matchingAttribute.getAttributeForMatching(n2.getNetworkPointer());
         
         if (attr1==null || attr2==null) {
             throw new java.lang.IllegalArgumentException("Please specify the matching attribute first");

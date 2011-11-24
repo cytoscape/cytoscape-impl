@@ -59,18 +59,18 @@ class CyNodeImpl extends CyTableEntryImpl implements CyNode {
 	}
 
 	/**
-	 * @see org.cytoscape.model.CyNode#getNetwork()
+	 * @see org.cytoscape.model.CyNode#getNetworkPointer()
 	 */
 	@Override
-	public synchronized CyNetwork getNetwork() {
+	public synchronized CyNetwork getNetworkPointer() {
 		return nestedNet;
 	}
 
 	/**
-	 * @see org.cytoscape.model.CyNode#setNetwork(CyNetwork)
+	 * @see org.cytoscape.model.CyNode#setNetworkPointer(CyNetwork)
 	 */
 	@Override
-	public void setNetwork(final CyNetwork n) {
+	public void setNetworkPointer(final CyNetwork n) {
 		final CyNetwork orig; 
 	
 		synchronized (this) {

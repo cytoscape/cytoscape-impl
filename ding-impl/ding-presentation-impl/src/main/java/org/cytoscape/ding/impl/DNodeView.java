@@ -1072,7 +1072,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		synchronized (graphView.m_lock) {
 			++nestedNetworkPaintingDepth;
 			try {
-				if (nestedNetworkPaintingDepth > 1 || getModel().getNetwork() == null
+				if (nestedNetworkPaintingDepth > 1 || getModel().getNetworkPointer() == null
 						|| !nestedNetworkVisible)
 					return null;
 

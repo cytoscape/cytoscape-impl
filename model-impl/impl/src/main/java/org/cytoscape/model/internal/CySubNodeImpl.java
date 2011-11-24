@@ -50,13 +50,13 @@ class CySubNodeImpl extends CyTableEntryImpl implements CyNode {
 	}
 
 	@Override
-	public CyNetwork getNetwork() {
-		return rootNode.getNetwork();
+	public CyNetwork getNetworkPointer() {
+		return rootNode.getNetworkPointer();
 	}
 
 	@Override
-	public void setNetwork(final CyNetwork n) {
-		rootNode.setNetwork(n);
+	public void setNetworkPointer(final CyNetwork n) {
+		rootNode.setNetworkPointer(n);
 	}
 
 	public CyNode getRootNode() {

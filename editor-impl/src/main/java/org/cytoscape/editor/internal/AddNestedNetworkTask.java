@@ -47,7 +47,7 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 		}
 
 		CyNode n = nodeView.getModel();
-		n.setNetwork( nestedNetwork.getSelectedValue() );
+		n.setNetworkPointer( nestedNetwork.getSelectedValue() );
 		netView.updateView();
 	}
 }
