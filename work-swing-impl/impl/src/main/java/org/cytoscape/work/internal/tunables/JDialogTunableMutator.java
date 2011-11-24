@@ -23,7 +23,6 @@ import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.internal.tunables.utils.CollapsablePanel;
 import org.cytoscape.work.internal.tunables.utils.XorPanel;
 import org.cytoscape.work.swing.GUITunableHandler;
-import org.cytoscape.work.swing.TunableDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
