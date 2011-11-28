@@ -5,13 +5,13 @@ import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETW
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_SCALE_FACTOR;
 
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 
 
 /** An undoable edit that will undo and redo the fitting of the content of a network view. */ 
-final class FitContentEdit extends CyAbstractEdit {
+final class FitContentEdit extends AbstractCyEdit {
 	private final CyNetworkView view;
 	private final double networkScaleFactor;
 	private final double networkCenterXLocation;

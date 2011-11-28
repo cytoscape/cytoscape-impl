@@ -14,11 +14,11 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo hiding of nodes and edges. */
-final class HideEdit extends CyAbstractEdit {
+final class HideEdit extends AbstractCyEdit {
 	private final CyEventHelper eventHelper;
 	private final CyNetwork network;
 	private final CyNetworkView view;

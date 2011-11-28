@@ -14,13 +14,13 @@ import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
 
 /** An undoable edit that will undo and redo the zooming of a network view. */
-final class LayoutEdit extends CyAbstractEdit {
+final class LayoutEdit extends AbstractCyEdit {
 	private final CyEventHelper eventHelper;
 	private final CyNetworkView view;
 	private List<NodeViewAndLocations> nodeViewsAndLocations;

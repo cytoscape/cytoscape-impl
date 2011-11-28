@@ -43,7 +43,7 @@ import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
@@ -52,7 +52,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
  * An undoable edit used by MergeNetworkTask
  * to provide undo/redo support.  Code based on cytoscape.editor.AddNodeEdit
  */
-public class MergeNetworkEdit extends CyAbstractEdit {
+public class MergeNetworkEdit extends AbstractCyEdit {
 
     /**
      * ref to CyNetwork that we are modifying

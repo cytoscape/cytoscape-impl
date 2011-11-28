@@ -6,11 +6,11 @@ import java.util.Collection;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the copying of a value to an entire column. */
-final class CopyValueToEntireColumnEdit extends CyAbstractEdit {
+final class CopyValueToEntireColumnEdit extends AbstractCyEdit {
 	private final CyTable table;
 	private final String columnName;
 	private final Class<?> columnType;

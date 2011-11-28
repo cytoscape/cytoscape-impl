@@ -9,11 +9,11 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo selection of nodes and edges. */
-final class SelectionEdit extends CyAbstractEdit {
+final class SelectionEdit extends AbstractCyEdit {
 	public static enum SelectionFilter {
 		NODES_ONLY, EDGES_ONLY, NODES_AND_EDGES;
 	}

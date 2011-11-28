@@ -3,11 +3,11 @@ package org.cytoscape.task.internal.table;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the deletion of a column. */
-final class DeleteColumnEdit extends CyAbstractEdit {
+final class DeleteColumnEdit extends AbstractCyEdit {
 	private final CyTable table;
 	private final String columnName;
 	private final Class<?> columnType;

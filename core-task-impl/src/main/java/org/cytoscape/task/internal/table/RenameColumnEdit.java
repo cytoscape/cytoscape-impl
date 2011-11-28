@@ -2,11 +2,11 @@ package org.cytoscape.task.internal.table;
 
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the renaming of a column. */
-final class RenameColumnEdit extends CyAbstractEdit {
+final class RenameColumnEdit extends AbstractCyEdit {
 	private final CyColumn column;
 	private String oldName;
 

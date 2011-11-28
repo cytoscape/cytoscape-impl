@@ -20,11 +20,11 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the creation of a network view. */ 
-final class CreateNetworkViewEdit extends CyAbstractEdit {
+final class CreateNetworkViewEdit extends AbstractCyEdit {
 	private final CyEventHelper eventHelper;
 	private final CyNetwork network;
 	private final CyNetworkViewFactory viewFactory;

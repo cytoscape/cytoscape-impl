@@ -16,13 +16,13 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
-import org.cytoscape.util.swing.CyAbstractEdit;
+import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /**
  * An undoable edit that will undo and redo deletion of nodes and edges.
  */ 
-final class DeleteEdit extends CyAbstractEdit {
+final class DeleteEdit extends AbstractCyEdit {
 	private final List<CyNode> nodes;
 	private final Set<CyEdge> edges;
 	private final double[] xPos;
