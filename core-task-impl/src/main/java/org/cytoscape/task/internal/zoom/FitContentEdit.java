@@ -5,9 +5,9 @@ import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETW
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_SCALE_FACTOR;
 
-import org.cytoscape.util.swing.AbstractCyEdit;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the fitting of the content of a network view. */ 

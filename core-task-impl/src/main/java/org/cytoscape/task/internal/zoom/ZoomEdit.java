@@ -3,8 +3,8 @@ package org.cytoscape.task.internal.zoom;
 
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_SCALE_FACTOR;
 
-import org.cytoscape.util.swing.AbstractCyEdit;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the zooming of a network view. */

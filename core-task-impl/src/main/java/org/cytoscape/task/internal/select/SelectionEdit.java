@@ -9,7 +9,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.util.swing.AbstractCyEdit;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo selection of nodes and edges. */

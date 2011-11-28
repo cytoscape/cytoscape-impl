@@ -15,8 +15,8 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
-import org.cytoscape.util.swing.AbstractCyEdit;
 
 
 /**

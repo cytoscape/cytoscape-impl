@@ -14,9 +14,9 @@ import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.util.swing.AbstractCyEdit;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the zooming of a network view. */

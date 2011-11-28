@@ -3,7 +3,7 @@ package org.cytoscape.task.internal.title;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.util.swing.AbstractCyEdit;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo renaming of a network. */ 

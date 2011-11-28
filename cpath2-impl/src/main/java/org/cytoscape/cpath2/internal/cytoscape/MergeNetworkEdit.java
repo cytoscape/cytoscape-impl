@@ -43,10 +43,10 @@ import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.util.swing.AbstractCyEdit;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
 /**
  * An undoable edit used by MergeNetworkTask
