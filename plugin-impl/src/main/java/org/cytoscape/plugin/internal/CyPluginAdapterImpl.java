@@ -31,7 +31,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
-import org.cytoscape.plugin.CyPlugin;
+import org.cytoscape.plugin.AbstractCyPlugin;
 import org.cytoscape.plugin.CyPluginAdapter;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
@@ -149,7 +149,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	private AbstractWebServiceClient abstractWebServiceClient;
 	private DataImportFinishedEvent dataImportFinishedEvent;
 	private DropNetworkViewTaskFactory dropNetworkViewTaskFactory;
-	private CyPlugin cyPlugin;
+	private AbstractCyPlugin cyPlugin;
 	private final VisualMappingFunctionFactory visualMappingFunctionContinuousFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory;

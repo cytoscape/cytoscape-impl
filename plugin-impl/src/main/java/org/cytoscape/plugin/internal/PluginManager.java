@@ -37,7 +37,7 @@
 package org.cytoscape.plugin.internal;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.plugin.CyPlugin;
+import org.cytoscape.plugin.AbstractCyPlugin;
 import org.cytoscape.plugin.CyPluginAdapter;
 import org.cytoscape.plugin.internal.action.PluginManagerAction;
 import org.cytoscape.plugin.internal.util.FileUtil;
