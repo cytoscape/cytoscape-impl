@@ -30,13 +30,20 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
 	@Override
 	public Set<CyCustomGraphics> values() {
-		
 		return new HashSet<CyCustomGraphics>(manager.getAllCustomGraphics());
 	}
 
 	@Override
 	public void addRangeValue(CyCustomGraphics newValue) {
 		manager.addCustomGraphics(newValue, null);
+	}
+	
+	@Override
+	public boolean inRange(CyCustomGraphics value) {
+		if(manager.getAllCustomGraphics().contains(value))
+			return true;
+		else
+			return false;
 	}
 
 }

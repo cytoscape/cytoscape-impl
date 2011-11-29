@@ -67,7 +67,22 @@ public class DependencyTable extends JTable {
 
 	private void processMouseClick() {
 		final int selected = this.getSelectedRow();
-		final VisualPropertyDependency dep = depList.get(selected);
+		if(selected == -1)
+			return;
+		
+		final Object selectedRowString = this.getValueAt(selected, 1);
+		
+		System.out.println("#Selected Row val = " + selectedRowString.toString());
+		
+		VisualPropertyDependency dep = null;
+		for(VisualPropertyDependency dependency: depList) {
+			if(dependency.getDisplayName().equals(selectedRowString.toString())) {
+				dep = dependency;
+				break;
+			}
+		}
+		
+		System.out.println("#And dep = " + dep.toString());
 		final boolean isDepend = (Boolean) model.getValueAt(selected, 0);
 		
 		depStateMap.put(dep, isDepend);

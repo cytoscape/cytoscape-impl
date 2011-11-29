@@ -32,17 +32,24 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.TexturePaint;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.Label;
+import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.ding.customgraphics.Layer;
+import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.util.intr.IntObjHash;
+import org.cytoscape.view.model.VisualProperty;
 
 
 /*
@@ -50,6 +57,9 @@ import org.cytoscape.util.intr.IntObjHash;
  * there is a threat of multiple threads.
  */
 class DNodeDetails extends IntermediateNodeDetails {
+	
+	// Will be used when Custom graphics is empty.
+	private final static Set<CustomGraphic> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphic>(0);
 	
 	final DGraphView m_view;
 	
@@ -81,8 +91,6 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	Map<Integer, Double> m_width = new HashMap<Integer, Double>();
 	
-	
-	
 	private Set<Integer> selected = new HashSet<Integer>();
 
 	// Default values
@@ -107,13 +115,15 @@ class DNodeDetails extends IntermediateNodeDetails {
 	private Double m_labelOffsetVectorXDefault; 
 	private Double m_labelOffsetVectorYDefault;
 	private Byte m_labelJustifyDefault; 
-	private Double m_labelWidthDefault; 
+	private Double m_labelWidthDefault;
 	
+	private final Map<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>> defaultCustomGraphicsMap;
 
 	private boolean isCleared = false;
-	
+
 	DNodeDetails(final DGraphView view) {
 		m_view = view;
+		defaultCustomGraphicsMap = new HashMap<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>>();
 	}
 	
 	void clear() {
@@ -243,21 +253,6 @@ class DNodeDetails extends IntermediateNodeDetails {
 	}
 
 
-//	/*
-//	 * A null color has the special meaning to remove overridden color.
-//	 */
-//	void overrideColorLowDetail(int node, Color color) {
-//		if ((color == null) || color.equals(super.colorLowDetail(node))) {
-//			final Object val = m_colorsLowDetail.get(node);
-//
-//			if ((val != null) && (val != m_deletedEntry))
-//				m_colorsLowDetail.put(node, m_deletedEntry);
-//		} else {
-//			m_colorsLowDetail.put(node, color);
-//			isCleared = false;
-//		}
-//	}
-
 	@Override
 	public byte shape(final int node) {
 		final Byte shape = m_shapes.get(node);
@@ -339,8 +334,6 @@ class DNodeDetails extends IntermediateNodeDetails {
 	void unselect(final int node) {
 		selected.remove(node);
 	}
-	
-	
 
 	
 	@Override
@@ -558,32 +551,44 @@ class DNodeDetails extends IntermediateNodeDetails {
 		}
 	}
 
-	// overrides NodeDetails.customGraphicCount():
+
+	@Override
 	public int customGraphicCount(final int node) {
 		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);	
 		return dnv.getNumCustomGraphics();
 	}
 
-	// overrides NodeDetails.customGraphics():
+
+	@Override
 	public Iterator<CustomGraphic> customGraphics (final int node) {
 		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);
-		return dnv.customGraphicIterator();
+		final Iterator<CustomGraphic> iterator = dnv.customGraphicIterator();
+		
+		if (iterator == null) {
+			if ( defaultCustomGraphicsMap.size() == 0)
+				return EMPTY_CUSTOM_GRAPHICS.iterator();
+			else {
+				List<CustomGraphic> cgList = new ArrayList<CustomGraphic>();
+				for (CyCustomGraphics<CustomGraphic> val:defaultCustomGraphicsMap.values()) {
+					List<Layer<CustomGraphic>> layers = val.getLayers();
+					for(Layer<CustomGraphic> layer: layers) {
+						cgList.add(layer.getLayerObject());
+					}
+				}
+				return cgList.iterator();
+			}
+		} else
+			return dnv.customGraphicIterator();
 	}
-	// overrides NodeDetails.customGraphicLock():
-	public Object customGraphicLock (final int node) {
-		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);
-		return dnv.customGraphicLock();	
+	
+
+	void setCustomGraphicsDefault(final CustomGraphicsVisualProperty vp,
+			final CyCustomGraphics<CustomGraphic> customGraphics) {
+		defaultCustomGraphicsMap.put(vp, customGraphics);
 	}
 
-	// label positioning
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param node DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+
+	@Override
 	public byte labelTextAnchor(final int node, final int labelInx) {
 		final Integer p = m_labelTextAnchors.get(node);
 
@@ -609,14 +614,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 		}
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param node DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public byte labelNodeAnchor(final int node, final int labelInx) {
 		final Integer o = m_labelNodeAnchors.get(node);
 

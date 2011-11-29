@@ -31,9 +31,16 @@ package org.cytoscape.ding.impl;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
+import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
+import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -60,15 +67,18 @@ class NodeViewDefaultSupport {
 	private Font font;
 	private Color borderColor;
 	
+	private final Map<VisualProperty<CyCustomGraphics<CustomGraphic>>, CyCustomGraphics<CustomGraphic>> defaultCustomGraphicsMap;
+	
 	
 	NodeViewDefaultSupport(final DNodeDetails nodeDetails, final Object lock) {
 		this.nodeDetails = nodeDetails;
 		this.lock = lock;
+		this.defaultCustomGraphicsMap = new HashMap<VisualProperty<CyCustomGraphics<CustomGraphic>>, CyCustomGraphics<CustomGraphic>>();
 	}
 
 	
-	<T, V extends T> void setNodeViewDefault(final VisualProperty<? extends T> vp, V value) {
-		
+	<V> void setNodeViewDefault(final VisualProperty<?> vpOriginal, V value) {
+		final VisualProperty<?> vp = vpOriginal;
 		
 		// Null means set value to VP's default.
 		if(value == null)
@@ -110,6 +120,8 @@ class NodeViewDefaultSupport {
 			}
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
+		} else if (vp instanceof CustomGraphicsVisualProperty) {
+			setCustomGraphics(vp, (CyCustomGraphics<CustomGraphic>) value);
 		}
 	}
 
@@ -190,6 +202,7 @@ class NodeViewDefaultSupport {
 		}
 	}
 
+
 	void setFont(Font newFont, float newSize) {
 		synchronized (lock) {
 			if ( newFont == null )
@@ -203,11 +216,13 @@ class NodeViewDefaultSupport {
 		}
 	}
 
+
 	void setLabelWidth(double width) {
 		synchronized (lock) {
 			nodeDetails.setLabelWidthDefault(width);
 		}
 	}
+
 
 	public void setLabelPosition(final ObjectPosition labelPosition) {
 		synchronized (lock) {
@@ -217,6 +232,17 @@ class NodeViewDefaultSupport {
 			nodeDetails.setLabelOffsetVectorXDefault(labelPosition.getOffsetX());
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
 		}
+	}
+	
+	
+	void setCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {
+
+		synchronized (lock) {
+			// Pick from Custom Graphics 1-9.
+			final CyCustomGraphics<CustomGraphic> currentCG = defaultCustomGraphicsMap.get(vp);
+			nodeDetails.setCustomGraphicsDefault((CustomGraphicsVisualProperty) vp, customGraphics);
+		}
+
 	}
 	
 }

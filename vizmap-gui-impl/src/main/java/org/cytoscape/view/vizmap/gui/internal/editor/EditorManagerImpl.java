@@ -157,7 +157,6 @@ public class EditorManagerImpl implements EditorManager {
 		this.valueEditors.put(ve.getType(), ve);
 	}
 
-	
 	public void removeValueEditor(ValueEditor<?> valueEditor, @SuppressWarnings("rawtypes") Map properties) {
 		logger.debug("************* Removing Value Editor ****************");
 		valueEditors.remove(valueEditor.getType());
@@ -169,17 +168,15 @@ public class EditorManagerImpl implements EditorManager {
 		logger.debug("Total editor count = " + editors.size());
 	}
 
-
 	public void removeVisualPropertyEditor(VisualPropertyEditor<?> vpEditor,
 			@SuppressWarnings("rawtypes") Map properties) {
 		logger.debug("************* Removing VP Editor ****************");
 		editors.remove(vpEditor.getType());
 	}
 
-
 	@Override
-	public <V> V showVisualPropertyValueEditor(final Component parentComponent, final VisualProperty<V> type, V initialValue)
-			throws Exception {
+	public <V> V showVisualPropertyValueEditor(final Component parentComponent, final VisualProperty<V> type,
+			V initialValue) throws Exception {
 
 		@SuppressWarnings("unchecked")
 		final ValueEditor<V> editor = (ValueEditor<V>) valueEditors.get(type.getRange().getType());
@@ -187,21 +184,21 @@ public class EditorManagerImpl implements EditorManager {
 		if (editor == null)
 			throw new IllegalStateException("No value editor for " + type.getDisplayName() + " is available.");
 
-		while (true) {
-			final V newValue = editor.showEditor(parentComponent, initialValue);
-			// Null is valid return value.  It's from "Cancel" button.
-			if(newValue == null)
-				return null;
+		final V newValue = editor.showEditor(parentComponent, initialValue);
+		// Null is valid return value. It's from "Cancel" button.
+		if (newValue == null)
+			return null;
+
+		if (type.getRange().inRange(newValue))
+			return newValue;
+		else {
+			String message = "Value is out-of-range.";
+			if (type.getRange() instanceof ContinuousRange)
+				message = message + ": " + ((ContinuousRange) type.getRange()).getMin() + " to "
+						+ ((ContinuousRange) type.getRange()).getMax();
+			JOptionPane.showMessageDialog(parentComponent, message, "Invalid Value", JOptionPane.ERROR_MESSAGE);
 			
-			if (type.getRange().inRange(newValue))
-				return newValue;
-			else {
-				String message = "Value is out-of-range.  Please evter valid value.";
-				if (type.getRange() instanceof ContinuousRange)
-					message = message + ": " + ((ContinuousRange) type.getRange()).getMin() + " to "
-							+ ((ContinuousRange) type.getRange()).getMax();
-				JOptionPane.showMessageDialog(parentComponent, message, "Invalid Value", JOptionPane.ERROR_MESSAGE);
-			}
+			return initialValue;
 		}
 	}
 
@@ -246,7 +243,6 @@ public class EditorManagerImpl implements EditorManager {
 
 		return ret;
 	}
-
 
 	public PropertyEditor getDefaultComboBoxEditor(String editorName) {
 		PropertyEditor editor = comboBoxEditors.get(editorName);

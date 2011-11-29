@@ -244,7 +244,6 @@ public class DefaultViewEditorImpl extends JDialog implements
 	}
 	
 	
-	
 	private void updateDependencyTable() {
 		
 		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
@@ -276,13 +275,12 @@ public class DefaultViewEditorImpl extends JDialog implements
 				depTableModel.addRow(newRow);
 			}
 		}
+		
 		depTable = new DependencyTable(cyApplicationManager, cyEventHelper, depTableModel,
 				(List<VisualPropertyDependency>) depList, depStateMap);
 		depMap.put(selectedStyle, depStateMap);
 		dependencyScrollPane.setViewportView(depTable);
 		depTable.repaint();
-		
-		logger.info("Row count = " + depTable.getModel().getRowCount());
 	}
 
 

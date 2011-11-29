@@ -177,9 +177,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// object assuming it takes up the least amount of memory:
 	private final Object[] CG_LOCK = new Object[0];
 
-	// Will be used when Custom graphics is empty.
-	private final static Set<CustomGraphic> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphic>(0);
-
 	// Map from NodeCustomGraphics Visual Property to native CustomGraphics
 	// objects.
 	private final Map<VisualProperty<?>, Set<CustomGraphic>> cgMap;
@@ -696,10 +693,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		m_selected = true;
 		graphView.m_nodeDetails.select(m_inx);
-		
-//		graphView.m_nodeDetails.overrideFillPaint(m_inx, graphView.m_nodeDetails.selectedPaint(m_inx));
-//		graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) graphView.m_nodeDetails.selectedPaint(m_inx));
-
 		graphView.m_selectedNodes.insert(m_inx);
 
 		return true;
@@ -724,9 +717,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		m_selected = false;
 		graphView.m_nodeDetails.unselect(m_inx);
-//		graphView.m_nodeDetails.overrideFillPaint(m_inx, graphView.m_nodeDetails.fillPaint(m_inx));
-//		graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) graphView.m_nodeDetails.fillPaint(m_inx));
-
 		graphView.m_selectedNodes.delete(m_inx);
 
 		return true;
@@ -792,12 +782,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param textPaint
-	 *            DOCUMENT ME!
-	 */
+	
 	@Override
 	public void setTextPaint(Paint textPaint) {
 		synchronized (graphView.m_lock) {
@@ -806,32 +791,16 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param threshold
-	 *            DOCUMENT ME!
-	 */
-	public void setGreekThreshold(double threshold) {
-	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public String getText() {
 		synchronized (graphView.m_lock) {
 			return graphView.m_nodeDetails.labelText(m_inx, 0);
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param text
-	 *            DOCUMENT ME!
-	 */
+
+	@Override
 	public void setText(String text) {
 		synchronized (graphView.m_lock) {
 			graphView.m_nodeDetails.overrideLabelText(m_inx, 0, text);
@@ -900,8 +869,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				retVal = false;
 			else {
 				retVal = orderedCustomGraphicLayers.add(cg);
-				// ????graphicsPositions.put(cg,
-				// ObjectPositionImpl.DEFAULT_POSITION);
 			}
 		}
 		ensureContentChanged();
@@ -925,26 +892,22 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * Return a non-null, read-only Iterator over all CustomGraphics contained
+	 * Return a read-only Iterator over all CustomGraphics contained
 	 * in this DNodeView. The Iterator will return each CustomGraphic in draw
 	 * order. The Iterator cannot be used to modify the underlying set of
 	 * CustomGraphics.
 	 * 
 	 * @return The CustomGraphics Iterator. If no CustomGraphics are associated
-	 *         with this DNOdeView, an empty Iterator is returned.
+	 *         with this DNOdeView, null is returned.
 	 * @throws UnsupportedOperationException
 	 *             if an attempt is made to use the Iterator's remove() method.
-	 * @since Cytoscape 2.6
 	 */
 	public Iterator<CustomGraphic> customGraphicIterator() {
-		final Iterable<CustomGraphic> toIterate;
 		synchronized (CG_LOCK) {
-			if (orderedCustomGraphicLayers == null) {
-				toIterate = EMPTY_CUSTOM_GRAPHICS;
-			} else {
-				toIterate = orderedCustomGraphicLayers;
-			}
-			return new ReadOnlyIterator<CustomGraphic>(toIterate);
+			if (orderedCustomGraphicLayers == null)
+				return null;
+			else
+				return new ReadOnlyIterator<CustomGraphic>(orderedCustomGraphicLayers);
 		}
 	}
 
@@ -1315,53 +1278,23 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
 		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
-		// final ObjectPosition position = this.graphicsPositions.get(vp);
-
-		// System.out.print("CG Position for: " +
-		// cgPositionVP.getDisplayName());
-		// System.out.println(" = " + positionValue);
 
 		for (Layer<CustomGraphic> layer : layers) {
 			// Assume it's a Ding layer
 			CustomGraphic newCG = layer.getLayerObject();
-			// if(newPosition != null) {
-			// newCG = this.moveCustomGraphicsToNewPosition(newCG, newPosition);
-			// System.out.println("MOVED: " + vp.getDisplayName());
-			// }
-
 			CustomGraphic finalCG = newCG;
 			if (sync) {
 				// Size is locked to node size.
 				finalCG = syncSize(customGraphics, newCG, lexicon.getVisualLexiconNode(MinimalVisualLexicon.NODE_WIDTH)
 						.isDepend());
 			}
-			// addCustomGraphic(resized);
-			// dCustomGraphicsSet.add(resized);
-			// } else {
-			// addCustomGraphic(newCG);
-			// dCustomGraphicsSet.add(newCG);
-			// }
-
 			finalCG = moveCustomGraphicsToNewPosition(finalCG, positionValue);
 
 			addCustomGraphic(finalCG);
 			dCustomGraphicsSet.add(finalCG);
 		}
-		// this.currentMap.put(dv, targets);
-
-		// if(position != null &&
-		// position.equals(ObjectPositionImpl.DEFAULT_POSITION) == false) {
-		// // Transform
-		// this.transformCustomGraphics(dCustomGraphicsSet, vp, position);
-		// }
 
 		cgMap.put(vp, dCustomGraphicsSet);
-
-		// Flag this as used Custom Graphics
-		// Cytoscape.getVisualMappingManager().getCustomGraphicsManager().setUsedInCurrentSession(graphics,
-		// true);
-
-		// System.out.println("CG Applyed: " + vp.getDisplayName());
 	}
 
 	private void applyCustomGraphicsPosition(final VisualProperty<?> vp, final ObjectPosition position) {
@@ -1384,31 +1317,21 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (parent == null)
 			throw new NullPointerException("Associated Custom Graphics VP is missing for " + vp.getDisplayName());
 
-		// System.out.println("Got associated CG = " + parent.getDisplayName());
 
 		final Set<CustomGraphic> currentCG = cgMap.get(parent);
 
-		if (currentCG == null || currentCG.size() == 0) {
-			// Ignore if no CG is available.
-			// System.out.println("    CG not found.  No need to update: " +
-			// parent.getDisplayName());
+		if (currentCG == null || currentCG.size() == 0)
 			return;
-		}
 
 		final Set<CustomGraphic> newList = new HashSet<CustomGraphic>();
 		for (CustomGraphic g : currentCG) {
 			newList.add(moveCustomGraphicsToNewPosition(g, position));
-			// this.removeCustomGraphic(g);
 		}
 
 		currentCG.clear();
 		currentCG.addAll(newList);
 
 		this.cgMap.put(parent, currentCG);
-		// this.graphicsPositions.put(parent, position);
-
-		// System.out.println("Position applied of CG = " + vp.getDisplayName()
-		// + " <--- " + parent.getDisplayName());
 	}
 
 	private CustomGraphic syncSize(CyCustomGraphics<?> graphics, final CustomGraphic cg, final boolean whLock) {
@@ -1446,56 +1369,4 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 		return new CustomGraphic(scale.createTransformedShape(originalShape), cg.getPaintFactory());
 	}
-
-//	@Override
-//	public <T> T getVisualProperty(final VisualProperty<T> vp) {
-//		Object value = null;
-//		
-//		if (vp == DVisualLexicon.NODE_SHAPE) {
-//			value = Integer.valueOf(getShape());
-//		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
-//			value = getSelectedPaint();
-//		} else if (vp == MinimalVisualLexicon.NODE_SELECTED) {
-//			value = Boolean.valueOf(isSelected());
-//		} else if (vp == MinimalVisualLexicon.NODE_VISIBLE) {
-//			value = !graphView.isHidden(this);
-//		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
-//			value = getUnselectedPaint();
-//		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
-//			value = getBorderPaint();
-//		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
-//			value = getBorderWidth();
-//		} else if (vp == DVisualLexicon.NODE_BORDER_LINE_TYPE) {
-//			value = this.getBorder();
-//		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
-//			value = getTransparency();
-//		} else if (vp == MinimalVisualLexicon.NODE_WIDTH) {
-//			value = getWidth();
-//		} else if (vp == MinimalVisualLexicon.NODE_HEIGHT) {
-//			value = getHeight();
-//		} else if (vp == MinimalVisualLexicon.NODE_SIZE) {
-//			value = getWidth();
-//		} else if (vp == MinimalVisualLexicon.NODE_LABEL) {
-//			value = getText();
-//		} else if (vp == MinimalVisualLexicon.NODE_X_LOCATION) {
-//			value = getXPosition();
-//		} else if (vp == MinimalVisualLexicon.NODE_Y_LOCATION) {
-//			value = getYPosition();
-//		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
-//			value = getToolTip();
-//		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
-//			value = getTextPaint();
-//		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
-//			value = getFont();
-//		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_SIZE) {
-//			value = getFont().getSize();
-//		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
-//			value = getLabelPosition();
-//		} else if (vp instanceof CustomGraphicsVisualProperty) {
-//			// FIXME!
-//		} else
-//			value = vp.getDefault();
-//		
-//		return (T) value;
-//	}
 }
