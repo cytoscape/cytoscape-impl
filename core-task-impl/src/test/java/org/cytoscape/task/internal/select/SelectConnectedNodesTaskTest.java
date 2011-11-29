@@ -33,7 +33,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
@@ -52,9 +51,7 @@ public class SelectConnectedNodesTaskTest extends AbstractSelectTaskTester {
 	public void testRun() throws Exception {
 		final CyTable nodeTable = mock(CyTable.class);
 		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 
 		// more setup
 		when(r1.get("selected", Boolean.class)).thenReturn(true);

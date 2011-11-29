@@ -82,7 +82,7 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 
 		taskMonitor.setProgress(0.3);
 		
-		undoSupport.getUndoableEditSupport().postEdit(
+		undoSupport.postEdit(
 			new DeleteEdit(network, selectedNodes, selectedEdges,
 				       networkViewManager, visualMappingManager, eventHelper));
 

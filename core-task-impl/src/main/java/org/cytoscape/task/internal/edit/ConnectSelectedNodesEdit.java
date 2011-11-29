@@ -26,7 +26,7 @@ final class ConnectSelectedNodesEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		final List<CyEdge> newEdges = new ArrayList<CyEdge>(edges.size());
 		for (final CyEdge edge : edges) {
@@ -45,7 +45,7 @@ final class ConnectSelectedNodesEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		network.removeEdges(edges);
 	}

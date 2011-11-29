@@ -57,7 +57,7 @@ public class HideSelectedEdgesTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
 		final CyNetwork network = view.getModel(); 
-		undoSupport.getUndoableEditSupport().postEdit(
+		undoSupport.postEdit(
 			new HideEdit(eventHelper, "Hide Selected Edges", network, view));
 
 		final List<CyEdge> selectedEdges =

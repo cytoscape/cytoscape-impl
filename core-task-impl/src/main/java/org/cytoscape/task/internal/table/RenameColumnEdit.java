@@ -18,7 +18,7 @@ final class RenameColumnEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		final String previousName = column.getName();
 		column.setName(oldName);
@@ -26,7 +26,7 @@ final class RenameColumnEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		final String previousName = column.getName();
 		column.setName(oldName);

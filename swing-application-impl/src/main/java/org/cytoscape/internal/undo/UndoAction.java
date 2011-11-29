@@ -41,7 +41,7 @@ import javax.swing.undo.CannotUndoException;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,12 +56,12 @@ public class UndoAction extends AbstractCyAction {
 
 	private final static Logger logger = LoggerFactory.getLogger(UndoAction.class);
 
-	private UndoSupport undo;
+	private SwingUndoSupport undo;
 
 	/**
 	 * Constructs the action.
 	 */
-	public UndoAction(UndoSupport undo,CyApplicationManager appMgr) {
+	public UndoAction(SwingUndoSupport undo,CyApplicationManager appMgr) {
 		super("Undo",appMgr);
 		setAcceleratorKeyStroke(
 			KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit()

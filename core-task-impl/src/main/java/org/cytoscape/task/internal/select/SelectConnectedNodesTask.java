@@ -60,7 +60,7 @@ public class SelectConnectedNodesTask extends AbstractSelectTask {
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
-		undoSupport.getUndoableEditSupport().postEdit(
+		undoSupport.postEdit(
 			new SelectionEdit(eventHelper, "Select Nodes Connected by Selected Edges",
 			                  network, view, SelectionEdit.SelectionFilter.NODES_ONLY));
 		tm.setProgress(0.1);

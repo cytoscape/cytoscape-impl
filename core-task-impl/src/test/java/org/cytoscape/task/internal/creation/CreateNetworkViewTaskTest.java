@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
@@ -32,9 +31,7 @@ public class CreateNetworkViewTaskTest {
 	
 	@Test
 	public void testCreateNetworkViewTask() throws Exception {
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 				
 		final TaskMonitor tm = mock(TaskMonitor.class);
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);

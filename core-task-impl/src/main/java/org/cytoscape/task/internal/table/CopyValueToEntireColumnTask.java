@@ -56,7 +56,7 @@ final class CopyValueToEntireColumnTask extends AbstractTableCellTask {
 		final String columnName = column.getName();
 		final Object sourceValue = sourceRow.getRaw(columnName);
 
-		undoSupport.getUndoableEditSupport().postEdit(
+		undoSupport.postEdit(
 			new CopyValueToEntireColumnEdit(column, sourceValue));
 
 		final List<CyRow> rows = column.getTable().getAllRows();

@@ -19,6 +19,7 @@ import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.util.*;
@@ -81,8 +82,10 @@ public class CyActivator extends AbstractCyActivator {
 		SyncTunableMutator syncTunableMutator = new SyncTunableMutator();
 		SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 		SyncTaskManager syncTaskManager = new SyncTaskManager(syncTunableMutator);
-		
-		registerService(bc,undoSupport,UndoSupport.class, new Properties());
+	
+		Properties undoSupportProps = new Properties();
+		registerService(bc,undoSupport,UndoSupport.class, undoSupportProps);
+		registerService(bc,undoSupport,SwingUndoSupport.class, undoSupportProps);
 
 		registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
 		registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());

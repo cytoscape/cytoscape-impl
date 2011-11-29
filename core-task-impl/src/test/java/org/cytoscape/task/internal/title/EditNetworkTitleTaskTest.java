@@ -6,7 +6,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -26,9 +25,7 @@ public class EditNetworkTitleTaskTest {
 		when(net.getCyRow()).thenReturn(r1);
 		when(r1.get("name",String.class)).thenReturn("title");
 		
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 					
 		EditNetworkTitleTask t = new EditNetworkTitleTask(undoSupport, net);
 		

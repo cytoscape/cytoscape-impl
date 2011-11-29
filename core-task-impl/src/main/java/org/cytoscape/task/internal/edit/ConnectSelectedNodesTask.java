@@ -68,7 +68,7 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 			taskMonitor.setProgress(0.1+i/(double)selectedNodesCount*0.9);
 		}
 
-		undoSupport.getUndoableEditSupport().postEdit(
+		undoSupport.postEdit(
 			new ConnectSelectedNodesEdit(network, newEdges));
 		
 		taskMonitor.setProgress(1.0);

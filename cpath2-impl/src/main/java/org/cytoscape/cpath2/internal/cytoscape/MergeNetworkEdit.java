@@ -107,7 +107,6 @@ public class MergeNetworkEdit extends AbstractCyEdit {
      * Method to undo this network merge
      */
     public void undo() {
-        super.undo();
 
 		cyNetwork.removeNodes(cyNodes.keySet());
 		cyNetwork.removeEdges(cyEdges);
@@ -117,7 +116,6 @@ public class MergeNetworkEdit extends AbstractCyEdit {
      * Method to redo this network merge
      */
     public void redo() {
-        super.redo();
 
         // get ref to view
         CyNetworkView view = factory.getCyNetworkViewManager().getNetworkView(cyNetwork.getSUID());

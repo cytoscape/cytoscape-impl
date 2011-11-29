@@ -36,24 +36,22 @@
 
 package org.cytoscape.ding;
 
-import javax.swing.undo.AbstractUndoableEdit;
 
 import org.cytoscape.ding.impl.ViewState;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.undo.AbstractCyEdit;
 
 
 /**
  * A Ding specific undoable edit.
  */
-public class ViewChangeEdit extends AbstractUndoableEdit {
+public class ViewChangeEdit extends AbstractCyEdit {
 	private final static long serialVersionUID = 1202416511789433L;
 
 	private ViewState origState;
 	private ViewState newState;
 
 	private GraphView m_view;
-
-	private String m_label;
 
 	private SavedObjs m_savedObjs;
 
@@ -66,9 +64,8 @@ public class ViewChangeEdit extends AbstractUndoableEdit {
 	}
 
 	public ViewChangeEdit(GraphView view, SavedObjs saveObjs, String label, UndoSupport undo) {
-		super();
+		super(label);
 		m_view = view;
-		m_label = label;
 		m_savedObjs = saveObjs;
 		m_undo = undo;
 
@@ -86,35 +83,13 @@ public class ViewChangeEdit extends AbstractUndoableEdit {
 	public void post() {
 		saveNewPositions();
 		if ( !origState.equals(newState) )
-			m_undo.getUndoableEditSupport().postEdit( this );
-	}
-
-	/**
-	 * @return Not sure where this is used.
-	 */
-	public String getPresentationName() {
-		return m_label;
-	}
-
-	/**
-	 * @return Used in the edit menu.
-	 */
-	public String getRedoPresentationName() {
-		return "Redo: " + m_label;
-	}
-
-	/**
-	 * @return Used in the edit menu.
-	 */
-	public String getUndoPresentationName() {
-		return "Undo: " + m_label;
+			m_undo.postEdit( this );
 	}
 
 	/**
 	 * Applies the new state to the view after it has been undone.
 	 */
 	public void redo() {
-		super.redo();
 		newState.apply();
 	}
 
@@ -122,7 +97,6 @@ public class ViewChangeEdit extends AbstractUndoableEdit {
 	 * Applies the original state to the view.
 	 */
 	public void undo() {
-		super.undo();
 		origState.apply();
 	}
 }

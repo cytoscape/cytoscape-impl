@@ -145,7 +145,7 @@ public class MergeNetworkTask implements Task {
 
         // setup undo
         UndoSupport undo = factory.getUndoSupport();
-        undo.getUndoableEditSupport().postEdit(factory.createMergeNetworkEdit(mergedNetwork, nodes, newEdges));
+        undo.postEdit(factory.createMergeNetworkEdit(mergedNetwork, nodes, newEdges));
 
         // fire Cytoscape.NETWORK_MODIFIED - should be removed when undo support is back in
 //        Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, mergedNetwork);

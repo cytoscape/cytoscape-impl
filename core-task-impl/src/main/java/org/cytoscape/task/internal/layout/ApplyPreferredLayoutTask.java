@@ -72,7 +72,7 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
 		if (undoSupport != null)
-			undoSupport.getUndoableEditSupport().postEdit(new LayoutEdit(eventHelper,
+			undoSupport.postEdit(new LayoutEdit(eventHelper,
 			                                                             view));
 		tm.setProgress(0.1);
 		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;

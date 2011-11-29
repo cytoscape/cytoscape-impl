@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyTable;
@@ -55,9 +54,7 @@ public class SelectFromFileListTaskTest extends AbstractSelectTaskTester {
 		this.eventHelper = mock(CyEventHelper.class);
 		final CyTable nodeTable = mock(CyTable.class);
 		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		this.undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 	}
 
 	@Test

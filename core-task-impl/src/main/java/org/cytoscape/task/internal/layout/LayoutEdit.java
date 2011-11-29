@@ -38,13 +38,13 @@ final class LayoutEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		saveAndRestore();
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		saveAndRestore();
 	}

@@ -94,7 +94,7 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 		}
 
 		if (undoSupport != null)
-			undoSupport.getUndoableEditSupport().postEdit(
+			undoSupport.postEdit(
 				new CreateNetworkViewEdit(eventHelper, network, viewFactory,
 				                          networkViewManager));
 		

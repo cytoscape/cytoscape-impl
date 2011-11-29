@@ -4,8 +4,6 @@ package org.cytoscape.task.internal.hide;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.swing.undo.UndoableEditSupport;
-
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNetworkViewTaskTest;
@@ -32,8 +30,6 @@ public class HideSelectedNodesTaskTest extends AbstractNetworkViewTaskTest {
 	
 	@Test
 	public void testHideSelectedEdgesTask() throws Exception {
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 		
 		final HideSelectedNodesTask task =
 			new HideSelectedNodesTask(undoSupport, eventHelper, view);

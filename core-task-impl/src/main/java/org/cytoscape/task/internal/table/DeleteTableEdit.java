@@ -27,7 +27,7 @@ final class DeleteTableEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		final CyTable newTable =
 			tableFactory.createTable(table.getTitle(), table.getPrimaryKey().getName(),
@@ -39,7 +39,7 @@ final class DeleteTableEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		final CyTable newTable =
 			tableFactory.createTable(table.getTitle(), table.getPrimaryKey().getName(),

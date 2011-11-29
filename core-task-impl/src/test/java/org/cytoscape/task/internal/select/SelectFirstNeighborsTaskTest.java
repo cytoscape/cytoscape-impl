@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
@@ -57,9 +56,7 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 	public void testRun() throws Exception {
 		final CyTable nodeTable = mock(CyTable.class);
 		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 
 		// more setup
 		when(r3.get("selected", Boolean.class)).thenReturn(true);

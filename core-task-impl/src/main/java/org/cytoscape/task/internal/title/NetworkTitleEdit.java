@@ -19,7 +19,7 @@ final class NetworkTitleEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		final String savedTitle = network.getCyRow().get(CyTableEntry.NAME, String.class);
 		network.getCyRow().set(CyTableEntry.NAME, previousTitle);
@@ -27,7 +27,7 @@ final class NetworkTitleEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		final String savedTitle = network.getCyRow().get(CyTableEntry.NAME, String.class);
 		network.getCyRow().set(CyTableEntry.NAME, previousTitle);

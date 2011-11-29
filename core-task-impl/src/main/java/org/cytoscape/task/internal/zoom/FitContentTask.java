@@ -46,7 +46,7 @@ public class FitContentTask extends AbstractNetworkViewTask {
 
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
-		undoSupport.getUndoableEditSupport().postEdit(new FitContentEdit("Fit Content",
+		undoSupport.postEdit(new FitContentEdit("Fit Content",
 		                                                                 view));
 		tm.setProgress(0.3);
 		view.fitContent();

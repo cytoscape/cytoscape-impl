@@ -27,14 +27,14 @@ final class FitContentEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		view.fitContent();
 		view.updateView();
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		view.setVisualProperty(NETWORK_SCALE_FACTOR, networkScaleFactor);
 		view.setVisualProperty(NETWORK_CENTER_X_LOCATION, networkCenterXLocation);

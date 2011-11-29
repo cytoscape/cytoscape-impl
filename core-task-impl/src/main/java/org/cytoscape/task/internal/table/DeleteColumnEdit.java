@@ -23,14 +23,14 @@ final class DeleteColumnEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		savedColumn = new SaveColumn(table, columnName);
 		table.deleteColumn(columnName);
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		table.createColumn(columnName, columnType, /* isImmutable = */ false);
 		savedColumn.restoreColumn(table, columnName);

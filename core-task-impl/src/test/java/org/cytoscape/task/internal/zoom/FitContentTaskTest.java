@@ -9,7 +9,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -27,9 +26,7 @@ public class FitContentTaskTest {
 				
 		TaskMonitor tm = mock(TaskMonitor.class);
 		
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 				
 		FitContentTask t = new FitContentTask(undoSupport, view);
 		
@@ -44,9 +41,7 @@ public class FitContentTaskTest {
 				
 		TaskMonitor tm = mock(TaskMonitor.class);
 		
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 				
 		FitContentTask t = new FitContentTask(undoSupport, view);
 		

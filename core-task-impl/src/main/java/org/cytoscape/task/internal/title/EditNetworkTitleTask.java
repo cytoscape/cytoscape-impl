@@ -56,7 +56,7 @@ public class EditNetworkTitleTask extends AbstractNetworkTask {
 		e.setProgress(0.3);
 		network.getCyRow().set(CyTableEntry.NAME, title);
 		e.setProgress(0.6);
-		undoSupport.getUndoableEditSupport().postEdit(
+		undoSupport.postEdit(
 			new NetworkTitleEdit(network, oldTitle));
 		
 		e.setProgress(1.0);

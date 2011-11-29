@@ -20,7 +20,7 @@ final class ZoomEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		final double currentScaleFactor = view.getVisualProperty(NETWORK_SCALE_FACTOR);
 		view.setVisualProperty(NETWORK_SCALE_FACTOR, currentScaleFactor * factor);
@@ -28,7 +28,7 @@ final class ZoomEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		final double currentScaleFactor = view.getVisualProperty(NETWORK_SCALE_FACTOR);
 		view.setVisualProperty(NETWORK_SCALE_FACTOR, currentScaleFactor / factor);

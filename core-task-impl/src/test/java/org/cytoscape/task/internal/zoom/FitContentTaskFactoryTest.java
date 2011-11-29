@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.Task;
@@ -20,9 +19,7 @@ public class FitContentTaskFactoryTest {
 	public void testGetTaskIterator() {
 		CyNetworkView view = mock(CyNetworkView.class);
 		
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 
 		FitContentTaskFactory factory = new FitContentTaskFactory(undoSupport);
 		factory.setNetworkView(view);

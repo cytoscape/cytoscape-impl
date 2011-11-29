@@ -29,7 +29,7 @@ final class CopyValueToEntireColumnEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		savedColumn = new SaveColumn(table, columnName);
 
@@ -39,7 +39,7 @@ final class CopyValueToEntireColumnEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		savedColumn.restoreColumn(table, columnName);
 		savedColumn = null;

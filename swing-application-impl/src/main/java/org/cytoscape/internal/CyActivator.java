@@ -123,7 +123,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.SubmenuTaskManager;
@@ -186,7 +186,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc,
 		                                                                 CyNetworkViewFactory.class);
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
-		UndoSupport undoSupportServiceRef = getService(bc, UndoSupport.class);
+		SwingUndoSupport undoSupportServiceRef = getService(bc, SwingUndoSupport.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);

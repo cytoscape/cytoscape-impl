@@ -38,7 +38,7 @@ package org.cytoscape.internal.util.undo;
 
 import java.util.Properties;
 
-import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.property.CyProperty;
@@ -50,10 +50,10 @@ import org.cytoscape.property.CyProperty;
  */
 public class UndoMonitor implements SetCurrentNetworkViewListener {
 
-	private UndoSupport undo;
+	private SwingUndoSupport undo;
 	private Properties props;
 
-	public UndoMonitor(UndoSupport undo,CyProperty<Properties> cyProps) {
+	public UndoMonitor(SwingUndoSupport undo,CyProperty<Properties> cyProps) {
 
 		this.undo = undo;
 		this.props = cyProps.getProperties();

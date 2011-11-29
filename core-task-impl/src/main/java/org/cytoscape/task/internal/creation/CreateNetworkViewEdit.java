@@ -48,7 +48,7 @@ final class CreateNetworkViewEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		final CyNetworkView view =
 			viewFactory.getNetworkView(network, /* useThreshold = */ false);
@@ -67,7 +67,7 @@ final class CreateNetworkViewEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
 

@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTable;
@@ -56,9 +55,7 @@ public class SelectAdjacentEdgesTaskTest extends AbstractSelectTaskTester {
 	public void testRun() throws Exception {
 		final CyTable edgeTable = mock(CyTable.class);
 		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 
 		when(r3.get("selected", Boolean.class)).thenReturn(true);
 		when(r4.get("selected", Boolean.class)).thenReturn(false);

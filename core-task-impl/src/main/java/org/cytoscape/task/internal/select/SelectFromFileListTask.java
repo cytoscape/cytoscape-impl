@@ -98,7 +98,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 			throw new Exception("Error reading file: " + file.getAbsolutePath(), e);
 		}
 
-		undoSupport.getUndoableEditSupport().postEdit(edit);
+		undoSupport.postEdit(edit);
 		tm.setProgress(1.0);
 	}
 }

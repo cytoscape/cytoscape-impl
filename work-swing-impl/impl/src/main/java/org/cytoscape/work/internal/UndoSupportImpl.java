@@ -38,17 +38,14 @@ package org.cytoscape.work.internal;
 
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEditSupport;
+import javax.swing.undo.AbstractUndoableEdit;
 
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
 
 
-/**
- * Rudimentary support for undo.  To post an edit to the manager, call
- * Undo.getUndoableEditSupport().postEdit(yourEdit).  To handle the edits,
- * you should extend this class and write actions, etc. that use the 
- * UndoManager.
- */
-public class UndoSupportImpl implements UndoSupport {
+public class UndoSupportImpl implements SwingUndoSupport {
 
 	private UndoManager m_undoManager;
 	private UndoableEditSupport m_undoSupport; 
@@ -79,5 +76,47 @@ public class UndoSupportImpl implements UndoSupport {
 		return m_undoSupport;
 	}
 
+	/**
+	 * Posts the edit to the UndoableEditSupport instance.
+	 */
+	public void postEdit(AbstractCyEdit edit) {
+		if ( edit != null )
+			m_undoSupport.postEdit( new SwingEditWrapper(edit) );	
+	}
+
+	/**
+	 * Creates a Swing UndoableEdit by wrapping a Cytoscape AbstractCyEdit.
+	 */
+	private class SwingEditWrapper extends AbstractUndoableEdit {
+
+		private final AbstractCyEdit edit;
+
+		SwingEditWrapper(AbstractCyEdit edit) {
+			super();
+			this.edit = edit;
+		}
+	
+		public String getPresentationName() {
+			return edit.getPresentationName();
+		}
+
+		public String getUndoPresentationName() {
+			return edit.getUndoPresentationName();
+		}
+
+		public String getRedoPresentationName() {
+			return edit.getRedoPresentationName();
+		}
+		
+		public void undo() {
+			super.undo();
+			edit.undo();
+		}
+
+		public void redo() {
+			super.redo();
+			edit.redo();
+		}
+	}
 }
 

@@ -79,7 +79,7 @@ final class DeleteEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 
 		net.removeNodes(nodes);
 		net.removeEdges(edges);
@@ -91,7 +91,7 @@ final class DeleteEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		super.undo();
+		;
 
 		for (CyNode n : nodes)
 			net.addNode(n);

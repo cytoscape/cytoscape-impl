@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.undo.UndoableEditSupport;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
@@ -48,9 +47,7 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 	
 	@Test
 	public void testNewNetworkSelectedNodesEdgesTask() throws Exception {
-		UndoableEditSupport undoableEditSupport = mock(UndoableEditSupport.class);
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		when(undoSupport.getUndoableEditSupport()).thenReturn(undoableEditSupport);
 
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 

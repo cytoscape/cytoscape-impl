@@ -40,12 +40,12 @@ final class SelectionEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		super.redo();
+		;
 		saveAndRestoreState();
 	}
 
 	public void undo() {
-		super.undo();
+		;
 		saveAndRestoreState();
 	}
 

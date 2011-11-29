@@ -57,7 +57,7 @@ abstract class AbstractZoomTask extends AbstractNetworkViewTask {
 		tm.setProgress(0.2);
 		view.updateView();
 		tm.setProgress(0.4);
-		undoSupport.getUndoableEditSupport().postEdit(
+		undoSupport.postEdit(
 			new ZoomEdit(view, factor));
 		
 		tm.setProgress(1.0);

@@ -41,7 +41,7 @@ import javax.swing.KeyStroke;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,13 +54,13 @@ import org.slf4j.LoggerFactory;
 public class RedoAction extends AbstractCyAction {
 	private final static long serialVersionUID = 1202339875203626L;
 
-	private final UndoSupport undo;
+	private final SwingUndoSupport undo;
 	private static final Logger logger = LoggerFactory.getLogger(RedoAction.class);
 
 	/**
 	 * Constructs the action. 
 	 */
-	public RedoAction(UndoSupport undo, CyApplicationManager appMgr ) {
+	public RedoAction(SwingUndoSupport undo, CyApplicationManager appMgr ) {
 		super("Redo",appMgr);
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		setPreferredMenu("Edit");

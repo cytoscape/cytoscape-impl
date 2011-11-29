@@ -7,7 +7,6 @@ import java.util.Set;
 
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.undo.UndoableEdit;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -46,6 +45,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
 
 // TODO: This is a "God" object.  Probably shouldn't exist, but it's better than having to
@@ -193,7 +193,7 @@ public class CPath2Factory {
 		return new MergeNetworkTaskFactory(cpathURL, cyNetwork, this);
 	}
 
-	public UndoableEdit createMergeNetworkEdit(CyNetwork cyNetwork, Collection<CyNode> cyNodes, Set<CyEdge> cyEdges) {
+	public AbstractCyEdit createMergeNetworkEdit(CyNetwork cyNetwork, Collection<CyNode> cyNodes, Set<CyEdge> cyEdges) {
 		return new MergeNetworkEdit(cyNetwork, cyNodes, cyEdges, this);
 	}
 
