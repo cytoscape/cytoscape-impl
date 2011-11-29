@@ -15,7 +15,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
@@ -34,7 +34,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 
 
 	private CyTableFactory dataFactory;
-	private CyRootNetworkFactory cyRoot;
+	private CyRootNetworkManager cyRoot;
 	private SpacialIndex2DFactory spacialFactory;
 
 	

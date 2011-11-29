@@ -6,7 +6,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -23,7 +23,7 @@ import org.cytoscape.io.util.StreamUtil;
 public class  CytoscapeServices {
 
 	public static CyLayoutAlgorithmManager cyLayouts;
-	public static CyRootNetworkFactory cyRootNetworkFactory;
+	public static CyRootNetworkManager cyRootNetworkFactory;
 	public static CyNetworkFactory cyNetworkFactory;
 	public static CySwingApplication cySwingApplication;
 	public static CyApplicationManager cyApplicationManager;

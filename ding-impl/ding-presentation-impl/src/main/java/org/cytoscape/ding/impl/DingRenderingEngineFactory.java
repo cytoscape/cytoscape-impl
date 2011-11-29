@@ -11,7 +11,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -39,7 +39,7 @@ public class DingRenderingEngineFactory implements
 
 	private final RenderingEngineManager renderingEngineManager;
 	private final CyTableFactory dataTableFactory;
-	private final CyRootNetworkFactory rootNetworkFactory;
+	private final CyRootNetworkManager rootNetworkFactory;
 	private final SpacialIndex2DFactory spacialFactory;
 	private final UndoSupport undo;
 	private final VisualLexicon dingLexicon;
@@ -55,7 +55,7 @@ public class DingRenderingEngineFactory implements
 	
 	
 	public DingRenderingEngineFactory(CyTableFactory dataTableFactory,
-			CyRootNetworkFactory rootNetworkFactory, UndoSupport undo,
+			CyRootNetworkManager rootNetworkFactory, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
 			DialogTaskManager dialogTaskManager, 
 			SubmenuTaskManager menuTaskManager, 

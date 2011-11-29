@@ -7,20 +7,20 @@ import org.cytoscape.io.internal.read.AbstractTableReaderFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskIterator;
 
 
 public class CyAttributesReaderFactory extends AbstractTableReaderFactory {
 	private final CyApplicationManager appMgr;
 	private final CyNetworkManager netMgr;
-	private final CyRootNetworkFactory rootNetFact;
+	private final CyRootNetworkManager rootNetFact;
 
 	public CyAttributesReaderFactory(final CyFileFilter filter, final CyTableFactory factory,
 					 final CyApplicationManager appMgr,
 					 final CyNetworkManager netMgr,
 					 final CyTableManager tableManager,
-					 final CyRootNetworkFactory rootNetFact)
+					 final CyRootNetworkManager rootNetFact)
 	{
 		super(filter, factory, tableManager);
 		this.appMgr = appMgr;

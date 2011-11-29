@@ -6,13 +6,13 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.model.internal.CyRootNetworkFactoryImpl;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import static org.mockito.Mockito.*;
@@ -24,7 +24,7 @@ public class NetworkTestSupport {
 	protected CyEventHelper eventHelper;
 	protected CyTableManagerImpl tableMgr;
 	protected CyNetworkTableManagerImpl networkTableMgr;
-	protected CyRootNetworkFactory rootNetworkFactory;
+	protected CyRootNetworkManager rootNetworkFactory;
 
 	public NetworkTestSupport() {
 		eventHelper = new DummyCyEventHelper();
@@ -33,7 +33,7 @@ public class NetworkTestSupport {
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
 		networkFactory = new CyNetworkFactoryImpl(eventHelper, tableMgr, networkTableMgr, tableFactory, serviceRegistrar);
-		rootNetworkFactory = new CyRootNetworkFactoryImpl();
+		rootNetworkFactory = new CyRootNetworkManagerImpl();
 	}
 
 	public CyNetwork getNetwork() {
@@ -44,7 +44,7 @@ public class NetworkTestSupport {
 		return networkFactory;	
 	}
 
-	public CyRootNetworkFactory getRootNetworkFactory() {
+	public CyRootNetworkManager getRootNetworkFactory() {
 		return rootNetworkFactory;
 	}
 }

@@ -41,7 +41,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
@@ -57,7 +57,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	private final UndoSupport undoSupport;
-	protected final CyRootNetworkFactory rootNetworkFactory;
+	protected final CyRootNetworkManager rootNetworkFactory;
 	protected final CyNetworkViewFactory viewFactory;
 	protected final VisualMappingManager vmm;
 	protected final CyNetworkNaming cyNetworkNaming;
@@ -66,7 +66,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
-	                                        final CyRootNetworkFactory rootNetworkFactory,
+	                                        final CyRootNetworkManager rootNetworkFactory,
 	                                        final CyNetworkViewFactory viewFactory,
 	                                        final CyNetworkManager netmgr,
 	                                        final CyNetworkViewManager networkViewManager,
@@ -106,7 +106,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			throw new IllegalArgumentException("No nodes are selected!");
 
 		// create subnetwork and add selected nodes and appropriate edges
-		final CySubNetwork newNet = rootNetworkFactory.convert(parentNetwork).addSubNetwork();
+		final CySubNetwork newNet = rootNetworkFactory.getRootNetwork(parentNetwork).addSubNetwork();
 		tm.setProgress(0.3);
 
 		for (final CyNode node : selectedNodes)

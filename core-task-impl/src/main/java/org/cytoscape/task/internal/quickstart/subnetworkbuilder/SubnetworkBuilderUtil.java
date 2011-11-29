@@ -12,7 +12,7 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTask;
@@ -40,7 +40,7 @@ public class SubnetworkBuilderUtil {
 
 	private CyNetworkNaming cyNetworkNaming;
 
-	private final CyRootNetworkFactory crnf;
+	private final CyRootNetworkManager crnf;
 	private final CyNetworkViewFactory cnvf;
 
 	private final Set<InteractionFilePreprocessor> processors;
@@ -59,7 +59,7 @@ public class SubnetworkBuilderUtil {
 	public SubnetworkBuilderUtil(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, CyProperty<Properties> cyProps,
 			CyNetworkNaming cyNetworkNaming, StreamUtil streamUtil, final CyEventHelper eventHelper,
-			final CyApplicationManager appManager, CyRootNetworkFactory crnf, CyNetworkViewFactory cnvf,
+			final CyApplicationManager appManager, CyRootNetworkManager crnf, CyNetworkViewFactory cnvf,
 			final VisualMappingManager vmm, final VisualStyleFactory vsFactory,
 			final CyLayoutAlgorithmManager layouts, final UndoSupport undoSupport)
 	{

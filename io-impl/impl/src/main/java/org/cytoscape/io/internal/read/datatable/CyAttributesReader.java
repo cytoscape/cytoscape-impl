@@ -21,7 +21,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.MapNetworkAttrTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -68,7 +68,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private final CyApplicationManager appMgr;
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tableManager;
-	private final CyRootNetworkFactory rootNetFact;
+	private final CyRootNetworkManager rootNetFact;
 
 	@Tunable(description = "Map table to:")
 	public final ListSingleSelection<TableType> dataTypeOptions;
@@ -77,7 +77,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 
 	public CyAttributesReader(final InputStream inputStream, final CyTableFactory tableFactory,
 				  final CyApplicationManager appMgr, final CyNetworkManager netMgr,
-				  final CyTableManager tableManager, final CyRootNetworkFactory rootNetFact)
+				  final CyTableManager tableManager, final CyRootNetworkManager rootNetFact)
 	{
 		lineNum = 0;
 		doDecoding = Boolean.valueOf(System.getProperty(DECODE_PROPERTY, "true"));

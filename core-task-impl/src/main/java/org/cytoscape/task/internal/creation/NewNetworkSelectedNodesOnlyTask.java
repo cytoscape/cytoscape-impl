@@ -41,7 +41,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -51,7 +51,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectionTask {
 	public NewNetworkSelectedNodesOnlyTask(final UndoSupport undoSupport, final CyNetwork net,
-	                                       final CyRootNetworkFactory cyroot,
+	                                       final CyRootNetworkManager cyroot,
 	                                       final CyNetworkViewFactory cnvf,
 	                                       final CyNetworkManager netmgr,
 	                                       final CyNetworkViewManager networkViewManager,

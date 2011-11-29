@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -42,14 +42,14 @@ public class ImportTableTask extends AbstractTask {
 	private final CyApplicationManager applicationManager;
 	private final Window parent;
 	private final CyTableManager tableManager;
-	private final CyRootNetworkFactory cyRootNetworkFactory;
+	private final CyRootNetworkManager cyRootNetworkFactory;
 
 	public ImportTableTask(final BiomartRestClient client, final BiomartQuery query,
 			       final CyTableFactory tableFactory,
 			       final CyNetworkManager networkManager,
 			       final CyApplicationManager applicationManager, final Window parent,
 			       final CyTableManager tableManager,
-				   final CyRootNetworkFactory cyRootNetworkFactory)
+				   final CyRootNetworkManager cyRootNetworkFactory)
 	{
 		this.client               = client;
 		this.query                = query;

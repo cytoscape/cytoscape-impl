@@ -104,7 +104,7 @@ import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.events.AddedNodesEvent;
 import org.cytoscape.model.events.AddedNodesListener;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
@@ -391,7 +391,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * 
 	 */
 	public DGraphView(final CyNetworkView view, final CyTableFactory dataFactory,
-			CyRootNetworkFactory cyRoot, UndoSupport undo,
+			CyRootNetworkManager cyRoot, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
 			Map<NodeViewTaskFactory, Map> nodeViewTFs,
@@ -428,7 +428,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @param tableMgr
 	 */
 	public DGraphView(final CyNetwork model, CyTableFactory dataFactory,
-			CyRootNetworkFactory cyRoot, UndoSupport undo,
+			CyRootNetworkManager cyRoot, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
 			Map<NodeViewTaskFactory, Map> nodeViewTFs,
@@ -465,7 +465,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		tableMgr.setTable(model, CyEdge.class, "VIEW", edgeCAM);
 
 		// creating empty subnetworks
-		m_drawPersp = cyRoot.convert(model).addSubNetwork();
+		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork();
 		cyEventHelper.silenceEventSource(m_drawPersp);
 		m_spacial = spacialFactory.createSpacialIndex2D();
 		m_spacialA = spacialFactory.createSpacialIndex2D();

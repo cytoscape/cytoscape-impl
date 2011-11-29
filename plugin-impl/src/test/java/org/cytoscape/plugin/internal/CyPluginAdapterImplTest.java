@@ -20,7 +20,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.plugin.CyPluginAdapterTest;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -56,7 +56,7 @@ public class CyPluginAdapterImplTest extends CyPluginAdapterTest {
 			(CyProperty<Properties>)mock(CyProperty.class),
 			mock(CyPropertyReaderManager.class),
 			mock(CyPropertyWriterManager.class),
-			mock(CyRootNetworkFactory.class),
+			mock(CyRootNetworkManager.class),
 			mock(CyServiceRegistrar.class),
 			mock(CySessionManager.class),
 			mock(CySessionReaderManager.class),

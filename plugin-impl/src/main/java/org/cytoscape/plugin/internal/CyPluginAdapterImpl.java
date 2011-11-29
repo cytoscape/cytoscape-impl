@@ -30,7 +30,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.plugin.AbstractCyPlugin;
 import org.cytoscape.plugin.CyPluginAdapter;
 import org.cytoscape.property.SimpleCyProperty;
@@ -92,7 +92,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	private final CyProperty<Properties> cyProperty;
 	private final CyPropertyReaderManager cyPropertyReaderManager;
 	private final CyPropertyWriterManager cyPropertyWriterManager;
-	private final CyRootNetworkFactory cyRootNetworkFactory;
+	private final CyRootNetworkManager cyRootNetworkFactory;
 	private final CyServiceRegistrar cyServiceRegistrar;
 	private final CySessionManager cySessionManager;
 	private final CySessionReaderManager cySessionReaderManager;
@@ -171,7 +171,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	                     final CyProperty<Properties> cyProperty,
 	                     final CyPropertyReaderManager cyPropertyReaderManager,
 	                     final CyPropertyWriterManager cyPropertyWriterManager,
-	                     final CyRootNetworkFactory cyRootNetworkFactory,
+	                     final CyRootNetworkManager cyRootNetworkFactory,
 	                     final CyServiceRegistrar cyServiceRegistrar,
 	                     final CySessionManager cySessionManager,
 	                     final CySessionReaderManager cySessionReaderManager,
@@ -246,7 +246,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	public CyProperty<Properties> getCoreProperties() { return cyProperty; }
 	public CyPropertyReaderManager getCyPropertyReaderManager() { return cyPropertyReaderManager; }
 	public CyPropertyWriterManager getCyPropertyWriterManager() { return cyPropertyWriterManager; }
-	public CyRootNetworkFactory getCyRootNetworkFactory() { return cyRootNetworkFactory; } 
+	public CyRootNetworkManager getCyRootNetworkFactory() { return cyRootNetworkFactory; } 
 	public CyServiceRegistrar getCyServiceRegistrar() { return cyServiceRegistrar; }
 	public CySessionManager getCySessionManager() { return cySessionManager; } 
 	public CySessionReaderManager getCySessionReaderManager() { return cySessionReaderManager; }

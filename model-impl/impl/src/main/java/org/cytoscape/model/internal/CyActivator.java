@@ -6,7 +6,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.equations.Interpreter;
 
 import org.cytoscape.model.internal.CyTableFactoryImpl;
-import org.cytoscape.model.internal.CyRootNetworkFactoryImpl;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
@@ -14,7 +14,7 @@ import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNetworkFactory;
@@ -43,11 +43,11 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableManagerImpl cyTableManager = new CyTableManagerImpl(cyEventHelperServiceRef,cyNetworkTableManager,cyNetworkManager);
 		CyTableFactoryImpl cyTableFactory = new CyTableFactoryImpl(cyEventHelperServiceRef,InterpreterRef,cyServiceRegistrarServiceRef);
 		CyNetworkFactoryImpl cyNetworkFactory = new CyNetworkFactoryImpl(cyEventHelperServiceRef,cyTableManager,cyNetworkTableManager,cyTableFactory,cyServiceRegistrarServiceRef);
-		CyRootNetworkFactoryImpl cyRootNetworkFactory = new CyRootNetworkFactoryImpl();
+		CyRootNetworkManagerImpl cyRootNetworkFactory = new CyRootNetworkManagerImpl();
 		
 		registerService(bc,cyNetworkFactory,CyNetworkFactory.class, new Properties());
 		registerService(bc,cyTableFactory,CyTableFactory.class, new Properties());
-		registerService(bc,cyRootNetworkFactory,CyRootNetworkFactory.class, new Properties());
+		registerService(bc,cyRootNetworkFactory,CyRootNetworkManager.class, new Properties());
 		registerService(bc,cyTableManager,CyTableManager.class, new Properties());
 		registerService(bc,cyNetworkTableManager,CyNetworkTableManager.class, new Properties());
 		registerService(bc,cyTableManager,NetworkAboutToBeDestroyedListener.class, new Properties());

@@ -3,7 +3,7 @@ package org.cytoscape.plugin.internal;
 import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.io.read.CyTableReaderManager;
@@ -71,7 +71,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyProperty cyPropertyRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		CyPropertyReaderManager cyPropertyReaderManagerRef = getService(bc,CyPropertyReaderManager.class);
 		CyPropertyWriterManager cyPropertyWriterManagerRef = getService(bc,CyPropertyWriterManager.class);
-		CyRootNetworkFactory cyRootNetworkFactoryRef = getService(bc,CyRootNetworkFactory.class);
+		CyRootNetworkManager cyRootNetworkFactoryRef = getService(bc,CyRootNetworkManager.class);
 		CyServiceRegistrar cyServiceRegistrarRef = getService(bc,CyServiceRegistrar.class);
 		CySessionManager cySessionManagerRef = getService(bc,CySessionManager.class);
 		CySessionReaderManager cySessionReaderManagerRef = getService(bc,CySessionReaderManager.class);

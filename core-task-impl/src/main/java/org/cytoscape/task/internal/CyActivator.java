@@ -4,7 +4,7 @@ package org.cytoscape.task.internal;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.io.read.CyTableReaderManager;
@@ -137,7 +137,7 @@ public class CyActivator extends AbstractCyActivator {
 		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
 		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc,CyNetworkViewFactory.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
-		CyRootNetworkFactory cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkFactory.class);
+		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
 		CyNetworkReaderManager cyNetworkReaderManagerServiceRef = getService(bc,CyNetworkReaderManager.class);
 		CyTableReaderManager cyDataTableReaderManagerServiceRef = getService(bc,CyTableReaderManager.class);
 		VizmapReaderManager vizmapReaderManagerServiceRef = getService(bc,VizmapReaderManager.class);

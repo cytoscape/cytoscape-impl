@@ -4,7 +4,7 @@ package org.cytoscape.io.internal;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.application.CyApplicationManager;
@@ -136,7 +136,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory continuousMappingFactoryServiceRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=continuous)");
 		VisualMappingFunctionFactory passthroughMappingFactoryServiceRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		EquationCompiler equationCompilerServiceRef = getService(bc,EquationCompiler.class);
-		CyRootNetworkFactory cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkFactory.class);
+		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
 		
 		StreamUtilImpl streamUtil = new StreamUtilImpl();
 		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix (.pvals) File", DataCategory.TABLE, streamUtil);

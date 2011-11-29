@@ -6,7 +6,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import org.cytoscape.io.webservice.biomart.task.ShowBiomartGUIAction;
@@ -38,7 +38,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CyTableFactory cyTableFactoryServiceRef = getService(bc,CyTableFactory.class);
-		CyRootNetworkFactory cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkFactory.class);
+		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
 		
 		BiomartRestClient biomartRestClient = new BiomartRestClient("http://www.biomart.org/biomart/martservice");
 		BiomartClient biomartClient = new BiomartClient("BioMart Client","REST version of BioMart Web Service Client.",biomartRestClient,cyTableFactoryServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyTableManagerServiceRef,cyRootNetworkFactoryServiceRef);

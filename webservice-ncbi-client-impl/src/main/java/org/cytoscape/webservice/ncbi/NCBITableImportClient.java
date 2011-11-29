@@ -3,7 +3,7 @@ package org.cytoscape.webservice.ncbi;
 
 import java.util.Set;
 
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
@@ -20,7 +20,7 @@ public class NCBITableImportClient extends AbstractWebServiceClient implements T
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;
 	private final CyTableManager tableManager;
-	private final CyRootNetworkFactory cyRootNetworkFactory; 
+	private final CyRootNetworkManager cyRootNetworkFactory; 
 
 	public NCBITableImportClient(final String uri, final String displayName,
 	                             final String description,
@@ -28,7 +28,7 @@ public class NCBITableImportClient extends AbstractWebServiceClient implements T
 	                             final CyNetworkManager networkManager,
 	                             final CyApplicationManager applicationManager,
 	                             final CyTableManager tableManager,
-								 final CyRootNetworkFactory cyRootNetworkFactory)
+								 final CyRootNetworkManager cyRootNetworkFactory)
 	{
 		super(uri, displayName, description);
 

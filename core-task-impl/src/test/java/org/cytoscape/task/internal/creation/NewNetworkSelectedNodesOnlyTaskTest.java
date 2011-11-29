@@ -19,7 +19,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -33,7 +33,7 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 	private CyNetwork net = support.getNetwork();
-	private CyRootNetworkFactory cyroot = mock(CyRootNetworkFactory.class);
+	private CyRootNetworkManager cyroot = mock(CyRootNetworkManager.class);
 	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
 	private CyNetworkManager netmgr = mock(CyNetworkManager.class);
 	private CyNetworkViewManager networkViewManager = mock(CyNetworkViewManager.class);

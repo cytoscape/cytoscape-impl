@@ -33,7 +33,7 @@ package org.cytoscape.task.internal.creation;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -47,7 +47,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactory extends AbstractNetworkTask
 	private final UndoSupport undoSupport;
 	private final CyNetworkManager netmgr;
 	private final CyNetworkViewManager networkViewManager;
-	private final CyRootNetworkFactory crnf;
+	private final CyRootNetworkManager crnf;
 	private final CyNetworkViewFactory cnvf;
 	private final CyNetworkNaming naming;
 	private final VisualMappingManager vmm;
@@ -55,7 +55,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactory extends AbstractNetworkTask
 	private final CyEventHelper eventHelper;
 
 	public NewNetworkSelectedNodesEdgesTaskFactory(final UndoSupport undoSupport,
-	                                               final CyRootNetworkFactory crnf,
+	                                               final CyRootNetworkManager crnf,
 	                                               final CyNetworkViewFactory cnvf,
 	                                               final CyNetworkManager netmgr,
 	                                               final CyNetworkViewManager networkViewManager,

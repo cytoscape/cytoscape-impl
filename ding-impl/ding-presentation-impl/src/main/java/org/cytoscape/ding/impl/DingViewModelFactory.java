@@ -8,7 +8,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -25,7 +25,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private static final Logger logger = LoggerFactory.getLogger(DingViewModelFactory.class);
 
 	private final CyTableFactory dataTableFactory;
-	private final CyRootNetworkFactory rootNetworkFactory;
+	private final CyRootNetworkManager rootNetworkFactory;
 	private final SpacialIndex2DFactory spacialFactory;
 	private final UndoSupport undo;
 	private final VisualLexicon dingLexicon;
@@ -38,7 +38,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private ViewTaskFactoryListener vtfListener;
 	private final AnnotationFactoryManager annMgr;
 
-	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkFactory rootNetworkFactory,
+	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkFactory,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
 			DialogTaskManager dialogTaskManager, SubmenuTaskManager menuTaskManager,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 

@@ -6,7 +6,7 @@ package org.cytoscape.tableimport.internal;
 
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.io.util.StreamUtil;
@@ -53,7 +53,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		CytoscapeServices.cyLayouts = getService(bc,CyLayoutAlgorithmManager.class);
 		CytoscapeServices.cyNetworkFactory = getService(bc,CyNetworkFactory.class);
-		CytoscapeServices.cyRootNetworkFactory = getService(bc,CyRootNetworkFactory.class);
+		CytoscapeServices.cyRootNetworkFactory = getService(bc,CyRootNetworkManager.class);
 		CytoscapeServices.cyNetworkViewFactory = getService(bc,CyNetworkViewFactory.class);
 		CytoscapeServices.cySwingApplication = getService(bc,CySwingApplication.class);
 		CytoscapeServices.cyApplicationManager = getService(bc,CyApplicationManager.class);

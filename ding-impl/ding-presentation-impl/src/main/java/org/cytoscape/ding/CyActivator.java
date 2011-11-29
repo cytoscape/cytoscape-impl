@@ -21,7 +21,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -59,7 +59,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager applicationManagerManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CustomGraphicsManager customGraphicsManagerServiceRef = getService(bc,CustomGraphicsManager.class);
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc,RenderingEngineManager.class);
-		CyRootNetworkFactory cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkFactory.class);
+		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
 		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc,CyTableFactory.class);
 		SpacialIndex2DFactory spacialIndex2DFactoryServiceRef = getService(bc,SpacialIndex2DFactory.class);
