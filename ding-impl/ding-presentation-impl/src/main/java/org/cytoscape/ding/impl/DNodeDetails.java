@@ -45,6 +45,7 @@ import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.Layer;
+import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.NodeDetails;
@@ -584,7 +585,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	void setCustomGraphicsDefault(final CustomGraphicsVisualProperty vp,
 			final CyCustomGraphics<CustomGraphic> customGraphics) {
-		defaultCustomGraphicsMap.put(vp, customGraphics);
+		
+		if(customGraphics == NullCustomGraphics.getNullObject())
+			defaultCustomGraphicsMap.remove(vp);
+		else
+			defaultCustomGraphicsMap.put(vp, customGraphics);
 	}
 
 

@@ -238,11 +238,8 @@ class NodeViewDefaultSupport {
 	void setCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {
 
 		synchronized (lock) {
-			// Pick from Custom Graphics 1-9.
-			final CyCustomGraphics<CustomGraphic> currentCG = defaultCustomGraphicsMap.get(vp);
 			nodeDetails.setCustomGraphicsDefault((CustomGraphicsVisualProperty) vp, customGraphics);
 		}
-
 	}
 	
 }
