@@ -60,6 +60,6 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager);
 		originalTitle = "Style 1";
 		newTitle = "Style 2";
-		style = visualStyleFactory.getInstance(originalTitle);
+		style = visualStyleFactory.createVisualStyle(originalTitle);
 	}
 }

@@ -150,7 +150,7 @@ public class BioPaxVisualStyleUtil {
 		// want to over-ride these tweaks.
 		synchronized (this) {
 			if (style == null) {
-				style = styleFactory.getInstance(BIO_PAX_VISUAL_STYLE);
+				style = styleFactory.createVisualStyle(BIO_PAX_VISUAL_STYLE);
 	
 				// style.getDependency().set(VisualPropertyDependency.Definition.NODE_SIZE_LOCKED,false);
 	

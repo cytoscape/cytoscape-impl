@@ -41,7 +41,7 @@ public class CopyVisualStyleTask extends AbstractTask {
 		if (name == null)
 			return;
 
-		final VisualStyle copiedStyle = factory.getInstance(originalStyle);
+		final VisualStyle copiedStyle = factory.createVisualStyle(originalStyle);
 		vmm.addVisualStyle(copiedStyle);
 	}
 

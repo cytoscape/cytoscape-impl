@@ -34,7 +34,7 @@ public class CreateNewVisualStyleTask extends AbstractTask {
 			return;
 
 		// Create new style.  This method call automatically fire event.
-		final VisualStyle newStyle = vsFactory.getInstance(title);
+		final VisualStyle newStyle = vsFactory.createVisualStyle(title);
 		vmm.addVisualStyle(newStyle);
 		logger.info("CreateNewVisualStyleTask created new Visual Style: " + newStyle.getTitle());
 	}

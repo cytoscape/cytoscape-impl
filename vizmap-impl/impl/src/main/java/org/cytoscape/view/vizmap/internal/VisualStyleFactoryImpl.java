@@ -18,7 +18,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 	}
 
 	@Override
-	public VisualStyle getInstance(final VisualStyle original) {
+	public VisualStyle createVisualStyle(final VisualStyle original) {
 		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager);
 
 		copyDefaultValues(original, copy);
@@ -28,7 +28,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 	}
 
 	@Override
-	public VisualStyle getInstance(final String title) {
+	public VisualStyle createVisualStyle(final String title) {
 		return new VisualStyleImpl(title, lexManager);
 	}
 

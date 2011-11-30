@@ -100,7 +100,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	
 	
 	private VisualStyle buildGlobalDefaultStyle(final VisualStyleFactory factory) {
-		final VisualStyle defStyle = factory.getInstance(DEFAULT_STYLE_NAME);
+		final VisualStyle defStyle = factory.createVisualStyle(DEFAULT_STYLE_NAME);
 		
 		defStyle.setDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT, NETWORK_COLOR);
 		defStyle.setDefaultValue(MinimalVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);

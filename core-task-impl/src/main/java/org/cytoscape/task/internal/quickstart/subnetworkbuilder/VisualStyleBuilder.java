@@ -63,7 +63,7 @@ public class VisualStyleBuilder {
     }
 
     public VisualStyle buildStyle(final String vsName) {
-	final VisualStyle newStyle = vsFactory.getInstance(vsName);
+	final VisualStyle newStyle = vsFactory.createVisualStyle(vsName);
 
 	newStyle.setDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT, BACKGROUND_COLOR);
 	newStyle.setDefaultValue(MinimalVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
