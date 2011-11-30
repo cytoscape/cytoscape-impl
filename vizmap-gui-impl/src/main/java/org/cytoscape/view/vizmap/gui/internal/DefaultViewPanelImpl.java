@@ -130,7 +130,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 
 		dummyNet.getCyRow().set(CyTableEntry.NAME, "Default Appearance");
 		final CyNetworkView dummyview = cyNetworkViewFactory
-				.getNetworkView(dummyNet);
+				.createNetworkView(dummyNet);
 
 		// Set node locations
 		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
