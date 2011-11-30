@@ -162,7 +162,7 @@ public class GOPTAlgorithm {
 
 	// TODO This should be refactored out into a Task
 	private CyNetwork createNetwork(String name) {
-		CyNetwork n = netFactory.getInstance();
+		CyNetwork n = netFactory.createNetwork();
 		n.getCyRow().set("name",name);
 		netMgr.addNetwork(n);
 		return n;

@@ -810,7 +810,7 @@ public class NetworkMergeFrame extends JFrame {
 //				frame.setAlwaysOnTop(isFrameAlwaysOnTop);
                         }
                         
-                        CyNetwork net = cnf.getInstance();
+                        CyNetwork net = cnf.createNetwork();
                         String netName = cnn.getSuggestedNetworkTitle(mergeNodeAttributeTable.getMergedNetworkName());
                         //TODO: set network name
                         

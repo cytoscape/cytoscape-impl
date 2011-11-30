@@ -79,7 +79,7 @@ public class SBMLNetworkViewReader extends AbstractTask implements CyNetworkRead
 		String xml = readString(stream);
 		SBMLDocument document = JSBML.readSBMLFromString(xml);
 		
-		network = networkFactory.getInstance();
+		network = networkFactory.createNetwork();
 		//view = viewFactory.getNetworkView(network);
 		Model model = document.getModel();
 		

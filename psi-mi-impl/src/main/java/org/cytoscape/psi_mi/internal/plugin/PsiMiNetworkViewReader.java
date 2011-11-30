@@ -64,7 +64,7 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 		taskMonitor.setProgress(0.25);
 
 		//  Now map to Cytoscape network objects.
-		network = networkFactory.getInstance();
+		network = networkFactory.createNetwork();
 		MapToCytoscape mapper2 = new MapToCytoscape(network, interactions, MapToCytoscape.SPOKE_VIEW);
 		mapper2.doMapping();
 

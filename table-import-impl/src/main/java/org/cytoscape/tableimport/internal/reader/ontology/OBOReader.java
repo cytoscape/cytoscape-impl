@@ -94,7 +94,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		String line;
 
 		// Create new DAG
-		this.ontologyDAG = cyNetworkFactory.getInstance();
+		this.ontologyDAG = cyNetworkFactory.createNetwork();
 		try {
 			// Phase 1: read header information
 			header = new HashMap<String, String>();

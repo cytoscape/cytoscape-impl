@@ -84,7 +84,7 @@ public class PsiMiTabParser {
 
 		String[] edgeScore;
 
-		final CyNetwork network = cyNetworkFactory.getInstance();
+		final CyNetwork network = cyNetworkFactory.createNetwork();
 		
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		if(nodeTable.getColumn(INTERACTOR_TYPE) == null)

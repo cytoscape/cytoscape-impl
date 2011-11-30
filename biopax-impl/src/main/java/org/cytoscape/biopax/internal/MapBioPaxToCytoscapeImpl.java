@@ -173,7 +173,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	 */
 	@Override
 	public CyNetwork createCyNetwork(String networkName)  {		
-		CyNetwork network = networkFactory.getInstance();
+		CyNetwork network = networkFactory.createNetwork();
 	
 		// First, create nodes for all Entity class objects
 		createEntityNodes(network);

@@ -69,7 +69,7 @@ public class ImportNetworkTask extends AbstractTask { //implements CyNetworkView
 	protected VisualStyle[] visualstyles;
 	private final GraphReader reader;
 	
-	final CyNetwork network = CytoscapeServices.cyNetworkFactory.getInstance();
+	final CyNetwork network = CytoscapeServices.cyNetworkFactory.createNetwork();
 
 	/**
 	 * Creates a new ImportNetworkTask object.

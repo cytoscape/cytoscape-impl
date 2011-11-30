@@ -100,7 +100,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 			new BufferedReader(new InputStreamReader(inputStream), 128*1024);
 		Map<String, CyNode> nMap = new HashMap<String, CyNode>(10000);
 
-		CyNetwork network = cyNetworkFactory.getInstance();
+		CyNetwork network = cyNetworkFactory.createNetwork();
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		final CyTable edgeTable = network.getDefaultEdgeTable();
 

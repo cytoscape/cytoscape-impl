@@ -142,7 +142,7 @@ public class GraphMLParser extends DefaultHandler {
 		
 		if (networkStack.size() == 0) {
 			// Root network.
-			currentNetwork = networkFactory.getInstance();
+			currentNetwork = networkFactory.createNetwork();
 		} else {
 			final CyNetwork parentNetwork = networkStack.peek();
 			currentNetwork = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();

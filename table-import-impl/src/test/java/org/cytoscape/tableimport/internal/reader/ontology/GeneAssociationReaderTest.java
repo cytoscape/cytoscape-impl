@@ -46,7 +46,7 @@ public class GeneAssociationReaderTest {
 		CyNetworkViewFactory cyNetworkViewFactory = viewSupport.getNetworkViewFactory();
 		CyNetworkFactory cyNetworkFactory = netSupport.getNetworkFactory();
 		tableFactory = tableSupport.getTableFactory();
-		dag = cyNetworkFactory.getInstance();
+		dag = cyNetworkFactory.createNetwork();
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		tm = mock(TaskMonitor.class);
 	}

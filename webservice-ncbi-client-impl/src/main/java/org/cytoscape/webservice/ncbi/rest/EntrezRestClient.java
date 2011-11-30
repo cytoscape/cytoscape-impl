@@ -91,7 +91,7 @@ public class EntrezRestClient {
 		final CompletionService<Double> completionService = new ExecutorCompletionService<Double>(executer);
 		
 		logger.debug("Executor initialized.");
-		final CyNetwork newNetwork = networkFactory.getInstance();
+		final CyNetwork newNetwork = networkFactory.createNetwork();
 
 		final ConcurrentMap<String, CyNode> nodeName2CyNodeMap = new ConcurrentHashMap<String, CyNode>();
 

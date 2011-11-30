@@ -192,7 +192,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		taskMonitor.setProgress(0.1);
 		readGML(keyVals, taskMonitor); // read the GML file
 		taskMonitor.setProgress(0.3);
-		network = cyNetworkFactory.getInstance();
+		network = cyNetworkFactory.createNetwork();
 		createGraph(taskMonitor);
 		taskMonitor.setProgress(0.8);
 		this.cyNetworks = new CyNetwork[] { network };

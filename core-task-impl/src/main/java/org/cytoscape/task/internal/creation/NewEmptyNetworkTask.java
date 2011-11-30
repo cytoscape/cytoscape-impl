@@ -68,7 +68,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
-		final CyNetwork newNet = cnf.getInstance();
+		final CyNetwork newNet = cnf.createNetwork();
 		tm.setProgress(0.2);
 		newNet.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle("Network"));
 		tm.setProgress(0.4);

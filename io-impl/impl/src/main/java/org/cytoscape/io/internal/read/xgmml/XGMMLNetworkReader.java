@@ -113,7 +113,7 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 
 		readDataMgr.initAllData();
 		readDataMgr.setSessionFormat(sessionFormat);
-		readDataMgr.setNetwork(cyNetworkFactory.getInstance());
+		readDataMgr.setNetwork(cyNetworkFactory.createNetwork());
 		tm.setProgress(0.1);
 		try {
 			readXGMML();

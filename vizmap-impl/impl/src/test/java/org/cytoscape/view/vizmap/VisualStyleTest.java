@@ -26,7 +26,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		final Class<String> type = String.class;
         CyProperty<Properties> cyProperties = mock(CyProperty.class);
         NetworkViewTestSupport nvts = new NetworkViewTestSupport();
-        network = nvts.getNetworkFactory().getInstance();
+        network = nvts.getNetworkFactory().createNetwork();
 
         node1 = network.addNode();
         node2 = network.addNode();
