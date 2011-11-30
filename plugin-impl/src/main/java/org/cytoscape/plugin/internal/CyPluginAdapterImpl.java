@@ -4,6 +4,7 @@ package org.cytoscape.plugin.internal;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
@@ -96,6 +97,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	private final CyServiceRegistrar cyServiceRegistrar;
 	private final CySessionManager cySessionManager;
 	private final CySessionReaderManager cySessionReaderManager;
+	private final CytoscapeVersion cytoscapeVersion;
 	private final CySessionWriterManager cySessionWriterManager;
 	private final CySwingApplication cySwingApplication;
 	private final CyTableFactory cyTableFactory;
@@ -180,6 +182,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	                     final CyTableFactory cyTableFactory,
 	                     final CyTableManager cyTableManager,
 	                     final CyTableReaderManager cyTableReaderManager,
+	                     final CytoscapeVersion cytoscapeVersion,
 //	                     final CyTableWriterManager cyTableWriterManager,
 	                     final DialogTaskManager dialogTaskManager,
 	                     final PanelTaskManager panelTaskManager,
@@ -216,6 +219,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 		this.cyTableFactory = cyTableFactory;
 		this.cyTableManager = cyTableManager;
 		this.cyTableReaderManager = cyTableReaderManager;
+		this.cytoscapeVersion = cytoscapeVersion;
 //		this.cyTableWriterManager = cyTableWriterManager;
 		this.dialogTaskManager = dialogTaskManager;
 		this.panelTaskManager = panelTaskManager;
@@ -255,6 +259,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	public CyTableFactory getCyTableFactory() { return cyTableFactory; } 
 	public CyTableManager getCyTableManager() { return cyTableManager; }
 	public CyTableReaderManager getCyTableReaderManager() { return cyTableReaderManager; }
+	public CytoscapeVersion getCytoscapeVersion() { return cytoscapeVersion; }
 //	public CyTableWriterManager getCyTableWriterManager() { return cyTableWriterManager; }
 	public DialogTaskManager getDialogTaskManager() { return dialogTaskManager; }
 	public PanelTaskManager getPanelTaskManager() { return panelTaskManager; }
