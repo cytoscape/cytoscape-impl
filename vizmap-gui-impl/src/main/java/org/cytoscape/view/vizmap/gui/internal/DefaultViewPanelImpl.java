@@ -144,7 +144,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		this.innerPanel.setBackground((Color) currentStyle.getDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT));
 		// Render it in this panel
 		renderingEngine = presentationFactory
-				.getInstance(innerPanel, dummyview);
+				.createRenderingEngine(innerPanel, dummyview);
 		dummyview.fitContent();
 	}
 

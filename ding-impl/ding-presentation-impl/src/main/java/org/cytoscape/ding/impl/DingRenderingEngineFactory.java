@@ -87,7 +87,7 @@ public class DingRenderingEngineFactory implements
 	 * 
 	 */
 	@Override
-	public RenderingEngine<CyNetwork> getInstance(
+	public RenderingEngine<CyNetwork> createRenderingEngine(
 			final Object presentationContainer, final View<CyNetwork> view) {
 
 		// Validate arguments

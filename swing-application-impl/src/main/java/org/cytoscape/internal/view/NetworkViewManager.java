@@ -377,7 +377,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 		final long start = System.currentTimeMillis();
 		logger.debug("Rendering start: view model = " + view.getSUID());
-		final RenderingEngine<CyNetwork> renderingEngine = currentRenderingEngineFactory.getInstance(iframe, view);
+		final RenderingEngine<CyNetwork> renderingEngine = currentRenderingEngineFactory.createRenderingEngine(iframe, view);
 		logger.debug("Rendering finished in " + (System.currentTimeMillis() - start) + " m sec.");
 		presentationMap.put(modelID, renderingEngine);
 

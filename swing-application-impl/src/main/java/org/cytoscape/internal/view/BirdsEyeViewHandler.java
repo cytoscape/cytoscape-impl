@@ -164,7 +164,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 				+ engine.getViewModel().getSUID());
 
 		bevPanel.removeAll();
-		bevFactory.getInstance(bevPanel, engine.getViewModel());
+		bevFactory.createRenderingEngine(bevPanel, engine.getViewModel());
 		setFocus();
 		bevPanel.repaint();
 	}
@@ -187,7 +187,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 		engine = newEngine;
 		logger.debug("Got BEV New Network view = " + engine.getViewModel());
 		bevPanel.removeAll();
-		bevFactory.getInstance(bevPanel, engine.getViewModel());
+		bevFactory.createRenderingEngine(bevPanel, engine.getViewModel());
 		setFocus();
 		bevPanel.repaint();
 		

@@ -45,7 +45,7 @@ public class DingNavigationRenderingEngineFactory implements
 	}
 
 	@Override
-	public RenderingEngine<CyNetwork> getInstance(final Object visualizationContainer, final View<CyNetwork> view) {
+	public RenderingEngine<CyNetwork> createRenderingEngine(final Object visualizationContainer, final View<CyNetwork> view) {
 		if (visualizationContainer == null)
 			throw new IllegalArgumentException(
 					"Visualization container is null.  This should be an JComponent for this rendering engine.");
