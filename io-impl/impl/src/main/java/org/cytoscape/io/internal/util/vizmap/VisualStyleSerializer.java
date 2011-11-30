@@ -166,7 +166,7 @@ public class VisualStyleSerializer {
 					vs = defStyle;
 					// TODO: delete mappings?
 				} else
-					vs = visualStyleFactory.getInstance(styleName);
+					vs = visualStyleFactory.createVisualStyle(styleName);
 
 				// Set the visual properties and mappings:
 				if (vsModel.getNetwork() != null)

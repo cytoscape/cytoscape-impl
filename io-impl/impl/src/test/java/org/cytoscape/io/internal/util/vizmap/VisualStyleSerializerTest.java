@@ -47,7 +47,7 @@ public class VisualStyleSerializerTest {
 		final VisualStyleFactory visualStyleFactory = mock(VisualStyleFactory.class);
 
 		when(visualMappingManager.getDefaultVisualStyle()).thenReturn(dummyDefaultStyle);
-		when(visualStyleFactory.getInstance(dummyDefaultStyle)).thenAnswer(new Answer<VisualStyle>() {
+		when(visualStyleFactory.createVisualStyle(dummyDefaultStyle)).thenAnswer(new Answer<VisualStyle>() {
 
 			public VisualStyle answer(InvocationOnMock invocation) throws Throwable {
 				return createDefaultStyle();
