@@ -78,6 +78,7 @@ import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedEvent;
 import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedListener;
+import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyFilter;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.jdesktop.swingx.JXList;
 import org.jdesktop.swingx.JXPanel;
@@ -549,6 +550,10 @@ public class DefaultViewEditorImpl extends JDialog implements
 			list.setModel(model);
 			Set<VisualProperty<?>> vps = vpSets.get(key);
 			for (VisualProperty<?> vp : vps) {
+				
+				// Check supported or not.
+				if(VisualPropertyFilter.isCompatible(vp) == false)
+					continue;
 				
 				//Do not allow editing of the following two VP 
 				if (vp.getDisplayName().contains("Edge Target Arrow Selected Paint") ||
