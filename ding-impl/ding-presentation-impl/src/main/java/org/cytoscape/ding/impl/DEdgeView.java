@@ -67,7 +67,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	static final Font DEFAULT_LABEL_FONT = new Font("SansSerif", Font.PLAIN, 12);
 	static final Paint DEFAULT_LABEL_PAINT = Color.black;
 	
-	DGraphView m_view;
+	final DGraphView m_view;
 	
 	final int m_inx; // Positive.
 	boolean m_selected;
@@ -95,6 +95,9 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	 */
 	DEdgeView(final VisualLexicon lexicon, final DGraphView view, final int inx, final CyEdge model) {
 		super(model);
+
+		if ( view == null )
+			throw new NullPointerException("view for edge view is null");
 		
 		this.lexicon = lexicon;
 		m_view = view;
