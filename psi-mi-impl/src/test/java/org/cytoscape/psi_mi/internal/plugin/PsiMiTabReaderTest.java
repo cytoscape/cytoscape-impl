@@ -51,7 +51,7 @@ public class PsiMiTabReaderTest {
 
 		when(layouts.getDefaultLayout()).thenReturn(
 				layout);
-		when(layout.getTaskIterator()).thenReturn(new TaskIterator(task));
+		when(layout.createTaskIterator()).thenReturn(new TaskIterator(task));
 		
 		networkFactory = new NetworkTestSupport().getNetworkFactory();
 		networkViewFactory = new NetworkViewTestSupport().getNetworkViewFactory();

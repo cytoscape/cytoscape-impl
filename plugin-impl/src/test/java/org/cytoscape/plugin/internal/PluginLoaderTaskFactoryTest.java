@@ -17,7 +17,7 @@ public class PluginLoaderTaskFactoryTest {
 
 		PluginLoaderTaskFactory factory = new PluginLoaderTaskFactory(adapter);
 
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 
 		assertTrue(ti.hasNext());

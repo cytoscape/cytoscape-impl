@@ -51,7 +51,7 @@ public class SelectAllTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectAllTask(undoSupport, network,
 		                                          networkViewManager, eventHelper));
 	}

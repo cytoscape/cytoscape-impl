@@ -52,7 +52,7 @@ public class OpenSessionTaskFactory implements TaskFactory {
 		this.tracker = tracker;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2,new OpenSessionTask(mgr, rmgr, appManager, tracker));
 	}
 }

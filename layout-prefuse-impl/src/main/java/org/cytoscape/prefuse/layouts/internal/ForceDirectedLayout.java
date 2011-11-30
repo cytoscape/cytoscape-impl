@@ -72,7 +72,7 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm implements Tuna
 		return n > 0.0;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new ForceDirectedLayoutTask(networkView, getName(), selectedOnly, staticNodes,
 						    numIterations, defaultSpringCoefficient,

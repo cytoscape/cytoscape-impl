@@ -34,7 +34,7 @@ public class DropNetworkViewTaskFactoryImpl implements DropNetworkViewTaskFactor
 		this.xformPt = xformPt;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new DropNetworkViewTask(vmm, view, t, xformPt, eh));
 	}
 }

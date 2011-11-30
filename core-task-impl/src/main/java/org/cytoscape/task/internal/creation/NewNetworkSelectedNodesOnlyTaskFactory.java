@@ -75,7 +75,7 @@ public class NewNetworkSelectedNodesOnlyTaskFactory extends AbstractNetworkTaskF
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2,
 			new NewNetworkSelectedNodesOnlyTask(undoSupport, network, crnf, cnvf, netmgr,
 			                                    networkViewManager, naming, vmm,

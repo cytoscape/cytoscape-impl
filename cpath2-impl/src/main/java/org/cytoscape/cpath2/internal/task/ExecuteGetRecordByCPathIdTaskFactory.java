@@ -41,7 +41,7 @@ public class ExecuteGetRecordByCPathIdTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ExecuteGetRecordByCPathId(webApi, ids, format, networkTitle, networkToMerge, cPathFactory, bpContainer, mapperFactory, networkListener, mappingManager));
 	}
 

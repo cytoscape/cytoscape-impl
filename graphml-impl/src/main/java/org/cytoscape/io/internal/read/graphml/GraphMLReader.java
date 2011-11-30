@@ -102,7 +102,7 @@ public class GraphMLReader extends AbstractTask implements CyNetworkReader {
 		layout.setNetworkView(view);
 		
 		// Force to run this task here to avoid concurrency problem.
-		TaskIterator itr = layout.getTaskIterator();
+		TaskIterator itr = layout.createTaskIterator();
 		Task nextTask = itr.next();
 		try {
 			nextTask.run(taskMonitor);

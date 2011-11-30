@@ -52,7 +52,7 @@ public class DeselectAllEdgesTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new DeselectAllEdgesTask(undoSupport, network, networkViewManager,
 						 eventHelper));

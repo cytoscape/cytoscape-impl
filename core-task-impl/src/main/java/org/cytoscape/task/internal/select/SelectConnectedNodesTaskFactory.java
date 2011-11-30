@@ -51,7 +51,7 @@ public class SelectConnectedNodesTaskFactory extends AbstractNetworkTaskFactory 
 		this.eventHelper = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectConnectedNodesTask(undoSupport, network,
 		                                                     networkViewManager, eventHelper));
 	}

@@ -33,7 +33,7 @@ public class EdgeLinkoutTaskFactory extends AbstractEdgeViewTaskFactory {
 		this.browser = browser;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new LinkoutTask(link, browser, edgeView.getModel().getSource(), edgeView.getModel().getTarget(), edgeView.getModel()));
 	}
 }

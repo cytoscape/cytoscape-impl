@@ -77,7 +77,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 					if ( !stream.markSupported() )
 		                stream = new MarkSupportedInputStream(stream);
 					factory.setInputStream( stream, inputName );
-					return (R) factory.getTaskIterator().next();
+					return (R) factory.createTaskIterator().next();
 				} catch (IOException e) {
 					logger.warn("Error opening stream to URI: " + uri.toString(), e);
 				}
@@ -104,7 +104,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 				if (cff.accepts(CopyInputStream.copyKBytes(stream,2), category)) {
 					logger.debug("successfully matched factory " + factory);
 					factory.setInputStream(stream, inputName);
-					return (R)factory.getTaskIterator().next();	
+					return (R)factory.createTaskIterator().next();	
 				}
 			}
 		} catch (IOException ioe) {

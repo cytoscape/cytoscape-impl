@@ -48,7 +48,7 @@ public final class DeleteTableTaskFactory implements TableTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (table == null)
 			throw new IllegalStateException("you forgot to set the CyTable on this task factory!");
 		return new TaskIterator(new DeleteTableTask(tableManager, table));

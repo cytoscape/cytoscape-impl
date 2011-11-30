@@ -78,7 +78,7 @@ public class SessionReaderFactoryImpl implements InputStreamTaskFactory {
 		return filter;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SessionReaderImpl(inputStream, networkReaderMgr, propertyReaderMgr,
 													  vizmapReaderMgr, csvCyReaderFactory, tableManager,
 													  networkTableManager));

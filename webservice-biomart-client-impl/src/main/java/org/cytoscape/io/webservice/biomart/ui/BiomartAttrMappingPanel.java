@@ -204,14 +204,14 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 					datasourceName, client.getRestClient());
 			final SetAttributeTask setAttrTask = new SetAttributeTask(firstTask);
 			final BioMartTaskFactory tf = new BioMartTaskFactory(firstTask);
-			tf.getTaskIterator().insertTasksAfter(firstTask, setAttrTask);
+			tf.createTaskIterator().insertTasksAfter(firstTask, setAttrTask);
 			taskManager.execute(tf);
 		} else if (type.equals(SourceType.FILTER)) {
 			final ImportFilterTask firstTask = new ImportFilterTask(
 					datasourceName, client.getRestClient());
 			final SetFilterTask setFilterTask = new SetFilterTask(firstTask);
 			final BioMartTaskFactory tf = new BioMartTaskFactory(firstTask);
-			tf.getTaskIterator().insertTasksAfter(firstTask, setFilterTask);
+			tf.createTaskIterator().insertTasksAfter(firstTask, setFilterTask);
 			taskManager.execute(tf);
 		}
 	}

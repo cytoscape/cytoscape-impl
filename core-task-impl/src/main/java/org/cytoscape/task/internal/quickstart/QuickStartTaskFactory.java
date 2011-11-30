@@ -47,7 +47,7 @@ public class QuickStartTaskFactory implements TaskFactory {
 		this.subnetworkUtil = subnetworkUtil;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(3,new QuickStartTask(new QuickStartState(), util, networkManager, subnetworkUtil));
 	} 
 }

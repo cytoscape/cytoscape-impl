@@ -60,7 +60,7 @@ public class ConfigDirPropertyWriter implements CytoscapeShutdownListener {
 			//	new PropertyWriterFactory(propertyWriterManager, keyAndValue.getKey(),
 			//				  matchingFileFilter, outputFile);
 
-			//taskFactory.getTaskIterator().next().run(arg0)
+			//taskFactory.createTaskIterator().next().run(arg0)
 			//taskManager.execute(taskFactory);
 
 			

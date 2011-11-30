@@ -15,7 +15,7 @@ public class ProxySettingsTaskFactory implements TaskFactory {
 		this.streamUtil = streamUtil;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2,new ProxySettingsTask(streamUtil));
 	}
 }

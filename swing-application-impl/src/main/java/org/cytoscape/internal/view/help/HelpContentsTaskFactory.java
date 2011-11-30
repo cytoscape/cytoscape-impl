@@ -46,7 +46,7 @@ public class HelpContentsTaskFactory implements TaskFactory {
 		this.app = app;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new HelpContentsTask(help, app));
 	} 
 }

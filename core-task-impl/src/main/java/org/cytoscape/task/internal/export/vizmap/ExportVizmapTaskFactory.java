@@ -16,7 +16,7 @@ public class ExportVizmapTaskFactory implements TaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2,new VizmapWriter(writerManager, vmMgr));
 	}
 }

@@ -24,7 +24,7 @@ public class ImportDefaultVizmapTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ImportDefaultVizmapTask(vizmapReaderMgr, vmm, config, eventHelper));
 	}
 }

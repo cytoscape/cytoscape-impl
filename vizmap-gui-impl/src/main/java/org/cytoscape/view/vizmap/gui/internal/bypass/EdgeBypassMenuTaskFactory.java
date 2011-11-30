@@ -28,7 +28,7 @@ public class EdgeBypassMenuTaskFactory extends AbstractEdgeViewTaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new BypassTask<CyEdge>(parent, editor, vp, edgeView, netView, selectedManager));
 	}
 }

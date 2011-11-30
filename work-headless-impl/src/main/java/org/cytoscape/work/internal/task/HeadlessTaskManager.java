@@ -49,7 +49,7 @@ public class HeadlessTaskManager extends AbstractTaskManager {
 
 	@Override
 	public void execute(final TaskFactory factory) {
-		final TaskIterator taskIterator = factory.getTaskIterator();
+		final TaskIterator taskIterator = factory.createTaskIterator();
 		final Timer timer = new Timer();
 		final ConsoleTaskMonitor taskMonitor = new ConsoleTaskMonitor(timer);
 

@@ -107,7 +107,7 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (gui == null)
 			throw new IllegalStateException(
 					"Could not build query because Query Builder GUI is null.");

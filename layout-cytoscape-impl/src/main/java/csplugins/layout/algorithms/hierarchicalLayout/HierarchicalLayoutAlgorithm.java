@@ -101,7 +101,7 @@ public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm impleme
 		return ValidationState.OK;
 	}
 	
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (selectedOnly)
 			initStaticNodes();
 		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(networkView, getName(), selectedOnly, staticNodes,

@@ -71,7 +71,7 @@ public class LoadNetworkURLTaskFactoryImpl implements TaskFactory {
 		this.streamUtil = streamUtil;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil));
 	}
 }

@@ -43,7 +43,7 @@ public class FitSelectedTaskFactory extends AbstractNetworkViewTaskFactory {
 	}
 
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new FitSelectedTask(undoSupport, view));
 	} 
 }

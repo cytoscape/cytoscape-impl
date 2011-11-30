@@ -66,7 +66,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
 				streamUtil);
 		assertNotNull(networkViewManager);
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
 		while (ti.hasNext()) {
@@ -92,7 +92,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
 				streamUtil);
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
 		while (ti.hasNext()) {
@@ -113,7 +113,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
 				streamUtil);
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
 		while (ti.hasNext()) {

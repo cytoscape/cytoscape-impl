@@ -467,9 +467,9 @@ public class UnifiedNetworkImportDialog extends JDialog {
 		}
 		
 		@Override
-		public TaskIterator getTaskIterator() {
+		public TaskIterator createTaskIterator() {
 			final TaskIterator itr = new TaskIterator();
-			itr.insertTasksAfter(new RegisterNetworkTask(), tFactory.getTaskIterator().next());
+			itr.insertTasksAfter(new RegisterNetworkTask(), tFactory.createTaskIterator().next());
 			return itr;
 		}
 		

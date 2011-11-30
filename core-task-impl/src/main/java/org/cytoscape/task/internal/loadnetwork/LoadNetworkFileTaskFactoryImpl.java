@@ -65,7 +65,7 @@ public class LoadNetworkFileTaskFactoryImpl implements TaskFactory {
 		this.cyNetworkNaming = cyNetworkNaming;
 	}
 	
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming));
 	}
 }

@@ -46,7 +46,7 @@ public class ArrangeTaskFactory implements TaskFactory {
 		this.arrange = arrange;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ArrangeTask(desk, arrange));
 	} 
 }

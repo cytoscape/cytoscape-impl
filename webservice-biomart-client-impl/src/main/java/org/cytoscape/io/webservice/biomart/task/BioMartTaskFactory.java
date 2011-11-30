@@ -16,7 +16,7 @@ public class BioMartTaskFactory implements TaskFactory{
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return itr;
 	}
 

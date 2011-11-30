@@ -39,7 +39,7 @@ public final class RenameColumnTaskFactory extends AbstractTableColumnTaskFactor
 		this.undoSupport = undoSupport;
 	}
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory!");
 		return new TaskIterator(new RenameColumnTask(undoSupport, column));

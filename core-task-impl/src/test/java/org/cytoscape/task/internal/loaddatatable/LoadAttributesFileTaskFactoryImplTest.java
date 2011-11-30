@@ -36,7 +36,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	public void testLoadAttributesFileTaskFactory() throws Exception {
 
 		final LoadAttributesFileTaskFactoryImpl factory = new LoadAttributesFileTaskFactoryImpl(rmgr, tmgr);
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 
 		assertTrue(ti.hasNext());

@@ -24,7 +24,7 @@ public class GMLNetworkReaderFactory extends AbstractNetworkReaderFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new GMLNetworkReader(inputStream, cyNetworkFactory, cyNetworkViewFactory,
 													 renderingEngineManager, unrecognizedVisualPropertyMgr));
 	}

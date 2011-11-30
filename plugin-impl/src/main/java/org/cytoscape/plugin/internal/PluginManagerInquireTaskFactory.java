@@ -12,7 +12,7 @@ public class PluginManagerInquireTaskFactory implements TaskFactory{
 		this.task = task;
 	}
 	
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(task);
 	}
 }

@@ -42,7 +42,7 @@ public class VizmapPropertiesReaderFactory extends AbstractPropertyReaderFactory
         this.visualStyleSerializer = visualStyleSerializer;
     }
 
-    public TaskIterator getTaskIterator() {
+    public TaskIterator createTaskIterator() {
         return new TaskIterator( new VizmapPropertiesReader(inputStream, visualStyleSerializer) );
     }
 }

@@ -17,7 +17,7 @@ public class LoadNetworkFromUrlTaskFactory implements TaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new LoadNetworkFromUrlTask(url, factory));
 	}
 

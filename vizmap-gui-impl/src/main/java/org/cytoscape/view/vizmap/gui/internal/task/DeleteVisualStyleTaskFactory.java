@@ -17,7 +17,7 @@ public class DeleteVisualStyleTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new DeleteVisualStyleTask(vmm, manager));
 	}
 

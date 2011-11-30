@@ -42,7 +42,7 @@ public final class CopyValueToEntireColumnTaskFactory extends AbstractTableCellT
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (column == null)
 			throw new IllegalStateException("\"column\" was not set!");
 		if (primaryKeyValue == null)

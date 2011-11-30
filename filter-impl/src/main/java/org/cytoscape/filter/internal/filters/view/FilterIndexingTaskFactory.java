@@ -45,7 +45,7 @@ final class FilterIndexingTaskFactory implements TaskFactory {
 	 *  Note: Most factory's returned iterator only yields a single <code>Task</code>.
 	 */
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new FilterIndexingTask(network));
 	}
 }

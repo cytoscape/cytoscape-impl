@@ -24,7 +24,7 @@ public class SearchTaskFactory extends AbstractNetworkTaskFactory implements Tas
 		this.appManager = appManager;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new IndexAndSearchTask(network, searchMgr, query, viewManager, appManager));
 	}
 }

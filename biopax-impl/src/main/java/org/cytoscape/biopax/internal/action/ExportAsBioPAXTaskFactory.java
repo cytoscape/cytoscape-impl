@@ -27,7 +27,7 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory, Ta
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(getWriterTask());
 	}
 	

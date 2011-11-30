@@ -467,7 +467,7 @@ public class SessionReaderImpl extends AbstractTask implements CySessionReader {
 
 	private void extractTable(InputStream stream, String entryName) throws Exception {
 		csvCyReaderFactory.setInputStream(stream, entryName);
-		CyTableReader reader = (CyTableReader) csvCyReaderFactory.getTaskIterator().next();
+		CyTableReader reader = (CyTableReader) csvCyReaderFactory.createTaskIterator().next();
 		reader.run(taskMonitor);
 
 		// Assume one table per entry

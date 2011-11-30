@@ -50,7 +50,7 @@ public class AbstractNetworkViewReaderTester {
 		taskMonitor = mock(TaskMonitor.class);
 
 		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
-		when(def.getTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
+		when(def.createTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
 
 		layouts = mock(CyLayoutAlgorithmManager.class);
 		when(layouts.getDefaultLayout()).thenReturn(def);

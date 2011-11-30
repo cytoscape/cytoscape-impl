@@ -13,7 +13,7 @@ import org.apache.log4j.Level;
 
 public class TestTaskFactory implements TaskFactory {
 	int i = 0;
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		Task task = new TestTask(i);
 		i = (i + 1) % 4;
 		return new TaskIterator(task);

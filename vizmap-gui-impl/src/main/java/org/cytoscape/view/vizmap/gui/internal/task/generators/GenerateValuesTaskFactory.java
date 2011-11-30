@@ -27,7 +27,7 @@ public class GenerateValuesTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 
 		return new TaskIterator(new GenerateValuesTask(generator, table, manager, appManager));
 	}

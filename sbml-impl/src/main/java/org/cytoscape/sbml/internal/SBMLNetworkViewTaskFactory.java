@@ -23,7 +23,7 @@ public class SBMLNetworkViewTaskFactory implements InputStreamTaskFactory {
 		this.filter = filter;
 	}
 	
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SBMLNetworkViewReader(stream, networkFactory, viewFactory));
 	}
 

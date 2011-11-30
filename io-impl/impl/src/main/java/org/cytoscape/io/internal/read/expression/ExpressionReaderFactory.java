@@ -16,7 +16,7 @@ public class ExpressionReaderFactory extends AbstractTableReaderFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ExpressionReader(inputStream, tableFactory, tableManager));
 	}
 }

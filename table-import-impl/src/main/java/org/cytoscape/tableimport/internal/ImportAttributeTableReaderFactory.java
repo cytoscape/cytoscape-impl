@@ -32,7 +32,7 @@ public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactor
 		this.fileFormat = fileFormat;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new ImportAttributeTableReaderTask(this.inputStream, fileFormat, CytoscapeServices.cyTableManager));
 	}

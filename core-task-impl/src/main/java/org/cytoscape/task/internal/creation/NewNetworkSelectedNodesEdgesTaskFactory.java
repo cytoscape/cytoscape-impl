@@ -75,7 +75,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactory extends AbstractNetworkTask
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2,
 			new NewNetworkSelectedNodesEdgesTask(undoSupport, network, crnf, cnvf,
 			                                     netmgr, networkViewManager, naming, vmm,

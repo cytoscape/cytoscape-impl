@@ -52,7 +52,7 @@ public class NetworkMergeTaskFactory implements TaskFactory {
     }
     
     @Override
-    public TaskIterator getTaskIterator() {
+    public TaskIterator createTaskIterator() {
         return new TaskIterator(new NetworkMergeTask(network, matchingAttribute, nodeAttributeMapping,
                 edgeAttributeMapping, selectedNetworkList, operation, conflictCollector,
                 selectedNetworkAttributeIDType, tgtType, inNetworkMerge));

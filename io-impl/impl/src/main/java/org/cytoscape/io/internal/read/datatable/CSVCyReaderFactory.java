@@ -33,7 +33,7 @@ public class CSVCyReaderFactory implements InputStreamTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new CSVCyReader(stream, readSchema, handleEquations,
 							tableFactory, compiler, tableManager));
 	}

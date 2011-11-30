@@ -39,7 +39,7 @@ public class AddEdgeNodeViewTaskFactoryImpl implements DropNodeViewTaskFactory {
 		AddEdgeStateMonitor.setTransferable(view,t);
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new AddEdgeTask(nv, view, AddEdgeStateMonitor.getTransferable(view)));
 	}
 }

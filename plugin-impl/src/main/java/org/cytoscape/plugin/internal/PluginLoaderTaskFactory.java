@@ -21,7 +21,7 @@ public class PluginLoaderTaskFactory implements TaskFactory {
 		this.adapter = adapter;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new PluginLoaderTask(adapter, urls));
 	}
 }

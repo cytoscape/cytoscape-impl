@@ -21,7 +21,7 @@ public class ZoomInTaskFactoryTest {
 		ZoomInTaskFactory factory = new ZoomInTaskFactory(undoSupport);
 		factory.setNetworkView(view);
 
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 
 		assertTrue( ti.hasNext() );

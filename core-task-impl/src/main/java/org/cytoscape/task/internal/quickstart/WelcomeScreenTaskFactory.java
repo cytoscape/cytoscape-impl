@@ -42,7 +42,7 @@ public class WelcomeScreenTaskFactory extends QuickStartTaskFactory {
 		this.openTaskFactory = openTaskFactory;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		// return new TaskIterator(new StartTask(new QuickStartState(), util,
 		// networkManager, subnetworkUtil, openBrowserServiceRef));
 		return new TaskIterator(new ShowWelcomeScreenTask(openBrowserServiceRef, fileTracker, this.guiTaskManager,

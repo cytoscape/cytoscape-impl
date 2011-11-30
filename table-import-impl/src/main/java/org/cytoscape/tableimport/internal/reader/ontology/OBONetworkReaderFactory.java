@@ -43,7 +43,7 @@ public class OBONetworkReaderFactory implements InputStreamTaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new OBOReader(inputName, inputStream, cyNetworkViewFactory, cyNetworkFactory, eventHelper));
 	}
 }

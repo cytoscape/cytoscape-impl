@@ -47,7 +47,7 @@ public class ISOMLayout extends AbstractLayoutAlgorithm implements TunableValida
 		return ValidationState.OK;
 	}
 	
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (selectedOnly)
 			initStaticNodes();
 

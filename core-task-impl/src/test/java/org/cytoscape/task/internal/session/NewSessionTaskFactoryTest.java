@@ -18,7 +18,7 @@ public class NewSessionTaskFactoryTest {
 
 		NewSessionTaskFactory factory = new NewSessionTaskFactory(mgr);
 		
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );

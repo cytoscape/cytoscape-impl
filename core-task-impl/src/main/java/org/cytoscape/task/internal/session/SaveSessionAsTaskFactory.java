@@ -47,7 +47,7 @@ public class SaveSessionAsTaskFactory implements TaskFactory {
 		this.writerMgr = writerMgr;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new SaveSessionAsTask(writerMgr, sessionMgr));
 	}
 }

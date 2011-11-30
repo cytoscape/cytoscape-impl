@@ -121,7 +121,7 @@ public class BioLayoutFRAlgorithm extends AbstractLayoutAlgorithm implements Tun
 
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new BioLayoutFRAlgorithmTask(
 				networkView, getName(), selectedOnly, staticNodes, update_iterations,

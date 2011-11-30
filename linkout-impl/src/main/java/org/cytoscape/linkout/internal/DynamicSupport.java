@@ -172,7 +172,7 @@ public class DynamicSupport {
 			return s;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		String url = "none found"; 
 		synchronized (this) {
 			//System.out.println("Selected menu: " + menuTitleSelection.getSelectedValue());

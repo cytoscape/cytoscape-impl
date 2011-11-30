@@ -40,7 +40,7 @@ public class NCBIWebServiceClient extends AbstractWebServiceClient
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (currentQuery == null)
 			throw new NullPointerException("Query object is null.");
 		else {

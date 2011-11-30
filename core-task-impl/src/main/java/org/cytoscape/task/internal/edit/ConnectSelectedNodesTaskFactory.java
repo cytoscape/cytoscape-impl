@@ -23,7 +23,7 @@ public class ConnectSelectedNodesTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new ConnectSelectedNodesTask(undoSupport, appManager.getCurrentNetwork(),
 			                             eventHelper));

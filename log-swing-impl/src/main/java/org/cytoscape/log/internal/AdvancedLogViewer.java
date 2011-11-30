@@ -381,7 +381,7 @@ class AdvancedLogViewer {
 			this.file = file;
 		}
 
-		public TaskIterator getTaskIterator() {
+		public TaskIterator createTaskIterator() {
 			return new TaskIterator(new ExportTask(file));
 		}
 	}

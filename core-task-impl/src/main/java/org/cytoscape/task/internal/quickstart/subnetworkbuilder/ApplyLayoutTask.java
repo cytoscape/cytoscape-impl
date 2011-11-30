@@ -23,7 +23,7 @@ public class ApplyLayoutTask extends AbstractTask {
 	taskMonitor.setProgress(0.1);
 	layout.setNetworkView(util.appManager.getCurrentNetworkView());
 	taskMonitor.setProgress(0.2);
-	insertTasksAfterCurrentTask(layout.getTaskIterator());
+	insertTasksAfterCurrentTask(layout.createTaskIterator());
 	
 	taskMonitor.setProgress(1.0);
     }

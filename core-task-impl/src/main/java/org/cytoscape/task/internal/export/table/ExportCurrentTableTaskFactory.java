@@ -13,7 +13,7 @@ public class ExportCurrentTableTaskFactory extends AbstractTableTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2,new CyTableWriter(writerManager, table));
 	}
 }

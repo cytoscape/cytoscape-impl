@@ -37,7 +37,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 
 		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr, tmgr);
 		
-		final TaskIterator ti = factory.getTaskIterator();
+		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );

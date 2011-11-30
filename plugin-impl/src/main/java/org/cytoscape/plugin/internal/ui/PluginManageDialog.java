@@ -247,7 +247,7 @@ public class PluginManageDialog extends javax.swing.JDialog implements
 			this.task = task;
 		}
 		
-		public TaskIterator getTaskIterator() {
+		public TaskIterator createTaskIterator() {
 			return new TaskIterator(task);
 		}
 	}
@@ -1247,7 +1247,7 @@ public class PluginManageDialog extends javax.swing.JDialog implements
 			this.task = task;
 		}
 		
-		public TaskIterator getTaskIterator() {
+		public TaskIterator createTaskIterator() {
 			return new TaskIterator(task);
 		}
 	}

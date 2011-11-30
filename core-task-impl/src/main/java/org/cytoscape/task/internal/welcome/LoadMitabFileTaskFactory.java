@@ -41,7 +41,7 @@ public class LoadMitabFileTaskFactory implements TaskFactory {
 		this.apply = apply;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new LoadMitabFileTask(apply, file, mgr, netmgr, networkViewManager, props, cyNetworkNaming));
 	}
 

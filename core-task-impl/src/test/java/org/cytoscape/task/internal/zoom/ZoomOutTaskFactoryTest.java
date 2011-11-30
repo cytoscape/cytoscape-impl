@@ -21,7 +21,7 @@ public class ZoomOutTaskFactoryTest {
 		ZoomOutTaskFactory factory = new ZoomOutTaskFactory(undoSupport);
 		factory.setNetworkView(view);
 		
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );

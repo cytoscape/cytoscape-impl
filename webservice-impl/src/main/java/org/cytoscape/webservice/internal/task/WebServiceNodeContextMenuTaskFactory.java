@@ -11,7 +11,7 @@ public class WebServiceNodeContextMenuTaskFactory extends AbstractNodeViewTaskFa
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new WebServiceContextMenuTask<CyNode>(nodeView));
 	}
 

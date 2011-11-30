@@ -26,7 +26,7 @@ public class DegreeSortedCircleLayout extends AbstractLayoutAlgorithm implements
 		return ValidationState.OK;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new DegreeSortedCircleLayoutTask(networkView, getName(), selectedOnly,
 							 staticNodes, DEGREE_ATTR_NAME, singlePartition));

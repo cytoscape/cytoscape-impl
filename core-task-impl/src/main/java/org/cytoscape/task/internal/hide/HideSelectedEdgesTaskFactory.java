@@ -47,7 +47,7 @@ public class HideSelectedEdgesTaskFactory extends AbstractNetworkViewTaskFactory
 		this.eventHelper = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new HideSelectedEdgesTask(undoSupport, eventHelper, view));
 	}
 }

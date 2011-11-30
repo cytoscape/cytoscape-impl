@@ -71,7 +71,7 @@ public class ShowBiomartGUIAction extends AbstractCyAction {
 	private void initDialog() {
 		
 		final BioMartTaskFactory tf = new BioMartTaskFactory(firstTask);
-		tf.getTaskIterator().insertTasksAfter(firstTask, showDialogTask);
+		tf.createTaskIterator().insertTasksAfter(firstTask, showDialogTask);
 
 		taskManager.setExecutionContext(app.getJFrame());
 		taskManager.execute(tf);

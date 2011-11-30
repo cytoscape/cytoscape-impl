@@ -60,7 +60,7 @@ public class NewEmptyNetworkTaskFactory implements TaskFactory, NewEmptyNetworkV
 		this.syncTaskMgr = syncTaskMgr;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		task = new NewEmptyNetworkTask(cnf, cnvf, netmgr, networkViewManager,namingUtil);
 		return new TaskIterator(task);
 	} 

@@ -19,7 +19,7 @@ public class ExecutePhysicalEntitySearchTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		task = new ExecutePhysicalEntitySearch(webApi, keyword, ncbiTaxonomyId, result);
 		return new TaskIterator(task);
 	}

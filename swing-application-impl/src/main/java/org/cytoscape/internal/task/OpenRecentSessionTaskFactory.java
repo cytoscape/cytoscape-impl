@@ -41,7 +41,7 @@ public class OpenRecentSessionTaskFactory implements TaskFactory {
 		this.targetSession = targetSession;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		CySessionReader reader = null;
 		try {
 			reader = readerManager.getReader(targetSession.toURI(), targetSession.toString());

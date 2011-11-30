@@ -44,7 +44,7 @@ public class NewSessionTaskFactory implements TaskFactory {
 		this.mgr = mgr;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new NewSessionTask(mgr));
 	}
 }

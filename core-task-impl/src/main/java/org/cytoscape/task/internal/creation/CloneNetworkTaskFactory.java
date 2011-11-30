@@ -61,7 +61,7 @@ public class CloneNetworkTaskFactory extends AbstractNetworkTaskFactory {
 	this.eventHelper = eventHelper;
     }
 
-    public TaskIterator getTaskIterator() {
+    public TaskIterator createTaskIterator() {
 	return new TaskIterator(new CloneNetworkTask(network, networkManager, networkViewManager, vmm, netFactory,
 		netViewFactory, naming, eventHelper));
     }

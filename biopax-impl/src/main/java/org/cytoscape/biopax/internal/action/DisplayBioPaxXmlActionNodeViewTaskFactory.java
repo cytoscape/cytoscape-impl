@@ -18,7 +18,7 @@ public class DisplayBioPaxXmlActionNodeViewTaskFactory implements NodeViewTaskFa
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new DisplayBioPaxXmlTask(nodeView, networkView, factory));
 	}
 

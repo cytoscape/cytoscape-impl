@@ -46,7 +46,7 @@ public class ExportNetworkImageTaskFactoryTest {
 		final CyNetworkView view = mock(CyNetworkView.class);
 		factory.setNetworkView(view);
 		
-		final TaskIterator itr = factory.getTaskIterator();
+		final TaskIterator itr = factory.createTaskIterator();
 		
 		assertNotNull(itr);
 		assertTrue(itr.hasNext());

@@ -37,7 +37,7 @@ public class BioPaxNetworkViewTaskFactory implements InputStreamTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		BioPaxNetworkViewReaderTask task = new BioPaxNetworkViewReaderTask(
 				inputStream, inputName, networkFactory, viewFactory, naming, 
 				networkListener, mappingManager, bioPaxVisualStyleUtil);

@@ -101,7 +101,7 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 		
 		CyLayoutAlgorithm taskFactory = layouts.getDefaultLayout();
 		taskFactory.setNetworkView(networkView);
-		TaskIterator taskIterator = taskFactory.getTaskIterator();
+		TaskIterator taskIterator = taskFactory.createTaskIterator();
 		Task task = taskIterator.next();
 		insertTasksAfterCurrentTask(task);
 		

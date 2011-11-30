@@ -25,7 +25,7 @@ final class PropertyWriterFactory implements TaskFactory {
 		this.fileFilter    = fileFilter;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new PropertyWriter(writerManager, fileFilter, property, outputFile));
 	}

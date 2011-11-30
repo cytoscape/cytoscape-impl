@@ -41,7 +41,7 @@ public class DropNodeViewTaskFactoryImpl implements DropNodeViewTaskFactory {
 		this.t = t;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new AddNestedNetworkTask(nv, view, netMgr, t));
 	}
 }

@@ -25,7 +25,7 @@ public class RenameVisualStyleTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new RenameVisualStyleTask(manager, vmm, util,
 				parent));
 	}

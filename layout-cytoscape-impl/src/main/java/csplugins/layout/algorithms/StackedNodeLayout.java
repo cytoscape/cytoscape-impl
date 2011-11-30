@@ -72,7 +72,7 @@ public class StackedNodeLayout extends AbstractLayoutAlgorithm implements Tunabl
 		super(undoSupport, "stacked-node-layout", "Stacked Node Layout", true);
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new StackedNodeLayoutTask(networkView, getName(), selectedOnly, staticNodes,
 				x_position, y_start_position));
 	}

@@ -26,7 +26,7 @@ public class NodeBypassMenuTaskFactory extends AbstractNodeViewTaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new BypassTask<CyNode>(parent, editor, vp, nodeView, netView, selectedManager));
 	}
 }

@@ -28,7 +28,7 @@ public class ApplyPreferredLayoutTaskFactory extends AbstractNetworkViewTaskFact
 		this.props       = p.getProperties();
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new ApplyPreferredLayoutTask(undoSupport, eventHelper, view,
 		                                                     layouts, props));
 	}

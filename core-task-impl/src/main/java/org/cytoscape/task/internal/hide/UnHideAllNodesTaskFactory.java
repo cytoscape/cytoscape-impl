@@ -47,7 +47,7 @@ public class UnHideAllNodesTaskFactory extends AbstractNetworkViewTaskFactory {
 		this.eventHelper = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new UnHideAllNodesTask(undoSupport, eventHelper, view));
 	} 
 }

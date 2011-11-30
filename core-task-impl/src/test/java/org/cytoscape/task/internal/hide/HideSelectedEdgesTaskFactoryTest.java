@@ -24,7 +24,7 @@ public class HideSelectedEdgesTaskFactoryTest {
 		CyNetworkView view = mock(CyNetworkView.class);
 		factory.setNetworkView(view);
 		
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );

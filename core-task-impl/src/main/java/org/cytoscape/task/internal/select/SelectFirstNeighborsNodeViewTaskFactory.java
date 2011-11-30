@@ -42,7 +42,7 @@ public class SelectFirstNeighborsNodeViewTaskFactory extends AbstractNodeViewTas
 		this.direction = direction;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectFirstNeighborsNodeViewTask(nodeView, netView, direction));
 	}
 }

@@ -42,7 +42,7 @@ public class ZoomOutTaskFactory extends AbstractNetworkViewTaskFactory {
 		this.undoSupport = undoSupport;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ZoomOutTask(undoSupport, view));
 	} 
 }

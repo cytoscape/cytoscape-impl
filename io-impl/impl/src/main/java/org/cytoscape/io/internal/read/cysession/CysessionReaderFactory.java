@@ -40,7 +40,7 @@ public class CysessionReaderFactory extends AbstractPropertyReaderFactory {
 		super(filter);
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator( new CysessionReader(inputStream) );
 	}
 }

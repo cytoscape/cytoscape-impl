@@ -20,7 +20,7 @@ public class CreateNewVisualStyleTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new CreateNewVisualStyleTask(vizMapperUtil, vsFactory, vmm));
 	}
 

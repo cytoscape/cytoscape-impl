@@ -22,7 +22,7 @@ public class HandleConflictsTaskFactory implements TaskFactory {
     }
     
     @Override
-    public TaskIterator getTaskIterator() {
+    public TaskIterator createTaskIterator() {
         return new TaskIterator(new HandleConflictsTask(conflictCollector));
     }
 }

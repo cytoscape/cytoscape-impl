@@ -43,7 +43,7 @@ public class HelpContactHelpDeskTaskFactory implements TaskFactory {
 		this.openBrowser = openBrowser;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new HelpContactHelpDeskTask(openBrowser));
 	} 
 }

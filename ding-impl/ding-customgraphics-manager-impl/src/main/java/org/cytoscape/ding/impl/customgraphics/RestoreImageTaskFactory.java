@@ -16,7 +16,7 @@ public class RestoreImageTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		
 		return new TaskIterator(new RestoreImageTask(imageLocation, manager));
 	}

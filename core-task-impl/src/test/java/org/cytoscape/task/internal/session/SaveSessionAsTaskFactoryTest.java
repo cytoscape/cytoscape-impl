@@ -20,7 +20,7 @@ public class SaveSessionAsTaskFactoryTest {
 
 		SaveSessionAsTaskFactory factory = new SaveSessionAsTaskFactory(wmgr,mgr);
 		
-		TaskIterator ti = factory.getTaskIterator();
+		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );

@@ -52,7 +52,7 @@ public class InvertSelectedNodesTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new InvertSelectedNodesTask(undoSupport, network,
 		                                                    networkViewManager, eventHelper));
 	} 

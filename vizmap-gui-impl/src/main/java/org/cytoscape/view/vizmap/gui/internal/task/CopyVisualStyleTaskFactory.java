@@ -30,7 +30,7 @@ public class CopyVisualStyleTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new CopyVisualStyleTask(vmm, factory, manager,
 				util, parent));
 	}

@@ -92,7 +92,7 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm implements Tuna
 		return ValidationState.OK;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		
 		return new TaskIterator(new JGraphLayoutWrapperTask(networkView, getName(), selectedOnly, staticNodes,
 				layout, layoutSettings));

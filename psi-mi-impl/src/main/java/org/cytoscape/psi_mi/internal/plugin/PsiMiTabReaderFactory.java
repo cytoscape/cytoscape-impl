@@ -36,7 +36,7 @@ public class PsiMiTabReaderFactory implements InputStreamTaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new PsiMiTabReader(inputStream,
 				cyNetworkViewFactory, cyNetworkFactory, layouts, prop));
 	}

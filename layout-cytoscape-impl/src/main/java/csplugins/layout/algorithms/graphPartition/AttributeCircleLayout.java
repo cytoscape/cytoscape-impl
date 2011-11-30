@@ -89,7 +89,7 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm implements Tu
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new AttributeCircleLayoutTask(networkView, getName(), selectedOnly,
 						      staticNodes, attribute, spacing,

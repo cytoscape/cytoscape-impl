@@ -33,7 +33,7 @@ public class DropAnnotationTaskFactory implements DropNetworkViewTaskFactory {
 		this.xformPt = xformPt;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new DropAnnotationTask(view, t, xformPt, bge, annotationFactory));
 	}
 }

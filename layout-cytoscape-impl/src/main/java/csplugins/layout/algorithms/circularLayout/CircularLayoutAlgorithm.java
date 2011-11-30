@@ -40,7 +40,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
 
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 				new CircularLayoutAlgorithmTask(
 						networkView, getName(), selectedOnly, singlePartition, staticNodes));

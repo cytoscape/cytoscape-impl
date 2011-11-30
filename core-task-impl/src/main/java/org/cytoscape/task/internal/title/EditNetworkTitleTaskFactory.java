@@ -42,7 +42,7 @@ public class EditNetworkTitleTaskFactory extends AbstractNetworkTaskFactory {
 		this.undoSupport = undoSupport;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new EditNetworkTitleTask(undoSupport, network));
 	} 
 }

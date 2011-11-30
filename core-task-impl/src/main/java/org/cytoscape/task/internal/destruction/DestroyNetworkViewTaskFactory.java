@@ -43,7 +43,7 @@ public class DestroyNetworkViewTaskFactory extends AbstractNetworkViewCollection
 		this.networkViewManager = networkViewManager;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new DestroyNetworkViewTask(networkViews, networkViewManager));
 	} 
 }

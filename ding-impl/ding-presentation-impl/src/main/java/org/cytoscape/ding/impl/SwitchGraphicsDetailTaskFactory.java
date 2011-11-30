@@ -19,7 +19,7 @@ public class SwitchGraphicsDetailTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SwitchGraphicsDetailTask(defaultProps, appManager));
 	}
 

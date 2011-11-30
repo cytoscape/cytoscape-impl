@@ -19,7 +19,7 @@ public class MergeNetworkTaskFactory implements TaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new MergeNetworkTask(cpathURL, cyNetwork, factory));
 	}
 

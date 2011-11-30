@@ -12,7 +12,7 @@ public class PluginLoaderTaskFactory2 implements TaskFactory {
 	PluginLoaderTaskFactory2() {
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(task);
 	}
 	

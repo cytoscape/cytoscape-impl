@@ -57,7 +57,7 @@ public class SyncTaskManager extends AbstractTaskManager<Object,Map<String,Objec
 			if ( !displayTunables(factory) )
 				return;
 
-			TaskIterator taskIterator = factory.getTaskIterator();
+			TaskIterator taskIterator = factory.createTaskIterator();
 
 			// now execute all subsequent tasks
 			while (taskIterator.hasNext()) {

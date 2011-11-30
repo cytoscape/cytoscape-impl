@@ -19,7 +19,7 @@ public class ImportFilterTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if(task == null)
 			return new TaskIterator(new ImportFilterTask(datasourceName, client));
 		else

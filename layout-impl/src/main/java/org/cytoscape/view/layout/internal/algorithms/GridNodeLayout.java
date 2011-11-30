@@ -82,7 +82,7 @@ public class GridNodeLayout extends AbstractLayoutAlgorithm implements TunableVa
 		}
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		if (selectedOnly)
 			initStaticNodes();
 		return new TaskIterator(new GridNodeLayoutTask(networkView, getName(), selectedOnly, staticNodes,

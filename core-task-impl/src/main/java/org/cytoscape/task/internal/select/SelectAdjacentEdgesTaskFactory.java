@@ -51,7 +51,7 @@ public class SelectAdjacentEdgesTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectAdjacentEdgesTask(undoSupport, network,
 		                                                    networkViewManager, eventHelper));
 	} 

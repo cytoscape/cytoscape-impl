@@ -17,7 +17,7 @@ public class LoadAttributesURLTaskFactoryImpl implements TaskFactory {
 		this.tableMgr = tableMgr;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new LoadAttributesURLTask(mgr, tableMgr));
 	}
 }

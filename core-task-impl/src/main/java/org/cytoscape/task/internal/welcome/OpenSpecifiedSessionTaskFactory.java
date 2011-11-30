@@ -30,7 +30,7 @@ public class OpenSpecifiedSessionTaskFactory implements TaskFactory {
 		this.sessionFileURI = url.toURI();
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2,new OpenSpecifiedSessionTask(sessionFileURI, mgr, rmgr, appManager));
 	}
 }

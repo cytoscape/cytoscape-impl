@@ -60,7 +60,7 @@ public class ConsoleTaskFactory implements TaskFactory {
 		statusBar.addActionListener(new ConsoleAction());
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ConsoleTask());
 	}
 

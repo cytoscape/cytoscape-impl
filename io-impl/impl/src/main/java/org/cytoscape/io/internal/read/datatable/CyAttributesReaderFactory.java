@@ -28,7 +28,7 @@ public class CyAttributesReaderFactory extends AbstractTableReaderFactory {
 		this.rootNetFact = rootNetFact;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new CyAttributesReader(inputStream, tableFactory, appMgr,
 		                                               netMgr, tableManager,rootNetFact));
 	}

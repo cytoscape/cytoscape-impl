@@ -41,7 +41,7 @@ public class CommandExecutorTaskFactory implements TaskFactory {
 		this.cei = cei;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new CommandExecutorTask(cei));
 	} 
 }

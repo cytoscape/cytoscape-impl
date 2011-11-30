@@ -40,7 +40,7 @@ public class NCBITableImportClient extends AbstractWebServiceClient implements T
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new ImportTableFromNCBITask(tableFactory, ((NCBIQuery) this.currentQuery).getIds(),
 			                            ((NCBIQuery) this.currentQuery).getCategory(),

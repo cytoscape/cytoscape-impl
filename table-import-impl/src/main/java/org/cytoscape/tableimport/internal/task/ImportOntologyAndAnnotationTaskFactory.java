@@ -40,7 +40,7 @@ public class ImportOntologyAndAnnotationTaskFactory implements TaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new ImportOntologyAndAnnotationTask(manager, factory, is, ontologyDAGName,
 			                                    tableFactory, gaStream,

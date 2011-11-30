@@ -59,7 +59,7 @@ public class CreateNetworkViewTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, network, viewFactory,
 		                                                     networkViewManager, layouts,
 		                                                     eventHelper));

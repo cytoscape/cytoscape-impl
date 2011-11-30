@@ -24,7 +24,7 @@ public class DownloadBiogridDataTaskFactory implements TaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		task = new DownloadBiogridDataTask(settingFile, list);
 		return new TaskIterator(task);
 	}

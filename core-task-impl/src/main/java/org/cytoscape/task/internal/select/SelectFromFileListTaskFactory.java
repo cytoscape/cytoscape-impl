@@ -52,7 +52,7 @@ public class SelectFromFileListTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectFromFileListTask(undoSupport, network,
 		                                                   networkViewManager, eventHelper));
 	} 

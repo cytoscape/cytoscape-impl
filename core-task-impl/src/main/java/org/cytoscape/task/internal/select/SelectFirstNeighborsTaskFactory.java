@@ -55,7 +55,7 @@ public class SelectFirstNeighborsTaskFactory extends AbstractNetworkTaskFactory 
 		this.direction = direction;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectFirstNeighborsTask(undoSupport, network,
 		                                                     networkViewManager, eventHelper, direction));
 	}

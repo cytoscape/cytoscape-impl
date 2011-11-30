@@ -90,7 +90,7 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
 		super(undoSupport, "attributes-layout", "Group Attributes Layout", true);
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new GroupAttributesLayoutTask(networkView, getName(), selectedOnly, staticNodes,
 				spacingx,spacingy,maxwidth,minrad,radmult,attributeName,attributeNamespace));
 	}

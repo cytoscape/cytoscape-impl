@@ -29,7 +29,7 @@ public class SyncTaskManagerTest {
 	}
 
 	public class TestTaskFactory implements TaskFactory {
-		public TaskIterator getTaskIterator() { return new TaskIterator( new TestTask() ); }
+		public TaskIterator createTaskIterator() { return new TaskIterator( new TestTask() ); }
 	}
 
 	public class TestTask extends AbstractTask {

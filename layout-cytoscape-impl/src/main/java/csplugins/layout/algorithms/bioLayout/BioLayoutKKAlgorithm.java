@@ -86,7 +86,7 @@ public class BioLayoutKKAlgorithm  extends AbstractLayoutAlgorithm implements Tu
 		supportWeights = supportEdgeWeights;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new BioLayoutKKAlgorithmTask(
 				networkView, getName(), selectedOnly, staticNodes,

@@ -47,7 +47,7 @@ public class GraphMLReaderFactory implements InputStreamTaskFactory {
 	}
 
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new GraphMLReader(inputStream, layouts, cyNetworkFactory, cyNetworkViewFactory,
 				cyRootNetworkFactory));
 	}

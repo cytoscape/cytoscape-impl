@@ -24,7 +24,7 @@ public class SetCurrentNetworkTaskFactoryImpl implements TaskFactory {
 		this.netmgr = netmgr;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SetCurrentNetworkTask(applicationManager, netmgr));
 	}
 }

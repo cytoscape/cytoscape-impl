@@ -59,7 +59,7 @@ public class DeleteSelectedNodesAndEdgesTaskFactory implements TaskFactory {
 		this.eventHelper          = eventHelper;
 	}
 
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new DeleteSelectedNodesAndEdgesTask(undoSupport, applicationManager,
 							    networkViewManager,

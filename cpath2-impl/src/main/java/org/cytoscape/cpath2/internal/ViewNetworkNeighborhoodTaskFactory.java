@@ -19,7 +19,7 @@ public class ViewNetworkNeighborhoodTaskFactory implements NodeViewTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator getTaskIterator() {
+	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ViewNetworkNeighborhoodTask(nodeView, networkView));
 	}
 
