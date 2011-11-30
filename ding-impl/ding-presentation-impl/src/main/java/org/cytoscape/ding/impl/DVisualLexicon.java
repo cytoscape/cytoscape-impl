@@ -237,9 +237,10 @@ public class DVisualLexicon extends RichVisualLexicon {
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
 
-	public static final VisualProperty<ObjectPosition> EDGE_LABEL_POSITION = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION, "EDGE_LABEL_POSITION",
-			"Edge Label Position", CyEdge.class);
+	// TODO: Implement if possible (in rendering engine)
+//	public static final VisualProperty<ObjectPosition> EDGE_LABEL_POSITION = new ObjectPositionVisualProperty(
+//			ObjectPositionImpl.DEFAULT_POSITION, "EDGE_LABEL_POSITION",
+//			"Edge Label Position", CyEdge.class);
 
 	// Ding specific node shapes.
 	private static final NodeShape VEE = new DNodeShape(GraphGraphics.SHAPE_VEE, "V", "VEE");
@@ -390,7 +391,7 @@ public class DVisualLexicon extends RichVisualLexicon {
 		addVisualProperty(EDGE_SOURCE_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
 		addVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
 
-		addVisualProperty(EDGE_LABEL_POSITION, EDGE);
+		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
 
 		createLookupMap();
 	}

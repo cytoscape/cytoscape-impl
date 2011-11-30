@@ -1406,8 +1406,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 				m_view.showGraphObject(this);
 			else
 				m_view.hideGraphObject(this);
-		} else if (vp == DVisualLexicon.EDGE_LABEL_POSITION) {
-			// FIXME: Not implemented yet.
 		}
 		
 		visualProperties.put(vp, value);

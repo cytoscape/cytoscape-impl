@@ -115,8 +115,6 @@ class EdgeViewDefaultSupport {
 				labelTransparency = ((Number) value).intValue();
 				setTextPaint(labelColor);
 			}
-		} else if (vp == DVisualLexicon.EDGE_LABEL_POSITION) {
-			// FIXME: Not implemented yet.
 		}
 	}
 		
