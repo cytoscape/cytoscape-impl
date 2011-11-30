@@ -69,7 +69,9 @@ import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.GraphViewChangeListener;
 import org.cytoscape.ding.GraphViewObject;
 import org.cytoscape.ding.NodeView;
+import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.PrintLOD;
+import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.events.GraphViewChangeListenerChain;
 import org.cytoscape.ding.impl.events.GraphViewEdgesHiddenEvent;
@@ -80,6 +82,8 @@ import org.cytoscape.ding.impl.events.GraphViewNodesRestoredEvent;
 import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
+import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
+import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
@@ -2991,6 +2995,21 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				|| vp == MinimalVisualLexicon.NODE_HEIGHT) {
 			applyToAll(vp, defaultValue);
 			return;
+		}
+		// The following is a bit hacky, and we need to remove this when we refactor DING.
+		// Special case: Custom Graphics
+		if((VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
+			if(defaultValue != NullCustomGraphics.getNullObject()) {
+				applyToAll(vp, defaultValue);
+				return;
+			}
+		}
+		
+		if (vp != DVisualLexicon.NODE_LABEL_POSITION && defaultValue instanceof ObjectPosition) {
+			if (defaultValue != ObjectPositionImpl.DEFAULT_POSITION) {
+				applyToAll(vp, defaultValue);
+				return;
+			}
 		}
 		
 		if(targetType == CyNode.class) {

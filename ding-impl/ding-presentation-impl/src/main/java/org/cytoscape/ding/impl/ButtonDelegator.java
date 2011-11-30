@@ -49,7 +49,6 @@ class ButtonDelegator {
 	}
 
 	final void delegateMouseEvent(MouseEvent e) {
-		//System.out.println("delegating mouse event: " + getMouseEventString(e));
 		// single click or release (i.e. no clicks)
 		if ( e.getClickCount() <= 1 ) {
 			if ( isLeftClick(e) ) {

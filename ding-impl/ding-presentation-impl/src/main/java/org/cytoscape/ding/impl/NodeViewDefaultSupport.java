@@ -31,16 +31,9 @@ package org.cytoscape.ding.impl;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
-import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -65,15 +58,11 @@ class NodeViewDefaultSupport {
 	
 	private float fontSize = 12f;
 	private Font font;
-	private Color borderColor;
-	
-	private final Map<VisualProperty<CyCustomGraphics<CustomGraphic>>, CyCustomGraphics<CustomGraphic>> defaultCustomGraphicsMap;
-	
+	private Color borderColor;	
 	
 	NodeViewDefaultSupport(final DNodeDetails nodeDetails, final Object lock) {
 		this.nodeDetails = nodeDetails;
 		this.lock = lock;
-		this.defaultCustomGraphicsMap = new HashMap<VisualProperty<CyCustomGraphics<CustomGraphic>>, CyCustomGraphics<CustomGraphic>>();
 	}
 
 	
@@ -120,8 +109,6 @@ class NodeViewDefaultSupport {
 			}
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
-		} else if (vp instanceof CustomGraphicsVisualProperty) {
-			setCustomGraphics(vp, (CyCustomGraphics<CustomGraphic>) value);
 		}
 	}
 
@@ -232,14 +219,5 @@ class NodeViewDefaultSupport {
 			nodeDetails.setLabelOffsetVectorXDefault(labelPosition.getOffsetX());
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
 		}
-	}
-	
-	
-	void setCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {
-
-		synchronized (lock) {
-			nodeDetails.setCustomGraphicsDefault((CustomGraphicsVisualProperty) vp, customGraphics);
-		}
-	}
-	
+	}	
 }

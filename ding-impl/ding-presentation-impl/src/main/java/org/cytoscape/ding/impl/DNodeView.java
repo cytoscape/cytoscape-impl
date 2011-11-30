@@ -64,6 +64,7 @@ import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.CustomGraphicsPositionCalculator;
 import org.cytoscape.ding.impl.customgraphics.vector.VectorCustomGraphics;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
+import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.model.CyNode;
@@ -82,6 +83,8 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  */
 public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, Label {
 	
+	private final static Set<CustomGraphic> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphic>(0);
+
 	// Affects size of the nested network image relative to the node size:
 	private static final float NESTED_IMAGE_SCALE_FACTOR = 0.6f;
 
@@ -278,15 +281,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 			graphView.m_nodeDetails.setUnselectedPaint(m_inx, paint);
 			
-			if (!isSelected()) {
-//				Color transPaint = new Color(((Color) paint).getRed(),
-//						((Color) paint).getGreen(), ((Color) paint).getBlue(), transparency);
-//				
-//				graphView.m_nodeDetails.overrideFillPaint(m_inx, transPaint);
-//				graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) transPaint);
-
+			if (!isSelected())
 				graphView.m_contentChanged = true;
-			}
 		}
 	}
 
@@ -413,14 +409,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if (trans < 0 || trans > 255)
 				throw new IllegalArgumentException("Transparency is out of range.");
 			transparency = trans;
-
-//			Paint originalColor = graphView.m_nodeDetails.fillPaint(m_inx);
-//				m_unselectedPaint = new Color(((Color) m_unselectedPaint).getRed(),
-//						((Color) m_unselectedPaint).getGreen(), ((Color) m_unselectedPaint).getBlue(), trans);
-//
-//				graphView.m_nodeDetails.overrideFillPaint(m_inx, m_unselectedPaint);
-//				graphView.m_nodeDetails.overrideColorLowDetail(m_inx, (Color) m_unselectedPaint);
-
 			graphView.m_contentChanged = true;
 		}
 
@@ -867,9 +855,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 			if (orderedCustomGraphicLayers.contains(cg))
 				retVal = false;
-			else {
+			else
 				retVal = orderedCustomGraphicLayers.add(cg);
-			}
 		}
 		ensureContentChanged();
 		return retVal;
@@ -904,10 +891,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 */
 	public Iterator<CustomGraphic> customGraphicIterator() {
 		synchronized (CG_LOCK) {
+			final Set<CustomGraphic> toIterate;
 			if (orderedCustomGraphicLayers == null)
-				return null;
+				toIterate = EMPTY_CUSTOM_GRAPHICS;
 			else
-				return new ReadOnlyIterator<CustomGraphic>(orderedCustomGraphicLayers);
+				toIterate = orderedCustomGraphicLayers;
+			
+			return new ReadOnlyIterator<CustomGraphic>(toIterate);
 		}
 	}
 
@@ -1243,6 +1233,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			this.setLabelPosition((ObjectPosition) value);
 		} else if (vp instanceof CustomGraphicsVisualProperty) {
 			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphic>) value);
+		} else if (vp instanceof ObjectPositionVisualProperty) {
+			applyCustomGraphicsPosition(vp, (ObjectPosition) value);
 		}
 		visualProperties.put(vp, value);
 	}
@@ -1253,9 +1245,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (dCustomGraphicsSet == null)
 			dCustomGraphicsSet = new HashSet<CustomGraphic>();
 
-		// ObjectPosition newPosition = null;
 		for (final CustomGraphic cg : dCustomGraphicsSet) {
-			// newPosition = this.graphicsPositions.get(cg);
 			removeCustomGraphic(cg);
 		}
 
@@ -1270,7 +1260,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (layers == null || layers.size() == 0)
 			return;
 
-		// FIXME: size dependency
 		// Check dependency. Sync size or not.
 		final VisualProperty<?> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
 		final VisualLexiconNode sizeTreeNode = lexicon.getVisualLexiconNode(cgSizeVP);
@@ -1298,10 +1287,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	private void applyCustomGraphicsPosition(final VisualProperty<?> vp, final ObjectPosition position) {
+		
 		// No need to modify
 		if (position == null)
 			return;
-
+		
 		// Use dependency to retrieve its parent.
 		final VisualLexiconNode lexNode = lexicon.getVisualLexiconNode(vp);
 		final Collection<VisualLexiconNode> leavs = lexNode.getParent().getChildren();
@@ -1317,16 +1307,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (parent == null)
 			throw new NullPointerException("Associated Custom Graphics VP is missing for " + vp.getDisplayName());
 
-
 		final Set<CustomGraphic> currentCG = cgMap.get(parent);
 
 		if (currentCG == null || currentCG.size() == 0)
 			return;
 
 		final Set<CustomGraphic> newList = new HashSet<CustomGraphic>();
-		for (CustomGraphic g : currentCG) {
+		for (CustomGraphic g : currentCG)
 			newList.add(moveCustomGraphicsToNewPosition(g, position));
-		}
 
 		currentCG.clear();
 		currentCG.addAll(newList);
@@ -1348,9 +1336,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (nodeW == cgW && nodeH == cgH)
 			return cg;
 
-		// Check width/height lock status
-		// final boolean whLock = dep.check(NODE_SIZE_LOCKED);
-
 		final AffineTransform scale;
 		final float fit = graphics.getFitRatio();
 
@@ -1360,10 +1345,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			// Case 1: node height value is larger than width
 			if (nodeW >= nodeH) {
 				scale = AffineTransform.getScaleInstance(fit * (nodeW / cgW) * (nodeH / nodeW), fit * nodeH / cgH);
-				// scale = AffineTransform.getScaleInstance(nodeH/nodeW, 1);
 			} else {
 				scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * (nodeH / cgH) * (nodeW / nodeH));
-				// scale = AffineTransform.getScaleInstance(1, nodeW/nodeH);
 			}
 
 		}

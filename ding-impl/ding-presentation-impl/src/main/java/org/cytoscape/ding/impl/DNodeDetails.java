@@ -36,21 +36,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.Label;
+import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
-import org.cytoscape.ding.customgraphics.Layer;
-import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
+import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.NodeDetails;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntObjHash;
-import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.View;
 
 
 /*
@@ -59,8 +59,6 @@ import org.cytoscape.view.model.VisualProperty;
  */
 class DNodeDetails extends IntermediateNodeDetails {
 	
-	// Will be used when Custom graphics is empty.
-	private final static Set<CustomGraphic> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphic>(0);
 	
 	final DGraphView m_view;
 	
@@ -92,6 +90,8 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	Map<Integer, Double> m_width = new HashMap<Integer, Double>();
 	
+	Map<Integer, List<CustomGraphic>> m_customGraphics = new HashMap<Integer, List<CustomGraphic>>();
+	
 	private Set<Integer> selected = new HashSet<Integer>();
 
 	// Default values
@@ -118,13 +118,18 @@ class DNodeDetails extends IntermediateNodeDetails {
 	private Byte m_labelJustifyDefault; 
 	private Double m_labelWidthDefault;
 	
-	private final Map<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>> defaultCustomGraphicsMap;
+	private Map<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>> defaultCustomGraphicsMap;
+	private Map<ObjectPositionVisualProperty, ObjectPosition> defaultCustomGraphicsPositionMap;
+	
+	private List<CustomGraphic> defaultCGList;
 
 	private boolean isCleared = false;
-
+	
 	DNodeDetails(final DGraphView view) {
 		m_view = view;
+		
 		defaultCustomGraphicsMap = new HashMap<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>>();
+		defaultCustomGraphicsPositionMap = new HashMap<ObjectPositionVisualProperty, ObjectPosition>();
 	}
 	
 	void clear() {
@@ -153,7 +158,17 @@ class DNodeDetails extends IntermediateNodeDetails {
 		m_width = new HashMap<Integer, Double>();
 		
 		m_selectedPaints = new HashMap<Integer, Paint>();
-				
+		
+		m_customGraphics = new HashMap<Integer, List<CustomGraphic>>();
+		
+		defaultCustomGraphicsMap = new HashMap<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>>();
+		defaultCustomGraphicsPositionMap = new HashMap<ObjectPositionVisualProperty, ObjectPosition>();
+		defaultCGList = new ArrayList<CustomGraphic>();
+		
+		// Clear all Custom Graphics
+		for(final View<CyNode> nv: m_view.getNodeViews())
+			((DNodeView) nv).removeAllCustomGraphics();
+	
 		isCleared = true;
 	}
 
@@ -560,37 +575,103 @@ class DNodeDetails extends IntermediateNodeDetails {
 	}
 
 
+	/**
+	 * Return value of this will be used actual rendering code.
+	 * 
+	 */
 	@Override
 	public Iterator<CustomGraphic> customGraphics (final int node) {
 		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);
-		final Iterator<CustomGraphic> iterator = dnv.customGraphicIterator();
-		
-		if (iterator == null) {
-			if ( defaultCustomGraphicsMap.size() == 0)
-				return EMPTY_CUSTOM_GRAPHICS.iterator();
-			else {
-				List<CustomGraphic> cgList = new ArrayList<CustomGraphic>();
-				for (CyCustomGraphics<CustomGraphic> val:defaultCustomGraphicsMap.values()) {
-					List<Layer<CustomGraphic>> layers = val.getLayers();
-					for(Layer<CustomGraphic> layer: layers) {
-						cgList.add(layer.getLayerObject());
-					}
-				}
-				return cgList.iterator();
-			}
-		} else
-			return dnv.customGraphicIterator();
+		return dnv.customGraphicIterator();
 	}
 	
 
-	void setCustomGraphicsDefault(final CustomGraphicsVisualProperty vp,
-			final CyCustomGraphics<CustomGraphic> customGraphics) {
-		
-		if(customGraphics == NullCustomGraphics.getNullObject())
-			defaultCustomGraphicsMap.remove(vp);
-		else
-			defaultCustomGraphicsMap.put(vp, customGraphics);
-	}
+//	void setCustomGraphicsDefault(final CustomGraphicsVisualProperty vp,
+//			final CyCustomGraphics<CustomGraphic> customGraphics) {
+//		
+//		if(customGraphics == null || customGraphics == NullCustomGraphics.getNullObject()) {
+//			// Setting NullCustomGraphics means remove current custom graphics.
+//			defaultCustomGraphicsMap.remove(vp);
+//		} else {
+//			// Create new default values.  Need to apply positions, too.
+//			defaultCustomGraphicsMap.put(vp, customGraphics);
+//			
+//			this.defaultCGList = new ArrayList<CustomGraphic>();
+//			final Collection<CyCustomGraphics<CustomGraphic>> defCGList = defaultCustomGraphicsMap.values();
+//			
+//			for (final CyCustomGraphics<CustomGraphic> val:defCGList) {
+//				List<Layer<CustomGraphic>> layers = val.getLayers();
+//				for(Layer<CustomGraphic> layer: layers)
+//					defaultCGList.add(layer.getLayerObject());
+//			}
+//		}
+//	}
+//	
+//	private CustomGraphicsVisualProperty getParentVP(final ObjectPositionVisualProperty vp) {
+//		final VisualLexiconNode lexNode = m_view.dingLexicon.getVisualLexiconNode(vp);
+//		final Collection<VisualLexiconNode> leavs = lexNode.getParent().getChildren();
+//
+//		CustomGraphicsVisualProperty parent = null;
+//		for (VisualLexiconNode vlNode : leavs) {
+//			if (vlNode.getVisualProperty().getRange().getType().equals(CyCustomGraphics.class)) {
+//				parent = (CustomGraphicsVisualProperty) vlNode.getVisualProperty();
+//				break;
+//			}
+//		}
+//
+//		if (parent == null)
+//			throw new NullPointerException("Associated Custom Graphics VP is missing for " + vp.getDisplayName());
+//		
+//		return parent;
+//	}
+//	
+//	void setCustomGraphicsPositionDefault(final ObjectPositionVisualProperty vp, final ObjectPosition position) {
+//		
+//		System.out.println("#Setting called: " + vp.getDisplayName());
+//		
+//		if (position == null || position.equals(ObjectPositionImpl.DEFAULT_POSITION))
+//			defaultCustomGraphicsPositionMap.remove(vp);
+//		else {
+//			defaultCustomGraphicsPositionMap.put(vp, position);
+//			
+//			final CustomGraphicsVisualProperty parent = getParentVP(vp);
+//			final CyCustomGraphics<CustomGraphic> cg = defaultCustomGraphicsMap.get(parent);
+//			if(cg == null)
+//				return;
+//			
+//			System.out.println("#Setting new location for: " + parent.getDisplayName() + " -- " + vp.getDisplayName());
+//
+//			// This is the set of all Custom Graphics.
+//			final Collection<CyCustomGraphics<CustomGraphic>> defCGList = defaultCustomGraphicsMap.values();
+//			
+//			for (final View<CyNode> dnv : m_view.getNodeViews()) {
+//				final List<CustomGraphic> newCGList = new ArrayList<CustomGraphic>();
+//				for (final Layer<CustomGraphic> layer : cg.getLayers()) {
+//					final CustomGraphic newCG = moveCustomGraphicsToNewPosition(layer.getLayerObject(), position,
+//							(DNodeView) dnv);
+//					newCGList.add(newCG);
+//				}
+//
+//				for (final CyCustomGraphics<CustomGraphic> val : defCGList) {
+//					if (val != cg) {
+//						List<Layer<CustomGraphic>> layers = val.getLayers();
+//						for (Layer<CustomGraphic> layer : layers)
+//							newCGList.add(layer.getLayerObject());
+//					}
+//				}
+//				this.m_customGraphics.put(((DNodeView) dnv).m_inx, newCGList);
+//			}
+//		}
+//	}
+//	
+//	private CustomGraphic moveCustomGraphicsToNewPosition(final CustomGraphic cg, final ObjectPosition newPosition, final DNodeView dnv) {
+//		if (cg == null || newPosition == null)
+//			throw new NullPointerException("CustomGraphic and Position cannot be null.");
+//
+//		// Create new graphics
+//		final CustomGraphic newCg = CustomGraphicsPositionCalculator.transform(newPosition, dnv, cg);
+//		return newCg;
+//	}
 
 
 	@Override
