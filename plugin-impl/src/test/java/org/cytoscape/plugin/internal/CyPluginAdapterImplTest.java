@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Properties;
 
+import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -65,6 +66,7 @@ public class CyPluginAdapterImplTest extends CyPluginAdapterTest {
 			mock(CyTableFactory.class),
 			mock(CyTableManager.class),
 			mock(CyTableReaderManager.class),
+			mock(CytoscapeVersion.class),
 //			mock(CyTableWriterManager.class),
 			mock(DialogTaskManager.class),
 			mock(PanelTaskManager.class),
