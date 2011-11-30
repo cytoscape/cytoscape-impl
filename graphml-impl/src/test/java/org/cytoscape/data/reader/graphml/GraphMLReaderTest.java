@@ -15,7 +15,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskMonitor;
@@ -30,7 +30,7 @@ public class GraphMLReaderTest {
 	private NetworkTestSupport testSupport;
 	private NetworkViewTestSupport nvts;
 	private CyNetworkFactory netFactory;
-	private CyRootNetworkFactory rootFactory;
+	private CyRootNetworkManager rootFactory;
 	private CyNetworkViewFactory viewFactory;
 	
 	@Mock

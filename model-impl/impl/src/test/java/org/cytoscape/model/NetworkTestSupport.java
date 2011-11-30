@@ -24,7 +24,7 @@ public class NetworkTestSupport {
 	protected CyEventHelper eventHelper;
 	protected CyTableManagerImpl tableMgr;
 	protected CyNetworkTableManagerImpl networkTableMgr;
-	protected CyRootNetworkManager rootNetworkFactory;
+	protected CyRootNetworkManager rootNetworkManager;
 
 	public NetworkTestSupport() {
 		eventHelper = new DummyCyEventHelper();
@@ -33,7 +33,7 @@ public class NetworkTestSupport {
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
 		networkFactory = new CyNetworkFactoryImpl(eventHelper, tableMgr, networkTableMgr, tableFactory, serviceRegistrar);
-		rootNetworkFactory = new CyRootNetworkManagerImpl();
+		rootNetworkManager = new CyRootNetworkManagerImpl();
 	}
 
 	public CyNetwork getNetwork() {
@@ -45,7 +45,7 @@ public class NetworkTestSupport {
 	}
 
 	public CyRootNetworkManager getRootNetworkFactory() {
-		return rootNetworkFactory;
+		return rootNetworkManager;
 	}
 }
 

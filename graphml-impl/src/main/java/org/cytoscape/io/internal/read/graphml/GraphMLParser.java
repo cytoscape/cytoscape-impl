@@ -21,7 +21,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskMonitor;
@@ -51,7 +51,7 @@ public class GraphMLParser extends DefaultHandler {
 	private String currentObjectTarget = null;
 
 	private final CyNetworkFactory networkFactory;
-	private final CyRootNetworkFactory rootNetworkFactory;
+	private final CyRootNetworkManager rootNetworkManager;
 
 	private boolean directed = true;
 
@@ -72,9 +72,9 @@ public class GraphMLParser extends DefaultHandler {
 	 * result, a minimum number of local data structures
 	 */
 	GraphMLParser(final TaskMonitor tm, final CyNetworkFactory networkFactory,
-			final CyRootNetworkFactory rootNetworkFactory) {
+			final CyRootNetworkManager rootNetworkManager) {
 		this.networkFactory = networkFactory;
-		this.rootNetworkFactory = rootNetworkFactory;
+		this.rootNetworkManager = rootNetworkManager;
 
 		networkStack = new Stack<CyNetwork>();
 		cyNetworks = new ArrayList<CyNetwork>();
@@ -145,7 +145,7 @@ public class GraphMLParser extends DefaultHandler {
 			currentNetwork = networkFactory.getInstance();
 		} else {
 			final CyNetwork parentNetwork = networkStack.peek();
-			currentNetwork = rootNetworkFactory.convert(parentNetwork).addSubNetwork();
+			currentNetwork = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
 			if(lastTag != null && lastTag.equals(NODE.getTag())) {
 				Collection<CyNode> toBeRemoved = new ArrayList<CyNode>();
 				toBeRemoved.add(lastNode);

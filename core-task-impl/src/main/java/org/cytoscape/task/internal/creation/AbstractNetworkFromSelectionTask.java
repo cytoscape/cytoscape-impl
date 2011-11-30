@@ -57,7 +57,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	private final UndoSupport undoSupport;
-	protected final CyRootNetworkManager rootNetworkFactory;
+	protected final CyRootNetworkManager rootNetworkManager;
 	protected final CyNetworkViewFactory viewFactory;
 	protected final VisualMappingManager vmm;
 	protected final CyNetworkNaming cyNetworkNaming;
@@ -66,7 +66,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
-	                                        final CyRootNetworkManager rootNetworkFactory,
+	                                        final CyRootNetworkManager rootNetworkManager,
 	                                        final CyNetworkViewFactory viewFactory,
 	                                        final CyNetworkManager netmgr,
 	                                        final CyNetworkViewManager networkViewManager,
@@ -78,7 +78,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		super(parentNetwork, netmgr, networkViewManager);
 
 		this.undoSupport        = undoSupport;
-		this.rootNetworkFactory = rootNetworkFactory;
+		this.rootNetworkManager = rootNetworkManager;
 		this.viewFactory        = viewFactory;
 		this.cyNetworkNaming    = cyNetworkNaming;
 		this.vmm                = vmm;
@@ -106,7 +106,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			throw new IllegalArgumentException("No nodes are selected!");
 
 		// create subnetwork and add selected nodes and appropriate edges
-		final CySubNetwork newNet = rootNetworkFactory.getRootNetwork(parentNetwork).addSubNetwork();
+		final CySubNetwork newNet = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
 		tm.setProgress(0.3);
 
 		for (final CyNode node : selectedNodes)

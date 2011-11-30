@@ -39,7 +39,7 @@ public class DingRenderingEngineFactory implements
 
 	private final RenderingEngineManager renderingEngineManager;
 	private final CyTableFactory dataTableFactory;
-	private final CyRootNetworkManager rootNetworkFactory;
+	private final CyRootNetworkManager rootNetworkManager;
 	private final SpacialIndex2DFactory spacialFactory;
 	private final UndoSupport undo;
 	private final VisualLexicon dingLexicon;
@@ -55,7 +55,7 @@ public class DingRenderingEngineFactory implements
 	
 	
 	public DingRenderingEngineFactory(CyTableFactory dataTableFactory,
-			CyRootNetworkManager rootNetworkFactory, UndoSupport undo,
+			CyRootNetworkManager rootNetworkManager, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
 			DialogTaskManager dialogTaskManager, 
 			SubmenuTaskManager menuTaskManager, 
@@ -67,7 +67,7 @@ public class DingRenderingEngineFactory implements
 			AnnotationFactoryManager annMgr) {
 		
 		this.dataTableFactory = dataTableFactory;
-		this.rootNetworkFactory = rootNetworkFactory;
+		this.rootNetworkManager = rootNetworkManager;
 		this.spacialFactory = spacialFactory;
 		this.undo = undo;
 		this.dingLexicon = dingLexicon;
@@ -117,7 +117,7 @@ public class DingRenderingEngineFactory implements
 			}
 			else
 				dgv = new DGraphView(targetView, dataTableFactory,
-					rootNetworkFactory, undo, spacialFactory, dingLexicon,
+					rootNetworkManager, undo, spacialFactory, dingLexicon,
 					vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs,
 					vtfListener.dropEmptySpaceTFs, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
 

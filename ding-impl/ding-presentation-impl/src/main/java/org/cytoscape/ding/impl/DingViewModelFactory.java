@@ -25,7 +25,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private static final Logger logger = LoggerFactory.getLogger(DingViewModelFactory.class);
 
 	private final CyTableFactory dataTableFactory;
-	private final CyRootNetworkManager rootNetworkFactory;
+	private final CyRootNetworkManager rootNetworkManager;
 	private final SpacialIndex2DFactory spacialFactory;
 	private final UndoSupport undo;
 	private final VisualLexicon dingLexicon;
@@ -38,7 +38,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private ViewTaskFactoryListener vtfListener;
 	private final AnnotationFactoryManager annMgr;
 
-	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkFactory,
+	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkManager,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
 			DialogTaskManager dialogTaskManager, SubmenuTaskManager menuTaskManager,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
@@ -46,7 +46,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			AnnotationFactoryManager annMgr) {
 
 		this.dataTableFactory = dataTableFactory;
-		this.rootNetworkFactory = rootNetworkFactory;
+		this.rootNetworkManager = rootNetworkManager;
 		this.spacialFactory = spacialFactory;
 		this.undo = undo;
 		this.dingLexicon = dingLexicon;
@@ -70,7 +70,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		if (network == null)
 			throw new IllegalArgumentException("Cannot create view without model.");
 
-		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkFactory, undo, spacialFactory, dingLexicon,
+		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
 				vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs, 
 				vtfListener.dropEmptySpaceTFs, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
 

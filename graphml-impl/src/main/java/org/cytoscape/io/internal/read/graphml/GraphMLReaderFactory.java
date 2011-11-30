@@ -5,7 +5,7 @@ import java.io.InputStream;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
@@ -16,7 +16,7 @@ public class GraphMLReaderFactory implements InputStreamTaskFactory {
 
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final CyNetworkFactory cyNetworkFactory;
-	private final CyRootNetworkFactory cyRootNetworkFactory;
+	private final CyRootNetworkManager cyRootNetworkFactory;
 
 	private InputStream inputStream;
 	private String inputName;
@@ -25,7 +25,7 @@ public class GraphMLReaderFactory implements InputStreamTaskFactory {
 
 	public GraphMLReaderFactory(CyFileFilter filter, final CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			final CyRootNetworkFactory cyRootNetworkFactory) {
+			final CyRootNetworkManager cyRootNetworkFactory) {
 		this.filter = filter;
 		this.cyNetworkViewFactory = cyNetworkViewFactory;
 		this.cyNetworkFactory = cyNetworkFactory;
