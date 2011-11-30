@@ -39,7 +39,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
         nodeTable.getRow(node2.getSUID()).set(attrName, "green");
         nodeTable.getRow(node3.getSUID()).set(attrName, "foo");
 
-        networkView = nvts.getNetworkViewFactory().getNetworkView(network);
+        networkView = nvts.getNetworkViewFactory().createNetworkView(network);
 		
 		// Create root node.
 		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);

@@ -51,7 +51,7 @@ final class CreateNetworkViewEdit extends AbstractCyEdit {
 		;
 
 		final CyNetworkView view =
-			viewFactory.getNetworkView(network, /* useThreshold = */ false);
+			viewFactory.createNetworkView(network, /* useThreshold = */ false);
 		networkViewManager.addNetworkView(view);
 
 		for (final View<CyNode> nodeView : view.getNodeViews())

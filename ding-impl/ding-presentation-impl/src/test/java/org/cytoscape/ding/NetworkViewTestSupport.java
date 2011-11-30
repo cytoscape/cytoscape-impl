@@ -46,7 +46,7 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 	}
 	
 	public CyNetworkView getNetworkView() {
-		return viewFactory.getNetworkView( getNetwork() );
+		return viewFactory.createNetworkView( getNetwork() );
 	}
 
 	public CyNetworkViewFactory getNetworkViewFactory() {

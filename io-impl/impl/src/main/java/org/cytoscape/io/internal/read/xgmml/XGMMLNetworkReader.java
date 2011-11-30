@@ -134,7 +134,7 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		// any existing equations should be parsed first
 		readDataMgr.parseAllEquations();
-		netView = cyNetworkViewFactory.getNetworkView(network);
+		netView = cyNetworkViewFactory.createNetworkView(network);
 
 		if (netView != null) {
 			// Network Title

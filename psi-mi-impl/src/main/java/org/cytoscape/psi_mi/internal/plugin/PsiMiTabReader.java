@@ -77,7 +77,7 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 
-		final CyNetworkView view = cyNetworkViewFactory.getNetworkView(network);
+		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
 		
 		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
 		if(prop != null) 

@@ -71,7 +71,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
-		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.getNetworkView(arg0);
+		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.createNetworkView(arg0);
 		return view;
 	}
 

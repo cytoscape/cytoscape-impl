@@ -96,7 +96,7 @@ public class GraphMLReader extends AbstractTask implements CyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		final CyNetworkView view = cyNetworkViewFactory.getNetworkView(network);
+		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
 
 		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 		layout.setNetworkView(view);

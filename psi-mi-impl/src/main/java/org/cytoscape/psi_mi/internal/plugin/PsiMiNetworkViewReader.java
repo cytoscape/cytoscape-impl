@@ -97,7 +97,7 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		
-		final CyNetworkView networkView = networkViewFactory.getNetworkView(network);
+		final CyNetworkView networkView = networkViewFactory.createNetworkView(network);
 		
 		CyLayoutAlgorithm taskFactory = layouts.getDefaultLayout();
 		taskFactory.setNetworkView(networkView);

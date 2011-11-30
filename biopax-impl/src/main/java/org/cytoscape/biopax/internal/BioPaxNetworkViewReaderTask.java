@@ -145,7 +145,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		CyNetworkView view = viewFactory.getNetworkView(network);
+		CyNetworkView view = viewFactory.createNetworkView(network);
 		networkListener.registerNetwork(view);
 		
 		//  Set-up the BioPax Visual Style

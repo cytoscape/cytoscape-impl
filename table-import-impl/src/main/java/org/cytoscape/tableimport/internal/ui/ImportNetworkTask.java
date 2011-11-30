@@ -99,7 +99,7 @@ public class ImportNetworkTask extends AbstractTask { //implements CyNetworkView
 			return;
 		}
 
-		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.getNetworkView(network);
+		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.createNetworkView(network);
 
 		CytoscapeServices.cyNetworkManager.addNetwork(network);
 		CytoscapeServices.cyNetworkViewManager.addNetworkView(view);

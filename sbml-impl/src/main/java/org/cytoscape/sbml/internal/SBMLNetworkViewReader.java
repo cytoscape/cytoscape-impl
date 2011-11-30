@@ -207,6 +207,6 @@ public class SBMLNetworkViewReader extends AbstractTask implements CyNetworkRead
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		return viewFactory.getNetworkView(network);
+		return viewFactory.createNetworkView(network);
 	}
 }

@@ -326,7 +326,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
-		final CyNetworkView view = cyNetworkViewFactory.getNetworkView(ontologyDAG);
+		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(ontologyDAG);
 		return view;
 	}
 

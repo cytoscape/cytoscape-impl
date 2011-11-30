@@ -201,7 +201,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		view = cyNetworkViewFactory.getNetworkView(network);
+		view = cyNetworkViewFactory.createNetworkView(network);
 
 		releaseStructures();
 		layout(view);

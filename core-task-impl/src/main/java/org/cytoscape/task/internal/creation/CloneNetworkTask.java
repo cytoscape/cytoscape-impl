@@ -165,7 +165,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	 * 
 	 */
 	private void copyView(final CyNetwork newNet, final CyNetworkView origView) {
-		final CyNetworkView newView = netViewFactory.getNetworkView(newNet);
+		final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
 
 		// Copy node locations since this is controlled outside of visual style.
 		for (final View<CyNode> origNodeView : origView.getNodeViews()) {

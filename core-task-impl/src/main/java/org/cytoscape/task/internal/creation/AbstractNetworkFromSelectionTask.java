@@ -137,7 +137,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.7);
 
 		// create new view
-		final CyNetworkView newView = viewFactory.getNetworkView(newNet);
+		final CyNetworkView newView = viewFactory.createNetworkView(newNet);
 
 		networkViewManager.addNetworkView(newView);
 		tm.setProgress(0.8);
