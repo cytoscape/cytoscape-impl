@@ -22,14 +22,14 @@ public final class FileHandlerFactory implements GUITunableHandlerFactory {
 		this.fileTypesManager = fileTypesManager;
 	}
 
-	public GUITunableHandler getHandler(Field field, Object instance, Tunable tunable) {
+	public GUITunableHandler createTunableHandler(Field field, Object instance, Tunable tunable) {
 		if (!File.class.isAssignableFrom(field.getType()))
 			return null;
 
 		return new FileHandler(field, instance, tunable, fileTypesManager, fileUtil);
 	}
 
-	public GUITunableHandler getHandler(Method getter, Method setter, Object instance, Tunable tunable) {
+	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if (!File.class.isAssignableFrom(getter.getReturnType()))
 			return null;
 

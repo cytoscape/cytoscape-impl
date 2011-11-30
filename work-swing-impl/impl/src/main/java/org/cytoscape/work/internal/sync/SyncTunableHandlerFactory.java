@@ -12,11 +12,11 @@ import org.cytoscape.work.TunableHandlerFactory;
 
 public class SyncTunableHandlerFactory implements TunableHandlerFactory<SyncTunableHandler> {
 
-	public SyncTunableHandler getHandler(final Field field, final Object instance, final Tunable tunable) {
+	public SyncTunableHandler createTunableHandler(final Field field, final Object instance, final Tunable tunable) {
 		return new SyncTunableHandler(field,instance,tunable);
 	}
 
-	public SyncTunableHandler getHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable) {
+	public SyncTunableHandler createTunableHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable) {
 		return new SyncTunableHandler(getter,setter,instance,tunable);
 	}
 }

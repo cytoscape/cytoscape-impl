@@ -21,7 +21,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class CommandTunableHandlerFactory implements TunableHandlerFactory<StringTunableHandler> {
 
 
-	public StringTunableHandler getHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable) {
+	public StringTunableHandler createTunableHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable) {
 		final Class<?> type = getter.getReturnType();
 
 		if (type == Boolean.class || type == boolean.class)
@@ -58,7 +58,7 @@ public class CommandTunableHandlerFactory implements TunableHandlerFactory<Strin
 		return null;
 	}
 
-	public StringTunableHandler getHandler(final Field field, final Object instance, final Tunable tunable) {
+	public StringTunableHandler createTunableHandler(final Field field, final Object instance, final Tunable tunable) {
 		final Class<?> type = field.getType();
 
 		if (type == Boolean.class || type == boolean.class)

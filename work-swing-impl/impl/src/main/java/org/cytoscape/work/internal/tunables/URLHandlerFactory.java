@@ -22,14 +22,14 @@ public class URLHandlerFactory implements GUITunableHandlerFactory {
 		
 	}
 
-	public GUITunableHandler getHandler(Field field, Object instance, Tunable tunable) {
+	public GUITunableHandler createTunableHandler(Field field, Object instance, Tunable tunable) {
 		if ( field.getType() != URL.class)
 			return null;
 		
 		return new URLHandler(field, instance, tunable, bookmarks, bookmarksUtil);
 	}
 
-	public GUITunableHandler getHandler(Method getter, Method setter, Object instance, Tunable tunable) {
+	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if ( getter.getReturnType() != URL.class)
 			return null;
 		
