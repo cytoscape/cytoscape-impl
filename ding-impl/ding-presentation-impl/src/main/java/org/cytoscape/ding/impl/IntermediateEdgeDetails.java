@@ -24,7 +24,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
 package org.cytoscape.ding.impl;
 
@@ -35,10 +35,12 @@ import java.awt.Stroke;
 
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 
-
+/**
+ * Defines default values for each edge visual properties.
+ * 
+ */
 class IntermediateEdgeDetails extends EdgeDetails {
-	// Note: It is extremely important that the methds sourceArrow(int) and
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -47,115 +49,52 @@ class IntermediateEdgeDetails extends EdgeDetails {
 		return DEdgeView.DEFAULT_EDGE_PAINT;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public float sourceArrowSize(int edge) {
 		return DEdgeView.DEFAULT_ARROW_SIZE;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint sourceArrowPaint(int edge) {
 		return DEdgeView.DEFAULT_ARROW_PAINT;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public float targetArrowSize(int edge) {
 		return DEdgeView.DEFAULT_ARROW_SIZE;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint targetArrowPaint(int edge) {
 		return DEdgeView.DEFAULT_ARROW_PAINT;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public float segmentThickness(int edge) {
 		return DEdgeView.DEFAULT_EDGE_THICKNESS;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Stroke segmentStroke(int edge) {
 		return DEdgeView.DEFAULT_EDGE_STROKE;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint segmentPaint(int edge) {
 		return DEdgeView.DEFAULT_EDGE_PAINT;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public String labelText(int edge, int labelInx) {
 		return DEdgeView.DEFAULT_LABEL_TEXT;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Font labelFont(int edge, int labelInx) {
 		return DEdgeView.DEFAULT_LABEL_FONT;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edge DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint labelPaint(int edge, int labelInx) {
 		return DEdgeView.DEFAULT_LABEL_PAINT;
 	}
