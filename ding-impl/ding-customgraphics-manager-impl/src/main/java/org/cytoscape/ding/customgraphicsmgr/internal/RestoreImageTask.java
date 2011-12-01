@@ -22,12 +22,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.impl.customgraphics.AbstractDCustomGraphics;
-import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.ding.impl.customgraphics.vector.GradientOvalLayer;
-import org.cytoscape.ding.impl.customgraphics.vector.GradientRoundRectangleLayer;
+import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
+import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;

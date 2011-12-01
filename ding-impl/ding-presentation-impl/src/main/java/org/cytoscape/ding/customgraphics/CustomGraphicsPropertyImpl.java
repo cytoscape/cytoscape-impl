@@ -1,6 +1,6 @@
 package org.cytoscape.ding.customgraphics;
 
-import org.cytoscape.ding.impl.customgraphics.vector.CustomGraphicsProperty;
+import org.cytoscape.ding.customgraphics.vector.CustomGraphicsProperty;
 
 
 public class CustomGraphicsPropertyImpl<T> implements

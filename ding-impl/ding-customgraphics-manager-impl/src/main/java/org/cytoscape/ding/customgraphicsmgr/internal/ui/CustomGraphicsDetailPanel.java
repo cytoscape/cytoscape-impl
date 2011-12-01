@@ -12,7 +12,7 @@ import javax.swing.event.ListSelectionListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.jdesktop.swingx.JXImageView;
 
 /**

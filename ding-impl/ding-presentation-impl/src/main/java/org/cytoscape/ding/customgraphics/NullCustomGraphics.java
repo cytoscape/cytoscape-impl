@@ -6,8 +6,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.cytoscape.ding.impl.customgraphics.AbstractDCustomGraphics;
-import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 
 /**
  * Null object for Custom Graphics. This is used to reset custom graphics on

@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics.vector;
+package org.cytoscape.ding.customgraphics.vector;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -10,8 +10,8 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsPropertyImpl;
-import org.cytoscape.ding.impl.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.graph.render.stateful.PaintFactory;
 
 /**

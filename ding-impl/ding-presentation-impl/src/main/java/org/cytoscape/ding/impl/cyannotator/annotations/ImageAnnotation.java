@@ -15,7 +15,7 @@ import java.net.URL;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.ImageUtil;
-import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;

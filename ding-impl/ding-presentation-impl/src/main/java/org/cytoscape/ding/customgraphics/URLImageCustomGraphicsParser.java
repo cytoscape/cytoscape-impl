@@ -1,6 +1,6 @@
 package org.cytoscape.ding.customgraphics;
 
-import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 
 /**
  * Create instance of URLImageCustomGraphics object from String.

@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics.vector;
+package org.cytoscape.ding.customgraphics.vector;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

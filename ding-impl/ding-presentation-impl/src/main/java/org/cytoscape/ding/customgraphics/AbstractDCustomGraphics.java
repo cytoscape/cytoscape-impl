@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics;
+package org.cytoscape.ding.customgraphics;
 
 import java.awt.Image;
 import java.util.ArrayList;
@@ -7,11 +7,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
-import org.cytoscape.ding.customgraphics.CyCustomGraphicsParser;
-import org.cytoscape.ding.customgraphics.IDGenerator;
-import org.cytoscape.ding.customgraphics.Layer;
-import org.cytoscape.ding.customgraphics.Taggable;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 
 public abstract class AbstractDCustomGraphics implements

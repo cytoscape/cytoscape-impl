@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics.bitmap;
+package org.cytoscape.ding.customgraphics.bitmap;
 
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
@@ -9,9 +9,9 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
-import org.cytoscape.ding.impl.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.DLayer;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.PaintFactory;
