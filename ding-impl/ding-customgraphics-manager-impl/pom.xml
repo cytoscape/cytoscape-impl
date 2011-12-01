@@ -9,7 +9,7 @@
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.ding-customgraphics-manager-impl</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.ding.customgraphics</bundle.namespace>
+		<bundle.namespace>org.cytoscape.ding.customgraphicsmgr.internal</bundle.namespace>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>

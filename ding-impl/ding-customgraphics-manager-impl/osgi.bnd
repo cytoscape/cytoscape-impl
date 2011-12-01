@@ -2,5 +2,5 @@
 # Use this file to add customized Bnd instructions for the bundle
 #-----------------------------------------------------------------
 
-Bundle-Activator: org.cytoscape.ding.impl.customgraphics.CyActivator
+Bundle-Activator: ${bundle.namespace}.CyActivator
 Import-Package: *, org.cytoscape.work.swing

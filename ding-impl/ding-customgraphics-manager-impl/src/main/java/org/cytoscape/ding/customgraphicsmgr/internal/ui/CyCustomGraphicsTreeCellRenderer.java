@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics.ui;
+package org.cytoscape.ding.customgraphicsmgr.internal.ui;
 
 import java.awt.Component;
 

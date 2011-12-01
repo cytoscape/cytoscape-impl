@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics;
+package org.cytoscape.ding.customgraphicsmgr.internal;
 
 import java.io.File;
 

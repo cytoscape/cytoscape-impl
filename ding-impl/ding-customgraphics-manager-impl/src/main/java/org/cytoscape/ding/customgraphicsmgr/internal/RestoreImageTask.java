@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics;
+package org.cytoscape.ding.customgraphicsmgr.internal;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -24,6 +24,7 @@ import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.Taggable;
+import org.cytoscape.ding.impl.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.impl.customgraphics.vector.GradientRoundRectangleLayer;

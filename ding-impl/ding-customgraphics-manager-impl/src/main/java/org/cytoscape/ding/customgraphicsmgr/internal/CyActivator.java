@@ -2,15 +2,15 @@
 
 
 
-package org.cytoscape.ding.impl.customgraphics;
+package org.cytoscape.ding.customgraphicsmgr.internal;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyApplicationConfiguration;
 
-import org.cytoscape.ding.impl.customgraphics.CustomGraphicsManagerImpl;
-import org.cytoscape.ding.impl.customgraphics.action.CustomGraphicsManagerAction;
+import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
+import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
 
 import org.cytoscape.application.swing.CyAction;
 

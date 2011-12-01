@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics.action;
+package org.cytoscape.ding.customgraphicsmgr.internal.action;
 
 
 import java.awt.event.ActionEvent;
@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.customgraphics.ui.CustomGraphicsManagerDialog;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
 
 
 public class CustomGraphicsManagerAction extends AbstractCyAction {
