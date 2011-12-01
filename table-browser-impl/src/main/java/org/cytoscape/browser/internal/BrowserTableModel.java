@@ -14,7 +14,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
-import org.cytoscape.browser.util.TableBrowserUtil;
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;

@@ -51,7 +51,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.browser.util.TableBrowserUtil;
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;

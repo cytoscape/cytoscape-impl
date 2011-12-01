@@ -1,4 +1,4 @@
-package org.cytoscape.browser.util;
+package org.cytoscape.browser.internal.util;
 
 import java.io.IOException;
 import java.io.StringReader;
