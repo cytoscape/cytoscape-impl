@@ -83,7 +83,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	//
 	private final CyApplicationManager cyApplicationManager;
 	private final CyEventHelper cyEventHelper;
-	private final CyLayoutAlgorithmManager cyLayouts;
+	private final CyLayoutAlgorithmManager cyLayoutAlgorithmManager;
 	private final CyNetworkFactory cyNetworkFactory;
 	private final CyNetworkManager cyNetworkManager;
 	private final CyNetworkViewFactory cyNetworkViewFactory;
@@ -163,7 +163,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	//
 	CyPluginAdapterImpl( final CyApplicationManager cyApplicationManager,
 	                     final CyEventHelper cyEventHelper,
-	                     final CyLayoutAlgorithmManager cyLayouts,
+	                     final CyLayoutAlgorithmManager cyLayoutAlgorithmManager,
 	                     final CyNetworkFactory cyNetworkFactory,
 	                     final CyNetworkManager cyNetworkManager,
 	                     final CyNetworkViewFactory cyNetworkViewFactory,
@@ -200,7 +200,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	{
 		this.cyApplicationManager = cyApplicationManager;
 		this.cyEventHelper = cyEventHelper;
-		this.cyLayouts = cyLayouts;
+		this.cyLayoutAlgorithmManager = cyLayoutAlgorithmManager;
 		this.cyNetworkFactory = cyNetworkFactory;
 		this.cyNetworkManager = cyNetworkManager;
 		this.cyNetworkViewFactory = cyNetworkViewFactory;
@@ -240,7 +240,7 @@ public class CyPluginAdapterImpl implements CyPluginAdapter {
 	// 
 	public CyApplicationManager getCyApplicationManager() { return cyApplicationManager; }
 	public CyEventHelper getCyEventHelper() { return cyEventHelper; } 
-	public CyLayoutAlgorithmManager getCyLayouts() { return cyLayouts; } 
+	public CyLayoutAlgorithmManager getCyLayoutAlgorithmManager() { return cyLayoutAlgorithmManager; } 
 	public CyNetworkFactory getCyNetworkFactory() { return cyNetworkFactory; }
 	public CyNetworkManager getCyNetworkManager() { return cyNetworkManager; } 
 	public CyNetworkViewFactory getCyNetworkViewFactory() { return cyNetworkViewFactory; }
