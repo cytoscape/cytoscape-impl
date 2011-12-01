@@ -7,7 +7,7 @@
 	</parent>
 	<properties>
 		<bundle.symbolicName>org.cytoscape.sbml-impl</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.sbml</bundle.namespace>
+		<bundle.namespace>org.cytoscape.sbml.internal</bundle.namespace>
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
@@ -169,7 +169,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<_include>-osgi.bnd</_include>
+						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 					</instructions>
 				</configuration>
 			</plugin>

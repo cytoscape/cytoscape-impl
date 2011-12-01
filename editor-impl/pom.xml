@@ -9,7 +9,7 @@
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.editor-impl</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.editor</bundle.namespace>
+		<bundle.namespace>org.cytoscape.editor.internal</bundle.namespace>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -44,7 +44,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<_include>-osgi.bnd</_include>
+                        <Export-Package>!${bundle.namespace}.*</Export-Package>
+                        <Private-Package>${bundle.namespace}.*</Private-Package>
+                        <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -52,9 +54,7 @@
 	</build>
 
 	<repositories>
-		<!--
-			bootstrap for cytoscape , namely the parent POM snapshots
-		-->
+		<!-- bootstrap for cytoscape, namely the parent POM snapshots -->
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
@@ -66,9 +66,7 @@
 			<name>Cytoscape Snapshots</name>
 			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
 		</repository>
-		<!--
-			bootstrap for cytoscape d, namely the parent POM releases
-		-->
+		<!-- bootstrap for cytoscape, namely the parent POM releases -->
 		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>

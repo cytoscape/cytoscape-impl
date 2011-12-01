@@ -1,7 +1,0 @@
-#-----------------------------------------------------------------
-# Use this file to add customized Bnd instructions for the bundle
-#-----------------------------------------------------------------
-
-Export-Package: !org.cytoscape.math.*
-Private-Package: ${bundle.namespace},${bundle.namespace}.*,org.cytoscape.math,org.cytoscape.math.*
-Bundle-Activator: ${bundle.namespace}.CyActivator

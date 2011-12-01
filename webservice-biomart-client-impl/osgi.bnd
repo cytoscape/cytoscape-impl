@@ -1,8 +1,0 @@
-#-----------------------------------------------------------------
-# Use this file to add customized Bnd instructions for the bundle
-#-----------------------------------------------------------------
-
-Import-Package: *
-Private-Package: org.cytoscape.io.webservice.biomart, org.cytoscape.io.webservice.biomart.*
-Bundle-Activator: org.cytoscape.io.webservice.biomart.CyActivator
-

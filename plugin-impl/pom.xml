@@ -9,7 +9,7 @@
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.plugin-impl</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.plugin</bundle.namespace>
+		<bundle.namespace>org.cytoscape.plugin.internal</bundle.namespace>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -25,8 +25,6 @@
 			<resource>
 				<directory>src/main/resources</directory>
 			</resource>
-			<!-- | example additional resource entries, useful when building Eclipse 
-				RCP applications -->
 			<resource>
 				<directory>.</directory>
 				<includes>
@@ -54,7 +52,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<_include>-osgi.bnd</_include>
+						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 					</instructions>
 				</configuration>
 			</plugin>

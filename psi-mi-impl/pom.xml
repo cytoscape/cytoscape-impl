@@ -7,7 +7,7 @@
   </parent>
   <properties>
     <bundle.symbolicName>org.cytoscape.psi-mi-impl</bundle.symbolicName>
-    <bundle.namespace>org.cytoscape.psi_mi</bundle.namespace>
+    <bundle.namespace>org.cytoscape.psi_mi.internal</bundle.namespace>
   </properties>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cytoscape</groupId>
@@ -131,7 +131,7 @@
 	      <schemaIncludes>
 	        <include>MIF1.xsd</include>
 	      </schemaIncludes>
-              <generatePackage>${bundle.namespace}.internal.schema.mi1</generatePackage>
+              <generatePackage>${bundle.namespace}.schema.mi1</generatePackage>
               <verbose>true</verbose>
               <removeOldOutput>false</removeOldOutput>
               <forceRegenerate>true</forceRegenerate>
@@ -147,7 +147,7 @@
 	      <schemaIncludes>
 	        <include>MIF25.xsd</include>
 	      </schemaIncludes>
-              <generatePackage>${bundle.namespace}.internal.schema.mi25</generatePackage>
+              <generatePackage>${bundle.namespace}.schema.mi25</generatePackage>
               <verbose>true</verbose>
               <removeOldOutput>false</removeOldOutput>
               <forceRegenerate>true</forceRegenerate>
@@ -164,7 +164,10 @@
 	  <instructions>
 	    <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 	    <Bundle-Version>${project.version}</Bundle-Version>
-	    <_include>-osgi.bnd</_include>
+		<Export-Package>!${bundle.namespace}.*</Export-Package>
+		<Private-Package>${bundle.namespace}.*</Private-Package>
+		<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+		<Import-Package>com.sun.xml.internal.bind,*</Import-Package>
 	  </instructions>
 	</configuration>
       </plugin>

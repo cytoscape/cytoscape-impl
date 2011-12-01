@@ -53,7 +53,9 @@
           <instructions>
             <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <_include>-osgi.bnd</_include>
+            <Export-Package>!${bundle.namespace}.*,!org.cytoscape.math.*</Export-Package>
+            <Private-Package>${bundle.namespace}.*,org.cytoscape.math.*</Private-Package>
+            <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
           </instructions>
         </configuration>
       </plugin>

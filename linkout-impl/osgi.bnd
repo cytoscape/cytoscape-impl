@@ -1,6 +1,0 @@
-#-----------------------------------------------------------------
-# Use this file to add customized Bnd instructions for the bundle
-#-----------------------------------------------------------------
-
-Private-Package: org.cytoscape.linkout.*
-Bundle-Activator: org.cytoscape.linkout.internal.CyActivator
