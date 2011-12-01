@@ -58,7 +58,7 @@ import org.cytoscape.view.presentation.property.values.LineType;
 
 class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, Bend, EdgeAnchors {
 	
-	static final float DEFAULT_ARROW_SIZE = 5.0f;
+	static final float DEFAULT_ARROW_SIZE = 8.0f;
 	static final Paint DEFAULT_ARROW_PAINT = Color.BLACK;
 	static final float DEFAULT_EDGE_THICKNESS = 1.0f;
 	static final Stroke DEFAULT_EDGE_STROKE = new BasicStroke(); 
@@ -104,9 +104,9 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_inx = inx;
 		m_selected = false;
 		transparency = 255;
-		m_sourceUnselectedPaint = m_view.m_edgeDetails.sourceArrowPaint(m_inx);
+		m_sourceUnselectedPaint = DEFAULT_ARROW_PAINT;
 		m_sourceSelectedPaint = Color.red;
-		m_targetUnselectedPaint = m_view.m_edgeDetails.targetArrowPaint(m_inx);
+		m_targetUnselectedPaint = DEFAULT_ARROW_PAINT;
 		m_targetSelectedPaint = Color.red;
 		m_sourceEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_targetEdgeEnd = GraphGraphics.ARROW_NONE;

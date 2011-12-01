@@ -232,22 +232,23 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 		if (isSelected)
 			return selectedPaint(edge);
-		else {
+		else
 			return sourceArrowUnselectedPaint(edge);
-		}
 	}
 
-	public Paint sourceArrowUnselectedPaint(final int edge) {
+	private Paint sourceArrowUnselectedPaint(final int edge) {
 		final Paint paint = this.m_sourceArrowPaints.get(edge);
 
 		if (paint == null) {
-			return this.m_sourceArrowPaintDefault;
-		}
-
-		return paint;
+			if(m_sourceArrowPaintDefault == null)
+				return DEdgeView.DEFAULT_ARROW_PAINT;
+			else
+				return m_sourceArrowPaintDefault;
+		} else
+			return paint;
 	}
 
-	void setSourceArrowPaintDefault(Paint p) {
+	void setSourceArrowPaintDefault(final Paint p) {
 		m_sourceArrowPaintDefault = p;
 	}
 
@@ -301,27 +302,27 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 */
 	@Override
 	public Paint targetArrowPaint(final int edge) {
-
-		boolean isSelected = selected.contains(edge);
+		final boolean isSelected = selected.contains(edge);
 
 		if (isSelected)
 			return selectedPaint(edge);
-		else {
+		else
 			return targetArrowUnselectedPaint(edge);
-		}
 	}
 
-	public Paint targetArrowUnselectedPaint(final int edge) {
+	private Paint targetArrowUnselectedPaint(final int edge) {
 		final Paint paint = this.m_targetArrowPaints.get(edge);
 
 		if (paint == null) {
-			return this.m_targetArrowPaintDefault;
-		}
-
-		return paint;
+			if(m_targetArrowPaintDefault == null)
+				return DEdgeView.DEFAULT_ARROW_PAINT;
+			else
+				return this.m_targetArrowPaintDefault;
+		} else
+			return paint;
 	}
 
-	void setTargetArrowPaintDefault(Paint p) {
+	void setTargetArrowPaintDefault(final Paint p) {
 		m_targetArrowPaintDefault = p;
 	}
 
@@ -336,26 +337,6 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			isCleared = false;
 		}
 	}
-
-	// //@Override
-	// public Paint targetArrowSelectedPaint(final int edge) {
-	//
-	// final Paint arrowPaint = this.m_targetArrowSelectedPaints.get(edge);
-	// if (arrowPaint == null)
-	// if ( m_targetArrowSelectedPaintDefault == null ){
-	// return super.targetArrowPaint(edge);
-	// }
-	// else
-	// return m_targetArrowSelectedPaintDefault;
-	//
-	//
-	// return arrowPaint;
-	// }
-	//
-	//
-	// void setTargetArrowSelectedPaintDefault(Paint p) {
-	// m_targetArrowSelectedPaintDefault = p;
-	// }
 
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
