@@ -28,8 +28,8 @@ import org.cytoscape.work.TaskManager;
 
 public class CreateNewNetworkPanel extends JPanel {
 	
-	private static final String ICON_OPEN = "images/open.png";
-	private static final String ICON_DATABASE = "images/database.png";
+	private static final String ICON_OPEN = "images/icons/net_file_import_small.png";
+	private static final String ICON_DATABASE = "images/icons/net_db_import_small.png";
 	
 	private JLabel loadNetwork;
 	private JLabel fromDB;

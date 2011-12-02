@@ -243,7 +243,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkFileTaskFactoryProps.setProperty("commandNamespace","network");
 		loadNetworkFileTaskFactoryProps.setProperty("command","load");
 		loadNetworkFileTaskFactoryProps.setProperty("menuGravity","1.0");
-		loadNetworkFileTaskFactoryProps.setProperty("iconName","/images/placehold/netfileimport.png");
+		loadNetworkFileTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_file_import.png").toString());
 		loadNetworkFileTaskFactoryProps.setProperty("inToolBar","true");
 		loadNetworkFileTaskFactoryProps.setProperty("tooltip","Import Network From File");
 		registerService(bc,loadNetworkFileTaskFactory,TaskFactory.class, loadNetworkFileTaskFactoryProps);
@@ -253,7 +253,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty("accelerator","cmd shift l");
 		loadNetworkURLTaskFactoryProps.setProperty("menuGravity","2.0");
 		loadNetworkURLTaskFactoryProps.setProperty("title","URL...");
-		loadNetworkURLTaskFactoryProps.setProperty("iconName","/images/placehold/netdbimport.png");
+		loadNetworkURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_db_import.png").toString());
 		loadNetworkURLTaskFactoryProps.setProperty("inToolBar","true");
 		loadNetworkURLTaskFactoryProps.setProperty("tooltip","Import Network From Public Database");
 		registerService(bc,loadNetworkURLTaskFactory,TaskFactory.class, loadNetworkURLTaskFactoryProps);
@@ -269,7 +269,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsFileTaskFactoryProps.setProperty("preferredMenu","File.Import.Table");
 		loadAttrsFileTaskFactoryProps.setProperty("menuGravity","1.1");
 		loadAttrsFileTaskFactoryProps.setProperty("title","File...");
-		loadAttrsFileTaskFactoryProps.setProperty("iconName","/images/placehold/tablefileimport.png");
+		loadAttrsFileTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_file_import.png").toString());
 		loadAttrsFileTaskFactoryProps.setProperty("inToolBar","true");
 		loadAttrsFileTaskFactoryProps.setProperty("tooltip","Import Table From File");
 		registerService(bc,loadAttrsFileTaskFactory,TaskFactory.class, loadAttrsFileTaskFactoryProps);
@@ -278,7 +278,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsURLTaskFactoryProps.setProperty("preferredMenu","File.Import.Table");
 		loadAttrsURLTaskFactoryProps.setProperty("menuGravity","1.2");
 		loadAttrsURLTaskFactoryProps.setProperty("title","URL...");
-		loadAttrsURLTaskFactoryProps.setProperty("iconName","/images/placehold/tabledbimport.png");
+		loadAttrsURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_db_import.png").toString());
 		loadAttrsURLTaskFactoryProps.setProperty("inToolBar","true");
 		loadAttrsURLTaskFactoryProps.setProperty("tooltip","Import Table From Public Database");
 		registerService(bc,loadAttrsURLTaskFactory,TaskFactory.class, loadAttrsURLTaskFactoryProps);
@@ -348,7 +348,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryProps.setProperty("menuGravity","6.0");
 		selectFirstNeighborsTaskFactoryProps.setProperty("accelerator","cmd 6");
 		selectFirstNeighborsTaskFactoryProps.setProperty("title","Undirected");
-		selectFirstNeighborsTaskFactoryProps.setProperty("iconName","/images/placehold/selectfirstneighb.png");
+		selectFirstNeighborsTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/select_firstneighbors.png").toString());
 		selectFirstNeighborsTaskFactoryProps.setProperty("inToolBar","true");
 		selectFirstNeighborsTaskFactoryProps.setProperty("tooltip","First Neighbors of Selected Nodes (Undirected)");
 		registerService(bc,selectFirstNeighborsTaskFactory,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
@@ -357,7 +357,6 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("preferredMenu","Select.Nodes.First Neighbors of Selected Nodes");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("menuGravity","6.1");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("title","Directed: Incoming");
-		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("iconName","/images/placehold/selectfirstneighb.png");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty("tooltip","First Neighbors of Selected Nodes (Directed: Incoming)");
 		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
 		Properties selectFirstNeighborsTaskFactoryOutEdgeProps = new Properties();
@@ -365,7 +364,6 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("preferredMenu","Select.Nodes.First Neighbors of Selected Nodes");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("menuGravity","6.2");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("title","Directed: Outgoing");
-		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("iconName","/images/placehold/selectfirstneighb.png");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty("tooltip","First Neighbors of Selected Nodes (Directed: Outgoing)");
 		registerService(bc,selectFirstNeighborsTaskFactoryOutEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryOutEdgeProps);
 		
@@ -408,7 +406,7 @@ public class CyActivator extends AbstractCyActivator {
 		invertSelectedNodesTaskFactoryProps.setProperty("menuGravity","1.0");
 		invertSelectedNodesTaskFactoryProps.setProperty("accelerator","cmd i");
 		invertSelectedNodesTaskFactoryProps.setProperty("title","Invert node selection");
-		invertSelectedNodesTaskFactoryProps.setProperty("iconName","/images/placehold/invertnodeselect.png");
+		invertSelectedNodesTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/invert_selection.png").toString());
 		invertSelectedNodesTaskFactoryProps.setProperty("inToolBar","true");
 		invertSelectedNodesTaskFactoryProps.setProperty("tooltip","Invert Node Selection");
 		registerService(bc,invertSelectedNodesTaskFactory,NetworkTaskFactory.class, invertSelectedNodesTaskFactoryProps);
@@ -430,7 +428,7 @@ public class CyActivator extends AbstractCyActivator {
 		hideSelectedTaskFactoryProps.setProperty("preferredMenu","Select");
 		hideSelectedTaskFactoryProps.setProperty("menuGravity","3.1");
 		hideSelectedTaskFactoryProps.setProperty("title","Hide selected nodes and edges");
-		hideSelectedTaskFactoryProps.setProperty("iconName","/images/placehold/hideselect.png");
+		hideSelectedTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/hide_selected.png").toString());
 		hideSelectedTaskFactoryProps.setProperty("inToolBar","true");
 		hideSelectedTaskFactoryProps.setProperty("tooltip","Hide Selected Nodes and Edges");
 		registerService(bc,hideSelectedTaskFactory,NetworkViewTaskFactory.class, hideSelectedTaskFactoryProps);
@@ -454,7 +452,7 @@ public class CyActivator extends AbstractCyActivator {
 		unHideAllTaskFactoryProps.setProperty("preferredMenu","Select");
 		unHideAllTaskFactoryProps.setProperty("menuGravity","3.0");
 		unHideAllTaskFactoryProps.setProperty("title","Show all nodes and edges");
-		unHideAllTaskFactoryProps.setProperty("iconName","/images/placehold/unhideall.png");
+		unHideAllTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/unhide_all.png").toString());
 		unHideAllTaskFactoryProps.setProperty("inToolBar","true");
 		unHideAllTaskFactoryProps.setProperty("tooltip","Show All Nodes and Edges");
 		registerService(bc,unHideAllTaskFactory,NetworkViewTaskFactory.class, unHideAllTaskFactoryProps);
@@ -490,7 +488,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties newNetworkSelectedNodesOnlyTaskFactoryProps = new Properties();
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("preferredMenu","File.New.Network");
-		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("iconName","/images/new-network-from-selected-nodes-32.png");
+		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/new_fromselected.png").toString());
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("accelerator","cmd n");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("enableFor","selectedNodesOrEdges");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("title","From selected nodes, all edges");
@@ -526,7 +524,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties zoomInTaskFactoryProps = new Properties();
 		zoomInTaskFactoryProps.setProperty("accelerator","cmd equals");
-		zoomInTaskFactoryProps.setProperty("iconName","/images/ximian/stock_zoom-in.png");
+		zoomInTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/stock_zoom-in.png").toString());
 		zoomInTaskFactoryProps.setProperty("enableFor","networkAndView");
 		zoomInTaskFactoryProps.setProperty("title","Zoom In");
 		zoomInTaskFactoryProps.setProperty("tooltip","Zoom In");
@@ -536,7 +534,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties zoomOutTaskFactoryProps = new Properties();
 		zoomOutTaskFactoryProps.setProperty("accelerator","cmd minus");
-		zoomOutTaskFactoryProps.setProperty("iconName","/images/ximian/stock_zoom-out.png");
+		zoomOutTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/stock_zoom-out.png").toString());
 		zoomOutTaskFactoryProps.setProperty("enableFor","networkAndView");
 		zoomOutTaskFactoryProps.setProperty("title","Zoom Out");
 		zoomOutTaskFactoryProps.setProperty("tooltip","Zoom Out");
@@ -546,7 +544,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties fitSelectedTaskFactoryProps = new Properties();
 		fitSelectedTaskFactoryProps.setProperty("accelerator","cmd shift f");
-		fitSelectedTaskFactoryProps.setProperty("iconName","/images/ximian/stock_zoom-object.png");
+		fitSelectedTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/stock_zoom-object.png").toString());
 		fitSelectedTaskFactoryProps.setProperty("enableFor","networkAndView");
 		fitSelectedTaskFactoryProps.setProperty("title","Fit Selected");
 		fitSelectedTaskFactoryProps.setProperty("tooltip","Zoom selected region");
@@ -556,7 +554,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties fitContentTaskFactoryProps = new Properties();
 		fitContentTaskFactoryProps.setProperty("accelerator","cmd f");
-		fitContentTaskFactoryProps.setProperty("iconName","/images/ximian/stock_zoom-1.png");
+		fitContentTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/stock_zoom-1.png").toString());
 		fitContentTaskFactoryProps.setProperty("enableFor","networkAndView");
 		fitContentTaskFactoryProps.setProperty("title","Fit Content");
 		fitContentTaskFactoryProps.setProperty("tooltip","Zoom out to display all of current Network");
@@ -582,7 +580,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
 		exportNetworkImageTaskFactoryProps.setProperty("preferredMenu","File.Export.Network View");
-		exportNetworkImageTaskFactoryProps.setProperty("iconName","/images/ximian/tango-32-camera-photo.png");
+		exportNetworkImageTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/img_file_export.png").toString());
 		exportNetworkImageTaskFactoryProps.setProperty("enableFor","networkAndView");
 		exportNetworkImageTaskFactoryProps.setProperty("title","Graphics");
 		exportNetworkImageTaskFactoryProps.setProperty("toolBarGravity","5.0");
@@ -594,7 +592,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkViewTaskFactoryProps.setProperty("preferredMenu","File.Export.Network View");
 		exportNetworkViewTaskFactoryProps.setProperty("menuGravity","5.1");
 		exportNetworkViewTaskFactoryProps.setProperty("title","File");
-		exportNetworkViewTaskFactoryProps.setProperty("iconName","/images/placehold/netfileexport.png");
+		exportNetworkViewTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_file_export.png").toString());
 		exportNetworkViewTaskFactoryProps.setProperty("inToolBar","true");
 		exportNetworkViewTaskFactoryProps.setProperty("tooltip","Export Network to File");
 		registerService(bc,exportNetworkViewTaskFactory,NetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
@@ -618,7 +616,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportCurrentTableTaskFactoryProps.setProperty("preferredMenu","File.Export.Table");
 		exportCurrentTableTaskFactoryProps.setProperty("menuGravity","1.2");
 		exportCurrentTableTaskFactoryProps.setProperty("title","File...");
-		exportCurrentTableTaskFactoryProps.setProperty("iconName","/images/placehold/tablefileexport.png");
+		exportCurrentTableTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_file_export.png").toString());
 		exportCurrentTableTaskFactoryProps.setProperty("inToolBar","true");
 		exportCurrentTableTaskFactoryProps.setProperty("tooltip","Export Table to File");
 		registerService(bc,exportCurrentTableTaskFactory,TableTaskFactory.class, exportCurrentTableTaskFactoryProps);
@@ -639,7 +637,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties openSessionTaskFactoryProps = new Properties();
 		openSessionTaskFactoryProps.setProperty("preferredMenu","File");
 		openSessionTaskFactoryProps.setProperty("accelerator","cmd o");
-		openSessionTaskFactoryProps.setProperty("iconName","/images/ximian/stock_open.png");
+		openSessionTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/open_session.png").toString());
 		openSessionTaskFactoryProps.setProperty("title","Open");
 		openSessionTaskFactoryProps.setProperty("toolBarGravity","1.0");
 		openSessionTaskFactoryProps.setProperty("inToolBar","true");
@@ -649,7 +647,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties saveSessionTaskFactoryProps = new Properties();
 		saveSessionTaskFactoryProps.setProperty("preferredMenu","File");
 		saveSessionTaskFactoryProps.setProperty("accelerator","cmd s");
-		saveSessionTaskFactoryProps.setProperty("iconName","/images/ximian/stock_save.png");
+		saveSessionTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/stock_save.png").toString());
 		saveSessionTaskFactoryProps.setProperty("title","Save");
 		saveSessionTaskFactoryProps.setProperty("toolBarGravity","1.1");
 		saveSessionTaskFactoryProps.setProperty("inToolBar","true");
@@ -666,7 +664,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties applyPreferredLayoutTaskFactoryProps = new Properties();
 		applyPreferredLayoutTaskFactoryProps.setProperty("preferredMenu","Layout");
 		applyPreferredLayoutTaskFactoryProps.setProperty("accelerator","fn5");
-		applyPreferredLayoutTaskFactoryProps.setProperty("iconName","/images/apply-force-directed-layout-32.png");
+		applyPreferredLayoutTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/apply_layout.png").toString());
 		applyPreferredLayoutTaskFactoryProps.setProperty("enableFor","networkAndView");
 		applyPreferredLayoutTaskFactoryProps.setProperty("title","Apply Preferred Layout");
 		applyPreferredLayoutTaskFactoryProps.setProperty("toolBarGravity","9.0");

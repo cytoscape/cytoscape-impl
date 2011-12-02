@@ -26,7 +26,7 @@ import org.cytoscape.work.TaskManager;
 public class OpenPanel extends JPanel {
 	
 	private static final Font FILE_NAME_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
-	private static final String ICON_LOCATION = "images/open.png";
+	private static final String ICON_LOCATION = "images/icons/open_session.png";
 	private BufferedImage openIconImg;
 	private ImageIcon openIcon;
 	
