@@ -255,7 +255,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty("title","URL...");
 		loadNetworkURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_db_import.png").toString());
 		loadNetworkURLTaskFactoryProps.setProperty("inToolBar","true");
-		loadNetworkURLTaskFactoryProps.setProperty("tooltip","Import Network From Public Database");
+		loadNetworkURLTaskFactoryProps.setProperty("tooltip","Import Network From URL");
 		registerService(bc,loadNetworkURLTaskFactory,TaskFactory.class, loadNetworkURLTaskFactoryProps);
 
 		Properties loadVizmapFileTaskFactoryProps = new Properties();
@@ -495,6 +495,7 @@ public class CyActivator extends AbstractCyActivator {
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("toolBarGravity","9.1");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("inToolBar","true");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("menuGravity","1.0");
+		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty("tooltip","New Network From Selection");
 		registerService(bc,newNetworkSelectedNodesOnlyTaskFactory,NetworkTaskFactory.class, newNetworkSelectedNodesOnlyTaskFactoryProps);
 
 		Properties cloneNetworkTaskFactoryProps = new Properties();
@@ -585,6 +586,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkImageTaskFactoryProps.setProperty("title","Graphics");
 		exportNetworkImageTaskFactoryProps.setProperty("toolBarGravity","5.0");
 		exportNetworkImageTaskFactoryProps.setProperty("inToolBar","true");
+		exportNetworkImageTaskFactoryProps.setProperty("tooltip","Export Network Image to File");
 		registerService(bc,exportNetworkImageTaskFactory,NetworkViewTaskFactory.class, exportNetworkImageTaskFactoryProps);
 
 		Properties exportNetworkViewTaskFactoryProps = new Properties();
@@ -642,6 +644,7 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty("toolBarGravity","1.0");
 		openSessionTaskFactoryProps.setProperty("inToolBar","true");
 		openSessionTaskFactoryProps.setProperty("menuGravity","1.0");
+		openSessionTaskFactoryProps.setProperty("tooltip","Open Session");
 		registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
 
 		Properties saveSessionTaskFactoryProps = new Properties();
@@ -652,6 +655,7 @@ public class CyActivator extends AbstractCyActivator {
 		saveSessionTaskFactoryProps.setProperty("toolBarGravity","1.1");
 		saveSessionTaskFactoryProps.setProperty("inToolBar","true");
 		saveSessionTaskFactoryProps.setProperty("menuGravity","3.0");
+		saveSessionTaskFactoryProps.setProperty("tooltip","Save Session");
 		registerService(bc,saveSessionTaskFactory,TaskFactory.class, saveSessionTaskFactoryProps);
 
 		Properties saveSessionAsTaskFactoryProps = new Properties();
@@ -670,6 +674,7 @@ public class CyActivator extends AbstractCyActivator {
 		applyPreferredLayoutTaskFactoryProps.setProperty("toolBarGravity","9.0");
 		applyPreferredLayoutTaskFactoryProps.setProperty("inToolBar","true");
 		applyPreferredLayoutTaskFactoryProps.setProperty("menuGravity","5.0");
+		applyPreferredLayoutTaskFactoryProps.setProperty("tooltip","Apply Preferred Layout");
 		registerService(bc,applyPreferredLayoutTaskFactory,NetworkViewTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
 
 		Properties deleteColumnTaskFactoryProps = new Properties();
