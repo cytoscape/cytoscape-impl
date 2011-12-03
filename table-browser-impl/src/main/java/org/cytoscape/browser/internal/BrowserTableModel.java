@@ -361,7 +361,14 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		final int rowCount = table.getRowCount();
 		for(int i=0; i<rowCount; i++) {
 			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) table.getValueAt(i, tablePKeyIndex);
-			if(suidMap.keySet().contains(Long.parseLong(tableKey.getEditString()))) {
+			Long pk = null;
+			try{
+				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
+				pk = Long.parseLong(tableKey.getEditString());
+			} catch (NumberFormatException nfe) {
+				System.out.println("Error parsing long from table " + table.getName() + ": " + nfe.getMessage());
+			}
+			if(pk != null && suidMap.keySet().contains(pk)) {
 				table.addRowSelectionInterval(i, i);
 				table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
 			}
