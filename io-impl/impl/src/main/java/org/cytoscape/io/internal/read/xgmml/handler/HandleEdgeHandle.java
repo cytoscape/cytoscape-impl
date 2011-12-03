@@ -29,7 +29,7 @@ public class HandleEdgeHandle extends AbstractHandler {
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
 
-		if (manager.documentVersion == 1.0) {
+		if (manager.getDocumentVersion() == 1.0) {
 			// This is the outer "handle" attribute
 			if (!attributeValueUtil.getAttribute(atts, "name").equals("handle")) {
 				// OK, this is one of our "data" attributes

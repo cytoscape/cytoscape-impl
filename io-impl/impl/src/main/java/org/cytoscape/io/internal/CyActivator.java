@@ -1,119 +1,114 @@
 
 package org.cytoscape.io.internal;
 
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.application.CyApplicationManager;
+import java.util.Properties;
+
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.property.CyProperty;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.io.BasicCyFileFilter;
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.internal.read.CyNetworkReaderManagerImpl;
+import org.cytoscape.io.internal.read.CyPropertyReaderManagerImpl;
+import org.cytoscape.io.internal.read.CySessionReaderManagerImpl;
+import org.cytoscape.io.internal.read.CyTableReaderManagerImpl;
+import org.cytoscape.io.internal.read.VizmapReaderManagerImpl;
+import org.cytoscape.io.internal.read.bookmarks.BookmarkFileFilter;
+import org.cytoscape.io.internal.read.bookmarks.BookmarkReaderFactory;
+import org.cytoscape.io.internal.read.cysession.CysessionFileFilter;
+import org.cytoscape.io.internal.read.cysession.CysessionReaderFactory;
+import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
+import org.cytoscape.io.internal.read.datatable.CyAttributesReaderFactory;
+import org.cytoscape.io.internal.read.expression.ExpressionReaderFactory;
+import org.cytoscape.io.internal.read.gml.GMLFileFilter;
+import org.cytoscape.io.internal.read.gml.GMLNetworkReaderFactory;
+import org.cytoscape.io.internal.read.properties.PropertiesFileFilter;
+import org.cytoscape.io.internal.read.properties.PropertiesReaderFactory;
+import org.cytoscape.io.internal.read.session.Cy2SessionReaderFactoryImpl;
+import org.cytoscape.io.internal.read.session.Cy3SessionReaderFactoryImpl;
+import org.cytoscape.io.internal.read.session.SessionFileFilter;
+import org.cytoscape.io.internal.read.sif.SIFNetworkReaderFactory;
+import org.cytoscape.io.internal.read.vizmap.VizmapPropertiesFileFilter;
+import org.cytoscape.io.internal.read.vizmap.VizmapPropertiesReaderFactory;
+import org.cytoscape.io.internal.read.vizmap.VizmapXMLFileFilter;
+import org.cytoscape.io.internal.read.vizmap.VizmapXMLReaderFactory;
+import org.cytoscape.io.internal.read.xgmml.HandlerFactory;
+import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
+import org.cytoscape.io.internal.read.xgmml.XGMMLFileFilter;
+import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReaderFactory;
+import org.cytoscape.io.internal.read.xgmml.XGMMLParser;
+import org.cytoscape.io.internal.read.xgmml.handler.AttributeValueUtil;
+import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
+import org.cytoscape.io.internal.util.ReadUtils;
+import org.cytoscape.io.internal.util.RecentlyOpenedTrackerImpl;
+import org.cytoscape.io.internal.util.StreamUtilImpl;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.internal.util.vizmap.CalculatorConverterFactory;
+import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
+import org.cytoscape.io.internal.write.CyNetworkViewWriterManagerImpl;
+import org.cytoscape.io.internal.write.CyTableWriterManagerImpl;
+import org.cytoscape.io.internal.write.PresentationWriterManagerImpl;
+import org.cytoscape.io.internal.write.PropertyWriterManagerImpl;
+import org.cytoscape.io.internal.write.SessionWriterManagerImpl;
+import org.cytoscape.io.internal.write.VizmapWriterManagerImpl;
+import org.cytoscape.io.internal.write.bookmarks.BookmarksWriterFactoryImpl;
+import org.cytoscape.io.internal.write.cysession.CysessionWriterFactoryImpl;
+import org.cytoscape.io.internal.write.datatable.csv.CSVTableWriterFactory;
+import org.cytoscape.io.internal.write.graphics.BitmapWriterFactory;
+import org.cytoscape.io.internal.write.graphics.PDFWriterFactory;
+import org.cytoscape.io.internal.write.graphics.PSWriterFactory;
+import org.cytoscape.io.internal.write.graphics.SVGWriterFactory;
+import org.cytoscape.io.internal.write.properties.PropertiesWriterFactoryImpl;
+import org.cytoscape.io.internal.write.session.SessionWriterFactoryImpl;
+import org.cytoscape.io.internal.write.sif.SifNetworkWriterFactory;
+import org.cytoscape.io.internal.write.vizmap.VizmapWriterFactoryImpl;
+import org.cytoscape.io.internal.write.xgmml.XGMMLNetworkViewWriterFactory;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.read.CyPropertyReaderManager;
+import org.cytoscape.io.read.CySessionReaderManager;
+import org.cytoscape.io.read.CyTableReaderManager;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.io.write.CyPropertyWriterFactory;
+import org.cytoscape.io.write.CyPropertyWriterManager;
+import org.cytoscape.io.write.CySessionWriterFactory;
+import org.cytoscape.io.write.CySessionWriterManager;
+import org.cytoscape.io.write.CyTableWriterFactory;
+import org.cytoscape.io.write.CyTableWriterManager;
+import org.cytoscape.io.write.CyWriterFactory;
+import org.cytoscape.io.write.PresentationWriterFactory;
+import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.io.write.VizmapWriterFactory;
+import org.cytoscape.io.write.VizmapWriterManager;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-
-import org.cytoscape.io.internal.read.CySessionReaderManagerImpl;
-import org.cytoscape.io.internal.write.CyTableWriterManagerImpl;
-import org.cytoscape.io.internal.write.graphics.SVGWriterFactory;
-import org.cytoscape.io.internal.write.PropertyWriterManagerImpl;
-import org.cytoscape.io.internal.write.graphics.BitmapWriterFactory;
-import org.cytoscape.io.internal.util.ReadUtils;
-import org.cytoscape.io.internal.write.graphics.PDFWriterFactory;
-import org.cytoscape.io.internal.read.cysession.CysessionFileFilter;
-import org.cytoscape.io.internal.read.CyPropertyReaderManagerImpl;
-import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
-import org.cytoscape.io.internal.write.xgmml.XGMMLNetworkViewWriterFactory;
-import org.cytoscape.io.internal.read.bookmarks.BookmarkReaderFactory;
-import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
-import org.cytoscape.io.internal.write.SessionWriterManagerImpl;
-import org.cytoscape.io.internal.write.sif.SifNetworkWriterFactory;
-import org.cytoscape.io.internal.read.bookmarks.BookmarkFileFilter;
-import org.cytoscape.io.internal.read.xgmml.XGMMLParser;
-import org.cytoscape.io.internal.write.vizmap.VizmapWriterFactoryImpl;
-import org.cytoscape.io.internal.read.cysession.CysessionReaderFactory;
-import org.cytoscape.io.internal.read.xgmml.XGMMLFileFilter;
-import org.cytoscape.io.internal.read.gml.GMLFileFilter;
-import org.cytoscape.io.internal.read.sif.SIFNetworkReaderFactory;
-import org.cytoscape.io.internal.write.session.SessionWriterFactoryImpl;
-import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReaderFactory;
-import org.cytoscape.io.internal.read.vizmap.VizmapPropertiesFileFilter;
-import org.cytoscape.io.BasicCyFileFilter;
-import org.cytoscape.io.internal.read.properties.PropertiesFileFilter;
-import org.cytoscape.io.internal.util.StreamUtilImpl;
-import org.cytoscape.io.internal.write.CyNetworkViewWriterManagerImpl;
-import org.cytoscape.io.internal.read.CyNetworkReaderManagerImpl;
-import org.cytoscape.io.internal.write.bookmarks.BookmarksWriterFactoryImpl;
-import org.cytoscape.io.internal.write.datatable.csv.CSVTableWriterFactory;
-import org.cytoscape.io.internal.read.expression.ExpressionReaderFactory;
-import org.cytoscape.io.internal.read.gml.GMLNetworkReaderFactory;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.internal.util.vizmap.CalculatorConverterFactory;
-import org.cytoscape.io.internal.read.vizmap.VizmapXMLReaderFactory;
-import org.cytoscape.io.internal.read.VizmapReaderManagerImpl;
-import org.cytoscape.io.internal.write.PresentationWriterManagerImpl;
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.internal.read.vizmap.VizmapPropertiesReaderFactory;
-import org.cytoscape.io.internal.read.properties.PropertiesReaderFactory;
-import org.cytoscape.io.internal.write.cysession.CysessionWriterFactoryImpl;
-import org.cytoscape.io.internal.write.properties.PropertiesWriterFactoryImpl;
-import org.cytoscape.io.internal.read.xgmml.HandlerFactory;
-import org.cytoscape.io.internal.read.session.SessionReaderFactoryImpl;
-import org.cytoscape.io.internal.util.RecentlyOpenedTrackerImpl;
-import org.cytoscape.io.internal.read.xgmml.handler.AttributeValueUtil;
-import org.cytoscape.io.internal.read.vizmap.VizmapXMLFileFilter;
-import org.cytoscape.io.internal.read.datatable.CyAttributesReaderFactory;
-import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
-import org.cytoscape.io.internal.read.CyTableReaderManagerImpl;
-import org.cytoscape.io.internal.write.VizmapWriterManagerImpl;
-import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
-import org.cytoscape.io.internal.write.graphics.PSWriterFactory;
-
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.io.read.CySessionReaderManager;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.io.read.CyPropertyReaderManager;
-import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.io.write.CyPropertyWriterManager;
-import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.read.VizmapReaderManager;
-import org.cytoscape.io.write.PresentationWriterManager;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.io.write.VizmapWriterManager;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.io.read.CyTableReaderManager;
-
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.io.write.CyTableWriterFactory;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.io.write.PresentationWriterFactory;
-import org.cytoscape.io.write.CyPropertyWriterFactory;
-import org.cytoscape.io.write.CyNetworkViewWriterFactory;
-import org.cytoscape.io.write.VizmapWriterFactory;
-import org.cytoscape.io.write.CySessionWriterFactory;
-import org.cytoscape.io.write.CyWriterFactory;
-
 import org.osgi.framework.BundleContext;
-
-import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
 
 
 
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
-
 
 	public void start(BundleContext bc) {
 
@@ -140,7 +135,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		StreamUtilImpl streamUtil = new StreamUtilImpl();
 		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix (.pvals) File", DataCategory.TABLE, streamUtil);
-		BasicCyFileFilter cysFilter = new BasicCyFileFilter(new String[]{"cys"}, new String[]{"application/zip"}, "Cytoscape Session (.cys) File",DataCategory.SESSION, streamUtil);
+		
+		// Always register CYS filters from higher to lower version!
+		BasicCyFileFilter cys3Filter = new SessionFileFilter(new String[]{"cys"}, new String[]{"application/zip"}, "Cytoscape 3 Session (.cys) File", DataCategory.SESSION, "3.0.0", streamUtil);
+		BasicCyFileFilter cys2Filter = new SessionFileFilter(new String[]{"cys"}, new String[]{"application/zip"}, "Cytoscape 2 Session (.cys) File", DataCategory.SESSION, "2.0.0", streamUtil);
+		
 		BasicCyFileFilter pngFilter = new BasicCyFileFilter(new String[]{"png"}, new String[]{"image/png"}, "Portable Network Graphics (PNG) File",DataCategory.IMAGE, streamUtil);
 		BasicCyFileFilter jpegFilter = new BasicCyFileFilter(new String[]{"jpg","jpeg"}, new String[]{"image/jpeg"}, "JPEG Image File",DataCategory.IMAGE, streamUtil);
 		BasicCyFileFilter pdfFilter = new BasicCyFileFilter(new String[]{"pdf"}, new String[]{"image/pdf"}, "PDF File",DataCategory.IMAGE, streamUtil);
@@ -178,14 +177,15 @@ public class CyActivator extends AbstractCyActivator {
 		SIFNetworkReaderFactory sifNetworkViewReaderFactory = new SIFNetworkReaderFactory(sifFilter,cyLayoutsServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyEventHelperRef);
 		UnrecognizedVisualPropertyManager unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(cyTableFactoryServiceRef,cyTableManagerServiceRef);
 		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);
-		ReadDataManager readDataManager = new ReadDataManager(equationCompilerServiceRef);
+		ReadDataManager readDataManager = new ReadDataManager(equationCompilerServiceRef,cyTableManagerServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkFactoryServiceRef);
 		ObjectTypeMap objectTypeMap = new ObjectTypeMap();
 		AttributeValueUtil attributeValueUtil = new AttributeValueUtil(objectTypeMap,readDataManager);
 		HandlerFactory handlerFactory = new HandlerFactory(readDataManager,attributeValueUtil);
 		XGMMLParser xgmmlParser = new XGMMLParser(handlerFactory,readDataManager);
-		XGMMLNetworkReaderFactory xgmmlNetworkViewReaderFactory = new XGMMLNetworkReaderFactory(xgmmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
+		XGMMLNetworkReaderFactory xgmmlNetworkViewReaderFactory = new XGMMLNetworkReaderFactory(xgmmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
 		CSVCyReaderFactory sessionTableReaderFactory = new CSVCyReaderFactory(sessionTableFilter,true,true,cyTableFactoryServiceRef,compilerServiceRef,cyTableManagerServiceRef);
-		SessionReaderFactoryImpl sessionReaderFactory = new SessionReaderFactoryImpl(cysFilter,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,sessionTableReaderFactory,cyTableManagerServiceRef, cyNetworkTableManagerServiceRef);
+		Cy3SessionReaderFactoryImpl cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,sessionTableReaderFactory,cyTableManagerServiceRef,cyTableFactoryServiceRef,cyNetworkTableManagerServiceRef);
+		Cy2SessionReaderFactoryImpl cy2SessionReaderFactory = new Cy2SessionReaderFactoryImpl(cys2Filter,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,cyTableManagerServiceRef,cyTableFactoryServiceRef,cyRootNetworkFactoryServiceRef);
 		CysessionReaderFactory cysessionReaderFactory = new CysessionReaderFactory(cysessionFilter);
 		BookmarkReaderFactory bookmarkReaderFactory = new BookmarkReaderFactory(bookmarksFilter);
 		PropertiesReaderFactory propertiesReaderFactory = new PropertiesReaderFactory(propertiesFilter);
@@ -198,14 +198,14 @@ public class CyActivator extends AbstractCyActivator {
 		PSWriterFactory psWriterFactory = new PSWriterFactory(psFilter);
 		SVGWriterFactory svgWriterFactory = new SVGWriterFactory(svgFilter);
 		SifNetworkWriterFactory sifNetworkViewWriterFactory = new SifNetworkWriterFactory(sifFilter);
-		XGMMLNetworkViewWriterFactory xgmmlNetworkViewWriterFactory = new XGMMLNetworkViewWriterFactory(xgmmlFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);
+		XGMMLNetworkViewWriterFactory xgmmlNetworkViewWriterFactory = new XGMMLNetworkViewWriterFactory(xgmmlFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager,cyNetworkManagerServiceRef,cyRootNetworkFactoryServiceRef);
 		CysessionWriterFactoryImpl cysessionWriterFactory = new CysessionWriterFactoryImpl(cysessionFilter);
 		BookmarksWriterFactoryImpl bookmarksWriterFactory = new BookmarksWriterFactoryImpl(bookmarksFilter);
 		PropertiesWriterFactoryImpl propertiesWriterFactory = new PropertiesWriterFactoryImpl(propertiesFilter);
 		CSVTableWriterFactory csvTableWriterFactory = new CSVTableWriterFactory(csvFilter,false,false);
 		CSVTableWriterFactory sessionTableWriterFactory = new CSVTableWriterFactory(sessionTableFilter,true,true);
 		VizmapWriterFactoryImpl vizmapWriterFactory = new VizmapWriterFactoryImpl(vizmapXMLFilter,visualStyleSerializer);
-		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cysFilter,xgmmlFilter,bookmarksFilter,cysessionFilter,propertiesFilter,sessionTableFilter,vizmapXMLFilter,networkViewWriterManager,propertyWriterManager,tableWriterManager,vizmapWriterManager);
+		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter,xgmmlFilter,bookmarksFilter,cysessionFilter,propertiesFilter,sessionTableFilter,vizmapXMLFilter,networkViewWriterManager,cyRootNetworkFactoryServiceRef,propertyWriterManager,tableWriterManager,vizmapWriterManager);
 		RecentlyOpenedTrackerImpl recentlyOpenedTracker = new RecentlyOpenedTrackerImpl("tracker.recent.sessions",cyApplicationConfigurationServiceRef);
 		
 		registerService(bc,cyNetworkReaderManager,CyNetworkReaderManager.class, new Properties());
@@ -225,7 +225,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc,attrsDataReaderFactory,InputStreamTaskFactory.class, new Properties());
 		registerService(bc,gmlNetworkViewReaderFactory,InputStreamTaskFactory.class, new Properties());
-		registerService(bc,sessionReaderFactory,InputStreamTaskFactory.class, new Properties());
+		registerService(bc,cy3SessionReaderFactory,InputStreamTaskFactory.class, new Properties());
+		registerService(bc,cy2SessionReaderFactory,InputStreamTaskFactory.class, new Properties());
 		registerService(bc,cysessionReaderFactory,InputStreamTaskFactory.class, new Properties());
 		registerService(bc,bookmarkReaderFactory,InputStreamTaskFactory.class, new Properties());
 		registerService(bc,propertiesReaderFactory,InputStreamTaskFactory.class, new Properties());

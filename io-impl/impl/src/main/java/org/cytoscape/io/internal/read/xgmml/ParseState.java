@@ -3,25 +3,26 @@ package org.cytoscape.io.internal.read.xgmml;
 public enum ParseState {
     NONE("none"),
     RDF("RDF"),
-    NETATT("Network Attribute"),
-    NODEATT("Node Attribute"),
-    EDGEATT("Edge Attribute"),
+    NET_ATT("Network Attribute"),
+    NODE_ATT("Node Attribute"),
+    EDGE_ATT("Edge Attribute"),
 
     // Types of attributes that require special handling
-    LISTATT("List Attribute"),
-    LISTELEMENT("List Element"),
-    NODEGRAPHICS("Node Graphics"),
-    EDGEGRAPHICS("Edge Graphics"),
+    LIST_ATT("List Attribute"),
+    LIST_ELEMENT("List Element"),
+    NET_GRAPHICS("Network Graphics"),
+    NODE_GRAPHICS("Node Graphics"),
+    EDGE_GRAPHICS("Edge Graphics"),
+    LOCKED_VISUAL_PROP_ATT("Bypass Attribute"),
 
     // Handle edge handles
-    EDGEBEND("Edge Bend"),
-    EDGEHANDLE("Edge Handle"),
-    EDGEHANDLEATT("Edge Handle Attribute"),
+    EDGE_BEND("Edge Bend"),
+    EDGE_HANDLE("Edge Handle"),
+    EDGE_HANDLE_ATT("Edge Handle Attribute"),
     NODE("Node Element"),
     EDGE("Edge Element"),
-    GROUP("Group"),
     GRAPH("Graph Element"),
-    RDFDESC("RDF Description"),
+    RDF_DESC("RDF Description"),
     ANY("any");
 
     private String name;

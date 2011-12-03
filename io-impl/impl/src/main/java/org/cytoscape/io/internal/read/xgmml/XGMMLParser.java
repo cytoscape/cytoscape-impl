@@ -69,11 +69,19 @@ public class XGMMLParser extends DefaultHandler {
 		stateStack = new Stack<ParseState>();
 	}
 
-
 	/********************************************************************
 	 * Handler routines. The following routines are called directly from the SAX
 	 * parser.
 	 *******************************************************************/
+
+	/**
+	 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
+	 */
+	@Override
+	public void startDocument() throws SAXException {
+		handlerFactory.init();
+		super.startDocument();
+	}
 
 	/**
 	 * startElement is called whenever the SAX parser sees a start tag. We use
@@ -88,12 +96,9 @@ public class XGMMLParser extends DefaultHandler {
 	 * @param atts
 	 *            the Attributes list from the tag
 	 */
-	public void startElement(String namespace, String localName, String qName,
-			Attributes atts) throws SAXException {
-
-		final ParseState nextState = handleStartState(parseState, localName,
-				atts);
-
+	@Override
+	public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
+		final ParseState nextState = handleStartState(parseState, localName, atts);
 		stateStack.push(parseState);
 		parseState = nextState;
 	}
@@ -109,11 +114,9 @@ public class XGMMLParser extends DefaultHandler {
 	 * @param qName
 	 *            the tag with the namespace prefix
 	 */
-	public void endElement(String uri, String localName, String qName)
-			throws SAXException {
-
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
 		handleEndState(parseState, localName, null);
-
 		parseState = stateStack.pop();
 	}
 
@@ -127,6 +130,7 @@ public class XGMMLParser extends DefaultHandler {
 	 * @param length
 	 *            the number of bytes for this tag
 	 */
+	@Override
 	public void characters(char[] ch, int start, int length) {
 		currentCData = new String(ch, start, length);
 	}
@@ -137,9 +141,9 @@ public class XGMMLParser extends DefaultHandler {
 	 * @param e
 	 *            the exception that generated the error
 	 */
+	@Override
 	public void fatalError(SAXParseException e) throws SAXException {
-		String err = "Fatal parsing error on line " + e.getLineNumber()
-				+ " -- '" + e.getMessage() + "'";
+		String err = "Fatal parsing error on line " + e.getLineNumber() + " -- '" + e.getMessage() + "'";
 		throw new SAXException(err);
 	}
 
@@ -149,6 +153,7 @@ public class XGMMLParser extends DefaultHandler {
 	 * @param e
 	 *            the exception that generated the error
 	 */
+	@Override
 	public void error(SAXParseException e) {
 
 	}
@@ -159,6 +164,7 @@ public class XGMMLParser extends DefaultHandler {
 	 * @param locator
 	 *            the document locator to set
 	 */
+	@Override
 	public void setDocumentLocator(Locator locator) {
 		this.locator = locator;
 	}
@@ -184,21 +190,16 @@ public class XGMMLParser extends DefaultHandler {
 	 *            to the handler
 	 * @return the new state
 	 */
-	private ParseState handleStartState(ParseState currentState, String tag,
-			Attributes atts) throws SAXException {
-		return handleState(currentState, tag, atts, handlerFactory
-				.getStartHandler(currentState, tag));
+	private ParseState handleStartState(ParseState currentState, String tag, Attributes atts) throws SAXException {
+		return handleState(currentState, tag, atts, handlerFactory.getStartHandler(currentState, tag));
 	}
 
-	private ParseState handleEndState(ParseState currentState, String tag,
-			Attributes atts) throws SAXException {
-		return handleState(currentState, tag, atts, handlerFactory
-				.getEndHandler(currentState, tag));
+	private ParseState handleEndState(ParseState currentState, String tag, Attributes atts) throws SAXException {
+		return handleState(currentState, tag, atts, handlerFactory.getEndHandler(currentState, tag));
 	}
 
-	private ParseState handleState(ParseState currentState, String tag,
-			Attributes atts, SAXState state) throws SAXException {
-
+	private ParseState handleState(ParseState currentState, String tag, Attributes atts, SAXState state)
+			throws SAXException {
 		if (state != null) {
 			final Handler handler = state.getHandler();
 
@@ -209,6 +210,5 @@ public class XGMMLParser extends DefaultHandler {
 		} else {
 			return currentState;
 		}
-
 	}
 }

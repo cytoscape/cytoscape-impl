@@ -30,57 +30,59 @@ package org.cytoscape.io.internal.read.session;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.read.VizmapReaderManager;
-import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskIterator;
 
-public class SessionReaderFactoryImpl implements InputStreamTaskFactory {
+public class Cy2SessionReaderFactoryImpl implements InputStreamTaskFactory {
 
 	private final CyFileFilter filter;
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
-	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyTableManager tableManager;
-	private final CyNetworkTableManager networkTableManager;
+	private final CyTableFactory tableFactory;
+	private final CyRootNetworkManager rootNetworkManager;
 
 	private InputStream inputStream;
 	private String inputName;
 
-	public SessionReaderFactoryImpl(final CyFileFilter filter,
-									final CyNetworkReaderManager networkReaderMgr,
-									final CyPropertyReaderManager propertyReaderMgr,
-									final VizmapReaderManager vizmapReaderMgr,
-									final CSVCyReaderFactory csvCyReaderFactory,
-									final CyTableManager tableManager,
-									final CyNetworkTableManager networkTableManager) {
+	public Cy2SessionReaderFactoryImpl(final CyFileFilter filter,
+									   final CyNetworkReaderManager networkReaderMgr,
+									   final CyPropertyReaderManager propertyReaderMgr,
+									   final VizmapReaderManager vizmapReaderMgr,
+									   final CyTableManager tableManager,
+									   final CyTableFactory tableFactory,
+									   final CyRootNetworkManager rootNetworkManager) {
 		this.filter = filter;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
 		this.vizmapReaderMgr = vizmapReaderMgr;
-		this.csvCyReaderFactory = csvCyReaderFactory;
 		this.tableManager = tableManager;
-		this.networkTableManager = networkTableManager;
+		this.tableFactory = tableFactory;
+		this.rootNetworkManager = rootNetworkManager;
 	}
 
+	@Override
 	public void setInputStream(InputStream is, String in) {
 		if (is == null) throw new NullPointerException("Input stream is null");
 		inputStream = is;
 		inputName = in;
 	}
 
+	@Override
 	public CyFileFilter getCyFileFilter() {
 		return filter;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SessionReaderImpl(inputStream, networkReaderMgr, propertyReaderMgr,
-													  vizmapReaderMgr, csvCyReaderFactory, tableManager,
-													  networkTableManager));
+		return new TaskIterator(new Cy2SessionReaderImpl(inputStream, networkReaderMgr, propertyReaderMgr,
+				vizmapReaderMgr, tableManager, tableFactory, rootNetworkManager));
 	}
 }

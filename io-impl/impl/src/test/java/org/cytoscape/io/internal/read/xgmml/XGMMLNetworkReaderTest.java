@@ -1,12 +1,16 @@
 package org.cytoscape.io.internal.read.xgmml;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.internal.read.AbstractNetworkViewReaderTester;
 import org.cytoscape.io.internal.read.xgmml.handler.AttributeValueUtil;
@@ -18,7 +22,9 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -31,6 +37,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 
 	CyNetworkViewFactory networkViewFactory;
 	CyNetworkFactory networkFactory;
+	CyRootNetworkManager rootNetworkManager;
 	CyTableFactory tableFactory;
 	RenderingEngineManager renderingEngineMgr;
 	ReadDataManager readDataMgr;
@@ -47,22 +54,27 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 				.thenReturn(new MinimalVisualLexicon(new NullVisualProperty("MINIMAL_ROOT",
 																			"Minimal Root Visual Property")));
 
-		readDataMgr = new ReadDataManager(mock(EquationCompiler.class));
+		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
+		networkFactory = networkTestSupport.getNetworkFactory();
+		rootNetworkManager = networkTestSupport.getRootNetworkFactory();
+		
+		NetworkViewTestSupport networkViewTestSupport = new NetworkViewTestSupport();
+		networkViewFactory = networkViewTestSupport.getNetworkViewFactory();
+		
+		readDataMgr = new ReadDataManager(mock(EquationCompiler.class), mock(CyTableManager.class), networkFactory, rootNetworkManager);
 		ObjectTypeMap objectTypeMap = new ObjectTypeMap();
 		attributeValueUtil = new AttributeValueUtil(objectTypeMap, readDataMgr);
 		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr, attributeValueUtil);
+		handlerFactory.init();
 		parser = new XGMMLParser(handlerFactory, readDataMgr);
-
-		networkViewFactory = mock(CyNetworkViewFactory.class);
-		networkFactory = mock(CyNetworkFactory.class);
 		
 		TableTestSupport tblTestSupport = new TableTestSupport();
 		tableFactory = tblTestSupport.getTableFactory();
 
 		ByteArrayInputStream is = new ByteArrayInputStream("".getBytes("UTF-8")); // TODO: use XGMML string or load from file
 
-		reader = new XGMMLNetworkReader(is, networkViewFactory, networkFactory, renderingEngineMgr, readDataMgr,
-										parser, unrecognizedVisualPropertyMgr);
+		reader = new XGMMLNetworkReader(is, networkViewFactory, networkFactory, rootNetworkManager, renderingEngineMgr,
+				readDataMgr, parser, unrecognizedVisualPropertyMgr);
 
 		CyTableManager tableMgr= mock(CyTableManager.class);
 		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);
@@ -148,8 +160,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 	private CyNetworkView[] getViews(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
 		XGMMLNetworkReader snvp = new XGMMLNetworkReader(new FileInputStream(f), viewFactory, netFactory,
-														 renderingEngineMgr, readDataMgr, parser,
-														 unrecognizedVisualPropertyMgr);
+				rootNetworkManager, renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
 		snvp.run(taskMonitor);
 
 		final CyNetwork[] networks = snvp.getCyNetworks();

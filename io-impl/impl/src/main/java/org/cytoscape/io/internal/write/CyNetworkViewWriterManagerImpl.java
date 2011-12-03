@@ -9,6 +9,7 @@ import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 
 public class CyNetworkViewWriterManagerImpl extends AbstractWriterManager<CyNetworkViewWriterFactory> implements CyNetworkViewWriterManager {
@@ -18,7 +19,7 @@ public class CyNetworkViewWriterManagerImpl extends AbstractWriterManager<CyNetw
 
 	@Override
 	public CyWriter getWriter(CyNetworkView view, CyFileFilter filter, File file) throws Exception {
-		return getWriter(view,filter,new FileOutputStream(file));
+		return getWriter(view, filter, new FileOutputStream(file));
 	}
 
 	@Override
@@ -28,6 +29,22 @@ public class CyNetworkViewWriterManagerImpl extends AbstractWriterManager<CyNetw
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
 		}
 		factory.setNetworkView(view);
+		return factory.getWriterTask();
+	}
+
+	@Override
+	public CyWriter getWriter(CyNetwork network, CyFileFilter filter, File file)
+			throws Exception {
+		return getWriter(network, filter, new FileOutputStream(file));
+	}
+
+	@Override
+	public CyWriter getWriter(CyNetwork network, CyFileFilter filter, OutputStream os) throws Exception {
+		CyNetworkViewWriterFactory factory = getMatchingFactory(filter, os);
+		if (factory == null) {
+			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
+		}
+		factory.setNetwork(network);
 		return factory.getWriterTask();
 	}
 }

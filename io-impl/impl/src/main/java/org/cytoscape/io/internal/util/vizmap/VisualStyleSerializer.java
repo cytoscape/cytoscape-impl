@@ -368,7 +368,7 @@ public class VisualStyleSerializer {
 
 						vs.addVisualMappingFunction(pm);
 
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						logger.error("Cannot create PassthroughMapping (style=" + vs.getTitle() + ", property=" +
 									 vp.getIdString() + ")", e);
 					}
@@ -430,7 +430,7 @@ public class VisualStyleSerializer {
 
 						vs.addVisualMappingFunction(dm);
 
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						logger.error("Cannot create DiscreteMapping (style=" + vs.getTitle() + ", property=" +
 									 vp.getIdString() + ")", e);
 					}
@@ -458,7 +458,7 @@ public class VisualStyleSerializer {
 						}
 
 						vs.addVisualMappingFunction(cm);
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						logger.error("Cannot create ContinuousMapping (style=" + vs.getTitle() + ", property=" +
 									 vp.getIdString() + ")", e);
 					}

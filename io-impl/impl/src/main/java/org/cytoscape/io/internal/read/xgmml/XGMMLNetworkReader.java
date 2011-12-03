@@ -38,9 +38,9 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -49,18 +49,21 @@ import javax.xml.parsers.SAXParserFactory;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,26 +84,29 @@ import org.xml.sax.helpers.ParserAdapter;
 public class XGMMLNetworkReader extends AbstractNetworkReader {
 
 	protected static final String CY_NAMESPACE = "http://www.cytoscape.org";
-	public static final String ORIGINAL_ID_COLUMN = "original_id";
 
+	private final CyRootNetworkManager cyRootNetworkManager;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	private final XGMMLParser parser;
 	private final ReadDataManager readDataMgr;
 	private final VisualLexicon visualLexicon;
-	private boolean sessionFormat;
+	private boolean viewFormat;
 	private CyNetworkView netView;
+	private CyRootNetwork parent;
 
 	private static final Logger logger = LoggerFactory.getLogger(XGMMLNetworkReader.class);
 
 	public XGMMLNetworkReader(final InputStream inputStream,
 							  final CyNetworkViewFactory cyNetworkViewFactory,
 							  final CyNetworkFactory cyNetworkFactory,
+							  final CyRootNetworkManager cyRootNetworkManager,
 							  final RenderingEngineManager renderingEngineMgr,
 							  final ReadDataManager readDataMgr,
 							  final XGMMLParser parser,
 							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
 		super(inputStream, cyNetworkViewFactory, cyNetworkFactory);
 
+		this.cyRootNetworkManager = cyRootNetworkManager;
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
@@ -110,17 +116,24 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
 		tm.setProgress(0.0);
-
-		readDataMgr.initAllData();
-		readDataMgr.setSessionFormat(sessionFormat);
-		readDataMgr.setNetwork(cyNetworkFactory.createNetwork());
+		
+		readDataMgr.init();
+		readDataMgr.setSessionFormat(SessionUtil.isReadingSessionFile()); // TODO: delete this flag and create different versions of the reader.
+		readDataMgr.setViewFormat(viewFormat);
+		
+		if (!viewFormat && parent != null)
+			readDataMgr.setParentNetwork(parent);
+		
 		tm.setProgress(0.1);
+		
 		try {
 			readXGMML();
 			tm.setProgress(0.3);
-			this.cyNetworks = new CyNetwork[] { readDataMgr.getNetwork() };
-		} catch (SAXException e) {
-			throw new IOException("Could not parse XGMML file: ");
+			
+			Set<CyNetwork> netSet = readDataMgr.getNetworks();
+			this.cyNetworks = netSet.toArray(new CyNetwork[netSet.size()]);
+		} catch (Exception e) {
+			throw new IOException("Could not parse XGMML file.", e);
 		}
 
 		tm.setProgress(1.0);
@@ -137,66 +150,102 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 		netView = cyNetworkViewFactory.createNetworkView(network);
 
 		if (netView != null) {
-			// Network Title
+			// View Title:
 			// (only when directly importing an XGMML file or if as part of a 2.x CYS file;
-			//  otherwise the name is stored in a cyTable)
-			if (!sessionFormat || readDataMgr.getDocumentVersion() < 3.0) {
-				String netName = readDataMgr.getNetworkName();
+			//  otherwise the title is read from the view xgmml file)
+			if (!readDataMgr.isSessionFormat() || readDataMgr.getDocumentVersion() < 3.0) {
+				String name = network.getCyRow().get(CyNetwork.NAME, String.class);
 				
-				if (netName != null) {
-					CyRow netRow = netView.getModel().getCyRow();
-					netRow.set(CyTableEntry.NAME, netName);
-				}
+				if (name != null)
+					netView.setVisualProperty(MinimalVisualLexicon.NETWORK_TITLE, name);
 			}
 
 			// Nodes and edges
 			if (netView.getModel().getNodeCount() > 0) {
-				layoutNodes();
-				layoutEdges();
+				layoutNodeViews(netView.getModel().getNodeList());
+				layoutEdgeViews(netView.getModel().getEdgeList());
 			}
 
 			// Network visual properties
-			final Map<String, String> atts = readDataMgr.getGraphicsAttributes(network);
-			layoutGraphics(netView, atts);
-
+			Map<String, String> atts = null;
+			
+			if (viewFormat) {
+				// Direct visual properties
+				atts = readDataMgr.getViewGraphicsAttributes(readDataMgr.getNetworkId(), false);
+				layoutViewGraphics(netView, atts, false);
+				// Locked visual properties
+				atts = readDataMgr.getViewGraphicsAttributes(readDataMgr.getNetworkId(), true);
+				layoutViewGraphics(netView, atts, true);
+			} else {
+				atts = readDataMgr.getGraphicsAttributes(network);
+				layoutGraphics(netView, atts);
+			}
+			
 			netView.updateView();
 		}
 
 		return netView;
 	}
 
-	public void setSessionFormat(boolean b) {
-		this.sessionFormat = b;
+	public void setParent(CyNetwork n) {
+		if (n != null) {
+			this.parent = (n instanceof CyRootNetwork) ? (CyRootNetwork) n : cyRootNetworkManager.getRootNetwork(n);
+		} else {
+			this.parent = null;
+		}
 	}
-
-	private void layoutNodes() {
+	
+	/**
+	 * Only if reading network views from 3.0+ session formats.
+	 * @param viewFormat
+	 */
+	public void setViewFormat(boolean viewFormat) {
+		this.viewFormat = viewFormat;  // TODO: remove flag from here and add it to ReadDataManager only or a XGMMLConfig object
+	}
+	
+	private void layoutNodeViews(final List<CyNode> nodes) {
 		// Graphics (defaults & mappings)
-		final Map<CyNode, Map<String, String>> graphicsMap = readDataMgr.getNodeGraphics();
-
-		for (Entry<CyNode, Map<String, String>> entry : graphicsMap.entrySet()) {
-			CyNode node = entry.getKey();
-			Map<String, String> atts = entry.getValue();
-			View<CyNode> nv = netView.getNodeView(node);
-
-			if (nv != null) {
+		for (CyNode node : nodes) {
+			final View<CyNode> nv = netView.getNodeView(node);
+			Map<String, String> atts = null;
+			
+			if (viewFormat) {
+				// When parsing view-format XGMML, the manager does not have the network model
+				// to create a map by CyNode objects, so the graphics mapping is indexed by the old element id.
+				String oldId = readDataMgr.getOldId(node.getSUID());
+				// Direct visual properties
+				atts = readDataMgr.getViewGraphicsAttributes(oldId, false);
+				layoutViewGraphics(nv, atts, false);
+				// Locked visual properties
+				atts = readDataMgr.getViewGraphicsAttributes(oldId, true);
+				layoutViewGraphics(nv, atts, true);
+			} else {
+				atts = readDataMgr.getGraphicsAttributes(node);
 				layoutGraphics(nv, atts);
 			}
 		}
 	}
 
-	private void layoutEdges() {
-		View<CyEdge> ev = null;
-		Map<CyEdge, Map<String, String>> graphicsMap = readDataMgr.getEdgeGraphics();
-
-		for (Entry<CyEdge, Map<String, String>> entry : graphicsMap.entrySet()) {
-			CyEdge edge = entry.getKey();
-			Map<String, String> atts = entry.getValue();
-			ev = netView.getEdgeView(edge);
-
-			if ((graphicsMap != null) && (ev != null)) {
+	private void layoutEdgeViews(final List<CyEdge> edges) {
+		for (CyEdge edge : edges) {
+			final View<CyEdge> ev = netView.getEdgeView(edge);
+			Map<String, String> atts = null;
+			
+			if (viewFormat) {
+				// When parsing view-format XGMML, the manager does not have the network model
+				// to create a map by CyEdge objects, so the graphics mapping is indexed by the old element id.
+				String oldId = readDataMgr.getOldId(edge.getSUID());
+				// Direct visual properties
+				atts = readDataMgr.getViewGraphicsAttributes(oldId, false);
+				layoutViewGraphics(ev, atts, false);
+				// Locked visual properties
+				atts = readDataMgr.getViewGraphicsAttributes(oldId, true);
+				layoutViewGraphics(ev, atts, true);
+			} else {
+				atts = readDataMgr.getGraphicsAttributes(edge);
 				layoutGraphics(ev, atts);
 			}
-
+			
 			// TODO Edge bend
 //			if (readDataMgr.getAttributeNS(attr, "curved", CY_NAMESPACE) != null) {
 //				String value = readDataMgr.getAttributeNS(attr, "curved", CY_NAMESPACE);
@@ -220,17 +269,14 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void layoutGraphics(final View<? extends CyTableEntry> view, Map<String, String> atts) {
-		if (atts != null) {
+		if (view != null && atts != null) {
 			CyTableEntry model = view.getModel();
 			Class<?> type = CyNetwork.class;
 			
-			if (model instanceof CyNode) {
-				type = CyNode.class;
-			} else if (model instanceof CyEdge) {
-				type = CyEdge.class;
-			}
+			if (model instanceof CyNode)      type = CyNode.class;
+			else if (model instanceof CyEdge) type = CyEdge.class;
 
 			Set<String> attSet = atts.keySet();
 
@@ -239,14 +285,51 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 				String attValue = atts.get(attName);
 
 				if (vp != null) {
-					if (isXGMMLTransparency(attName)) {
+					if (isXGMMLTransparency(attName))
 						attValue = convertXGMMLTransparencyValue(attValue);
-					}
 
 					Object value = vp.parseSerializableString(attValue);
 
 					if (value != null) {
 						if (isLockedVisualProperty(model, attName))
+							view.setLockedValue(vp, value);
+						else
+							view.setVisualProperty(vp, value);
+					}
+				} else {
+					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, attName, attValue);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Only used by Cy3 view-format.
+	 * @param view
+	 * @param atts
+	 * @param locked true is creating vizmap bypass properties.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected void layoutViewGraphics(final View<? extends CyTableEntry> view, Map<String, String> atts, boolean locked) {
+		// TODO: refactor--see layoutGraphics()
+		if (view != null && atts != null) {
+			CyTableEntry model = view.getModel();
+			Class<?> type = CyNetwork.class;
+			
+			if (model instanceof CyNode)      type = CyNode.class;
+			else if (model instanceof CyEdge) type = CyEdge.class;
+			
+			Set<String> attSet = atts.keySet();
+			
+			for (String attName : attSet) {
+				VisualProperty vp = visualLexicon.lookup(type, attName);
+				String attValue = atts.get(attName);
+				
+				if (vp != null) {
+					Object value = vp.parseSerializableString(attValue);
+					
+					if (value != null) {
+						if (locked)
 							view.setLockedValue(vp, value);
 						else
 							view.setVisualProperty(vp, value);

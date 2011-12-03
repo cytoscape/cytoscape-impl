@@ -2,6 +2,7 @@ package org.cytoscape.io.internal.read;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,9 +18,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -77,14 +78,26 @@ public class AbstractNetworkViewReaderTester {
 	 */
 	protected void findInteraction(CyNetwork net, String source, String target, String interaction, int count) {
 		for (CyNode n : net.getNodeList()) {
-			if (n.getCyRow().get("name", String.class).equals(source)) {
+			String sname = n.getCyRow().get(CyNode.NAME, String.class);
+			assertNotNull("Source name is NULL", sname);
+			
+			if (source.equals(sname)) {
 				List<CyNode> neigh = net.getNeighborList(n, CyEdge.Type.ANY);
 				assertEquals("wrong number of neighbors", count, neigh.size());
+				
 				for (CyNode nn : neigh) {
-					if (nn.getCyRow().get("name", String.class).equals(target)) {
+					String tname = nn.getCyRow().get(CyNode.NAME, String.class);
+					assertNotNull("Target name is NULL", tname);
+					
+					if (tname.equals(target)) {
 						List<CyEdge> con = net.getConnectingEdgeList(n, nn, CyEdge.Type.ANY);
+						assertTrue("Connecting edge list is empty", con.size() > 0);
+						
 						for (CyEdge e : con) {
-							if (e.getCyRow().get("interaction", String.class).equals(interaction)) {
+							String inter = e.getCyRow().get(CyEdge.INTERACTION, String.class);
+							assertNotNull("Edge interaction is NULL", inter);
+							
+							if (inter.equals(interaction)) {
 								return;
 							}
 						}

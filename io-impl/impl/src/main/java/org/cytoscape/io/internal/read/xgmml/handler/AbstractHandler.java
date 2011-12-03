@@ -22,8 +22,7 @@ public abstract class AbstractHandler implements Handler {
 	}
 
 	@Override
-	abstract public ParseState handle(String tag, Attributes atts,
-			ParseState current) throws SAXException;
+	abstract public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException;
 
 	@Override
 	public void setManager(ReadDataManager manager) {
