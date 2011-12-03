@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -12,7 +13,7 @@ import org.cytoscape.work.TaskIterator;
 public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory, TaskFactory {
 
 	private final CyFileFilter filter;
-	private CyNetworkView view;
+	private CyNetwork network;
 	private OutputStream outputStream;
 	private final String fileName;
 
@@ -23,7 +24,7 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory, Ta
 	
 	@Override
 	public CyWriter getWriterTask() {
-		return new ExportAsBioPAXTask(fileName, outputStream, view.getModel());
+		return new ExportAsBioPAXTask(fileName, outputStream, network);
 	}
 
 	@Override
@@ -40,10 +41,15 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory, Ta
 	public CyFileFilter getCyFileFilter() {
 		return filter;
 	}
+	
+	@Override
+	public void setNetwork(CyNetwork network) {
+		this.network = network;
+	}
 
 	@Override
 	public void setNetworkView(CyNetworkView view) {
-		this.view = view;
+		this.network = view.getModel();
 	}
 
 }
