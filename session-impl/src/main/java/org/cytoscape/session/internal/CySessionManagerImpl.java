@@ -37,15 +37,17 @@ package org.cytoscape.session.internal;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -56,6 +58,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
@@ -91,6 +95,7 @@ public class CySessionManagerImpl implements CySessionManager {
 	private final CyNetworkTableManager netTblMgr;
 	private final VisualMappingManager vmMgr;
 	private final CyNetworkViewManager nvMgr;
+	private final CyRootNetworkManager rootNetMgr;
 
 	private final Map<CyProperty<?>, Map<String, String>> sessionProperties;
 
@@ -101,13 +106,15 @@ public class CySessionManagerImpl implements CySessionManager {
 								final CyTableManager tblMgr,
 								final CyNetworkTableManager netTblMgr,
 								final VisualMappingManager vmMgr,
-								final CyNetworkViewManager nvMgr) {
+								final CyNetworkViewManager nvMgr,
+								final CyRootNetworkManager rootNetMgr) {
 		this.cyEventHelper = cyEventHelper;
 		this.netMgr = netMgr;
 		this.tblMgr = tblMgr;
 		this.netTblMgr = netTblMgr;
 		this.vmMgr = vmMgr;
 		this.nvMgr = nvMgr;
+		this.rootNetMgr = rootNetMgr;
 		sessionProperties = new HashMap<CyProperty<?>, Map<String, String>>();
 	}
 
@@ -119,6 +126,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		cyEventHelper.fireEvent(savingEvent);
 
 		CysessionFactory cysessFactory = new CysessionFactory(netMgr, nvMgr, vmMgr);
+		Set<CyNetwork> networks = netMgr.getNetworkSet();
 		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
 		// Visual Styles Map
@@ -143,24 +151,48 @@ public class CySessionManagerImpl implements CySessionManager {
 		Properties props = getProperties();
 		Bookmarks bkmarks = getBookmarks();
 
-		Set<CyTableMetadata> metadata = buildMetadata(tables, netViews);
+		Set<CyTableMetadata> metadata = buildMetadata(tables, networks);
 		// Build the session
 		CySession sess = new CySession.Builder().cytoscapeProperties(props).bookmarks(bkmarks).cysession(cysess)
-				.pluginFileListMap(pluginMap).tables(metadata).networkViews(netViews).visualStyles(styles)
-				.viewVisualStyleMap(stylesMap).build();
+				.pluginFileListMap(pluginMap).tables(metadata).networks(networks).networkViews(netViews)
+				.visualStyles(styles).viewVisualStyleMap(stylesMap).build();
 
 		return sess;
 	}
 
-	private Set<CyTableMetadata> buildMetadata(Set<CyTable> tables, Set<CyNetworkView> netViews) {
+	@SuppressWarnings("unchecked")
+	private static Class<? extends CyTableEntry>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
+	
+	private Set<CyTableMetadata> buildMetadata(Set<CyTable> tables, Set<CyNetwork> networks) {
 		Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
 		
+		// Clone the networks and tables to add the root-networks without changing the original sets:
+		Set<CyNetwork> allNetworks = new HashSet<CyNetwork>(networks);
+		Set<CyTable> allTables = new HashSet<CyTable>(tables);
+		
+		// Add the root-networks, which are not included in the original networks set:
+		for (CyNetwork network : networks) {
+			if (!(network instanceof CyRootNetwork)) {
+				CyRootNetwork rootNet = rootNetMgr.getRootNetwork(network);
+				
+				if (!allNetworks.contains(rootNet)) {
+					allNetworks.add(rootNet);
+				
+					for (Class<? extends CyTableEntry> type : TYPES) {
+						Map<String, CyTable> tableMap = netTblMgr.getTables(rootNet, type);
+						allTables.addAll(tableMap.values());
+					}
+				}
+			}
+		}
+		
 		// Figure out which tables aren't associated with networks
-		Map<CyTable, Set<CyTableMetadata>> networkTables = getNetworkTables(netViews);
+		Map<CyTable, Set<CyTableMetadata>> networkTables = getNetworkTables(allNetworks);
 		
 		// Merge network/global metadata into a single set
-		for (CyTable table : tables) {
+		for (CyTable table : allTables) {
 			Set<CyTableMetadata> metadataSet = networkTables.get(table);
+			
 			if (metadataSet == null || metadataSet.size() == 0) {
 				result.add(new CyTableMetadataImpl.CyTableMetadataBuilder().setCyTable(table));
 			} else {
@@ -169,26 +201,26 @@ public class CySessionManagerImpl implements CySessionManager {
 				}
 			}
 		}
+		
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
-	private static Class<? extends CyTableEntry>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
-	
-	private Map<CyTable, Set<CyTableMetadata>> getNetworkTables(Set<CyNetworkView> views) {
+	private Map<CyTable, Set<CyTableMetadata>> getNetworkTables(final Set<CyNetwork> networks) {
 		Map<CyTable, Set<CyTableMetadata>> result = new HashMap<CyTable, Set<CyTableMetadata>>();
-		for (CyNetworkView view : views) {
-			CyNetwork network = view.getModel();
+		
+		for (CyNetwork network : networks) {
 			for (Class<? extends CyTableEntry> type : TYPES) {
 				Map<String, CyTable> tableMap = netTblMgr.getTables(network, type);
+				
 				for (Entry<String, CyTable> entry : tableMap.entrySet()) {
 					CyTable table = entry.getValue();
-					
 					Set<CyTableMetadata> metadataSet = result.get(table);
+					
 					if (metadataSet == null) {
 						metadataSet = new HashSet<CyTableMetadata>();
 						result.put(table, metadataSet);
 					}
+					
 					String namespace = entry.getKey();
 					metadataSet.add(new CyTableMetadataImpl.CyTableMetadataBuilder()
 										.setCyTable(table)
@@ -199,6 +231,7 @@ public class CySessionManagerImpl implements CySessionManager {
 				}
 			}
 		}
+		
 		return result ;
 	}
 
@@ -224,11 +257,12 @@ public class CySessionManagerImpl implements CySessionManager {
 		} else {
 			logger.debug("Restoring the session...");
 			restoreNetworks(sess);
+			restoreNetworkViews(sess);
 			restoreTables(sess);
 			restoreVisualStyles(sess);
-			restoreSelection(sess);
+//			restoreSelection(sess);
 		}
-
+		
 		currentSession = sess;
 		currentFileName = fileName;
 
@@ -239,6 +273,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		// Register global tables
 		for (CyTableMetadata metadata : sess.getTables()) {
 			CyNetwork network = metadata.getCyNetwork();
+			
 			if (network == null) {
 				tblMgr.addTable(metadata.getCyTable());
 			}
@@ -292,11 +327,22 @@ public class CySessionManagerImpl implements CySessionManager {
 
 	private void restoreNetworks(CySession sess) {
 		logger.debug("Restoring networks...");
-		Set<CyNetworkView> netViews = sess.getNetworkViews();
+		Set<CyNetwork> networks = sess.getNetworks();
 
-		for (CyNetworkView nv : netViews) {
-			netMgr.addNetwork(nv.getModel());
-			nvMgr.addNetworkView(nv);
+		for (CyNetwork n : networks) {
+			netMgr.addNetwork(n);
+		}
+	}
+	
+	private void restoreNetworkViews(CySession sess) {
+		logger.debug("Restoring network views...");
+		Set<CyNetworkView> netViews = sess.getNetworkViews();
+		
+		if (netViews != null) {
+			for (CyNetworkView nv : netViews) {
+				if (nv != null)
+					nvMgr.addNetworkView(nv);
+			}
 		}
 	}
 
@@ -369,62 +415,62 @@ public class CySessionManagerImpl implements CySessionManager {
 		}
 
 		if (version < 3.0) {
-			logger.debug("Restoring node/edge selection...");
-
-			// First create network_title -> element_name lookup maps
-			final Map<String, Set<String>> selectedNodesMap = new HashMap<String, Set<String>>();
-			final Map<String, Set<String>> selectedEdgesMap = new HashMap<String, Set<String>>();
-			final List<Network> networks = cysess.getNetworkTree().getNetwork();
-
-			for (Network net : networks) {
-				String netTitle = net.getId();
-
-				if (net.getSelectedNodes() != null) {
-					// Store selected node names for future reference
-					Set<String> selectedNodes = new HashSet<String>();
-					selectedNodesMap.put(netTitle, selectedNodes);
-
-					for (Node n : net.getSelectedNodes().getNode()) {
-						selectedNodes.add(n.getId());
-					}
-				}
-
-				if (net.getSelectedEdges() != null) {
-					// Store selected edge names for future reference
-					Set<String> selectedEdges = new HashSet<String>();
-					selectedEdgesMap.put(netTitle, selectedEdges);
-
-					for (Edge e : net.getSelectedEdges().getEdge()) {
-						selectedEdges.add(e.getId());
-					}
-				}
-			}
+//			logger.debug("Restoring node/edge selection...");
+//
+//			// First create network_title -> element_name lookup maps
+//			final Map<String, Set<String>> selectedNodesMap = new HashMap<String, Set<String>>();
+//			final Map<String, Set<String>> selectedEdgesMap = new HashMap<String, Set<String>>();
+//			final List<Network> networks = cysess.getNetworkTree().getNetwork();
+//
+//			for (Network net : networks) {
+//				String netTitle = net.getId();
+//
+//				if (net.getSelectedNodes() != null) {
+//					// Store selected node names for future reference
+//					Set<String> selectedNodes = new HashSet<String>();
+//					selectedNodesMap.put(netTitle, selectedNodes);
+//
+//					for (Node n : net.getSelectedNodes().getNode()) {
+//						selectedNodes.add(n.getId());
+//					}
+//				}
+//
+//				if (net.getSelectedEdges() != null) {
+//					// Store selected edge names for future reference
+//					Set<String> selectedEdges = new HashSet<String>();
+//					selectedEdgesMap.put(netTitle, selectedEdges);
+//
+//					for (Edge e : net.getSelectedEdges().getEdge()) {
+//						selectedEdges.add(e.getId());
+//					}
+//				}
+//			}
 
 			// Now iterate through all CyNodes/Edges and select the ones that are found in the lookup maps
-			Set<CyNetwork> cyNetworks = netMgr.getNetworkSet();
-
-			if (cyNetworks != null) {
-				for (CyNetwork cyNet : cyNetworks) {
-					String netTitle = cyNet.getCyRow().get(CyNetwork.NAME, String.class);
-
-					selectElementsByName(cyNet.getNodeList(), selectedNodesMap.get(netTitle));
-					selectElementsByName(cyNet.getEdgeList(), selectedEdgesMap.get(netTitle));
-				}
-			}
+//			Set<CyNetwork> cyNetworks = netMgr.getNetworkSet();
+//
+//			if (cyNetworks != null) {
+//				for (CyNetwork cyNet : cyNetworks) {
+//					String netTitle = cyNet.getCyRow().get(CyNetwork.NAME, String.class);
+//
+//					selectElementsByName(cyNet.getNodeList(), selectedNodesMap.get(netTitle));
+//					selectElementsByName(cyNet.getEdgeList(), selectedEdgesMap.get(netTitle));
+//				}
+//			}
 		}
 	}
 
-	private <T extends CyTableEntry> void selectElementsByName(List<T> entries, Set<String> names) {
-		if (entries != null && names != null) {
-			for (T entry : entries) {
-				CyRow row = entry.getCyRow();
-
-				if (names.contains(row.get(CyNetwork.NAME, String.class))) {
-					row.set(CyNetwork.SELECTED, true);
-				}
-			}
-		}
-	}
+//	private <T extends CyTableEntry> void selectElementsByName(List<T> entries, Set<String> names) {
+//		if (entries != null && names != null) {
+//			for (T entry : entries) {
+//				CyRow row = entry.getCyRow();
+//
+//				if (names.contains(row.get(CyNetwork.NAME, String.class))) {
+//					row.set(CyNetwork.SELECTED, true);
+//				}
+//			}
+//		}
+//	}
 
 	private void disposeCurrentSession(boolean removeVisualStyles) {
 		logger.debug("Disposing current session...");
