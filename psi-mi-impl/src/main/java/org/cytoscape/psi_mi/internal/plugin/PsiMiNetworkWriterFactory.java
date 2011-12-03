@@ -37,6 +37,11 @@ public class PsiMiNetworkWriterFactory implements CyNetworkViewWriterFactory {
 	}
 
 	@Override
+	public void setNetwork(CyNetwork network) {
+		this.network = network;
+	}
+	
+	@Override
 	public void setNetworkView(CyNetworkView view) {
 		this.network = view.getModel();
 	}
