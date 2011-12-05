@@ -705,7 +705,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,bioGridPreprocessor, new Properties());
 
 		Properties connectSelectedNodesTaskFactoryProps = new Properties();
-		connectSelectedNodesTaskFactoryProps.setProperty("preferredMenu","Select.Nodes");
+		connectSelectedNodesTaskFactoryProps.setProperty("preferredMenu","Edit");
 		connectSelectedNodesTaskFactoryProps.setProperty("enableFor","network");
 		connectSelectedNodesTaskFactoryProps.setProperty("toolBarGravity","2.5");
 		connectSelectedNodesTaskFactoryProps.setProperty("title","Connect Selected Nodes");
