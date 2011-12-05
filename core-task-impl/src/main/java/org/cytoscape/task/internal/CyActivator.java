@@ -62,7 +62,6 @@ import org.cytoscape.task.internal.destruction.DestroyNetworkViewTaskFactory;
 import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactory;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesEdgesTaskFactory;
 import org.cytoscape.task.internal.session.NewSessionTaskFactory;
-import org.cytoscape.task.internal.quickstart.QuickStartTaskFactory;
 import org.cytoscape.task.internal.session.SaveSessionTaskFactory;
 import org.cytoscape.task.internal.creation.NewEmptyNetworkTaskFactory;
 import org.cytoscape.task.internal.export.table.ExportEdgeTableTaskFactory;
@@ -224,7 +223,6 @@ public class CyActivator extends AbstractCyActivator {
 		ExportVizmapTaskFactory exportVizmapTaskFactory = new ExportVizmapTaskFactory(vizmapWriterManagerServiceRef,visualMappingManagerServiceRef);
 		SubnetworkBuilderUtil subnetworkBuilderUtil = new SubnetworkBuilderUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyEventHelperRef,cyApplicationManagerServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,visualMappingManagerServiceRef,visualStyleFactoryServiceRef,cyLayoutsServiceRef,undoSupportServiceRef);
 		ImportTaskUtil importTaskUtil = new ImportTaskUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyTableManagerServiceRef,cyDataTableReaderManagerServiceRef,cyApplicationManagerServiceRef);
-		QuickStartTaskFactory quickStartTaskFactory = new QuickStartTaskFactory(importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil);
 		
 		OpenSpecifiedSessionTaskFactory openSpecifiedSessionTaskFactory = new OpenSpecifiedSessionTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef);
 
@@ -689,12 +687,6 @@ public class CyActivator extends AbstractCyActivator {
 		copyValueToEntireColumnTaskFactoryProps.setProperty("title","Copy to entire column");
 		registerService(bc,copyValueToEntireColumnTaskFactory,TableCellTaskFactory.class, copyValueToEntireColumnTaskFactoryProps);
 		registerService(bc,deleteTableTaskFactory,TableTaskFactory.class, new Properties());
-
-		
-		Properties quickStartTaskFactoryProps = new Properties();
-		quickStartTaskFactoryProps.setProperty("scope","startup");
-		quickStartTaskFactoryProps.setProperty("title","QuickStart");
-		registerService(bc,quickStartTaskFactory,TaskFactory.class, quickStartTaskFactoryProps);
 
 		Properties welcomeTaskFactoryProps = new Properties();
 		welcomeTaskFactoryProps.setProperty("scope","startup");
