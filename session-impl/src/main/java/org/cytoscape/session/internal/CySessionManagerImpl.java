@@ -35,9 +35,7 @@
 package org.cytoscape.session.internal;
 
 import java.io.File;
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,13 +45,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
@@ -63,17 +59,13 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
-import org.cytoscape.property.session.Edge;
-import org.cytoscape.property.session.Network;
 import org.cytoscape.property.session.NetworkFrame;
-import org.cytoscape.property.session.Node;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.slf4j.Logger;
@@ -355,7 +347,6 @@ public class CySessionManagerImpl implements CySessionManager {
 			for (VisualStyle vs : styles) {
 				vmMgr.addVisualStyle(vs);
 				stylesMap.put(vs.getTitle(), vs);
-				// TODO: what if a style with the same name already exists?
 			}
 		}
 
@@ -370,9 +361,6 @@ public class CySessionManagerImpl implements CySessionManager {
 				framesLookup.put(nf.getFrameID(), nf);
 
 			// Set visual styles to network views
-
-			// This is a map from network view to Visual Style TITLE (may
-			// not be unique. TODO: use ID?)
 			final Map<CyNetworkView, String> netStyleMap = sess.getViewVisualStyleMap();
 
 			for (Entry<CyNetworkView, String> entry : netStyleMap.entrySet()) {
@@ -383,38 +371,22 @@ public class CySessionManagerImpl implements CySessionManager {
 				if (vs != null) {
 					vmMgr.setVisualStyle(vs, netView);
 					vs.apply(netView);
+					netView.updateView();
 				}
-
-				// Set network width/height
-				String name = netView.getModel().getCyRow().get(CyNetwork.NAME, String.class);
-
-				if (name != null && name.length() > 0) {
-					NetworkFrame nf = framesLookup.get(name);
-
-					if (nf != null) {
-						BigInteger w = nf.getWidth();
-						BigInteger h = nf.getHeight();
-
-						if (w != null) netView.setVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH, w.doubleValue());
-						if (h != null) netView.setVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT, h.doubleValue());
-					}
-				}
-
-				netView.updateView();
 			}
 		}
 	}
 
-	private void restoreSelection(CySession sess) {
-		final Cysession cysess = sess.getCysession();
-		float version = 0;
-
-		try {
-			version = Float.valueOf(cysess.getDocumentVersion());
-		} catch (Exception e) {
-		}
-
-		if (version < 3.0) {
+//	private void restoreSelection(CySession sess) {
+//		final Cysession cysess = sess.getCysession();
+//		float version = 0;
+//
+//		try {
+//			version = Float.valueOf(cysess.getDocumentVersion());
+//		} catch (Exception e) {
+//		}
+//
+//		if (version < 3.0) {
 //			logger.debug("Restoring node/edge selection...");
 //
 //			// First create network_title -> element_name lookup maps
@@ -445,8 +417,8 @@ public class CySessionManagerImpl implements CySessionManager {
 //					}
 //				}
 //			}
-
-			// Now iterate through all CyNodes/Edges and select the ones that are found in the lookup maps
+//
+//			// Now iterate through all CyNodes/Edges and select the ones that are found in the lookup maps
 //			Set<CyNetwork> cyNetworks = netMgr.getNetworkSet();
 //
 //			if (cyNetworks != null) {
@@ -457,9 +429,9 @@ public class CySessionManagerImpl implements CySessionManager {
 //					selectElementsByName(cyNet.getEdgeList(), selectedEdgesMap.get(netTitle));
 //				}
 //			}
-		}
-	}
-
+//		}
+//	}
+//
 //	private <T extends CyTableEntry> void selectElementsByName(List<T> entries, Set<String> names) {
 //		if (entries != null && names != null) {
 //			for (T entry : entries) {
@@ -498,7 +470,7 @@ public class CySessionManagerImpl implements CySessionManager {
 			}
 		}
 
-		// TODO: destroy unattached tables--how?
+		// Destroy tables
 		tblMgr.reset();
 	}
 }
