@@ -554,21 +554,34 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @throws IOException
      */
 	private void writeEdgeView(View<CyEdge> view) throws IOException {
-		writeElement("<edge");
-		writeAttributePair("id", view.getSUID());
-		writeAttributePair("label", getLabel(view.getModel()));
-		writeAttributePair("cy:edgeId", view.getModel().getSUID());
-		write(">\n");
-		depth++;
-
-		// Write the edge graphics
-		writeGraphics(view);
-
-		depth--;
-		writeElement("</edge>\n");
+		// It is not necessary to write edges that have no locked visual properties
+		boolean hasLockedVisualProps = false;
+		Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(MinimalVisualLexicon.EDGE);
+		
+		for (VisualProperty<?> vp : visualProperties) {
+			if (view.isValueLocked(vp)) {
+				hasLockedVisualProps = true;
+				break;
+			}
+		}
+		
+		if (hasLockedVisualProps) {
+			writeElement("<edge");
+			writeAttributePair("id", view.getSUID());
+			writeAttributePair("label", getLabel(view.getModel()));
+			writeAttributePair("cy:edgeId", view.getModel().getSUID());
+			write(">\n");
+			depth++;
+	
+			// Write the edge graphics
+			writeGraphics(view);
+	
+			depth--;
+			writeElement("</edge>\n");
+		}
 	}
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
 	private void writeGraphics(View<? extends CyTableEntry> view) throws IOException {
         if (view == null) return;
         writeElement("<graphics");
@@ -595,8 +608,10 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         		
             Object value = view.getVisualProperty(vp);
 
-            if (value != null && view.isValueLocked(vp))
+            if (value != null && view.isValueLocked(vp)) {
             	lockedProperties.add(vp);
+            	continue;
+            }
             
             // Use XGMML graphics attribute names for some visual properties
             String key = getGraphicsKey(vp);
@@ -723,15 +738,18 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     }
     
     /**
+     * Do not use this method with locked visual properties.
 	 * @param element
 	 * @param attName
 	 * @return
 	 */
     private boolean ignoreGraphicsAttribute(final CyTableEntry element, String attName) {
+    	// If a session format, only those visual properties that belong to the view
+    	// (not a visual style) should be saved in the XGMML file.
     	boolean b = (sessionFormat && (element instanceof CyNode) && !attName.matches("x|y|z"));
 		b = b || (sessionFormat && (element instanceof CyEdge));
 		b = b || (sessionFormat && (element instanceof CyNetwork) && 
-				  !attName.matches(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT.getIdString()));
+				  attName.matches(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT.getIdString()));
 		
 		return b;
 	}

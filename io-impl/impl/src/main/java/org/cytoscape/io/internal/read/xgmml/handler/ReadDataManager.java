@@ -40,7 +40,7 @@ import org.xml.sax.Attributes;
 public class ReadDataManager {
 
 	protected final static String XLINK = "http://www.w3.org/1999/xlink";
-
+	
 	/* RDF Data */
 	protected String RDFDate;
 	protected String RDFTitle;
@@ -471,7 +471,7 @@ public class ReadDataManager {
 	
 	protected void addElementLink(String href, Class<? extends CyTableEntry> clazz) {
 		Map<CyNetwork, Set<String>> map = null;
-		String id = href.replace("#", "").trim();
+		String id = AttributeValueUtil.getIdFromXLink(href);
 		
 		if (clazz == CyNode.class)      map = nodeLinkMap;
 		else if (clazz == CyEdge.class) map = edgeLinkMap;

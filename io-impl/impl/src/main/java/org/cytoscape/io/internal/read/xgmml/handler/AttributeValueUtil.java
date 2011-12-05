@@ -1,6 +1,8 @@
 package org.cytoscape.io.internal.read.xgmml.handler;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.read.xgmml.MetadataEntries;
 import org.cytoscape.io.internal.read.xgmml.MetadataParser;
@@ -23,6 +25,8 @@ public class AttributeValueUtil {
     static final String ATTR_LABEL = "label";
     static final String ATTR_VALUE = "value";
     static final String LOCKED_VISUAL_PROPS = "lockedVisualProperties";
+    
+    static final Pattern XLINK_PATTERN = Pattern.compile(".*#(\\d+)");
 
     private Locator locator;
 
@@ -217,5 +221,10 @@ public class AttributeValueUtil {
 		}
     	
     	return version;
+	}
+    
+	public static String getIdFromXLink(String href) {
+		Matcher matcher = XLINK_PATTERN.matcher(href);
+		return matcher.matches() ? matcher.group(1) : null;
 	}
 }

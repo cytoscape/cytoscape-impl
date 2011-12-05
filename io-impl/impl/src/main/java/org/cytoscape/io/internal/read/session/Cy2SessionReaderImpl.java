@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,10 +75,13 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Child;
 import org.cytoscape.property.session.Cysession;
+import org.cytoscape.property.session.Desktop;
 import org.cytoscape.property.session.Edge;
 import org.cytoscape.property.session.Network;
+import org.cytoscape.property.session.NetworkFrame;
 import org.cytoscape.property.session.Node;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 
 /**
  * Session reader implementation that handles the Cytoscape 2.x session format.
@@ -203,7 +207,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				is = findEntry(entryName);
 				
 				if (is != null) {
-					rootNetwork = extractNetworks(is, entryName, parent, childNet.isViewAvailable());
+					rootNetwork = extractNetworksAndViews(is, entryName, parent, childNet.isViewAvailable());
 				} else {
 					logger.error("Cannot find network file \"" + entryName + "\": ");
 				}
@@ -236,8 +240,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	 * @return The root-network of the extracted networks
 	 * @throws Exception
 	 */
-	private CyRootNetwork extractNetworks(InputStream is, String entryName, CyRootNetwork parent, boolean createView)
-			throws Exception {
+	private CyRootNetwork extractNetworksAndViews(InputStream is, String entryName, CyRootNetwork parent,
+			boolean createView) throws Exception {
 		this.tm.setStatusMessage("Extracting network: " + entryName);
 		
 		CyRootNetwork rootNetwork = null;
@@ -264,19 +268,23 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				views = new CyNetworkView[netArray.length];
 
 			int i = 0;
+			String netName = null;
 
 			for (CyNetwork net : netArray) {
-				networkLookup.put(entryName, net);
+				netName = net.getCyRow().get(CyNetwork.NAME, String.class);
+				
+				networkLookup.put(netName, net);
 				networks.add(net);
 				
 				if (createView) {
-					views[i] = reader.buildCyNetworkView(net);
+					CyNetworkView netView = reader.buildCyNetworkView(net);
+					views[i] = netView;
 					i++;
 				}
 			}
 
 			if (views != null) {
-				networkViewLookup.put(entryName, views);
+				networkViewLookup.put(netName, views);
 				networkViews.addAll(Arrays.asList(views));
 			}
 		}
@@ -354,66 +362,93 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	private void processNetworks() throws Exception {
-		if (cysession.getNetworkTree() == null)
-			return;
-
-		for (final Network net : cysession.getNetworkTree().getNetwork()) {
-			// We no longer have the concept of one top-level network root,
-			// so let's ignore a network with that name.
-			if (net.getId().equals(NETWORK_ROOT))
-				continue;
-
-			final String fileName = net.getFilename();
-			final CyNetworkView view = getNetworkView(fileName);
-
-			if (view != null) {
-				String vsName = net.getVisualStyle();
-
-				if (vsName != null)
-					visualStyleMap.put(view, vsName);
+		if (cysession == null) return;
+		
+		// Network attributes and visual styles
+		if (cysession.getNetworkTree() != null) {
+			for (final Network net : cysession.getNetworkTree().getNetwork()) {
+				// We no longer have the concept of one top-level network root,
+				// so let's ignore a network with that name.
+				if (net.getId().equals(NETWORK_ROOT))
+					continue;
+	
+				final String netName = net.getId();
+				final CyNetworkView[] views = getNetworkViews(netName);
+	
+				if (views != null) {
+					for (CyNetworkView nv : views) {
+						String vsName = net.getVisualStyle();
+		
+						if (vsName != null)
+							visualStyleMap.put(nv, vsName);
+					}
+				}
+	
+				final CyNetwork cyNet = getNetwork(netName);
+	
+				if (cyNet != null) {
+					// TODO: check if should delete from network
+//					if (net.getHiddenNodes() != null)
+//						setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode().iterator(), "hidden");
+//					if (net.getHiddenEdges() != null)
+//						setBooleanEdgeAttr(cyNet, net.getHiddenEdges().getEdge().iterator(), "hidden");
+	
+					// From Cytoscape 3.0, the selection info is stored inside CyTables,
+					// but 2.x stores that info in the cysession.xml file.
+					if (net.getSelectedNodes() != null)
+						setBooleanNodeAttr(cyNet, net.getSelectedNodes().getNode().iterator(), CyNetwork.SELECTED);
+					if (net.getSelectedEdges() != null)
+						setBooleanEdgeAttr(cyNet, net.getSelectedEdges().getEdge().iterator(), CyNetwork.SELECTED);
+				}
 			}
+		}
+		
+		// Network view sizes
+		if (cysession.getSessionState() != null) {
+			Desktop desktop = cysession.getSessionState().getDesktop();
+			
+			if (desktop != null && desktop.getNetworkFrames() != null) {
+				List<NetworkFrame> frames = desktop.getNetworkFrames().getNetworkFrame();
 
-			final CyNetwork cyNet = getNetwork(fileName);
-
-			if (cyNet != null) {
-				// TODO: check if should delete from network
-//				if (net.getHiddenNodes() != null)
-//					setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode().iterator(), "hidden");
-//				if (net.getHiddenEdges() != null)
-//					setBooleanEdgeAttr(cyNet, net.getHiddenEdges().getEdge().iterator(), "hidden");
-
-				// From Cytoscape 3.0, the selection info is stored inside CyTables,
-				// but 2.x stores that info in the cysession.xml file.
-				if (net.getSelectedNodes() != null)
-					setBooleanNodeAttr(cyNet, net.getSelectedNodes().getNode().iterator(), CyNetwork.SELECTED);
-				if (net.getSelectedEdges() != null)
-					setBooleanEdgeAttr(cyNet, net.getSelectedEdges().getEdge().iterator(), CyNetwork.SELECTED);
+				for (NetworkFrame nf : frames) {
+					// Set sizes
+					CyNetworkView[] views = getNetworkViews(nf.getFrameID());
+					
+					if (views != null) {
+						for (CyNetworkView nv : views) {
+							BigInteger w = nf.getWidth();
+							BigInteger h = nf.getHeight();
+	
+							if (w != null)
+								nv.setVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH, w.doubleValue());
+							if (h != null)
+								nv.setVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT, h.doubleValue());
+						}
+					}
+				}
 			}
 		}
 	}
 
-	private CyNetworkView getNetworkView(final String name) {
+	private CyNetworkView[] getNetworkViews(final String name) {
+		CyNetworkView[] views = null;
+		
 		for (String s : networkViewLookup.keySet()) {
 			String decode = s;
 
 			try {
 				decode = URLDecoder.decode(s, "UTF-8");
+				
+				if (decode.endsWith(name)) {
+					// this is OK since XGMML only ever reads one network
+					views = networkViewLookup.get(s);
+				}
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
-				return null;
-			}
-
-			if (decode.endsWith("/" + name)) {
-				// this is OK since XGMML only ever reads one network
-				CyNetworkView[] views = networkViewLookup.get(s);
-
-				if (views != null && views.length > 0) {
-					return views[0];
-				}
 			}
 		}
 
-		return null;
+		return views;
 	}
 
 	private CyNetwork getNetwork(final String name) {
