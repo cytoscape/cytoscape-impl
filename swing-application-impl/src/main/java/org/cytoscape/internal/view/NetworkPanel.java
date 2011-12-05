@@ -429,7 +429,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		logger.debug("Network view added to NetworkPanel: " + nde.getNetworkView().getModel().getSUID());
 
 		// Set current network view to the new one.
-		appManager.setCurrentNetworkView(nde.getNetworkView().getModel().getSUID());
+		appManager.setCurrentNetworkView(nde.getNetworkView());
 		this.treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.black);
 		treeTable.getTree().updateUI();
 	}
@@ -536,22 +536,22 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		if (node.getNetwork() == null)
 			return;
 
-		appManager.setCurrentNetwork(node.getNetwork().getSUID());
+		appManager.setCurrentNetwork(node.getNetwork());
 
 		// creates a list of all selected networks
-		List<Long> networkList = new LinkedList<Long>();
+		List<CyNetwork> networkList = new LinkedList<CyNetwork>();
 		try {
 			for (int i = mtree.getMinSelectionRow(); i <= mtree.getMaxSelectionRow(); i++) {
 				NetworkTreeNode n = (NetworkTreeNode) mtree.getPathForRow(i).getLastPathComponent();
 				if (n != null && n.getUserObject() != null && mtree.isRowSelected(i))
-					networkList.add(n.getNetwork().getSUID());
+					networkList.add(n.getNetwork());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 
 		if (networkList.size() > 0)
-			appManager.setSelectedNetworkViews(networkList);
+			appManager.setSelectedNetworks(networkList);
 	}
 
 	/**

@@ -101,7 +101,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		if (network == null || currentNetwork == network)
 			return;
 		
-		applicationManager.setCurrentNetwork(network.getSUID());
+		applicationManager.setCurrentNetwork(network);
 	}
 
 	@Override

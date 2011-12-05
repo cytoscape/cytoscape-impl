@@ -53,6 +53,8 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
 
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
@@ -122,16 +124,20 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
 
-		appManager.setCurrentNetwork(newNet.getSUID());
+		appManager.setCurrentNetwork(newNet);
 
 		if (curView == null) {
-			// Create view for the new network.
-			final CreateNetworkViewTask createViewTask =
-				new CreateNetworkViewTask(undoSupport, newNet, viewFactory,
-				                          networkViewManager, null, eventHelper);
+		
+			// inserted first, happens second
+			final Task setCurrentNetworkView = new SetCurrentNetworkViewTask(newNet.getSUID()); 
+			insertTasksAfterCurrentTask(setCurrentNetworkView);
+
+			
+			// inserted second, happens first
+			final Task createViewTask = new CreateNetworkViewTask(undoSupport, newNet, viewFactory,
+			                                                      networkViewManager, null, eventHelper);
 			insertTasksAfterCurrentTask(createViewTask);
 
-			appManager.setCurrentNetworkView(newNet.getSUID());
 			return;
 		}
 		tm.setProgress(0.7);
@@ -165,7 +171,22 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		style.apply(newView);
 		newView.fitContent();
 
-		appManager.setCurrentNetworkView(newView.getModel().getSUID());
+		appManager.setCurrentNetworkView(newView);
 		tm.setProgress(1.0);
+	}
+
+	private class SetCurrentNetworkViewTask extends AbstractTask {
+		long netId;
+		SetCurrentNetworkViewTask(long netId) {
+			this.netId = netId;
+		}
+		public void run(TaskMonitor tm) {
+			tm.setProgress(0.0);
+			CyNetworkView view = networkViewManager.getNetworkView(netId);			
+			tm.setProgress(0.5);
+			if ( view != null )
+				appManager.setCurrentNetworkView( view );
+			tm.setProgress(1.0);
+		}
 	}
 }

@@ -111,13 +111,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final JDesktopPane desktopPane;
 
 	// Key is MODEL ID
-	private final Map<Long, JInternalFrame> presentationContainerMap;
-	private final Map<Long, RenderingEngine<CyNetwork>> presentationMap;
+	private final Map<CyNetworkView, JInternalFrame> presentationContainerMap;
+	private final Map<CyNetworkView, RenderingEngine<CyNetwork>> presentationMap;
 
-	private final Map<JInternalFrame, Long> iFrameMap;
+	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
 	private final Properties props;
 
-	private Long currentPresentationContainerID;
+	private CyNetworkView currentView;
 
 	// Supports multiple presentations
 	private final Map<String, RenderingEngineFactory<CyNetwork>> factories;
@@ -159,10 +159,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
 
-		presentationContainerMap = new HashMap<Long, JInternalFrame>();
-		presentationMap = new HashMap<Long, RenderingEngine<CyNetwork>>();
-		iFrameMap = new HashMap<JInternalFrame, Long>();
-		currentPresentationContainerID = null;
+		presentationContainerMap = new HashMap<CyNetworkView, JInternalFrame>();
+		presentationMap = new HashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
+		iFrameMap = new HashMap<JInternalFrame, CyNetworkView>();
+		currentView = null;
 
 		nameTables = new HashMap<CyTable, CyNetwork>();
 	}
@@ -219,22 +219,22 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		// outta here
-		return presentationContainerMap.get(view.getModel().getSUID());
+		return presentationContainerMap.get(view);
 	}
 
 	/**
 	 * View switched
 	 */
 	public void internalFrameActivated(InternalFrameEvent e) {
-		final Long networkId = iFrameMap.get(e.getInternalFrame());
-		if (networkId == null)
+		final CyNetworkView view = iFrameMap.get(e.getInternalFrame());
+		if (view == null)
 			return;
 
 		final RenderingEngine<CyNetwork> currentEngine = applicationManager.getCurrentRenderingEngine();
-		applicationManager.setCurrentNetworkView(networkId);
+		applicationManager.setCurrentNetworkView(view);
 
-		if (currentEngine == null || currentEngine.getViewModel().getModel().getSUID() != networkId)
-			applicationManager.setCurrentRenderingEngine(presentationMap.get(networkId));
+		if (currentEngine == null || currentEngine.getViewModel() != view)
+			applicationManager.setCurrentRenderingEngine(presentationMap.get(view));
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		logger.info("Attempting to set current network view model: View Model ID = " + e.getNetworkView().getSUID());
-		setFocus(e.getNetworkView().getModel().getSUID());
+		setFocus(e.getNetworkView());
 	}
 
 	public void handleEvent(SetCurrentNetworkEvent e) {
@@ -263,7 +263,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		logger.info("Attempting to set current network model: Model ID = " + e.getNetwork().getSUID());
-		setFocus(e.getNetwork().getSUID());
+		setFocus(networkViewManager.getNetworkView(e.getNetwork().getSUID()));
 	}
 
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
@@ -313,9 +313,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	protected void removeView(final CyNetworkView view) {
 		try {
-			final JInternalFrame frame = presentationContainerMap.get(view.getModel().getSUID());
+			final JInternalFrame frame = presentationContainerMap.get(view);
 			if (frame != null) {
-				RenderingEngine<CyNetwork> removed = this.presentationMap.remove(view.getModel().getSUID());
+				RenderingEngine<CyNetwork> removed = this.presentationMap.remove(view);
 				logger.debug("#### Removing rendering engine: " + removed);
 				removed = null;
 				frame.dispose();
@@ -324,7 +324,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			logger.error("Network View unable to be killed", e);
 		}
 
-		presentationContainerMap.remove(view.getModel().getSUID());
+		presentationContainerMap.remove(view);
 		nameTables.remove(view.getModel().getDefaultNetworkTable());
 
 		logger.debug("Network View Model removed.");
@@ -335,10 +335,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 * 
 	 */
 	private void render(final CyNetworkView view) {
-		final Long modelID = view.getModel().getSUID();
-
 		// If already registered in this manager, do not render.
-		if (presentationContainerMap.containsKey(modelID))
+		if (presentationContainerMap.containsKey(view))
 			return;
 
 		// Create a new InternalFrame and put the CyNetworkView Component into
@@ -372,14 +370,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		});
 
 		desktopPane.add(iframe);
-		presentationContainerMap.put(modelID, iframe);
-		iFrameMap.put(iframe, modelID);
+		presentationContainerMap.put(view, iframe);
+		iFrameMap.put(iframe, view);
 
 		final long start = System.currentTimeMillis();
 		logger.debug("Rendering start: view model = " + view.getSUID());
 		final RenderingEngine<CyNetwork> renderingEngine = currentRenderingEngineFactory.createRenderingEngine(iframe, view);
 		logger.debug("Rendering finished in " + (System.currentTimeMillis() - start) + " m sec.");
-		presentationMap.put(modelID, renderingEngine);
+		presentationMap.put(view, renderingEngine);
 
 		iframe.pack();
 
@@ -422,7 +420,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		} else {
 			int w = view.getVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH).intValue();
 			int h = view.getVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT).intValue();
-			updateNetworkSize(modelID, w, h);
+			updateNetworkSize(view, w, h);
 		}
 
 		// Display it and add listeners
@@ -439,25 +437,25 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			return;
 		
 		final String title = n.getCyRow().get(CyTableEntry.NAME, String.class);
-		updateNetworkTitle(n.getSUID(), title);
+		updateNetworkTitle(n, title);
 	}
 	
 	@Override
 	public void handleEvent(NetworkViewChangedEvent e) {
 		for ( ViewChangeRecord<CyNetwork> record : e.getPayloadCollection()) {
-			Long id = record.getView().getModel().getSUID();
-			JInternalFrame iframe = presentationContainerMap.get(id);
+			CyNetworkView view = (CyNetworkView)(record.getView());
+			JInternalFrame iframe = presentationContainerMap.get(view);
 			if ( iframe == null )
 				return;
 			
 			if (record.getVisualProperty().equals(MinimalVisualLexicon.NETWORK_WIDTH)) {
 				int w = ((Double) record.getValue()).intValue();
 				int h = iframe.getSize().height;
-				updateNetworkSize(id, w, h);
+				updateNetworkSize(view, w, h);
 			} else if (record.getVisualProperty().equals(MinimalVisualLexicon.NETWORK_HEIGHT)) {
 				int w = iframe.getSize().width;
 				int h = ((Double) record.getValue()).intValue();
-				updateNetworkSize(id, w, h);
+				updateNetworkSize(view, w, h);
 			}
 		}
 	}
@@ -521,17 +519,21 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
     	}
     }
 	
-	private void updateNetworkTitle(Long networkModelID, String title) {
-		JInternalFrame frame = presentationContainerMap.get(networkModelID);
+	private void updateNetworkTitle(CyNetwork net, String title) {
+		CyNetworkView view = networkViewManager.getNetworkView(net.getSUID());
+		if ( view == null )
+			return;
 
-		if (frame != null) {
-			frame.setTitle(title);
-			frame.repaint();
-		}
+		JInternalFrame frame = presentationContainerMap.get(view);
+		if (frame == null) 
+			return;
+
+		frame.setTitle(title);
+		frame.repaint();
 	}
 
-	private void updateNetworkSize(final Long networkModelID, int width, int height) {
-		final JInternalFrame frame = presentationContainerMap.get(networkModelID);
+	private void updateNetworkSize(final CyNetworkView view, int width, int height) {
+		final JInternalFrame frame = presentationContainerMap.get(view);
 
 		if (frame == null)
 			return;
@@ -540,25 +542,19 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			frame.setSize(new Dimension(width, height));
 	}
 
-	private void setFocus(Long networkModelID) {
-		if (networkModelID == null) {
-			logger.warn("Set Focus method got a null as target ID.");
-			return;
-		}
-
-		final CyNetworkView targetViewModel = networkViewManager.getNetworkView(networkModelID);
+	private void setFocus(CyNetworkView targetViewModel) {
 		if (targetViewModel == null) {
-			logger.debug("View model does not exist for model ID: " + networkModelID);
+			logger.warn("Set Focus method got a null vew.");
 			return;
 		}
 
 		// make sure we're not redundant
-		if (currentPresentationContainerID != null && currentPresentationContainerID.equals(networkModelID)) {
-			logger.debug("Same as current focus.  No need to update focus: model ID = " + networkModelID);
+		if (currentView != null && currentView.equals(targetViewModel)) {
+			logger.debug("Same as current focus.  No need to update focus view model: " + targetViewModel);
 			return;
 		}
 
-		currentPresentationContainerID = networkModelID;
+		currentView = targetViewModel;
 
 		// Reset focus on frames
 		for (JInternalFrame f : presentationContainerMap.values()) {
@@ -570,10 +566,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		// Set focus
-		if (presentationContainerMap.containsKey(networkModelID)) {
+		if (presentationContainerMap.containsKey(targetViewModel)) {
 			try {
 				logger.debug("Updating JInternalFrame selection");
-				final JInternalFrame curr = presentationContainerMap.get(networkModelID);
+				final JInternalFrame curr = presentationContainerMap.get(targetViewModel);
 
 				curr.setIcon(false);
 				curr.show();

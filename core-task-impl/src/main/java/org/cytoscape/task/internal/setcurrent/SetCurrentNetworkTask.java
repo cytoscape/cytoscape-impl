@@ -33,7 +33,7 @@ public class SetCurrentNetworkTask extends AbstractTask {
 		taskMonitor.setProgress(0.0);
 		Object[] setNetworks = networkManager.getNetworkSet().toArray();
 		taskMonitor.setProgress(0.3);
-		applicationManager.setCurrentNetwork(((CyNetwork) setNetworks[setNetworks.length-1]).getSUID());
+		applicationManager.setCurrentNetwork(((CyNetwork) setNetworks[setNetworks.length-1]));
 		taskMonitor.setProgress(1.0);
 	}
 }

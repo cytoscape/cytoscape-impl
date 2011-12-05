@@ -246,6 +246,6 @@ public class NetworkUtil extends Thread {
         //view.addNodeContextMenuListener(nodeContextMenuListener);
 
         // set focus current
-        factory.getCyApplicationManager().setCurrentNetworkView(cyNetwork.getSUID());
+        factory.getCyApplicationManager().setCurrentNetworkView(view);
 	}
 }

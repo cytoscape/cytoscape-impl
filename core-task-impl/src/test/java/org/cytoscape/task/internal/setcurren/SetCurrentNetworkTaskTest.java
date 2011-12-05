@@ -31,6 +31,6 @@ public class SetCurrentNetworkTaskTest {
 		SetCurrentNetworkTask t = new SetCurrentNetworkTask(applicationManager, netmgr);
 		t.run(tm);
 
-		verify(applicationManager, times(1)).setCurrentNetwork(net.getSUID());
+		verify(applicationManager, times(1)).setCurrentNetwork(net);
 	}
 }
