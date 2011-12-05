@@ -51,8 +51,8 @@ public class XGMMLParser extends DefaultHandler {
 	private Locator locator;
 	private String currentCData;
 
-	private ParseState parseState = ParseState.NONE;
-	private Stack<ParseState> stateStack = null;
+	private ParseState parseState;
+	private Stack<ParseState> stateStack;
 
 	private final HandlerFactory handlerFactory;
 
@@ -66,7 +66,6 @@ public class XGMMLParser extends DefaultHandler {
 	public XGMMLParser(HandlerFactory handlerFactory, ReadDataManager readDataManager) {
 		this.handlerFactory = handlerFactory;
 		this.readDataManager = readDataManager;
-		stateStack = new Stack<ParseState>();
 	}
 
 	/********************************************************************
@@ -79,6 +78,8 @@ public class XGMMLParser extends DefaultHandler {
 	 */
 	@Override
 	public void startDocument() throws SAXException {
+		stateStack = new Stack<ParseState>();
+		parseState = ParseState.NONE;
 		handlerFactory.init();
 		super.startDocument();
 	}
