@@ -29,6 +29,7 @@ public class Mitab25Mapper {
 	private static final String TAB = "\t";
 
 	// Attr Names
+	private static final String DATABASE_UNIQUE_ID = ATTR_PREFIX + "database-unique ID";
 	private static final String DETECTION_METHOD = ATTR_PREFIX + "interaction detection method";
 	private static final String INTERACTION_TYPE = ATTR_PREFIX + "interaction type";
 	private static final String SOURCE_DB = ATTR_PREFIX + "source database";
@@ -55,43 +56,12 @@ public class Mitab25Mapper {
 	public Mitab25Mapper(final CyNetwork network) {
 		this.network = network;
 		this.nodeMap = new HashMap<String, CyNode>();
+		
+		// Create Columns
+		network.getDefaultNodeTable().createColumn(INTERACTOR_TYPE, String.class, true);
+		network.getDefaultNodeTable().createColumn(DATABASE_UNIQUE_ID, String.class, true);
+		network.getDefaultEdgeTable().createColumn(INTERACTION_ID, String.class, true);
 	}
-
-//	public CyNetwork map(String mitab, String networkName, CyNetwork parentNetwork) {
-//
-//		// Read the long string of MITAB
-//		String[] lines = mitab.split("\n");
-//
-//		parse(lines);
-//
-//		// Create top attribues for important keys
-//		List<String> currentAttr;
-//		for (CyNode node : nodes) {
-//			currentAttr = nodeAttr.getListAttribute(node.getIdentifier(), ATTR_PREFIX + UNIPROT);
-//			if (currentAttr != null && currentAttr.size() != 0) {
-//				nodeAttr.setAttribute(node.getIdentifier(), ATTR_PREFIX + UNIPROT + ".top", currentAttr.get(0));
-//			}
-//			currentAttr = nodeAttr.getListAttribute(node.getIdentifier(), ATTR_PREFIX + ENTREZ_GENE);
-//			if (currentAttr != null && currentAttr.size() != 0) {
-//				nodeAttr.setAttribute(node.getIdentifier(), ATTR_PREFIX + ENTREZ_GENE + ".top", currentAttr.get(0));
-//			}
-//
-//			currentAttr = nodeAttr.getListAttribute(node.getIdentifier(), ATTR_PREFIX + ENTREZ_GENE_SYN);
-//			if (currentAttr != null && currentAttr.size() != 0) {
-//				nodeAttr.setAttribute(node.getIdentifier(), ATTR_PREFIX + ENTREZ_GENE + ".top", currentAttr.get(0));
-//			}
-//		}
-//
-//		if (edges.size() != 0) {
-//			final CyNetwork network = Cytoscape.createNetwork(nodes, edges, networkName, parentNetwork);
-//
-//			nodes.clear();
-//			edges.clear();
-//			return network;
-//		} else {
-//			return null;
-//		}
-//	}
 
 	public void parse(final String line) {
 		
@@ -117,29 +87,32 @@ public class Mitab25Mapper {
 			return;
 
 		sourceID = entry[0].split(SEPARATOR);
+		final String sourceIDHalf = sourceID[0].split(":")[1];
 		targetID = entry[1].split(SEPARATOR);
+		final String targetIDHalf = targetID[0].split(":")[1];
 
+		// Create source and target node if necessary.
 		source = nodeMap.get(sourceID[0]);
 		if(source == null) {
 			source = network.addNode();
-			source.getCyRow().set(CyTableEntry.NAME, sourceID[0]);
+			source.getCyRow().set(CyTableEntry.NAME, sourceIDHalf);
+			source.getCyRow().set(DATABASE_UNIQUE_ID, sourceID[0]);
 			nodeMap.put(sourceID[0], source);
 		}
-		
 		target = nodeMap.get(targetID[0]);
 		if (target == null) {
 			target = network.addNode();
-			target.getCyRow().set(CyTableEntry.NAME, targetID[0]);
+			target.getCyRow().set(CyTableEntry.NAME, targetIDHalf);
+			target.getCyRow().set(DATABASE_UNIQUE_ID, targetID[0]);
 			nodeMap.put(targetID[0], target);
 		}
 		
+		// Set type if not protein
+		if (sourceID[0].contains(CHEBI))
+			source.getCyRow().set(INTERACTOR_TYPE, COMPOUND);
+		if (targetID[0].contains(CHEBI))
+			target.getCyRow().set(INTERACTOR_TYPE, COMPOUND);
 
-//		// Set type if not protein
-//		if (source.getIdentifier().contains(CHEBI))
-//			nodeAttr.setAttribute(source.getIdentifier(), INTERACTOR_TYPE, COMPOUND);
-//		if (target.getIdentifier().contains(CHEBI))
-//			nodeAttr.setAttribute(target.getIdentifier(), INTERACTOR_TYPE, COMPOUND);
-//
 //		// Aliases
 //		setAliases(nodeAttr, source.getIdentifier(), entry[0].split(SEPARATOR));
 //		setAliases(nodeAttr, target.getIdentifier(), entry[1].split(SEPARATOR));
@@ -151,7 +124,7 @@ public class Mitab25Mapper {
 //		// Tax ID (pick first one only)
 //		setTaxID(nodeAttr, source.getIdentifier(), entry[9].split(SEPARATOR)[0]);
 //		setTaxID(nodeAttr, target.getIdentifier(), entry[10].split(SEPARATOR)[0]);
-//
+
 //		sourceDB = entry[12].split(SEPARATOR);
 		interactionID = entry[13].split(SEPARATOR);
 		edgeScore = entry[14].split(SEPARATOR);
@@ -172,14 +145,14 @@ public class Mitab25Mapper {
 //		// Map scores
 //		setEdgeScoreListAttribute(edgeAttr, e.getIdentifier(), edgeScore, EDGE_SCORE);
 //
-//		edgeAttr.setAttribute(e.getIdentifier(), INTERACTION_ID, interactionID[0]);
+		e.getCyRow().set(INTERACTION_ID, interactionID[0]);
 //
 //		setPublication(edgeAttr, e.getIdentifier(), entry[8].split(SEPARATOR), entry[7].split(SEPARATOR));
 
 	}
 
 
-//	private void setTaxID(CyAttributes attr, String id, String value) {
+//	private void setTaxID(String id, String value) {
 //		String[] buf = value.split(":", 2);
 //		String attrName;
 //		String taxonName;
@@ -216,7 +189,7 @@ public class Mitab25Mapper {
 //		}
 //	}
 //
-//	private void setAliases(CyAttributes attr, String id, String[] entry) {
+//	private void setAliases(final String id, final String[] entry) {
 //		String key = null;
 //		String[] temp;
 //		String value;
@@ -272,19 +245,7 @@ public class Mitab25Mapper {
 //		}
 //	}
 //
-//	private void listAttrMapper(CyAttributes attr, String attrName, String id, String value) {
-//		List currentAttr;
-//
-//		currentAttr = attr.getListAttribute(id, attrName);
-//		if (currentAttr == null) {
-//			currentAttr = new ArrayList<String>();
-//			currentAttr.add(value);
-//			attr.setListAttribute(id, attrName, currentAttr);
-//		} else if (currentAttr.contains(value) == false) {
-//			currentAttr.add(value);
-//			attr.setListAttribute(id, attrName, currentAttr);
-//		}
-//	}
+
 //
 //	private String trimPSITerm(String original) {
 //		String miID = null;

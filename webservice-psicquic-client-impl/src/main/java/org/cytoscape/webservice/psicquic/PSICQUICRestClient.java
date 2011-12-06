@@ -6,13 +6,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -57,7 +60,7 @@ public class PSICQUICRestClient {
 
 	// Timeout for search
 	private static final long SEARCH_TIMEOUT = 20000;
-	private static final long IMPORT_TIMEOUT = 1200000;
+	private static final long IMPORT_TIMEOUT = 1000;
 
 	private final CyNetworkFactory factory;
 	private final CyNetworkViewFactory viewFactory;
@@ -73,51 +76,49 @@ public class PSICQUICRestClient {
 	public Map<String, CyNetwork> importNetwork(final String query, final Collection<String> targetServices,
 			final SearchMode mode, final TaskMonitor tm) throws InterruptedException {
 		final Map<String, CyNetwork> resultMap = new ConcurrentHashMap<String, CyNetwork>();
-		final ExecutorService exe = Executors.newCachedThreadPool();
+		final ExecutorService exe = Executors.newFixedThreadPool(20);
+		final CompletionService<Map<CyNetwork, String>> completionService = new ExecutorCompletionService<Map<CyNetwork, String>>(exe);
+		
 		final long startTime = System.currentTimeMillis();
 
 		// Submit the query for each active service
+		double completed = 0.0d;
+		final double increment = 1.0d / (double) targetServices.size();
 		final List<ImportNetworkTask> tasks = new ArrayList<ImportNetworkTask>();
 		for (final String serviceURL : targetServices)
-			tasks.add(new ImportNetworkTask(serviceURL, query, mode));
+			completionService.submit(new ImportNetworkTask(serviceURL, query, mode));
 
-		final List<Future<CyNetwork>> futures = exe.invokeAll(tasks, IMPORT_TIMEOUT, TimeUnit.MILLISECONDS);
-		logger.debug("Task submitted!");
-
-		double completed = 0.0d;
-		final double increment = 1.0d / (double) futures.size();
-		final Iterator<ImportNetworkTask> taskItr = tasks.iterator();
-		for (final Future<CyNetwork> future : futures) {
-			final ImportNetworkTask task = taskItr.next();
-			final String source = task.getURL();
+		
+		for (int i = 0; i < targetServices.size(); i++) {
 			try {
-				final CyNetwork network = future.get();
-				//createView(network);
+				Future<Map<CyNetwork, String>> future = completionService.take();
+				final Map<CyNetwork, String> ret = future.get();
+				final CyNetwork network = ret.keySet().iterator().next();
+				final String source = ret.get(network);
 				resultMap.put(source, network);
-				logger.debug(source + " : Got response = " + resultMap.get(source));
-			} catch (ExecutionException e) {
-				logger.warn("Error occured in network import from: " + source, e);
+				completed = completed + increment;
+				tm.setProgress(completed);
+			} catch (InterruptedException ie) {
+				logger.warn("Interrupted: network import", ie);
 				continue;
-			} catch (CancellationException ce) {
-				logger.warn("Import operation timeout for " + source, ce);
+			} catch (ExecutionException e) {
+				logger.warn("Error occured in network import", e);
 				continue;
 			}
-			completed += increment;
-			tm.setProgress(completed);
 		}
-		long endTime = System.currentTimeMillis();
-		double sec = (endTime - startTime) / (1000.0);
-		logger.info("PSICQUIC import finished in " + sec + " sec.");
+
+		try {
+			exe.shutdown();
+			exe.awaitTermination(IMPORT_TIMEOUT, TimeUnit.SECONDS);
+
+			long endTime = System.currentTimeMillis();
+			double sec = (endTime - startTime) / (1000.0);
+			logger.info("PSICUQIC Import Finished in " + sec + " sec.");
+		} catch (Exception ex) {
+			logger.warn("Import operation timeout", ex);
+		}
 		
-		tm.setProgress(1.0d);
-
 		return resultMap;
-	}
-
-	private void createView(final CyNetwork network) {
-		final CyNetworkView view = viewFactory.createNetworkView(network);
-		viewManager.addNetworkView(view);
-		//view.fitContent();
 	}
 
 	public Map<String, Long> search(final String query, final Collection<String> targetServices, final SearchMode mode,
@@ -193,18 +194,21 @@ public class PSICQUICRestClient {
 		}
 	}
 
-	private final class ImportNetworkTask implements Callable<CyNetwork> {
+	private final class ImportNetworkTask implements Callable<Map<CyNetwork, String>> {
 		private final String serviceURL;
 		private final String query;
 		private final SearchMode mode;
+		
+		private final Map<CyNetwork, String> returnThis;
 
 		private ImportNetworkTask(final String serviceURL, final String query, final SearchMode mode) {
 			this.serviceURL = serviceURL;
 			this.query = query;
 			this.mode = mode;
+			this.returnThis = new HashMap<CyNetwork, String>();
 		}
 
-		public CyNetwork call() throws Exception {
+		public Map<CyNetwork, String> call() throws Exception {
 			final PSICQUICSimpleClient simpleClient = new PSICQUICSimpleClient(serviceURL);
 			InputStream is = null;
 			if (mode == SearchMode.INTERACTOR)
@@ -217,11 +221,8 @@ public class PSICQUICRestClient {
 			is.close();
 			is = null;
 
-			return network;
-		}
-
-		String getURL() {
-			return serviceURL;
+			returnThis.put(network, serviceURL);
+			return returnThis;
 		}
 	}
 

@@ -103,7 +103,6 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			manager.addNetwork(network);
 			networks.add(network);
 		}
-		taskMonitor.setProgress(1.0d);
 		
 
 		int retValue = JOptionPane.showConfirmDialog(null, "Do you want to create view?");

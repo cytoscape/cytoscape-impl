@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,7 @@ public class CyNetworkBuilder {
 			mapper.parse(line);
 
 		br.close();
+		logger.info("Import Done: " + network.getSUID());
 		return network;
 	}
 }
