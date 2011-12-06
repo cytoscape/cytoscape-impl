@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.List;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 
@@ -14,6 +15,8 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.sif.SIFNetworkReader;
 import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.NetworkTestSupport;
@@ -24,6 +27,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+
 
 public class PerfTest {
 
@@ -94,9 +98,10 @@ public class PerfTest {
 
 	public void runTestLoop() {
 		try {
-			justNetworkPerf("A200-200.sif");
-			justNetworkPerf("A50-100.sif");
-			justNetworkPerf("A50-50.sif");
+			testNetworkCapability("biogrid-fly.sif");
+//			justNetworkPerf("A200-200.sif");
+//			justNetworkPerf("A50-100.sif");
+//			justNetworkPerf("A50-50.sif");
 			//networkAndViewPerf("A200-200.sif");
 			//networkAndViewPerf("A50-100.sif");
 			//networkAndViewPerf("A50-50.sif");
@@ -125,6 +130,36 @@ public class PerfTest {
 
 	protected void setViewThreshold(int threshold) {
 		properties.setProperty("viewThreshold", String.valueOf(threshold));
+	}
+
+	private void testNetworkCapability(String name) throws Exception {
+		CyNetwork[] nets = getNetworks(name);
+		CyNetwork net = nets[0];
+		List<CyNode> nodeList = net.getNodeList();
+
+		long start = System.currentTimeMillis();
+		for ( CyNode n : nodeList ) {
+			List<CyEdge> edges = net.getAdjacentEdgeList(n,CyEdge.Type.ANY);
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("Getting all adjacent edges: " + (end - start));
+/*
+		start = System.currentTimeMillis();
+		for ( CyNode n : nodeList ) {
+			for ( CyNode nn : nodeList ) {
+				List<CyEdge> edges = net.getConnectingEdgeList(n,nn,CyEdge.Type.ANY);
+			}
+		}
+		end = System.currentTimeMillis();
+		System.out.println("Getting all connecting edges: " + (end - start));
+		*/
+
+		start = System.currentTimeMillis();
+		for ( CyNode n : nodeList ) {
+			List<CyNode> nodes = net.getNeighborList(n,CyEdge.Type.ANY);
+		}
+		end = System.currentTimeMillis();
+		System.out.println("Getting all neighbor nodes: " + (end - start));
 	}
 
 }
