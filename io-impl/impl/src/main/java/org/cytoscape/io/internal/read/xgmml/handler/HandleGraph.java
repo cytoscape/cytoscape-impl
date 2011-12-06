@@ -106,12 +106,14 @@ public class HandleGraph extends AbstractHandler {
 	
 	protected void addCurrentNetwork(String oldId, CyNetwork net) {
 		manager.setCurrentNetwork(net);
-		manager.cache(oldId, net.getSUID());
+		manager.getNetworkStack().push(oldId);
 		
-		if (!(net instanceof CyRootNetwork))
-			manager.addNetwork(oldId, net);
-		
-		manager.getNetworkStack().push(net);
+		if (net != null) {
+			manager.cache(net, oldId);
+			
+			if (!(net instanceof CyRootNetwork))
+				manager.addNetwork(oldId, net);
+		}
 	}
 	
 	/**

@@ -1,9 +1,9 @@
 package org.cytoscape.io.internal.read.xgmml.handler;
 
 import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -20,6 +20,7 @@ public class HandleNodeGraph extends HandleGraph {
 		final CyNode node = manager.currentNode;
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
 		final String netId;
+		CyNetwork network = null;
 		
 		if (href != null) {
 			// The network has already been created
@@ -28,9 +29,10 @@ public class HandleNodeGraph extends HandleGraph {
 			netId = atts.getValue("id");
 			// Create network
 			final CyRootNetwork rootNet = manager.getRootNetwork();
-			final CySubNetwork subNet = rootNet.addSubNetwork();
-			addCurrentNetwork(netId, subNet);
+			network = rootNet.addSubNetwork();
 		}
+		
+		addCurrentNetwork(netId, network);
 		
 		if (netId != null) {
 			manager.addNetworkPointer(node.getSUID(), netId);

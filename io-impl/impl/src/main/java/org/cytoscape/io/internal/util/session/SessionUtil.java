@@ -69,11 +69,12 @@ public class SessionUtil {
 	
 	public static String getNetworkTableFilename(CyNetwork network, CyTableMetadata metadata) throws UnsupportedEncodingException {
 		CyTable table = metadata.getCyTable();
+		Long networkId = network.getSUID();
 		String networkFileName = getNetworkFileName(network);
 		String namespace = escape(metadata.getNamespace());
 		String type = escape(metadata.getType().getCanonicalName());
 		String tableTitle = escape(table.getTitle());
-		return String.format("%s/%s-%s-%s%s", networkFileName, namespace, type, tableTitle, TABLE_EXT);
+		return String.format("%s_%s/%s-%s-%s%s", networkId, networkFileName, namespace, type, tableTitle, TABLE_EXT);
 	}
 	
 	public static String getXGMMLFilename(CyNetwork network) throws UnsupportedEncodingException {

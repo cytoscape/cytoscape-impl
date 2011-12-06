@@ -23,7 +23,12 @@ public class HandleGraphDone extends AbstractHandler {
 		if (!manager.getNetworkStack().isEmpty())
 			manager.getNetworkStack().pop();
 		
-		final CyNetwork currentNet = manager.getNetworkStack().isEmpty() ? null : manager.getNetworkStack().peek();
+		CyNetwork currentNet = null;
+		final String oldNetId = manager.getNetworkStack().isEmpty() ? null : manager.getNetworkStack().peek();
+		
+		if (oldNetId != null)
+			currentNet = manager.getNetwork(oldNetId);
+		
 		manager.setCurrentNetwork(currentNet);
 		
 		// End of document

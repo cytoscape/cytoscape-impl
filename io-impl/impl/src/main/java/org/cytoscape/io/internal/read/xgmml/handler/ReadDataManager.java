@@ -60,7 +60,8 @@ public class ReadDataManager {
 	private Map<String, CyEdge> edgeIdMap;
 	/* Map of XML ID's to networks */
 	private Map<String, CyNetwork> networkIdMap;
-	private Stack<CyNetwork> networkStack;
+	/* Stack of original network IDs */
+	private Stack<String> networkStack;
 	
 	private Map<CyNetwork, Set<String>> nodeLinkMap;
 	private Map<CyNetwork, Set<String>> edgeLinkMap;
@@ -150,7 +151,7 @@ public class ReadDataManager {
 		nodeIdMap = new HashMap<String, CyNode>();
 		edgeIdMap = new HashMap<String, CyEdge>();
 		networkIdMap = new HashMap<String, CyNetwork>();
-		networkStack = new Stack<CyNetwork>();
+		networkStack = new Stack<String>();
 		
 		nodeLinkMap = new HashMap<CyNetwork, Set<String>>();
 		edgeLinkMap = new HashMap<CyNetwork, Set<String>>();
@@ -378,7 +379,7 @@ public class ReadDataManager {
 		return this.currentNetwork;
 	}
 	
-	protected Stack<CyNetwork> getNetworkStack() {
+	protected Stack<String> getNetworkStack() {
 		return networkStack;
 	}
 
@@ -470,6 +471,28 @@ public class ReadDataManager {
 		return edge;
 	}
 	
+    protected <T extends CyTableEntry> void cache(T element, String strId) {
+    	int index = -1;
+    	
+    	if (element instanceof CyNode) {
+    		nodeIdMap.put(strId, (CyNode) element);
+    		nodeList.add((CyNode) element);
+    		index = ((CyNode) element).getIndex();
+    	} else if (element instanceof CyEdge) {
+    		edgeIdMap.put(strId, (CyEdge) element);
+    		edgeList.add((CyEdge) element);
+    		index = ((CyEdge) element).getIndex();
+    	} else if (element instanceof CyNetwork) {
+	    	networkIdMap.put(strId, (CyNetwork) element);
+	    }
+    	
+    	// The id mapping is only necessary when loading XGMML from 3.0+ format session.
+    	// Should NOT be done with older versions or simple XGMML import.
+    	if (this.isSessionFormat()) {
+        	this.cache(strId, element.getSUID(), index);
+		}
+    }
+    
 	protected void cache(String oldId, long newId, int index) {
 		if (oldId != null && !oldId.isEmpty()) {
 			CyTable tbl = getIdMappingTable();
@@ -529,6 +552,10 @@ public class ReadDataManager {
 		return edgeLinkMap;
 	}
 
+	public CyNetwork getNetwork(String oldId) {
+		return networkIdMap.get(oldId);
+	}
+	
 	public CyNode getNode(String oldId) {
 		return nodeIdMap.get(oldId);
 	}
@@ -610,28 +637,6 @@ public class ReadDataManager {
 		return null;
 	}
 
-    private <T extends CyTableEntry> void cache(T element, String strId) {
-    	int index = -1;
-    	
-    	if (element instanceof CyNode) {
-    		nodeIdMap.put(strId, (CyNode) element);
-    		nodeList.add((CyNode) element);
-    		index = ((CyNode) element).getIndex();
-    	} else if (element instanceof CyEdge) {
-    		edgeIdMap.put(strId, (CyEdge) element);
-    		edgeList.add((CyEdge) element);
-    		index = ((CyEdge) element).getIndex();
-    	} else if (element instanceof CyNetwork) {
-	    	networkIdMap.put(strId, (CyNetwork) element);
-	    }
-    	
-    	// The id mapping is only necessary when loading XGMML from 3.0+ format session.
-    	// Should NOT be done with older versions or simple XGMML import.
-    	if (this.isSessionFormat()) {
-        	this.cache(strId, element.getSUID(), index);
-		}
-    }
-	
 	private CyTable getIdMappingTable() {
 		CyTable tbl = null;
 		
