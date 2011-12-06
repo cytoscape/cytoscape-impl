@@ -57,6 +57,7 @@
 		<!-- <module>work-headless-impl</module> -->
 		<module>work-swing-impl</module>
 		<module>application-impl</module>
+    <module>webservice-psicquic-client-impl</module>
   </modules>
 
 	<properties>
@@ -290,7 +291,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

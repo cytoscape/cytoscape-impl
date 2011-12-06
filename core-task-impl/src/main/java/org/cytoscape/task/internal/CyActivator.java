@@ -575,6 +575,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty("scope","limited");
 		createNetworkViewTaskFactoryProps.setProperty("menuGravity","3.0");
 		createNetworkViewTaskFactoryProps.setProperty("title","Create View");
+		createNetworkViewTaskFactoryProps.setProperty("id","createNetworkViewTaskFactory");
 		registerService(bc,createNetworkViewTaskFactory,NetworkTaskFactory.class, createNetworkViewTaskFactoryProps);
 
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
