@@ -1,11 +1,8 @@
 package org.cytoscape.webservice.psicquic;
 
 import java.io.InputStream;
-import java.security.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,11 +18,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.SwingUtilities;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
@@ -63,18 +57,13 @@ public class PSICQUICRestClient {
 	private static final long IMPORT_TIMEOUT = 1000;
 
 	private final CyNetworkFactory factory;
-	private final CyNetworkViewFactory viewFactory;
-	private final CyNetworkViewManager viewManager;
 
-	public PSICQUICRestClient(final CyNetworkFactory factory, final CyNetworkViewFactory viewFactory,
-			final CyNetworkViewManager viewManager) {
+	public PSICQUICRestClient(final CyNetworkFactory factory) {
 		this.factory = factory;
-		this.viewFactory = viewFactory;
-		this.viewManager = viewManager;
 	}
 
 	public Map<String, CyNetwork> importNetwork(final String query, final Collection<String> targetServices,
-			final SearchMode mode, final TaskMonitor tm) throws InterruptedException {
+			final SearchMode mode, final TaskMonitor tm) {
 		final Map<String, CyNetwork> resultMap = new ConcurrentHashMap<String, CyNetwork>();
 		final ExecutorService exe = Executors.newFixedThreadPool(20);
 		final CompletionService<Map<CyNetwork, String>> completionService = new ExecutorCompletionService<Map<CyNetwork, String>>(exe);
@@ -84,10 +73,8 @@ public class PSICQUICRestClient {
 		// Submit the query for each active service
 		double completed = 0.0d;
 		final double increment = 1.0d / (double) targetServices.size();
-		final List<ImportNetworkTask> tasks = new ArrayList<ImportNetworkTask>();
 		for (final String serviceURL : targetServices)
 			completionService.submit(new ImportNetworkTask(serviceURL, query, mode));
-
 		
 		for (int i = 0; i < targetServices.size(); i++) {
 			try {
@@ -98,9 +85,11 @@ public class PSICQUICRestClient {
 				resultMap.put(source, network);
 				completed = completed + increment;
 				tm.setProgress(completed);
+				tm.setStatusMessage("Got " + i + " out of " + targetServices.size() + " retults from remote database.");
 			} catch (InterruptedException ie) {
-				logger.warn("Interrupted: network import", ie);
-				continue;
+				logger.warn("!!! Interrupted: network import", ie);
+				exe.shutdown();
+				return resultMap;
 			} catch (ExecutionException e) {
 				logger.warn("Error occured in network import", e);
 				continue;
@@ -110,12 +99,12 @@ public class PSICQUICRestClient {
 		try {
 			exe.shutdown();
 			exe.awaitTermination(IMPORT_TIMEOUT, TimeUnit.SECONDS);
-
 			long endTime = System.currentTimeMillis();
 			double sec = (endTime - startTime) / (1000.0);
 			logger.info("PSICUQIC Import Finished in " + sec + " sec.");
 		} catch (Exception ex) {
 			logger.warn("Import operation timeout", ex);
+			return resultMap;
 		}
 		
 		return resultMap;

@@ -53,8 +53,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 	private SearchRecoredsTask searchTask;
 
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
-			final CyNetworkFactory networkFactory, final CyNetworkViewFactory viewFactory,
-			final CyNetworkViewManager viewManager, final CyNetworkManager networkManager, final TaskManager tManager,
+			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager, final TaskManager tManager,
 			final NetworkTaskFactory createViewTaskFactory) {
 		super(uri, displayName, description);
 
@@ -62,7 +61,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 		this.tManager = tManager;
 		this.createViewTaskFactory = createViewTaskFactory;
 
-		client = new PSICQUICRestClient(networkFactory, viewFactory, viewManager);
+		client = new PSICQUICRestClient(networkFactory);
 
 		// Initialize registry manager in different thread.
 		initRegmanager();

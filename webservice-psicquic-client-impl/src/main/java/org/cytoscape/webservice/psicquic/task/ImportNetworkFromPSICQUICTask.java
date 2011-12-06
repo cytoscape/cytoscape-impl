@@ -102,11 +102,9 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			addNetworkData(network);
 			manager.addNetwork(network);
 			networks.add(network);
-		}
-		
+		}		
 
-		int retValue = JOptionPane.showConfirmDialog(null, "Do you want to create view?");
-		
+		int retValue = JOptionPane.showConfirmDialog(null, "Do you want to create views?");
 		if(retValue == JOptionPane.YES_OPTION) {
 			// Create View
 			for(final CyNetwork network: networks) {
