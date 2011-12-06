@@ -41,7 +41,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -51,7 +50,6 @@ import java.util.Properties;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
-import javax.swing.JOptionPane;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 
@@ -62,10 +60,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.property.session.Desktop;
@@ -97,7 +92,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		SessionLoadedListener, SessionAboutToBeSavedListener, NetworkViewChangedListener, RowsSetListener {
+		SessionLoadedListener, SessionAboutToBeSavedListener, NetworkViewChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -130,7 +125,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	// UI to select presentation.
 	private static final String DEFAULT_PRESENTATION = "ding";
 
-	private final Map<CyTable, CyNetwork> nameTables;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyApplicationManager applicationManager;
 
@@ -163,8 +157,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		presentationMap = new HashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
 		iFrameMap = new HashMap<JInternalFrame, CyNetworkView>();
 		currentView = null;
-
-		nameTables = new HashMap<CyTable, CyNetwork>();
 	}
 
 	/**
@@ -225,6 +217,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	/**
 	 * View switched
 	 */
+	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
 		final CyNetworkView view = iFrameMap.get(e.getInternalFrame());
 		if (view == null)
@@ -246,6 +239,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 
 	// // Event Handlers ////
+	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		if (e.getNetworkView() == null) {
 			logger.info("Attempting to set current network view model: null view ");
@@ -256,6 +250,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		setFocus(e.getNetworkView());
 	}
 
+	@Override
 	public void handleEvent(SetCurrentNetworkEvent e) {
 		if (e.getNetwork() == null) {
 			logger.info("Attempting to set current network : null network ");
@@ -266,6 +261,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		setFocus(networkViewManager.getNetworkView(e.getNetwork().getSUID()));
 	}
 
+	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
 		logger.info("Network view destroyed: View ID = " + nvde.getNetworkView());
 		removeView(nvde.getNetworkView());
@@ -274,6 +270,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	/**
 	 * Adding new network view model to this manager. Then, render presentation.
 	 */
+	@Override
 	public void handleEvent(final NetworkViewAddedEvent nvae) {
 
 		logger.info("\n\n\nView Manager got Network view added event.  Adding view to manager: NetworkViewManager: View ID = "
@@ -325,8 +322,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		presentationContainerMap.remove(view);
-		nameTables.remove(view.getModel().getDefaultNetworkTable());
-
 		logger.debug("Network View Model removed.");
 	}
 
@@ -339,9 +334,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (presentationContainerMap.containsKey(view))
 			return;
 
-		// Create a new InternalFrame and put the CyNetworkView Component into
-		// it
-		final String title = view.getModel().getCyRow().get(CyTableEntry.NAME, String.class);
+		// Create a new InternalFrame and put the CyNetworkView Component into it
+		final String title = getTitle(view);
 		final JInternalFrame iframe = new JInternalFrame(title, true, true, true, true);
 		
 		// This is for force move title bar to the desktop if it's out of range.
@@ -349,7 +343,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				final Point originalPoint = iframe.getLocation();
-				if(originalPoint.y < 0)
+				if (originalPoint.y < 0)
 					iframe.setLocation(originalPoint.x, 0);
 			}
 		});
@@ -426,18 +420,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// Display it and add listeners
 		iframe.setVisible(true);
 		iframe.addInternalFrameListener(this);
-
-		nameTables.put(view.getModel().getDefaultNetworkTable(), view.getModel());
-	}
-	
-	@Override
-	public void handleEvent(RowsSetEvent e) {
-		CyNetwork n = nameTables.get( e.getSource() );
-		if ( n == null )
-			return;
-		
-		final String title = n.getCyRow().get(CyTableEntry.NAME, String.class);
-		updateNetworkTitle(n, title);
 	}
 	
 	@Override
@@ -456,6 +438,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				int w = iframe.getSize().width;
 				int h = ((Double) record.getValue()).intValue();
 				updateNetworkSize(view, w, h);
+			} else if (record.getVisualProperty().equals(MinimalVisualLexicon.NETWORK_TITLE)) {
+				updateNetworkTitle(view);
 			}
 		}
 	}
@@ -519,19 +503,25 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
     	}
     }
 	
-	private void updateNetworkTitle(CyNetwork net, String title) {
-		CyNetworkView view = networkViewManager.getNetworkView(net.getSUID());
-		if ( view == null )
-			return;
-
+	private void updateNetworkTitle(CyNetworkView view) {
 		JInternalFrame frame = presentationContainerMap.get(view);
-		if (frame == null) 
-			return;
 
-		frame.setTitle(title);
-		frame.repaint();
+		if (frame != null) {
+			final String title = getTitle(view);
+			frame.setTitle(title);
+			frame.repaint();
+		}
 	}
 
+	private String getTitle(CyNetworkView view) {
+		String title = view.getVisualProperty(MinimalVisualLexicon.NETWORK_TITLE);
+		
+		if (title == null || title.isEmpty())
+			title = view.getModel().getCyRow().get(CyTableEntry.NAME, String.class);
+		
+		return title;
+	}
+	
 	private void updateNetworkSize(final CyNetworkView view, int width, int height) {
 		final JInternalFrame frame = presentationContainerMap.get(view);
 
