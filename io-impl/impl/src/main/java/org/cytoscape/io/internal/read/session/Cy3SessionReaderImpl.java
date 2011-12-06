@@ -394,12 +394,15 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		
 		for (VirtualColumnSerializer columnData : virtualColumns) {
 			CyTable targetTable = filenameTableMap.get(columnData.getTargetTable());
-			CyTable sourceTable = filenameTableMap.get(columnData.getSourceTable());
-			targetTable.addVirtualColumn(columnData.getName(),
-										 columnData.getSourceColumn(),
-										 sourceTable,
-										 columnData.getTargetJoinKey(),
-										 columnData.isImmutable());
+			
+			if (targetTable.getColumn(columnData.getName()) == null) {
+				CyTable sourceTable = filenameTableMap.get(columnData.getSourceTable());
+				targetTable.addVirtualColumn(columnData.getName(),
+											 columnData.getSourceColumn(),
+											 sourceTable,
+											 columnData.getTargetJoinKey(),
+											 columnData.isImmutable());
+			}
 		}
 	}
 
