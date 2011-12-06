@@ -71,13 +71,13 @@ public class AlignPanel extends JPanel {
 
 		setLayout(new GridLayout(1,6));
 
-		add(createJButton(hal, "Horizontal Left"));
-		add(createJButton(hac, "Horizontal Center"));
-		add(createJButton(har, "Horizontal Right"));
+		add(createJButton(hal, "Horizontal Align Left"));
+		add(createJButton(hac, "Horizontal Align Center"));
+		add(createJButton(har, "Horizontal Align Right"));
 
-		add(createJButton(vat, "Vertical Top"));
-		add(createJButton(vac, "Vertical Center"));
-		add(createJButton(vab, "Vertical Bottom"));
+		add(createJButton(vat, "Vertical Align Top"));
+		add(createJButton(vac, "Vertical Align Center"));
+		add(createJButton(vab, "Vertical Align Bottom"));
 
 		setBorder(new TitledBorder("Align"));
 	}

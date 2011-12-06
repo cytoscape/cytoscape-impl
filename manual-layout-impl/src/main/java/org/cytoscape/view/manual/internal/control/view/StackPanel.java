@@ -70,12 +70,12 @@ public class StackPanel extends JPanel {
 		HStackBottom hab = new HStackBottom(habi,app);
 
 		setLayout(new GridLayout(1,6,0,0));
-		add(createJButton(val, "Vertical Left"));
-		add(createJButton(vac, "Vertical Center"));
-		add(createJButton(var, "Vertical Right"));
-		add(createJButton(hat, "Horizontal Top"));
-		add(createJButton(hac, "Horizontal Center"));
-		add(createJButton(hab, "Horizontal Bottom"));
+		add(createJButton(val, "Vertical Stack Left"));
+		add(createJButton(vac, "Vertical Stack Center"));
+		add(createJButton(var, "Vertical Stack Right"));
+		add(createJButton(hat, "Horizontal Stack Top"));
+		add(createJButton(hac, "Horizontal Stack Center"));
+		add(createJButton(hab, "Horizontal Stack Bottom"));
 
 		setBorder(new TitledBorder("Stack"));
 	}

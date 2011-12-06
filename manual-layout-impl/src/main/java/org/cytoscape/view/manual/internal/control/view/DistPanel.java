@@ -71,12 +71,12 @@ public class DistPanel extends JPanel {
 
 		setLayout(new java.awt.GridLayout(1,6));
 
-		add(createJButton(hal, "Horizontal Left"));
-		add(createJButton(hac, "Horizontal Center"));
-		add(createJButton(har, "Horizontal Right"));
-		add(createJButton(vat, "Vertical Top"));
-		add(createJButton(vac, "Vertical Center"));
-		add(createJButton(vab, "Vertical Bottom"));
+		add(createJButton(hal, "Horizontal Distribute Left"));
+		add(createJButton(hac, "Horizontal Distribute Center"));
+		add(createJButton(har, "Horizontal Distribute Right"));
+		add(createJButton(vat, "Vertical Distribute Top"));
+		add(createJButton(vac, "Vertical Distribute Center"));
+		add(createJButton(vab, "Vertical Distribute Bottom"));
 
 		setBorder(new TitledBorder("Distribute"));
 	}
