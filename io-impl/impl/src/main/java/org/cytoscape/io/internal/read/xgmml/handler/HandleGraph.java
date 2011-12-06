@@ -110,6 +110,8 @@ public class HandleGraph extends AbstractHandler {
 		
 		if (!(net instanceof CyRootNetwork))
 			manager.addNetwork(oldId, net);
+		
+		manager.getNetworkStack().push(net);
 	}
 	
 	/**

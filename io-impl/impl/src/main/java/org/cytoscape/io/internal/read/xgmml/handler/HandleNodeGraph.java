@@ -15,6 +15,7 @@ public class HandleNodeGraph extends HandleGraph {
 	@Override
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
 		ParseState state = current;
+		manager.graphCount++;
 		
 		final CyNode node = manager.currentNode;
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
@@ -22,7 +23,7 @@ public class HandleNodeGraph extends HandleGraph {
 		
 		if (href != null) {
 			// The network has already been created
-			netId = href.replaceAll(".*#", "");
+			netId = AttributeValueUtil.getIdFromXLink(href);
 		} else {
 			netId = atts.getValue("id");
 			// Create network

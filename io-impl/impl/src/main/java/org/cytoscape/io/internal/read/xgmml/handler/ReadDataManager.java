@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
@@ -59,6 +60,7 @@ public class ReadDataManager {
 	private Map<String, CyEdge> edgeIdMap;
 	/* Map of XML ID's to networks */
 	private Map<String, CyNetwork> networkIdMap;
+	private Stack<CyNetwork> networkStack;
 	
 	private Map<CyNetwork, Set<String>> nodeLinkMap;
 	private Map<CyNetwork, Set<String>> edgeLinkMap;
@@ -148,6 +150,7 @@ public class ReadDataManager {
 		nodeIdMap = new HashMap<String, CyNode>();
 		edgeIdMap = new HashMap<String, CyEdge>();
 		networkIdMap = new HashMap<String, CyNetwork>();
+		networkStack = new Stack<CyNetwork>();
 		
 		nodeLinkMap = new HashMap<CyNetwork, Set<String>>();
 		edgeLinkMap = new HashMap<CyNetwork, Set<String>>();
@@ -375,6 +378,10 @@ public class ReadDataManager {
 		return this.currentNetwork;
 	}
 	
+	protected Stack<CyNetwork> getNetworkStack() {
+		return networkStack;
+	}
+
 	protected CyRootNetwork createRootNetwork() {
 		final CyNetwork baseNet = networkFactory.createNetwork();
 		final CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(baseNet);
@@ -400,6 +407,7 @@ public class ReadDataManager {
 	        if (index != null) {
 	        	node = this.getParentNetwork().getNode(index);
 	        	((CySubNetwork) this.getCurrentNetwork()).addNode(node);
+	        	node = this.getCurrentNetwork().getNode(index); // in order to return the correct instance!
 	        }
         }
         
@@ -419,18 +427,41 @@ public class ReadDataManager {
 		CyEdge edge = null;
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
-        	// Do not create the element again if the network is a sub-network!
+        	// Do not create the element again if the network is a sub-network and the edge already exists!
 	        Integer index = this.getIndex(id);
 	        
 	        if (index != null) {
 	        	edge = this.getParentNetwork().getEdge(index);
 	        	((CySubNetwork) this.getCurrentNetwork()).addEdge(edge);
+	        	edge = this.getCurrentNetwork().getEdge(index); // in order to return the correct instance!
 	        }
         }
         
         if (edge == null) {
 	        // OK, create it
-			edge = this.getCurrentNetwork().addEdge(source, target, directed);
+        	CyNetwork net = getCurrentNetwork();
+        	// But first get the actual source/target instances from the current network,
+        	// because both node instances have to belong to the same root or sub-network.
+        	CyNode actualSrc = net.getNode(source.getIndex());
+        	CyNode actualTgt = net.getNode(target.getIndex());
+        	
+        	if (actualSrc == null || actualTgt == null) {
+				if ((getDocumentVersion() < 3.0 || !isSessionFormat()) && (net == getRootNetwork().getBaseNetwork())) {
+	        		// The nodes might have been added to the root network only, but not the base one in this case,
+	        		// because the root-graph element of old and generic XGMML formats are handled as base-network in 3.0
+	        		// (3.0 session XGMML has the root-graph as the CyRootNetwork, though).
+	        		if (actualSrc == null) {
+	        			((CySubNetwork) net).addNode(source);
+	        			actualSrc = net.getNode(source.getIndex());
+	        		}
+	        		if (actualTgt == null) {
+	        			((CySubNetwork) net).addNode(target);
+	        			actualTgt = net.getNode(target.getIndex());
+	        		}
+	        	}
+        	}
+        	
+			edge = this.getCurrentNetwork().addEdge(actualSrc, actualTgt, directed);
         }
         
         // Add to internal cache

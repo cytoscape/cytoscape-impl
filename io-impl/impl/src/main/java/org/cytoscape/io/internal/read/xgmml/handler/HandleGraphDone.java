@@ -19,6 +19,14 @@ public class HandleGraphDone extends AbstractHandler {
 
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
+		// In order to handle sub-graphs correctly
+		if (!manager.getNetworkStack().isEmpty())
+			manager.getNetworkStack().pop();
+		
+		final CyNetwork currentNet = manager.getNetworkStack().isEmpty() ? null : manager.getNetworkStack().peek();
+		manager.setCurrentNetwork(currentNet);
+		
+		// End of document
 		if (++manager.graphDoneCount != manager.graphCount)
 			return current;
 		
