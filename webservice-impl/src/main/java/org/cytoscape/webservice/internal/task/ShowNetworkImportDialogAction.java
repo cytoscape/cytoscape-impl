@@ -2,6 +2,10 @@ package org.cytoscape.webservice.internal.task;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+
+import javax.swing.KeyStroke;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -20,12 +24,13 @@ public class ShowNetworkImportDialogAction extends AbstractCyAction {
 
 	private final Window parent;
 
-	public ShowNetworkImportDialogAction(
-			final CyApplicationManager applicationManager,
-			final CySwingApplication app,
+	public ShowNetworkImportDialogAction(final CyApplicationManager applicationManager, final CySwingApplication app,
 			final UnifiedNetworkImportDialog dialog) {
 		super("Public Databases...", applicationManager);
+		
 		setPreferredMenu("File.Import.Network");
+		final KeyStroke shortcut = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
+		setAcceleratorKeyStroke(shortcut);
 
 		if (dialog == null)
 			throw new NullPointerException("Dialog is null.");
