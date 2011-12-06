@@ -2946,13 +2946,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			value = getCenter().getY();
 		} else if (vp == MinimalVisualLexicon.NETWORK_SCALE_FACTOR) {
 			value = getZoom();
-		} else if (vp == MinimalVisualLexicon.NETWORK_WIDTH || vp == MinimalVisualLexicon.NETWORK_HEIGHT) {
+		} else {
 			value = visualProperties.get(vp);
 			
 			if (value == null)
 				value = vp.getDefault();
-		} else
-			value = vp.getDefault();
+		}
 		
 		return (T) value;
 	}
