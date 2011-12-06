@@ -87,6 +87,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.desktop = desktop;
 		this.appMgr = appMgr;
 		this.taskManager = taskManager;
+		this.setPreferredSize(new Dimension(300, 150));
 	}
 
 	/**
@@ -108,6 +109,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			initialize();
 			setLocationRelativeTo(desktop.getJFrame());
 			setVisible(true);
+			this.pack();
 		}
 	}
 
