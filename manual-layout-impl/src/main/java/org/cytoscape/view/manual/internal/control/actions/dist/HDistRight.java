@@ -53,7 +53,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class HDistRight extends AbstractControlAction {
 
 	public HDistRight(Icon i,CyApplicationManager appMgr) {
-		super("Horizontal Distribute Right",i,appMgr);
+		super("",i,appMgr);
 	}
 	
 	protected void control(List<View<CyNode>> nodes) {

@@ -54,7 +54,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class VDistTop extends AbstractControlAction {
 
 	public VDistTop(Icon i,CyApplicationManager mgr) {
-		super("Vertical Distribute Top",i,mgr);
+		super("",i,mgr);
 	}
 	
 	protected void control(List<View<CyNode>> nodes) {

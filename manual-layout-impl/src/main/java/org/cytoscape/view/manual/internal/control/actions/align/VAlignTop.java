@@ -52,7 +52,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class VAlignTop extends AbstractControlAction {
 
 	public VAlignTop(Icon i,CyApplicationManager appMgr) {
-		super("Vertical Align Top",i,appMgr);
+		super("",i,appMgr);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

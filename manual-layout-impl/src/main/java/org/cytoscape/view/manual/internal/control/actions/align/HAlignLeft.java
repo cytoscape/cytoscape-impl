@@ -55,7 +55,7 @@ public class HAlignLeft extends AbstractControlAction {
 	private static final long serialVersionUID = 6744254664976466345L;
 
 	public HAlignLeft(Icon i,CyApplicationManager appMgr) {
-		super("Horizontal Align Left",i,appMgr);
+		super("",i,appMgr);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

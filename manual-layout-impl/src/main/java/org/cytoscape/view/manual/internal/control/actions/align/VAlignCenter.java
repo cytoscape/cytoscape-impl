@@ -52,7 +52,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class VAlignCenter extends AbstractControlAction {
 
 	public VAlignCenter(Icon i,CyApplicationManager appMgr) {
-		super("Vertical Align Center",i,appMgr);
+		super("",i,appMgr);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

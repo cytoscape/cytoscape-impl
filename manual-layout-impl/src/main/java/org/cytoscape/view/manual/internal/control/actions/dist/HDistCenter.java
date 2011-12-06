@@ -54,7 +54,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class HDistCenter extends AbstractControlAction {
 
 	public HDistCenter(Icon i,CyApplicationManager appMgr) {
-		super("Horizontal Distribute Center",i,appMgr);
+		super("",i,appMgr);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

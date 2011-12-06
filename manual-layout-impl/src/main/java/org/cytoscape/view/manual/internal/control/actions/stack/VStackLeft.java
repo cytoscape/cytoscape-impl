@@ -55,7 +55,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class VStackLeft extends AbstractControlAction {
 
 	public VStackLeft(Icon i,CyApplicationManager mgr) {
-		super("Vertical Stack Left",i,mgr);
+		super("",i,mgr);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

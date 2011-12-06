@@ -53,7 +53,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class VDistCenter extends AbstractControlAction {
 
 	public VDistCenter(Icon i,CyApplicationManager appMgr) {
-		super("Vertical Distribute Center",i,appMgr);
+		super("",i,appMgr);
 	}
 	
 	protected void control(List<View<CyNode>> nodes) {

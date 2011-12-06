@@ -55,7 +55,7 @@ public class VAlignBottom extends AbstractControlAction {
 	private static final long serialVersionUID = 179061461245367451L;
 
 	public VAlignBottom(Icon i,CyApplicationManager appMgr) {
-		super("Vertical Align Bottom",i,appMgr);
+		super("",i,appMgr);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

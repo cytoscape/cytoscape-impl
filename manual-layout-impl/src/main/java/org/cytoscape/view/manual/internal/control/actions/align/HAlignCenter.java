@@ -53,7 +53,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class HAlignCenter extends AbstractControlAction {
 
 	public HAlignCenter(Icon i,CyApplicationManager appMgr) {
-		super("Horizontal Align Center",i,appMgr);
+		super("",i,appMgr);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

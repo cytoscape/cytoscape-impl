@@ -54,7 +54,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class HStackBottom extends AbstractControlAction {
 
 	public HStackBottom(Icon i,CyApplicationManager mgr) {
-		super("Horizontal Stack Bottom",i,mgr);
+		super("",i,mgr);
 	}
 	
 	protected void control(List<View<CyNode>> nodes) {

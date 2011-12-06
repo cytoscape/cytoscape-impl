@@ -53,7 +53,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class VDistBottom extends AbstractControlAction {
 
 	public VDistBottom(Icon i,CyApplicationManager appMgr) {
-		super("Vertical Distribute Bottom",i,appMgr);
+		super("",i,appMgr);
 	}
 	
 	protected void control(List<View<CyNode>> nodes) {

@@ -55,7 +55,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 public class HStackCenter extends AbstractControlAction {
 
 	public HStackCenter(Icon i,CyApplicationManager mgr) {
-		super("Horizontal Stack Center",i,mgr);
+		super("",i,mgr);
 	}
 	
 	protected void control(List<View<CyNode>> nodes) {
