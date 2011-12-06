@@ -139,6 +139,8 @@ public class UnifiedNetworkImportDialog extends JDialog {
 				serviceUIPanels.put(client, container);
 			}
 		}
+		datasourceComboBox.setSelectedItem(client);
+		datasourceComboBoxActionPerformed(null);
 		logger.info("New network import client registered: " + client);
 	}
 
@@ -501,12 +503,15 @@ public class UnifiedNetworkImportDialog extends JDialog {
 
 	private void datasourceComboBoxActionPerformed(ActionEvent evt) {
 		
-		final Object selected = datasourceComboBox.getSelectedItem();
-		if(selected == null)
-			return;
+		Object selected = datasourceComboBox.getSelectedItem();
+		if(selected == null) {
+			selected = datasourceComboBox.getItemAt(0);
+			if(selected == null)
+				return;
+		}
 		
 		queryTextPane.setText("");
-		setProperty(clientNames.get(datasourceComboBox.getSelectedItem()));
+		setProperty(clientNames.get(selected));
 			
 		if(selected instanceof WebServiceClient == false)
 			return;
