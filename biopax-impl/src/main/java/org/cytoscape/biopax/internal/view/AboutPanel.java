@@ -70,12 +70,12 @@ public class AboutPanel extends JPanel {
         temp.append("</h2>");
         temp.append("<P>");
 
-		temp.append("<BR><BR>Plugin released by:  Sander Group, "
+		temp.append("<BR><BR>App released by:  Sander Group, "
 		            + "<A class=\"link\" HREF=\"http://www.cbio.mskcc.org/\">"
 		            + "Computational Biology Center</A>, "
 		            + "<A class=\"link\" HREF=\"http://www.mskcc.org\">Memorial Sloan-Kettering "
 		            + "Cancer Center</A>.");
-		temp.append("<BR><BR>For any questions concerning this plugin, please "
+		temp.append("<BR><BR>For any questions concerning this app, please "
 		            + "contact:<BR><BR><UL><LI> - Gary Bader:  baderg AT mskcc.org"
 		            + "<LI> - Ethan Cerami:  cerami AT cbio.mskcc.org"
 		            + "<LI> - Benjamin Gross:  grossb AT cbio.mskcc.org"

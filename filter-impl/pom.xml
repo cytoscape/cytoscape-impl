@@ -55,7 +55,8 @@
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
-        	<artifactId>plugin-api</artifactId>
+        	<artifactId>app-api</artifactId>
+        	<version>${project.version}</version>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>

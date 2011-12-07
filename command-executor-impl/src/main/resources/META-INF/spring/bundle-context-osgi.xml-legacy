@@ -12,7 +12,7 @@
 		interface="org.cytoscape.work.TaskFactory">
         <osgi:service-properties>
             <entry key="title" value="Load Command File" />
-            <entry key="preferredMenu" value="Plugins" />
+            <entry key="preferredMenu" value="Apps" />
         </osgi:service-properties>
 	</osgi:service>
 

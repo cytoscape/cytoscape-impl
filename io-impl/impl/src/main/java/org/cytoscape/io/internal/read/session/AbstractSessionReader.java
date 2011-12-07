@@ -133,7 +133,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	public CySession getCySession() {
 		CySession ret = new CySession.Builder().networks(networks).networkViews(networkViews)
 				.viewVisualStyleMap(visualStyleMap).cytoscapeProperties(cytoscapeProps).visualStyles(visualStyles)
-				.bookmarks(bookmarks).cysession(cysession).pluginFileListMap(pluginFileListMap).tables(tableMetadata)
+				.bookmarks(bookmarks).cysession(cysession).appFileListMap(pluginFileListMap).tables(tableMetadata)
 				.build();
 	
 		return ret;

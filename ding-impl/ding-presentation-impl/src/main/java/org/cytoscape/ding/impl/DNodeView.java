@@ -828,7 +828,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 * a thread-safe way. Each CustomGraphic will be drawn in the order is was
 	 * added. So, if you care about draw order (as for overlapping graphics),
 	 * make sure you add them in the order you desire. Note that since
-	 * CustomGraphics may be added by multiple plugins, your additions may be
+	 * CustomGraphics may be added by multiple apps, your additions may be
 	 * interleaved with others.
 	 * 
 	 * <P>

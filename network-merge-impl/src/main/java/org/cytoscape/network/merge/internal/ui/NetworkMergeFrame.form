@@ -363,7 +363,7 @@
                       <Color blue="33" green="0" red="ff" type="rgb"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="&quot;If you want to map identifiers between the matching attributes, please install CyThesaurus plugin version &quot;+requiredCyThesaursServiceVersion+&quot; or above.&quot;" type="code"/>
+                      <Connection code="&quot;If you want to map identifiers between the matching attributes, please install CyThesaurus app version &quot;+requiredCyThesaursServiceVersion+&quot; or above.&quot;" type="code"/>
                     </Property>
                   </Properties>
                   <AuxValues>

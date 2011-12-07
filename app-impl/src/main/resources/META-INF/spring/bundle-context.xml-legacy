@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- regular spring configuration file defining the beans for this
+		bundle. We've kept the osgi definitions in a separate 
+		configuration file so that this file can easily be used
+		for integration testing outside of an OSGi environment -->
+
+	<context:annotation-config/>
+	
+
+	<!-- constructor args are in alphabetical order! -->
+
+	<bean id="cyPluginAdapter" class="org.cytoscape.plugin.internal.CyPluginAdapterImpl">
+		<constructor-arg ref="cyApplicationManagerRef" />
+		<constructor-arg ref="cyEventHelperRef" />
+		<constructor-arg ref="cyLayoutsRef" />
+		<constructor-arg ref="cyNetworkFactoryRef" />
+		<constructor-arg ref="cyNetworkManagerRef" />
+		<constructor-arg ref="cyNetworkViewFactoryRef" />
+		<constructor-arg ref="cyNetworkViewManagerRef" />
+		<constructor-arg ref="cyNetworkViewReaderManagerRef" />
+		<constructor-arg ref="cyNetworkViewWriterManagerRef" />
+		<constructor-arg ref="cyPropertyRef" />
+		<constructor-arg ref="cyPropertyReaderManagerRef" />
+		<constructor-arg ref="cyPropertyWriterManagerRef" />
+		<constructor-arg ref="cyRootNetworkFactoryRef" />
+		<constructor-arg ref="cyServiceRegistrarRef" />
+		<constructor-arg ref="cySessionManagerRef" />
+		<constructor-arg ref="cySessionReaderManagerRef" />
+		<constructor-arg ref="cySessionWriterManagerRef" />
+		<constructor-arg ref="cySwingApplicationRef" />
+		<constructor-arg ref="cyTableFactoryRef" />
+		<constructor-arg ref="cyTableManagerRef" />
+		<constructor-arg ref="cyTableReaderManagerRef" />
+		<!--
+		<constructor-arg ref="cyTableWriterManagerRef" />
+		-->
+		<constructor-arg ref="guiTaskManagerRef" />
+		<constructor-arg ref="presentationWriterManagerRef" />
+		<constructor-arg ref="renderingEngineManagerRef" />
+		<constructor-arg ref="taskManagerRef" />
+		<constructor-arg ref="undoSupportRef" />
+		<constructor-arg ref="visualMappingManagerRef" />
+		<constructor-arg ref="visualStyleFactoryRef" />
+	</bean>
+
+	<bean id="pluginLoaderTaskFactory" class="org.cytoscape.plugin.internal.PluginLoaderTaskFactory">
+		<constructor-arg ref="cyPluginAdapter" />
+	</bean>
+			
+		
+	<bean id="pluginManagerAction" class="org.cytoscape.plugin.internal.action.PluginManagerAction">
+		<constructor-arg ref="cySwingApplicationRef" />
+		<constructor-arg ref="cyApplicationManagerRef" />
+		<constructor-arg ref="cytoscapeVersionService" />
+		<constructor-arg ref="bookmarkServiceRef" />		
+		<constructor-arg ref="bookmarksUtilServiceRef" />
+		<constructor-arg ref="guiTaskManagerRef" />
+		<constructor-arg ref="cyPropertyRef" />
+		<constructor-arg ref="cyPluginAdapter" />
+		<constructor-arg ref="pluginLoaderTaskFactory" />
+		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
+	</bean>
+
+	<bean id="startupMostlyFinished" class="org.cytoscape.plugin.internal.StartupMostlyFinished">
+		<constructor-arg ref="cyEventHelperRef" />
+	</bean>
+</beans>

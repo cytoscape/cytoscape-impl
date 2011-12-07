@@ -616,7 +616,7 @@ public class NetworkMergeFrame extends JFrame {
 		attributePanel.add(idmappingCheckBox, gridBagConstraints);
 
 		idmappingLabel.setForeground(new Color(255, 0, 51));
-		idmappingLabel.setText("If you want to map identifiers between the matching attributes, please install CyThesaurus plugin version "+requiredCyThesaursServiceVersion+" or above.");
+		idmappingLabel.setText("If you want to map identifiers between the matching attributes, please install CyThesaurus app version "+requiredCyThesaursServiceVersion+" or above.");
 		//idmappingLabel.setVisible(!checkCyThesaurus);
                 idmappingLabel.setVisible(false);
 		gridBagConstraints = new GridBagConstraints();

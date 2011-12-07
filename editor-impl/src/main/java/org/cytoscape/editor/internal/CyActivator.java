@@ -98,7 +98,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty("enableFor","networkAndView");
 		sifInterpreterTaskFactoryProps.setProperty("preferredAction","OPEN");
-		sifInterpreterTaskFactoryProps.setProperty("preferredMenu","Plugins");
+		sifInterpreterTaskFactoryProps.setProperty("preferredMenu","Apps");
 		sifInterpreterTaskFactoryProps.setProperty("menuGravity","5.0f");
 		sifInterpreterTaskFactoryProps.setProperty("title","SIF Interpreter");
 		registerService(bc,sifInterpreterTaskFactory,NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);

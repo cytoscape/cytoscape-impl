@@ -9,7 +9,7 @@
 
   <properties>
     <bundle.symbolicName>org.cytoscape.layout-cytoscape-impl</bundle.symbolicName>
-    <bundle.namespace>csplugins.layout</bundle.namespace>
+    <bundle.namespace>csapps.layout</bundle.namespace>
   </properties>
 
   <modelVersion>4.0.0</modelVersion>

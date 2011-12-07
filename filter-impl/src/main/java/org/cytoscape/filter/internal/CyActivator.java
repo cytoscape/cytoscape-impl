@@ -13,7 +13,7 @@ import org.cytoscape.filter.internal.FilterPanelSelectedListener;
 import org.cytoscape.filter.internal.filters.view.FilterMainPanel;
 import org.cytoscape.filter.internal.filters.FilterPlugin;
 import org.cytoscape.filter.internal.gui.FilterCytoPanelComponent;
-import org.cytoscape.filter.internal.quickfind.plugin.QuickFindPlugIn;
+import org.cytoscape.filter.internal.quickfind.app.QuickFindApp;
 import org.cytoscape.filter.internal.filters.FilterMenuItemAction;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -46,7 +46,7 @@ public class CyActivator extends AbstractCyActivator {
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
 		
 		FilterPlugin filterPlugin = new FilterPlugin(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
-		QuickFindPlugIn quickFindPlugin = new QuickFindPlugIn(cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
+		QuickFindApp quickFindApp = new QuickFindApp(cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		FilterMainPanel filterMainPanel = new FilterMainPanel(cyApplicationManagerServiceRef,filterPlugin,cyNetworkManagerServiceRef,cyServiceRegistrarServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
 		FilterCytoPanelComponent filterCytoPanelComponent = new FilterCytoPanelComponent(filterMainPanel);
 		FilterPanelSelectedListener filterPanelSelectedListener = new FilterPanelSelectedListener(filterMainPanel);
@@ -56,7 +56,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,filterMainPanel, new Properties());
 		registerService(bc,filterPanelSelectedListener,CytoPanelComponentSelectedListener.class, new Properties());
 		registerService(bc,filterAction,CyAction.class, new Properties());
-		registerAllServices(bc,quickFindPlugin, new Properties());
+		registerAllServices(bc,quickFindApp, new Properties());
 
 		
 

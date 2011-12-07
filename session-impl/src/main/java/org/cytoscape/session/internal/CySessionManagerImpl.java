@@ -137,7 +137,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		// Cysession
 		Cysession cysess = cysessFactory.createCysession(savingEvent.getDesktop(), savingEvent.getCytopanels(), null);
 
-		Map<String, List<File>> pluginMap = savingEvent.getPluginFileListMap();
+		Map<String, List<File>> pluginMap = savingEvent.getAppFileListMap();
 		Set<CyTable> tables = tblMgr.getAllTables(true);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 		Properties props = getProperties();
@@ -146,7 +146,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		Set<CyTableMetadata> metadata = buildMetadata(tables, networks);
 		// Build the session
 		CySession sess = new CySession.Builder().cytoscapeProperties(props).bookmarks(bkmarks).cysession(cysess)
-				.pluginFileListMap(pluginMap).tables(metadata).networks(networks).networkViews(netViews)
+				.appFileListMap(pluginMap).tables(metadata).networks(networks).networkViews(netViews)
 				.visualStyles(styles).viewVisualStyleMap(stylesMap).build();
 
 		return sess;

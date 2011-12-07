@@ -20,46 +20,46 @@
     <context:annotation-config />
 
 
-	<bean id="circularLayoutAlgorithm" class="csplugins.layout.algorithms.circularLayout.CircularLayoutAlgorithm">
+	<bean id="circularLayoutAlgorithm" class="csapps.layout.algorithms.circularLayout.CircularLayoutAlgorithm">
 		<constructor-arg ref="undoSupportServiceRef"/>
 	</bean>
-	<bean id="hierarchicalLayoutAlgorithm" class="csplugins.layout.algorithms.hierarchicalLayout.HierarchicalLayoutAlgorithm">
-		<constructor-arg ref="undoSupportServiceRef"/>
-	</bean>
-
-	<bean id="attributeCircleLayout" class="csplugins.layout.algorithms.graphPartition.AttributeCircleLayout">
+	<bean id="hierarchicalLayoutAlgorithm" class="csapps.layout.algorithms.hierarchicalLayout.HierarchicalLayoutAlgorithm">
 		<constructor-arg ref="undoSupportServiceRef"/>
 	</bean>
 
-	<bean id="degreeSortedCircleLayout" class="csplugins.layout.algorithms.graphPartition.DegreeSortedCircleLayout">
+	<bean id="attributeCircleLayout" class="csapps.layout.algorithms.graphPartition.AttributeCircleLayout">
 		<constructor-arg ref="undoSupportServiceRef"/>
 	</bean>
 
-	<bean id="ISOMLayout" class="csplugins.layout.algorithms.graphPartition.ISOMLayout">
+	<bean id="degreeSortedCircleLayout" class="csapps.layout.algorithms.graphPartition.DegreeSortedCircleLayout">
 		<constructor-arg ref="undoSupportServiceRef"/>
 	</bean>
 
-	<bean id="bioLayoutKKAlgorithmFALSE" class="csplugins.layout.algorithms.bioLayout.BioLayoutKKAlgorithm">
+	<bean id="ISOMLayout" class="csapps.layout.algorithms.graphPartition.ISOMLayout">
+		<constructor-arg ref="undoSupportServiceRef"/>
+	</bean>
+
+	<bean id="bioLayoutKKAlgorithmFALSE" class="csapps.layout.algorithms.bioLayout.BioLayoutKKAlgorithm">
 		<constructor-arg ref="undoSupportServiceRef"/>
 		<constructor-arg type="boolean" value="false"/>
 	</bean>
 
-	<bean id="bioLayoutKKAlgorithmTRUE" class="csplugins.layout.algorithms.bioLayout.BioLayoutKKAlgorithm">
+	<bean id="bioLayoutKKAlgorithmTRUE" class="csapps.layout.algorithms.bioLayout.BioLayoutKKAlgorithm">
 		<constructor-arg ref="undoSupportServiceRef"/>
 		<constructor-arg type="boolean" value="true"/>
 	</bean>
 
-	<bean id="bioLayoutFRAlgorithm" class="csplugins.layout.algorithms.bioLayout.BioLayoutFRAlgorithm">
+	<bean id="bioLayoutFRAlgorithm" class="csapps.layout.algorithms.bioLayout.BioLayoutFRAlgorithm">
 		<constructor-arg ref="undoSupportServiceRef"/>
 		<constructor-arg type="boolean" value="true"/>
 	</bean>
 
-	<bean id="stackedNodeLayout" class="csplugins.layout.algorithms.StackedNodeLayout">
+	<bean id="stackedNodeLayout" class="csapps.layout.algorithms.StackedNodeLayout">
 		<constructor-arg ref="undoSupportServiceRef"/>
 	</bean>
 
 
-	<bean id="groupAttributesLayout" class="csplugins.layout.algorithms.GroupAttributesLayout">
+	<bean id="groupAttributesLayout" class="csapps.layout.algorithms.GroupAttributesLayout">
 		<constructor-arg ref="undoSupportServiceRef"/>
 	</bean>
 

@@ -82,7 +82,7 @@ public class CytoscapeMenus {
 	menuBar.addSeparator("Layout", 4.0);
 	menuBar.addSeparator("Layout", 6.0);
 
-	menuBar.addSeparator("Plugins", 2.0);
+	menuBar.addSeparator("Apps", 2.0);
 
 	menuBar.addSeparator("Help", 2.0);
 

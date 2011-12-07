@@ -388,7 +388,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private void zipFileListMap() throws IOException {
 
 		// fire an event to tell plugins we're ready to save!
-		Map<String, List<File>> pluginFileMap = session.getPluginFileListMap(); 
+		Map<String, List<File>> pluginFileMap = session.getAppFileListMap(); 
 
 		// now write any files to the zip files
 		if ((pluginFileMap != null) && (pluginFileMap.size() > 0)) {
