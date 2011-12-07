@@ -42,6 +42,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 
 /**
@@ -100,22 +102,24 @@ public class FilterPlugin {
 	public void restoreInitState() {
 //		// TODO: Port this
 //		final File globalFilterFile = CytoscapeInit.getConfigFile("filters.props");
-//		int[] loadCount = filterIO.getFilterVectFromPropFile(globalFilterFile);
+		int[] loadCount = {0,0}; //filterIO.getFilterVectFromPropFile(globalFilterFile);
 //		logger.debug("FilterPlugin: load " + loadCount[1] + " of " + loadCount[0] + " filters from filters.prop");
 //
 //		if (loadCount[1] == 0) {
-//			final String DEFAULT_FILTERS_FILENAME = "/default_filters.props";
-//			final InputStream inputStream = FilterPlugin.class.getResourceAsStream(DEFAULT_FILTERS_FILENAME);
-//			if (inputStream == null) {
-//				System.err.println("FilterPlugin: Failed to read default filters from \""
-//				                   + DEFAULT_FILTERS_FILENAME + "\" in the plugin's jar file!");
-//				return;
-//			}
-//
-//			final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-//			loadCount = filterIO.getFilterVectFromPropFile(inputStreamReader);
-//			logger.debug("FilterPlugin: load " + loadCount[1] + " of " + loadCount[0]
-//			             + " filters from " + DEFAULT_FILTERS_FILENAME);
+			final String DEFAULT_FILTERS_FILENAME = "/default_filters.props";
+			final InputStream inputStream = FilterPlugin.class.getResourceAsStream(DEFAULT_FILTERS_FILENAME);
+			
+			if (inputStream == null) {
+				System.err.println("FilterPlugin: Failed to read default filters from \""
+				                   + DEFAULT_FILTERS_FILENAME + "\" in the plugin's jar file!");
+				return;
+			}
+
+			final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+			loadCount = filterIO.getFilterVectFromPropFile(inputStreamReader);
+
+			logger.debug("FilterPlugin: load " + loadCount[1] + " of " + loadCount[0]
+			             + " filters from " + DEFAULT_FILTERS_FILENAME);
 //		}
 	}
 
