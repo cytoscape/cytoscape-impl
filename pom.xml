@@ -38,7 +38,7 @@
 		<module>model-impl</module>
 		<module>network-analyzer-impl</module>
 		<module>network-merge-impl</module>
-		<module>plugin-impl</module>
+		<module>app-impl</module>
 		<module>presentation-impl</module>
 		<module>property-impl</module>
 		<module>psi-mi-impl</module>
@@ -119,7 +119,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
-				<artifactId>plugin-api</artifactId>
+				<artifactId>app-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
 			<dependency>
@@ -208,7 +208,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
-				<artifactId>plugin-api</artifactId>
+				<artifactId>app-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 				<type>test-jar</type>
 			</dependency>
