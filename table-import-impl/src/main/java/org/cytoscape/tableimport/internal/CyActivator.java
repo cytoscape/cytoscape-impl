@@ -78,7 +78,7 @@ public class CyActivator extends AbstractCyActivator {
 		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_txt = new ImportAttributeTableReaderFactory(attrsTableFilter_txt,".txt");
 		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_xls = new ImportAttributeTableReaderFactory(attrsTableFilter_xls,".xls");
 		ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction(oboReaderFactory);
-		BasicCyFileFilter networkTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
+		BasicCyFileFilter networkTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
 		BasicCyFileFilter networkTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",NETWORK,CytoscapeServices.streamUtil);
 		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_txt = new ImportNetworkTableReaderFactory(networkTableFilter_txt,".txt");
 		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_xls = new ImportNetworkTableReaderFactory(networkTableFilter_xls,".xls");
