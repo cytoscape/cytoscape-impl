@@ -5,6 +5,8 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.task.internal.session.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.AbstractTask;
@@ -23,16 +25,23 @@ public class ShowWelcomeScreenTask extends AbstractTask {
 	private final LoadMitabFileTaskFactory loadTF;
 	private final CyApplicationConfiguration config;
 	private final TaskFactory layoutTF;
+	
+	private final BookmarksUtil bkUtil;
+	private final Bookmarks bookmarks;
 
 	public ShowWelcomeScreenTask(final OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker,
 			TaskManager guiTaskManager, OpenSpecifiedSessionTaskFactory taskFactory,
 			final OpenSessionTaskFactory openTaskFactory, final LoadMitabFileTaskFactory loadTF,
-			final CyApplicationConfiguration config, final TaskFactory layoutTF) {
+			final CyApplicationConfiguration config, final TaskFactory layoutTF, BookmarksUtil bkUtil,
+			Bookmarks bookmarks) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.openTaskFactory = openTaskFactory;
 		this.loadTF = loadTF;
 		this.config = config;
 		this.layoutTF = layoutTF;
+		
+		this.bkUtil = bkUtil;
+		this.bookmarks = bookmarks;
 
 		this.fileTracker = fileTracker;
 
@@ -46,7 +55,7 @@ public class ShowWelcomeScreenTask extends AbstractTask {
 			@Override
 			public void run() {
 				final JDialog welcome = new WelcomeScreenDialog(null, openBrowserServiceRef, fileTracker,
-						guiTaskManager, taskFactory, openTaskFactory, loadTF, config, layoutTF);
+						guiTaskManager, taskFactory, openTaskFactory, loadTF, config, layoutTF, bkUtil, bookmarks);
 				welcome.setVisible(true);
 			}
 		});

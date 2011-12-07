@@ -1,6 +1,6 @@
 package org.cytoscape.task.internal.welcome;
 
-import java.io.File;
+import java.net.URL;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReaderManager;
@@ -20,7 +20,7 @@ public class LoadMitabFileTaskFactory implements TaskFactory {
 
 	private CyNetworkNaming cyNetworkNaming;
 	
-	private File file;
+	private URL url;
 	private boolean apply = false;
 
 	public LoadMitabFileTaskFactory(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
@@ -33,8 +33,8 @@ public class LoadMitabFileTaskFactory implements TaskFactory {
 		this.cyNetworkNaming = cyNetworkNaming;
 	}
 	
-	void setFile(final File file) {
-		this.file = file;
+	void setURL(final URL url) {
+		this.url = url;
 	}
 	
 	void setApplyLayout(boolean apply) {
@@ -42,7 +42,7 @@ public class LoadMitabFileTaskFactory implements TaskFactory {
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new LoadMitabFileTask(apply, file, mgr, netmgr, networkViewManager, props, cyNetworkNaming));
+		return new TaskIterator(new LoadMitabFileTask(apply, url, mgr, netmgr, networkViewManager, props, cyNetworkNaming));
 	}
 
 }

@@ -20,6 +20,8 @@ import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
@@ -128,6 +130,9 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		CyProperty<Bookmarks> bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
+		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
+		
 		OpenBrowser openBrowserServiceRef = getService(bc,OpenBrowser.class);
 		CyEventHelper cyEventHelperRef = getService(bc,CyEventHelper.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
@@ -229,7 +234,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		LoadMitabFileTaskFactory loadMitabFileTaskFactory = new LoadMitabFileTaskFactory(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef);
 
-		WelcomeScreenTaskFactory welcomeTaskFactory = new WelcomeScreenTaskFactory(openBrowserServiceRef, importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil, recentlyOpenedTrackerServiceRef, taskManagerServiceRef, openSpecifiedSessionTaskFactory, openSessionTaskFactory, loadMitabFileTaskFactory, cyApplicationConfigurationServiceRef, loadNetworkFileTaskFactory);
+		WelcomeScreenTaskFactory welcomeTaskFactory = new WelcomeScreenTaskFactory(openBrowserServiceRef, importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil, recentlyOpenedTrackerServiceRef, taskManagerServiceRef, openSpecifiedSessionTaskFactory, openSessionTaskFactory, loadMitabFileTaskFactory, cyApplicationConfigurationServiceRef, loadNetworkFileTaskFactory, bookmarksUtilServiceRef, bookmarkServiceRef.getProperties());
 		BioGridPreprocessor bioGridPreprocessor = new BioGridPreprocessor(cyPropertyServiceRef,cyApplicationConfigurationServiceRef);
 		ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactory(undoSupportServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
 		
