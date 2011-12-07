@@ -10,7 +10,6 @@
 		<bundle.namespace>org.cytoscape.cpath2</bundle.namespace>
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>cpath2-impl</artifactId>
 	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
 	<packaging>bundle</packaging>
@@ -18,53 +17,65 @@
         <dependency>
             <groupId>org.cytoscape</groupId>
             <artifactId>model-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.cytoscape</groupId>
             <artifactId>io-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.cytoscape</groupId>
             <artifactId>webservice-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>viewmodel-api</artifactId>
-        	<scope>compile</scope>
+        	<scope>provided</scope>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>layout-api</artifactId>
+        	<scope>provided</scope>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>presentation-api</artifactId>
+        	<scope>provided</scope>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>swing-util-api</artifactId>
+        	<scope>provided</scope>
         </dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>swing-application-api</artifactId>
+        	<scope>provided</scope>
         </dependency>
-
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>biopax-impl</artifactId>
-			<version>${project.version}</version>
+			<artifactId>biopax-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
-		
 		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.httpclient</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+ 	  		<groupId>org.jdom</groupId>
+	   		<artifactId>com.springsource.org.jdom</artifactId>
+	  		<version>1.1.0</version>
+	  		<scope>provided</scope>
+		</dependency>
 		
 		<dependency>
 			<groupId>junit</groupId>

@@ -70,7 +70,7 @@
 		<constructor-arg ref="bioPaxVisualStyleUtil"/>
 	</bean>
 	
-	<bean id="bioPaxVisualStyleUtil" class="org.cytoscape.biopax.util.BioPaxVisualStyleUtil">
+	<bean id="bioPaxVisualStyleUtil" class="org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil">
 		<constructor-arg ref="visualStyleFactoryRef" />
 		<constructor-arg ref="visualMappingManagerRef" />
 		<constructor-arg ref="discreteMappingFunctionFactoryRef" />

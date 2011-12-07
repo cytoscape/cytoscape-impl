@@ -184,6 +184,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
+				<artifactId>biopax-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
 				<artifactId>core-task-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 				<type>test-jar</type>

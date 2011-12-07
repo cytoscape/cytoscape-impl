@@ -29,17 +29,18 @@
  ** along with this library; if not, write to the Free Software Foundation,
  ** Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  **/
-package org.cytoscape.biopax.util;
+package org.cytoscape.biopax.internal.util;
 
 import java.awt.Color;
 import java.awt.Paint;
 
 import org.biopax.paxtools.model.BioPAXElement;
-import org.biopax.paxtools.model.level3.Complex;
 import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import static org.cytoscape.biopax.MapBioPaxToCytoscape.*;
+
+import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;

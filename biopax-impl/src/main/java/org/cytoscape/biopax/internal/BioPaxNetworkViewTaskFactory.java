@@ -3,7 +3,7 @@ package org.cytoscape.biopax.internal;
 import java.io.InputStream;
 
 import org.cytoscape.biopax.NetworkListener;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
+import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;

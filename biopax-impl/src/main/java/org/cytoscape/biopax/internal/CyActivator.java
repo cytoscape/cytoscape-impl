@@ -18,7 +18,7 @@ import org.cytoscape.biopax.internal.BioPaxFilter;
 import org.cytoscape.biopax.internal.action.NetworkListenerImpl;
 import org.cytoscape.biopax.internal.BioPaxNetworkViewTaskFactory;
 import org.cytoscape.biopax.internal.BioPaxFactory;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
+import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.view.BioPaxContainerImpl;
 import org.cytoscape.biopax.internal.MapBioPaxToCytoscapeFactoryImpl;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;

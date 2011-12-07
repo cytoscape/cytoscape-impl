@@ -5,8 +5,8 @@ import java.awt.Component;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.biopax.internal.BioPaxFactory;
+import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.util.BioPaxUtil;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;

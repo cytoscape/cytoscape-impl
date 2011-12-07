@@ -33,17 +33,20 @@ import org.biopax.paxtools.model.level3.Pathway;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.biopax.paxtools.model.level3.Process;
 import org.biopax.paxtools.model.level3.PublicationXref;
+import org.biopax.paxtools.model.level3.RelationshipTypeVocabulary;
 import org.biopax.paxtools.model.level3.RelationshipXref;
+import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
 import org.biopax.paxtools.model.level3.Stoichiometry;
 import org.biopax.paxtools.model.level3.UnificationXref;
 import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
+import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
 import org.cytoscape.biopax.MapBioPaxToCytoscape;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
+import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
 import org.cytoscape.biopax.util.BioPaxUtil;
-import org.cytoscape.biopax.util.BioPaxVisualStyleUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -812,14 +815,13 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	}
 
 
-	@Deprecated
 	private static String addPublicationXRefs(BioPAXElement resource) {
 		
 		if(!(resource instanceof XReferrable)) {
 			return null;
 		}
 		
-		List<ExternalLink> pubList = BioPaxUtil.xrefToExternalLinks(resource, PublicationXref.class);
+		List<ExternalLink> pubList = xrefToExternalLinks(resource, PublicationXref.class);
 
 		if (!pubList.isEmpty()) {
 			StringBuffer temp = new StringBuffer("<ul>");
@@ -853,7 +855,6 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	}
 
 	
-	@Deprecated
 	private static String addXRefs(List<ExternalLink> xrefList) {
 		if (!xrefList.isEmpty()) {
 			StringBuffer temp = new StringBuffer("<ul>");
@@ -873,13 +874,75 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		return null;
 	}
 
+	
+	public static <T extends Xref> List<ExternalLink> xrefToExternalLinks(BioPAXElement bpe, Class<T> xrefClass) {
+		
+		if(bpe instanceof XReferrable) {
+			List<ExternalLink> erefs = new ArrayList<ExternalLink>();
+			erefs.addAll(extractXrefs(new ClassFilterSet<Xref,T>(
+				((XReferrable)bpe).getXref(), xrefClass) ));
+			if(bpe instanceof SimplePhysicalEntity && 
+				((SimplePhysicalEntity)bpe).getEntityReference() != null)
+			{
+				erefs.addAll(extractXrefs(new ClassFilterSet<Xref,T>(
+					((SimplePhysicalEntity)bpe).getEntityReference().getXref(), xrefClass) ));
+			}
+			return erefs;
+		}
+		return new ArrayList<ExternalLink>();
+	}
+	
 
-	@Deprecated
+	private static List<ExternalLink> extractXrefs(Collection<? extends Xref> xrefs) {
+		List<ExternalLink> dbList = new ArrayList<ExternalLink>();
+
+		for (Xref x: xrefs) {		
+			String db = null;
+			String id = null;
+			String relType = null;
+			String title = null;
+			String year = null;
+			String author = null;
+			String url = null;
+			String source = null;
+			
+			db = x.getDb();
+			String ver = x.getIdVersion();
+			id = x.getId(); // + ((ver!=null) ? "_" + ver : "");
+			if(x instanceof RelationshipXref) {
+				RelationshipTypeVocabulary v = ((RelationshipXref)x).getRelationshipType();
+				if(v != null) relType = v.getTerm().toString();
+			}
+			if(x instanceof PublicationXref) {
+				PublicationXref px = (PublicationXref)x;
+				author = px.getAuthor().toString();
+				title = px.getTitle();
+				source = px.getSource().toString();
+				url =px.getUrl().toString();
+				year = px.getYear() + "";
+			}
+
+			if ((db != null) && (id != null)) {
+				ExternalLink link = new ExternalLink(db, id);
+				link.setAuthor(author);
+				link.setRelType(relType);
+				link.setTitle(title);
+				link.setYear(year);
+				link.setSource(source);
+				link.setUrl(url);
+				dbList.add(link);
+			}
+		}
+
+		return dbList;
+	}	
+	
+
 	private static List<String> getXRefList(BioPAXElement bpe, String xrefType) {
 		List<String> listToReturn = new ArrayList<String>();
 
 		// get the xref list
-		List<ExternalLink> list = BioPaxUtil.xrefToExternalLinks(bpe, RelationshipXref.class);
+		List<ExternalLink> list = xrefToExternalLinks(bpe, RelationshipXref.class);
 		// what type of xref are we interested in ?
 		String type = null;
 		if (xrefType.equals(BIOPAX_AFFYMETRIX_REFERENCES_LIST)) {
@@ -900,7 +963,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	
 	private static String addIHOPLinks(CyNetwork network, BioPAXElement bpe) {
 		List<String> synList = new ArrayList<String>(BioPaxUtil.getSynonymList(bpe));
-		List<ExternalLink> dbList = BioPaxUtil.xrefToExternalLinks(bpe, Xref.class);
+		List<ExternalLink> dbList = xrefToExternalLinks(bpe, Xref.class);
 		
 		if (!synList.isEmpty() || !dbList.isEmpty()) {
 			String htmlLink = ExternalLinkUtil.createIHOPLink(bpe.getModelInterface().getSimpleName(),
