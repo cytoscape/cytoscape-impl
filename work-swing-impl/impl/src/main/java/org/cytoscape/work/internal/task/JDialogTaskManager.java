@@ -8,22 +8,18 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import javax.swing.JPanel;
+
 import javax.swing.JDialog;
-import org.cytoscape.work.swing.DialogTaskManager;
+
 import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.TunableRecorder;
+import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 
 /**
  * Uses Swing components to create a user interface for the <code>Task</code>.

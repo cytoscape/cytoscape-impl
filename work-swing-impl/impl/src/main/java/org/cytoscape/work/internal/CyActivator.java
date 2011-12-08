@@ -4,38 +4,57 @@
 
 package org.cytoscape.work.internal;
 
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-
-import org.cytoscape.work.internal.sync.*;
-import org.cytoscape.work.internal.task.*;
-import org.cytoscape.work.internal.tunables.*;
-import org.cytoscape.work.internal.submenu.*;
-import org.cytoscape.work.internal.UndoSupportImpl;
-import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
-
-import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.swing.undo.SwingUndoSupport;
-import org.cytoscape.work.swing.GUITunableHandlerFactory;
-import org.cytoscape.work.TunableHandlerFactory;
-import org.cytoscape.work.util.*;
-import org.cytoscape.work.swing.*;
-
-import org.cytoscape.io.write.CyWriterFactory;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.work.TunableMutator;
-import org.cytoscape.work.TunableRecorder;
-import org.cytoscape.work.swing.GUITunableHandlerFactory;
-
-import org.osgi.framework.BundleContext;
-
-import org.cytoscape.service.util.AbstractCyActivator;
-
 import java.util.Properties;
+
+import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.write.CyWriterFactory;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TunableHandlerFactory;
+import org.cytoscape.work.TunableRecorder;
+import org.cytoscape.work.internal.submenu.SubmenuTaskManagerImpl;
+import org.cytoscape.work.internal.submenu.SubmenuTunableHandlerImpl;
+import org.cytoscape.work.internal.submenu.SubmenuTunableMutator;
+import org.cytoscape.work.internal.sync.SyncTaskManager;
+import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
+import org.cytoscape.work.internal.sync.SyncTunableMutator;
+import org.cytoscape.work.internal.task.JDialogTaskManager;
+import org.cytoscape.work.internal.task.JPanelTaskManager;
+import org.cytoscape.work.internal.tunables.BooleanHandler;
+import org.cytoscape.work.internal.tunables.BoundedHandler;
+import org.cytoscape.work.internal.tunables.DoubleHandler;
+import org.cytoscape.work.internal.tunables.FileHandlerFactory;
+import org.cytoscape.work.internal.tunables.FloatHandler;
+import org.cytoscape.work.internal.tunables.IntegerHandler;
+import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
+import org.cytoscape.work.internal.tunables.JPanelTunableMutator;
+import org.cytoscape.work.internal.tunables.ListMultipleHandler;
+import org.cytoscape.work.internal.tunables.ListSingleHandler;
+import org.cytoscape.work.internal.tunables.LongHandler;
+import org.cytoscape.work.internal.tunables.StringHandler;
+import org.cytoscape.work.internal.tunables.URLHandlerFactory;
+import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
+import org.cytoscape.work.swing.SimpleSubmenuTunableHandlerFactory;
+import org.cytoscape.work.swing.SubmenuTaskManager;
+import org.cytoscape.work.swing.SubmenuTunableHandlerFactory;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
+import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.work.util.BoundedFloat;
+import org.cytoscape.work.util.BoundedInteger;
+import org.cytoscape.work.util.BoundedLong;
+import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSingleSelection;
+import org.osgi.framework.BundleContext;
 
 
 
@@ -46,6 +65,8 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	public void start(BundleContext bc) {
+		
+		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
 
 		FileUtil fileUtilRef = getService(bc,FileUtil.class);
 		CyProperty bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
@@ -76,7 +97,9 @@ public class CyActivator extends AbstractCyActivator {
 		SimpleGUITunableHandlerFactory boundedLongHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedLong.class);
 		SimpleGUITunableHandlerFactory listSingleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory(ListSingleHandler.class,ListSingleSelection.class);
 		SimpleGUITunableHandlerFactory listMultipleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory(ListMultipleHandler.class,ListMultipleSelection.class);
-		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(bookmarkServiceRef,bookmarksUtilServiceRef);
+		
+		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(dsManager);
+		
 		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager);
 
 		SyncTunableMutator syncTunableMutator = new SyncTunableMutator();

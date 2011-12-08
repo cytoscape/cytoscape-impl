@@ -4,36 +4,30 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
-import org.cytoscape.work.swing.GUITunableHandler;
 
-public class URLHandlerFactory implements GUITunableHandlerFactory {
+public class URLHandlerFactory implements GUITunableHandlerFactory<URLHandler> {
 	
-	private final Bookmarks bookmarks;
-	private final BookmarksUtil bookmarksUtil;
+	private final DataSourceManager manager;
 
-	public URLHandlerFactory(CyProperty<Bookmarks> book, BookmarksUtil bookmarksUtil) {
-		this.bookmarks = (Bookmarks)book.getProperties();
-		this.bookmarksUtil = bookmarksUtil;
-		
+	public URLHandlerFactory(final DataSourceManager manager) {
+		this.manager = manager;
 	}
 
-	public GUITunableHandler createTunableHandler(Field field, Object instance, Tunable tunable) {
+	public URLHandler createTunableHandler(Field field, Object instance, Tunable tunable) {
 		if ( field.getType() != URL.class)
 			return null;
 		
-		return new URLHandler(field, instance, tunable, bookmarks, bookmarksUtil);
+		return new URLHandler(field, instance, tunable, manager);
 	}
 
-	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
+	public URLHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if ( getter.getReturnType() != URL.class)
 			return null;
 		
-		return new URLHandler(getter, setter, instance, tunable, bookmarks, bookmarksUtil);
+		return new URLHandler(getter, setter, instance, tunable, manager);
 	}
 
 }
