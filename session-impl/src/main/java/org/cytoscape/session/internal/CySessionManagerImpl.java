@@ -447,13 +447,17 @@ public class CySessionManagerImpl implements CySessionManager {
 	private void disposeCurrentSession(boolean removeVisualStyles) {
 		logger.debug("Disposing current session...");
 
-		// Destroy network views and models
+		// Destroy network views
 		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
-		for (CyNetworkView nv : netViews) {
+		for (CyNetworkView nv : netViews)
 			nvMgr.destroyNetworkView(nv);
-			netMgr.destroyNetwork(nv.getModel());
-		}
+		
+		// Destroy networks
+		Set<CyNetwork> networks = netMgr.getNetworkSet();
+		
+		for (CyNetwork n : networks)
+			netMgr.destroyNetwork(n);
 
 		// Destroy styles
 		if (removeVisualStyles) {
