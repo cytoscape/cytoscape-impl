@@ -3,6 +3,8 @@ package org.cytoscape.filter.internal;
 
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -44,8 +46,11 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
+		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
+		CytoscapeVersion cytoscapeVersionService = getService(bc,CytoscapeVersion.class);
 		
-		FilterPlugin filterPlugin = new FilterPlugin(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
+		FilterPlugin filterPlugin = new FilterPlugin(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, 
+				cyApplicationConfigurationServiceRef, cytoscapeVersionService);
 		QuickFindApp quickFindApp = new QuickFindApp(cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		FilterMainPanel filterMainPanel = new FilterMainPanel(cyApplicationManagerServiceRef,filterPlugin,cyNetworkManagerServiceRef,cyServiceRegistrarServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
 		FilterCytoPanelComponent filterCytoPanelComponent = new FilterCytoPanelComponent(filterMainPanel);
@@ -57,9 +62,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,filterPanelSelectedListener,CytoPanelComponentSelectedListener.class, new Properties());
 		registerService(bc,filterAction,CyAction.class, new Properties());
 		registerAllServices(bc,quickFindApp, new Properties());
-
+		registerAllServices(bc,filterPlugin, new Properties());
 		
-
 	}
 }
 
