@@ -119,7 +119,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			newNet.addEdge(edge);
 		tm.setProgress(0.5);
 
-		newNet.getCyRow().set(CyTableEntry.NAME, cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork));
+		newNet.getCyRow(newNet).set(CyTableEntry.NAME, cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork));
 
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);

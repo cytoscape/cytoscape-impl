@@ -66,16 +66,13 @@ public class PassthroughMappingImpl<K, V> extends
 	 * @see org.cytoscape.view.vizmap.mappings.PassthroughMapping#apply(org.cytoscape.view.model.View)
 	 */
 	@Override
-	public void apply(final View<? extends CyTableEntry> view) {
+	public void apply(final CyRow row, final View<? extends CyTableEntry> view) {
+		if ( row == null )
+			return;
+
 		if (view == null)
 			return; // empty list, nothing to do
 
-		final CyRow row;
-		if(table == null)
-			row = view.getModel().getCyRow();
-		else
-			row = view.getModel().getCyRow(table.getTitle());
-		
 		if(attrName.equals(CyTableEntry.SUID)) {
 			// Special case: SUID
 			view.setVisualProperty(vp, (V)Long.valueOf(view.getModel().getSUID()));

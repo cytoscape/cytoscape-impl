@@ -35,7 +35,7 @@ public class NetworkGroupUtil {
             if (type == CPathProperties.DOWNLOAD_REDUCED_BINARY_SIF) {
                 attribute = MapBioPaxToCytoscape.BINARY_NETWORK;
             }
-            Boolean b = net.getCyRow().get(attribute, Boolean.class);
+            Boolean b = net.getCyRow(net).get(attribute, Boolean.class);
             if (b != null && b) {
                 networkSet.add(net);
             }

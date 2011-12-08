@@ -461,7 +461,7 @@ public class MapToCytoscape implements Mapper {
 		if (!edgeIds.contains(key)) {
 			CyEdge edge = network.addEdge(node1, node2, true);
 
-			mapEdgeAttributes(interaction, edge);
+			mapEdgeAttributes(interaction, edge, network);
 
 			int edgeRootGraphIndex = edge.getIndex();
 			@SuppressWarnings("unchecked")
@@ -491,10 +491,10 @@ public class MapToCytoscape implements Mapper {
 
 		if (!inGraph) {
 			CyNode node = network.addNode();
-			node.getCyRow().set(AttributeUtil.NODE_NAME_ATTR_LABEL, name);
+			network.getCyRow(node).set(AttributeUtil.NODE_NAME_ATTR_LABEL, name);
 
 			nodeList.add(node);
-			mapNodeAttributes(interactor, node);
+			mapNodeAttributes(interactor, node, network);
 			map.put(name, node);
 		}
 	}
@@ -506,11 +506,11 @@ public class MapToCytoscape implements Mapper {
 	 * @param interactor Interactor object.
 	 * @param cyNode     Node.
 	 */
-	protected void mapNodeAttributes(Interactor interactor, CyNode cyNode) {
+	protected void mapNodeAttributes(Interactor interactor, CyNode cyNode, CyNetwork network) {
 		//  Map All Interactor Attributes
 		Map<String, Object> attributeMap = interactor.getAllAttributes();
 
-		CyRow attributes = cyNode.getCyRow();
+		CyRow attributes = network.getCyRow(cyNode);
 		for (Entry<String, Object> entry : attributeMap.entrySet()) {
 			Object value = entry.getValue();
 			// TODO: Review this: The original code assumed all attributes were Strings
@@ -546,10 +546,10 @@ public class MapToCytoscape implements Mapper {
 	 * @param interaction Interaction object.
 	 * @param cyEdge      Edge object.
 	 */
-	protected void mapEdgeAttributes(Interaction interaction, CyEdge cyEdge) {
+	protected void mapEdgeAttributes(Interaction interaction, CyEdge cyEdge, CyNetwork network) {
 		Map<String, Object> attributeMap = interaction.getAllAttributes();
 
-		CyRow attributes = cyEdge.getCyRow();
+		CyRow attributes = network.getCyRow(cyEdge);
 		for (Entry<String, Object> entry : attributeMap.entrySet()) {
 			String key = entry.getKey();
 			Object attrObject = entry.getValue();

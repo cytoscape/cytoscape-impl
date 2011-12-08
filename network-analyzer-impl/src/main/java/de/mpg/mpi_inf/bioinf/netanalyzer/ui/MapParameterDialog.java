@@ -202,7 +202,7 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		Utils.setStandardBorder(contentPane);
 
 		// Add a title label
-		String tt = "<html>" + Messages.DI_APPLYVS + "<b>" + network.getCyRow().get("name", String.class) + "</b>";
+		String tt = "<html>" + Messages.DI_APPLYVS + "<b>" + network.getCyRow(network).get("name", String.class) + "</b>";
 		contentPane.add(new JLabel(tt, SwingConstants.CENTER), BorderLayout.PAGE_START);
 
 		boolean attrCalculated = false;
@@ -482,17 +482,17 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	 * @param id
 	 *            A node id, whose computed attribute values are retrieved.
 	 */
-	private void getBoundaryValues(String[][] attr, CyTableEntry entry) {
+	private void getBoundaryValues(CyNetwork network, String[][] attr, CyTableEntry entry) {
 		for (int i = 0; i < attr.length; i++) {
 			for (int j = 0; j < attr[i].length; j++) {
 				final Class<?> attrType =
-					entry.getCyRow().getTable().getColumn(attr[i][j]).getType();
+					network.getCyRow(entry).getTable().getColumn(attr[i][j]).getType();
 
 				Double attrValue = new Double(0.0);
 				if (attrType == Integer.class)
-					attrValue = entry.getCyRow().get(attr[i][j], Integer.class).doubleValue();
+					attrValue = network.getCyRow(entry).get(attr[i][j], Integer.class).doubleValue();
 				else if (attrType == Double.class)
-					attrValue = entry.getCyRow().get(attr[i][j], Double.class);
+					attrValue = network.getCyRow(entry).get(attr[i][j], Double.class);
 
 				if (attrValue != null && !attrValue.isNaN()) {
 					final Double oldMinValue = minAttrValue.get(attr[i][j]);
@@ -527,12 +527,12 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		// Find min, max and mean for each node attribute
 		// TODO: [Cytoscape 2.8] Check if the returned iterator is parameterized
 		for ( CyNode n : network.getNodeList()) {
-			getBoundaryValues( nodeAttr, n);
+			getBoundaryValues( network, nodeAttr, n);
 		}
 		calculateMean(network.getNodeCount(), nodeAttr);
 		// Find min, max and mean for each node attribute
 		for ( CyEdge e : network.getEdgeList()) {
-			getBoundaryValues( edgeAttr, e);
+			getBoundaryValues( network, edgeAttr, e);
 		}
 		calculateMean(network.getEdgeCount(), edgeAttr);
 	}

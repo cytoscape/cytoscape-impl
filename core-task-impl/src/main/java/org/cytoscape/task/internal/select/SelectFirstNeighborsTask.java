@@ -73,7 +73,7 @@ public class SelectFirstNeighborsTask extends AbstractSelectTask {
 		for (CyNode currentNode : selectedNodes)
 			nodes.addAll(network.getNeighborList(currentNode, direction));
 		tm.setProgress(0.4);
-		selectUtils.setSelectedNodes(nodes, true);
+		selectUtils.setSelectedNodes(network, nodes, true);
 		tm.setProgress(0.8);
 		updateView();
 		tm.setProgress(1.0);

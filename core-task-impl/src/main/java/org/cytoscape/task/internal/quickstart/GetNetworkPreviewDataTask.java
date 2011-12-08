@@ -36,7 +36,7 @@ public class GetNetworkPreviewDataTask extends AbstractTask {
 		
 		for (int i=0; i<nodeCount; i++ ){
 			CyNode node = nodeList.get(i);
-			String nodeName = node.getCyRow().get("name", String.class);
+			String nodeName = net.getCyRow(node).get("name", String.class);
 			previewData[i][0]= nodeName; 
 		}
 		monitor.setProgress(1.0);

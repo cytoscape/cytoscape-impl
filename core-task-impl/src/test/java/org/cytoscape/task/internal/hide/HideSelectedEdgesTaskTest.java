@@ -40,8 +40,8 @@ public class HideSelectedEdgesTaskTest extends AbstractNetworkViewTaskTest {
 		edge2 = network.addEdge(n1, n3, true);
 		edge3 = network.addEdge(n2, n3, true);
 		
-		edge1.getCyRow().set(CyNetwork.SELECTED, true);
-		edge3.getCyRow().set(CyNetwork.SELECTED, true);
+		view.getModel().getCyRow(edge1).set(CyNetwork.SELECTED, true);
+		view.getModel().getCyRow(edge3).set(CyNetwork.SELECTED, true);
 	}
 	
 	@Test(expected=NullPointerException.class)

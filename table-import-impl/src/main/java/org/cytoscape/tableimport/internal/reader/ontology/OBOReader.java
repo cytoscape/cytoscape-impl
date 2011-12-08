@@ -151,7 +151,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 			networkTable.createColumn(DAG_ATTR, Boolean.class, true);
 		
 		networkTable.getRow(ontologyDAG.getSUID()).set(DAG_ATTR, true);
-		ontologyDAG.getCyRow().set(CyTableEntry.NAME, dagName);
+		ontologyDAG.getCyRow(ontologyDAG).set(CyTableEntry.NAME, dagName);
 	}
 
 
@@ -203,45 +203,45 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 				termNode = termID2nodeMap.get(val);
 				if (termNode == null) {
 					termNode = this.ontologyDAG.addNode();
-					termNode.getCyRow().set(CyTableEntry.NAME, val);
+					ontologyDAG.getCyRow(termNode).set(CyTableEntry.NAME, val);
 					termID2nodeMap.put(val, termNode);
 					id = val;					
 				}
 			} else if (key.equals(NAME.toString())) {
 				// Name column is used in Cytoscape core, so use different tag instead.
-				if (termNode.getCyRow().getTable().getColumn(TERM_NAME) == null)
-					termNode.getCyRow().getTable().createColumn(TERM_NAME, String.class, true);
-				termNode.getCyRow().set(TERM_NAME, val);
+				if (ontologyDAG.getCyRow(termNode).getTable().getColumn(TERM_NAME) == null)
+					ontologyDAG.getCyRow(termNode).getTable().createColumn(TERM_NAME, String.class, true);
+				ontologyDAG.getCyRow(termNode).set(TERM_NAME, val);
 			} else if (key.equals(DEF.toString())) {
 				definitionParts = val.split("\"");
 				
-				if (termNode.getCyRow().getTable().getColumn(key) == null)
-					termNode.getCyRow().getTable().createColumn(key, String.class, true);
-				termNode.getCyRow().set(key, definitionParts[1]);
+				if (ontologyDAG.getCyRow(termNode).getTable().getColumn(key) == null)
+					ontologyDAG.getCyRow(termNode).getTable().createColumn(key, String.class, true);
+				ontologyDAG.getCyRow(termNode).set(key, definitionParts[1]);
 				
 				final List<String> originList = getReferences(val.substring(definitionParts[1].length() + 2));
 				
 				if (originList != null) {
-					if (termNode.getCyRow().getTable().getColumn(DEF_ORIGIN) == null)
-						termNode.getCyRow().getTable().createListColumn(DEF_ORIGIN, String.class, true);
-					termNode.getCyRow().set(DEF_ORIGIN, originList);
+					if (ontologyDAG.getCyRow(termNode).getTable().getColumn(DEF_ORIGIN) == null)
+						ontologyDAG.getCyRow(termNode).getTable().createListColumn(DEF_ORIGIN, String.class, true);
+					ontologyDAG.getCyRow(termNode).set(DEF_ORIGIN, originList);
 				}
 			} else if (key.equals(EXACT_SYNONYM.toString()) || key.equals(RELATED_SYNONYM.toString())
 					|| key.equals(BROAD_SYNONYM.toString()) || key.equals(NARROW_SYNONYM.toString())
 					|| key.equals(SYNONYM.toString())) {
 				synonymParts = val.split("\"");
 
-				if (termNode.getCyRow().getTable().getColumn(key) == null)
-					termNode.getCyRow().getTable().createListColumn(key, String.class, true);
+				if (ontologyDAG.getCyRow(termNode).getTable().getColumn(key) == null)
+					ontologyDAG.getCyRow(termNode).getTable().createListColumn(key, String.class, true);
 				
-				List<String> listAttr = termNode.getCyRow().getList(key, String.class);
+				List<String> listAttr = ontologyDAG.getCyRow(termNode).getList(key, String.class);
 
 				if (listAttr == null)
 					listAttr = new ArrayList<String>();
 
 				listAttr.add(synonymParts[1]);
 
-				termNode.getCyRow().set(key, listAttr);
+				ontologyDAG.getCyRow(termNode).set(key, listAttr);
 			} else if (key.equals(RELATIONSHIP.toString())) {
 				entry = val.split(" ");
 				final String[] itr = new String[3];
@@ -264,10 +264,10 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 				itr[2] = "is_a";
 				interactionList.add(itr);
 			} else if (key.equals(IS_OBSOLETE.toString())) {
-				if (termNode.getCyRow().getTable().getColumn(key) == null)
-					termNode.getCyRow().getTable().createColumn(key, Boolean.class, true);
+				if (ontologyDAG.getCyRow(termNode).getTable().getColumn(key) == null)
+					ontologyDAG.getCyRow(termNode).getTable().createColumn(key, Boolean.class, true);
 				try {
-					termNode.getCyRow().set(key, Boolean.parseBoolean(val));
+					ontologyDAG.getCyRow(termNode).set(key, Boolean.parseBoolean(val));
 				} catch(Exception e) {
 					// Ignore invalid entries.
 					continue;
@@ -276,10 +276,10 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 					|| key.equals(ALT_ID.toString()) || key.equals(SUBSET.toString())
 					|| key.equals(DISJOINT_FROM.toString())) {
 
-				if (termNode.getCyRow().getTable().getColumn(key) == null)
-					termNode.getCyRow().getTable().createListColumn(key, String.class, true);
+				if (ontologyDAG.getCyRow(termNode).getTable().getColumn(key) == null)
+					ontologyDAG.getCyRow(termNode).getTable().createListColumn(key, String.class, true);
 
-				List<String> listAttr = termNode.getCyRow().getList(key, String.class);
+				List<String> listAttr = ontologyDAG.getCyRow(termNode).getList(key, String.class);
 				if (listAttr == null)
 					listAttr = new ArrayList<String>();
 
@@ -289,12 +289,12 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 					} else
 						listAttr.add(val);
 				}
-				termNode.getCyRow().set(key, listAttr);
+				ontologyDAG.getCyRow(termNode).set(key, listAttr);
 			} else {
 				// Others will be stored as a string attr.
-				if (termNode.getCyRow().getTable().getColumn(key) == null)
-					termNode.getCyRow().getTable().createColumn(key, String.class, true);
-				termNode.getCyRow().set(key, val);
+				if (ontologyDAG.getCyRow(termNode).getTable().getColumn(key) == null)
+					ontologyDAG.getCyRow(termNode).getTable().createColumn(key, String.class, true);
+				ontologyDAG.getCyRow(termNode).set(key, val);
 			}
 		}
 	}
@@ -302,7 +302,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 	private void buildEdge() {
 		for (String[] entry : this.interactionList) {
 			CyEdge edge = ontologyDAG.addEdge(termID2nodeMap.get(entry[0]), termID2nodeMap.get(entry[1]), true);
-			edge.getCyRow().set(CyEdge.INTERACTION, entry[2]);
+			ontologyDAG.getCyRow(edge).set(CyEdge.INTERACTION, entry[2]);
 		}
 		interactionList.clear();
 	}

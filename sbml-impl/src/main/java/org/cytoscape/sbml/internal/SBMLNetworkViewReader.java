@@ -88,7 +88,7 @@ public class SBMLNetworkViewReader extends AbstractTask implements CyNetworkRead
 		for (Species species : model.getListOfSpecies()) {
 			CyNode node = network.addNode();
 			speciesById.put(species.getId(), node);
-			CyRow attributes = node.getCyRow();
+			CyRow attributes = network.getCyRow(node);
 			checkNodeSchema(attributes);
 			attributes.set(NODE_NAME_ATTR_LABEL, species.getName());
 			attributes.set(SBML_TYPE_ATTR, SBML_TYPE_SPECIES);
@@ -109,7 +109,7 @@ public class SBMLNetworkViewReader extends AbstractTask implements CyNetworkRead
 		for (Reaction reaction : model.getListOfReactions()) {
 			CyNode node = network.addNode();
 			reactionsById.put(reaction.getId(), node);
-			CyRow attributes = node.getCyRow();
+			CyRow attributes = network.getCyRow(node);
 			checkNodeSchema(attributes);
 			String name = reaction.getName();
 			if (name == null) {
@@ -123,7 +123,7 @@ public class SBMLNetworkViewReader extends AbstractTask implements CyNetworkRead
 			for (SpeciesReference product : reaction.getListOfProducts()) {
 				CyNode sourceNode = speciesById.get(product.getSpecies());
 				CyEdge edge = network.addEdge(sourceNode, node, true);
-				CyRow edgeAttributes = edge.getCyRow();
+				CyRow edgeAttributes = network.getCyRow(edge);
 				checkEdgeSchema(edgeAttributes);
 				edgeAttributes.set(INTERACTION_TYPE_ATTR, INTERACTION_TYPE_REACTION_PRODUCT);
 			}
@@ -131,7 +131,7 @@ public class SBMLNetworkViewReader extends AbstractTask implements CyNetworkRead
 			for (SpeciesReference reactant : reaction.getListOfReactants()) {
 				CyNode sourceNode = speciesById.get(reactant.getSpecies());
 				CyEdge edge = network.addEdge(sourceNode, node, true);
-				CyRow edgeAttributes = edge.getCyRow();
+				CyRow edgeAttributes = network.getCyRow(edge);
 				checkEdgeSchema(edgeAttributes);
 				edgeAttributes.set(INTERACTION_TYPE_ATTR, INTERACTION_TYPE_REACTION_REACTANT);
 			}
@@ -139,7 +139,7 @@ public class SBMLNetworkViewReader extends AbstractTask implements CyNetworkRead
 			for (ModifierSpeciesReference modifier : reaction.getListOfModifiers()) {
 				CyNode sourceNode = speciesById.get(modifier.getSpecies());
 				CyEdge edge = network.addEdge(sourceNode, node, true);
-				CyRow edgeAttributes = edge.getCyRow();
+				CyRow edgeAttributes = network.getCyRow(edge);
 				checkEdgeSchema(edgeAttributes);
 				edgeAttributes.set(INTERACTION_TYPE_ATTR, INTERACTION_TYPE_REACTION_MODIFIER);
 			}

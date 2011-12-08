@@ -28,10 +28,10 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 		CyNetworkView[] views = getViews("sample.sif");
 		for ( CyNetworkView view : views ) {
 			for (CyNode n : view.getModel().getNodeList()) {
-				System.out.println("sample.sif: NODE " + n.getCyRow().get("name",String.class));
+				System.out.println("sample.sif: NODE " + view.getModel().getCyRow(n).get("name",String.class));
 			}
 			for (CyEdge e : view.getModel().getEdgeList()) {
-				System.out.println("sample.sif: EDGE " + e.getCyRow().get("name",String.class));
+				System.out.println("sample.sif: EDGE " + view.getModel().getCyRow(e).get("name",String.class));
 			}
 		}
 		CyNetwork net = checkSingleNetwork(views, 31, 27);
@@ -51,7 +51,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 		CyNetwork net = checkSingleNetwork(views, 9, 0);
 
 		for (CyNode n : net.getNodeList())
-			assertTrue(n.getCyRow().get("name", String.class).startsWith("Y"));
+			assertTrue(net.getCyRow(n).get("name", String.class).startsWith("Y"));
 	}
 
 	@Test

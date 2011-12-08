@@ -62,6 +62,7 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 
 	private final GraphView view;
 	private final CyEventHelper eventHelper;
+	private final CyNetwork network;
 
 	/**
 	 * Standard constructor takes the flag filter and the view that should be
@@ -72,6 +73,7 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 	public FlagAndSelectionHandler(final GraphView view, final CyEventHelper eventHelper) {
 		this.view = view;
 		this.eventHelper = eventHelper;
+		this.network = view.getNetwork();
 
 		syncFilterAndView();
 		view.addGraphViewChangeListener(this);
@@ -80,8 +82,8 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 	private Set<CyNode> getSelectedNodes() {
 		final Set<CyNode> selectedNodes = new HashSet<CyNode>();
 
-		for (final CyNode n : view.getNetwork().getNodeList()) {
-			final Boolean selected = n.getCyRow().get(CyNetwork.SELECTED, Boolean.class);
+		for (final CyNode n : network.getNodeList()) {
+			final Boolean selected = network.getCyRow(n).get(CyNetwork.SELECTED, Boolean.class);
 			if (selected != null && selected)
 				selectedNodes.add(n);
 		}
@@ -92,8 +94,8 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 	private Set<CyEdge> getSelectedEdges() {
 		final Set<CyEdge> selectedEdges = new HashSet<CyEdge>();
 
-		for (final CyEdge n : view.getNetwork().getEdgeList()) {
-			final Boolean selected = n.getCyRow().get(CyNetwork.SELECTED, Boolean.class);
+		for (final CyEdge n : network.getEdgeList()) {
+			final Boolean selected = network.getCyRow(n).get(CyNetwork.SELECTED, Boolean.class);
 			if (selected != null && selected)
 				selectedEdges.add(n);
 		}
@@ -146,7 +148,7 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 
 		
 		for (final CyTableEntry nodeOrEdge : nodesOrEdges)
-			nodeOrEdge.getCyRow().set(CyNetwork.SELECTED, selected);		
+			network.getCyRow(nodeOrEdge).set(CyNetwork.SELECTED, selected);		
 	}
 
 	/**

@@ -2,6 +2,8 @@ package org.cytoscape.internal.select;
 
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -47,7 +49,10 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	 * @param RowsSetEvent The event to be processed.
 	 */
 	@SuppressWarnings("unchecked")
-	public void handleEvent(RowsSetEvent e) {
+	public void handleEvent(final RowsSetEvent e) {
+
+		SwingUtilities.invokeLater( new Runnable() {
+		public void run() {
 
 		boolean refreshView = false;
 		CyNetwork network = am.getCurrentNetwork();		
@@ -95,6 +100,8 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		if (refreshView){
 			networkView.updateView();			
 		}
+
+		}});
 	}
 	
 	

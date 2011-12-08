@@ -115,7 +115,7 @@ public class ConnComponentsDialog extends JDialog
 		boolean enabled = (i != 0);
 		btnExtract.setEnabled(enabled);
 		if (enabled) {
-			String title = network.getCyRow().get("name", String.class);
+			String title = network.getCyRow(network).get("name", String.class);
 			if (title == null) {
 				title = "_" + i;
 			} else if (title.endsWith(".gml") || title.endsWith(".sif")) {
@@ -170,7 +170,7 @@ public class ConnComponentsDialog extends JDialog
 		Box contentPane = new Box(BoxLayout.PAGE_AXIS);
 		Utils.setStandardBorder(contentPane);
 
-		String tt = "<html>" + Messages.DI_CCOF + "<b>" + network.getCyRow().get("name", String.class) + "</b>";
+		String tt = "<html>" + Messages.DI_CCOF + "<b>" + network.getCyRow(network).get("name", String.class) + "</b>";
 		JPanel panTitle = new JPanel();
 		panTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panTitle.add(new JLabel(tt));

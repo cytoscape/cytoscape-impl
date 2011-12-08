@@ -269,7 +269,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			String netName = null;
 
 			for (CyNetwork net : netArray) {
-				netName = net.getCyRow().get(CyNetwork.NAME, String.class);
+				netName = net.getCyRow(net).get(CyNetwork.NAME, String.class);
 				
 				networkLookup.put(netName, net);
 				networks.add(net);
@@ -476,7 +476,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 
 		for (CyNode n : net.getNodeList())
-			nodeMap.put(n.getCyRow().get(CyRootNetwork.SHARED_NAME, String.class), n);
+			nodeMap.put(net.getCyRow(n).get(CyRootNetwork.SHARED_NAME, String.class), n);
 
 		// set attr values based on ids
 		while (it.hasNext()) {
@@ -486,7 +486,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 			// FIXME this fires too many events
 			if (n != null)
-				n.getCyRow().set(attrName, true);
+				net.getCyRow(n).set(attrName, true);
 			else 
 				logger.error("Cannot restore boolean node attr \"" + name + "\": node not found.");
 		}
@@ -500,7 +500,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		Map<String, CyEdge> edgeMap = new HashMap<String, CyEdge>();
 		
 		for (CyEdge e : net.getEdgeList())
-			edgeMap.put(e.getCyRow().get(CyRootNetwork.SHARED_NAME, String.class), e);
+			edgeMap.put(net.getCyRow(e).get(CyRootNetwork.SHARED_NAME, String.class), e);
 
 		// set attr values based on ids
 		while (it.hasNext()) {
@@ -510,7 +510,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 			// FIXME this fires too many events
 			if (e != null)
-				e.getCyRow().set(attrName, true);
+				net.getCyRow(e).set(attrName, true);
 			else 
 				logger.error("Cannot restore boolean edge attr \"" + name + "\": node not found.");
 		}

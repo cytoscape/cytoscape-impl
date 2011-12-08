@@ -144,7 +144,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 		
 		for (CyNode node:network.getNodeList()){
 			// TODO: support namespace
-			T key = node.getCyRow().get(attributeName, klass);
+			T key = network.getCyRow(node).get(attributeName, klass);
 
 			if (key == null) {
 				if (invalidNodes != null)

@@ -238,7 +238,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         writeAttributePair("id", id);
         
         // Save the label to make it more human readable
-        String label = networkView != null ? getLabel(networkView) : getLabel(network);
+        String label = networkView != null ? getLabel(networkView) : getLabel(network, network);
         writeAttributePair("label", label);
         
         // Is is a network view serialization?
@@ -294,7 +294,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @throws IOException
      */
     private void writeRDF() throws IOException {
-    	String title = networkView != null ? getLabel(networkView) : getLabel(network);
+    	String title = networkView != null ? getLabel(networkView) : getLabel(network, network);
     	Date now = new Date();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     	
@@ -324,7 +324,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      */
 	private void writeNetworkAttributes() throws IOException {
 		// Handle all of the other network attributes, but only if exporting to XGMML directly
-		writeAttributes(network.getCyRow());
+		writeAttributes(network.getCyRow(network));
 
 		// Write sub-graphs first, but only if the XGMML is for a CYS file
 		if (sessionFormat && subNetworks != null) {
@@ -338,14 +338,14 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 				// Always write the network ID
 				writeAttributePair("id", subNet.getSUID());
 				// Save the label to make it more human readable
-				writeAttributePair("label", getLabel(subNet));
+				writeAttributePair("label", getLabel(subNet, subNet));
 				write(">\n");
 				depth++;
 
 				for (CyNode childNode : subNet.getNodeList())
-					writeNode(childNode);
+					writeNode(subNet,childNode);
 				for (CyEdge childEdge : subNet.getEdgeList())
-					writeEdge(childEdge);
+					writeEdge(subNet,childEdge);
 
 				depth--;
 				writeElement("</graph>\n");
@@ -367,13 +367,13 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	private void writeNodes() throws IOException {
 		if (sessionFormat && networkView != null) {
 			for (View<CyNode> view : networkView.getNodeViews()) {
-				writeNodeView(view);
+				writeNodeView(networkView.getModel(),view);
 			}
 		} else {
 			for (CyNode node : network.getNodeList()) {
 				// Only if not already written inside a nested graph
 				if (!nodeMap.containsKey(node))
-					writeNode(node);
+					writeNode(network,node);
 			}
 		}
 	}
@@ -385,13 +385,13 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     private void writeEdges() throws IOException {
     	if (sessionFormat && networkView != null) {
 	    	for (View<CyEdge> view : networkView.getEdgeViews()) {
-				writeEdgeView(view);
+				writeEdgeView(networkView.getModel(),view);
 			}
     	} else {
     		for (CyEdge edge : network.getEdgeList()) {
     			// Only if not already written inside a nested graph
     			if (!edgeMap.containsKey(edge))
-    				writeEdge(edge);
+    				writeEdge(network,edge);
 	        }
 		}
     }
@@ -402,7 +402,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param node the node to output
      * @throws IOException
      */
-	private void writeNode(CyNode node) throws IOException {
+	private void writeNode(CyNetwork network, CyNode node) throws IOException {
 		boolean written = nodeMap.containsKey(node);
 		
 		// Output the node
@@ -418,12 +418,12 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			
 			// Write the actual node with its properties
 			writeAttributePair("id", node.getSUID());
-			writeAttributePair("label", getLabel(node));
+			writeAttributePair("label", getLabel(network, node));
 			write(">\n");
 			depth++;
 			
 			// Output the node attributes
-			writeAttributes(node.getCyRow());
+			writeAttributes(network.getCyRow(node));
 			
 	        // Write node's sub-graph:
 			CyNetwork subNet = node.getNetworkPointer();
@@ -458,12 +458,12 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 					write(">\n");
 					depth++;
 					
-					writeAttributes(subNet.getCyRow());
+					writeAttributes(subNet.getCyRow(subNet));
 					
 					for (CyNode n : subNet.getNodeList())
-						writeNode(n);
+						writeNode(subNet,n);
 					for (CyEdge e : network.getEdgeList())
-						writeEdge(e);
+						writeEdge(network,e);
 					
 					depth--;
 					writeElement("</graph>\n");
@@ -489,11 +489,11 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param view the node view to output
      * @throws IOException
      */
-	private void writeNodeView(View<CyNode> view) throws IOException {
+	private void writeNodeView(CyNetwork network, View<CyNode> view) throws IOException {
 		// Output as a node tag
 		writeElement("<node");
 		writeAttributePair("id", view.getSUID());
-		writeAttributePair("label", getLabel(view.getModel()));
+		writeAttributePair("label", getLabel(network, view.getModel()));
 		writeAttributePair("cy:nodeId", view.getModel().getSUID());
 		write(">\n");
         depth++;
@@ -511,7 +511,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param edge the edge to output
      * @throws IOException
      */
-	private void writeEdge(CyEdge edge) throws IOException {
+	private void writeEdge(CyNetwork network, CyEdge edge) throws IOException {
 		// Make sure these nodes exist
 		if (!nodeMap.containsKey(edge.getTarget()) || !nodeMap.containsKey(edge.getSource())) return;
 		boolean written = edgeMap.containsKey(edge);
@@ -527,7 +527,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			edgeMap.put(edge, edge);
 			
 			writeAttributePair("id", edge.getSUID());
-			writeAttributePair("label", getLabel(edge));
+			writeAttributePair("label", getLabel(network, edge));
 			writeAttributePair("source", edge.getSource().getSUID());
 			writeAttributePair("target", edge.getTarget().getSUID());
 			writeAttributePair("cy:directed",  AttributeValueUtil.toXGMMLBoolean(edge.isDirected()));
@@ -535,7 +535,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			depth++;
 
 			// Write the edge attributes
-			writeAttributes(edge.getCyRow());
+			writeAttributes(network.getCyRow(edge));
 	
 			// Write the edge graphics
 			if (networkView != null) {
@@ -553,7 +553,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param view the edge view to output
      * @throws IOException
      */
-	private void writeEdgeView(View<CyEdge> view) throws IOException {
+	private void writeEdgeView(CyNetwork network, View<CyEdge> view) throws IOException {
 		// It is not necessary to write edges that have no locked visual properties
 		boolean hasLockedVisualProps = false;
 		Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(MinimalVisualLexicon.EDGE);
@@ -568,7 +568,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 		if (hasLockedVisualProps) {
 			writeElement("<edge");
 			writeAttributePair("id", view.getSUID());
-			writeAttributePair("label", getLabel(view.getModel()));
+			writeAttributePair("label", getLabel(network, view.getModel()));
 			writeAttributePair("cy:edgeId", view.getModel().getSUID());
 			write(">\n");
 			depth++;
@@ -951,8 +951,8 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         }
     }
 
-    private String getLabel(CyTableEntry entry) {
-        String label = encode(entry.getCyRow().get(CyNetwork.NAME, String.class));
+    private String getLabel(CyNetwork network, CyTableEntry entry) {
+        String label = encode(network.getCyRow(entry).get(CyNetwork.NAME, String.class));
         
         if (label == null || label.isEmpty())
         	label = Long.toString(entry.getSUID());

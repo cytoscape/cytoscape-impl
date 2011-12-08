@@ -43,8 +43,8 @@ class CyNodeImpl extends CyTableEntryImpl implements CyNode {
 	private CyNetwork nestedNet;
 	final private CyEventHelper eventHelper;
 
-	CyNodeImpl(long suid, int ind, final Map<String,CyTable> table, final CyEventHelper eventHelper) {
-		super(table,suid);
+	CyNodeImpl(long suid, int ind, final CyEventHelper eventHelper) {
+		super(suid);
 		index = ind;
 		nestedNet = null;
 		this.eventHelper = eventHelper;

@@ -27,7 +27,7 @@ public class HandleGraphAttribute extends AbstractHandler {
 			String attValue = attributeValueUtil.getAttributeValue(atts, attName);
 			manager.addGraphicsAttribute(manager.getCurrentNetwork(), attName, attValue);
 		} else {
-			manager.currentAttributes = manager.getCurrentNetwork().getCyRow();
+			manager.currentAttributes = manager.getCurrentNetwork().getCyRow(manager.getCurrentNetwork());
 			nextState = attributeValueUtil.handleAttribute(atts, manager.currentAttributes);
 		}
 

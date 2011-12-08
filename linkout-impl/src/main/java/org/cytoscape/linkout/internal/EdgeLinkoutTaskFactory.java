@@ -34,6 +34,6 @@ public class EdgeLinkoutTaskFactory extends AbstractEdgeViewTaskFactory {
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new LinkoutTask(link, browser, edgeView.getModel().getSource(), edgeView.getModel().getTarget(), edgeView.getModel()));
+		return new TaskIterator(new LinkoutTask(link, browser, netView.getModel(), edgeView.getModel().getSource(), edgeView.getModel().getTarget(), edgeView.getModel()));
 	}
 }

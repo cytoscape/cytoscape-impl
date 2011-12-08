@@ -106,7 +106,7 @@ public class MapToCytoscapeTest {
 		CyNode node1 = null;
 
 		for (CyNode node : network.getNodeList()) {
-			String name = getName(node);
+			String name = getName(network, node);
 			if (name.equals("YDL065C")) {
 				node1 = node;
 			}
@@ -118,7 +118,7 @@ public class MapToCytoscapeTest {
 		CyEdge edge1 = null;
 
 		for (CyEdge edge : network.getEdgeList()) {
-			if (checkEdge(edge, "YCR038C", "YDR532C")) {
+			if (checkEdge(network, edge, "YCR038C", "YDR532C")) {
 				edge1 = edge;
 			}
 		}
@@ -128,7 +128,7 @@ public class MapToCytoscapeTest {
 		CyNode sourceNode = edge1.getSource();
 
 		//  Verify that Attributes were mapped over too...
-		CyRow nodeAttributes = sourceNode.getCyRow();
+		CyRow nodeAttributes = network.getCyRow(sourceNode);
 		String taxonomyId = nodeAttributes.get(InteractorVocab.ORGANISM_NCBI_TAXONOMY_ID, String.class); 
 		assertEquals("4932", taxonomyId);
 
@@ -142,7 +142,7 @@ public class MapToCytoscapeTest {
 		assertEquals("RefSeq GI", dbNameList.get(0));
 
 		//  Verify that Interaction Xrefs were mapped over correctly.
-		CyRow edgeAttributes = edge1.getCyRow();
+		CyRow edgeAttributes = network.getCyRow(edge1);
 		dbNameList = edgeAttributes.getList(CommonVocab.XREF_DB_NAME, String.class);
 
 		List<?> dbIdList = edgeAttributes.getList(CommonVocab.XREF_DB_ID, String.class);
@@ -154,20 +154,20 @@ public class MapToCytoscapeTest {
 		assertEquals("12345", dbIdList.get(1));
 	}
 
-	private boolean checkEdge(CyEdge edge, String source, String target) {
-		return getName(edge.getSource()).equals(source) && getName(edge.getTarget()).equals(target);
+	private boolean checkEdge(CyNetwork network, CyEdge edge, String source, String target) {
+		return getName(network, edge.getSource()).equals(source) && getName(network, edge.getTarget()).equals(target);
 	}
 
-	private boolean checkEdge(CyEdge edge, String source, String target, String experimentalSystem, String interactionShortName) {
-		CyRow attributes = edge.getCyRow();
-		return getName(edge.getSource()).equals(source) &&
-			   getName(edge.getTarget()).equals(target) &&
+	private boolean checkEdge(CyNetwork network, CyEdge edge, String source, String target, String experimentalSystem, String interactionShortName) {
+		CyRow attributes = network.getCyRow(edge);
+		return getName(network, edge.getSource()).equals(source) &&
+			   getName(network, edge.getTarget()).equals(target) &&
 			   attributes.get(InteractionVocab.EXPERIMENTAL_SYSTEM_NAME, String.class).equals(experimentalSystem) &&
 			   attributes.get(InteractionVocab.INTERACTION_SHORT_NAME, String.class).equals(interactionShortName);
 	}
 	
-	private String getName(CyNode node) {
-		return node.getCyRow().get(AttributeUtil.NODE_NAME_ATTR_LABEL, String.class);
+	private String getName(CyNetwork network, CyNode node) {
+		return network.getCyRow(node).get(AttributeUtil.NODE_NAME_ATTR_LABEL, String.class);
 	}
 
 	/**
@@ -238,12 +238,12 @@ public class MapToCytoscapeTest {
 		int counter = 0;
 
 		for (CyEdge edge : network.getEdgeList()) {
-			if (checkEdge(edge, "A", "C") ||
-				checkEdge(edge, "A", "D") ||
-				checkEdge(edge, "B", "C") ||
-				checkEdge(edge, "B", "D") ||
-				checkEdge(edge, "C", "D") ||
-				checkEdge(edge, "A", "B")) { 
+			if (checkEdge(network, edge, "A", "C") ||
+				checkEdge(network, edge, "A", "D") ||
+				checkEdge(network, edge, "B", "C") ||
+				checkEdge(network, edge, "B", "D") ||
+				checkEdge(network, edge, "C", "D") ||
+				checkEdge(network, edge, "A", "B")) { 
 				counter++;
 			}
 		}
@@ -286,9 +286,9 @@ public class MapToCytoscapeTest {
 		int counter = 0;
 
 		for (CyEdge edge : network.getEdgeList()) {
-			if (checkEdge(edge, "A", "B") ||
-				checkEdge(edge, "A", "C") ||
-				checkEdge(edge, "A", "D")) {
+			if (checkEdge(network, edge, "A", "B") ||
+				checkEdge(network, edge, "A", "C") ||
+				checkEdge(network, edge, "A", "D")) {
 				counter++;
 			}
 		}
@@ -329,9 +329,9 @@ public class MapToCytoscapeTest {
 		int counter = 0;
 		
 		for (CyEdge edge : network.getEdgeList()) {
-			if (checkEdge(edge, "kaib_synp7", "kaia_synp7", "pull down", "kaib-kaia-2") ||
-				checkEdge(edge, "kaib_synp7", "kaic_synp7", "pull down", "kaib-kaic-5") ||
-				checkEdge(edge, "kaic_synp7", "kaia_synp7", "two hybrid", "kaic-kaia-1")) {
+			if (checkEdge(network, edge, "kaib_synp7", "kaia_synp7", "pull down", "kaib-kaia-2") ||
+				checkEdge(network, edge, "kaib_synp7", "kaic_synp7", "pull down", "kaib-kaic-5") ||
+				checkEdge(network, edge, "kaic_synp7", "kaia_synp7", "two hybrid", "kaic-kaia-1")) {
 				counter++;
 			}
 		}
@@ -364,7 +364,7 @@ public class MapToCytoscapeTest {
 
 		CyNode node1 = null;
 		for (CyNode node : network.getNodeList()) {
-			if (getName(node).equals("HGNC:7733")) {
+			if (getName(network, node).equals("HGNC:7733")) {
 				node1 = node;
 			}
 		}

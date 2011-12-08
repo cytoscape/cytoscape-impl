@@ -122,13 +122,13 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		final CyNode source = dummyNet.addNode();
 		final CyNode target = dummyNet.addNode();
 
-		source.getCyRow().set(CyTableEntry.NAME, "Source");
-		target.getCyRow().set(CyTableEntry.NAME, "Target");
+		dummyNet.getCyRow(source).set(CyTableEntry.NAME, "Source");
+		dummyNet.getCyRow(target).set(CyTableEntry.NAME, "Target");
 
 		final CyEdge edge = dummyNet.addEdge(source, target, true);
-		edge.getCyRow().set(CyTableEntry.NAME, "Source (interaction) Target");
+		dummyNet.getCyRow(edge).set(CyTableEntry.NAME, "Source (interaction) Target");
 
-		dummyNet.getCyRow().set(CyTableEntry.NAME, "Default Appearance");
+		dummyNet.getCyRow(dummyNet).set(CyTableEntry.NAME, "Default Appearance");
 		final CyNetworkView dummyview = cyNetworkViewFactory
 				.createNetworkView(dummyNet);
 

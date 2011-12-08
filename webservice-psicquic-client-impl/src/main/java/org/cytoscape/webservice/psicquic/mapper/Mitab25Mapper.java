@@ -95,23 +95,23 @@ public class Mitab25Mapper {
 		source = nodeMap.get(sourceID[0]);
 		if(source == null) {
 			source = network.addNode();
-			source.getCyRow().set(CyTableEntry.NAME, sourceIDHalf);
-			source.getCyRow().set(DATABASE_UNIQUE_ID, sourceID[0]);
+			network.getCyRow(source).set(CyTableEntry.NAME, sourceIDHalf);
+			network.getCyRow(source).set(DATABASE_UNIQUE_ID, sourceID[0]);
 			nodeMap.put(sourceID[0], source);
 		}
 		target = nodeMap.get(targetID[0]);
 		if (target == null) {
 			target = network.addNode();
-			target.getCyRow().set(CyTableEntry.NAME, targetIDHalf);
-			target.getCyRow().set(DATABASE_UNIQUE_ID, targetID[0]);
+			network.getCyRow(target).set(CyTableEntry.NAME, targetIDHalf);
+			network.getCyRow(target).set(DATABASE_UNIQUE_ID, targetID[0]);
 			nodeMap.put(targetID[0], target);
 		}
 		
 		// Set type if not protein
 		if (sourceID[0].contains(CHEBI))
-			source.getCyRow().set(INTERACTOR_TYPE, COMPOUND);
+			network.getCyRow(source).set(INTERACTOR_TYPE, COMPOUND);
 		if (targetID[0].contains(CHEBI))
-			target.getCyRow().set(INTERACTOR_TYPE, COMPOUND);
+			network.getCyRow(target).set(INTERACTOR_TYPE, COMPOUND);
 
 //		// Aliases
 //		setAliases(nodeAttr, source.getIdentifier(), entry[0].split(SEPARATOR));
@@ -132,11 +132,11 @@ public class Mitab25Mapper {
 		detectionMethods = entry[6].split(SEPARATOR);
 		interactionType = entry[11].split(SEPARATOR);
 		e = network.addEdge(source, target, true);
-		e.getCyRow().set(
+		network.getCyRow(e).set(
 				CyTableEntry.NAME,
-				source.getCyRow().get(CyTableEntry.NAME, String.class) + " (" + interactionID[0] + ") "
-						+ target.getCyRow().get(CyTableEntry.NAME, String.class));
-		e.getCyRow().set(CyEdge.INTERACTION, interactionID[0]);
+				network.getCyRow(source).get(CyTableEntry.NAME, String.class) + " (" + interactionID[0] + ") "
+						+ network.getCyRow(target).get(CyTableEntry.NAME, String.class));
+		network.getCyRow(e).set(CyEdge.INTERACTION, interactionID[0]);
 
 //		setEdgeListAttribute(edgeAttr, e.getIdentifier(), interactionType, INTERACTION_TYPE);
 //		setEdgeListAttribute(edgeAttr, e.getIdentifier(), detectionMethods, DETECTION_METHOD);
@@ -145,7 +145,7 @@ public class Mitab25Mapper {
 //		// Map scores
 //		setEdgeScoreListAttribute(edgeAttr, e.getIdentifier(), edgeScore, EDGE_SCORE);
 //
-		e.getCyRow().set(INTERACTION_ID, interactionID[0]);
+		network.getCyRow(e).set(INTERACTION_ID, interactionID[0]);
 //
 //		setPublication(edgeAttr, e.getIdentifier(), entry[8].split(SEPARATOR), entry[7].split(SEPARATOR));
 

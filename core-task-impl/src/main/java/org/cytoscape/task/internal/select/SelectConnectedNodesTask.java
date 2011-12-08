@@ -72,7 +72,7 @@ public class SelectConnectedNodesTask extends AbstractSelectTask {
 			nodes.add(edge.getTarget());
 		}
 		tm.setProgress(0.5);
-		selectUtils.setSelectedNodes(nodes, true);
+		selectUtils.setSelectedNodes(network, nodes, true);
 		tm.setProgress(0.8);
 		updateView();
 		tm.setProgress(1.0);

@@ -50,6 +50,8 @@ import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 
+import javax.swing.SwingUtilities;
+
 /**
  * A utility class that listens for various events and then updates the enable
  * state for the toolbar icons. Menus do this check every time that a menu is
@@ -105,8 +107,12 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 	}
 
 	private void updateToolbar() {
-		for (CyAction action : toolbar.getAllToolBarActions())
-			action.updateEnableState();
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				for (CyAction action : toolbar.getAllToolBarActions())
+					action.updateEnableState();
+			}
+		});
 	}
 
 }

@@ -56,7 +56,7 @@ public class DeselectAllNodesTask extends AbstractSelectTask {
 			new SelectionEdit(eventHelper, "Deselect All Nodes", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));
 		tm.setProgress(0.2);
-		selectUtils.setSelectedNodes( network.getNodeList(), false);
+		selectUtils.setSelectedNodes(network, network.getNodeList(), false);
 		tm.setProgress(0.7);
 		updateView();
 		tm.setProgress(1.0);

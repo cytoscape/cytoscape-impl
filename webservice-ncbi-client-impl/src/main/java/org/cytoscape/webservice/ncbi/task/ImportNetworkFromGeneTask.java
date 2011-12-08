@@ -61,7 +61,7 @@ public class ImportNetworkFromGeneTask extends AbstractTask {
 		newNetwork = restClient.importNetwork(searchResult, taskMonitor);
 
 		// Register it
-		newNetwork.getCyRow().set(CyTableEntry.NAME, "NCBI");
+		newNetwork.getCyRow(newNetwork).set(CyTableEntry.NAME, "NCBI");
 		manager.addNetwork(newNetwork);
 	}
 

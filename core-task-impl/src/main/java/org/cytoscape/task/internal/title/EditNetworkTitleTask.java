@@ -47,14 +47,14 @@ public class EditNetworkTitleTask extends AbstractNetworkTask {
 	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net) {
 		super(net);
 		this.undoSupport = undoSupport;
-		title = network.getCyRow().get(CyTableEntry.NAME, String.class);
+		title = network.getCyRow(network).get(CyTableEntry.NAME, String.class);
 	}
 
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
-		final String oldTitle = network.getCyRow().get(CyTableEntry.NAME, String.class);
+		final String oldTitle = network.getCyRow(network).get(CyTableEntry.NAME, String.class);
 		e.setProgress(0.3);
-		network.getCyRow().set(CyTableEntry.NAME, title);
+		network.getCyRow(network).set(CyTableEntry.NAME, title);
 		e.setProgress(0.6);
 		undoSupport.postEdit(
 			new NetworkTitleEdit(network, oldTitle));

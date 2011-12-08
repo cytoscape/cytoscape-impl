@@ -314,22 +314,25 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 
 	public void updateFeedbackTableModel(){		
-		CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
-		CyNetworkView view = applicationManager.getCurrentNetworkView();
-		RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
-		if (cyNetwork == null || view == null || engine == null) {
-			return;
-		}
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
+				CyNetworkView view = applicationManager.getCurrentNetworkView();
+				RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
+				if (cyNetwork == null || view == null || engine == null) {
+					return;
+				}
 		
-		//VisualLexicon lexicon = engine.getVisualLexicon();
-		//String title = VisualPropertyUtil.get(lexicon, view, "NETWORK_TITLE", MinimalVisualLexicon.NETWORK, String.class);
-		tblFeedBack.getModel().setValueAt(cyNetwork.getCyRow().get("name", String.class), 0, 0);
+				//VisualLexicon lexicon = engine.getVisualLexicon();
+				//String title = VisualPropertyUtil.get(lexicon, view, "NETWORK_TITLE", MinimalVisualLexicon.NETWORK, String.class);
+				tblFeedBack.getModel().setValueAt(cyNetwork.getCyRow(cyNetwork).get("name", String.class), 0, 0);
 
-		String nodeStr = "" + cyNetwork.getNodeCount() + "(" + CyTableUtil.getNodesInState(cyNetwork,"selected",true).size() + ")";
-		tblFeedBack.getModel().setValueAt(nodeStr, 0, 1);
+				String nodeStr = "" + cyNetwork.getNodeCount() + "(" + CyTableUtil.getNodesInState(cyNetwork,"selected",true).size() + ")";
+				tblFeedBack.getModel().setValueAt(nodeStr, 0, 1);
 
-		String edgeStr = "" + cyNetwork.getEdgeCount() + "(" + CyTableUtil.getEdgesInState(cyNetwork,"selected",true).size() + ")";
-		tblFeedBack.getModel().setValueAt(edgeStr, 0, 2);				
+				String edgeStr = "" + cyNetwork.getEdgeCount() + "(" + CyTableUtil.getEdgesInState(cyNetwork,"selected",true).size() + ")";
+				tblFeedBack.getModel().setValueAt(edgeStr, 0, 2);				
+		}});
 	}
 	
 	/**
@@ -394,7 +397,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 		
 		CyTableEntry tableEntry = entries.iterator().next();
-		final Collection<CyColumn> columns = tableEntry.getCyRow().getTable().getColumns();
+		final Collection<CyColumn> columns = network.getCyRow(tableEntry).getTable().getColumns();
 		for (final CyColumn column : columns) {
 			//  Show all attributes, with type of String or Number
 			Class<?> type = column.getType();

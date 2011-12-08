@@ -176,7 +176,7 @@ public class BatchNetworkAnalyzer extends SwingWorker {
 						analyzer = null;
 					}
 
-					final String networkName = network.getCyRow().get("name",String.class);
+					final String networkName = network.getCyRow(network).get("name",String.class);
 					stats.setTitle(networkName + interpretation.getInterpretSuffix());
 					final String extendedName = networkName + createID(interpretation);
 					try {
@@ -290,10 +290,10 @@ public class BatchNetworkAnalyzer extends SwingWorker {
 			}
 			writer.write("\n");
 			for ( CyNode n : aNetwork.getNodeList()) {
-				final String id = n.getCyRow().get("name", String.class);
+				final String id = aNetwork.getCyRow(n).get("name", String.class);
 				writer.write(id);
 				for (final String attr : netAnayzerAttr) {
-					final Object attrValue = n.getCyRow().getRaw(attr);
+					final Object attrValue = aNetwork.getCyRow(n).getRaw(attr);
 					if (attrValue != null) {
 						writer.write("\t" + attrValue.toString());
 					}

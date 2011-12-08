@@ -41,6 +41,7 @@ import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyNetwork;
 
 /**
  *
@@ -56,5 +57,5 @@ public interface AttributeMerger {
          * @param toAttrName 
          */
         public <T extends CyTableEntry> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
-                                     T toGO, CyColumn toAttrName);
+                                     T toGO, CyColumn toAttrName, CyNetwork fromNetwork, CyNetwork toNetwork);
 }

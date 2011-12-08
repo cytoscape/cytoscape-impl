@@ -391,7 +391,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		if (n == null)
 			return;
 
-		final String title = n.getCyRow().get(CyTableEntry.NAME, String.class);
+		final String title = n.getCyRow(n).get(CyTableEntry.NAME, String.class);
 		updateTitle(n, title); // this should updated the UI regardless...
 	}
 
@@ -453,7 +453,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				parentTreeNode = new NetworkTreeNode("", null);
 
 			// Actual tree node for this network
-			NetworkTreeNode dmtn = new NetworkTreeNode(network.getCyRow().get(CyTableEntry.NAME, String.class),
+			NetworkTreeNode dmtn = new NetworkTreeNode(network.getCyRow(network).get(CyTableEntry.NAME, String.class),
 					network);
 
 			parentTreeNode.add(dmtn);

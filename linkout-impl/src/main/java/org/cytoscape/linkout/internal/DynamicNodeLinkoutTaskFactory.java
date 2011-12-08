@@ -26,7 +26,7 @@ import org.cytoscape.work.TaskMonitor;
 public class DynamicNodeLinkoutTaskFactory extends DynamicSupport implements NodeViewTaskFactory {
 
 	public void setNodeView(View<CyNode> nodeView, CyNetworkView netView) {
-		setURLs(nodeView.getModel());
+		setURLs(netView.getModel(),nodeView.getModel());
 	}
 
 	public DynamicNodeLinkoutTaskFactory(OpenBrowser browser) {

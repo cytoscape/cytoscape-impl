@@ -70,7 +70,7 @@ public class SelectAdjacentEdgesTask extends AbstractSelectTask {
 			edgeSet.addAll(network.getAdjacentEdgeList(node, CyEdge.Type.ANY));
 		}
 		tm.setProgress(0.8);
-		selectUtils.setSelectedEdges(edgeSet, true);
+		selectUtils.setSelectedEdges(network,edgeSet, true);
 		updateView();
 		tm.setProgress(1.0);
 	}

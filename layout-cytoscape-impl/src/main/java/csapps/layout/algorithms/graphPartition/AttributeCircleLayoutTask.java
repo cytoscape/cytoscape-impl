@@ -56,8 +56,7 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 		r *= spacing;
 
 		if (this.attribute != null && count > 0) {
-			final CyColumn column =
-				nodes.get(0).getNode().getCyRow().getTable().getColumn(attribute);
+			final CyColumn column = nodes.get(0).getRow().getTable().getColumn(attribute);
 			Class<?> klass = (column == null) ? null : column.getType();
 			if (klass != null && Comparable.class.isAssignableFrom(klass)){
 				// FIXME: I assume this would be better, but get type errors if I try:
@@ -92,8 +91,8 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 		}
 
 		public int compare(LayoutNode o1, LayoutNode o2) {
-			T v1 = o1.getNode().getCyRow().get(attribute, klass);
-			T v2 = o2.getNode().getCyRow().get(attribute, klass);
+			T v1 = o1.getRow().get(attribute, klass);
+			T v2 = o2.getRow().get(attribute, klass);
 			if (String.class.isAssignableFrom(klass)){ // i.e. if klass _is_ String.class
 				String s1 = String.class.cast(v1);
 				String s2 = String.class.cast(v2);

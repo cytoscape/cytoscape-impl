@@ -40,16 +40,13 @@ import org.cytoscape.model.SUIDFactory;
 
 class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	private final long suid;
-	private final Map<String, CyTable> attrMgr;
-	private CyRow defaultRow;
 
-	CyTableEntryImpl(final Map<String, CyTable> attrMgr, long suid) {
+	CyTableEntryImpl(long suid) {
 		this.suid = suid;
-		this.attrMgr = attrMgr;
 	}
 
-	CyTableEntryImpl(final Map<String, CyTable> attrMgr) {
-		this(attrMgr,SUIDFactory.getNextSUID());
+	CyTableEntryImpl() {
+		this(SUIDFactory.getNextSUID());
 	}
 
 	/**
@@ -60,30 +57,6 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 		return suid;
 	}
 
-	/**
-	 * @see org.cytoscape.model.CyTableEntry#getCyRow(String)
-	 */
-	@Override
-	final public CyRow getCyRow(final String namespace) {
-		if (namespace == null)
-			throw new NullPointerException("namespace is null");
-
-		final CyTable mgr = attrMgr.get(namespace);
-		if (mgr == null)
-			throw new NullPointerException("attribute manager is null for namespace: " + namespace);
-
-		return mgr.getRow(suid);
-	}
-
-	/**
-	 * @see org.cytoscape.model.CyTableEntry#getCyRow()
-	 */
-	@Override
-	final public CyRow getCyRow() {
-		if ( defaultRow == null )
-			defaultRow = attrMgr.get(CyNetwork.DEFAULT_ATTRS).getRow(suid);
-		return defaultRow;
-	}
 	
 	@Override
 	public int hashCode() {

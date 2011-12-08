@@ -94,8 +94,8 @@ public class GraphMLReaderTest {
 		final CyEdge edge1 = network.getEdge(0);
 		assertNotNull(edge1);
 		
-		final CyColumn colorCol = node1.getCyRow().getTable().getColumn("color");
-		final CyColumn weightCol = edge1.getCyRow().getTable().getColumn("weight");
+		final CyColumn colorCol = network.getDefaultNodeTable().getColumn("color");
+		final CyColumn weightCol = network.getDefaultEdgeTable().getColumn("weight");
 		
 		assertNotNull(colorCol);
 		assertNotNull(weightCol);
@@ -103,7 +103,7 @@ public class GraphMLReaderTest {
 		assertEquals(String.class, colorCol.getType());
 		assertEquals(Double.class, weightCol.getType());
 		
-		assertEquals(Double.valueOf(1.0d), edge1.getCyRow().get("weight", Double.class));
+		assertEquals(Double.valueOf(1.0d), network.getCyRow(edge1).get("weight", Double.class));
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class GraphMLReaderTest {
 		
 		final CyNetwork rootNetwork = networks[0];
 		for(CyNode node: rootNetwork.getNodeList())
-			System.out.println("In root network: " + node.getCyRow().get(CyTableEntry.NAME, String.class));
+			System.out.println("In root network: " + rootNetwork.getCyRow(node).get(CyTableEntry.NAME, String.class));
 		
 		assertEquals(11, rootNetwork.getNodeCount());
 		assertEquals(12, rootNetwork.getEdgeCount());
@@ -172,7 +172,7 @@ public class GraphMLReaderTest {
 		
 		final CyNetwork rootNetwork = networks[0];
 		for(CyNode node: rootNetwork.getNodeList())
-			System.out.println("In root network: " + node.getCyRow().get(CyTableEntry.NAME, String.class));
+			System.out.println("In root network: " + rootNetwork.getCyRow(node).get(CyTableEntry.NAME, String.class));
 		
 		assertEquals(8, rootNetwork.getNodeCount());
 		assertEquals(10, rootNetwork.getEdgeCount());

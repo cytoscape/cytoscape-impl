@@ -110,12 +110,12 @@ public class PlotParameterDialog extends VisualizeParameterDialog implements Act
 	 * @return A Double value representation of the attribute value for the node with node
 	 *         identifier id.
 	 */
-	private Double getAttrValue(CyNode node, String attr, Class<?> attrType) {
+	private Double getAttrValue(CyNetwork network, CyNode node, String attr, Class<?> attrType) {
 		if (attrType == Double.class) {
-			return node.getCyRow().get(attr,Double.class);
+			return network.getCyRow(node).get(attr,Double.class);
 		}
 		if (attrType == Integer.class) {
-			return node.getCyRow().get(attr,Integer.class).doubleValue();
+			return network.getCyRow(node).get(attr,Integer.class).doubleValue();
 		}
 		return null;
 	}
@@ -134,7 +134,7 @@ public class PlotParameterDialog extends VisualizeParameterDialog implements Act
 		// Add title
 		final JPanel panTop = new JPanel(new BorderLayout(0, 0));
 		final JPanel panTitle = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		final JLabel title = new JLabel("<html>" + Messages.DI_PLOT1 + "<b>" + network.getCyRow().get("name",String.class)
+		final JLabel title = new JLabel("<html>" + Messages.DI_PLOT1 + "<b>" + network.getCyRow(network).get("name",String.class)
 				+ "</b>" + Messages.DI_PLOT2);
 		panTitle.add(title);
 		panTop.add(panTitle, BorderLayout.PAGE_START);
@@ -203,8 +203,8 @@ public class PlotParameterDialog extends VisualizeParameterDialog implements Act
 		final List<Point2D.Double> plotValues = new ArrayList<Point2D.Double>(network
 				.getNodeCount());
 		for ( CyNode node : network.getNodeList()) {
-			Double value1 = getAttrValue(node, attrX, attrType1);
-			Double value2 = getAttrValue(node, attrY, attrType2);
+			Double value1 = getAttrValue(network, node, attrX, attrType1);
+			Double value2 = getAttrValue(network, node, attrY, attrType2);
 			if (value1 != null && value2 != null) {
 				plotValues.add(new Point2D.Double(value1.doubleValue(), value2.doubleValue()));
 			}

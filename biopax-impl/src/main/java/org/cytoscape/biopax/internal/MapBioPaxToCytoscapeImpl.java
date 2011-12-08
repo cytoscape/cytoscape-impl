@@ -188,19 +188,19 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		// Finally, set network attributes:
 		
 		// name
-		AttributeUtil.set(network, CyNetwork.NAME, networkName, String.class);
+		AttributeUtil.set(network, network, CyNetwork.NAME, networkName, String.class);
 		
 		// an attribute which indicates this network is a BioPAX network
-		AttributeUtil.set(network, MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.TRUE, Boolean.class);
+		AttributeUtil.set(network, network, MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.TRUE, Boolean.class);
 	
 		//  default Quick Find Index
-		AttributeUtil.set(network, "quickfind.default_index", CyNode.NAME, String.class);
+		AttributeUtil.set(network, network, "quickfind.default_index", CyNode.NAME, String.class);
 
 		// (converted to L3, processed) RDF/XML data
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			new SimpleIOHandler().convertToOWL(model, baos);
-			AttributeUtil.set(network, CyNetwork.HIDDEN_ATTRS, 
+			AttributeUtil.set(network, network, CyNetwork.HIDDEN_ATTRS, 
 					BioPaxUtil.BIOPAX_DATA, baos.toString("UTF-8"), String.class);
 		} catch (Exception e) {
 			log.error("Serializing BioPAX to RDF/XML string failed.", e);
@@ -234,7 +234,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		}
 		
 		if(log.isDebugEnabled())
-			log.debug(network.getCyRow().get(CyNetwork.NAME, String.class) 
+			log.debug(network.getCyRow(network).get(CyNetwork.NAME, String.class) 
 				+ "" + network.getNodeList().size() + " nodes created.");
 	}
 
@@ -282,7 +282,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 				CyNode complexMemberCyNode = uriToCyNodeMap.get(member);
 				// create edge, set attributes
 				CyEdge edge = network.addEdge(complexCyNode, complexMemberCyNode, true);
-				AttributeUtil.set(edge, BIOPAX_EDGE_TYPE, "contains", String.class);
+				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "contains", String.class);
 			}
 		}
 	}
@@ -333,7 +333,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 			edge = network.addEdge(nodeB, nodeA, true);
 		}
 
-		AttributeUtil.set(edge, BIOPAX_EDGE_TYPE, type, String.class);
+		AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, type, String.class);
 	}
 
 	
@@ -458,7 +458,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	/**
 	 * A helper function to set chemical modification attributes
 	 */
-	private void setChemicalModificationAttributes(CyNode node, 
+	private void setChemicalModificationAttributes(CyNetwork network, CyNode node, 
 			NodeAttributesWrapper chemicalModificationsWrapper) 
 	{
 		Map<String, Object> modificationsMap = (chemicalModificationsWrapper != null)
@@ -478,14 +478,14 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 
 			//  Store List of Chemical Modifications Only
 			List<String> list = new ArrayList<String>(modificationsMap.keySet());
-			AttributeUtil.set(node, BIOPAX_CHEMICAL_MODIFICATIONS_LIST, list, String.class);
+			AttributeUtil.set(network, node, BIOPAX_CHEMICAL_MODIFICATIONS_LIST, list, String.class);
 
 			//  Store Complete Map of Chemical Modifications --> # of Modifications
 			// TODO: How do we handle MultiHashMaps?
 //			setMultiHashMap(cyNodeId, nodeAttributes, BIOPAX_CHEMICAL_MODIFICATIONS_MAP, modificationsMap);
 
 			if (modificationsMap.containsKey(BioPaxUtil.PHOSPHORYLATION_SITE)) {
-				AttributeUtil.set(node, BIOPAX_ENTITY_TYPE, BioPaxUtil.PROTEIN_PHOSPHORYLATED, String.class);
+				AttributeUtil.set(network, node, BIOPAX_ENTITY_TYPE, BioPaxUtil.PROTEIN_PHOSPHORYLATED, String.class);
 			}
 		}
 	}
@@ -497,14 +497,14 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		List<String> xrefList = getXRefList(resource,
 				BIOPAX_AFFYMETRIX_REFERENCES_LIST);
 		if ((xrefList != null) && !xrefList.isEmpty()) {
-			AttributeUtil.set(node, BIOPAX_AFFYMETRIX_REFERENCES_LIST,
+			AttributeUtil.set(network, node, BIOPAX_AFFYMETRIX_REFERENCES_LIST,
 					xrefList, String.class);
 		}
 		
 		// ihop links
 		String stringRef = addIHOPLinks(network, resource);
 		if (stringRef != null) {
-			AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_IHOP_LINKS, stringRef, String.class);
+			AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_IHOP_LINKS, stringRef, String.class);
 		}
 
 		List<String> allxList = new ArrayList<String>();
@@ -517,9 +517,9 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 			// per db -
 			String key = BIOPAX_XREF_PREFIX + link.getDb().toUpperCase();
 			// Set individual XRefs; Max of 1 per database.
-			String existingId = node.getCyRow().get(key, String.class);
+			String existingId = network.getCyRow(node).get(key, String.class);
 			if (existingId == null) {
-				AttributeUtil.set(node, key, link.getId(), String.class);
+				AttributeUtil.set(network, node, key, link.getId(), String.class);
 			}
 			
 
@@ -558,16 +558,16 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 			allxList.add(link.toString());
 		}
 		
-		AttributeUtil.set(node, BIOPAX_XREF_IDS, allxList, String.class);
-		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_UNIFICATION_REFERENCES, unifxfList, String.class);
-		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_RELATIONSHIP_REFERENCES, relxList, String.class);
-		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS, BIOPAX_PUBLICATION_REFERENCES, pubxList, String.class);	
+		AttributeUtil.set(network, node, BIOPAX_XREF_IDS, allxList, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_UNIFICATION_REFERENCES, unifxfList, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_RELATIONSHIP_REFERENCES, relxList, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_PUBLICATION_REFERENCES, pubxList, String.class);	
 	}
 
 
 	@Override
 	public void createAttributesFromProperties(final BioPAXElement element,
-			final CyNode node, CyNetwork network) 
+			final CyNode node, final CyNetwork network) 
 	{
 		Filter<PropertyEditor> filter = new Filter<PropertyEditor>() {
 			@Override
@@ -608,7 +608,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 					if (!"".equalsIgnoreCase(value.toString().replaceAll("\\]|\\[", ""))) 
 					{
 						if (editor.isMultipleCardinality()) {
-							CyRow row = node.getCyRow();
+							CyRow row = network.getCyRow(node);
 							List vals = new ArrayList<String>();
 							// consider existing attribute values
 							if (row.isSet(attrName)) {
@@ -622,9 +622,9 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 							if(!vals.contains(value)) 
 								vals.add(value);
 
-							AttributeUtil.set(node, attrName, vals, String.class);
+							AttributeUtil.set(network, node, attrName, vals, String.class);
 						} else {
-							AttributeUtil.set(node, attrName, value, String.class);
+							AttributeUtil.set(network, node, attrName, value, String.class);
 						}
 					}
 					
@@ -649,13 +649,13 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		};
 
 		// set the most important attributes
-		AttributeUtil.set(node, BIOPAX_RDF_ID, element.getRDFId(), String.class);
-		AttributeUtil.set(node, BIOPAX_ENTITY_TYPE, element.getModelInterface().getSimpleName(), String.class);	
+		AttributeUtil.set(network, node, BIOPAX_RDF_ID, element.getRDFId(), String.class);
+		AttributeUtil.set(network, node, BIOPAX_ENTITY_TYPE, element.getModelInterface().getSimpleName(), String.class);	
 		
 		// add a piece of the BioPAX (RDF/XML without parent|child elements)
 		
 		String owl = BioPaxUtil.toOwl(element); // (requires common-lang-2.4 bundle to be started)
-		AttributeUtil.set(node, CyNetwork.HIDDEN_ATTRS,BioPaxUtil.BIOPAX_DATA, owl, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS,BioPaxUtil.BIOPAX_DATA, owl, String.class);
 		
 		String name = BioPaxUtil.truncateLongStr(BioPaxUtil.getNodeName(element) + "");
 		
@@ -675,10 +675,10 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 				}
 			}
 			// set node attributes
-			setChemicalModificationAttributes(node, chemicalModificationsWrapper);	
+			setChemicalModificationAttributes(network, node, chemicalModificationsWrapper);	
 		}
 		// update the name (also used for node's label and quick find)
-		AttributeUtil.set(node, CyNode.NAME, name, String.class);		
+		AttributeUtil.set(network, node, CyNode.NAME, name, String.class);		
 		
 		// traverse to create the rest of attr.
 		bpeAutoMapper.traverse(element, model);

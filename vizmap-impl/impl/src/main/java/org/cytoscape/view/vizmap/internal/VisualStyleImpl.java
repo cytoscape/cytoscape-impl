@@ -172,9 +172,9 @@ public class VisualStyleImpl implements VisualStyle {
 		applyViewDefaults(networkView, lexManager.getNetworkVisualProperties());
 		
 		// Current visual prop tree.
-		applyImpl(nodeViews, lexManager.getNodeVisualProperties());
-		applyImpl(edgeViews, lexManager.getEdgeVisualProperties());
-		applyImpl(networkViewSet, lexManager.getNetworkVisualProperties());
+		applyImpl(networkView, nodeViews, lexManager.getNodeVisualProperties());
+		applyImpl(networkView, edgeViews, lexManager.getEdgeVisualProperties());
+		applyImpl(networkView, networkViewSet, lexManager.getNetworkVisualProperties());
 
 		logger.info(title + ": Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
 	}
@@ -190,14 +190,14 @@ public class VisualStyleImpl implements VisualStyle {
 	 * @param visualProperties
 	 *            DOCUMENT ME!
 	 */
-	private void applyImpl(final Collection<? extends View<?>> views,
+	private void applyImpl(final CyNetworkView networkView, final Collection<? extends View<?>> views,
 			final Collection<VisualProperty<?>> visualProperties) {
 		
 		for (VisualProperty<?> vp : visualProperties)
-					applyToView(views, vp);
+					applyToView(networkView, views, vp);
 	}
 
-	private void applyToView(final Collection<? extends View<?>> views, final VisualProperty<?> vp) {
+	private void applyToView(final CyNetworkView networkView, final Collection<? extends View<?>> views, final VisualProperty<?> vp) {
 
 		final VisualMappingFunction<?, ?> mapping = getVisualMappingFunction(vp);
 
@@ -207,9 +207,11 @@ public class VisualStyleImpl implements VisualStyle {
 			final Object styleDefaultValue = getDefaultValue(vp);
 			// Default of this Visual Property
 			final Object vpDefault = vp.getDefault();
+			final CyNetwork net = networkView.getModel();
 
-			for (View<?> view : views) {
-				mapping.apply((View<? extends CyTableEntry>) view);
+			for (View<?> v : views) {
+				View<? extends CyTableEntry> view = (View<? extends CyTableEntry>)v;
+				mapping.apply( net.getCyRow( view.getModel() ), view);
 				
 				if (view.getVisualProperty(vp) == vpDefault)
 					view.setVisualProperty(vp, styleDefaultValue);

@@ -67,13 +67,13 @@ public class CyAttributesUtil {
 	 * @param attributeKey  Attribute Key.
 	 * @return array of String Objects or null.
 	 */
-	public static String[] getAttributeValues(CyTableEntry graphObject, String attributeKey) {
+	public static String[] getAttributeValues(CyNetwork network, CyTableEntry graphObject, String attributeKey) {
 		String[] terms = null;
 
 		if (attributeKey.equals(QuickFind.UNIQUE_IDENTIFIER)) {
 			terms = new String[] {String.valueOf(graphObject.getSUID())};
 		} else {
-			CyRow row = graphObject.getCyRow();
+			CyRow row = network.getCyRow(graphObject);
 			Class<?> type = row.getTable().getColumn(attributeKey).getType();
 			boolean hasAttribute = type != null;
 
@@ -132,14 +132,14 @@ public class CyAttributesUtil {
 	 * @param numDistinctValues Number of Distinct Values.
 	 * @return Array of Distinct Value Strings.
 	 */
-	public static String[] getDistinctAttributeValues(Iterator<? extends CyTableEntry> iterator,
+	public static String[] getDistinctAttributeValues(CyNetwork network, Iterator<? extends CyTableEntry> iterator,
 	                                                  String attributeKey, int numDistinctValues) {
 		Set<String> set = new HashSet<String>();
 		int counter = 0;
 
 		while (iterator.hasNext() && (counter < numDistinctValues)) {
 			CyTableEntry graphObject = iterator.next();
-			String[] values = CyAttributesUtil.getAttributeValues(graphObject, attributeKey);
+			String[] values = CyAttributesUtil.getAttributeValues(network,graphObject, attributeKey);
 
 			if ((values != null) && (values.length > 0)) {
 				String singleStr = join(values);
@@ -191,7 +191,7 @@ public class CyAttributesUtil {
 			return true;
 		}
 		for (CyTableEntry entry : entries) {
-			CyRow row = entry.getCyRow();
+			CyRow row = cyNetwork.getCyRow(entry);
 			Class<?> type = row.getTable().getColumn(attributeName).getType();
 			if (row.get(attributeName, type) != null) {
 				return false;

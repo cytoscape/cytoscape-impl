@@ -134,13 +134,13 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			for (CyNetwork network : networks) {
 
 				// Use original name if exists
-				String networkName = network.getCyRow().get(CyTableEntry.NAME, String.class);
+				String networkName = network.getCyRow(network).get(CyTableEntry.NAME, String.class);
 				if(networkName == null || networkName.trim().length() == 0) {
 					networkName = name;
 					if(networkName == null)
 						networkName = "? (Name is missing)";
 					
-					network.getCyRow().set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+					network.getCyRow(network).set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
 				}
 				networkManager.addNetwork(network);
 

@@ -121,12 +121,12 @@ public class MergeNetworkTask implements Task {
         for (CyNode node : network.getNodeList()) {
             CyNode mergedNode = mergedNetwork.addNode();
             AttributeUtil.copyAttributes(node, mergedNode);
-            String name = mergedNode.getCyRow().get(CyNode.NAME, String.class);
+            String name = network.getCyRow(mergedNode).get(CyNode.NAME, String.class);
             newNodes.put(name, mergedNode);
         }
         for (CyEdge edge : network.getEdgeList()) {
-        	String sourceName = edge.getSource().getCyRow().get(CyNode.NAME, String.class);
-        	String targetName = edge.getTarget().getCyRow().get(CyNode.NAME, String.class);
+        	String sourceName = network.getCyRow(edge.getSource()).get(CyNode.NAME, String.class);
+        	String targetName = network.getCyRow(edge.getTarget()).get(CyNode.NAME, String.class);
         	CyNode source = newNodes.get(sourceName);
         	CyNode target = newNodes.get(targetName);
             CyEdge mergedEdge = mergedNetwork.addEdge(source, target, true);
@@ -140,8 +140,8 @@ public class MergeNetworkTask implements Task {
 
         // select nodes / edges
         Collection<CyNode> nodes = newNodes.values();
-        SelectUtil.setSelectedNodeState(nodes, true);
-        SelectUtil.setSelectedEdgeState(newEdges, true);
+        SelectUtil.setSelectedNodeState(mergedNetwork,nodes, true);
+        SelectUtil.setSelectedEdgeState(mergedNetwork,newEdges, true);
 
         // setup undo
         UndoSupport undo = factory.getUndoSupport();

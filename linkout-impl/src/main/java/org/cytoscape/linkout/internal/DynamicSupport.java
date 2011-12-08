@@ -46,6 +46,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableEntry;
 
 import org.cytoscape.work.AbstractTask;
@@ -92,6 +93,7 @@ public class DynamicSupport {
 	private Map<String,String> menuTitleURLMap = new HashMap<String,String>();
 	private CyTableEntry[] tableEntries;
 	private CyTableEntry tableEntry2;
+	private CyNetwork network;
 
 	protected final OpenBrowser browser;
 
@@ -99,9 +101,10 @@ public class DynamicSupport {
 		this.browser = browser;
 	}
 
-	protected synchronized void setURLs(CyTableEntry... entries) {
+	protected synchronized void setURLs(CyNetwork network, CyTableEntry... entries) {
+		this.network = network;
 		menuTitleURLMap.clear();
-		if ( entries == null ) {
+		if ( entries == null || network == null) {
 			menuTitleSelection = null;
 			menuTitleURLMap.clear();
 			return;
@@ -110,7 +113,7 @@ public class DynamicSupport {
 		tableEntries = entries; 
 
 		for ( CyTableEntry entry : tableEntries )
-			generateExternalLinks(entry.getCyRow(), menuTitleURLMap);
+			generateExternalLinks(network.getCyRow(entry), menuTitleURLMap);
 
 		List<String> menuTitles = new ArrayList<String>( menuTitleURLMap.keySet() );
 		Collections.sort(menuTitles);
@@ -179,6 +182,6 @@ public class DynamicSupport {
 			url = menuTitleURLMap.get( menuTitleSelection.getSelectedValue() );	
 		}
 			//System.out.println("url for LinkoutTask: " + url);
-		return new TaskIterator(new LinkoutTask(url, browser, tableEntries ));
+		return new TaskIterator(new LinkoutTask(url, browser, network, tableEntries ));
 	}
 }

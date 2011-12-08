@@ -16,7 +16,7 @@ public class NetworkWrapper {
 
     public String toString() {
         if (network != null) {
-        	CyRow row = network.getCyRow();
+        	CyRow row = network.getCyRow(network);
         	String title = row.get(CyNetwork.NAME, String.class);
             if (title != null && title.length() > 40) {
                 title = title.substring(0, 38) + "...";

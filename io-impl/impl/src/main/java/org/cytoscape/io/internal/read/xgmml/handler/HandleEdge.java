@@ -75,7 +75,7 @@ public class HandleEdge extends AbstractHandler {
 				manager.currentEdge = manager.createEdge(sourceNode, targetNode, id, label, directed);
 				
 				if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) {
-					CyRow row = manager.currentEdge.getCyRow();
+					CyRow row = manager.getCurrentNetwork().getCyRow(manager.currentEdge);
 					row.set(CyEdge.NAME, label);
 					row.set(CyEdge.INTERACTION, interaction);
 				}

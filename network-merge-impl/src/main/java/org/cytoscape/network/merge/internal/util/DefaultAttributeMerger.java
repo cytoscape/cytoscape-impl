@@ -40,6 +40,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
 
 
@@ -70,19 +71,19 @@ public class DefaultAttributeMerger implements AttributeMerger {
          */
         //@Override
         public <T extends CyTableEntry> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
-                                     T toGO, CyColumn toAttr) {
+                                     T toGO, CyColumn toAttr, CyNetwork fromNetwork, CyNetwork toNetwork) {
                 if ((mapGOAttr == null) || (toGO == null) || (toAttr == null)) {
                     throw new java.lang.IllegalArgumentException("Null argument.");
                 }
                 
-                CyRow cyRow = toGO.getCyRow(toAttr.getTable().getTitle());
+                CyRow cyRow = toNetwork.getCyRow(toGO, toAttr.getTable().getTitle());
                 CyTable cyTable = cyRow.getTable();
                 ColumnType colType = ColumnType.getType(toAttr);
 
                 for (Map.Entry<T,CyColumn> entryGOAttr : mapGOAttr.entrySet()) {
                         T from = entryGOAttr.getKey();
                         CyColumn fromAttr = entryGOAttr.getValue();
-                        CyRow fromCyRow = from.getCyRow(fromAttr.getTable().getTitle());
+                        CyRow fromCyRow = fromNetwork.getCyRow(from, fromAttr.getTable().getTitle());
                         ColumnType fromColType = ColumnType.getType(fromAttr);
 
                         if (colType == ColumnType.STRING) { // the case of inconvertable attributes and simple attributes to String

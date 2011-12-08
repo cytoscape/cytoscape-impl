@@ -63,9 +63,10 @@ public class DefaultAttributeValueMatcher implements AttributeValueMatcher {
                 if (entry1==entry2 && attr1==attr2) {
                         return true;
                 }
-                
-                CyRow row1 = entry1.getCyRow(attr1.getTable().getTitle());
-                CyRow row2 = entry2.getCyRow(attr2.getTable().getTitle());
+               
+			   	// TODO figure out where to get networks from
+                CyRow row1 = null; //entry1.getCyRow(attr1.getTable().getTitle());
+                CyRow row2 = null; //entry2.getCyRow(attr2.getTable().getTitle());
                 
                 Class<?> type1 = attr1.getType(); 
                 Class<?> type2 = attr2.getType();

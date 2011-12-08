@@ -215,6 +215,8 @@ public class ReadDataManager {
 				graphics = nodeGraphics;
 			else if (element instanceof CyEdge)
 				graphics = edgeGraphics;
+			else if (element instanceof CyNetwork)
+				graphics = networkGraphics;
 
 			Map<String, String> attributes = graphics.get(element);
 

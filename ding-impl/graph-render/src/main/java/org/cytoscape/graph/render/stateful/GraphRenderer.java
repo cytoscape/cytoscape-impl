@@ -43,6 +43,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.IntHash;
+import java.util.List;
 
 
 /**
@@ -136,7 +137,7 @@ public final class GraphRenderer {
 	                                    final GraphGraphics grafx, final Paint bgPaint,
 	                                    final double xCenter, final double yCenter,
 	                                    final double scaleFactor) {
-		
+	
 		nodeBuff.empty(); // Make sure we keep our promise.
 
 		// Define the visible window in node coordinate space.
@@ -234,9 +235,9 @@ public final class GraphRenderer {
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
 
-					final java.util.List<CyEdge> touchingEdges = graph.getAdjacentEdgeList(graph.getNode(node),CyEdge.Type.ANY);
+					final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
-                                        for ( CyEdge e : touchingEdges ) {
+					for ( CyEdge e : touchingEdges ) {
 						final int edge = e.getIndex(); 
 						final int otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex();
 
@@ -311,7 +312,7 @@ public final class GraphRenderer {
 				                                      Float.POSITIVE_INFINITY, null, 0, false);
 			else
 				nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax, yMax, null, 0, false);
-
+		
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
 				final int nodeHitCount = nodeHits.numRemaining();
@@ -324,18 +325,18 @@ public final class GraphRenderer {
 					final float nodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
 					final float nodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
 
-                                        java.util.List<CyEdge> touchingEdges = graph.getAdjacentEdgeList(graph.getNode(node),CyEdge.Type.ANY);
-                                        for ( CyEdge e : touchingEdges ) {
-                                                final int edge = e.getIndex();
-                                                final int otherNode = node ^ e.getSource().getIndex()
-							^ e.getTarget().getIndex();
+					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
+
+					for ( CyEdge e : touchingEdges ) {
+						final int edge = e.getIndex();
+						final int otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 							nodePositions.exists(otherNode, floatBuff2, 0);
 							grafx.drawEdgeLow(nodeX, nodeY, 
-							// Again, casting issue - tradeoff between
-							// accuracy and performance.
-							(floatBuff2[0] + floatBuff2[2]) / 2,
+							                  // Again, casting issue - tradeoff between
+							                  // accuracy and performance.
+							                  (floatBuff2[0] + floatBuff2[2]) / 2,
 							                  (floatBuff2[1] + floatBuff2[3]) / 2,
 							                  edgeDetails.colorLowDetail(edge));
 						}
@@ -347,7 +348,7 @@ public final class GraphRenderer {
 				while (nodeHits.numRemaining() > 0) {
 					final int node = nodeHits.nextExtents(floatBuff1, 0);
 					final byte nodeShape = nodeDetails.shape(node);
-					java.util.List<CyEdge> touchingEdges = graph.getAdjacentEdgeList(graph.getNode(node),CyEdge.Type.ANY);
+					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 					for ( CyEdge e : touchingEdges ) {
 						final int edge = e.getIndex(); 
 						final int otherNode = node ^ e.getSource().getIndex()
@@ -709,7 +710,6 @@ public final class GraphRenderer {
 				}
 			}
 		}
-
 		return lodBits;
 	}
 

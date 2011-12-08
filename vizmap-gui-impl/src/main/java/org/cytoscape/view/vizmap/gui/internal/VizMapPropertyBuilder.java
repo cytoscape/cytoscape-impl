@@ -30,6 +30,7 @@ package org.cytoscape.view.vizmap.gui.internal;
 import java.beans.PropertyEditor;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -149,9 +150,10 @@ public class VizMapPropertyBuilder {
 
 		final Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
 
-		final Set<CyTableEntry> graphObjectSet = new HashSet<CyTableEntry>();
+		final Map<CyNetwork,Set<CyTableEntry>> graphObjectSet = new HashMap<CyNetwork,Set<CyTableEntry>>();
 		for (CyNetwork targetNetwork : networks) {
 			Iterator<? extends CyTableEntry> it = null;
+			graphObjectSet.put(targetNetwork, new HashSet<CyTableEntry>());
 
 			((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(topProperty,
 					editorManager.getDataTableComboBoxEditor((Class<? extends CyTableEntry>) vp.getTargetDataType()));
@@ -166,7 +168,7 @@ public class VizMapPropertyBuilder {
 			}
 
 			while (it.hasNext())
-				graphObjectSet.add(it.next());
+				graphObjectSet.get(targetNetwork).add(it.next());
 		}
 
 		final VisualPropertyEditor<V> vpEditor = editorManager.getVisualPropertyEditor(vp);
@@ -177,26 +179,28 @@ public class VizMapPropertyBuilder {
 			// This set should not contain null!
 			final SortedSet<K> attrSet = new TreeSet<K>();
 
-			for (CyTableEntry go : graphObjectSet) {
-				final CyRow row = go.getCyRow();
-				final CyTable table = row.getTable();
-				final CyColumn column = table.getColumn(attrName);
-
-				if (column != null) {
-					final Class<?> attrClass = column.getType();
-
-					if (attrClass.isAssignableFrom(List.class)) {
-						List<?> list = row.getList(attrName, column.getListElementType());
-						if (list != null) {
-							for (Object item : list) {
-								if (item != null)
-									attrSet.add((K) item);
+			for (CyNetwork net : graphObjectSet.keySet()) {
+				for (CyTableEntry go : graphObjectSet.get(net)) {
+					final CyRow row = net.getCyRow(go);
+					final CyTable table = row.getTable();
+					final CyColumn column = table.getColumn(attrName);
+	
+					if (column != null) {
+						final Class<?> attrClass = column.getType();
+	
+						if (attrClass.isAssignableFrom(List.class)) {
+							List<?> list = row.getList(attrName, column.getListElementType());
+							if (list != null) {
+								for (Object item : list) {
+									if (item != null)
+										attrSet.add((K) item);
+								}
 							}
+						} else {
+							final Object id = row.get(attrName, attrClass);
+							if (id != null)
+								attrSet.add((K) id);
 						}
-					} else {
-						final Object id = row.get(attrName, attrClass);
-						if (id != null)
-							attrSet.add((K) id);
 					}
 				}
 			}
@@ -234,20 +238,21 @@ public class VizMapPropertyBuilder {
 			Object value;
 			String stringVal;
 
-			for (CyTableEntry go : graphObjectSet) {
-				CyColumn column = go.getCyRow().getTable().getColumn(attrName);
+			for (CyNetwork net : graphObjectSet.keySet()) {
+			for (CyTableEntry go : graphObjectSet.get(net)) {
+				CyColumn column = net.getCyRow(go).getTable().getColumn(attrName);
 
 				if (column != null) {
 					Class<?> attrClass = column.getType();
 
-					id = go.getCyRow().get(CyTableEntry.NAME, String.class);
+					id = net.getCyRow(go).get(CyTableEntry.NAME, String.class);
 
 					if (attrName.equals(Identifiable.SUID))
 						value = go.getSUID();
 					else if (attrClass.isAssignableFrom(List.class))
-						value = go.getCyRow().getList(attrName, column.getListElementType());
+						value = net.getCyRow(go).getList(attrName, column.getListElementType());
 					else
-						value = go.getCyRow().get(attrName, attrClass);
+						value = net.getCyRow(go).get(attrName, attrClass);
 
 					if (value != null)
 						stringVal = value.toString();
@@ -270,6 +275,7 @@ public class VizMapPropertyBuilder {
 					}
 				}
 			}
+		}
 
 		} else {
 			throw new IllegalArgumentException("Unsupported mapping type: " + visualMapping);

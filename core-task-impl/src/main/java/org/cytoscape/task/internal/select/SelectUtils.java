@@ -46,17 +46,17 @@ import org.cytoscape.model.CyTableEntry;
 
 final class SelectUtils {
 
-	void setSelectedNodes(final Collection<CyNode> nodes, final boolean select) {
-		setSelected(nodes, select);
+	void setSelectedNodes(final CyNetwork network, final Collection<CyNode> nodes, final boolean select) {
+		setSelected(network,nodes, select);
 	}
 
-	void setSelectedEdges(final Collection<CyEdge> edges, final boolean select) {
-		setSelected(edges, select);
+	void setSelectedEdges(final CyNetwork network, final Collection<CyEdge> edges, final boolean select) {
+		setSelected(network,edges, select);
 	}
 
-	private void setSelected(final Collection<? extends CyTableEntry> objects, final boolean select) {
+	private void setSelected(final CyNetwork network, final Collection<? extends CyTableEntry> objects, final boolean select) {
 
 		for (final CyTableEntry nodeOrEdge : objects)
-			nodeOrEdge.getCyRow().set(CyNetwork.SELECTED, select);
+			network.getCyRow(nodeOrEdge).set(CyNetwork.SELECTED, select);
 	}
 }

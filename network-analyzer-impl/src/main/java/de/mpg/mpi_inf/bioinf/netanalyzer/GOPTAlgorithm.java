@@ -63,8 +63,8 @@ public class GOPTAlgorithm {
 	public void computeNetworks(boolean aIntersection, boolean aUnion, boolean aDifference) {
 		if (aIntersection || aUnion || aDifference) {
 			// Create the required (empty) networks
-			final String title1 = network1.getCyRow().get("name", String.class);
-			final String title2 = network2.getCyRow().get("name", String.class);
+			final String title1 = network1.getCyRow(network1).get("name", String.class);
+			final String title2 = network2.getCyRow(network2).get("name", String.class);
 			if (aIntersection) {
 				intersectionNw = createNetwork(title1 + " AND " + title2);
 			}
@@ -163,7 +163,7 @@ public class GOPTAlgorithm {
 	// TODO This should be refactored out into a Task
 	private CyNetwork createNetwork(String name) {
 		CyNetwork n = netFactory.createNetwork();
-		n.getCyRow().set("name",name);
+		n.getCyRow(n).set("name",name);
 		netMgr.addNetwork(n);
 		return n;
 	}

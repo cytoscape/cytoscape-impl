@@ -96,7 +96,7 @@ public abstract class CyNetworkUtils {
 		final Set<String> computedAttr = CyTableUtil.getColumnNames(table);
 		for (final CyEdge n : aNetwork.getEdgeList()) {
 			for (final CyColumn column : columns) {
-				if (!n.getCyRow().isSet(column.getName()))
+				if (!aNetwork.getCyRow(n).isSet(column.getName()))
 					computedAttr.remove(column.getName());
 			}
 		}
@@ -117,7 +117,7 @@ public abstract class CyNetworkUtils {
 		final Set<String> computedAttr = CyTableUtil.getColumnNames(table);
 		for (final CyNode n : aNetwork.getNodeList()) {
 			for (final CyColumn column : columns) {
-				if (!n.getCyRow().isSet(column.getName()))
+				if (!aNetwork.getCyRow(n).isSet(column.getName()))
 					computedAttr.remove(column.getName());
 			}
 		}
@@ -467,9 +467,9 @@ public abstract class CyNetworkUtils {
 					}
 					// store the number of removed edges as edge attribute
 					if (aCreateEdgeAttr) {
-						saveNumDuplEdges(undirEdge, numUndir);
-						saveNumDuplEdges(dir12Edge, numDir12);
-						saveNumDuplEdges(dir21Edge, numDir21);
+						saveNumDuplEdges(aNetwork,undirEdge, numUndir);
+						saveNumDuplEdges(aNetwork,dir12Edge, numDir12);
+						saveNumDuplEdges(aNetwork,dir21Edge, numDir21);
 					}
 				}
 			}
@@ -486,9 +486,9 @@ public abstract class CyNetworkUtils {
 	 * @param aNumEdges
 	 *            NUmber of edges duplicated to aEdge.
 	 */
-	private static void saveNumDuplEdges(CyEdge aEdge, int aNumEdges) {
+	private static void saveNumDuplEdges(CyNetwork net, CyEdge aEdge, int aNumEdges) {
 		if (aEdge != null) {
-			aEdge.getCyRow().set( Messages.getAttr("dpe"), aNumEdges);
+			net.getCyRow(aEdge).set( Messages.getAttr("dpe"), aNumEdges);
 		}
 	}
 

@@ -187,13 +187,13 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 				multiEdgePartners += partnerOfMultiEdgeNodePairs;
 
 				if (useNodeAttributes) {
-					node.getCyRow().set("cco", 0.0);
-					node.getCyRow().set("din", inEdges.size());
-					node.getCyRow().set("dou", outEdges.size());
-					node.getCyRow().set("dal", inEdges.size() + outEdges.size());
-					node.getCyRow().set("isn", (neighborCount == 0));
-					node.getCyRow().set("slo", selfloops);
-					node.getCyRow().set("pmn", partnerOfMultiEdgeNodePairs);
+					network.getCyRow(node).set("cco", 0.0);
+					network.getCyRow(node).set("din", inEdges.size());
+					network.getCyRow(node).set("dou", outEdges.size());
+					network.getCyRow(node).set("dal", inEdges.size() + outEdges.size());
+					network.getCyRow(node).set("isn", (neighborCount == 0));
+					network.getCyRow(node).set("slo", selfloops);
+					network.getCyRow(node).set("pmn", partnerOfMultiEdgeNodePairs);
 				}
 
 				if (neighborCount > 1) {
@@ -203,10 +203,10 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 					final double nodeCCp = computeCC(neighbors);
 					accumulate(CCps, neighborCount, nodeCCp);
 					if (useNodeAttributes) {
-						node.getCyRow().set("cco", Utils.roundTo(nodeCCp, roundingDigits));
+						network.getCyRow(node).set("cco", Utils.roundTo(nodeCCp, roundingDigits));
 					}
 				} else if (useNodeAttributes) {
-					node.getCyRow().set("cco", 0.0);
+					network.getCyRow(node).set("cco", 0.0);
 				}
 
 				// Neighborhood connectivity calculation
@@ -230,7 +230,7 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 				}
 
 				if (useNodeAttributes) {
-					node.getCyRow().set("nco", nco);
+					network.getCyRow(node).set("nco", nco);
 				}
 
 				if (nodeSet == null) {
@@ -250,9 +250,9 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 					closenessCent.add(new Point2D.Double(neighborCount, closeness));
 
 					if (useNodeAttributes) {
-						node.getCyRow().set("spl", eccentricity);
-						node.getCyRow().set("apl", Utils.roundTo(apl, roundingDigits));
-						node.getCyRow().set("clc", Utils.roundTo(closeness, roundingDigits));
+						network.getCyRow(node).set("spl", eccentricity);
+						network.getCyRow(node).set("apl", Utils.roundTo(apl, roundingDigits));
+						network.getCyRow(node).set("clc", Utils.roundTo(closeness, roundingDigits));
 					}
 
 					// CyNode and edge betweenness calculation
@@ -286,8 +286,8 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 					final long nodeStress = stress.get(n).longValue();
 					stressDist.addObservation(nodeStress);
 					if (useNodeAttributes) {
-						n.getCyRow().set("nbt", Utils.roundTo(nb, roundingDigits));
-						n.getCyRow().set("stress", nodeStress);
+						network.getCyRow(n).set("nbt", Utils.roundTo(nb, roundingDigits));
+						network.getCyRow(n).set("stress", nodeStress);
 					}
 				}
 
@@ -298,7 +298,7 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 						if (Double.isNaN(eb)) {
 							eb = 0.0;
 						}
-						betEntry.getKey().getCyRow().set("ebt",
+						network.getCyRow(betEntry.getKey()).set("ebt",
 								Utils.roundTo(eb, roundingDigits));
 					}
 				}

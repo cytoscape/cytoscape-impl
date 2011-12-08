@@ -73,12 +73,12 @@ public class EnhancedSearchIndex {
 			List<CyNode> nodeList = network.getNodeList();
 			
 			for (CyNode cyNode : nodeList) {
-				writer.addDocument(createDocument(cyNode, EnhancedSearch.NODE_TYPE, cyNode.getIndex()));
+				writer.addDocument(createDocument(network, cyNode, EnhancedSearch.NODE_TYPE, cyNode.getIndex()));
 			}
 		
 			List<CyEdge> edgeList = network.getEdgeList();
 			for (CyEdge cyEdge : edgeList) {
-				writer.addDocument(createDocument(cyEdge, EnhancedSearch.EDGE_TYPE, cyEdge.getIndex()));
+				writer.addDocument(createDocument(network, cyEdge, EnhancedSearch.EDGE_TYPE, cyEdge.getIndex()));
 			}
 
 			// Optimize and close the writer to finish building the index
@@ -95,14 +95,14 @@ public class EnhancedSearchIndex {
 	 * Make a Document object with an un-indexed identifier field and indexed
 	 * attribute fields
 	 */
-	private static Document createDocument(CyTableEntry graphObject, String graphObjectType, int index) {
+	private static Document createDocument(CyNetwork network, CyTableEntry graphObject, String graphObjectType, int index) {
 		Document doc = new Document();
 		String identifier = Integer.toString(index);
 		
 		doc.add(new Field(EnhancedSearch.INDEX_FIELD, identifier, Field.Store.YES, Field.Index.ANALYZED));
 		doc.add(new Field(EnhancedSearch.TYPE_FIELD, graphObjectType, Field.Store.YES, Field.Index.ANALYZED));
 		
-		CyRow cyRow = graphObject.getCyRow();
+		CyRow cyRow = network.getCyRow(graphObject);
 		CyTable cyDataTable = cyRow.getTable();
 		Set<String> attributeNames = CyTableUtil.getColumnNames(cyDataTable);
 
@@ -115,36 +115,36 @@ public class EnhancedSearchIndex {
 			Class<?> valueType = cyDataTable.getColumn(attrName).getType();
 			
 			if (valueType == String.class) {
-				String attrValue = graphObject.getCyRow().get(attrName, String.class);
+				String attrValue = network.getCyRow(graphObject).get(attrName, String.class);
 				if (attrValue == null){
 					continue;
 				}				
 				doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));
 			} else if (valueType == Integer.class) {
-				if (graphObject.getCyRow().get(attrName, Integer.class) == null){
+				if (network.getCyRow(graphObject).get(attrName, Integer.class) == null){
 					continue;
 				}
 
-				int attrValue = graphObject.getCyRow().get(attrName, Integer.class);
+				int attrValue = network.getCyRow(graphObject).get(attrName, Integer.class);
 
 				NumericField field = new NumericField(attrIndexingName);
 				field.setIntValue(attrValue);
 				doc.add(field);
 			} else if (valueType == Double.class) {	
-				if (graphObject.getCyRow().get(attrName, Double.class) == null){
+				if (network.getCyRow(graphObject).get(attrName, Double.class) == null){
 					continue;
 				}
 				
-				double attrValue = graphObject.getCyRow().get(attrName, Double.class);
+				double attrValue = network.getCyRow(graphObject).get(attrName, Double.class);
 				
 				NumericField field = new NumericField(attrIndexingName);
 				field.setDoubleValue(attrValue);
 				doc.add(field);
 			} else if (valueType == Boolean.class) {
-				String attrValue = graphObject.getCyRow().get(attrName, Boolean.class).toString();
+				String attrValue = network.getCyRow(graphObject).get(attrName, Boolean.class).toString();
 				doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));
 			} else if (valueType == List.class) {
-				List attrValueList = graphObject.getCyRow().get(attrName, List.class);
+				List attrValueList = network.getCyRow(graphObject).get(attrName, List.class);
 				if (attrValueList != null) {
 					for (int j = 0; j < attrValueList.size(); j++) {
 						String attrValue = attrValueList.get(j).toString();

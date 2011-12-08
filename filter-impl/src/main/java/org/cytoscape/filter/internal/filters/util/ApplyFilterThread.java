@@ -85,10 +85,10 @@ class ApplyFilterThread extends Thread {
 
 		if (pObject instanceof CyNode) {
 			CyNode node = (CyNode) pObject;
-			data = node.getCyRow();
+			data = network.getCyRow(node);
 		} else {
 			CyEdge edge = (CyEdge) pObject;
-			data = edge.getCyRow();
+			data = network.getCyRow(edge);
 		}
 
 		if (pAtomicFilter instanceof StringFilter) {
@@ -211,7 +211,7 @@ class ApplyFilterThread extends Thread {
 			}
 
 			//System.out.println("\tpassedNodes.size() ="+passedNodes.size());
-			SelectUtil.setSelectedNodeState(passedNodes, true);
+			SelectUtil.setSelectedNodeState(network,passedNodes, true);
 		}
 
 		if (pCompositeFilter.getAdvancedSetting().isEdgeChecked()) {
@@ -230,7 +230,7 @@ class ApplyFilterThread extends Thread {
 			}
 
 			//System.out.println("\tpassedEdges.size() ="+passedEdges.size());
-			SelectUtil.setSelectedEdgeState(passedEdges, true);
+			SelectUtil.setSelectedEdgeState(network,passedEdges, true);
 		}
 	} //testObjects
 }

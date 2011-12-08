@@ -95,7 +95,7 @@ public class MetadataParser {
 	public MetadataParser(CyNetwork network, String metadataLabel) {
 		this.metadataLabel = metadataLabel;
 		this.network = network;
-		networkAttributes = network.getCyRow(); 
+		networkAttributes = network.getCyRow(network); 
 
 		// Extract Network Metadata from CyAttributes
 		rdfAsMap = networkAttributes.get(metadataLabel,Map.class);
@@ -133,7 +133,7 @@ public class MetadataParser {
 					break;
 
 				case TITLE:
-					dataMap.put(entries[i].toString(), network.getCyRow().get("title",String.class));
+					dataMap.put(entries[i].toString(), network.getCyRow(network).get("title",String.class));
 
 					break;
 

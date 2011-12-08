@@ -77,7 +77,7 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 		
 		setForeground(treeNode.getNodeColor());
 		setForeground(treeNode.getNodeColor());
-		setToolTipText(treeNode.getNetwork().getCyRow().get(CyTableEntry.NAME, String.class));
+		setToolTipText(treeNode.getNetwork().getCyRow(treeNode.getNetwork()).get(CyTableEntry.NAME, String.class));
 
 		return this;
 	}

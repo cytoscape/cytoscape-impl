@@ -234,12 +234,12 @@ public class NetworkUtil extends Thread {
 
         // setup web services url to pc attribute  - used by nodeContextMenuListener
         if (webServicesURL != null) {
-        	AttributeUtil.set(cyNetwork, "biopax.web_services_url", webServicesURL, String.class);
+        	AttributeUtil.set(cyNetwork, cyNetwork, "biopax.web_services_url", webServicesURL, String.class);
         }
 
         // setup data sources attribute - used by nodeContextMenuListener - remains encoded
         if (dataSources != null) {
-        	AttributeUtil.set(cyNetwork, "biopax.data_sources", dataSources, String.class);
+        	AttributeUtil.set(cyNetwork, cyNetwork, "biopax.data_sources", dataSources, String.class);
         }
 
         // setup the context menu

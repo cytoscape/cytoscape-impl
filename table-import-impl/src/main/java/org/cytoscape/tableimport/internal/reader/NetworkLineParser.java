@@ -108,9 +108,9 @@ public class NetworkLineParser {
 
 		//edge = Cytoscape.getCyEdge(source, target, Semantics.INTERACTION, interaction, true, true);
 		CyEdge edge = network.addEdge(source, target, true);
-		edge.getCyRow().set("interaction", interaction);
-		String edgeName = source.getCyRow().get("name", String.class)+ " ("+interaction+") "+ target.getCyRow().get("name", String.class);
-		edge.getCyRow().set("name", edgeName);
+		network.getCyRow(edge).set("interaction", interaction);
+		String edgeName = network.getCyRow(source).get("name", String.class)+ " ("+interaction+") "+ network.getCyRow(target).get("name", String.class);
+		network.getCyRow(edge).set("name", edgeName);
 
 		edgeList.add(edge.getSUID());
 
@@ -129,7 +129,7 @@ public class NetworkLineParser {
 				return nodeMap.get(parts[nodeIndex]);
 			}
 			node = network.addNode();
-			node.getCyRow().set("name", parts[nodeIndex]);
+			network.getCyRow(node).set("name", parts[nodeIndex]);
 
 			nodeMap.put(parts[nodeIndex], node);
 
@@ -152,8 +152,8 @@ public class NetworkLineParser {
 
 	private void createColumn(final CyEdge edge, final String attributeName, Class<?> theType){
 		// If attribute does not exist, create it
-		if (edge.getCyRow().getTable().getColumn(attributeName) == null)
-			edge.getCyRow().getTable().createColumn(attributeName, theType, false);
+		if (network.getCyRow(edge).getTable().getColumn(attributeName) == null)
+			network.getCyRow(edge).getTable().createColumn(attributeName, theType, false);
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class NetworkLineParser {
 				//nmp.getAttributes()
 				//   .setAttribute(key, nmp.getAttributeNames()[index], new Boolean(entry));
 				createColumn(edge, nmp.getAttributeNames()[index],Boolean.class);
-				edge.getCyRow().set(nmp.getAttributeNames()[index], new Boolean(entry));
+				network.getCyRow(edge).set(nmp.getAttributeNames()[index], new Boolean(entry));
 
 				break;
 
@@ -186,7 +186,7 @@ public class NetworkLineParser {
 				//nmp.getAttributes()
 				//   .setAttribute(key, nmp.getAttributeNames()[index], new Integer(entry));
 				createColumn(edge, nmp.getAttributeNames()[index],Integer.class);
-				edge.getCyRow().set(nmp.getAttributeNames()[index], new Integer(entry));
+				network.getCyRow(edge).set(nmp.getAttributeNames()[index], new Integer(entry));
 
 				break;
 
@@ -194,14 +194,14 @@ public class NetworkLineParser {
 				//nmp.getAttributes()
 				//   .setAttribute(key, nmp.getAttributeNames()[index], new Double(entry));
 				createColumn(edge, nmp.getAttributeNames()[index],Double.class);
-				edge.getCyRow().set(nmp.getAttributeNames()[index], new Double(entry));
+				network.getCyRow(edge).set(nmp.getAttributeNames()[index], new Double(entry));
 
 				break;
 
 			case AttributeTypes.TYPE_STRING:
 				//nmp.getAttributes().setAttribute(key, nmp.getAttributeNames()[index], entry);
 				createColumn(edge, nmp.getAttributeNames()[index],String.class);
-				edge.getCyRow().set(nmp.getAttributeNames()[index], entry.trim());
+				network.getCyRow(edge).set(nmp.getAttributeNames()[index], entry.trim());
 
 				break;
 

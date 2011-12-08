@@ -32,7 +32,7 @@ public class HandleEdgeAttribute extends AbstractHandler {
     			}
 			}
 
-			manager.currentAttributes = manager.currentEdge.getCyRow();
+			manager.currentAttributes = manager.getCurrentNetwork().getCyRow(manager.currentEdge);
 			ParseState nextState = attributeValueUtil.handleAttribute(atts, manager.currentAttributes);
 
 			if (nextState != ParseState.NONE) return nextState;

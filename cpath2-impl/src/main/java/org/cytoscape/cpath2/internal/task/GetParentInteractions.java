@@ -51,7 +51,7 @@ public class GetParentInteractions implements Task {
             CySwingApplication application = factory.getCySwingApplication();
             JDialog dialog = new JDialog(application.getJFrame());
 
-            String nodeLabel = node.getCyRow().get(CyNode.NAME, String.class);
+            String nodeLabel = network.getCyRow(node).get(CyNode.NAME, String.class);
             if (nodeLabel != null) {
                 dialog.setTitle(nodeLabel);
             } else {

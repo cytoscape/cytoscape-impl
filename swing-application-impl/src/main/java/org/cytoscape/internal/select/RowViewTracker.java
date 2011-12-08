@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
@@ -38,12 +39,13 @@ public class RowViewTracker implements NetworkViewAddedListener,
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetworkView view = e.getNetworkView();
+				final CyNetwork net = view.getModel(); 
 
 				for ( View<CyNode> nv : view.getNodeViews() )
-					rowViewMap.put( nv.getModel().getCyRow(), nv);
+					rowViewMap.put( net.getCyRow(nv.getModel()), nv);
 		
 				for ( View<CyEdge> ev : view.getEdgeViews() ) 
-					rowViewMap.put( ev.getModel().getCyRow(), ev);
+					rowViewMap.put( net.getCyRow(ev.getModel()), ev);
 			}
 		});
 	}
@@ -51,8 +53,11 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AddedNodeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				final CyNetworkView view = e.getSource();
+				final CyNetwork net = view.getModel(); 
+				
 				for ( View<CyNode> v : e.getNodeViews()) 
-					rowViewMap.put( v.getModel().getCyRow(), v );
+					rowViewMap.put( net.getCyRow(v.getModel()), v );
 			}
 		});
 	}
@@ -60,8 +65,11 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AddedEdgeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				final CyNetworkView view = e.getSource();
+				final CyNetwork net = view.getModel(); 
+
 				for ( View<CyEdge> v : e.getEdgeViews()) 
-					rowViewMap.put( v.getModel().getCyRow(), v );
+					rowViewMap.put( net.getCyRow(v.getModel()), v );
 			}
 		});
 	}
@@ -69,8 +77,11 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AboutToRemoveNodeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				final CyNetworkView view = e.getSource();
+				final CyNetwork net = view.getModel(); 
+
 				for ( View<CyNode> v : e.getNodeViews()) 
-					rowViewMap.remove( v.getModel().getCyRow() );
+					rowViewMap.remove( net.getCyRow(v.getModel()) );
 			}
 		});
 	}
@@ -78,8 +89,11 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AboutToRemoveEdgeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				final CyNetworkView view = e.getSource();
+				final CyNetwork net = view.getModel(); 
+
 				for ( View<CyEdge> v : e.getEdgeViews()) 
-					rowViewMap.remove( v.getModel().getCyRow() );
+					rowViewMap.remove( net.getCyRow(v.getModel()) );
 			}
 		});
 	}

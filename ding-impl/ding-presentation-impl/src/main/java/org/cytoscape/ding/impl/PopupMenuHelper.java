@@ -83,7 +83,7 @@ class PopupMenuHelper {
 	/**
 	 * Creates a menu based on the EdgeView.
 	 */
-	void createEdgeViewMenu(EdgeView edgeView, int x, int y, String action) {
+	void createEdgeViewMenu(CyNetwork network, EdgeView edgeView, int x, int y, String action) {
 		if (edgeView != null ) {
 
 			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(m_view.edgeViewTFs,action);
@@ -91,7 +91,7 @@ class PopupMenuHelper {
 
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
-				String edgeLabel = ev.getModel().getCyRow().get("interaction",String.class);
+				String edgeLabel = network.getCyRow(ev.getModel()).get("interaction",String.class);
 				JPopupMenu menu = new JPopupMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
@@ -114,14 +114,14 @@ class PopupMenuHelper {
 	/**
 	 * Creates a menu based on a drop event on a NodeView.
 	 */
-	void createDropNodeViewMenu(NodeView nview, Point rawPt, Point xformPt, Transferable t, String action) {
+	void createDropNodeViewMenu(CyNetwork network, NodeView nview, Point rawPt, Point xformPt, Transferable t, String action) {
 		if (nview != null ) {
 			Collection<DropNodeViewTaskFactory> usableTFs = getPreferredActions(m_view.dropNodeViewTFs,action);
 			View<CyNode> nv = (DNodeView)nview;
 
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
-				String nodeLabel = nv.getModel().getCyRow().get("name",String.class);
+				String nodeLabel = network.getCyRow(nv.getModel()).get("name",String.class);
 				JPopupMenu menu = new JPopupMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
@@ -146,14 +146,14 @@ class PopupMenuHelper {
 	/**
 	 * Creates a menu based on the NodeView.
 	 */
-	void createNodeViewMenu(NodeView nview, int x, int y , String action) {
+	void createNodeViewMenu(CyNetwork network, NodeView nview, int x, int y , String action) {
 		if (nview != null ) {
 			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(m_view.nodeViewTFs,action);
 			View<CyNode> nv = (DNodeView)nview;
 
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
-				String nodeLabel = nv.getModel().getCyRow().get("name",String.class);
+				String nodeLabel = network.getCyRow(nv.getModel()).get("name",String.class);
 				JPopupMenu menu = new JPopupMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 

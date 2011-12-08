@@ -79,11 +79,14 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#apply(org.cytoscape.view.model.View)
 	 */
 	@Override
-	public void apply(View<? extends CyTableEntry> view) {
+	public void apply(CyRow row, View<? extends CyTableEntry> view) {
+		if ( row == null )
+			return;
+
 		if (view == null)
 			return; // empty view, nothing to do
 
-		applyDiscreteMapping(view);
+		applyDiscreteMapping(row,view);
 	}
 
 	/**
@@ -102,12 +105,7 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	 * @param <V>
 	 *            the type-parameter of the View
 	 */
-	private void applyDiscreteMapping(final View<? extends CyTableEntry> view) {
-		final CyRow row;
-		if(table == null)
-			row = view.getModel().getCyRow();
-		else
-			row = view.getModel().getCyRow(table.getTitle());
+	private void applyDiscreteMapping(final CyRow row, final View<? extends CyTableEntry> view) {
 		
 		V value = null;
 

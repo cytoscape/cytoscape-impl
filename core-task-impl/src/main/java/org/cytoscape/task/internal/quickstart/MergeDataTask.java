@@ -51,7 +51,7 @@ public class MergeDataTask extends AbstractTask {
 
 		final StringBuilder builder = new StringBuilder();
 		
-		builder.append("Data sets loaded:\n  Network: " + util.getTargetNetwork().getCyRow().get(CyTableEntry.NAME, String.class));
+		builder.append("Data sets loaded:\n  Network: " + util.getTargetNetwork().getCyRow(util.getTargetNetwork()).get(CyTableEntry.NAME, String.class));
 		builder.append("\n  Data Table: " + table.getTitle());
 		builder.append("\n\n  ID Type: " + columnName);
 		builder.append("\n  Matched entries: " + checkMatching(columnName, table.getColumn(columnName).getType()));

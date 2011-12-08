@@ -142,14 +142,17 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#apply(org.cytoscape.view.model.View)
 	 */
 	@Override
-	public void apply(final View<? extends CyTableEntry> view) {
+	public void apply(final CyRow row, final View<? extends CyTableEntry> view) {
+		if (row == null)
+			return;
+
 		if (view == null)
 			return;
 		
 		if(this.points.size() == 0)
 			return;
 
-		doMap(view);
+		doMap(row,view);
 	}
 
 	/**
@@ -168,13 +171,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	 * @param <V>
 	 *            the type-parameter of the View
 	 */
-	private void doMap(final View<? extends CyTableEntry> view) {
-
-		final CyRow row;
-		if(table == null)
-			row = view.getModel().getCyRow();
-		else
-			row = view.getModel().getCyRow(table.getTitle());
+	private void doMap(final CyRow row, final View<? extends CyTableEntry> view) {
 
 		if (row.isSet(attrName)) {
 			// skip Views where source attribute is not defined;
@@ -183,14 +180,12 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 
 			// In all cases, attribute value should be a number for continuous
 			// mapping.
-			final K attrValue = view.getModel().getCyRow()
-					.get(attrName, attrType);
+			final K attrValue = row.get(attrName, attrType);
 			final V value = getRangeValue(attrValue);
 			view.setVisualProperty(vp, value);
 		} else { // remove value so that default value will be used:
 			view.setVisualProperty(vp, null);
 		}
-
 	}
 
 	private V getRangeValue(K domainValue) {

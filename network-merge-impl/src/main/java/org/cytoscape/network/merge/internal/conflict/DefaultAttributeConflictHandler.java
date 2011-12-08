@@ -68,7 +68,8 @@ public class DefaultAttributeConflictHandler implements AttributeConflictHandler
                         throw new java.lang.NullPointerException();
                 }
 
-                CyRow row = to.getCyRow(toAttr.getTable().getTitle());
+				// TODO figure out a network to pass in
+                CyRow row = null; //to.getCyRow(toAttr.getTable().getTitle());
                 
                 ColumnType type = ColumnType.getType(toAttr);
                 
@@ -80,7 +81,8 @@ public class DefaultAttributeConflictHandler implements AttributeConflictHandler
                         for (Map.Entry<CyTableEntry,CyColumn> entry : mapFromGOFromAttr.entrySet()) {
                                 CyTableEntry from = entry.getKey();
                                 CyColumn fromAttr = entry.getValue();
-                                Object fromValue = from.getCyRow(fromAttr.getTable().getTitle()).getRaw(fromAttr.getName());
+								// TODO figure out which network to be using 
+                                Object fromValue = null; //from.getCyRow(fromAttr.getTable().getTitle()).getRaw(fromAttr.getName());
                                 if (fromValue!=null) {
                                         values.add(fromValue.toString());
                                 }

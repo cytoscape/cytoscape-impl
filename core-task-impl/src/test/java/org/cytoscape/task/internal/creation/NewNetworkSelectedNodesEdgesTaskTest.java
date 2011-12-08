@@ -48,7 +48,7 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		final CyNode node3 = net.addNode();
 		
 		final CyTable nodeTable = net.getDefaultNodeTable();
-		node1.getCyRow().set(CyNetwork.SELECTED, true);
+		net.getCyRow(node1).set(CyNetwork.SELECTED, true);
 
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 

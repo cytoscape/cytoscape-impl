@@ -28,8 +28,8 @@ class ExportAsBioPAXTask implements CyWriter {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setStatusMessage("Exporting BioPAX...");
-        //String bpModelStr = network.getCyRow().get(BioPaxUtil.BIOPAX_DATA, String.class);
-        String bpModelStr = network.getCyRow(CyNetwork.HIDDEN_ATTRS).get(BioPaxUtil.BIOPAX_DATA, String.class);
+        //String bpModelStr = network.getCyRow(network).get(BioPaxUtil.BIOPAX_DATA, String.class);
+        String bpModelStr = network.getCyRow(network,CyNetwork.HIDDEN_ATTRS).get(BioPaxUtil.BIOPAX_DATA, String.class);
         try {
             Writer w = new OutputStreamWriter(stream);
             w.write(bpModelStr);

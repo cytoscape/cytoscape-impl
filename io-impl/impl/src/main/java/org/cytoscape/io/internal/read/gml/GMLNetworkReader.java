@@ -264,7 +264,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				CyNode node = network.addNode();
 
 				// FIXME this fires too many events!!
-				node.getCyRow().set(CyTableEntry.NAME, label);
+				network.getCyRow(node).set(CyTableEntry.NAME, label);
 
 				nodeIDMap.put(label, node);
 				gml_id2order.put(nodes.get(idx), idx);
@@ -304,8 +304,8 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				CyNode node_1 = nodeIDMap.get(sourceName);
 				CyNode node_2 = nodeIDMap.get(targetName);
 				CyEdge edge = network.addEdge(node_1, node_2, isDirected.booleanValue());
-				edge.getCyRow().set(CyTableEntry.NAME, edgeName);
-				edge.getCyRow().set("interaction", label);
+				network.getCyRow(edge).set(CyTableEntry.NAME, edgeName);
+				network.getCyRow(edge).set("interaction", label);
 				edge_names.add(idx, edge);
 
 				edge_root_index_pairs.get(idx).value = Integer.valueOf(edge.getIndex());
@@ -486,7 +486,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			if (keyVal.key.equals(GRAPH)) {
 				layoutGraph(view, (List<KeyValue>) keyVal.value);
 			} else if (keyVal.key.equals(TITLE) && keyVal.value != null) {
-				CyRow netRow = view.getModel().getCyRow();
+				CyRow netRow = view.getModel().getCyRow(view.getModel());
 				String netName = keyVal.value.toString();
 				netRow.set(CyTableEntry.NAME, netName);
 			}

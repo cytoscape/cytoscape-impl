@@ -22,7 +22,7 @@ public class EditNetworkTitleTaskTest {
 
 		CyRow r1 =  mock(CyRow.class);
 
-		when(net.getCyRow()).thenReturn(r1);
+		when(net.getCyRow(net)).thenReturn(r1);
 		when(r1.get("name",String.class)).thenReturn("title");
 		
 		UndoSupport undoSupport = mock(UndoSupport.class);

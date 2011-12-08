@@ -39,7 +39,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 					if (node1 == null) {
 
 						node1 = network.addNode();
-						node1.getCyRow().set("name",terms[0]);
+						network.getCyRow(node1).set("name",terms[0]);
 
 
 						//nv1 = view.getNodeView(node1);
@@ -62,7 +62,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 						CyNode node2 = findNode(terms[2]);
 						if (node2 == null) {
 							node2 = network.addNode();
-							node2.getCyRow().set("name",terms[2]);
+							network.getCyRow(node2).set("name",terms[2]);
 
 							//nv2 = view.getNodeView(node2);
 
@@ -71,7 +71,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 						}
 
 						CyEdge edge = network.addEdge(node1, node2, true);
-						edge.getCyRow().set("name",terms[1]);
+						network.getCyRow(edge).set("name",terms[1]);
 
 					} else if (terms.length > 3) {
 						// process multiple targets and one source
@@ -82,7 +82,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 							CyNode node2 = findNode(terms[i]);
 							if (node2 == null) {
 								node2 = network.addNode();
-								node2.getCyRow().set("name",terms[i]);
+								network.getCyRow(node2).set("name",terms[i]);
 
 								//nv2 = view.getNodeView(node2);
 
@@ -91,7 +91,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 							}
 
 							CyEdge edge = network.addEdge(node1, node2, true);
-							edge.getCyRow().set("name",terms[1]);
+							network.getCyRow(edge).set("name",terms[1]);
 							//doCircleLayout(nodeViews, nv1);
 					}
 				}
@@ -129,7 +129,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 
 	private CyNode findNode(String name) {
 		for ( CyNode node : network.getNodeList() ) 
-			if ( node.getCyRow().get("name",String.class).equals(name) ) 
+			if ( network.getCyRow(node).get("name",String.class).equals(name) ) 
 				return node;	
 		return null;
 	}

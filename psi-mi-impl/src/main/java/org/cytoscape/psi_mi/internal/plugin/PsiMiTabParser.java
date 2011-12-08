@@ -140,27 +140,27 @@ public class PsiMiTabParser {
 					nodeMap.put(targetRawID, target);
 				}
 				
-				source.getCyRow().set(CyTableEntry.NAME, sourceRawID);
-				target.getCyRow().set(CyTableEntry.NAME, targetRawID);
+				network.getCyRow(source).set(CyTableEntry.NAME, sourceRawID);
+				network.getCyRow(target).set(CyTableEntry.NAME, targetRawID);
 
 				// Set type if not protein
 				if (sourceID[0].contains(CHEBI)) {
-					source.getCyRow().set(INTERACTOR_TYPE, COMPOUND);
+					network.getCyRow(source).set(INTERACTOR_TYPE, COMPOUND);
 				}
 				if (targetID[0].contains(CHEBI))
-					target.getCyRow().set(INTERACTOR_TYPE, COMPOUND);
+					network.getCyRow(target).set(INTERACTOR_TYPE, COMPOUND);
 
 				// Aliases
-				setAliases(source.getCyRow(), entry[0].split(SEPARATOR));
-				setAliases(target.getCyRow(), entry[1].split(SEPARATOR));
-				setAliases(source.getCyRow(), entry[2].split(SEPARATOR));
-				setAliases(target.getCyRow(), entry[3].split(SEPARATOR));
-				setAliases(source.getCyRow(), entry[4].split(SEPARATOR));
-				setAliases(target.getCyRow(), entry[5].split(SEPARATOR));
+				setAliases(network.getCyRow(source), entry[0].split(SEPARATOR));
+				setAliases(network.getCyRow(target), entry[1].split(SEPARATOR));
+				setAliases(network.getCyRow(source), entry[2].split(SEPARATOR));
+				setAliases(network.getCyRow(target), entry[3].split(SEPARATOR));
+				setAliases(network.getCyRow(source), entry[4].split(SEPARATOR));
+				setAliases(network.getCyRow(target), entry[5].split(SEPARATOR));
 
 				// Tax ID (pick first one only)
-				setTaxID(source.getCyRow(), entry[9].split(SEPARATOR)[0]);
-				setTaxID(target.getCyRow(), entry[10].split(SEPARATOR)[0]);
+				setTaxID(network.getCyRow(source), entry[9].split(SEPARATOR)[0]);
+				setTaxID(network.getCyRow(target), entry[10].split(SEPARATOR)[0]);
 
 				sourceDB = entry[12].split(SEPARATOR);
 				interactionID = entry[13].split(SEPARATOR);
@@ -171,18 +171,18 @@ public class PsiMiTabParser {
 				interactionType = entry[11].split(SEPARATOR);
 
 				final CyEdge e = network.addEdge(source, target, true);
-				e.getCyRow().set(INTERACTION, interactionID[0]);
+				network.getCyRow(e).set(INTERACTION, interactionID[0]);
 
-				setEdgeListAttribute(e.getCyRow(), interactionType, INTERACTION_TYPE);
-				setEdgeListAttribute(e.getCyRow(), detectionMethods, DETECTION_METHOD);
-				setEdgeListAttribute(e.getCyRow(), sourceDB, SOURCE_DB);
+				setEdgeListAttribute(network.getCyRow(e), interactionType, INTERACTION_TYPE);
+				setEdgeListAttribute(network.getCyRow(e), detectionMethods, DETECTION_METHOD);
+				setEdgeListAttribute(network.getCyRow(e), sourceDB, SOURCE_DB);
 
 				// Map scores
-				setEdgeScoreListAttribute(e.getCyRow(), edgeScore, EDGE_SCORE);
+				setEdgeScoreListAttribute(network.getCyRow(e), edgeScore, EDGE_SCORE);
 
-				e.getCyRow().set(INTERACTION_ID, interactionID[0]);
+				network.getCyRow(e).set(INTERACTION_ID, interactionID[0]);
 
-				setPublication(e.getCyRow(), entry[8].split(SEPARATOR),
+				setPublication(network.getCyRow(e), entry[8].split(SEPARATOR),
 						entry[7].split(SEPARATOR));
 			} catch (Exception ex) {
 				ex.printStackTrace();

@@ -26,7 +26,7 @@ import org.cytoscape.work.TaskMonitor;
 public class DynamicEdgeLinkoutTaskFactory extends DynamicSupport implements EdgeViewTaskFactory {
 
 	public void setEdgeView(View<CyEdge> edgeView, CyNetworkView netView) {
-		setURLs(edgeView.getModel().getSource(), edgeView.getModel().getTarget());
+		setURLs(netView.getModel(),edgeView.getModel().getSource(), edgeView.getModel().getTarget());
 	}
 
 	public DynamicEdgeLinkoutTaskFactory(OpenBrowser browser) {

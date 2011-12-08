@@ -50,6 +50,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -410,15 +411,15 @@ public class ExpressionReader extends AbstractTableReader {
 		taskMonitor.setProgress(1.0);
 	}
 
-	private Map<String,List<String>> getAttributeToIdList(String keyAttributeName) throws IOException {
+	private Map<String,List<String>> getAttributeToIdList(CyNetwork network, String keyAttributeName) throws IOException {
 		Map<String,List<String>> attributeToIdList = new HashMap<String,List<String>>();
 		// TODO needs to be converted to create a CyTable with node keys rather than looking
 		// up all node ids.
-		List<CyNode> allNodes = null; //Cytoscape.getCyNodesList();
+		List<CyNode> allNodes = network.getNodeList(); 
 
 		for (CyNode node : allNodes) {
-			String nodeName = node.getCyRow().get("name",String.class);
-			Object attrValue = node.getCyRow().getRaw(keyAttributeName);
+			String nodeName = network.getCyRow(node).get("name",String.class);
+			Object attrValue = network.getCyRow(node).getRaw(keyAttributeName);
 
 			if (attrValue != null) {
 				String attributeValue = attrValue.toString();

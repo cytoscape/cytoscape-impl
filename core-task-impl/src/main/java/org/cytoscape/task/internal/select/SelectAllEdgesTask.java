@@ -56,7 +56,7 @@ public class SelectAllEdgesTask extends AbstractSelectTask {
 			new SelectionEdit(eventHelper, "Select All Edges", network, view,
 			                  SelectionEdit.SelectionFilter.EDGES_ONLY));
 		tm.setProgress(0.3);
-		selectUtils.setSelectedEdges(network.getEdgeList(), true);
+		selectUtils.setSelectedEdges(network,network.getEdgeList(), true);
 		tm.setProgress(0.8);
 		updateView();
 		tm.setProgress(1.0);

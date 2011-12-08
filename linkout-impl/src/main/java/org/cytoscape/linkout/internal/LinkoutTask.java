@@ -10,6 +10,7 @@ import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -25,14 +26,16 @@ public class LinkoutTask extends AbstractTask {
 	private final String link;
 	private final CyTableEntry[] tableEntries;
 	private final OpenBrowser browser;
+	private final CyNetwork network;
 
 	private static final String REGEX = "%.+%"; 
 	private static final Pattern regexPattern = Pattern.compile(REGEX); 
 
-	public LinkoutTask(String link, OpenBrowser browser, CyTableEntry... tableEntries ) {
+	public LinkoutTask(String link, OpenBrowser browser, CyNetwork network, CyTableEntry... tableEntries ) {
 		this.link = link;
 		this.tableEntries = tableEntries;
 		this.browser = browser;
+		this.network = network;
 	}
 
 	@Override
@@ -71,7 +74,7 @@ public class LinkoutTask extends AbstractTask {
 			if ( attrName.equals(id) )
 				attrName = "name";
 		
-			Object raw = tableEntry.getCyRow().getRaw(attrName);
+			Object raw = network.getCyRow(tableEntry).getRaw(attrName);
 			if ( raw == null ) {
 				continue;
 			}

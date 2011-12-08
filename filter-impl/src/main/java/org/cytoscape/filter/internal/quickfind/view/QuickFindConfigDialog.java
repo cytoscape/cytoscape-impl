@@ -679,7 +679,7 @@ class DetermineDistinctValuesTask implements Task {
 			iterator = network.getEdgeList().iterator();
 		}
 
-		String[] values = CyAttributesUtil.getDistinctAttributeValues(iterator,
+		String[] values = CyAttributesUtil.getDistinctAttributeValues(network,iterator,
 		                                                              attributeKey, 5);
 
 		if ((values != null) && (values.length > 0)) {

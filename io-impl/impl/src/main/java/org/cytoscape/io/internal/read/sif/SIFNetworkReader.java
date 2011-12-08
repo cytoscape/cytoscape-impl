@@ -154,7 +154,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		CyNode sourceNode = nMap.get(itr.getSource());
 		if (sourceNode == null) {
 			sourceNode = network.addNode();
-			sourceNode.getCyRow().set(CyTableEntry.NAME, itr.getSource());
+			network.getCyRow(sourceNode).set(CyTableEntry.NAME, itr.getSource());
 			nMap.put(itr.getSource(), sourceNode);
 		}
 
@@ -162,12 +162,12 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 			CyNode targetNode = nMap.get(target);
 			if (targetNode == null) {
 				targetNode = network.addNode();
-				targetNode.getCyRow().set(CyTableEntry.NAME, target);
+				network.getCyRow(targetNode).set(CyTableEntry.NAME, target);
 				nMap.put(target, targetNode);
 			}
 			final CyEdge edge = network.addEdge(sourceNode, targetNode, true);
-			edge.getCyRow().set(CyTableEntry.NAME, getEdgeName(itr,target));
-			edge.getCyRow().set(CyEdge.INTERACTION, itr.getType());
+			network.getCyRow(edge).set(CyTableEntry.NAME, getEdgeName(itr,target));
+			network.getCyRow(edge).set(CyEdge.INTERACTION, itr.getType());
 		}
 	}
 

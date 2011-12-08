@@ -71,7 +71,7 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 		
 		selNodes.addAll(net.getNeighborList(node, direction));
 		tm.setProgress(0.6d);
-		selectUtils.setSelectedNodes(selNodes, true);
+		selectUtils.setSelectedNodes(net, selNodes, true);
 		tm.setProgress(0.8d);
 		netView.updateView();
 		tm.setProgress(1.0d);

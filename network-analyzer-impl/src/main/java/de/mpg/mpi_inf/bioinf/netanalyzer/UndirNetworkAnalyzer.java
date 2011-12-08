@@ -153,7 +153,7 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 				edgeCount += degree;
 				degreeDist.addObservation(degree);
 				if (useNodeAttributes) {
-					node.getCyRow().set("deg",degree);
+					network.getCyRow(node).set("deg",degree);
 				}
 				final int neighborCount = calcSimple(node, incEdges, neighborMap, params);
 				if (maxConnectivity < neighborCount) {
@@ -181,19 +181,19 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 						final double nodeCCp = computeCC(neighbors);
 						accumulate(CCps, neighborCount, nodeCCp);
 						if (useNodeAttributes) {
-							node.getCyRow().set( "cco", Utils.roundTo(nodeCCp, roundingDigits));
-							node.getCyRow().set( "tco", Utils.roundTo(topCoef, roundingDigits));
+							network.getCyRow(node).set( "cco", Utils.roundTo(nodeCCp, roundingDigits));
+							network.getCyRow(node).set( "tco", Utils.roundTo(topCoef, roundingDigits));
 						}
 
 					} else if (useNodeAttributes) {
-						node.getCyRow().set( "cco", 0.0);
-						node.getCyRow().set( "tco", 0.0);
+						network.getCyRow(node).set( "cco", 0.0);
+						network.getCyRow(node).set( "tco", 0.0);
 					}
-					node.getCyRow().set( "nco", Utils.roundTo(neighborConnect, roundingDigits));
+					network.getCyRow(node).set( "nco", Utils.roundTo(neighborConnect, roundingDigits));
 				} else if (useNodeAttributes) {
-					node.getCyRow().set( "nco", 0.0);
-					node.getCyRow().set( "cco", 0.0);
-					node.getCyRow().set( "tco", 0.0);
+					network.getCyRow(node).set( "nco", 0.0);
+					network.getCyRow(node).set( "cco", 0.0);
+					network.getCyRow(node).set( "tco", 0.0);
 				}
 				if (cancelled) {
 					analysisFinished();
@@ -224,9 +224,9 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 				// Store max. and avg. shortest path lengths, and closeness in
 				// node attributes
 				if (useNodeAttributes) {
-					node.getCyRow().set( "spl", eccentricity);
-					node.getCyRow().set( "apl", Utils.roundTo(apl, roundingDigits));
-					node.getCyRow().set( "clc", Utils.roundTo(closeness, roundingDigits));
+					network.getCyRow(node).set( "spl", eccentricity);
+					network.getCyRow(node).set( "apl", Utils.roundTo(apl, roundingDigits));
+					network.getCyRow(node).set( "clc", Utils.roundTo(closeness, roundingDigits));
 				}
 
 				// CyNode and edge betweenness calculation
@@ -253,7 +253,7 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 					final double rad = (componentDiameter + 1.0 - aplMap.get(n).doubleValue())
 							/ componentDiameter;
 					if (useNodeAttributes) {
-						n.getCyRow().set( "rad", Utils.roundTo(rad, roundingDigits));
+						network.getCyRow(n).set( "rad", Utils.roundTo(rad, roundingDigits));
 					}
 					if (computeNB) {
 						final NodeBetweenInfo nbi = nodeBetweenness.get(n);
@@ -266,8 +266,8 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 						final long nodeStress = stress.get(n).longValue();
 						stressDist.addObservation(nodeStress);
 						if (useNodeAttributes) {
-							n.getCyRow().set( "nbt", Utils.roundTo(nb, roundingDigits));
-							n.getCyRow().set( "stress", nodeStress);
+							network.getCyRow(n).set( "nbt", Utils.roundTo(nb, roundingDigits));
+							network.getCyRow(n).set( "stress", nodeStress);
 						}
 					}
 				} // end iterate over nodes
@@ -279,7 +279,7 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 						if (Double.isNaN(eb)) {
 							eb = 0.0;
 						}
-						betEntry.getKey().getCyRow().set( "ebt",
+						network.getCyRow(betEntry.getKey()).set( "ebt",
 								Utils.roundTo(eb, roundingDigits));
 					}
 				}
@@ -446,11 +446,11 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 
 		// Storing the values in attributes
 		if (useNodeAttributes) {
-			aNode.getCyRow().set( "slo", selfLoops);
-			aNode.getCyRow().set( "isn", (neighborCount == 0));
-			aNode.getCyRow().set( "nue", undirEdges);
-			aNode.getCyRow().set( "nde", dirEdges);
-			aNode.getCyRow().set( "pmn", partnerOfMultiEdgeNodePairs);
+			network.getCyRow(aNode).set( "slo", selfLoops);
+			network.getCyRow(aNode).set( "isn", (neighborCount == 0));
+			network.getCyRow(aNode).set( "nue", undirEdges);
+			network.getCyRow(aNode).set( "nde", dirEdges);
+			network.getCyRow(aNode).set( "pmn", partnerOfMultiEdgeNodePairs);
 		}
 		return neighborCount;
 	}

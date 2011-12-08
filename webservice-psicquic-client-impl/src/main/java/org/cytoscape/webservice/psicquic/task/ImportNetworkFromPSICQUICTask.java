@@ -98,7 +98,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		for (String sourceURL : result.keySet()) {
 			final CyNetwork network = result.get(sourceURL);
-			network.getCyRow().set(CyTableEntry.NAME, registryManager.getSource2NameMap().get(sourceURL) + " " + suffix);
+			network.getCyRow(network).set(CyTableEntry.NAME, registryManager.getSource2NameMap().get(sourceURL) + " " + suffix);
 			addNetworkData(network);
 			manager.addNetwork(network);
 			networks.add(network);
@@ -115,8 +115,8 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	}
 	
 	private void addNetworkData(final CyNetwork network) {
-		network.getCyRow().getTable().createColumn("created by", String.class, true);
-		network.getCyRow().set("created by", "PSICQUIC Web Service");
+		network.getCyRow(network).getTable().createColumn("created by", String.class, true);
+		network.getCyRow(network).set("created by", "PSICQUIC Web Service");
 	}
 
 	private void processSearchResult() {

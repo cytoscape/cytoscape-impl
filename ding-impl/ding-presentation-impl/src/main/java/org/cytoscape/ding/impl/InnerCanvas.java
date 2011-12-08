@@ -720,7 +720,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 				final float nodeX = (m_view.m_extentsBuff[0] + m_view.m_extentsBuff[2]) / 2;
 				final float nodeY = (m_view.m_extentsBuff[1] + m_view.m_extentsBuff[3]) / 2;
-				final java.util.List<CyEdge> touchingEdges = graph.getAdjacentEdgeList(nodeObj, CyEdge.Type.ANY);
+				final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(nodeObj, CyEdge.Type.ANY);
 
 				for ( CyEdge e : touchingEdges ) {      
 					final int edge = e.getIndex(); // Positive.
@@ -750,7 +750,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					continue; /* Will happen if e.g. node was removed. */
 
 				final byte nodeShape = m_view.m_nodeDetails.shape(node);
-				final java.util.List<CyEdge> touchingEdges = graph.getAdjacentEdgeList(nodeObj, CyEdge.Type.ANY);
+				final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(nodeObj, CyEdge.Type.ANY);
  
 				for ( CyEdge e : touchingEdges ) {      
 					final int edge = e.getIndex(); // Positive.
@@ -875,7 +875,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		NodeView nview = m_view.getPickedNodeView(rawPt);
 		if ( nview != null ) 
-			popup.createDropNodeViewMenu(nview,rawPt,xformPt,t,action);
+			popup.createDropNodeViewMenu(m_view.m_drawPersp,nview,rawPt,xformPt,t,action);
 		else
 			popup.createDropEmptySpaceMenu(rawPt,xformPt,t,action); 
 
@@ -1053,7 +1053,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			String action = "Edge";
 			NodeView nview = m_view.getPickedNodeView(rawPt);
 			if ( nview != null ) 
-				popup.createDropNodeViewMenu(nview,rawPt,xformPt,null,action);
+				popup.createDropNodeViewMenu(m_view.m_drawPersp,nview,rawPt,xformPt,null,action);
 		}
 	}
 
@@ -1189,10 +1189,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_lastYMousePos = e.getY();
 		
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
-			popup.createNodeViewMenu(nview,e.getX(),e.getY(),null);
+			popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),null);
 		
 			EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
-			popup.createEdgeViewMenu(edgeView,e.getX(),e.getY(),null);
+			popup.createEdgeViewMenu(m_view.m_drawPersp,edgeView,e.getX(),e.getY(),null);
 		}
 	
 		@Override
@@ -1200,7 +1200,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			//System.out.println("MousePressed ----> doubleLeftClick");
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
 			if ( nview != null )
-				popup.createNodeViewMenu(nview,e.getX(),e.getY(),"OPEN");
+				popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),"OPEN");
 			else 
 				popup.createEmptySpaceMenu(e.getX(), e.getY(),"OPEN"); 
 		}
@@ -1251,7 +1251,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 			if (m_undoable_edit != null)
 				m_undoable_edit.post();
-			
+
 			final List<CyNode> selected = m_view.getSelectedNodes();			
 			// Update view model if necessary (node location)
 			if(selected.size() != 0) {

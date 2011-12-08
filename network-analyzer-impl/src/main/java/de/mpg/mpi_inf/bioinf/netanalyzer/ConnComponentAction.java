@@ -68,7 +68,7 @@ public class ConnComponentAction extends NetAnalyzerAction {
 			compsSet.toArray(comps);
 
 			if (compsCount == 1) {
-				final String msg = "<html><b>" + network.getCyRow().get("name",String.class) + "</b>" + Messages.SM_CONNECTED;
+				final String msg = "<html><b>" + network.getCyRow(network).get("name",String.class) + "</b>" + Messages.SM_CONNECTED;
 				Utils.showInfoBox(swingApp.getJFrame(),Messages.DT_CONNCOMP, msg);
 			} else {
 				Arrays.sort(comps, new CCInfoInvComparator());

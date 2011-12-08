@@ -213,7 +213,7 @@ public class FilterSettingPanel extends JPanel {
 		}
 		
 		CyTableEntry entry = entries.iterator().next();
-		CyRow row = entry.getCyRow();
+		CyRow row = network.getCyRow(entry);
 		return row.getTable().getColumn(pAttribute).getType();
 	}
 
@@ -518,16 +518,12 @@ public class FilterSettingPanel extends JPanel {
 		
 		if (pIndexType == QuickFind.INDEX_NODES) {
 			if (cyNetwork.getNodeCount() > 0) {
-				CyNode node = cyNetwork.getNode(0);
-				attributeType =
-					node.getCyRow().getTable().getColumn(pCtrlAttribute).getType();
+				attributeType = cyNetwork.getDefaultNodeTable().getColumn(pCtrlAttribute).getType();
 			}
 		}
 		else if (pIndexType == QuickFind.INDEX_EDGES) {
 			if (cyNetwork.getEdgeCount() > 0) {
-				CyEdge edge = cyNetwork.getEdge(0);
-				attributeType =
-					edge.getCyRow().getTable().getColumn(pCtrlAttribute).getType();
+				attributeType = cyNetwork.getDefaultEdgeTable().getColumn(pCtrlAttribute).getType();
 			}
 		}
 		//

@@ -82,12 +82,12 @@ class QuickFindImpl implements QuickFind {
 
 		//  Use default index specified by network, if available.
 		//  Otherwise, index by UNIQUE_IDENTIFIER.
-		String controllingAttribute = network.getCyRow().get(QuickFind.DEFAULT_INDEX, String.class);
+		String controllingAttribute = network.getCyRow(network).get(QuickFind.DEFAULT_INDEX, String.class);
 
 		CyTable nodeTable = null;
 		CyNode node = network.getNodeList().iterator().next();
 		if (node != null)
-			nodeTable = node.getCyRow().getTable();
+			nodeTable = network.getDefaultNodeTable();
 		
 		if (controllingAttribute == null) {
 			//  Small hack to index BioPAX Networks by default with node_label.
@@ -208,13 +208,13 @@ class QuickFindImpl implements QuickFind {
 			if (node == null) {
 				return null;
 			}
-			table = node.getCyRow().getTable();
+			table = cyNetwork.getDefaultNodeTable();
 		} else if (indexType == QuickFind.INDEX_EDGES){
 			CyEdge edge = cyNetwork.getEdgeList().iterator().next();
 			if (edge == null) {
 				return null;
 			}
-			table = edge.getCyRow().getTable();
+			table = cyNetwork.getDefaultEdgeTable(); 
 		} else {
 			return null;
 		}
@@ -374,7 +374,7 @@ class QuickFindImpl implements QuickFind {
 			currentProgress++;
 
 			CyTableEntry graphObject = iterator.next();
-			addToIndex(attributeType, graphObject, controllingAttribute, index);
+			addToIndex(network,attributeType, graphObject, controllingAttribute, index);
 
 			//  Determine percent complete
 			taskMonitor.setProgress(currentProgress / (double) maxProgress);
@@ -425,9 +425,9 @@ class QuickFindImpl implements QuickFind {
 	 * @param controllingAttribute  Controlling attribute.
 	 * @param index                 Index to add to.
 	 */
-	private void addToIndex(Class<?> attributeType, CyTableEntry graphObject,
+	private void addToIndex(CyNetwork network, Class<?> attributeType, CyTableEntry graphObject,
 	                        String controllingAttribute, GenericIndex index) {
-		CyRow row = graphObject.getCyRow();
+		CyRow row = network.getCyRow(graphObject);
 		//  Get attribute values, and index
 		if (attributeType == Integer.class) {
 			Integer value = row.get(controllingAttribute, Integer.class);
@@ -440,7 +440,7 @@ class QuickFindImpl implements QuickFind {
 				index.addToIndex(value, graphObject);
 			}
 		} else {
-			String[] values = CyAttributesUtil.getAttributeValues(graphObject, controllingAttribute);
+			String[] values = CyAttributesUtil.getAttributeValues(network, graphObject, controllingAttribute);
 			if (values != null) {
 				addStringsToIndex(values, graphObject, index);
 			}

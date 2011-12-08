@@ -155,7 +155,7 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
     }
     
     @Override
-    protected void mergeNode(final Map<CyNetwork,Set<CyNode>> mapNetNode, CyNode newNode) {
+    protected void mergeNode(final Map<CyNetwork,Set<CyNode>> mapNetNode, CyNode newNode, CyNetwork newNetwork) {
         //TODO: refactor in Cytoscape3, 
         // in 2.x node with the same identifier be the same node
         // and different nodes must have different identifier.
@@ -165,32 +165,33 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
         // for attribute confilict handling, introduce a conflict node here?
         
         // set other attributes as indicated in attributeMapping        
-        setAttribute(newNode, mapNetNode, nodeAttributeMapping);
+        setAttribute(newNetwork, newNode, mapNetNode, nodeAttributeMapping);
     }
     
     /**
      * {@inheritDoc}
      */
     @Override
-    public void mergeEdge(final Map<CyNetwork,Set<CyEdge>> mapNetEdge, CyEdge newEdge) {
+    public void mergeEdge(final Map<CyNetwork,Set<CyEdge>> mapNetEdge, CyEdge newEdge, CyNetwork newNetwork) {
         if (mapNetEdge==null||mapNetEdge.isEmpty()||newEdge==null) {
             throw new IllegalArgumentException();
         }
         
         // set other attributes as indicated in attributeMapping
-        setAttribute(newEdge,mapNetEdge,edgeAttributeMapping);
+        setAttribute(newNetwork,newEdge,mapNetEdge,edgeAttributeMapping);
     }
     
     /*
      * set attribute for the merge node/edge according to attribute mapping
      * 
      */
-    protected <T extends CyTableEntry> void setAttribute(T toEntry, 
+    protected <T extends CyTableEntry> void setAttribute(CyNetwork newNetwork,
+	                            T toEntry, 
                                 final Map<CyNetwork,Set<T>> mapNetGOs,
                                 final AttributeMapping attributeMapping) {        
         final int nattr = attributeMapping.getSizeMergedAttributes();
         for (int i=0; i<nattr; i++) {
-            CyColumn attr_merged = toEntry.getCyRow().getTable().getColumn(attributeMapping.getMergedAttribute(i));
+            CyColumn attr_merged = newNetwork.getCyRow(toEntry).getTable().getColumn(attributeMapping.getMergedAttribute(i));
 
             // merge
             Map<T,CyColumn> mapGOAttr = new HashMap<T,CyColumn>();
@@ -210,7 +211,8 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
             }
 
             try {
-                attributeMerger.mergeAttribute(mapGOAttr, toEntry, attr_merged);
+				// TODO how to handle network?
+                attributeMerger.mergeAttribute(mapGOAttr, toEntry, attr_merged, null, newNetwork );
             } catch (Exception e) {
                 e.printStackTrace();
                 continue;

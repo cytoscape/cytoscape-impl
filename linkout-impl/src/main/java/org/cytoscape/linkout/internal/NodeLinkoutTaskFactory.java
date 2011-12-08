@@ -34,6 +34,6 @@ public class NodeLinkoutTaskFactory extends AbstractNodeViewTaskFactory {
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new LinkoutTask(link, browser, nodeView.getModel()));
+		return new TaskIterator(new LinkoutTask(link, browser, netView.getModel(), nodeView.getModel()));
 	}
 }

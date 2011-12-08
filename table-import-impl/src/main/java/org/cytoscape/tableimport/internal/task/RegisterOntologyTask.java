@@ -33,7 +33,7 @@ public class RegisterOntologyTask extends AbstractTask {
 		if(network == null)
 			throw new NullPointerException("No Ontology DAG loaded");
 		
-		network.getCyRow().set(CyTableEntry.NAME, name);
+		network.getCyRow(network).set(CyTableEntry.NAME, name);
 		manager.addNetwork(network);
 		
 		logger.debug("Registered: model ID = " + network.getSUID());

@@ -141,7 +141,7 @@ public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
     public void showLegend() {
         CardLayout cl = (CardLayout)(cards.getLayout());
         CyNetwork network = applicationManager.getCurrentNetwork();
-        CyRow row = network.getCyRow();
+        CyRow row = network.getCyRow(network);
         Boolean isBioPaxNetwork = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.class);
         if (isBioPaxNetwork != null) {
             cl.show(cards, LEGEND_BIOPAX_CARD);

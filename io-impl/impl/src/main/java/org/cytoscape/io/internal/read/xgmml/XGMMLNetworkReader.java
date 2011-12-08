@@ -152,7 +152,7 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 			// (only when directly importing an XGMML file or if as part of a 2.x CYS file;
 			//  otherwise the title is read from the view xgmml file)
 			if (!readDataMgr.isSessionFormat() || readDataMgr.getDocumentVersion() < 3.0) {
-				String name = network.getCyRow().get(CyNetwork.NAME, String.class);
+				String name = network.getCyRow(network).get(CyNetwork.NAME, String.class);
 				
 				if (name != null)
 					netView.setVisualProperty(MinimalVisualLexicon.NETWORK_TITLE, name);

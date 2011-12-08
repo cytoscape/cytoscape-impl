@@ -43,7 +43,7 @@ public class SifWriter implements CyWriter {
 					taskMonitor.setProgress(percent);
 				}
 	
-				String canonicalName = node.getCyRow().get(NODE_NAME_ATTR_LABEL, String.class);
+				String canonicalName = network.getCyRow(node).get(NODE_NAME_ATTR_LABEL, String.class);
 				List<CyEdge> edges = network.getAdjacentEdgeList(node, CyEdge.Type.ANY);
 	
 				if (edges.size() == 0) {
@@ -53,8 +53,8 @@ public class SifWriter implements CyWriter {
 	
 						if (node == edge.getSource()) { //do only for outgoing edges
 							CyNode target = edge.getTarget();
-							String canonicalTargetName = target.getCyRow().get(NODE_NAME_ATTR_LABEL,String.class);
-							String interactionName = edge.getCyRow().get(INTERACTION_ATTR_LABEL,String.class);
+							String canonicalTargetName = network.getCyRow(target).get(NODE_NAME_ATTR_LABEL,String.class);
+							String interactionName = network.getCyRow(edge).get(INTERACTION_ATTR_LABEL,String.class);
 	
 							if (interactionName == null) {
 								interactionName = "xx";

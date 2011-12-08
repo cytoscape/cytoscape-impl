@@ -7,15 +7,16 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyNetwork;
 
 public class AttributeUtil {
 	
-	public static void set(CyTableEntry entry, String name, Object value, Class<?> type) {
-		set(entry, null, name, value, type);
+	public static void set(CyNetwork network, CyTableEntry entry, String name, Object value, Class<?> type) {
+		set(network, entry, null, name, value, type);
 	}
 
-	public static void copyAttributes(CyTableEntry source, CyTableEntry target) {
-		CyRow sourceRow = source.getCyRow();
+	public static void copyAttributes(CyNetwork network, CyTableEntry source, CyTableEntry target) {
+		CyRow sourceRow = network.getCyRow(source);
 		for (Entry<String, Object> entry : sourceRow.getAllValues().entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -26,13 +27,13 @@ public class AttributeUtil {
 			} else {
 				type = column.getType();
 			}
-			set(target, key, value, type);
+			set(network, target, key, value, type);
 		}
 	}
 	
 	
-	public static void set(CyTableEntry entry, String tableName, String name, Object value, Class<?> type) {
-		CyRow row = (tableName==null) ? entry.getCyRow() : entry.getCyRow(tableName);
+	public static void set(CyNetwork network, CyTableEntry entry, String tableName, String name, Object value, Class<?> type) {
+		CyRow row = (tableName==null) ? network.getCyRow(entry) : network.getCyRow(entry,tableName);
 		CyTable table = row.getTable();
 		CyColumn column = table.getColumn(name);
 		if (column == null) {

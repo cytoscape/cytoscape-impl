@@ -81,7 +81,7 @@ public class DisplayBioPaxDetails implements RowsSetListener {
 			CyNode selected = null;
 			CyNetwork network = view.getModel();
 			for (CyNode node : network.getNodeList()) {
-				if (node.getCyRow().get(CyNetwork.SELECTED, Boolean.class)) {
+				if (network.getCyRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
 					selected = node;
 					break;
 				}

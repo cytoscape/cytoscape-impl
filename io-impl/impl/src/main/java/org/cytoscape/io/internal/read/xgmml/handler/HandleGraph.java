@@ -135,7 +135,7 @@ public class HandleGraph extends AbstractHandler {
 		final String name = getLabel(atts);
 		
 		if (net != null && name != null) {
-			CyRow netRow = net.getCyRow();
+			CyRow netRow = net.getCyRow(net);
 			netRow.set(CyNetwork.NAME, name);
 		}
 	}

@@ -12,41 +12,41 @@ import org.cytoscape.model.CyTableEntry;
 
 public class SelectUtil {
 	public static void unselectAllNodes(CyNetwork network) {
-		setSelectedState(network.getNodeList(), Boolean.FALSE);
+		setSelectedState(network, network.getNodeList(), Boolean.FALSE);
 	}
 	
 	public static void unselectAllEdges(CyNetwork network) {
-		setSelectedState(network.getEdgeList(), Boolean.FALSE);
+		setSelectedState(network, network.getEdgeList(), Boolean.FALSE);
 	}
 
-	public static void setSelectedNodeState(Collection<CyNode> list, boolean selected) {
-		setSelectedState(list, selected);
+	public static void setSelectedNodeState(CyNetwork network, Collection<CyNode> list, boolean selected) {
+		setSelectedState(network, list, selected);
 	}
 
-	public static void setSelectedEdgeState(Collection<CyEdge> list, boolean selected) {
-		setSelectedState(list, selected);
+	public static void setSelectedEdgeState(CyNetwork network, Collection<CyEdge> list, boolean selected) {
+		setSelectedState(network, list, selected);
 	}
 
-	static void setSelectedState(Collection<? extends CyTableEntry> list, Boolean selected) {
+	static void setSelectedState(CyNetwork network, Collection<? extends CyTableEntry> list, Boolean selected) {
 		for (CyTableEntry edge : list) {
-			CyRow row = edge.getCyRow();
+			CyRow row = network.getCyRow(edge);
 			row.set(CyNetwork.SELECTED, selected);
 		}
 		
 	}
 	
 	public static Set<CyNode> getSelectedNodes(CyNetwork cyNetwork) {
-		return getSelected(cyNetwork.getNodeList());
+		return getSelected(cyNetwork, cyNetwork.getNodeList());
 	}
 
 	public static Set<CyEdge> getSelectedEdges(CyNetwork cyNetwork) {
-		return getSelected(cyNetwork.getEdgeList());
+		return getSelected(cyNetwork, cyNetwork.getEdgeList());
 	}
 	
-	static <T extends CyTableEntry> Set<T> getSelected(Collection<T> items) {
+	static <T extends CyTableEntry> Set<T> getSelected(CyNetwork network, Collection<T> items) {
 		Set<T> entries = new HashSet<T>();
 		for (T item : items) {
-			CyRow row = item.getCyRow();
+			CyRow row = network.getCyRow(item);
 			if (row.get(CyNetwork.SELECTED, Boolean.class)) {
 				entries.add(item);
 			}
@@ -55,16 +55,16 @@ public class SelectUtil {
 	}
 	
 	public static void selectAllNodes(CyNetwork cyNetwork) {
-		selectAll(cyNetwork.getNodeList());
+		selectAll(cyNetwork,cyNetwork.getNodeList());
 	}
 	
 	public static void selectAllEdges(CyNetwork cyNetwork) {
-		selectAll(cyNetwork.getEdgeList());
+		selectAll(cyNetwork,cyNetwork.getEdgeList());
 	}
 	
-	static <T extends CyTableEntry> void selectAll(Collection<T> items) {
+	static <T extends CyTableEntry> void selectAll(CyNetwork network, Collection<T> items) {
 		for (T item : items) {
-			CyRow row = item.getCyRow();
+			CyRow row = network.getCyRow(item);
 			if (!row.get(CyNetwork.SELECTED, Boolean.class)) {
 				row.set(CyNetwork.SELECTED, Boolean.TRUE);
 			}
@@ -72,17 +72,17 @@ public class SelectUtil {
 	}
 
 	public static int getSelectedNodeCount(CyNetwork cyNetwork) {
-		return countSelected(cyNetwork.getNodeList());
+		return countSelected(cyNetwork, cyNetwork.getNodeList());
 	}
 
 	public static int getSelectedEdgeCount(CyNetwork cyNetwork) {
-		return countSelected(cyNetwork.getNodeList());
+		return countSelected(cyNetwork, cyNetwork.getNodeList());
 	}
 	
-	static <T extends CyTableEntry> int countSelected(Collection<T> items) {
+	static <T extends CyTableEntry> int countSelected(CyNetwork network, Collection<T> items) {
 		int count = 0;
 		for (T item : items) {
-			CyRow row = item.getCyRow();
+			CyRow row = network.getCyRow(item);
 			if (row.get(CyNetwork.SELECTED, Boolean.class)) {
 				count++;
 			}
