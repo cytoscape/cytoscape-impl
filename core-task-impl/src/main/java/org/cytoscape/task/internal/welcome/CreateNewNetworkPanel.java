@@ -12,9 +12,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
@@ -26,9 +29,9 @@ import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.property.bookmark.DataSource;
+import org.cytoscape.datasource.DataSource;
+import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.io.DataCategory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 
@@ -51,43 +54,50 @@ public class CreateNewNetworkPanel extends JPanel {
 	private DownloadBiogridDataTaskFactory taskFactory;
 	private final TaskFactory loadNetworkFileTF;
 	
-	private final BookmarksUtil bkUtil;
-	private final Bookmarks bookmarks;
+	private final DataSourceManager dsManager;
 	private final Map<String, String> dataSourceMap;
 
 	CreateNewNetworkPanel(Window parent, final TaskManager guiTaskManager, final LoadMitabFileTaskFactory loadTF,
-			final CyApplicationConfiguration config, final TaskFactory loadNetworkFileTF, BookmarksUtil bkUtil,
-			Bookmarks bookmarks) {
+			final CyApplicationConfiguration config, final TaskFactory loadNetworkFileTF, final DataSourceManager dsManager) {
 		this.loadTF = loadTF;
 		this.parent = parent;
 		this.loadNetworkFileTF = loadNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
-		this.bkUtil = bkUtil;
-		this.bookmarks = bookmarks;
+		this.dsManager = dsManager;
+		
 		this.dataSourceMap = new HashMap<String, String>();
 
 		this.networkList = new JComboBox();
 		// taskFactory = new DownloadBiogridDataTaskFactory(networkList,
 		// config);
 		// guiTaskManager.execute(taskFactory);
-		setFromBookmark();
+		setFromDataSource();
 
 		initComponents();
 	}
 	
-	private void setFromBookmark() {
+	private void setFromDataSource() {
 		DefaultComboBoxModel theModel = new DefaultComboBoxModel();
 
 		// Extract the URL entries
-		List<DataSource> dataSources = bkUtil.getDataSourceList("network", bookmarks.getCategory());
+		final Collection<DataSource> dataSources = dsManager.getDataSources(DataCategory.NETWORK);
+		final SortedSet<String> labelSet = new TreeSet<String>();
 		if (dataSources != null) {
 			for(DataSource ds: dataSources) {
-				final String link = ds.getHref();
+				String link = null;
+				link = ds.getLocation().toString();
 				final String sourceName = ds.getName();
-				dataSourceMap.put(sourceName, link);
-				theModel.addElement(sourceName);
+				final String provider = ds.getProvider();
+				final String sourceLabel = provider + ":" + sourceName;
+				dataSourceMap.put(sourceLabel, link);
+				labelSet.add(sourceLabel);
 			}
 		}
+		
+		for(final String label: labelSet)
+			theModel.addElement(label);
+		
+		
 		this.networkList.setModel(theModel);
 	}
 

@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -56,21 +57,18 @@ public class WelcomeScreenDialog extends JDialog {
 	private final CyApplicationConfiguration config;
 	private final TaskFactory loadNetworkTF;
 	
-	private final BookmarksUtil bkUtil;
-	private final Bookmarks bookmarks;
+	private final DataSourceManager dsManager;
 
 	WelcomeScreenDialog(Component parent, OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker,
 			TaskManager guiTaskManager, OpenSpecifiedSessionTaskFactory taskFactory,
 			final OpenSessionTaskFactory openTaskFactory, final LoadMitabFileTaskFactory loadTF,
-			final CyApplicationConfiguration config, final TaskFactory layoutTF, BookmarksUtil bkUtil,
-			Bookmarks bookmarks) {
+			final CyApplicationConfiguration config, final TaskFactory layoutTF, final DataSourceManager dsManager) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.loadTF = loadTF;
 		this.fileTracker = fileTracker;
 		this.config = config;
 		this.loadNetworkTF = layoutTF;
-		this.bkUtil = bkUtil;
-		this.bookmarks = bookmarks;
+		this.dsManager = dsManager;
 
 		this.guiTaskManager = guiTaskManager;
 		this.taskFactory = taskFactory;
@@ -149,7 +147,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, taskFactory, openTaskFactory),
 				"Open a Recent Session");
-		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, guiTaskManager, loadTF, config, loadNetworkTF, bkUtil, bookmarks), "Create New Network");
+		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, guiTaskManager, loadTF, config, loadNetworkTF, dsManager), "Create New Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
 

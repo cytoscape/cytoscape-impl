@@ -58,6 +58,8 @@
 		<module>work-swing-impl</module>
 		<module>application-impl</module>
     <module>webservice-psicquic-client-impl</module>
+    <module>datasource-impl</module>
+    <module>datasource-biogrid-impl</module>
   </modules>
 
 	<properties>
@@ -185,6 +187,11 @@
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>biopax-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>datasource-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
 			<dependency>
