@@ -10,6 +10,16 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JComponent;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.InnerCanvas;
+
 import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
@@ -39,7 +49,9 @@ public class PerfTest {
 
 
 	public static void main(String[] args) {
-		new PerfTest().runTestLoop();
+		PerfTest pt = new PerfTest();
+		//pt.runTestLoop();
+		pt.visualizeNetworks();
 	}
 
     protected TaskMonitor taskMonitor;
@@ -112,8 +124,29 @@ public class PerfTest {
 	private void networkAndViewPerf(String name) throws Exception {
 		long start = System.currentTimeMillis();
 		CyNetworkView[] views = getViews(name);
+		for ( CyNetworkView view : views )
+			view.updateView();
 		long end = System.currentTimeMillis();
 		System.out.println("LOADING SIF file (" + name + ") with view duration: " + (end - start));
+	}
+
+	private void visualizeNetworks() {
+		try {
+		CyNetworkView[] views = getViews("A50-50.sif");
+		JFrame frame = new JFrame();
+		frame.setPreferredSize(new Dimension(800,800));
+		JPanel panel = new JPanel();
+		panel.setPreferredSize(new Dimension(800,800));
+		panel.setBackground(Color.blue);
+		InnerCanvas jc = ((DGraphView)(views[0])).getCanvas();
+		jc.setVisible(true);
+		jc.setPreferredSize(new Dimension(800,800));
+		panel.add( jc );
+		frame.getContentPane().add(panel);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.pack();
+		frame.setVisible(true);
+		} catch (Exception e) { e.printStackTrace(); }
 	}
 
 	private CyLayoutAlgorithmManager getLayouts() {
