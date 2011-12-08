@@ -218,7 +218,7 @@ public class ReadDataManager {
 			else if (element instanceof CyNetwork)
 				graphics = networkGraphics;
 
-			Map<String, String> attributes = graphics.get(element);
+			Map<String, String> attributes = graphics.get(element.getSUID());
 
 			if (attributes == null) {
 				attributes = new HashMap<String, String>();
@@ -258,6 +258,8 @@ public class ReadDataManager {
 					addGraphicsAttribute((CyNode) element, atts.getLocalName(i), atts.getValue(i));
 				else if (element instanceof CyEdge)
 					addGraphicsAttribute((CyEdge) element, atts.getLocalName(i), atts.getValue(i));
+				else if (element instanceof CyNetwork)
+					addGraphicsAttribute((CyNetwork) element, atts.getLocalName(i), atts.getValue(i));
 			}
 		}
 	}
