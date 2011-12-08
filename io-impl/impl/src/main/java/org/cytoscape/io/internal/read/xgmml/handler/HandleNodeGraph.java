@@ -19,26 +19,29 @@ public class HandleNodeGraph extends HandleGraph {
 		
 		final CyNode node = manager.currentNode;
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
-		final String netId;
+		String netId = null;
 		CyNetwork network = null;
 		
 		if (href != null) {
 			// The network has already been created
 			netId = AttributeValueUtil.getIdFromXLink(href);
+			
+			if (netId == null)
+				logger.error("The node's network pointer will not be created: "
+						+ "the network ID cannot be parsed from the XLink reference.");
+			
+			addCurrentNetwork(netId, network, atts);
 		} else {
-			netId = atts.getValue("id");
+			netId = getId(atts);
+			
 			// Create network
 			final CyRootNetwork rootNet = manager.getRootNetwork();
 			network = rootNet.addSubNetwork();
+			netId = addCurrentNetwork(netId, network, atts);
 		}
 		
-		addCurrentNetwork(netId, network);
-		
-		if (netId != null) {
-			manager.addNetworkPointer(node.getSUID(), netId);
-		} else {
-			logger.warn("The node's network pointer cannot be created, because the original network ID is null.");
-		}
+		if (netId != null)
+			manager.getCache().addNetworkPointer(node.getSUID(), netId);
 
 		return state;
     }

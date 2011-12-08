@@ -49,7 +49,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -118,7 +117,6 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 		tm.setProgress(0.0);
 		
 		readDataMgr.init();
-		readDataMgr.setSessionFormat(SessionUtil.isReadingSessionFile()); // TODO: delete this flag and create different versions of the reader.
 		readDataMgr.setViewFormat(viewFormat);
 		
 		if (!viewFormat && parent != null)
@@ -134,6 +132,8 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 			this.cyNetworks = netSet.toArray(new CyNetwork[netSet.size()]);
 		} catch (Exception e) {
 			throw new IOException("Could not parse XGMML file.", e);
+		} finally {
+			readDataMgr.dispose();
 		}
 
 		tm.setProgress(1.0);
@@ -145,8 +145,6 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		// any existing equations should be parsed first
-		readDataMgr.parseAllEquations();
 		netView = cyNetworkViewFactory.createNetworkView(network);
 
 		if (netView != null) {
@@ -212,7 +210,7 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 			if (viewFormat) {
 				// When parsing view-format XGMML, the manager does not have the network model
 				// to create a map by CyNode objects, so the graphics mapping is indexed by the old element id.
-				String oldId = readDataMgr.getOldId(node.getSUID());
+				String oldId = readDataMgr.getCache().getOldId(node.getSUID());
 				// Direct visual properties
 				atts = readDataMgr.getViewGraphicsAttributes(oldId, false);
 				layoutViewGraphics(nv, atts, false);
@@ -234,7 +232,7 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 			if (viewFormat) {
 				// When parsing view-format XGMML, the manager does not have the network model
 				// to create a map by CyEdge objects, so the graphics mapping is indexed by the old element id.
-				String oldId = readDataMgr.getOldId(edge.getSUID());
+				String oldId = readDataMgr.getCache().getOldId(edge.getSUID());
 				// Direct visual properties
 				atts = readDataMgr.getViewGraphicsAttributes(oldId, false);
 				layoutViewGraphics(ev, atts, false);

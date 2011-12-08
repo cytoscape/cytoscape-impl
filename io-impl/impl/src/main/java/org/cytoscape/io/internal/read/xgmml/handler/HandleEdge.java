@@ -57,15 +57,20 @@ public class HandleEdge extends AbstractHandler {
 			CyNode targetNode = null;
 	
 			if (sourceId != null)
-				sourceNode = manager.getNode(sourceId);
+				sourceNode = manager.getCache().getNode(sourceId);
 			if (targetId != null)
-				targetNode = manager.getNode(targetId);
+				targetNode = manager.getCache().getNode(targetId);
 	
 			if (sourceNode == null && sourceAlias != null)
-				sourceNode = manager.getNode(sourceAlias);
+				sourceNode = manager.getCache().getNode(sourceAlias);
 			if (targetNode == null && targetAlias != null)
-				targetNode = manager.getNode(targetAlias);
-	
+				targetNode = manager.getCache().getNode(targetAlias);
+			
+			if (id == null || id.isEmpty())
+				id = label;
+			if (id == null || id.isEmpty())
+				id = String.format("%s (%s) %s", sourceId, (directed ? "directed" : "undirected"), targetId);
+			
 			if (sourceNode != null && targetNode != null) {
 				manager.currentEdge = manager.createEdge(sourceNode, targetNode, id, label, directed);
 				

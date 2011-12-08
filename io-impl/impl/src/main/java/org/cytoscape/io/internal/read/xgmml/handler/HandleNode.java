@@ -30,7 +30,7 @@ public class HandleNode extends AbstractHandler {
 		} else {
 			// Try to get the node from the internal cache
 			String id = AttributeValueUtil.getIdFromXLink(href);
-			CyNode node = manager.getNode(id);
+			CyNode node = manager.getCache().getNode(id);
 			
 			if (node != null) {
 				CyNetwork net = manager.getCurrentNetwork();

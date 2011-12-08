@@ -31,44 +31,40 @@ import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
+import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskIterator;
 
 public class Cy3SessionReaderFactoryImpl implements InputStreamTaskFactory {
 
 	private final CyFileFilter filter;
+	private final ReadCache cache;
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
-	private final CyTableManager tableManager;
-	private final CyTableFactory tablefacory;
 	private final CyNetworkTableManager networkTableManager;
 
 	private InputStream inputStream;
 	private String inputName;
 
 	public Cy3SessionReaderFactoryImpl(final CyFileFilter filter,
+									   final ReadCache cache,
 									   final CyNetworkReaderManager networkReaderMgr,
 									   final CyPropertyReaderManager propertyReaderMgr,
 									   final VizmapReaderManager vizmapReaderMgr,
 									   final CSVCyReaderFactory csvCyReaderFactory,
-									   final CyTableManager tableManager,
-									   final CyTableFactory tablefacory,
 									   final CyNetworkTableManager networkTableManager) {
 		this.filter = filter;
+		this.cache = cache;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.csvCyReaderFactory = csvCyReaderFactory;
-		this.tableManager = tableManager;
-		this.tablefacory = tablefacory;
 		this.networkTableManager = networkTableManager;
 	}
 
@@ -86,7 +82,7 @@ public class Cy3SessionReaderFactoryImpl implements InputStreamTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, networkReaderMgr, propertyReaderMgr,
-				vizmapReaderMgr, csvCyReaderFactory, tableManager, tablefacory, networkTableManager));
+		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, cache, networkReaderMgr, propertyReaderMgr,
+				vizmapReaderMgr, csvCyReaderFactory, networkTableManager));
 	}
 }

@@ -25,7 +25,7 @@ public class HandleGraphAttribute extends AbstractHandler {
 			manager.setDocumentVersion(attributeValueUtil.getAttributeValue(atts, attName));
 		} else if (attName.matches("backgroundColor|GRAPH_VIEW_ZOOM|GRAPH_VIEW_CENTER_[XY]|NODE_SIZE_LOCKED")) {
 			String attValue = attributeValueUtil.getAttributeValue(atts, attName);
-			manager.addNetworkGraphicsAttribute(attName, attValue);
+			manager.addGraphicsAttribute(manager.getCurrentNetwork(), attName, attValue);
 		} else {
 			manager.currentAttributes = manager.getCurrentNetwork().getCyRow();
 			nextState = attributeValueUtil.handleAttribute(atts, manager.currentAttributes);

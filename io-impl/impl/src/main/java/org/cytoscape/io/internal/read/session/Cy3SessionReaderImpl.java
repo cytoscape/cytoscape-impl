@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,6 +62,7 @@ import java.util.regex.Pattern;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
 import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReader;
+import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.internal.util.session.VirtualColumnSerializer;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -78,8 +78,6 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
@@ -116,14 +114,13 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	/**
 	 */
 	public Cy3SessionReaderImpl(final InputStream sourceInputStream,
+							    final ReadCache cache,
 							    final CyNetworkReaderManager networkReaderMgr,
 							    final CyPropertyReaderManager propertyReaderMgr,
 							    final VizmapReaderManager vizmapReaderMgr,
 							    final CSVCyReaderFactory csvCyReaderFactory,
-							    final CyTableManager tableManager,
-							    final CyTableFactory tablefacory,
 							    final CyNetworkTableManager networkTableManager) {
-		super(sourceInputStream, tableManager, tablefacory);
+		super(sourceInputStream, cache);
 
 		if (networkReaderMgr == null) throw new NullPointerException("network reader manager is null!");
 		this.networkReaderMgr = networkReaderMgr;
@@ -295,7 +292,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 		
 		if (oldNetId != null && !oldNetId.isEmpty()) {
-			final Long netId = getNewId(oldNetId);
+			final Long netId = cache.getNewId(oldNetId);
 			final CyNetwork network = networkLookup.get(netId);
 			
 			if (network != null) {
@@ -409,7 +406,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void mergeNetworkTables() throws UnsupportedEncodingException {
 		for (Entry<Long, CyNetwork> entry : networkLookup.entrySet()) {
 			CyNetwork network = entry.getValue();
-			String oldId = getOldId(network.getSUID());
+			String oldId = cache.getOldId(network.getSUID());
 			Set<CyTableMetadataBuilder> builders = networkTableMap.get(oldId);
 
 			if (builders == null)
@@ -440,7 +437,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		Map<String, CyTable> tableMap = networkTableManager.getTables(network, type);
 		CyTable targetTable = tableMap.get(namespace);
 		CyTable sourceTable = builder.getCyTable();
-		Map<String, Long> mappings = getSUIDMap();
+		Map<String, Long> mappings = cache.getIdMap();
 		mergeTables(sourceTable, targetTable, mappings);
 		builder.setCyTable(targetTable);
 	}
@@ -463,24 +460,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				mergeRow(keyName, sourceRow, targetRow);
 			}
 		}
-	}
-
-	private Map<String, Long> getSUIDMap() {
-		CyTable mappingTable = tableManager.getTable(SessionUtil.getIdMappingTableSUID());
-		
-		if (mappingTable == null) {
-			return Collections.emptyMap();
-		}
-
-		Map<String, Long> mappings = new HashMap<String, Long>();
-
-		for (CyRow row : mappingTable.getAllRows()) {
-			String oldSUID = row.get(SessionUtil.ORIGINAL_ID_COLUMN, String.class);
-			Long newSUID = row.get(SessionUtil.ENTRY_SUID_COLUMN, Long.class);
-			mappings.put(oldSUID, newSUID);
-		}
-
-		return mappings;
 	}
 
 	private void mergeRow(String keyName, CyRow sourceRow, CyRow targetRow) {

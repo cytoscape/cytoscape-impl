@@ -1,18 +1,11 @@
 package org.cytoscape.io.internal.read.xgmml.handler;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.ENTRY_SUID_COLUMN;
-import static org.cytoscape.io.internal.util.session.SessionUtil.ID_MAPPING_TABLE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.INDEX_COLUMN;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_POINTERS_TABLE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.ORIGINAL_ID_COLUMN;
-import static org.cytoscape.io.internal.util.session.SessionUtil.ORIGINAL_NETWORK_ID_COLUMN;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +14,7 @@ import java.util.Stack;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -28,9 +22,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -51,21 +43,12 @@ public class ReadDataManager {
 	protected String RDFType;
 	protected String RDFFormat;
 
-	/* Internal lists of the created nodes and edges */
-	protected List<CyNode> nodeList;
-	protected List<CyEdge> edgeList;
-	/* Map of XML ID's to nodes */
-	private Map<String, CyNode> nodeIdMap;
-	/* Map of XML ID's to edges */
-	private Map<String, CyEdge> edgeIdMap;
-	/* Map of XML ID's to networks */
-	private Map<String, CyNetwork> networkIdMap;
+	/* Set of created networks */
+	private Set<CyNetwork> networks;
+	
 	/* Stack of original network IDs */
 	private Stack<String> networkStack;
 	
-	private Map<CyNetwork, Set<String>> nodeLinkMap;
-	private Map<CyNetwork, Set<String>> edgeLinkMap;
-
 	protected CyNode currentNode;
 	protected CyEdge currentEdge;
 
@@ -86,21 +69,20 @@ public class ReadDataManager {
 	/** The graph-global directedness, which will be used as default directedness of edges. */
 	protected boolean currentNetworkIsDirected = true;
 
-	private Map<String/*att name*/, String/*att value*/> networkAttributes;
-	private Map<CyNode, Map<String/*att name*/, String/*att value*/>> nodeGraphics;
-	private Map<CyEdge, Map<String/*att name*/, String/*att value*/>> edgeGraphics;
+	private Map<Long/*network suid*/, Map<String/*att name*/, String/*att value*/>> networkGraphics;
+	private Map<Long/*node suid*/, Map<String/*att name*/, String/*att value*/>> nodeGraphics;
+	private Map<Long/*edge suid*/, Map<String/*att name*/, String/*att value*/>> edgeGraphics;
 	
 	private Map<CyRow, Map<String/*column name*/, String/*equation*/>> equations;
 
 	protected int graphCount;
 	protected int graphDoneCount;
 	
-	private boolean sessionFormat;
 	private boolean viewFormat;
 	private double documentVersion;
 	private CyNetwork currentNetwork;
 	private CyRootNetwork parentNetwork;
-	private Set<CyNetwork> networks;
+	
 	
 	// Network view format properties
 	private String networkViewId;
@@ -111,26 +93,28 @@ public class ReadDataManager {
 	private Map<String/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewGraphics;
 	private Map<String/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewLockedGraphics;
 	
+	private final ReadCache cache;
 	private final EquationCompiler equationCompiler;
-	private final CyTableManager tableManager;
 	private final CyNetworkFactory networkFactory;
 	private final CyRootNetworkManager rootNetworkManager;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReadDataManager.class);
 
-	public ReadDataManager(final EquationCompiler equationCompiler,
-						   final CyTableManager tableManager,
-						   final CyNetworkFactory networkFactory,
-						   final CyRootNetworkManager rootNetworkManager) {
+	public ReadDataManager(	final ReadCache cache,
+							final EquationCompiler equationCompiler,
+							final CyNetworkFactory networkFactory,
+							final CyRootNetworkManager rootNetworkManager) {
 		this.equationCompiler = equationCompiler;
-		this.tableManager = tableManager;
+		this.cache = cache;
 		this.networkFactory = networkFactory;
 		this.rootNetworkManager = rootNetworkManager;
 		init();
 	}
 
 	public void init() {
-		sessionFormat = false;
+		if (!SessionUtil.isReadingSessionFile())
+			cache.init();
+		
 		viewFormat = false;
 		graphCount = 0;
 		graphDoneCount = 0;
@@ -145,28 +129,10 @@ public class ReadDataManager {
 		RDFType = null;
 		RDFFormat = null;
 
-		nodeList = new ArrayList<CyNode>();
-		edgeList = new ArrayList<CyEdge>();
-
-		nodeIdMap = new HashMap<String, CyNode>();
-		edgeIdMap = new HashMap<String, CyEdge>();
-		networkIdMap = new HashMap<String, CyNetwork>();
-		networkStack = new Stack<String>();
-		
-		nodeLinkMap = new HashMap<CyNetwork, Set<String>>();
-		edgeLinkMap = new HashMap<CyNetwork, Set<String>>();
-
-		networkAttributes = new LinkedHashMap<String, String>();
-		nodeGraphics = new LinkedHashMap<CyNode, Map<String, String>>();
-		edgeGraphics = new LinkedHashMap<CyEdge, Map<String, String>>();
-		
-		equations = new Hashtable<CyRow, Map<String,String>>();
-		
 		currentNode = null;
 		currentEdge = null;
 		currentNetwork = null;
 		parentNetwork = null;
-		networks = new HashSet<CyNetwork>();
 		currentNetworkIsDirected = true;
 
 		attState = ParseState.NONE;
@@ -179,6 +145,15 @@ public class ReadDataManager {
 		edgeBendX = null;
 		edgeBendY = null;
 		
+		networkStack = new Stack<String>();
+		
+		networks = new LinkedHashSet<CyNetwork>();
+		equations = new Hashtable<CyRow, Map<String, String>>();
+		
+		networkGraphics = new LinkedHashMap<Long, Map<String, String>>();
+		nodeGraphics = new LinkedHashMap<Long, Map<String, String>>();
+		edgeGraphics = new LinkedHashMap<Long, Map<String, String>>();
+		
 		networkViewId = null;
 		networkId = null;
 		visualStyleName = null;
@@ -186,7 +161,19 @@ public class ReadDataManager {
 		viewGraphics = new LinkedHashMap<String, Map<String,String>>();
 		viewLockedGraphics = new LinkedHashMap<String, Map<String,String>>();
 	}
-
+	
+	public void dispose() {
+		// At least it should get rid of references to CyNodes, CyNodes and CyEdges!
+		networks = null;
+		equations = null;
+		
+		// Important: graphics related maps and lists cannot be disposed here,
+		// because they may be necessary when creating the network views.
+		
+		if (!SessionUtil.isReadingSessionFile())
+			cache.dispose();
+	}
+	
 	public double getDocumentVersion() {
 		return documentVersion;
 	}
@@ -196,11 +183,7 @@ public class ReadDataManager {
 	}
 
 	public boolean isSessionFormat() {
-		return sessionFormat;
-	}
-	
-	public void setSessionFormat(boolean sessionFormat) {
-		this.sessionFormat = sessionFormat;
+		return SessionUtil.isReadingSessionFile();
 	}
 	
 	public boolean isViewFormat() {
@@ -214,34 +197,30 @@ public class ReadDataManager {
 	public Set<CyNetwork> getNetworks() {
 		return networks;
 	}
+
+	public ReadCache getCache() {
+		return cache;
+	}
 	
-	public Set<CyNode> getNodes() {
-		return nodeGraphics.keySet();
-	}
-
-	public Set<CyEdge> getEdges() {
-		return edgeGraphics.keySet();
-	}
-
 	/**
-	 * @param <T> CyNode or CyEdge
 	 * @param element A CyNode or CyEdge
 	 * @param attName The name of the attribute
 	 * @param attValue The value of the attribute
 	 */
-	@SuppressWarnings("unchecked")
-	protected <T extends CyTableEntry> void addGraphicsAttribute(T element, String attName, String attValue) {
+	protected void addGraphicsAttribute(CyTableEntry element, String attName, String attValue) {
 		if (!ignoreGraphicsAttribute(element, attName)) {
-			Map<T, Map<String, String>> graphics = null;
+			Map<Long, Map<String, String>> graphics = null;
 
-			if (element instanceof CyNode) graphics = (Map<T, Map<String, String>>) nodeGraphics;
-			else if (element instanceof CyEdge) graphics = (Map<T, Map<String, String>>) edgeGraphics;
+			if (element instanceof CyNode)
+				graphics = nodeGraphics;
+			else if (element instanceof CyEdge)
+				graphics = edgeGraphics;
 
 			Map<String, String> attributes = graphics.get(element);
 
 			if (attributes == null) {
 				attributes = new HashMap<String, String>();
-				graphics.put(element, attributes);
+				graphics.put(element.getSUID(), attributes);
 			}
 
 			attributes.put(attName, attValue);
@@ -267,12 +246,6 @@ public class ReadDataManager {
 
 		attributes.put(attName, attValue);
 	}
-	
-	protected void addNetworkGraphicsAttribute(String attName, String attValue) {
-		if (attName != null) {
-			networkAttributes.put(attName, attValue);
-		}
-	}
 
 	protected void addGraphicsAttributes(CyTableEntry element, Attributes atts) {
 		if (element != null) {
@@ -296,24 +269,16 @@ public class ReadDataManager {
 		}
 	}
 
-	public <T extends CyTableEntry> Map<String, String> getGraphicsAttributes(T element) {
-		if (element instanceof CyNetwork) return networkAttributes;
-		if (element instanceof CyNode) return nodeGraphics.get(element);
-		if (element instanceof CyEdge) return edgeGraphics.get(element);
+	public Map<String, String> getGraphicsAttributes(CyTableEntry element) {
+		if (element instanceof CyNetwork) return networkGraphics.get(element.getSUID());
+		if (element instanceof CyNode)    return nodeGraphics.get(element.getSUID());
+		if (element instanceof CyEdge)    return edgeGraphics.get(element.getSUID());
 
 		return null;
 	}
 	
 	public <T extends CyTableEntry> Map<String, String> getViewGraphicsAttributes(String oldId, boolean locked) {
 		return locked ? viewLockedGraphics.get(oldId) : viewGraphics.get(oldId);
-	}
-
-	public Map<CyNode, Map<String, String>> getNodeGraphics() {
-		return nodeGraphics;
-	}
-
-	public Map<CyEdge, Map<String, String>> getEdgeGraphics() {
-		return edgeGraphics;
 	}
 
 	public void setParentNetwork(CyRootNetwork parent) {
@@ -345,7 +310,7 @@ public class ReadDataManager {
 	/**
 	 * Should be called only after all XGMML attributes have been read.
 	 */
-	public void parseAllEquations() {
+	protected void parseAllEquations() {
 		for (Map.Entry<CyRow, Map<String, String>> entry : equations.entrySet()) {
 			CyRow row = entry.getKey();
 			Map<String, String> colEquationMap = entry.getValue();
@@ -403,7 +368,7 @@ public class ReadDataManager {
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network!
-	        Integer index = this.getIndex(id);
+	        Integer index = cache.getIndex(id);
 	        
 	        if (index != null) {
 	        	node = this.getParentNetwork().getNode(index);
@@ -418,7 +383,7 @@ public class ReadDataManager {
         }
         
         // Add to internal cache
-        this.cache(node, id);
+        cache.cache(node, id);
         
         return node;
     }
@@ -429,7 +394,7 @@ public class ReadDataManager {
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network and the edge already exists!
-	        Integer index = this.getIndex(id);
+	        Integer index = cache.getIndex(id);
 	        
 	        if (index != null) {
 	        	edge = this.getParentNetwork().getEdge(index);
@@ -466,69 +431,22 @@ public class ReadDataManager {
         }
         
         // Add to internal cache
-     	this.cache(edge, id);
+        cache.cache(edge, id);
 
 		return edge;
 	}
 	
-    protected <T extends CyTableEntry> void cache(T element, String strId) {
-    	int index = -1;
-    	
-    	if (element instanceof CyNode) {
-    		nodeIdMap.put(strId, (CyNode) element);
-    		nodeList.add((CyNode) element);
-    		index = ((CyNode) element).getIndex();
-    	} else if (element instanceof CyEdge) {
-    		edgeIdMap.put(strId, (CyEdge) element);
-    		edgeList.add((CyEdge) element);
-    		index = ((CyEdge) element).getIndex();
-    	} else if (element instanceof CyNetwork) {
-	    	networkIdMap.put(strId, (CyNetwork) element);
-	    }
-    	
-    	// The id mapping is only necessary when loading XGMML from 3.0+ format session.
-    	// Should NOT be done with older versions or simple XGMML import.
-    	if (this.isSessionFormat()) {
-        	this.cache(strId, element.getSUID(), index);
-		}
-    }
-    
-	protected void cache(String oldId, long newId, int index) {
-		if (oldId != null && !oldId.isEmpty()) {
-			CyTable tbl = getIdMappingTable();
-			
-			if (tbl != null) {
-				CyRow row = tbl.getRow(oldId);
-				row.set(ENTRY_SUID_COLUMN, newId);
-				row.set(INDEX_COLUMN, index);
-			} else {
-				logger.warn("Cannot find table \"" + ID_MAPPING_TABLE + "\".");
-			}
-		}
-	}
-	
-	protected void addNetwork(String oldId, CyNetwork net) {
-		this.networks.add(net);
-	}
-	
-	protected void addNetworkPointer(Long nodeId, String oldNetworkId) {
-		CyTable tbl = getNetworkPointersTable();
-		
-		if (tbl != null) {
-			CyRow row = tbl.getRow(nodeId);
-			row.set(ORIGINAL_NETWORK_ID_COLUMN, oldNetworkId);
-		} else {
-			logger.warn("Cannot find table \"" + NETWORK_POINTERS_TABLE
-					+ "\". The node's network pointer will not be restored.");
-		}
+	protected void addNetwork(CyNetwork net) {
+		if (net != null)
+			networks.add(net);
 	}
 	
 	protected void addElementLink(String href, Class<? extends CyTableEntry> clazz) {
 		Map<CyNetwork, Set<String>> map = null;
 		String id = AttributeValueUtil.getIdFromXLink(href);
 		
-		if (clazz == CyNode.class)      map = nodeLinkMap;
-		else if (clazz == CyEdge.class) map = edgeLinkMap;
+		if (clazz == CyNode.class)      map = cache.getNodeLinks();
+		else if (clazz == CyEdge.class) map = cache.getEdgeLinks();
 		
 		CyNetwork net = getCurrentNetwork();
 		
@@ -542,30 +460,6 @@ public class ReadDataManager {
 			
 			idSet.add(id);
 		}
-	}
-	
-	protected Map<CyNetwork, Set<String>> getNodeLinks() {
-		return nodeLinkMap;
-	}
-
-	protected Map<CyNetwork, Set<String>> getEdgeLinks() {
-		return edgeLinkMap;
-	}
-
-	public CyNetwork getNetwork(String oldId) {
-		return networkIdMap.get(oldId);
-	}
-	
-	public CyNode getNode(String oldId) {
-		return nodeIdMap.get(oldId);
-	}
-	
-	public CyEdge getEdge(String oldId) {
-		return edgeIdMap.get(oldId);
-	}
-	
-	protected void cache(String oldId, long newId) {
-		cache(oldId, newId, 0);
 	}
 	
 	protected String getNetworkViewId() {
@@ -608,53 +502,6 @@ public class ReadDataManager {
 		this.currentElementId = currentElementId;
 	}
 
-	public Integer getIndex(String oldId) {
-		CyRow row = oldId != null ? getIdMappingTable().getRow(oldId) : null;
-		
-		if (row != null)
-			return row.get(INDEX_COLUMN, Integer.class);
-		
-		return null;
-	}
-	
-	public Long getSUID(String oldId) {
-		CyRow row = oldId != null ? getIdMappingTable().getRow(oldId) : null;
-		
-		if (row != null)
-			return row.get(ENTRY_SUID_COLUMN, Long.class);
-		
-		return null;
-	}
-	
-	public String getOldId(Long suid) {
-		Collection<CyRow> rows = suid != null ? getIdMappingTable().getMatchingRows(ENTRY_SUID_COLUMN, suid) : null;
-		
-		if (rows != null) {
-			for (CyRow row : rows)
-				return row.get(ORIGINAL_ID_COLUMN, String.class);
-		}
-		
-		return null;
-	}
-
-	private CyTable getIdMappingTable() {
-		CyTable tbl = null;
-		
-		if (SessionUtil.getIdMappingTableSUID() != null)
-			tbl = tableManager.getTable(SessionUtil.getIdMappingTableSUID());
-		
-		return tbl;
-	}
-	
-	private CyTable getNetworkPointersTable() {
-		CyTable tbl = null;
-		
-		if (SessionUtil.getNetworkPointersTableSUID() != null)
-			tbl = tableManager.getTable(SessionUtil.getNetworkPointersTableSUID());
-		
-		return tbl;
-	}
-	
 	/**
 	 * It controls which graphics attributes should be parsed.
 	 * @param element The network, node or edge
@@ -665,7 +512,7 @@ public class ReadDataManager {
 		boolean b = false;
 		
 		// When reading XGMML as part of a CYS file, these graphics attributes should not be parsed.
-		if (sessionFormat && element != null && attName != null) {
+		if (isSessionFormat() && element != null && attName != null) {
 			// Network
 			b = b || (element instanceof CyNetwork && attName.matches("backgroundColor"));
 			// Nodes or Edges (these are standard XGMML and 2.x <graphics> attributes, not 3.0 bypass properties)

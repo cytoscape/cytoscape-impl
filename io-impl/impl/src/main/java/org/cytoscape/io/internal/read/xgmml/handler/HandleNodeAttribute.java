@@ -34,7 +34,7 @@ public class HandleNodeAttribute extends AbstractHandler {
 					// Handle 2.x nested network as network pointer
 					final String netId = atts.getValue("value");
 					final CyNode node = manager.currentNode;
-					manager.addNetworkPointer(node.getSUID(), netId);
+					manager.getCache().addNetworkPointer(node.getSUID(), netId);
 				}
 			}
 

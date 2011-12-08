@@ -15,6 +15,7 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.internal.read.AbstractNetworkViewReaderTester;
 import org.cytoscape.io.internal.read.xgmml.handler.AttributeValueUtil;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
+import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -41,6 +42,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 	CyTableFactory tableFactory;
 	RenderingEngineManager renderingEngineMgr;
 	ReadDataManager readDataMgr;
+	ReadCache readCache;
 	AttributeValueUtil attributeValueUtil;
 	UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	XGMMLParser parser;
@@ -54,6 +56,9 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 				.thenReturn(new MinimalVisualLexicon(new NullVisualProperty("MINIMAL_ROOT",
 																			"Minimal Root Visual Property")));
 
+		TableTestSupport tblTestSupport = new TableTestSupport();
+		tableFactory = tblTestSupport.getTableFactory();
+		
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
 		networkFactory = networkTestSupport.getNetworkFactory();
 		rootNetworkManager = networkTestSupport.getRootNetworkFactory();
@@ -61,16 +66,14 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 		NetworkViewTestSupport networkViewTestSupport = new NetworkViewTestSupport();
 		networkViewFactory = networkViewTestSupport.getNetworkViewFactory();
 		
-		readDataMgr = new ReadDataManager(mock(EquationCompiler.class), mock(CyTableManager.class), networkFactory, rootNetworkManager);
+		readCache = new ReadCache();
+		readDataMgr = new ReadDataManager(readCache, mock(EquationCompiler.class), networkFactory, rootNetworkManager);
 		ObjectTypeMap objectTypeMap = new ObjectTypeMap();
 		attributeValueUtil = new AttributeValueUtil(objectTypeMap, readDataMgr);
 		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr, attributeValueUtil);
 		handlerFactory.init();
 		parser = new XGMMLParser(handlerFactory, readDataMgr);
 		
-		TableTestSupport tblTestSupport = new TableTestSupport();
-		tableFactory = tblTestSupport.getTableFactory();
-
 		ByteArrayInputStream is = new ByteArrayInputStream("".getBytes("UTF-8")); // TODO: use XGMML string or load from file
 
 		reader = new XGMMLNetworkReader(is, networkViewFactory, networkFactory, rootNetworkManager, renderingEngineMgr,

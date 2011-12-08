@@ -27,18 +27,9 @@
  */
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.ENTRY_SUID_COLUMN;
-import static org.cytoscape.io.internal.util.session.SessionUtil.ID_MAPPING_TABLE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.INDEX_COLUMN;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_POINTERS_TABLE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NODE_SUID_COLUMN;
-import static org.cytoscape.io.internal.util.session.SessionUtil.ORIGINAL_ID_COLUMN;
-import static org.cytoscape.io.internal.util.session.SessionUtil.ORIGINAL_NETWORK_ID_COLUMN;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,14 +40,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.cytoscape.io.internal.read.MarkSupportedInputStream;
+import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
@@ -73,8 +60,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Logger logger;
 	
 	protected InputStream sourceInputStream;
-	protected final CyTableManager tableManager;
-	protected final CyTableFactory tablefacory;
+	protected final ReadCache cache;
 	
 	protected TaskMonitor tm;
 	protected DummyTaskMonitor taskMonitor;
@@ -89,26 +75,18 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<CyTableMetadata>();
 	protected final Map<String, List<File>> pluginFileListMap = new HashMap<String, List<File>>();
 	
-	private CyTable idMappingTable;
-	private CyTable networkPointersTable;
-
 	private boolean inputStreamRead;
 	
 	public AbstractSessionReader(final InputStream sourceInputStream,
-								 final CyTableManager tableManager,
-								 final CyTableFactory tablefacory) {
+								 final ReadCache cache) {
 		if (sourceInputStream == null)
 			throw new NullPointerException("input stream is null!");
 		// So it can be read multiple times:
 		this.sourceInputStream = new ReusableInputStream(sourceInputStream);
 
-		if (tableManager == null)
-			throw new NullPointerException("table manager is null!");
-		this.tableManager = tableManager;
-		
-		if (tablefacory == null)
-			throw new NullPointerException("table factory is null!");
-		this.tablefacory = tablefacory;
+		if (cache == null)
+			throw new NullPointerException("cache is null!");
+		this.cache = cache;
 		
 		this.logger = LoggerFactory.getLogger(this.getClass());
 	}
@@ -146,7 +124,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		inputStreamRead = false;
 		
 		SessionUtil.setReadingSessionFile(true);
-		createTempTables();
+		cache.init();
 		
 		logger.debug("Reading CYS file...");
 		taskMonitor = new DummyTaskMonitor();
@@ -177,49 +155,12 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 			logger.error("Error closing source input stream.", e);
 		}
 		
-		deleteTempTables();
+		cache.dispose();
 		SessionUtil.setReadingSessionFile(false);
 	}
 	
 	protected void processNetworkPointers() {
-		if (networkPointersTable != null) {
-			final List<CyRow> rows = networkPointersTable.getAllRows();
-			
-			if (rows.size() == 0)
-				return;
-			
-			// Create lookup maps
-			final Map<Long, CyNetwork> netMap = new HashMap<Long, CyNetwork>();
-			final Map<Long, CyNode> nodeMap = new HashMap<Long, CyNode>();
-			
-			for (CyNetwork net : networks) {
-				netMap.put(net.getSUID(), net);
-				final List<CyNode> nodes = net.getNodeList();
-				
-				for (CyNode n : nodes)
-					nodeMap.put(n.getSUID(), n);
-			}
-			
-			// Iterate the rows and recreate the network pointers
-			for (CyRow r : rows) {
-				final Long nodeId = r.get(NODE_SUID_COLUMN, Long.class);
-				final String oldNetId = r.get(ORIGINAL_NETWORK_ID_COLUMN, String.class);
-				final Long netId = getNewId(oldNetId);
-				CyNetwork network = netMap.get(netId);
-				
-				if (network != null) {
-					CyNode node = nodeMap.get(nodeId);
-					
-					if (node != null)
-						node.setNetworkPointer(network);
-					else
-						logger.error("Cannot recreate network pointer for network " + netId + ": Cannot find node "
-								+ nodeId);
-				} else {
-					logger.error("Cannot recreate network pointer: Cannot find network " + oldNetId);
-				}
-			}
-		}
+		cache.createNetworkPointers();
 	}
 	
 	/**
@@ -316,73 +257,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		
 		return is;
 	}
-	
-	protected String getOldId(Long suid) {
-		Collection<CyRow> rows = idMappingTable.getMatchingRows(ENTRY_SUID_COLUMN, suid);
-		
-		if (rows != null) {
-			for (CyRow r : rows) {
-				return r.get(ORIGINAL_ID_COLUMN, String.class);
-			}
-		}
-		
-		return null;
-	}
-	
-	protected Long getNewId(String oldId) {
-		CyRow r = idMappingTable.getRow(oldId);		
-		return r != null ? r.get(ENTRY_SUID_COLUMN, Long.class) : null;
-	}
-	
-	protected void createTempTables() {
-		createIdMappingTable();
-		createNetworkPointersTable();
-	}
-	
-	protected void deleteTempTables() {
-		deleteIdMappingTable();
-		deleteNetworkPointersTable();
-	}
 
-	private void createIdMappingTable() {
-		deleteIdMappingTable();
-		
-		// The ORIGINAL_ID_COLUMN has to be a String, because 2.x XGMML edges uses the label as ID!
-		idMappingTable = tablefacory.createTable(ID_MAPPING_TABLE, ORIGINAL_ID_COLUMN, String.class, false, true);
-		idMappingTable.createColumn(ENTRY_SUID_COLUMN, Long.class, true);
-		idMappingTable.createColumn(INDEX_COLUMN, Integer.class, true);
-		
-		tableManager.addTable(idMappingTable);
-		SessionUtil.setIdMappingTableSUID(idMappingTable.getSUID());
-	}
-	
-	private void createNetworkPointersTable() {
-		deleteNetworkPointersTable();
-		
-		networkPointersTable = tablefacory.createTable(NETWORK_POINTERS_TABLE, NODE_SUID_COLUMN,
-				Long.class, false, true);
-		networkPointersTable.createColumn(ORIGINAL_NETWORK_ID_COLUMN, String.class, true);
-		
-		tableManager.addTable(networkPointersTable);
-		SessionUtil.setNetworkPointersTableSUID(networkPointersTable.getSUID());
-	}
-	
-	private void deleteIdMappingTable() {
-		if (idMappingTable != null && tableManager.getTable(idMappingTable.getSUID()) != null) {
-			tableManager.deleteTable(idMappingTable.getSUID());
-			idMappingTable = null;
-			SessionUtil.setIdMappingTableSUID(null);
-		}
-	}
-	
-	private void deleteNetworkPointersTable() {
-		if (networkPointersTable != null && tableManager.getTable(networkPointersTable.getSUID()) != null) {
-			tableManager.deleteTable(networkPointersTable.getSUID());
-			networkPointersTable = null;
-			SessionUtil.setNetworkPointersTableSUID(null);
-		}
-	}
-	
 	/**
 	 *  We need this class to avoid the progress-bar showing back-forth  when extract zipEntries.
 	 */

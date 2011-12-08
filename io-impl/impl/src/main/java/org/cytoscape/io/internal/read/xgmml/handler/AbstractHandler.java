@@ -33,5 +33,4 @@ public abstract class AbstractHandler implements Handler {
 	public void setAttributeValueUtil(AttributeValueUtil attributeValueUtil) {
 		this.attributeValueUtil = attributeValueUtil;
 	}
-
 }

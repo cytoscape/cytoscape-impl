@@ -55,8 +55,7 @@ public class HandleGraph extends AbstractHandler {
 			currentNet = rootNet.addSubNetwork();
 		}
 		
-		addCurrentNetwork(label, currentNet);
-		setNetworkNameFromLabel(atts);
+		addCurrentNetwork(label, currentNet, atts);
 		
 		return current;
 	}
@@ -78,15 +77,14 @@ public class HandleGraph extends AbstractHandler {
 			currentNet = rootNet.addSubNetwork();
 		}
 		
-		addCurrentNetwork(id, currentNet);
-		setNetworkNameFromLabel(atts); // TODO: not necessary--remove it?
+		addCurrentNetwork(id, currentNet, atts);
 		
 		return current;
 	}
 	
 	private ParseState handleGenericXGMMLGraph(String tag, Attributes atts, ParseState current) throws SAXException {
 		final CyNetwork currentNet;
-		final String id = getId(atts);
+		String id = getId(atts);
 
 		if (manager.graphCount == 1) {
 			// Root (graph) element...
@@ -98,45 +96,65 @@ public class HandleGraph extends AbstractHandler {
 			currentNet = rootNet.addSubNetwork();
 		}
 
-		addCurrentNetwork(id, currentNet);
-		setNetworkNameFromLabel(atts);
+		addCurrentNetwork(id, currentNet, atts);
 
 		return current;
 	}
 	
-	protected void addCurrentNetwork(String oldId, CyNetwork net) {
+	/**
+	 * @param oldId The original Id of the graph element. If null, one will be created.
+	 * @param net Can be null if just adding an XLink to an existing network
+	 * @param atts The attributes of the graph tag
+	 * @return The string identifier of the network
+	 */
+	protected String addCurrentNetwork(String oldId, CyNetwork net, Attributes atts) {
+		if (oldId == null)
+			oldId = String.format("_graph%s_%s", manager.graphCount, net.getSUID());
+		
 		manager.setCurrentNetwork(net);
 		manager.getNetworkStack().push(oldId);
 		
 		if (net != null) {
-			manager.cache(net, oldId);
+			manager.getCache().cache(net, oldId);
 			
 			if (!(net instanceof CyRootNetwork))
-				manager.addNetwork(oldId, net);
+				manager.addNetwork(net);
+			
+			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0)
+				setNetworkNameFromLabel(net, atts);
 		}
+		
+		return oldId;
 	}
 	
 	/**
 	 * Should be used when handling 2.x format only or importing the network from a standalone XGMML file.
 	 * @param atts
 	 */
-	private void setNetworkNameFromLabel(Attributes atts) {
+	protected void setNetworkNameFromLabel(CyNetwork net, Attributes atts) {
 		final String name = getLabel(atts);
 		
-		if (name != null) {
-			CyRow netRow = manager.getCurrentNetwork().getCyRow();
+		if (net != null && name != null) {
+			CyRow netRow = net.getCyRow();
 			netRow.set(CyNetwork.NAME, name);
 		}
 	}
 	
-	private String getLabel(Attributes atts) {
+	protected String getLabel(Attributes atts) {
 		String label = atts.getValue("label");
-		if (label != null) return label;
+		
+		if (label == null || label.isEmpty())
+			label = atts.getValue("id");
 
-		return getId(atts);
+		return label;
 	}
 	
-	private String getId(Attributes atts) {
-		return atts.getValue("id");
+	protected String getId(Attributes atts) {
+		String id = atts.getValue("id");
+		
+		if (id == null || id.isEmpty())
+			id = atts.getValue("label");
+		
+		return id;
 	}
 }
