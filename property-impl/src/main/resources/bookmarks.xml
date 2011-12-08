@@ -337,20 +337,23 @@
 		</category>
 	</category>
 	<category name="network">
-		<dataSource name="Human Interactome: BioGRID Release 3.1.83 (11/25/2011)"
-			xlink:href="http://www.cytoscape.org/datasets/BIOGRID-ORGANISM-Homo_sapiens-3.1.83.mitab"
-			format="mitab" />
-		<dataSource name="Yeast Interactome: BioGRID Release 3.1.83 (11/25/2011)"
-			xlink:href="http://www.cytoscape.org/datasets/BIOGRID-ORGANISM-Saccharomyces_cerevisiae-3.1.83.mitab"
-			format="mitab" />
-		<dataSource name="Mouse Interactome: BioGRID Release 3.1.83 (11/25/2011)"
-			xlink:href="http://www.cytoscape.org/datasets/BIOGRID-ORGANISM-Mus_musculus-3.1.83.mitab"
-			format="mitab" />
-		<dataSource name="Fly Interactome: BioGRID Release 3.1.83 (11/25/2011)"
-			xlink:href="http://www.cytoscape.org/datasets/BIOGRID-ORGANISM-Drosophila_melanogaster-3.1.83.mitab"
-			format="mitab" />
 		<dataSource name="Yeast Protein-Protein: Ideker, T. et al. (galFiltered.sif)"
-			xlink:href="http://www.cytoscape.org/datasets/galFiltered.sif"
+			xlink:href="http://chianti.ucsd.edu/kono/data/galFiltered.sif"
+			format="sif" />
+		<dataSource name="Human Protein-Protein: HPRD Literature Curated Interactions"
+			xlink:href="http://cytoscape.org/datasets/HPRD.sif"
+			format="sif" />
+		<dataSource name="Human Protein-Protein: Rual et al. Toward a proteome-scale map of the human protein-protein interaction network. Nature 2005."
+			xlink:href="http://cytoscape.org/datasets/rual.sif"
+			format="sif" />
+		<dataSource name="Human Protein-Protein: Rual et al. (Subnetwork for tutorial)"
+			xlink:href="http://www.cytoscape.org/tut/getting.started/RUAL.subset.sif"
+			format="sif" />
+		<dataSource name="Human Protein-Protein: Stelzl et al. A human protein-protein interaction network: a resource for annotating the proteome. Cell 2005."
+			xlink:href="http://cytoscape.org/datasets/stelzl.sif"
+			format="sif" />
+		<dataSource name="Yeast Protein-Protein: Ptacek et al. Global analysis of protein phosphorylation in yeast. Nature 2005"
+			xlink:href="http://cytoscape.org/datasets/ptacek.sif"
 			format="sif" />
 	</category>
 	
