@@ -31,11 +31,8 @@ package org.cytoscape.internal.view;
 
 
 import javax.swing.*;
-import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 
 import org.cytoscape.application.swing.CyAction;
@@ -82,9 +79,11 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if ( actionMenuItemMap.containsKey(action) )
 			return false;
 
+		// Actions with no preferredMenu don't show up in any menu.
 		String menu_name = action.getPreferredMenu();
 		if (menu_name == null || menu_name.isEmpty())
-			menu_name = DEFAULT_MENU_SPECIFIER;
+			return false;
+		
 		final GravityTracker gravityTracker = menuTracker.getGravityTracker(menu_name);
 		final JMenuItem menu_item = createMenuItem(action);
 
