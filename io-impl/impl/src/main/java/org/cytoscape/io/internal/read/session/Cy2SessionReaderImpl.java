@@ -69,6 +69,7 @@ import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -371,21 +372,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					continue;
 	
 				final String netName = net.getId();
-				final CyNetworkView[] views = getNetworkViews(netName);
-	
-				if (views != null) {
-					for (CyNetworkView nv : views) {
-						String vsName = net.getVisualStyle();
-		
-						if (vsName != null)
-							visualStyleMap.put(nv, vsName);
-					}
-				}
-	
+				
+				// Set attribute values that are saved in the cysession.xml
 				final CyNetwork cyNet = getNetwork(netName);
 	
 				if (cyNet != null) {
-					// TODO: check if should delete from network
+					// TODO: check if should delete from sub-network
 //					if (net.getHiddenNodes() != null)
 //						setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode().iterator(), "hidden");
 //					if (net.getHiddenEdges() != null)
@@ -397,6 +389,18 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 						setBooleanNodeAttr(cyNet, net.getSelectedNodes().getNode().iterator(), CyNetwork.SELECTED);
 					if (net.getSelectedEdges() != null)
 						setBooleanEdgeAttr(cyNet, net.getSelectedEdges().getEdge().iterator(), CyNetwork.SELECTED);
+				}
+				
+				// Populate the visual style map
+				final CyNetworkView[] views = getNetworkViews(netName);
+				
+				if (views != null) {
+					for (CyNetworkView nv : views) {
+						String vsName = net.getVisualStyle();
+		
+						if (vsName != null)
+							visualStyleMap.put(nv, vsName);
+					}
 				}
 			}
 		}
@@ -437,7 +441,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			try {
 				decode = URLDecoder.decode(s, "UTF-8");
 				
-				if (decode.endsWith(name)) {
+				if (decode.equals(name)) {
 					// this is OK since XGMML only ever reads one network
 					views = networkViewLookup.get(s);
 				}
@@ -460,7 +464,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				return null;
 			}
 
-			if (decode.endsWith("/" + name)) {
+			if (decode.equals(name)) {
 				return networkLookup.get(s);
 			}
 		}
@@ -475,8 +479,16 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		// create an id map
 		Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 
-		for (CyNode n : net.getNodeList())
-			nodeMap.put(net.getCyRow(n).get(CyRootNetwork.SHARED_NAME, String.class), n);
+		for (CyNode n : net.getNodeList()) {
+			CyRow row = net.getCyRow(n);
+			String name = row.get(CyNetwork.NAME, String.class);
+			
+			if (name == null) // try another column...
+				name = row.get(CyRootNetwork.SHARED_NAME, String.class);
+			
+			if (name != null)
+				nodeMap.put(name, n);
+		}
 
 		// set attr values based on ids
 		while (it.hasNext()) {
@@ -484,7 +496,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			String name = nodeObject.getId();
 			CyNode n = nodeMap.get(name);
 
-			// FIXME this fires too many events
 			if (n != null)
 				net.getCyRow(n).set(attrName, true);
 			else 
@@ -499,8 +510,16 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		// create an id map
 		Map<String, CyEdge> edgeMap = new HashMap<String, CyEdge>();
 		
-		for (CyEdge e : net.getEdgeList())
-			edgeMap.put(net.getCyRow(e).get(CyRootNetwork.SHARED_NAME, String.class), e);
+		for (CyEdge e : net.getEdgeList()){
+			CyRow row = net.getCyRow(e);
+			String name = row.get(CyNetwork.NAME, String.class);
+			
+			if (name == null) // try another column...
+				name = row.get(CyRootNetwork.SHARED_NAME, String.class);
+			
+			if (name != null)
+				edgeMap.put(name, e);
+		}
 
 		// set attr values based on ids
 		while (it.hasNext()) {
@@ -508,7 +527,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			String name = edgeObject.getId();
 			CyEdge e = edgeMap.get(name);
 
-			// FIXME this fires too many events
 			if (e != null)
 				net.getCyRow(e).set(attrName, true);
 			else 
