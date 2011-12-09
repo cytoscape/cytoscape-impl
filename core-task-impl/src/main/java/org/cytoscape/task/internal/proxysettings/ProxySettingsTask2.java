@@ -52,10 +52,11 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	
 		storeProxySettings();
 
-		FutureTask<Exception> executor = new FutureTask<Exception>(new TestProxySettings(streamUtil));
+		FutureTask<Exception> task = new FutureTask<Exception>(new TestProxySettings(streamUtil));
 		Exception result = null;
 		try {
-			result = executor.get(10, TimeUnit.SECONDS);
+			new Thread(task).start();
+			result = task.get(10, TimeUnit.SECONDS);
 		} catch (final InterruptedException e) {
 			result = e;
 		} catch (final ExecutionException e) {
