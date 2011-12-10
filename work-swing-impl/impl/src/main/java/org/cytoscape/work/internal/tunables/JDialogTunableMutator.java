@@ -1,28 +1,10 @@
 package org.cytoscape.work.internal.tunables;
 
 
-import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Window;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
 
-import org.cytoscape.work.AbstractTunableInterceptor;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
-import org.cytoscape.work.internal.tunables.utils.CollapsablePanel;
-import org.cytoscape.work.internal.tunables.utils.XorPanel;
-import org.cytoscape.work.swing.GUITunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -36,34 +36,43 @@
 
 package org.cytoscape.internal;
 
+import static org.cytoscape.application.swing.CytoPanelName.EAST;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
+import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.internal.view.CyDesktopManager.Arrange.CASCADE;
+import static org.cytoscape.internal.view.CyDesktopManager.Arrange.GRID;
+import static org.cytoscape.internal.view.CyDesktopManager.Arrange.HORIZONTAL;
+import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
+
+import java.util.Properties;
+
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CytoscapeShutdown;
 import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import static org.cytoscape.application.swing.CytoPanelName.*;
 import org.cytoscape.application.swing.ToolBarComponent;
-
+import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.event.CyEventHelper;
-
-import org.cytoscape.internal.CyOperatingContextImpl;
-import org.cytoscape.internal.QuickStartStartup;
-import org.cytoscape.internal.SessionShutdownHandler;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
+import org.cytoscape.internal.actions.WelcomeScreenAction;
 import org.cytoscape.internal.dialogs.AboutDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
 import org.cytoscape.internal.layout.ui.SettingsAction;
 import org.cytoscape.internal.select.RowViewTracker;
+import org.cytoscape.internal.select.RowsSetViewUpdater;
 import org.cytoscape.internal.select.SelectEdgeViewUpdater;
 import org.cytoscape.internal.select.SelectNodeViewUpdater;
 import org.cytoscape.internal.shutdown.ConfigDirPropertyWriter;
@@ -77,7 +86,6 @@ import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.*;
 import org.cytoscape.internal.view.NetworkPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
 import org.cytoscape.internal.view.ToolBarEnableUpdater;
@@ -85,54 +93,38 @@ import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
-
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.io.write.CyPropertyWriterManager;
-
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
-
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.session.CySessionManager;
-
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-
+import org.cytoscape.task.creation.ImportNetworksTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
-
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
-
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.undo.SwingUndoSupport;
-import org.cytoscape.work.swing.PanelTaskManager;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
-
-import org.osgi.framework.BundleContext;
-
-import java.util.Properties;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.internal.select.RowsSetViewUpdater;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.SubmenuTaskManager;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
+import org.osgi.framework.BundleContext;
 
 /**
  *
@@ -151,6 +143,14 @@ public class CyActivator extends AbstractCyActivator {
 	 * @param bc DOCUMENT ME!
 	 */
 	public void start(BundleContext bc) {
+		
+		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class, "(id=loadNetworkURLTaskFactory)");
+		NetworkTaskFactory createNetworkViewTaskFactory = getService(bc, NetworkTaskFactory.class, "(id=createNetworkViewTaskFactory)");
+		TaskFactory openSessionTaskFactory = getService(bc, TaskFactory.class, "(id=openSessionTaskFactory)");
+
+		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
+		
+		
 		CytoscapeShutdown cytoscapeShutdownServiceRef = getService(bc, CytoscapeShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 		                                                                             CyApplicationConfiguration.class);
@@ -191,7 +191,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
-		TaskFactory quickStartRef = getService(bc, TaskFactory.class, "(id=WelcomeScreen)");
 		
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
 
@@ -287,15 +286,16 @@ public class CyActivator extends AbstractCyActivator {
 				cyNetworkViewManagerServiceRef, visualMappingManagerServiceRef, rowViewTracker);
 		
 		
-		QuickStartStartup quickStartStartup = new QuickStartStartup(quickStartRef,
-		                                                            dialogTaskManagerServiceRef,
-		                                                            cytoscapeDesktop);
 		RecentSessionManager recentSessionManager = new RecentSessionManager(recentlyOpenedTrackerServiceRef,
 		                                                                     cyServiceRegistrarServiceRef,
 		                                                                     cySessionManagerServiceRef,
 		                                                                     sessionReaderManagerServiceRef,
 		                                                                     cyApplicationManagerServiceRef);
-		                                         
+		
+		// Show Welcome Screen
+		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(cytoscapeDesktop, cyApplicationManagerServiceRef, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
+		
+		registerService(bc, welcomeScreenAction, CyAction.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());
 		registerService(bc, redoAction, CyAction.class, new Properties());
 		registerService(bc, printAction, CyAction.class, new Properties());
@@ -373,7 +373,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, toolBarEnableUpdater, new Properties());
 		registerService(bc, configDirPropertyWriter, CytoscapeShutdownListener.class,
 		                new Properties());
-		registerAllServices(bc, quickStartStartup, new Properties());
 		registerAllServices(bc, recentSessionManager, new Properties());
 
 		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);
@@ -413,5 +412,16 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
+		
+		// Show Welcome screen
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				welcomeScreenAction.actionPerformed(null);
+			}
+		});
+		
 	}
 }

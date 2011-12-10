@@ -1,15 +1,13 @@
 package org.cytoscape.work.internal.sync;
 
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
+
 import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.TunableRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,17 +18,18 @@ import org.slf4j.LoggerFactory;
  *
  * This will not work if the application is running in headless mode.
  */
-public class SyncTaskManager extends AbstractTaskManager<Object,Map<String,Object>> implements SynchronousTaskManager<Object> {
+public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Object>> implements
+		SynchronousTaskManager<Object> {
 
 	private static final Logger logger = LoggerFactory.getLogger(SyncTaskManager.class);
 
 
-	private final SyncTunableMutator syncTunableMutator;
+	private final SyncTunableMutator<?> syncTunableMutator;
 
 	/**
 	 * Construct with default behavior.
 	 */
-	public SyncTaskManager(final SyncTunableMutator tunableMutator) {
+	public SyncTaskManager(final SyncTunableMutator<?> tunableMutator) {
 		super(tunableMutator);
 		this.syncTunableMutator = tunableMutator;
 	}
@@ -53,7 +52,6 @@ public class SyncTaskManager extends AbstractTaskManager<Object,Map<String,Objec
 		final LoggingTaskMonitor taskMonitor = new LoggingTaskMonitor();
 		
 		try {
-
 			if ( !displayTunables(factory) )
 				return;
 

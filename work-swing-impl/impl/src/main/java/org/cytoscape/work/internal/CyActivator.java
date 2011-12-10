@@ -9,11 +9,8 @@ import java.util.Properties;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
@@ -69,13 +66,13 @@ public class CyActivator extends AbstractCyActivator {
 		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
 
 		FileUtil fileUtilRef = getService(bc,FileUtil.class);
-		CyProperty bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
-		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
-		
 		UndoSupportImpl undoSupport = new UndoSupportImpl();
+		
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
-		SimpleSubmenuTunableHandlerFactory submenuListSingleSelectionHandlerFactory = new SimpleSubmenuTunableHandlerFactory(SubmenuTunableHandlerImpl.class,ListSingleSelection.class);
+		
+		SimpleSubmenuTunableHandlerFactory<SubmenuTunableHandlerImpl> submenuListSingleSelectionHandlerFactory = new SimpleSubmenuTunableHandlerFactory<SubmenuTunableHandlerImpl>(
+				SubmenuTunableHandlerImpl.class, ListSingleSelection.class);
 
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator);
 
@@ -85,19 +82,31 @@ public class CyActivator extends AbstractCyActivator {
 		SubmenuTaskManager submenuTaskManager = new SubmenuTaskManagerImpl(submenuTunableMutator,jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
-		SimpleGUITunableHandlerFactory booleanHandlerFactory = new SimpleGUITunableHandlerFactory(BooleanHandler.class, Boolean.class, boolean.class);
-		SimpleGUITunableHandlerFactory integerHandlerFactory = new SimpleGUITunableHandlerFactory(IntegerHandler.class, Integer.class, int.class);
-		SimpleGUITunableHandlerFactory floatHandlerFactory = new SimpleGUITunableHandlerFactory(FloatHandler.class, Float.class, float.class);
-		SimpleGUITunableHandlerFactory doubleHandlerFactory = new SimpleGUITunableHandlerFactory(DoubleHandler.class, Double.class, double.class);
-		SimpleGUITunableHandlerFactory longHandlerFactory = new SimpleGUITunableHandlerFactory(LongHandler.class, Long.class, long.class);
-		SimpleGUITunableHandlerFactory stringHandlerFactory = new SimpleGUITunableHandlerFactory(StringHandler.class,String.class);
-		SimpleGUITunableHandlerFactory boundedIntegerHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedInteger.class);
-		SimpleGUITunableHandlerFactory boundedFloatHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedFloat.class);
-		SimpleGUITunableHandlerFactory boundedDoubleHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedDouble.class);
-		SimpleGUITunableHandlerFactory boundedLongHandlerFactory = new SimpleGUITunableHandlerFactory(BoundedHandler.class,BoundedLong.class);
-		SimpleGUITunableHandlerFactory listSingleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory(ListSingleHandler.class,ListSingleSelection.class);
-		SimpleGUITunableHandlerFactory listMultipleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory(ListMultipleHandler.class,ListMultipleSelection.class);
-		
+		SimpleGUITunableHandlerFactory<BooleanHandler> booleanHandlerFactory = new SimpleGUITunableHandlerFactory<BooleanHandler>(
+				BooleanHandler.class, Boolean.class, boolean.class);
+		SimpleGUITunableHandlerFactory<IntegerHandler> integerHandlerFactory = new SimpleGUITunableHandlerFactory<IntegerHandler>(
+				IntegerHandler.class, Integer.class, int.class);
+		SimpleGUITunableHandlerFactory<FloatHandler> floatHandlerFactory = new SimpleGUITunableHandlerFactory<FloatHandler>(
+				FloatHandler.class, Float.class, float.class);
+		SimpleGUITunableHandlerFactory<DoubleHandler> doubleHandlerFactory = new SimpleGUITunableHandlerFactory<DoubleHandler>(
+				DoubleHandler.class, Double.class, double.class);
+		SimpleGUITunableHandlerFactory<LongHandler> longHandlerFactory = new SimpleGUITunableHandlerFactory<LongHandler>(
+				LongHandler.class, Long.class, long.class);
+		SimpleGUITunableHandlerFactory<StringHandler> stringHandlerFactory = new SimpleGUITunableHandlerFactory<StringHandler>(
+				StringHandler.class, String.class);
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedIntegerHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+				BoundedHandler.class, BoundedInteger.class);
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedFloatHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+				BoundedHandler.class, BoundedFloat.class);
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedDoubleHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+				BoundedHandler.class, BoundedDouble.class);
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedLongHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+				BoundedHandler.class, BoundedLong.class);
+		SimpleGUITunableHandlerFactory<ListSingleHandler> listSingleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory<ListSingleHandler>(
+				ListSingleHandler.class, ListSingleSelection.class);
+		SimpleGUITunableHandlerFactory<ListMultipleHandler> listMultipleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory<ListMultipleHandler>(
+				ListMultipleHandler.class, ListMultipleSelection.class);
+
 		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(dsManager);
 		
 		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager);
@@ -116,7 +125,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
 
 		registerService(bc,submenuTaskManager,SubmenuTaskManager.class, new Properties());
-
+		
+		registerAllServices(bc,syncTaskManager, new Properties());
+		
 		registerService(bc,submenuListSingleSelectionHandlerFactory,SubmenuTunableHandlerFactory.class, new Properties());
 
 		registerService(bc,integerHandlerFactory,GUITunableHandlerFactory.class, new Properties());
@@ -133,8 +144,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,listMultipleSelectionHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,fileHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,urlHandlerFactory,GUITunableHandlerFactory.class, new Properties());
-		registerService(bc,syncTaskManager,SynchronousTaskManager.class, new Properties());
-		registerService(bc,syncTunableHandlerFactory,TunableHandlerFactory.class, new Properties());
+		
+		Properties syncFactoryProp = new Properties();
+		registerService(bc,syncTunableHandlerFactory, TunableHandlerFactory.class, syncFactoryProp);
+		// This is a hack: directly add factory to the service.
+		syncTunableMutator.addTunableHandlerFactory(syncTunableHandlerFactory, syncFactoryProp);
 
 		registerServiceListener(bc,supportedFileTypesManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
 		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
@@ -144,9 +158,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
+		
 		registerServiceListener(bc,submenuTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SubmenuTunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,syncTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SyncTunableHandlerFactory.class, TunableHandlerFactory.class);
-
 	}
 }
-

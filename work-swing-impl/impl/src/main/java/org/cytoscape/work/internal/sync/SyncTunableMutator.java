@@ -1,33 +1,38 @@
-
-
 package org.cytoscape.work.internal.sync;
-
-import org.cytoscape.work.TunableMutator;
-import org.cytoscape.work.TunableHandler;
-import org.cytoscape.work.AbstractTunableInterceptor;
 
 import java.util.Map;
 
-public class SyncTunableMutator<S> extends AbstractTunableInterceptor<SyncTunableHandler> implements TunableMutator<SyncTunableHandler, S> {
+import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.work.TunableMutator;
 
-	private Map<String,Object> map;
+public class SyncTunableMutator<S> extends AbstractTunableInterceptor<SyncTunableHandler> implements
+		TunableMutator<SyncTunableHandler, S> {
 
-	public void setConfigurationContext(Object o) {
-		if ( o != null && o instanceof Map ) 
-			map = (Map<String,Object>)o;
+	private Map<String, Object> map;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void setConfigurationContext(final Object configContext) {
+		if (configContext != null && configContext instanceof Map)
+			map = (Map<String, Object>) configContext;
 	}
 
-	public S buildConfiguration(Object o) {
+	
+	@Override
+	public S buildConfiguration(Object objectWithTunables) {
+		// This method should not be called.
 		return null;
 	}
 
+	
+	@Override
 	public boolean validateAndWriteBack(Object o) {
-		Map<String,SyncTunableHandler> handlers = getHandlers(o);
-		for ( SyncTunableHandler handler : handlers.values() ) {
+		final Map<String, SyncTunableHandler> handlers = getHandlers(o);
+		
+		for (SyncTunableHandler handler : handlers.values()) {
 			handler.setValueMap(map);
 			handler.handle();
 		}
 		return true;
 	}
 }
-
