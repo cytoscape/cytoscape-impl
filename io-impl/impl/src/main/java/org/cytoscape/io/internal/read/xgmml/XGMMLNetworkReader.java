@@ -379,7 +379,7 @@ public class XGMMLNetworkReader extends AbstractNetworkReader {
 			// we can at least try to degrade gracefully.
 			System.gc();
 			throw new RuntimeException(
-									   "Out of memory error caught! The network being loaded is too large for the current memory allocation.  Use the -Xmx flag for the java virtual machine to increase the amount of memory available, e.g. java -Xmx1G cytoscape.jar -p plugins ....");
+									   "Out of memory error caught! The network being loaded is too large for the current memory allocation.  Use the -Xmx flag for the java virtual machine to increase the amount of memory available, e.g. java -Xmx1G cytoscape.jar -p apps ....");
 		} catch (ParserConfigurationException e) {
 		} catch (SAXParseException e) {
 			System.err.println("XGMMLParser: fatal parsing error on line " + e.getLineNumber() + " -- '" +

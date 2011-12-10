@@ -8,7 +8,7 @@ package org.cytoscape.app.internal;
  * @author skillcoy
  *
  */
-public class InvalidDownloadable extends PluginException
+public class InvalidDownloadable extends AppException
 	{
 
 	/**

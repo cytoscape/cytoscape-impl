@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * A utility class designed to capture methods used by multiple classes.
  */
 class JarUtil {
-	private static final Logger logger = LoggerFactory.getLogger(PluginTracker.class);
+	private static final Logger logger = LoggerFactory.getLogger(AppTracker.class);
 
 	/** 
 	 * Bug 2055 changing regexp used to match jars
@@ -67,13 +67,13 @@ class JarUtil {
 	static final String MATCH_JAR_REGEXP = ".*\\.jar$";
 
 	/**
-	 * Iterate through all class files, return the subclass of CytoscapePlugin.
-	 * Similar to CytoscapeInit, however only plugins with manifest files that
-	 * describe the class of the CytoscapePlugin are valid.
+	 * Iterate through all class files, return the subclass of CytoscapeApp.
+	 * Similar to CytoscapeInit, however only apps with manifest files that
+	 * describe the class of the CytoscapeApp are valid.
 	 */
-	static String getPluginClass(String fileName, PluginInfo.FileType type) throws IOException {
+	static String getAppClass(String fileName, AppInfo.FileType type) throws IOException {
 
-		String pluginClassName = null;
+		String appClassName = null;
 
 		try {
 
@@ -81,7 +81,7 @@ class JarUtil {
 		case JAR:
 			JarFile jar = new JarFile(fileName);
 			try {
-				pluginClassName = getManifestAttribute(jar.getManifest());
+				appClassName = getManifestAttribute(jar.getManifest());
 			} finally {
 				if (jar != null) 
 					jar.close();
@@ -112,7 +112,7 @@ class JarUtil {
 						is = ZipUtil.readFile(zf, entryName);
 						try {
 							jis = new JarInputStream(is);
-							pluginClassName = getManifestAttribute(jis.getManifest());
+							appClassName = getManifestAttribute(jis.getManifest());
 						} finally {
 							if (jis != null) 
 								jis.close();
@@ -129,21 +129,21 @@ class JarUtil {
 		}
 
 		} catch (Exception e) {
-			logger.debug("Problem getting plugin class name for " +
+			logger.debug("Problem getting app class name for " +
 			                           fileName + " " + type, e);
 			throw new IOException(e.toString());
 		}
 
-		return pluginClassName;
+		return appClassName;
 	}
 
 	/*
-	 * Gets the manifest file value for the Cytoscape-Plugin attribute
+	 * Gets the manifest file value for the Cytoscape-App attribute
 	 */
 	static String getManifestAttribute(Manifest m) {
 		String value = null;
 		if (m != null) {
-			value = m.getMainAttributes().getValue("Cytoscape-Plugin");
+			value = m.getMainAttributes().getValue("Cytoscape-App");
 		}
 		return value;
 	}

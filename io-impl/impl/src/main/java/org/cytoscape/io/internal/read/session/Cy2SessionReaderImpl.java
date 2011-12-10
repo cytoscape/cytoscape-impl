@@ -31,7 +31,7 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CY_PROPS;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_ROOT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PLUGINS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_PROPS;
 import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
 
@@ -130,8 +130,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
 	@Override
 	protected void handleEntry(InputStream is, String entryName) throws Exception {
-		if (entryName.contains("/" + PLUGINS_FOLDER + "/")) {
-			extractPluginEntry(is, entryName);
+		if (entryName.contains("/" + APPS_FOLDER + "/")) {
+			extractAppEntry(is, entryName);
 		} else if (entryName.endsWith(CYSESSION)) {
 			extractSessionState(is, entryName);
 		} else if (entryName.endsWith(VIZMAP_PROPS)) {
@@ -291,7 +291,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		return rootNetwork;
 	}
 
-	private void extractPluginEntry(InputStream is, String entryName) {
+	private void extractAppEntry(InputStream is, String entryName) {
 		String[] items = entryName.split("/");
 
 		if (items.length < 3) {
@@ -299,7 +299,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			return;
 		}
 
-		String pluginName = items[2];
+		String appName = items[2];
 		String fileName = items[items.length - 1];
 
 		String tmpDir = System.getProperty("java.io.tmpdir");
@@ -328,11 +328,11 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			return;
 		}
 
-		// Put the file into pluginFileListMap
-		if (!pluginFileListMap.containsKey(pluginName))
-			pluginFileListMap.put(pluginName, new ArrayList<File>());
+		// Put the file into appFileListMap
+		if (!appFileListMap.containsKey(appName))
+			appFileListMap.put(appName, new ArrayList<File>());
 
-		List<File> fileList = pluginFileListMap.get(pluginName);
+		List<File> fileList = appFileListMap.get(appName);
 		fileList.add(theFile);
 	}
 

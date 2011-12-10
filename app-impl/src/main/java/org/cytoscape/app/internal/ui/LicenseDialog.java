@@ -1,6 +1,6 @@
 package org.cytoscape.app.internal.ui;
 
-//import org.cytoscape.plugin.internal.CytoscapePlugin;
+//import org.cytoscape.app.internal.CytoscapeApp;
 import org.cytoscape.app.internal.DownloadableInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 public class LicenseDialog extends javax.swing.JDialog {
-	private static String title = "Plugin License Agreement";
+	private static String title = "App License Agreement";
 
 	private static final Logger logger = LoggerFactory.getLogger(LicenseDialog.class);
 
@@ -42,20 +42,20 @@ public class LicenseDialog extends javax.swing.JDialog {
 
     private void listSetup() {
         listModel = new LicenseListModel();
-        pluginList.setCellRenderer(new LicenseListCellRenderer());
-        pluginList.setModel(listModel);
-        pluginList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        appList.setCellRenderer(new LicenseListCellRenderer());
+        appList.setModel(listModel);
+        appList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         acceptRadio.setEnabled(false);
         declineRadio.setEnabled(false);
     }
     
-    public void addPlugin(DownloadableInfo obj) {
+    public void addApp(DownloadableInfo obj) {
     	listModel.addElement(obj);
     }
     
     public void selectDefault() {
-    	pluginList.setSelectedIndex(0);
-  	DownloadableInfo infoObj = (DownloadableInfo) pluginList.getSelectedValue();
+    	appList.setSelectedIndex(0);
+  	DownloadableInfo infoObj = (DownloadableInfo) appList.getSelectedValue();
   	setLicenseText(infoObj.getLicenseText());
     }
     
@@ -67,8 +67,8 @@ public class LicenseDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">                          
     private void initComponents() {
         licenseSplitPane = new javax.swing.JSplitPane();
-        pluginListScrollPane = new javax.swing.JScrollPane();
-        pluginList = new javax.swing.JList();
+        appListScrollPane = new javax.swing.JScrollPane();
+        appList = new javax.swing.JList();
         licenseScrollPane = new javax.swing.JScrollPane();
         licensePanel = new javax.swing.JEditorPane();
         buttonPane = new javax.swing.JPanel();
@@ -80,15 +80,15 @@ public class LicenseDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         licenseSplitPane.setDividerLocation(150);
-        pluginList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+        appList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                pluginListValueChanged(evt);
+                appListValueChanged(evt);
             }
         });
         
-        pluginListScrollPane.setViewportView(pluginList);
+        appListScrollPane.setViewportView(appList);
 
-        licenseSplitPane.setLeftComponent(pluginListScrollPane);
+        licenseSplitPane.setLeftComponent(appListScrollPane);
 
         licenseScrollPane.setViewportView(licensePanel);
 
@@ -153,7 +153,7 @@ public class LicenseDialog extends javax.swing.JDialog {
                     .add(okButton)))
         );
 
-        licenseLabel.setText("Cytoscape Plugin License Agreements");
+        licenseLabel.setText("Cytoscape App License Agreements");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -208,11 +208,11 @@ public class LicenseDialog extends javax.swing.JDialog {
     	this.dispose();
     }                                            
 
-    private void pluginListValueChanged(javax.swing.event.ListSelectionEvent evt) {                                        
-    	if (pluginList.getSelectedIndex() < 0) { // nothing selected, use the top license
-    		pluginList.setSelectedIndex(0);
+    private void appListValueChanged(javax.swing.event.ListSelectionEvent evt) {                                        
+    	if (appList.getSelectedIndex() < 0) { // nothing selected, use the top license
+    		appList.setSelectedIndex(0);
     	} 
-    	DownloadableInfo infoObj = (DownloadableInfo) pluginList.getSelectedValue();
+    	DownloadableInfo infoObj = (DownloadableInfo) appList.getSelectedValue();
     	setLicenseText(infoObj.getLicenseText());
 
     	acceptRadio.setEnabled(true);
@@ -247,8 +247,8 @@ public class LicenseDialog extends javax.swing.JDialog {
     private javax.swing.JScrollPane licenseScrollPane;
     private javax.swing.JSplitPane licenseSplitPane;
     private javax.swing.JButton okButton;
-    private javax.swing.JList pluginList;
-    private javax.swing.JScrollPane pluginListScrollPane;
+    private javax.swing.JList appList;
+    private javax.swing.JScrollPane appListScrollPane;
     private LicenseListModel listModel;
     // End of variables declaration                   
     
@@ -299,19 +299,19 @@ public class LicenseDialog extends javax.swing.JDialog {
 	public static void main(String[] args) {
 		LicenseDialog ld = new LicenseDialog();
 		
-		DownloadableInfo di_a = new cytoscape.plugin.PluginInfo();
+		DownloadableInfo di_a = new cytoscape.app.AppInfo();
 		di_a.setName("Foobar");
 		di_a.addCytoscapeVersion("2.6");
 		di_a.setLicense("This is just some text", true);
 
-		DownloadableInfo di_b = new cytoscape.plugin.PluginInfo();
+		DownloadableInfo di_b = new cytoscape.app.AppInfo();
 		di_b.setName("Booya");
 		di_b.addCytoscapeVersion("2.6");
 		di_b.setLicense("Hi there!", true);
 
 		
-		ld.addPlugin(di_a);
-		ld.addPlugin(di_b);
+		ld.addApp(di_a);
+		ld.addApp(di_b);
 		ld.selectDefault();
 		ld.setVisible(true);
 	}

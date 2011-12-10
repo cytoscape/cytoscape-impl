@@ -1,9 +1,9 @@
 package org.cytoscape.app.internal;
 
-import org.cytoscape.app.internal.CyPluginAdapterImpl;
-import org.cytoscape.app.internal.PluginLoaderTaskFactory;
+import org.cytoscape.app.internal.CyAppAdapterImpl;
+import org.cytoscape.app.internal.AppLoaderTaskFactory;
 import org.cytoscape.app.internal.StartupMostlyFinished;
-import org.cytoscape.app.internal.action.PluginManagerAction;
+import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.application.CytoscapeVersion;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -99,9 +99,9 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory vmfFactoryP = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
 
 		
-		CyPluginAdapterImpl cyPluginAdapter = new CyPluginAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutAlgorithmManagerRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,cytoscapeVersionService, dialogTaskManagerRef,panelTaskManagerRef,submenuTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef, vmfFactoryC, vmfFactoryD, vmfFactoryP, visualMappingManagerRef,visualStyleFactoryRef);
-		PluginLoaderTaskFactory pluginLoaderTaskFactory = new PluginLoaderTaskFactory(cyPluginAdapter);
-		PluginManagerAction pluginManagerAction = new PluginManagerAction(
+		CyAppAdapterImpl cyAppAdapter = new CyAppAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutAlgorithmManagerRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,cytoscapeVersionService, dialogTaskManagerRef,panelTaskManagerRef,submenuTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef, vmfFactoryC, vmfFactoryD, vmfFactoryP, visualMappingManagerRef,visualStyleFactoryRef);
+		AppLoaderTaskFactory appLoaderTaskFactory = new AppLoaderTaskFactory(cyAppAdapter);
+		AppManagerAction appManagerAction = new AppManagerAction(
 				cySwingApplicationRef,
 				cyApplicationManagerRef,
 				cytoscapeVersionService,
@@ -109,17 +109,17 @@ public class CyActivator extends AbstractCyActivator {
 				bookmarksUtilServiceRef,
 				dialogTaskManagerRef,
 				cyPropertyRef,
-				cyPluginAdapter,
-				pluginLoaderTaskFactory,
+				cyAppAdapter,
+				appLoaderTaskFactory,
 				cyApplicationConfigurationServiceRef);
 		StartupMostlyFinished startupMostlyFinished = new StartupMostlyFinished(cyEventHelperRef);
 		
 		
-		Properties pluginLoaderTaskFactoryProps = new Properties();
-		pluginLoaderTaskFactoryProps.setProperty("preferredMenu","Apps");
-//		pluginLoaderTaskFactoryProps.setProperty("title","Import Plugin...");
-		registerService(bc,pluginLoaderTaskFactory,TaskFactory.class, pluginLoaderTaskFactoryProps);
-		registerService(bc,pluginManagerAction,CyAction.class, new Properties());
+		Properties appLoaderTaskFactoryProps = new Properties();
+		appLoaderTaskFactoryProps.setProperty("preferredMenu","Apps");
+//		appLoaderTaskFactoryProps.setProperty("title","Import App...");
+		registerService(bc,appLoaderTaskFactory,TaskFactory.class, appLoaderTaskFactoryProps);
+		registerService(bc,appManagerAction,CyAction.class, new Properties());
 	}
 }
 

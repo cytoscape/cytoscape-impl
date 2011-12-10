@@ -143,16 +143,16 @@
 	<osgi:reference id="cyApplicationConfigurationServiceRef" interface="org.cytoscape.application.CyApplicationConfiguration" />
 
 
-    <osgi:service id="pluginLoaderTaskFactoryService" ref="pluginLoaderTaskFactory"
+    <osgi:service id="appLoaderTaskFactoryService" ref="appLoaderTaskFactory"
 	        interface="org.cytoscape.work.TaskFactory">
         <osgi:service-properties>
-	            <entry key="title" value="Plugin..." />
+	            <entry key="title" value="App..." />
 	            <entry key="preferredMenu" value="File.Import" />
         </osgi:service-properties>
     </osgi:service>
  
-	<!-- Plugin manager -->
-	<osgi:service id="pluginManagerActionService" ref="pluginManagerAction"
+	<!-- App manager -->
+	<osgi:service id="appManagerActionService" ref="appManagerAction"
 		interface="org.cytoscape.application.swing.CyAction" />
 
 </beans>

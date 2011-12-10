@@ -1,6 +1,6 @@
 package org.cytoscape.app.internal;
 
-public class TrackerException extends PluginException {
+public class TrackerException extends AppException {
 
 	public TrackerException() {
 		super();

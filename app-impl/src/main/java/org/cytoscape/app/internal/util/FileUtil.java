@@ -55,7 +55,7 @@ import javax.swing.JOptionPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.app.internal.PluginTracker;
+import org.cytoscape.app.internal.AppTracker;
 import org.cytoscape.io.CyFileFilter;
 
 /**

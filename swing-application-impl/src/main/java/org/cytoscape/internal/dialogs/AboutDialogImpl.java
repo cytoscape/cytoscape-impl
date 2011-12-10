@@ -50,7 +50,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 
 
 /**
- * About page for web service clients or other plugins.
+ * About page for web service clients or other apps.
  * Accepts HTML as the argument.
  *
  * @author  kono

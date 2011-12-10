@@ -25,7 +25,7 @@
    <mapID target="View" url="ar01s04.html#View"/>
    <mapID target="Select" url="ar01s04.html#Select"/>
    <mapID target="Layout" url="ar01s04.html#Layout"/>
-   <mapID target="Plugins" url="ar01s04.html#Plugins"/>
+   <mapID target="Apps" url="ar01s04.html#Apps"/>
    <mapID target="Help" url="ar01s04.html#Help"/>
    <mapID target="Network Management" url="ar01s04.html#Network Management"/>
    <mapID target="The Network Overview Window" url="ar01s04.html#The Network Overview Window"/>
@@ -137,12 +137,12 @@
    <mapID target="Running filters" url="ar01s13.html#Running filters"/>
    <mapID target="The Select Menu" url="ar01s13.html#The Select Menu"/>
    <mapID target="Editing Networks" url="ar01s14.html"/>
-   <mapID target="Plugins and the Plugin Manager" url="ar01s15.html"/>
-   <mapID target="The Plugin Manager" url="ar01s15.html#The Plugin Manager"/>
-   <mapID target="Get New Plugins" url="ar01s15.html#Get New Plugins"/>
-   <mapID target="Delete Existing Plugins" url="ar01s15.html#Delete Existing Plugins"/>
-   <mapID target="Update Existing Plugins" url="ar01s15.html#Update Existing Plugins"/>
-   <mapID target="Download Plugins from a Custom Site" url="ar01s15.html#Download Plugins from a Custom Site"/>
+   <mapID target="Apps and the App Manager" url="ar01s15.html"/>
+   <mapID target="The App Manager" url="ar01s15.html#The App Manager"/>
+   <mapID target="Get New Apps" url="ar01s15.html#Get New Apps"/>
+   <mapID target="Delete Existing Apps" url="ar01s15.html#Delete Existing Apps"/>
+   <mapID target="Update Existing Apps" url="ar01s15.html#Update Existing Apps"/>
+   <mapID target="Download Apps from a Custom Site" url="ar01s15.html#Download Apps from a Custom Site"/>
    <mapID target="CytoPanels" url="ar01s16.html"/>
    <mapID target="What are CytoPanels?" url="ar01s16.html#What are CytoPanels?"/>
    <mapID target="Basic Usage" url="ar01s16.html#Basic Usage"/>

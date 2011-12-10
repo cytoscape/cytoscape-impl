@@ -18,7 +18,7 @@
 
 	<!-- constructor args are in alphabetical order! -->
 
-	<bean id="cyPluginAdapter" class="org.cytoscape.plugin.internal.CyPluginAdapterImpl">
+	<bean id="cyAppAdapter" class="org.cytoscape.app.internal.CyAppAdapterImpl">
 		<constructor-arg ref="cyApplicationManagerRef" />
 		<constructor-arg ref="cyEventHelperRef" />
 		<constructor-arg ref="cyLayoutsRef" />
@@ -52,12 +52,12 @@
 		<constructor-arg ref="visualStyleFactoryRef" />
 	</bean>
 
-	<bean id="pluginLoaderTaskFactory" class="org.cytoscape.plugin.internal.PluginLoaderTaskFactory">
-		<constructor-arg ref="cyPluginAdapter" />
+	<bean id="appLoaderTaskFactory" class="org.cytoscape.app.internal.AppLoaderTaskFactory">
+		<constructor-arg ref="cyAppAdapter" />
 	</bean>
 			
 		
-	<bean id="pluginManagerAction" class="org.cytoscape.plugin.internal.action.PluginManagerAction">
+	<bean id="appManagerAction" class="org.cytoscape.app.internal.action.AppManagerAction">
 		<constructor-arg ref="cySwingApplicationRef" />
 		<constructor-arg ref="cyApplicationManagerRef" />
 		<constructor-arg ref="cytoscapeVersionService" />
@@ -65,12 +65,12 @@
 		<constructor-arg ref="bookmarksUtilServiceRef" />
 		<constructor-arg ref="guiTaskManagerRef" />
 		<constructor-arg ref="cyPropertyRef" />
-		<constructor-arg ref="cyPluginAdapter" />
-		<constructor-arg ref="pluginLoaderTaskFactory" />
+		<constructor-arg ref="cyAppAdapter" />
+		<constructor-arg ref="appLoaderTaskFactory" />
 		<constructor-arg ref="cyApplicationConfigurationServiceRef" />
 	</bean>
 
-	<bean id="startupMostlyFinished" class="org.cytoscape.plugin.internal.StartupMostlyFinished">
+	<bean id="startupMostlyFinished" class="org.cytoscape.app.internal.StartupMostlyFinished">
 		<constructor-arg ref="cyEventHelperRef" />
 	</bean>
 </beans>

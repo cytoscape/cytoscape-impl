@@ -75,7 +75,7 @@ public class TreeNode extends DefaultMutableTreeNode {
 	}
 
 	/**
-	 * Creates a TreeNode with given PluginInfo object, no parent and does not
+	 * Creates a TreeNode with given AppInfo object, no parent and does not
 	 * allow children.
 	 * 
 	 * @param obj
@@ -86,7 +86,7 @@ public class TreeNode extends DefaultMutableTreeNode {
 	}
 
 	/**
-	 * Creates a TreeNode with given PluginInfo object, no parent and allows
+	 * Creates a TreeNode with given AppInfo object, no parent and allows
 	 * children if specified.
 	 * 
 	 * @param obj
@@ -152,7 +152,7 @@ public class TreeNode extends DefaultMutableTreeNode {
 	}
 
 	/**
-	 * Adds a PluginInfo object to this node.
+	 * Adds a AppInfo object to this node.
 	 * 
 	 * @param info
 	 */
@@ -272,9 +272,9 @@ public class TreeNode extends DefaultMutableTreeNode {
 	}
 
 	/**
-	 * Gets the PluginInfo object of this node.
+	 * Gets the AppInfo object of this node.
 	 * 
-	 * @return PluginInfo
+	 * @return AppInfo
 	 */
 	public DownloadableInfo getObject() {
 		return this.infoObj;

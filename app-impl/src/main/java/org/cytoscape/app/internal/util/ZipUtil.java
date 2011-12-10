@@ -85,7 +85,7 @@ public class ZipUtil {
 	private String inputFileDir;
 	private int fileCount;
 	private String sessionDirName;
-	private HashMap pluginFileMap = null;
+	private HashMap appFileMap = null;
 
 	/**
 	 * For zip file, file separator is always "/" in all platforms inclding Win,
@@ -186,11 +186,11 @@ public class ZipUtil {
 					addEntryToZip(file, targetName, zipOS, crc32, rgb);
 				}
 
-				if ((pluginFileMap != null) && (pluginFileMap.size() > 0)) {
-					Set<String> pluginSet = pluginFileMap.keySet();
+				if ((appFileMap != null) && (appFileMap.size() > 0)) {
+					Set<String> appSet = appFileMap.keySet();
 
-					for (String pluginName : pluginSet) {
-						List<File> theFileList = (List<File>) pluginFileMap.get(pluginName);
+					for (String appName : appSet) {
+						List<File> theFileList = (List<File>) appFileMap.get(appName);
 
 						if ((theFileList == null) || (theFileList.size() == 0))
 							continue;
@@ -199,7 +199,7 @@ public class ZipUtil {
 							if ((theFile == null) || (!theFile.exists()))
 								continue;
 
-							targetName = sessionDirName + FS + "plugins" + FS + pluginName + FS
+							targetName = sessionDirName + FS + "apps" + FS + appName + FS
 										 + theFile.getName();
 							addEntryToZip(theFile, targetName, zipOS, crc32, rgb);
 						}
@@ -231,8 +231,8 @@ public class ZipUtil {
 	 *
 	 * @param pMap DOCUMENT ME!
 	 */
-	public void setPluginFileMap(HashMap pMap) {
-		pluginFileMap = pMap;
+	public void setAppFileMap(HashMap pMap) {
+		appFileMap = pMap;
 	}
 
 	private void addEntryToZip(File srcFile, String targetName, ZipOutputStream zipOS, CRC32 crc32,

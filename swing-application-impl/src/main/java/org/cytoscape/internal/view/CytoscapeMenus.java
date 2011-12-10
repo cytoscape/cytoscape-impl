@@ -56,7 +56,7 @@ public class CytoscapeMenus {
 	menuBar.addMenu("Select.Nodes", 1.0);
 	menuBar.addMenu("Select.Edges", 1.1);
 	menuBar.addMenu("Layout", 0.0);
-	menuBar.addMenu("Plugins", 0.0);
+	menuBar.addMenu("Apps", 0.0);
 	menuBar.addMenu("Tools", 0.0);
 	menuBar.addMenu("Help", 0.0);
 

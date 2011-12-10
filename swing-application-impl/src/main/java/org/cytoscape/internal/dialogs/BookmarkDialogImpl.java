@@ -71,7 +71,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 	private BookmarksUtil bkUtil;
 
 	// private Category theCategory = new Category();;
-	private String[] bookmarkCategories = { "network", "annotation", "plugins" };
+	private String[] bookmarkCategories = { "network", "annotation", "apps" };
 	private final static long serialVersionUID = 1202339873340615L;
 
 	public BookmarkDialogImpl(Frame pParent, Bookmarks bookmarks, BookmarksUtil bkUtil) {

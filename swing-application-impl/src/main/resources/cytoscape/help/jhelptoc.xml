@@ -28,7 +28,7 @@
             <tocitem target="View" text="View"/>
             <tocitem target="Select" text="Select"/>
             <tocitem target="Layout" text="Layout"/>
-            <tocitem target="Plugins" text="Plugins"/>
+            <tocitem target="Apps" text="Apps"/>
             <tocitem target="Help" text="Help"/>
          </tocitem>
          <tocitem target="Network Management" text="Network Management"/>
@@ -165,12 +165,12 @@
          <tocitem target="The Select Menu" text="The Select Menu"/>
       </tocitem>
       <tocitem target="Editing Networks" text="Editing Networks"/>
-      <tocitem target="Plugins and the Plugin Manager" text="Plugins and the Plugin Manager">
-         <tocitem target="The Plugin Manager" text="The Plugin Manager"/>
-         <tocitem target="Get New Plugins" text="Get New Plugins"/>
-         <tocitem target="Delete Existing Plugins" text="Delete Existing Plugins"/>
-         <tocitem target="Update Existing Plugins" text="Update Existing Plugins"/>
-         <tocitem target="Download Plugins from a Custom Site" text="Download Plugins from a Custom Site"/>
+      <tocitem target="Apps and the App Manager" text="Apps and the App Manager">
+         <tocitem target="The App Manager" text="The App Manager"/>
+         <tocitem target="Get New Apps" text="Get New Apps"/>
+         <tocitem target="Delete Existing Apps" text="Delete Existing Apps"/>
+         <tocitem target="Update Existing Apps" text="Update Existing Apps"/>
+         <tocitem target="Download Apps from a Custom Site" text="Download Apps from a Custom Site"/>
       </tocitem>
       <tocitem target="CytoPanels" text="CytoPanels">
          <tocitem target="What are CytoPanels?" text="What are CytoPanels?"/>

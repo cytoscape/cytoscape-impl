@@ -42,7 +42,7 @@ import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 
 
 /**
- * Displays information "About this PlugIn...".
+ * Displays information "About this App...".
  *
  * @author Ethan Cerami
  */
@@ -50,9 +50,9 @@ public class AboutPanel extends JPanel {
 	/**
 	 * Constructor.
 	 *
-	 * @param title        PlugIn Title.
-	 * @param majorVersion PlugIn Major Version.
-	 * @param minorVersion PlugIn Minor Version.
+	 * @param title        App Title.
+	 * @param majorVersion App Major Version.
+	 * @param minorVersion App Minor Version.
 	 */
 	public AboutPanel(String title, int majorVersion, int minorVersion, LaunchExternalBrowser browser) {
 		this.setLayout(new BorderLayout());

@@ -37,10 +37,10 @@ package org.cytoscape.app.internal;
 
 import java.util.*;
 
-//import org.cytoscape.plugin.internal.PluginInfo.AuthorInfo;
+//import org.cytoscape.app.internal.AppInfo.AuthorInfo;
 
 public class ThemeInfo extends DownloadableInfo {
-	private Set<PluginInfo> themePlugins;
+	private Set<AppInfo> themeApps;
 
 	/**
 	 * See {@link DownloadableInfo#DownloadableInfo()}
@@ -71,7 +71,7 @@ public class ThemeInfo extends DownloadableInfo {
 		setDescription("No description");
 		setObjectVersion("0.1");
 		setCategory(Category.THEME);
-		themePlugins = new HashSet<PluginInfo>();
+		themeApps = new HashSet<AppInfo>();
 	}
 
 	public Installable getInstallable() {
@@ -85,41 +85,41 @@ public class ThemeInfo extends DownloadableInfo {
 		return DownloadableType.THEME;
 	}
 
-	public void replacePlugin(PluginInfo oldPlugin, PluginInfo newPlugin) {
-		themePlugins.remove(oldPlugin);
-		themePlugins.add(newPlugin);
+	public void replaceApp(AppInfo oldApp, AppInfo newApp) {
+		themeApps.remove(oldApp);
+		themeApps.add(newApp);
 	}
 	
 	/**
-	 * @param plugin
-	 *            Add a plugin object to this theme.
+	 * @param app
+	 *            Add a app object to this theme.
 	 */
-	public void addPlugin(PluginInfo plugin) {
-		themePlugins.add(plugin);
+	public void addApp(AppInfo app) {
+		themeApps.add(app);
 	}
 
 	/**
-	 * @return All plugins that make up this theme.
+	 * @return All apps that make up this theme.
 	 */
-	public List<PluginInfo> getPlugins() {
-		return new ArrayList<PluginInfo>(themePlugins);
+	public List<AppInfo> getApps() {
+		return new ArrayList<AppInfo>(themeApps);
 	}
 
-	public boolean containsPlugin(PluginInfo plugin) {
-		for (PluginInfo pi: themePlugins) {
-			if (pi.equalsDifferentObjectVersion(plugin))
+	public boolean containsApp(AppInfo app) {
+		for (AppInfo pi: themeApps) {
+			if (pi.equalsDifferentObjectVersion(app))
 				return true;
 		}
 		return false;
 	}
 	
-	public void clearPluginList() {
-		this.themePlugins.clear();
+	public void clearAppList() {
+		this.themeApps.clear();
 	}
 	
 	public String getInstallLocation() {
 		 java.io.File Dir = new java.io.File(
-				 PluginManager.getPluginManager().getPluginManageDirectory(),
+				 AppManager.getAppManager().getAppManageDirectory(),
 				 this.getName()+"-"+this.getObjectVersion());
 		return Dir.getAbsolutePath();
 	}
@@ -127,8 +127,8 @@ public class ThemeInfo extends DownloadableInfo {
 	public String htmlOutput() {
 		String Html = this.basicHtmlOutput();
 		
-		Html += "<b>Plugins Included</b>:<br><ul>";
-		for (PluginInfo i: getPlugins()) {
+		Html += "<b>Apps Included</b>:<br><ul>";
+		for (AppInfo i: getApps()) {
 			Html += "<li>" + i.toString();
 		}
 		Html += "</ul>";

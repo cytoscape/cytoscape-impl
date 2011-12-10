@@ -112,8 +112,8 @@ public class CySessionManagerImpl implements CySessionManager {
 
 	@Override
 	public CySession getCurrentSession() {
-		// Plugins who want to save anything to a session will have to listen for this event
-		// and will then be responsible for adding files through SessionAboutToBeSavedEvent.addPluginFiles(..)
+		// Apps who want to save anything to a session will have to listen for this event
+		// and will then be responsible for adding files through SessionAboutToBeSavedEvent.addAppFiles(..)
 		SessionAboutToBeSavedEvent savingEvent = new SessionAboutToBeSavedEvent(this);
 		cyEventHelper.fireEvent(savingEvent);
 
@@ -137,7 +137,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		// Cysession
 		Cysession cysess = cysessFactory.createCysession(savingEvent.getDesktop(), savingEvent.getCytopanels(), null);
 
-		Map<String, List<File>> pluginMap = savingEvent.getAppFileListMap();
+		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
 		Set<CyTable> tables = tblMgr.getAllTables(true);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 		Properties props = getProperties();
@@ -146,7 +146,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		Set<CyTableMetadata> metadata = buildMetadata(tables, networks);
 		// Build the session
 		CySession sess = new CySession.Builder().cytoscapeProperties(props).bookmarks(bkmarks).cysession(cysess)
-				.appFileListMap(pluginMap).tables(metadata).networks(networks).networkViews(netViews)
+				.appFileListMap(appMap).tables(metadata).networks(networks).networkViews(netViews)
 				.visualStyles(styles).viewVisualStyleMap(stylesMap).build();
 
 		return sess;

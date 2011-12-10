@@ -1,5 +1,5 @@
-# This props file would be filled out and included in the plugin jar file.  
-# This props file will be used  to put information into the Plugin Manager 
+# This props file would be filled out and included in the app jar file.  
+# This props file will be used  to put information into the App Manager 
 # about the app 
 
 # -- The following properties are REQUIRED -- #
@@ -11,7 +11,7 @@ appName=GraphMLReader
 # Html tags are encouraged for formatting purposes.
 appDescription=GraphML reader app.  You can load basic information (network and attributes) from GraphML files.  Experimental GraphML export function is also available for testing.
 
-# Plugin version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
+# App version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
 appVersion=0.11
 
 # Compatible Cytoscape version

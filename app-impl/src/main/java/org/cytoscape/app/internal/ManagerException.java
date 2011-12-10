@@ -38,10 +38,10 @@ package org.cytoscape.app.internal;
 
 
 /**
- * Thrown to indicate PluginManager errors
+ * Thrown to indicate AppManager errors
  * @author skillcoyne
  */
-public class ManagerException extends PluginException {
+public class ManagerException extends AppException {
 	/**
 	 * Creates a new ManagerError object.
 	 *

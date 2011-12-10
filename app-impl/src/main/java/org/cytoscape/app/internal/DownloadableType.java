@@ -4,7 +4,7 @@
 package org.cytoscape.app.internal;
 
 public enum DownloadableType {
-	PLUGIN("plugin"), THEME("theme"), FILE("file");
+	APP("app"), THEME("theme"), FILE("file");
 
 	private String type;
 	

@@ -38,11 +38,11 @@ package org.cytoscape.app.internal;
 import java.net.URL;
 import java.io.IOException;
 
-import org.cytoscape.app.internal.action.PluginManagerAction;
+import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.app.internal.util.URLUtil;
 
-import static org.cytoscape.app.internal.PluginVersionUtils.getNewerVersion;
-import static org.cytoscape.app.internal.PluginVersionUtils.versionOk;
+import static org.cytoscape.app.internal.AppVersionUtils.getNewerVersion;
+import static org.cytoscape.app.internal.AppVersionUtils.versionOk;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -57,9 +57,9 @@ public abstract class DownloadableInfo {
 	private static final Logger logger = LoggerFactory.getLogger(DownloadableInfo.class);
 
 
-	protected String versionMatch = PluginVersionUtils.versionMatch;
+	protected String versionMatch = AppVersionUtils.versionMatch;
 
-	protected String versionSplit = PluginVersionUtils.versionSplit;
+	protected String versionSplit = AppVersionUtils.versionSplit;
 
 	private String releaseDate;
 
@@ -100,7 +100,7 @@ public abstract class DownloadableInfo {
 	}
 
 	/**
-	 * Sets the license information for the plugin. Not required.
+	 * Sets the license information for the app. Not required.
 	 * 
 	 * @param url
 	 *            object where license can be downloaded from.
@@ -110,7 +110,7 @@ public abstract class DownloadableInfo {
 	}
 
 	/**
-	 * Sets the license information for the plugin. Not required.
+	 * Sets the license information for the app. Not required.
 	 * 
 	 * @param licenseText
 	 *            string of license.
@@ -160,7 +160,7 @@ public abstract class DownloadableInfo {
 	 * @param url
 	 *            Sets the URL for the xml file describing all downloadable
 	 *            objects from any given project. (ex.
-	 *            http://cytoscape.org/plugins/plugin.xml)
+	 *            http://cytoscape.org/apps/app.xml)
 	 */
 	public void setDownloadableURL(String url) {
 		this.downloadURL = url;
@@ -224,7 +224,7 @@ public abstract class DownloadableInfo {
 	/* --- GET --- */
 
 	/**
-	 * @return The text of the license for this plugin if available.
+	 * @return The text of the license for this app if available.
 	 */
 	public String getLicenseText() {
 		if (license != null)
@@ -273,7 +273,7 @@ public abstract class DownloadableInfo {
 	/**
 	 * @return Url that returns the document of available downloadable objects
 	 *         this object came from. Example
-	 *         http://cytoscape.org/plugins/plugins.xml
+	 *         http://cytoscape.org/apps/apps.xml
 	 */
 	public String getDownloadableURL() {
 		return this.downloadURL;
@@ -316,25 +316,25 @@ public abstract class DownloadableInfo {
 			}
 		}		
 
-		String currentPluginVersion = null;
+		String currentAppVersion = null;
 		String all = "";
 		for (String v : this.compatibleCyVersions) {
 			all += v + " ";      
 
-			if (currentPluginVersion != null) {
-				currentPluginVersion = getNewerVersion(v, currentPluginVersion);
+			if (currentAppVersion != null) {
+				currentAppVersion = getNewerVersion(v, currentAppVersion);
 				// compare to cytoscape version
-				if ( isCytoscapeVersionCurrent(currentPluginVersion) )
-					return currentPluginVersion; 
+				if ( isCytoscapeVersionCurrent(currentAppVersion) )
+					return currentAppVersion; 
 			}
 			else {
-				currentPluginVersion = v;
+				currentAppVersion = v;
 			}
 		}
 
-		//logger.debug(getName() +": Compatible: " + all + " cyvers: " + currentPluginVersion
+		//logger.debug(getName() +": Compatible: " + all + " cyvers: " + currentAppVersion
 		//		+ "(cyversion " + CytoscapeVersion.version +")");
-		return currentPluginVersion;
+		return currentAppVersion;
 	}
 
   /**
@@ -393,17 +393,17 @@ public abstract class DownloadableInfo {
 	}
 
   /**
-   * @param pluginVersion
+   * @param appVersion
 	 * @return true if the given version is compatible with the current Cytoscape
-	 *         version major.minor (bugfix is only checked if the plugin
+	 *         version major.minor (bugfix is only checked if the app
 	 *         specifies a bugfix version)
 	 */
-  private boolean isCytoscapeVersionCurrent(String pluginVersion) {
+  private boolean isCytoscapeVersionCurrent(String appVersion) {
 	  
-  	if (pluginVersion == null )
+  	if (appVersion == null )
 		return false;
 
-    String[] plVersion = pluginVersion.split(versionSplit);
+    String[] plVersion = appVersion.split(versionSplit);
 
 	if ( plVersion.length <3)
 		return false;
@@ -412,9 +412,9 @@ public abstract class DownloadableInfo {
 						Integer.valueOf(plVersion[1]).intValue()*10+
 						Integer.valueOf(plVersion[2]).intValue();
 
-	int minCyVersionInt  = PluginManagerAction.cyVersion.getMajorVersion()*100 + 
-		PluginManagerAction.cyVersion.getMinorVersion()*10+
-		PluginManagerAction.cyVersion.getBugFixVersion();
+	int minCyVersionInt  = AppManagerAction.cyVersion.getMajorVersion()*100 + 
+		AppManagerAction.cyVersion.getMinorVersion()*10+
+		AppManagerAction.cyVersion.getBugFixVersion();
 
 	if (curCyVersionInt < minCyVersionInt){
 		return false;
@@ -436,22 +436,22 @@ public abstract class DownloadableInfo {
   }
 
 /**
- * @return true if the plugin is compatible with the current version of Cytoscape.
- *    NOTE: It is assumed that if a plugin is listed as being compatible with the minor version number
+ * @return true if the app is compatible with the current version of Cytoscape.
+ *    NOTE: It is assumed that if a app is listed as being compatible with the minor version number
  *      it is compatible with all bug fix versions.
  */
-  public boolean isPluginCompatibleWithCurrent() {
+  public boolean isAppCompatibleWithCurrent() {
 
 	  if (this.getCategory() != null && this.getCategory().equalsIgnoreCase("Core")){
-		  // core plugins already compatible with current version
+		  // core apps already compatible with current version
 		  return true;
 	  }
 	  
 	boolean compatible = false;
-    for (String pluginVersion: compatibleCyVersions) {
-      String[] cyVersion = PluginManagerAction.cyVersion.getVersion().split(versionSplit);
-      String[] plVersion = pluginVersion.split(versionSplit);
-      if ( PluginVersionUtils.isVersion(pluginVersion, PluginVersionUtils.MINOR) ) {
+    for (String appVersion: compatibleCyVersions) {
+      String[] cyVersion = AppManagerAction.cyVersion.getVersion().split(versionSplit);
+      String[] plVersion = appVersion.split(versionSplit);
+      if ( AppVersionUtils.isVersion(appVersion, AppVersionUtils.MINOR) ) {
           cyVersion = new String[]{cyVersion[0], cyVersion[1]};
         }
      // logger.debug("Comparing versions: " + Arrays.toString(cyVersion) + " : " + Arrays.toString(plVersion));
@@ -508,7 +508,7 @@ public abstract class DownloadableInfo {
 	}
 
   /**
-	 * @return Returns String of downloadable name and version ex. MyPlugin
+	 * @return Returns String of downloadable name and version ex. MyApp
 	 *         v.1.0
 	 */
 	public String toString() {
@@ -532,12 +532,12 @@ public abstract class DownloadableInfo {
 		Html += "<b>Category:</b>&nbsp;" + getCategory() + "<p>";
 		Html += "<b>Description:</b><br>" + getDescription();
 
-		if (!isPluginCompatibleWithCurrent()) {
+		if (!isAppCompatibleWithCurrent()) {
 			Html += "<br><b>Verified with the following Cytoscape versions:</b> "
 					+ getCytoscapeVersions().toString() + "<br>";
 			Html += "<font color='red'><i>" + toString()
 					+ " is not verfied to work in the current version ("
-					+ PluginManagerAction.cyVersion.getVersion()
+					+ AppManagerAction.cyVersion.getVersion()
 					+ ") of Cytoscape.</i></font>";
 		}
 		Html += "<p>";
@@ -551,7 +551,7 @@ public abstract class DownloadableInfo {
 
 
 	/**
-	 * Fetches and keeps a plugin license if one is available.
+	 * Fetches and keeps a app license if one is available.
 	 */
 	protected class License {
 		private URL url;

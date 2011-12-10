@@ -114,7 +114,7 @@ public class CysessionFactory {
 		OntologyServer os = factory.createOntologyServer();
 
 		// We've omitted the concept of Ontology from the core api in 3.0,
-		// so that code will exist in the future as a plugin (although with a public API)
+		// so that code will exist in the future as a app (although with a public API)
 		//		Set<String> ontoNames = Cytoscape.getOntologyServer().getOntologyNames();
 		//		Map<String, URL> sources = Cytoscape.getOntologyServer().getOntologySources();
 		//
@@ -134,7 +134,7 @@ public class CysessionFactory {
 	 * Extract states of the 3 Cytopanels.
 	 *
 	 * @return
-	 * Note: We will store the states of plugins near future. The location of
+	 * Note: We will store the states of apps near future. The location of
 	 * those states will be stored here.
 	 */
 	private Cytopanels getCytoPanelStates(List<Cytopanel> cytopanels) {

@@ -59,7 +59,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Creates the menu and tool bars for a Cytoscape window object. It
  * also provides access to individual menus and items.<BR>
  * <p>
- * AddAction takes one more optional argument to specify index. Plugin
+ * AddAction takes one more optional argument to specify index. App
  * writers can use this function to specify the location of the menu item.
  * </p>
  */

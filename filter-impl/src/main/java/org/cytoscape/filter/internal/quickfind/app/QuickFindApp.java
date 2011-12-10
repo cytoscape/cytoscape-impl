@@ -80,7 +80,7 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 
 
 /**
- * Quick Find PlugIn.
+ * Quick Find App.
  *
  * @author Ethan Cerami.
  */
@@ -123,7 +123,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	/**
 	 * Initializes index, if network already exists.
 	 * This condition may occur if a user loads up a network from the command
-	 * line, and the network is already loaded prior to any plugins being loaded
+	 * line, and the network is already loaded prior to any apps being loaded
 	 */
 	private void initIndex() {
 		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();

@@ -269,14 +269,14 @@ public class PSICQUICUniversalClient {
 //	}
 //
 //	/**
-//	 * Use reflection to display the AdvancedNetworkMerge plugin.
+//	 * Use reflection to display the AdvancedNetworkMerge app.
 //	 */
 //	private void displayNetworkMerge() {
 //		Class<?> advancedNetworkMergeClass;
 //		try {
-//			advancedNetworkMergeClass = Class.forName("csplugins.network.merge.NetworkMergePlugin");
+//			advancedNetworkMergeClass = Class.forName("csapps.network.merge.NetworkMergeApp");
 //		} catch (ClassNotFoundException e1) {
-//			CyLogger.getLogger().warn("Could not find Advanced Network Merge Plugin!", e1);
+//			CyLogger.getLogger().warn("Could not find Advanced Network Merge App!", e1);
 //			e1.printStackTrace();
 //			return;
 //		}

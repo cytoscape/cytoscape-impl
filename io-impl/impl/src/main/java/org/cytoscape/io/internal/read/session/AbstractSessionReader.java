@@ -73,7 +73,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Set<VisualStyle> visualStyles = new HashSet<VisualStyle>();
 	protected final Map<CyNetworkView, String> visualStyleMap = new HashMap<CyNetworkView, String>();
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<CyTableMetadata>();
-	protected final Map<String, List<File>> pluginFileListMap = new HashMap<String, List<File>>();
+	protected final Map<String, List<File>> appFileListMap = new HashMap<String, List<File>>();
 	
 	private boolean inputStreamRead;
 	
@@ -111,7 +111,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	public CySession getCySession() {
 		CySession ret = new CySession.Builder().networks(networks).networkViews(networkViews)
 				.viewVisualStyleMap(visualStyleMap).cytoscapeProperties(cytoscapeProps).visualStyles(visualStyles)
-				.bookmarks(bookmarks).cysession(cysession).appFileListMap(pluginFileListMap).tables(tableMetadata)
+				.bookmarks(bookmarks).cysession(cysession).appFileListMap(appFileListMap).tables(tableMetadata)
 				.build();
 	
 		return ret;

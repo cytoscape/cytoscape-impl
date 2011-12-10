@@ -6,7 +6,7 @@ package org.cytoscape.app.internal.ui;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.cytoscape.app.internal.DownloadableInfo;
-import org.cytoscape.app.internal.action.PluginManagerAction;
+import org.cytoscape.app.internal.action.AppManagerAction;
 
 /**
  * @author skillcoy
@@ -34,11 +34,11 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer {
 		if (((TreeNode) value).getObject() != null) {
 			if (leaf && isOutdated(value)) {
 				setIcon(warningIcon);
-				setToolTipText("This plugin is not verified to work with the current version of Cytoscape.");
+				setToolTipText("This app is not verified to work with the current version of Cytoscape.");
 			} else if (leaf && !isOutdated(value)) {
 				setIcon(okIcon);
 				setToolTipText("Verified to work in "
-						+ PluginManagerAction.cyVersion.getVersion());
+						+ AppManagerAction.cyVersion.getVersion());
 			} else {
 				setToolTipText(null); // no tool tip
 			}
@@ -49,7 +49,7 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer {
 	private boolean isOutdated(Object value) {
 		TreeNode node = (TreeNode) value;
 		DownloadableInfo infoObj = node.getObject();
-		if (infoObj != null && !infoObj.isPluginCompatibleWithCurrent()) {
+		if (infoObj != null && !infoObj.isAppCompatibleWithCurrent()) {
 			return true;
 		}
 		return false;

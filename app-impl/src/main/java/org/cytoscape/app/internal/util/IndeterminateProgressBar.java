@@ -60,7 +60,7 @@ import javax.swing.border.*;
  * This class creates a dialog with a JProgressBar in indeterminate state.
  * Showing a bar in indeterminate state is useful when a long task is running,
  * the task's running time can't be approximated (if it can, then it is
- * better to use csplugins.util.CytoscapeProgressMonitor), and the client
+ * better to use csapps.util.CytoscapeProgressMonitor), and the client
  * wants to let the user know that something is happening (instead of giving the
  * impression of a frozen program).
  */

@@ -34,7 +34,7 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADAT
 import static org.cytoscape.io.internal.util.session.SessionUtil.CY_PROPS;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PLUGINS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML;
@@ -145,8 +145,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	protected void handleEntry(InputStream is, String entryName) throws Exception {
 		if (!networksExtracted) {
 			// First pass..
-			if (entryName.contains("/" + PLUGINS_FOLDER)) {
-				extractPluginEntry(is, entryName);
+			if (entryName.contains("/" + APPS_FOLDER)) {
+				extractAppEntry(is, entryName);
 			} else if (entryName.endsWith(CYSESSION)) {
 				extractSessionState(is, entryName);
 			} else if (entryName.endsWith(VIZMAP_XML)) {
@@ -171,7 +171,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			}
 		} else {
 			// Second pass..
-			if (!entryName.contains("/" + PLUGINS_FOLDER) && entryName.endsWith(XGMML_EXT)) {
+			if (!entryName.contains("/" + APPS_FOLDER) && entryName.endsWith(XGMML_EXT)) {
 				// Now the network views can be extracted!
 				Matcher matcher = NETWORK_VIEW_PATTERN.matcher(entryName);
 				
@@ -316,7 +316,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		// TODO: populate visual style map
 	}
 
-	private void extractPluginEntry(InputStream is, String entryName) {
+	private void extractAppEntry(InputStream is, String entryName) {
 		String[] items = entryName.split("/");
 
 		if (items.length < 3) {
@@ -324,7 +324,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			return;
 		}
 
-		String pluginName = items[2];
+		String appName = items[2];
 		String fileName = items[items.length - 1];
 
 		String tmpDir = System.getProperty("java.io.tmpdir");
@@ -353,10 +353,10 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			return;
 		}
 
-		// Put the file into pluginFileListMap
-		if (!pluginFileListMap.containsKey(pluginName)) pluginFileListMap.put(pluginName, new ArrayList<File>());
+		// Put the file into appFileListMap
+		if (!appFileListMap.containsKey(appName)) appFileListMap.put(appName, new ArrayList<File>());
 
-		List<File> fileList = pluginFileListMap.get(pluginName);
+		List<File> fileList = appFileListMap.get(appName);
 		fileList.add(theFile);
 	}
 

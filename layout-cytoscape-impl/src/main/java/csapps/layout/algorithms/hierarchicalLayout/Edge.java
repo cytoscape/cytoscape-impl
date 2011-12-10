@@ -4,10 +4,10 @@
  ** Code written by: Robert Sheridan
  ** Authors: Gary Bader, Ethan Cerami, Chris Sander
  ** Date: January 19.2004
- ** Description: Hierarcical layout plugin, based on techniques by Sugiyama
+ ** Description: Hierarcical layout app, based on techniques by Sugiyama
  ** et al. described in chapter 9 of "graph drawing", Di Battista et al,1999
  **
- ** Based on the csplugins.tutorial written by Ethan Cerami and GINY plugin
+ ** Based on the csapps.tutorial written by Ethan Cerami and GINY app
  ** written by Andrew Markiel
  **
  ** This library is free software; you can redistribute it and/or modify it

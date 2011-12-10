@@ -41,7 +41,7 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PLUGINS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLES_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 
@@ -381,22 +381,22 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	}
 
 	/**
-	 * Writes any files from plugins to the session file.
+	 * Writes any files from apps to the session file.
 	 *
 	 * @throws IOException
 	 */
 	private void zipFileListMap() throws IOException {
 
-		// fire an event to tell plugins we're ready to save!
-		Map<String, List<File>> pluginFileMap = session.getAppFileListMap(); 
+		// fire an event to tell apps we're ready to save!
+		Map<String, List<File>> appFileMap = session.getAppFileListMap(); 
 
 		// now write any files to the zip files
-		if ((pluginFileMap != null) && (pluginFileMap.size() > 0)) {
+		if ((appFileMap != null) && (appFileMap.size() > 0)) {
 			byte[] buf = new byte[5000];
-			Set<String> pluginSet = pluginFileMap.keySet();
+			Set<String> appSet = appFileMap.keySet();
 		
-			for (String pluginName : pluginSet) {
-				List<File> theFileList = (List<File>) pluginFileMap.get(pluginName);
+			for (String appName : appSet) {
+				List<File> theFileList = (List<File>) appFileMap.get(appName);
 		
 				if ((theFileList == null) || (theFileList.size() == 0))
 					continue;
@@ -405,7 +405,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 					if ((theFile == null) || (!theFile.exists()))
 						continue;
 	
-					zos.putNextEntry(new ZipEntry( sessionDir + PLUGINS_FOLDER + pluginName + 
+					zos.putNextEntry(new ZipEntry( sessionDir + APPS_FOLDER + appName + 
 					                               "/" + theFile.getName() ) );
 
 					// copy the file contents to the zip output stream

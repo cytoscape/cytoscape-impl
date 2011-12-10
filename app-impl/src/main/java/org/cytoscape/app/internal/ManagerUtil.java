@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.cytoscape.app.internal.PluginStatus;
+import org.cytoscape.app.internal.AppStatus;
 
 /**
  * 
@@ -49,21 +49,21 @@ import org.cytoscape.app.internal.PluginStatus;
 public class ManagerUtil {
 	// get the list sorted the way we want to display it, I'd like to do these
 	// in one method somehow
-	// where you just give it the PluginInfo method to sort by. I'm sure there's
+	// where you just give it the AppInfo method to sort by. I'm sure there's
 	// a way, I just don't know it yet
 	/**
 	 * DOCUMENT ME!
 	 * 
-	 * @param Plugins
+	 * @param Apps
 	 *            DOCUMENT ME!
 	 * 
 	 * @return DOCUMENT ME!
 	 */
 	public static Map<String, List<DownloadableInfo>> sortByCategory(
-			List<DownloadableInfo> Plugins) {
+			List<DownloadableInfo> Apps) {
 		Map<String, List<DownloadableInfo>> Categories = new java.util.HashMap<String, List<DownloadableInfo>>();
 
-		for (DownloadableInfo Current : Plugins) {
+		for (DownloadableInfo Current : Apps) {
 			if (Categories.containsKey(Current.getCategory())) {
 				Categories.get(Current.getCategory()).add(Current);
 			} else {
@@ -78,31 +78,31 @@ public class ManagerUtil {
 	}
 
 	// cheap and hacky I know....
-	public static Map<String, List<PluginInfo>> sortByClass(
-			List<PluginInfo> Plugins) {
-		Map<String, List<PluginInfo>> Classes = new java.util.HashMap<String, List<PluginInfo>>();
+	public static Map<String, List<AppInfo>> sortByClass(
+			List<AppInfo> Apps) {
+		Map<String, List<AppInfo>> Classes = new java.util.HashMap<String, List<AppInfo>>();
 
-		for (PluginInfo Current : Plugins) {
-			if (Classes.containsKey(Current.getPluginClassName())) {
-				Classes.get(Current.getPluginClassName()).add(Current);
+		for (AppInfo Current : Apps) {
+			if (Classes.containsKey(Current.getAppClassName())) {
+				Classes.get(Current.getAppClassName()).add(Current);
 			} else {
-				List<PluginInfo> List = new java.util.ArrayList<PluginInfo>();
+				List<AppInfo> List = new java.util.ArrayList<AppInfo>();
 				List.add(Current);
-				Classes.put(Current.getPluginClassName(), List);
+				Classes.put(Current.getAppClassName(), List);
 			}
 		}
 		return Classes;
 	}
 
-	public static Map<String, List<PluginInfo>> sortByID(
-			List<PluginInfo> Plugins) {
-		Map<String, List<PluginInfo>> Ids = new java.util.HashMap<String, List<PluginInfo>>();
+	public static Map<String, List<AppInfo>> sortByID(
+			List<AppInfo> Apps) {
+		Map<String, List<AppInfo>> Ids = new java.util.HashMap<String, List<AppInfo>>();
 
-		for (PluginInfo Current : Plugins) {
+		for (AppInfo Current : Apps) {
 			if (Ids.containsKey(Current.getID())) {
 				Ids.get(Current.getID()).add(Current);
 			} else {
-				List<PluginInfo> List = new java.util.ArrayList<PluginInfo>();
+				List<AppInfo> List = new java.util.ArrayList<AppInfo>();
 				List.add(Current);
 				Ids.put(Current.getID(), List);
 			}
@@ -111,7 +111,7 @@ public class ManagerUtil {
 	}
 
 	/**
-	 * Returns a list of available plugins minus any currently installed
+	 * Returns a list of available apps minus any currently installed
 	 * 
 	 * @param Current
 	 * @param Available
@@ -129,7 +129,7 @@ public class ManagerUtil {
 
 		for (DownloadableInfo infoAvail : Available) {
 			for (DownloadableInfo infoCur : Current) {
-				if (!PluginManager.getPluginManager().usingWebstartManager()) {
+				if (!AppManager.getAppManager().usingWebstartManager()) {
 					if (infoCur.getType().equals(infoAvail.getType()) && infoCur.equalsDifferentObjectVersion(infoAvail)) {
 						UniqueAvail.remove(infoAvail);
 					}
@@ -137,7 +137,7 @@ public class ManagerUtil {
 					if ( infoCur.equalsDifferentObjectVersion(infoAvail) ||
 						infoCur.getName().equals(infoAvail.getName()) ) { 
 						infoAvail.setDescription( infoCur.getDescription() + 
-								"<p><font color='red'><i><b>Webstart Warning:</b><br>This plugin may be the same as a plugin loaded with the webstart bundle '" + 
+								"<p><font color='red'><i><b>Webstart Warning:</b><br>This app may be the same as a app loaded with the webstart bundle '" + 
 								infoCur.toString() + "' </i></font>");
 					}
 							
@@ -149,28 +149,28 @@ public class ManagerUtil {
 	}
 
 	/**
-	 * Takes a Class object for a CytoscapePlugin and returns the DownloadableInfo
+	 * Takes a Class object for a CytoscapeApp and returns the DownloadableInfo
 	 * object associated
 	 * 
-	 * @param pluginClass
+	 * @param appClass
 	 * @return DownloadableInfo object
 	 */
-	public static DownloadableInfo getInfoObject(Class pluginClass) {
-		PluginManager mgr = PluginManager.getPluginManager();
+	public static DownloadableInfo getInfoObject(Class appClass) {
+		AppManager mgr = AppManager.getAppManager();
 		
-		List<DownloadableInfo> Downloadables = mgr.getDownloadables(PluginStatus.CURRENT);
+		List<DownloadableInfo> Downloadables = mgr.getDownloadables(AppStatus.CURRENT);
 
 		for (DownloadableInfo Current : Downloadables) {
 			
 			if (Current.getType().equals(DownloadableType.THEME)) {
 				ThemeInfo t = (ThemeInfo) Current;
-				for (PluginInfo p: t.getPlugins()) {
-					if (p.getPluginClassName().equals(pluginClass.getName()))
-						return t; // return the theme that contains the plugin
+				for (AppInfo p: t.getApps()) {
+					if (p.getAppClassName().equals(appClass.getName()))
+						return t; // return the theme that contains the app
 				}
 			} else {
-				PluginInfo p = (PluginInfo) Current;
-				if (p.getPluginClassName().equals(pluginClass.getName()))
+				AppInfo p = (AppInfo) Current;
+				if (p.getAppClassName().equals(appClass.getName()))
 					return p;
 			}
 		}

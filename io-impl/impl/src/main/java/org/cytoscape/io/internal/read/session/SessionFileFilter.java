@@ -36,7 +36,7 @@
  */
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.PLUGINS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 
 import java.io.IOException;
@@ -102,7 +102,7 @@ public class SessionFileFilter extends BasicCyFileFilter {
 				try {
 					tmpIs = new MarkSupportedInputStream(zis);
 					
-					if (!entryName.contains(PLUGINS_FOLDER) && entryName.endsWith(VERSION_EXT)) {
+					if (!entryName.contains(APPS_FOLDER) && entryName.endsWith(VERSION_EXT)) {
 						version = parseVersion(entryName);
 						logger.debug("CYS version: " + version);
 						break;
