@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.filter.internal.ServicesUtil;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.FilterPlugin;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
@@ -88,8 +89,9 @@ public class FilterUtil {
 	}
 	
 	
-	public static boolean isFilterNameDuplicated(FilterPlugin filterPlugin, String pFilterName) {
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+	public static boolean isFilterNameDuplicated(Vector<CompositeFilter> allFilterVect, String pFilterName) {
+		// TODO
+		//Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties();
 		if (allFilterVect == null || allFilterVect.size() == 0)
 			return false;
 		

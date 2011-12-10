@@ -44,6 +44,7 @@ import org.cytoscape.application.events.CytoscapeShutdownListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.filter.internal.read.filter.FilterReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.InputStream;
@@ -53,10 +54,10 @@ import java.io.InputStreamReader;
 /**
  * 
  */
-public class FilterPlugin implements CytoscapeShutdownListener{
+public class FilterPlugin { //implements CytoscapeShutdownListener {
 
 	private Vector<CompositeFilter> allFilterVect = null;
-	private final FilterIO filterIO;
+	//private final FilterIO filterIO;
 	private final Logger logger;
 	
 	public static final String DYNAMIC_FILTER_THRESHOLD = "dynamicFilterThreshold";
@@ -66,13 +67,15 @@ public class FilterPlugin implements CytoscapeShutdownListener{
 	public static boolean shouldFireFilterEvent = false;
 	public static String cyConfigVerDir;
 	
+	private FilterReader filterReader;
+	
 	// Other plugin can get a handler to all the filters defined
-	public Vector<CompositeFilter> getAllFilterVect() {
-		if (allFilterVect == null) {
-			allFilterVect = new Vector<CompositeFilter>();
-		}
-		return allFilterVect;
-	}
+//	public Vector<CompositeFilter> getAllFilterVect() {
+//		if (allFilterVect == null) {
+//			allFilterVect = new Vector<CompositeFilter>();
+//		}
+//		return allFilterVect;
+//	}
 	
 	/**
 	 * Creates a new FilterPlugin object.
@@ -82,72 +85,77 @@ public class FilterPlugin implements CytoscapeShutdownListener{
 	 * @param csfilter
 	 *            DOCUMENT ME!
 	 */
-	public FilterPlugin(CyApplicationManager applicationManager, CySwingApplication application, final CyApplicationConfiguration config, CytoscapeVersion version) {
-		filterIO = new FilterIO(applicationManager, this);
+	public FilterPlugin() {
 		
-		if (allFilterVect == null) {
-			allFilterVect = new Vector<CompositeFilter>();
-		}
-
+		//this.filterReader = filterReader;
+		
+		//System.out.println("\n\nFilterPlugin constructor:  \n\tthis.filterReader.getProperties().size() = "+this.filterReader.getProperties().size());
+		
+//		filterIO = new FilterIO(applicationManager, this);
+//		
+//		if (allFilterVect == null) {
+//			allFilterVect = new Vector<CompositeFilter>();
+//		}
+//
 		logger = LoggerFactory.getLogger(FilterPlugin.class);
-		
-		cyConfigVerDir = new File(config.getSettingLocation(), File.separator + version.getMajorVersion()+ "." + version.getMinorVersion()).getAbsolutePath();
-
-		restoreInitState();
+//		
+//		cyConfigVerDir = new File(config.getSettingLocation(), File.separator + version.getMajorVersion()+ "." + version.getMinorVersion()).getAbsolutePath();
+//
+//		restoreInitState();
 	}
 
 
-	@Override
-	public void handleEvent(CytoscapeShutdownEvent e) {
-		//onCytoscapeExit
-		
-		final File globalFilterFile = new File(cyConfigVerDir + File.separator + "filters.props");		
-		filterIO.saveGlobalPropFile(globalFilterFile);		
-	}
+//	@Override
+//	public void handleEvent(CytoscapeShutdownEvent e) {
+//		//onCytoscapeExit
+//		
+//		//final File globalFilterFile = new File(cyConfigVerDir + File.separator + "filters.props");		
+//		//filterIO.saveGlobalPropFile(globalFilterFile);		
+//	}
 	
 	public void restoreInitState() {
-		final File globalFilterFile = new File(cyConfigVerDir + File.separator + "filters.props");
-		
-		if (!globalFilterFile.isFile()){
-			// filers.props does not exist, so load the default one
-			loadDefaultFilter();
-			return;
-		}
-
-		int[] loadCount = filterIO.getFilterVectFromPropFile(globalFilterFile);
-		logger.debug("FilterPlugin: load " + loadCount[1] + " of " + loadCount[0] + " filters from filters.prop");
-
-		if (loadCount[1] == 0) {
-			final String DEFAULT_FILTERS_FILENAME = "/default_filters.props";
-			final InputStream inputStream = FilterPlugin.class.getResourceAsStream(DEFAULT_FILTERS_FILENAME);
-			
-			if (inputStream == null) {
-				System.err.println("FilterPlugin: Failed to read default filters from \""
-				                   + DEFAULT_FILTERS_FILENAME + "\" in the plugin's jar file!");
-				return;
-			}
-
-			final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-			loadCount = filterIO.getFilterVectFromPropFile(inputStreamReader);
-
-			logger.debug("FilterPlugin: load " + loadCount[1] + " of " + loadCount[0]
-			             + " filters from " + DEFAULT_FILTERS_FILENAME);
-		}
+//		final File globalFilterFile = new File(cyConfigVerDir + File.separator + "filters.props");
+//		
+//		if (!globalFilterFile.isFile()){
+//			// filers.props does not exist, so load the default one
+//			loadDefaultFilter();
+//			return;
+//		}
+//
+//		int[] loadCount = filterIO.getFilterVectFromPropFile(globalFilterFile);
+//		logger.debug("FilterPlugin: load " + loadCount[1] + " of " + loadCount[0] + " filters from filters.prop");
+//
+//		if (loadCount[1] == 0) {
+//			final String DEFAULT_FILTERS_FILENAME = "/default_filters.props";
+//			final InputStream inputStream = FilterPlugin.class.getResourceAsStream(DEFAULT_FILTERS_FILENAME);
+//			
+//			if (inputStream == null) {
+//				System.err.println("FilterPlugin: Failed to read default filters from \""
+//				                   + DEFAULT_FILTERS_FILENAME + "\" in the plugin's jar file!");
+//				return;
+//			}
+//
+//			final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+//			loadCount = filterIO.getFilterVectFromPropFile(inputStreamReader);
+//
+//			logger.debug("FilterPlugin: load " + loadCount[1] + " of " + loadCount[0]
+//			             + " filters from " + DEFAULT_FILTERS_FILENAME);
+//		}
 	}
 
 	
 	private void loadDefaultFilter(){
-		final String DEFAULT_FILTERS_FILENAME = "/default_filters.props";
-		final InputStream inputStream = FilterPlugin.class.getResourceAsStream(DEFAULT_FILTERS_FILENAME);
-		
-		if (inputStream == null) {
-			System.err.println("FilterPlugin: Failed to read default filters from \""
-			                   + DEFAULT_FILTERS_FILENAME + "\" in the plugin's jar file!");
-			return;
-		}
-
-		final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-		filterIO.getFilterVectFromPropFile(inputStreamReader);
+//		final String DEFAULT_FILTERS_FILENAME = "/default_filters.props";
+//		final InputStream inputStream = FilterPlugin.class.getResourceAsStream(DEFAULT_FILTERS_FILENAME);
+//		
+//		if (inputStream == null) {
+//			System.err.println("FilterPlugin: Failed to read default filters from \""
+//			                   + DEFAULT_FILTERS_FILENAME + "\" in the plugin's jar file!");
+//			return;
+//		}
+//
+//		final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+//		filterIO.getFilterVectFromPropFile(inputStreamReader);
 	}
 	
 	// override the following two methods to save state.
@@ -158,7 +166,7 @@ public class FilterPlugin implements CytoscapeShutdownListener{
 	 *            DOCUMENT ME!
 	 */
 	public void restoreSessionState(List<File> pStateFileList) {
-		filterIO.restoreSessionState(pStateFileList);	
+		//filterIO.restoreSessionState(pStateFileList);	
 	}
 
 	/**
@@ -168,6 +176,6 @@ public class FilterPlugin implements CytoscapeShutdownListener{
 	 *            DOCUMENT ME!
 	 */
 	public void saveSessionStateFiles(List<File> pFileList) {
-		filterIO.saveSessionStateFiles(pFileList);
+		//filterIO.saveSessionStateFiles(pFileList);
 	}
 }

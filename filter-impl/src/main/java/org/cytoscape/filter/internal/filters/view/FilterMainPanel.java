@@ -72,6 +72,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.filter.internal.ServicesUtil;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.EdgeInteractionFilter;
 import org.cytoscape.filter.internal.filters.FilterPlugin;
@@ -111,6 +112,7 @@ import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.filter.internal.*;
 
 
 public class FilterMainPanel extends JPanel implements ActionListener,
@@ -519,7 +521,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 
 	public void initCMBSelectFilter(){
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties();//filterPlugin.getAllFilterVect();
 		ComboBoxModel theModel = new FilterSelectWidestStringComboBoxModel(allFilterVect);
 		cmbSelectFilter.setModel(theModel);
 		cmbSelectFilter.setRenderer(new FilterRenderer());
@@ -595,7 +597,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 
 		cbm.addElement(filtersSeperator);
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
 		if (allFilterVect != null) {
 			for (int i = 0; i < allFilterVect.size(); i++) {
 				Object fi;
@@ -1016,7 +1018,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					}
 					
 					if (org.cytoscape.filter.internal.filters.util.FilterUtil
-					    .isFilterNameDuplicated(filterPlugin, newFilterName)) {
+					    .isFilterNameDuplicated(ServicesUtil.filterReader.getProperties(),  newFilterName)) {
 						Object[] options = { "OK" };
 						JOptionPane.showOptionDialog(this,
 									     "Filter name already existed!", "Warning",
@@ -1099,7 +1101,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 
 	private void updateInteractionMenuItemStatus() {
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
 		//Disable interactionMenuItem if there is no other filters to depend on
 		if (allFilterVect == null || allFilterVect.size() == 0) {
 			newNodeInteractionFilterMenuItem.setEnabled(false);
@@ -1182,7 +1184,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			}
 			
 			if (org.cytoscape.filter.internal.filters.util.FilterUtil
-			    .isFilterNameDuplicated(filterPlugin, newFilterName)) {
+			    .isFilterNameDuplicated(ServicesUtil.filterReader.getProperties(),newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
 							     "Filter name already existed!", "Warning",
@@ -1198,7 +1200,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		CompositeFilter newFilter = (CompositeFilter) theFilter.clone(); 
 		newFilter.setName(newFilterName);
 		
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
 		allFilterVect.add(newFilter);
 		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, applicationManager, filterPlugin, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);
@@ -1229,7 +1231,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			}
 			
 			if (org.cytoscape.filter.internal.filters.util.FilterUtil
-			    .isFilterNameDuplicated(filterPlugin, newFilterName)) {
+			    .isFilterNameDuplicated(ServicesUtil.filterReader.getProperties(),newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
 							     "Filter name already existed!", "Warning",
@@ -1253,7 +1255,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		filter2SettingPanelMap.remove(pFilter);
 		cmbSelectFilter.removeItem(pFilter);
 		
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
 		if (allFilterVect == null || allFilterVect.size() == 0) {
 			replaceFilterSettingPanel(null);
 		}
@@ -1287,7 +1289,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		
 		newFilter.setNetwork(applicationManager.getCurrentNetwork());
 		
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
 		allFilterVect.add(newFilter);
 		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, applicationManager, filterPlugin, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);

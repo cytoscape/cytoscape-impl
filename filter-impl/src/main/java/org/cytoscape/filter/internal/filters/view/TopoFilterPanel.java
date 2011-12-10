@@ -55,6 +55,7 @@ import javax.swing.ListCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.filter.internal.ServicesUtil;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.FilterPlugin;
 import org.cytoscape.filter.internal.filters.TopologyFilter;
@@ -153,7 +154,7 @@ public class TopoFilterPanel extends JPanel implements ActionListener, ItemListe
 
 		Vector<CompositeFilter> tmpVect = new Vector<CompositeFilter>();
 		tmpVect.add(emptyFilter);
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties() ;//filterPlugin.getAllFilterVect();
 		tmpVect.addAll(allFilterVect);
 		
         PassFilterWidestStringComboBoxModel pfwscbm = new PassFilterWidestStringComboBoxModel(tmpVect);

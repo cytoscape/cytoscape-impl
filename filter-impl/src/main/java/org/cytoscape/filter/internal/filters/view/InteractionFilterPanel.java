@@ -51,6 +51,7 @@ import javax.swing.ListCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.filter.internal.ServicesUtil;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
 import org.cytoscape.filter.internal.filters.EdgeInteractionFilter;
 import org.cytoscape.filter.internal.filters.FilterPlugin;
@@ -168,7 +169,7 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 
 		Vector<CompositeFilter> tmpVect = new Vector<CompositeFilter>();
 		//tmpVect.add(emptyFilter);
-		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties();//filterPlugin.getAllFilterVect();
 		tmpVect.addAll(allFilterVect);
 		
         PassFilterWidestStringComboBoxModel pfwscbm = new PassFilterWidestStringComboBoxModel(tmpVect);
