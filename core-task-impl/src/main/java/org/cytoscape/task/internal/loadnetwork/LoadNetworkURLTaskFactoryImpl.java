@@ -29,25 +29,33 @@
 package org.cytoscape.task.internal.loadnetwork;
 
 
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.creation.ImportNetworksTaskFactory;
 
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 import org.cytoscape.property.CyProperty;
 
+import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 
 /**
  * Task to load a new network.
  */
-public class LoadNetworkURLTaskFactoryImpl implements TaskFactory {
+public class LoadNetworkURLTaskFactoryImpl implements TaskFactory, ImportNetworksTaskFactory {
 
 	private CyNetworkReaderManager mgr;
 	private CyNetworkManager netmgr;
@@ -56,12 +64,16 @@ public class LoadNetworkURLTaskFactoryImpl implements TaskFactory {
 	private StreamUtil streamUtil;
 
 	private CyNetworkNaming cyNetworkNaming;
+	
+	private final SynchronousTaskManager<?> syncTaskManager;
+	
+	private LoadNetworkURLTask task;
 
 	public LoadNetworkURLTaskFactoryImpl(CyNetworkReaderManager mgr,
 					     CyNetworkManager netmgr,
 					     final CyNetworkViewManager networkViewManager,
 					     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
-					     StreamUtil streamUtil)
+					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager)
 	{
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -69,9 +81,28 @@ public class LoadNetworkURLTaskFactoryImpl implements TaskFactory {
 		this.props = cyProps.getProperties();
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.streamUtil = streamUtil;
+		
+		this.syncTaskManager = syncTaskManager;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil));
+		task = new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil);
+		return new TaskIterator(task);
+	}
+	
+	@Override
+	public Set<CyNetwork> loadCyNetworks(final URL url) {
+		
+		final Map<String,Object> m = new HashMap<String,Object>();
+		m.put("url", url);
+		
+		syncTaskManager.setExecutionContext(m);
+		syncTaskManager.execute(this);
+
+		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		for(CyNetwork network: task.getCyNetworks())
+			networks.add(network);
+		
+		return networks;
 	}
 }

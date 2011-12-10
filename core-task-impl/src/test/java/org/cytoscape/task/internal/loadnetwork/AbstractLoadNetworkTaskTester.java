@@ -52,6 +52,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.SynchronousTaskManager;
 
 public class AbstractLoadNetworkTaskTester {
 
@@ -62,6 +63,7 @@ public class AbstractLoadNetworkTaskTester {
 	CyNetworkViewManager networkViewManager;
 	CyProperty<Properties> props;
 	CyNetworkNaming namingUtil;
+	SynchronousTaskManager synchronousTaskManager;
 
 	CyNetwork net;
 	CyNetworkView view;
@@ -99,5 +101,6 @@ public class AbstractLoadNetworkTaskTester {
 		when(props.getProperties()).thenReturn(p);
 
 		namingUtil = mock(CyNetworkNaming.class);
+		synchronousTaskManager = mock(SynchronousTaskManager.class);
 	}
 }

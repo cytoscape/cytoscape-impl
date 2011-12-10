@@ -29,14 +29,24 @@
  */
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class OpenSessionTaskFactory implements TaskFactory {
+public class OpenSessionTaskFactory implements TaskFactory, LoadSession {
 
 	private CySessionManager mgr;
 	private CySessionReaderManager rmgr;
@@ -44,15 +54,33 @@ public class OpenSessionTaskFactory implements TaskFactory {
 	private final CyApplicationManager appManager;
 	private final RecentlyOpenedTracker tracker;
 
+	private final SynchronousTaskManager<?> syncTaskManager;
+	
+	private OpenSessionTask task;
+
 	public OpenSessionTaskFactory(CySessionManager mgr, final CySessionReaderManager rmgr,
-			final CyApplicationManager appManager, final RecentlyOpenedTracker tracker) {
+			final CyApplicationManager appManager, final RecentlyOpenedTracker tracker,
+			final SynchronousTaskManager<?> syncTaskManager) {
 		this.mgr = mgr;
 		this.rmgr = rmgr;
 		this.appManager = appManager;
 		this.tracker = tracker;
+		this.syncTaskManager = syncTaskManager;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2,new OpenSessionTask(mgr, rmgr, appManager, tracker));
+		task = new OpenSessionTask(mgr, rmgr, appManager, tracker);
+		return new TaskIterator(2, task);
+	}
+
+	@Override
+	public CySession loadSession(File file) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("file", file);
+
+		syncTaskManager.setExecutionContext(m);
+		syncTaskManager.execute(this);
+
+		return task.getCySession();
 	}
 }

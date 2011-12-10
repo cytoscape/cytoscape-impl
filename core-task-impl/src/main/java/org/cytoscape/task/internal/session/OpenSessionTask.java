@@ -59,6 +59,8 @@ public class OpenSessionTask extends AbstractTask {
 	
 	private final CyApplicationManager appManager;
 	private final RecentlyOpenedTracker tracker;
+	
+	private CySessionReader reader;
 
 	/**
 	 * Constructor.<br>
@@ -83,7 +85,7 @@ public class OpenSessionTask extends AbstractTask {
 		if ( file == null )
 			throw new NullPointerException("No file specified!");
 		
-		CySessionReader reader = readerMgr.getReader(file.toURI(),file.getName());
+		reader = readerMgr.getReader(file.toURI(),file.getName());
 		if (reader == null)
 			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
 		taskMonitor.setProgress(0.2);
@@ -94,6 +96,10 @@ public class OpenSessionTask extends AbstractTask {
 
 		insertTasksAfterCurrentTask(new LoadSessionTask(reader));
 		taskMonitor.setProgress(1.0);
+	}
+	
+	CySession getCySession() {
+		return reader.getCySession();
 	}
 	
 	

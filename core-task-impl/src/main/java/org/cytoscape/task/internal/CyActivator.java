@@ -66,7 +66,6 @@ import org.cytoscape.task.internal.loadvizmap.LoadVizmapFileTaskFactoryImpl;
 import org.cytoscape.task.internal.networkobjects.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.task.internal.proxysettings.ProxySettingsTaskFactory;
 import org.cytoscape.task.internal.quickstart.ImportTaskUtil;
-import org.cytoscape.task.internal.quickstart.WelcomeScreenTaskFactory;
 import org.cytoscape.task.internal.quickstart.datasource.BioGridPreprocessor;
 import org.cytoscape.task.internal.quickstart.datasource.InteractionFilePreprocessor;
 import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SubnetworkBuilderUtil;
@@ -93,8 +92,6 @@ import org.cytoscape.task.internal.table.DeleteColumnTaskFactory;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactory;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactory;
-import org.cytoscape.task.internal.welcome.LoadMitabFileTaskFactory;
-import org.cytoscape.task.internal.welcome.OpenSpecifiedSessionTaskFactory;
 import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
 import org.cytoscape.task.internal.zoom.FitSelectedTaskFactory;
 import org.cytoscape.task.internal.zoom.ZoomInTaskFactory;
@@ -159,9 +156,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef,cyTableManagerServiceRef);
 		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef,cyTableManagerServiceRef);
+		
 		LoadVizmapFileTaskFactoryImpl loadVizmapFileTaskFactory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderManagerServiceRef,visualMappingManagerServiceRef,synchronousTaskManagerServiceRef);
+
 		LoadNetworkFileTaskFactoryImpl loadNetworkFileTaskFactory = new LoadNetworkFileTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef);
-		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef);
+		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef, synchronousTaskManagerServiceRef);
+
 		SetCurrentNetworkTaskFactoryImpl setCurrentNetworkTaskFactory = new SetCurrentNetworkTaskFactoryImpl(cyApplicationManagerServiceRef,cyNetworkManagerServiceRef);
 		DeleteSelectedNodesAndEdgesTaskFactory deleteSelectedNodesAndEdgesTaskFactory = new DeleteSelectedNodesAndEdgesTaskFactory(undoSupportServiceRef,cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyEventHelperRef);
 		SelectAllTaskFactory selectAllTaskFactory = new SelectAllTaskFactory(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
@@ -201,7 +201,7 @@ public class CyActivator extends AbstractCyActivator {
 		FitSelectedTaskFactory fitSelectedTaskFactory = new FitSelectedTaskFactory(undoSupportServiceRef);
 		FitContentTaskFactory fitContentTaskFactory = new FitContentTaskFactory(undoSupportServiceRef);
 		NewSessionTaskFactory newSessionTaskFactory = new NewSessionTaskFactory(cySessionManagerServiceRef);
-		OpenSessionTaskFactory openSessionTaskFactory = new OpenSessionTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,recentlyOpenedTrackerServiceRef);
+		OpenSessionTaskFactory openSessionTaskFactory = new OpenSessionTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,recentlyOpenedTrackerServiceRef, synchronousTaskManagerServiceRef);
 		SaveSessionTaskFactory saveSessionTaskFactory = new SaveSessionTaskFactory( sessionWriterManagerServiceRef, cySessionManagerServiceRef);
 		SaveSessionAsTaskFactory saveSessionAsTaskFactory = new SaveSessionAsTaskFactory( sessionWriterManagerServiceRef, cySessionManagerServiceRef);
 		ProxySettingsTaskFactory proxySettingsTaskFactory = new ProxySettingsTaskFactory(streamUtilRef);
@@ -220,18 +220,13 @@ public class CyActivator extends AbstractCyActivator {
 		ExportVizmapTaskFactory exportVizmapTaskFactory = new ExportVizmapTaskFactory(vizmapWriterManagerServiceRef,visualMappingManagerServiceRef);
 		SubnetworkBuilderUtil subnetworkBuilderUtil = new SubnetworkBuilderUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyEventHelperRef,cyApplicationManagerServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,visualMappingManagerServiceRef,visualStyleFactoryServiceRef,cyLayoutsServiceRef,undoSupportServiceRef);
 		ImportTaskUtil importTaskUtil = new ImportTaskUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyTableManagerServiceRef,cyDataTableReaderManagerServiceRef,cyApplicationManagerServiceRef);
-		
-		OpenSpecifiedSessionTaskFactory openSpecifiedSessionTaskFactory = new OpenSpecifiedSessionTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef);
 
-		
-		LoadMitabFileTaskFactory loadMitabFileTaskFactory = new LoadMitabFileTaskFactory(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef);
-
-		WelcomeScreenTaskFactory welcomeTaskFactory = new WelcomeScreenTaskFactory(openBrowserServiceRef, importTaskUtil,cyNetworkManagerServiceRef,subnetworkBuilderUtil, recentlyOpenedTrackerServiceRef, taskManagerServiceRef, openSpecifiedSessionTaskFactory, openSessionTaskFactory, loadMitabFileTaskFactory, cyApplicationConfigurationServiceRef, loadNetworkFileTaskFactory, dataSourceManagerServiceRef);
 		BioGridPreprocessor bioGridPreprocessor = new BioGridPreprocessor(cyPropertyServiceRef,cyApplicationConfigurationServiceRef);
 		ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactory(undoSupportServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
 		
 		
 		Properties loadNetworkFileTaskFactoryProps = new Properties();
+		loadNetworkFileTaskFactoryProps.setProperty("id","loadNetworkFileTaskFactory");
 		loadNetworkFileTaskFactoryProps.setProperty("preferredMenu","File.Import.Network");
 		loadNetworkFileTaskFactoryProps.setProperty("accelerator","cmd l");
 		loadNetworkFileTaskFactoryProps.setProperty("title","File...");
@@ -241,9 +236,10 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkFileTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_file_import.png").toString());
 		loadNetworkFileTaskFactoryProps.setProperty("inToolBar","true");
 		loadNetworkFileTaskFactoryProps.setProperty("tooltip","Import Network From File");
-		registerService(bc,loadNetworkFileTaskFactory,TaskFactory.class, loadNetworkFileTaskFactoryProps);
+		registerAllServices(bc,loadNetworkFileTaskFactory, loadNetworkFileTaskFactoryProps);
 
 		Properties loadNetworkURLTaskFactoryProps = new Properties();
+		loadNetworkURLTaskFactoryProps.setProperty("id","loadNetworkURLTaskFactory");
 		loadNetworkURLTaskFactoryProps.setProperty("preferredMenu","File.Import.Network");
 		loadNetworkURLTaskFactoryProps.setProperty("accelerator","cmd shift l");
 		loadNetworkURLTaskFactoryProps.setProperty("menuGravity","2.0");
@@ -251,7 +247,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_db_import.png").toString());
 		loadNetworkURLTaskFactoryProps.setProperty("inToolBar","true");
 		loadNetworkURLTaskFactoryProps.setProperty("tooltip","Import Network From URL");
-		registerService(bc,loadNetworkURLTaskFactory,TaskFactory.class, loadNetworkURLTaskFactoryProps);
+		registerAllServices(bc,loadNetworkURLTaskFactory, loadNetworkURLTaskFactoryProps);
 
 		Properties loadVizmapFileTaskFactoryProps = new Properties();
 		loadVizmapFileTaskFactoryProps.setProperty("preferredMenu","File.Import");
@@ -567,12 +563,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,editNetworkTitleTaskFactory,NetworkTaskFactory.class, editNetworkTitleTaskFactoryProps);
 
 		Properties createNetworkViewTaskFactoryProps = new Properties();
+		createNetworkViewTaskFactoryProps.setProperty("id","createNetworkViewTaskFactory");
 		createNetworkViewTaskFactoryProps.setProperty("enableFor","networkWithoutView");
 		createNetworkViewTaskFactoryProps.setProperty("preferredMenu","Edit");
 		createNetworkViewTaskFactoryProps.setProperty("scope","limited");
 		createNetworkViewTaskFactoryProps.setProperty("menuGravity","3.0");
 		createNetworkViewTaskFactoryProps.setProperty("title","Create View");
-		createNetworkViewTaskFactoryProps.setProperty("id","createNetworkViewTaskFactory");
 		registerService(bc,createNetworkViewTaskFactory,NetworkTaskFactory.class, createNetworkViewTaskFactoryProps);
 
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
@@ -633,6 +629,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,newSessionTaskFactory,TaskFactory.class, newSessionTaskFactoryProps);
 
 		Properties openSessionTaskFactoryProps = new Properties();
+		openSessionTaskFactoryProps.setProperty("id","openSessionTaskFactory");
 		openSessionTaskFactoryProps.setProperty("preferredMenu","File");
 		openSessionTaskFactoryProps.setProperty("accelerator","cmd o");
 		openSessionTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/open_session.png").toString());
@@ -685,12 +682,6 @@ public class CyActivator extends AbstractCyActivator {
 		copyValueToEntireColumnTaskFactoryProps.setProperty("title","Copy to entire column");
 		registerService(bc,copyValueToEntireColumnTaskFactory,TableCellTaskFactory.class, copyValueToEntireColumnTaskFactoryProps);
 		registerService(bc,deleteTableTaskFactory,TableTaskFactory.class, new Properties());
-
-		Properties welcomeTaskFactoryProps = new Properties();
-		welcomeTaskFactoryProps.setProperty("scope","startup");
-		welcomeTaskFactoryProps.setProperty("title","Welcome Screen");
-		welcomeTaskFactoryProps.setProperty("id","WelcomeScreen");
-		registerService(bc,welcomeTaskFactory,TaskFactory.class, welcomeTaskFactoryProps);
 
 		registerAllServices(bc,bioGridPreprocessor, new Properties());
 

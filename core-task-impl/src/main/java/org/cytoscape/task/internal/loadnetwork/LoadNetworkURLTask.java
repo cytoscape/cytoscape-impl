@@ -36,6 +36,7 @@ import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -99,5 +100,9 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 
 		taskMonitor.setStatusMessage("Loading network...");
 		loadNetwork(reader);
+	}
+	
+	protected CyNetwork[] getCyNetworks() {
+		return reader.getCyNetworks();
 	}
 }

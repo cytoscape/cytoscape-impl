@@ -6,7 +6,6 @@ import org.cytoscape.task.internal.quickstart.subnetworkbuilder.CreateSubnetwork
 import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SearchRelatedGenesTask;
 import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SubnetworkBuilderState;
 import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SubnetworkBuilderUtil;
-import org.cytoscape.task.internal.welcome.ShowWelcomeScreenTask;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
