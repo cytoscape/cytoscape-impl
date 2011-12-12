@@ -406,7 +406,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 					theDataSource.setName(name);
 					theDataSource.setHref(URLstr);
 
-					if (bkUtil.isInBookmarks(bookmarks, categoryName,
+					if (bkUtil.containsBookmarks(bookmarks, categoryName,
 							theDataSource)) {
 						String msg = "Bookmark already existed!";
 						// display info dialog

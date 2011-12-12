@@ -39,11 +39,11 @@ import java.util.List;
 import java.util.Vector;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.events.CytoscapeShutdownListener;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.filter.internal.read.filter.FilterReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

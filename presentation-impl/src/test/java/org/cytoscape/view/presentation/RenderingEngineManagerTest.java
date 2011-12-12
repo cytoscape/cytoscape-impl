@@ -50,18 +50,18 @@ public class RenderingEngineManagerTest {
 		final RenderingEngine<CyNetwork> engine3 = mock(RenderingEngine.class);
 		when(engine3.getViewModel()).thenReturn(networkView2);
 		
-		final RenderingEngine<?> engine = manager.getRendringEngine(networkView1);
+		final RenderingEngine<?> engine = manager.getRenderingEngine(networkView1);
 		assertNull(engine);
 		
 		when(engine1.getViewModel()).thenReturn(networkView1);
 		manager.addRenderingEngine(engine1);
 
-		assertEquals(engine1, manager.getRendringEngine(networkView1));
+		assertEquals(engine1, manager.getRenderingEngine(networkView1));
 		
 		// Remove from manager
 		manager.removeRenderingEngine(engine1);
 		
-		assertNull(manager.getRendringEngine(networkView1));
+		assertNull(manager.getRenderingEngine(networkView1));
 		
 	}
 }

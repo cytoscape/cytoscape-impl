@@ -4,7 +4,7 @@ import org.cytoscape.app.internal.CyAppAdapterImpl;
 import org.cytoscape.app.internal.AppLoaderTaskFactory;
 import org.cytoscape.app.internal.StartupMostlyFinished;
 import org.cytoscape.app.internal.action.AppManagerAction;
-import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -89,7 +89,7 @@ public class CyActivator extends AbstractCyActivator {
 		UndoSupport undoSupportRef = getService(bc,UndoSupport.class);
 		VisualMappingManager visualMappingManagerRef = getService(bc,VisualMappingManager.class);
 		VisualStyleFactory visualStyleFactoryRef = getService(bc,VisualStyleFactory.class);
-		CytoscapeVersion cytoscapeVersionService = getService(bc,CytoscapeVersion.class);
+		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
 		CyProperty bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);

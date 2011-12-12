@@ -318,7 +318,7 @@ public class EquationParserImpl implements EquationParser {
 	private AbstractNode handleUnaryOp(final int sourceLocation, final Token operator, final TreeNode operand) {
 		final Class<?> operandType = operand.getType();
 		if (operandType == Boolean.class || operandType == String.class
-		    || FunctionUtil.isSomeKindOfList(operandType))
+		    || FunctionUtil.isTypeOfList(operandType))
 			throw new ArithmeticException(sourceLocation + ": can't apply a unary " + operator.asString()
 			                              + " a boolean, string or list operand!");
 		if (operandType == Double.class)

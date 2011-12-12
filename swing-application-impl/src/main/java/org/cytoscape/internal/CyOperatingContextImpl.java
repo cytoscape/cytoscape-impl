@@ -75,7 +75,7 @@ public class CyOperatingContextImpl {
 			if (vmp != null)
 				props.getProperties().load(new FileInputStream(vmp));
 			else
-				logger.warn("couldn't read " + PROPS + " from " + config.getSettingLocation());
+				logger.warn("couldn't read " + PROPS + " from " + config.getConfigurationDirectoryLocation());
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -96,7 +96,7 @@ public class CyOperatingContextImpl {
 	 */
 	public File getConfigFile(String file_name) {
 		try {
-			File file = new File(config.getSettingLocation(), file_name);
+			File file = new File(config.getConfigurationDirectoryLocation(), file_name);
 
 			if (file.createNewFile())
 				logger.warn("Config file: " + file + " created.");

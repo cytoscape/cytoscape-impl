@@ -27,7 +27,7 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 	}
 
 	@Override
-	public File getSettingLocation() {
+	public File getConfigurationDirectoryLocation() {
 		return configFileLocation;	
 	}
 

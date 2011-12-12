@@ -14,6 +14,6 @@ public class CyActivator extends AbstractCyActivator {
 				CyApplicationConfiguration.class);
 
 		BioGridDataSoruceBuilder builder = new BioGridDataSoruceBuilder(bc,
-				cyApplicationConfigurationServiceRef.getSettingLocation());
+				cyApplicationConfigurationServiceRef.getConfigurationDirectoryLocation());
 	}
 }

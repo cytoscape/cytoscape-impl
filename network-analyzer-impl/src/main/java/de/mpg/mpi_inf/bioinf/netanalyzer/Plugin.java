@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
-import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.application.CyVersion;
 
 
 /**

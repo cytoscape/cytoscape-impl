@@ -12,8 +12,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.events.CytoscapeShutdownListener;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, CytoscapeShutdownListener {
+public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, CyShutdownListener {
 	private static final Logger logger = LoggerFactory.getLogger(CustomGraphicsManagerImpl.class);
 	private static final String IMAGE_DIR_NAME = "images3";
 
@@ -56,7 +56,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		if (props == null)
 			throw new NullPointerException("Property is missing.");
 
-		this.imageHomeDirectory = new File(config.getSettingLocation(), IMAGE_DIR_NAME);
+		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
 
 		logger.debug("\n!!!!!!!!!!!!!!!!! Cytoscape image directory: " + imageHomeDirectory.toString());
 
@@ -204,7 +204,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	}
 
 	@Override
-	public void handleEvent(CytoscapeShutdownEvent e) {
+	public void handleEvent(CyShutdownEvent e) {
 		// Persist images
 		logger.info("Start Saving images to: " + imageHomeDirectory);
 

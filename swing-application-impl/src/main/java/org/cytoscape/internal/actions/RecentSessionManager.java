@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.events.CytoscapeShutdownListener;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.task.OpenRecentSessionTaskFactory;
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * Update menu
  * 
  */
-public class RecentSessionManager implements SessionLoadedListener, CytoscapeShutdownListener {
+public class RecentSessionManager implements SessionLoadedListener, CyShutdownListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(RecentSessionManager.class);
 	
@@ -117,7 +117,7 @@ public class RecentSessionManager implements SessionLoadedListener, CytoscapeShu
 	}
 
 	@Override
-	public void handleEvent(CytoscapeShutdownEvent e) {
+	public void handleEvent(CyShutdownEvent e) {
 		logger.info("Saving recently used session file list...");
 		try {
 			tracker.writeOut();

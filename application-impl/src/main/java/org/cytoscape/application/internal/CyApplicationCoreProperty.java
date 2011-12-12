@@ -40,7 +40,7 @@ public class CyApplicationCoreProperty implements CyProperty<Properties>, Sessio
 		}
 		
 		//Load existing properties from config directory if any
-		final File propFile = new File(config.getSettingLocation(), "cytoscape3.props");
+		final File propFile = new File(config.getConfigurationDirectoryLocation(), "cytoscape3.props");
 		
 		props = new Properties();
 		

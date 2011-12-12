@@ -47,7 +47,7 @@ import java.awt.event.InputEvent;
 import javax.swing.KeyStroke;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.CytoscapeShutdown;
+import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.swing.AbstractCyAction;
 
 /**
@@ -58,12 +58,12 @@ public class ExitAction extends AbstractCyAction {
     private final static long serialVersionUID = 1202339869460858L;
     
     protected int returnVal;
-    private final CytoscapeShutdown shutdown;
+    private final CyShutdown shutdown;
 
     /**
      * Creates a new ExitAction object.
      */
-    public ExitAction(CyApplicationManager appMgr, CytoscapeShutdown shutdown) {
+    public ExitAction(CyApplicationManager appMgr, CyShutdown shutdown) {
 	super("Quit", appMgr);
 	this.shutdown = shutdown;
 	setPreferredMenu("File");

@@ -2,7 +2,7 @@ package org.cytoscape.app.internal;
 
 import java.util.Map;
 
-import org.cytoscape.application.events.CytoscapeStartEvent;
+import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.swing.CySwingApplication; 
 import org.cytoscape.event.CyEventHelper;
 /**
@@ -19,6 +19,6 @@ class StartupMostlyFinished {
 	public StartupMostlyFinished(final CyEventHelper eventHelper) {
 
 		// fire event "start up mostly finished"
-		eventHelper.fireEvent(new CytoscapeStartEvent(this));
+		eventHelper.fireEvent(new CyStartEvent(this));
 	}	
 }

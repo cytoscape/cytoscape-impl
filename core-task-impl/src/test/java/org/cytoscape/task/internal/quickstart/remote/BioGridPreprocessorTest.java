@@ -37,7 +37,7 @@ public class BioGridPreprocessorTest {
 		if(sampleDirectory.isDirectory() == false)
 			assertTrue(sampleDirectory.mkdir());
 		
-		when(config.getSettingLocation()).thenReturn(sampleDirectory);
+		when(config.getConfigurationDirectoryLocation()).thenReturn(sampleDirectory);
 	}
 
 	@After

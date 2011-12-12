@@ -38,9 +38,9 @@
 
 package org.cytoscape.internal;
 
-import org.cytoscape.application.CytoscapeShutdown;
-import org.cytoscape.application.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.events.CytoscapeShutdownListener;
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.event.CyEventHelper;
 
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-public class ShutdownHandler implements CytoscapeShutdown {
+public class ShutdownHandler implements CyShutdown {
 
 	private static final Logger logger = LoggerFactory.getLogger(ShutdownHandler.class);
 	private final CyEventHelper eh;
@@ -61,13 +61,13 @@ public class ShutdownHandler implements CytoscapeShutdown {
 
 	public void exit(int retVal) {
 		actuallyShutdown = true;
-		CytoscapeShutdownEvent ev =  new CytoscapeShutdownEvent(ShutdownHandler.this);
+		CyShutdownEvent ev =  new CyShutdownEvent(ShutdownHandler.this);
 		eh.fireEvent( ev );
 
 		// TODO figure out a way to do a clean shutdown of the OSGi container.
 		if ( ev.actuallyShutdown() )
 			System.exit(retVal);
 		else
-			logger.info("NOT shutting down, per listener instruction: " + ev.whyNot() );
+			logger.info("NOT shutting down, per listener instruction: " + ev.abortShutdownReason() );
 	}
 }

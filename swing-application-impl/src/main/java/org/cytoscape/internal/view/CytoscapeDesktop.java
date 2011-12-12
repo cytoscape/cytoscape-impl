@@ -29,9 +29,9 @@
  */
 package org.cytoscape.internal.view;
 
-import org.cytoscape.application.CytoscapeShutdown;
-import org.cytoscape.application.events.CytoscapeStartEvent;
-import org.cytoscape.application.events.CytoscapeStartListener;
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -86,7 +86,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The CytoscapeDesktop is the central Window for working with Cytoscape
  */
-public class CytoscapeDesktop extends JFrame implements CySwingApplication, CytoscapeStartListener,
+public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener,
 		SessionLoadedListener, SessionAboutToBeSavedListener {
 
 	private final static long serialVersionUID = 1202339866271348L;
@@ -129,7 +129,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 
 	// Status Bar TODO: Move this to log-swing to avoid cyclic dependency.
 	private JPanel main_panel;
-	private final CytoscapeShutdown shutdown; 
+	private final CyShutdown shutdown; 
 	private final CyEventHelper cyEventHelper;
 	private final CyServiceRegistrar registrar;
 	private final JToolBar statusToolBar;
@@ -144,7 +144,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 	 * Creates a new CytoscapeDesktop object.
 	 */
 	public CytoscapeDesktop(CytoscapeMenus cyMenus, NetworkViewManager networkViewManager, NetworkPanel networkPanel, 
-			CytoscapeShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager) {
+			CyShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager) {
 		super("Cytoscape Desktop (New Session)");
 
 		this.cyMenus = cyMenus;
@@ -423,7 +423,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, Cyto
 	
 	// handle CytoscapeStartEvent
 	@Override
-	public void handleEvent(CytoscapeStartEvent e) {
+	public void handleEvent(CyStartEvent e) {
 		this.setVisible(true);
 		this.toFront();
 	}

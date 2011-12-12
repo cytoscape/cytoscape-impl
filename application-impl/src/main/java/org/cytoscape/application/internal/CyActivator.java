@@ -12,7 +12,7 @@ import org.cytoscape.application.internal.CyApplicationManagerImpl;
 import org.cytoscape.application.internal.CyApplicationConfigurationImpl;
 import org.cytoscape.application.internal.CyApplicationCoreProperty;
 import org.cytoscape.application.internal.ShutdownHandler;
-import org.cytoscape.application.internal.CyVersion;
+import org.cytoscape.application.internal.CyVersionImpl;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
@@ -44,7 +44,7 @@ public class CyActivator extends AbstractCyActivator {
 		ShutdownHandler cytoscapeShutdown = new ShutdownHandler(cyEventHelperServiceRef);
 		CyApplicationConfigurationImpl cyApplicationConfiguration = new CyApplicationConfigurationImpl();
 		CyProperty cyApplicationCoreProperty = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");  
-		CyVersion cytoscapeVersion = new CyVersion(cyApplicationCoreProperty);
+		CyVersionImpl cytoscapeVersion = new CyVersionImpl(cyApplicationCoreProperty);
 		
 		registerService(bc,cyApplicationManager,CyApplicationManager.class, new Properties());
 		registerService(bc,cyApplicationManager,NetworkAboutToBeDestroyedListener.class, new Properties());

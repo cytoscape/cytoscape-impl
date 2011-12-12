@@ -129,7 +129,7 @@ public class LinkOut {
 	 * with other properties.
 	 */
 	private void readLocalProperties() {
-		File propertyFile= new File(config.getSettingLocation(), File.separator + "linkout.props");
+		File propertyFile= new File(config.getConfigurationDirectoryLocation(), File.separator + "linkout.props");
 		try {
 			if (propertyFile.canRead())
 				props.load(new FileInputStream(propertyFile));

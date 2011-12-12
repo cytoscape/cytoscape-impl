@@ -51,8 +51,8 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.CytoscapeShutdown;
-import org.cytoscape.application.events.CytoscapeShutdownListener;
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -151,7 +151,7 @@ public class CyActivator extends AbstractCyActivator {
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
 		
 		
-		CytoscapeShutdown cytoscapeShutdownServiceRef = getService(bc, CytoscapeShutdown.class);
+		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 		                                                                             CyApplicationConfiguration.class);
 		StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
@@ -368,10 +368,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerAllServices(bc, rowsSetViewUpdater, new Properties());
 		
-		registerService(bc, sessionShutdownHandler, CytoscapeShutdownListener.class,
+		registerService(bc, sessionShutdownHandler, CyShutdownListener.class,
 		                new Properties());
 		registerAllServices(bc, toolBarEnableUpdater, new Properties());
-		registerService(bc, configDirPropertyWriter, CytoscapeShutdownListener.class,
+		registerService(bc, configDirPropertyWriter, CyShutdownListener.class,
 		                new Properties());
 		registerAllServices(bc, recentSessionManager, new Properties());
 

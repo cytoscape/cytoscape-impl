@@ -40,15 +40,15 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.property.CyProperty;
 
 /** 
  * Identify the version of cytoscape. 
  */
-public class CyVersion implements CytoscapeVersion {
+public class CyVersionImpl implements CyVersion {
 
-	private final static Pattern p = Pattern.compile(CytoscapeVersion.VERSION_REGEX);
+	private final static Pattern p = Pattern.compile(CyVersion.VERSION_REGEX);
 
 	private final int major;
 	private final int minor;
@@ -56,16 +56,16 @@ public class CyVersion implements CytoscapeVersion {
 	private final String qualifier;
 	private final String version;
 
-	public CyVersion(final CyProperty<Properties> props) {
-		version = props.getProperties().getProperty(CytoscapeVersion.VERSION_PROPERTY_NAME);
+	public CyVersionImpl(final CyProperty<Properties> props) {
+		version = props.getProperties().getProperty(CyVersion.VERSION_PROPERTY_NAME);
 
 		if ( version == null )
-			throw new NullPointerException("No version number found in the provided properties with property name: " + CytoscapeVersion.VERSION_PROPERTY_NAME);
+			throw new NullPointerException("No version number found in the provided properties with property name: " + CyVersion.VERSION_PROPERTY_NAME);
 
 		Matcher m = p.matcher(version);
 
 		if ( !m.matches() )
-			throw new IllegalArgumentException("Malformed version number: " + version + "  The version number must match this regular expression: " + CytoscapeVersion.VERSION_REGEX);
+			throw new IllegalArgumentException("Malformed version number: " + version + "  The version number must match this regular expression: " + CyVersion.VERSION_REGEX);
 
 		major = Integer.parseInt(m.group(1));
 		minor = Integer.parseInt(m.group(2));

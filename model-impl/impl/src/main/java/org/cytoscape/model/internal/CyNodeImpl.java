@@ -34,8 +34,8 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.SetNestedNetworkEvent;
-import org.cytoscape.model.events.UnsetNestedNetworkEvent;
+import org.cytoscape.model.events.SetNetworkPointerEvent;
+import org.cytoscape.model.events.UnsetNetworkPointerEvent;
 
 
 class CyNodeImpl extends CyTableEntryImpl implements CyNode {
@@ -82,9 +82,9 @@ class CyNodeImpl extends CyTableEntryImpl implements CyNode {
 		}
 
 		if (orig != null)
-			eventHelper.fireEvent(new UnsetNestedNetworkEvent(this, orig));
+			eventHelper.fireEvent(new UnsetNetworkPointerEvent(this, orig));
 		if (nestedNet != null)
-			eventHelper.fireEvent(new SetNestedNetworkEvent(this, nestedNet));
+			eventHelper.fireEvent(new SetNetworkPointerEvent(this, nestedNet));
 	}
 	
 	@Override

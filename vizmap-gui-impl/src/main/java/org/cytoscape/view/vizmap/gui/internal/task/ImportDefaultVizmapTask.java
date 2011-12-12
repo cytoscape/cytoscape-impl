@@ -32,7 +32,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmm = vmm;
 		this.eventHelper = eventHelper;
-		this.vizmapFile = new File(config.getSettingLocation(), PRESET_VIZMAP_FILE);
+		this.vizmapFile = new File(config.getConfigurationDirectoryLocation(), PRESET_VIZMAP_FILE);
 	}
 
 	@Override

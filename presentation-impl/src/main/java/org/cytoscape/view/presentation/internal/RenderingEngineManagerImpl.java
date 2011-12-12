@@ -35,7 +35,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 	 * This method never returns null.
 	 */
 	@Override
-	public RenderingEngine<?> getRendringEngine(final View<?> viewModel) {
+	public RenderingEngine<?> getRenderingEngine(final View<?> viewModel) {
 		return renderingEngineMap.get(viewModel);
 	}
 

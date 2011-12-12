@@ -4,7 +4,7 @@ package org.cytoscape.filter.internal;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.application.CyApplicationManager;
@@ -47,7 +47,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
-		CytoscapeVersion cytoscapeVersionService = getService(bc,CytoscapeVersion.class);
+		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
 
 		//
 		ServicesUtil.cySwingApplicationServiceRef = cySwingApplicationServiceRef;

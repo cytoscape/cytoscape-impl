@@ -191,7 +191,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 	 */
 	public boolean deleteBookmark(Bookmarks pBookmarks, String pCategoryName,
 			DataSource pDataSource) {
-		if (!isInBookmarks(pBookmarks, pCategoryName, pDataSource)) {
+		if (!containsBookmarks(pBookmarks, pCategoryName, pDataSource)) {
 			return false;
 		}
 
@@ -224,7 +224,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 	 * org.cytoscape.properties.bookmark.Bookmarks, java.lang.String,
 	 * org.cytoscape.properties.bookmark.DataSource)
 	 */
-	public boolean isInBookmarks(Bookmarks pBookmarks, String pCategoryName,
+	public boolean containsBookmarks(Bookmarks pBookmarks, String pCategoryName,
 			DataSource pDataSource) {
 		if (pBookmarks == null) {
 			return false;

@@ -19,7 +19,7 @@ public class DownloadBiogridDataTaskFactory implements TaskFactory {
 	private final File settingFile;
 	
 	DownloadBiogridDataTaskFactory(final JComboBox list, final CyApplicationConfiguration config) {
-		settingFile = config.getSettingLocation();
+		settingFile = config.getConfigurationDirectoryLocation();
 		this.list = list;
 	}
 	

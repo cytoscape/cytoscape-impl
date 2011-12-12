@@ -42,13 +42,13 @@ package org.cytoscape.internal;
 //import org.cytoscape.application.swing.session.CySessionManager;
 import org.cytoscape.model.CyNetworkManager;
 
-import org.cytoscape.application.events.CytoscapeShutdownEvent;
-import org.cytoscape.application.events.CytoscapeShutdownListener;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CySwingApplication;
 
 import javax.swing.JOptionPane;
 
-public class SessionShutdownHandler implements CytoscapeShutdownListener {
+public class SessionShutdownHandler implements CyShutdownListener {
 
 //	private CySessionManager session;
 	private CySwingApplication desktop;
@@ -60,7 +60,7 @@ public class SessionShutdownHandler implements CytoscapeShutdownListener {
 		this.netmgr = netmgr;
 	}
 
-	public void handleEvent(CytoscapeShutdownEvent e) {
+	public void handleEvent(CyShutdownEvent e) {
 
 		// If there are no networks, just quit.
 		if (netmgr.getNetworkSet().size() == 0) 

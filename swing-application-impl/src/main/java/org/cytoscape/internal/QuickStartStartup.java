@@ -1,7 +1,7 @@
 package org.cytoscape.internal;
 
-import org.cytoscape.application.events.CytoscapeStartEvent;
-import org.cytoscape.application.events.CytoscapeStartListener;
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -9,7 +9,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 /*
  * This class listens CytoscapeStartEvent and pop up QuickStart dialog
  */
-public class QuickStartStartup implements CytoscapeStartListener {
+public class QuickStartStartup implements CyStartListener {
 
 	private TaskFactory quickStartTaskFactory;
 	private DialogTaskManager guiTaskManager;
@@ -21,7 +21,7 @@ public class QuickStartStartup implements CytoscapeStartListener {
 		this.swingApp = swingApp;
 	}
 	
-	public void handleEvent(CytoscapeStartEvent e){
+	public void handleEvent(CyStartEvent e){
 		guiTaskManager.setExecutionContext(swingApp.getJFrame());
 		guiTaskManager.execute(quickStartTaskFactory);
 	}	

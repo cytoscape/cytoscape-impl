@@ -270,7 +270,7 @@ public class AppManager {
 		
 		if (tempDir == null) {
 			if (usingWebstartManager()) {
-				tempDir = new File(config.getSettingLocation(),
+				tempDir = new File(config.getConfigurationDirectoryLocation(),
 						"webstart" + File.separator
 								+ AppManagerAction.cyVersion.getMajorVersion()
 								+ File.separator + "apps");

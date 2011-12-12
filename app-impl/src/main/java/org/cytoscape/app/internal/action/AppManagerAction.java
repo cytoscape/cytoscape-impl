@@ -59,7 +59,7 @@ import org.cytoscape.app.internal.AppStatus;
 import org.cytoscape.app.internal.ui.AppManageDialog;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.CytoscapeVersion;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.app.CyAppAdapter;
@@ -84,12 +84,12 @@ public class AppManagerAction extends AbstractCyAction {
 
 	public static String cyConfigVerDir;
 	public static String DefaultAppUrl = null;
-	public static CytoscapeVersion cyVersion;
+	public static CyVersion cyVersion;
 	
 	/**
 	 * Creates a new BookmarkAction object.
 	 */
-	public AppManagerAction(CySwingApplication desktop, CyApplicationManager appMgr, CytoscapeVersion version,
+	public AppManagerAction(CySwingApplication desktop, CyApplicationManager appMgr, CyVersion version,
 			CyProperty<Bookmarks> bookmarksProp, BookmarksUtil bookmarksUtil, DialogTaskManager guiTaskManagerServiceRef
 			, CyProperty<Properties> cytoscapePropertiesServiceRef, CyAppAdapter adapter, TaskFactory appLoaderTaskFactory,
 			final CyApplicationConfiguration config) {
@@ -112,7 +112,7 @@ public class AppManagerAction extends AbstractCyAction {
 		// initialize version
 		cyVersion = version;
 		
-		cyConfigVerDir = new File(config.getSettingLocation(), File.separator + version.getMajorVersion()+ "." + version.getMinorVersion()).getAbsolutePath();
+		cyConfigVerDir = new File(config.getConfigurationDirectoryLocation(), File.separator + version.getMajorVersion()+ "." + version.getMinorVersion()).getAbsolutePath();
 						
 		setPreferredMenu("Apps");
 		setMenuGravity(1.0f);
