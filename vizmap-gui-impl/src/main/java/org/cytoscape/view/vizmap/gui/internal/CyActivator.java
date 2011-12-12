@@ -2,9 +2,13 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Paint;
+import java.lang.reflect.Field;
 import java.util.Properties;
 
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -95,6 +99,7 @@ public class CyActivator extends AbstractCyActivator {
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl(editorManager);
 		DefaultVisualStyleBuilder defaultVisualStyleBuilder = new DefaultVisualStyleBuilder(visualStyleFactoryServiceRef,passthroughMappingFactoryRef);
 		PropertySheetPanel propertySheetPanel = new PropertySheetPanel();
+		
 		CyColorChooser colorEditor = new CyColorChooser();
 		FontEditor fontEditor = new FontEditor();
 		NumericValueEditor doubleValueEditor = new NumericValueEditor(Double.class);
@@ -118,7 +123,9 @@ public class CyActivator extends AbstractCyActivator {
 		ImportDefaultVizmapTaskFactory importDefaultVizmapTaskFactory = new ImportDefaultVizmapTaskFactory(vizmapReaderManagerServiceRef,vmmServiceRef,cyApplicationConfigurationServiceRef, cyEventHelperServiceRef);
 		VizMapPropertySheetBuilder vizMapPropertySheetBuilder = new VizMapPropertySheetBuilder(menuManager,cyNetworkManagerServiceRef,propertySheetPanel,editorManager,defaultViewPanel,cyTableManagerServiceRef,vizMapperUtil,vmmServiceRef);
 		EditorWindowManager editorWindowManager = new EditorWindowManager(editorManager,propertySheetPanel);
-		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef);
+		
+		SetViewModeAction viewModeAction = new SetViewModeAction(cyApplicationManagerServiceRef);
+		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef,viewModeAction );
 		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(vmmServiceRef,selectedVisualStyleManager,vizMapperUtil,vizMapperMainPanel);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager,vizMapperUtil,vizMapperMainPanel);
 		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(selectedVisualStyleManager,vizMapperMainPanel);
@@ -135,7 +142,7 @@ public class CyActivator extends AbstractCyActivator {
 		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(selectedVisualStyleManager,editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
 		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager,selectedVisualStyleManager);
 		
-		SetViewModeAction viewModeAction = new SetViewModeAction(cyApplicationManagerServiceRef, vizMapperMainPanel, selectedVisualStyleManager);
+		
 		registerAllServices(bc,viewModeAction, new Properties());
 		
 		registerAllServices(bc,selectedVisualStyleManager, new Properties());

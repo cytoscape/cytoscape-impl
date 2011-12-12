@@ -37,6 +37,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,7 +100,7 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  */
 public class VizMapperMainPanel extends AbstractVizMapperPanel implements VisualStyleAddedListener,
 		VisualStyleAboutToBeRemovedListener, PopupMenuListener, NetworkViewAddedListener, CytoPanelComponent,
-		SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener {
+		SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener, PropertyChangeListener {
 
 	private final static long serialVersionUID = 1202339867854959L;
 
@@ -125,16 +127,17 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 			final PropertySheetPanel propertySheetPanel, VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
 			EditorWindowManager editorWindowManager, CyApplicationManager applicationManager,
 			CyEventHelper eventHelper, final SelectedVisualStyleManager manager,
-			final ImportDefaultVizmapTaskFactory taskFactory, final TaskManager<?, ?> tManager) {
+			final ImportDefaultVizmapTaskFactory taskFactory, final TaskManager<?, ?> tManager, final SetViewModeAction viewModeAction) {
 
 		super(vsFactory, defViewEditor, iconMgr, colorMgr, vmm, menuMgr,
 				editorFactory, propertySheetPanel, vizMapPropertySheetBuilder,
-				editorWindowManager, applicationManager, eventHelper, manager);
+				editorWindowManager, applicationManager, eventHelper, manager, viewModeAction);
 
 		this.defaultViewMouseListener = new DefaultViewMouseListener(defViewEditor, this, manager);
 		
 		// Initialize all components
 		initPanel();
+		viewModeAction.addPropertyChangeListener(this);
 		
 		// Load default styles
 		tManager.execute(taskFactory);
@@ -460,5 +463,18 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		final Object currentSelected = visualStyleComboBox.getSelectedItem();
 		if(newStyle.equals(currentSelected) == false)
 			this.visualStyleComboBox.setSelectedItem(newStyle);
+	}
+
+	
+	/**
+	 * Handles local property change event.
+	 * This will be used to switch view mode: show all VPs or basic VPs only.
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent fromSetViewMode) {
+		// Need to update property sheet.
+		if(fromSetViewMode.getPropertyName().equals(SetViewModeAction.VIEW_MODE_CHANGED))
+			switchVS(manager.getCurrentVisualStyle(), true);
+
 	}
 }

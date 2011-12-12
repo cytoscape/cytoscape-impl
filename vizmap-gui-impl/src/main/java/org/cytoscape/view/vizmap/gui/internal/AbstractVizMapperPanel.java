@@ -33,8 +33,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +49,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle;
 import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -151,6 +154,9 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 	protected SwingPropertyChangeSupport spcs;
 
 	protected final VisualStyleFactory vsFactory;
+	
+	private JToggleButton showAllVPButton;
+	private final SetViewModeAction viewModeAction;
 
 	protected static final long serialVersionUID = -6839011300709287662L;
 
@@ -162,7 +168,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 			VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
 			EditorWindowManager editorWindowManager,
 			CyApplicationManager applicationManager, CyEventHelper eventHelper,
-			final SelectedVisualStyleManager manager) {
+			final SelectedVisualStyleManager manager, final SetViewModeAction viewModeAction) {
 		
 		if(menuMgr == null)
 			throw new NullPointerException("Menu manager is missing.");
@@ -180,6 +186,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 		this.editorWindowManager = editorWindowManager;
 		this.applicationManager = applicationManager;
 		this.eventHelper = eventHelper;
+		this.viewModeAction = viewModeAction;
 
 		editorReg = new PropertyEditorRegistry();
 		rendReg = new PropertyRendererRegistry();
@@ -193,13 +200,45 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 
 		initComponents();
 		initDefaultEditors();
+		
+		// This is a hack: Add extra button to the UI.
+		addButtonToPropertySheetPanel();
+	}
+	
+	private void addButtonToPropertySheetPanel() {
+		showAllVPButton = new JToggleButton();
+		showAllVPButton.setText("Show All");
+		// This is a hack: get private component and add button.
+		Field[] fields = PropertySheetPanel.class.getDeclaredFields();
+		showAllVPButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				viewModeAction.menuSelected(null);
+				viewModeAction.actionPerformed(null);
+			}
+		});
+		
+		showAllVPButton.setUI(new BlueishButtonUI());
+		showAllVPButton.setText("Show All");
+		showAllVPButton.setToolTipText("Show all Visual Properties");
+		
+		for (Field f : fields) {
+			if (f.getName().equals("actionPanel")) {
+				f.setAccessible(true);
+				try {
+					JPanel buttonPanel = (JPanel) f.get(propertySheetPanel);
+					buttonPanel.add(showAllVPButton);
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	private void initDefaultEditors() {
-		// nodeAttrEditor =
-		// editorManager.getDefaultComboBoxEditor("nodeAttrEditor");
-		// edgeAttrEditor =
-		// editorManager.getDefaultComboBoxEditor("edgeAttrEditor");
 		nodeNumericalAttrEditor = editorManager
 				.getDefaultComboBoxEditor("nodeNumericalAttrEditor");
 		edgeNumericalAttrEditor = editorManager
