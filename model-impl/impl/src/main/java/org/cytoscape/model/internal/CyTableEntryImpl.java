@@ -34,11 +34,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.Identifiable;
 import org.cytoscape.model.SUIDFactory;
 
 
-class CyTableEntryImpl implements CyTableEntry, Identifiable {
+class CyTableEntryImpl implements CyTableEntry {
 	private final long suid;
 
 	CyTableEntryImpl(long suid) {
@@ -50,7 +49,7 @@ class CyTableEntryImpl implements CyTableEntry, Identifiable {
 	}
 
 	/**
-	 * @see org.cytoscape.model.Identifiable#getSUID()
+	 * @see org.cytoscape.model.CyTableEntry#getSUID()
 	 */
 	@Override
 	final public long getSUID() {

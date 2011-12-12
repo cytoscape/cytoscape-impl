@@ -33,7 +33,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.Identifiable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowSetRecord;
@@ -67,7 +67,7 @@ class NameSetListener implements RowsSetListener {
 			if ( !record.getColumn().equals(CyTableEntry.NAME) )
 				return;
 
-			CyRow r = shared.getRow( record.getRow().get( Identifiable.SUID, Long.class ) );
+			CyRow r = shared.getRow( record.getRow().get( CyTableEntry.SUID, Long.class ) );
 			if ( r != null ) 
 				r.set(CyRootNetwork.SHARED_NAME, record.getValue());
 		}

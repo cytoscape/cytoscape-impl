@@ -1,7 +1,7 @@
 package org.cytoscape.model;
 
 
-import org.cytoscape.model.Identifiable;
+import org.cytoscape.model.CyTableEntry;
 import org.junit.Before;
 import org.junit.After;
 
@@ -26,8 +26,8 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 	@Before
 	public void setUp() {
 		eventHelper = support.getDummyCyEventHelper(); 
-		table = factory.createTable(Integer.toString( rand.nextInt(10000) ), Identifiable.SUID, Long.class, false, true);
-		table2 = factory.createTable(Integer.toString( rand.nextInt(10000) ), Identifiable.SUID, Long.class, false, true);
+		table = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyTableEntry.SUID, Long.class, false, true);
+		table2 = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyTableEntry.SUID, Long.class, false, true);
 		attrs = table.getRow(1l);
 	}
 

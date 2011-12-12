@@ -34,7 +34,7 @@ import org.junit.Before;
 import org.junit.After;
 
 
-public class IdentifiableTest extends AbstractIdentifiableTest {
+public class CyTableEntryTest extends AbstractCyTableEntryTest {
 	@Before
 	public void setUp() {
 		net = TestCyNetworkFactory.getInstance();

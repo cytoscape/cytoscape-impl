@@ -99,7 +99,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.Identifiable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AboutToRemoveNodesEvent;
@@ -460,11 +460,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.menuTaskManager = menuTaskManager;
 		this.cyEventHelper = cyEventHelper;
 
-		final CyTable nodeCAM = dataFactory.createTable("node view", Identifiable.SUID, Long.class, false, false);
+		final CyTable nodeCAM = dataFactory.createTable("node view", CyTableEntry.SUID, Long.class, false, false);
 		nodeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.setTable(model, CyNode.class, "VIEW", nodeCAM);
 
-		final CyTable edgeCAM = dataFactory.createTable("edge view", Identifiable.SUID, Long.class, false, false);
+		final CyTable edgeCAM = dataFactory.createTable("edge view", CyTableEntry.SUID, Long.class, false, false);
 		edgeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.setTable(model, CyEdge.class, "VIEW", edgeCAM);
 

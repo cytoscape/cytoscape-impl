@@ -31,7 +31,7 @@ package org.cytoscape.model.internal;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.Identifiable;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 
@@ -62,7 +62,7 @@ class VirtualColumnAdder implements ColumnCreatedListener {
 		if ( tgt.getColumn(srcName) != null )
 			return;
 		CyColumn srcCol = src.getColumn(srcName);
-		tgt.addVirtualColumn(srcName,srcName,src,Identifiable.SUID,srcCol.isImmutable());
+		tgt.addVirtualColumn(srcName,srcName,src,CyTableEntry.SUID,srcCol.isImmutable());
 	}
 }
 
