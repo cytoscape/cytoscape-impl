@@ -5,16 +5,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -108,11 +112,28 @@ public class WelcomeScreenDialog extends JDialog {
 
 		basePanel.add(mainPanel, BorderLayout.CENTER);
 
-		JPanel bottomPanel = new JPanel();
+		final JPanel bottomPanel = new JPanel();
+		bottomPanel.setLayout(new BorderLayout());
+		bottomPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		bottomPanel.setBackground(PANEL_COLOR);
 		final JCheckBox checkBox = new JCheckBox();
 		checkBox.setText("Don't show again");
-		bottomPanel.add(checkBox);
+		checkBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO: Update config property here.
+			}
+		});
+		
+		JButton closeButton = new JButton("Close");
+		closeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		bottomPanel.add(checkBox, BorderLayout.CENTER);
+		bottomPanel.add(closeButton, BorderLayout.EAST);
 		checkBox.setHorizontalAlignment(SwingConstants.CENTER);
 		basePanel.add(bottomPanel, BorderLayout.SOUTH);
 
@@ -163,7 +184,6 @@ public class WelcomeScreenDialog extends JDialog {
 		JPanel titlePanel = new JPanel();
 		contentPanel.setBackground(PANEL_COLOR);
 
-		// titlePanel.setOpaque(false);
 		titlePanel.setLayout(new GridLayout(1, 2));
 		titlePanel.setBackground(LABEL_COLOR);
 		panel.setLayout(new BorderLayout());
