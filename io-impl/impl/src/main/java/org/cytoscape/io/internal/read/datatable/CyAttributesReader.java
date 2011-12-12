@@ -440,7 +440,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	}
 
 	@Override
-	public CyTable[] getCyTables() {
+	public CyTable[] getTables() {
 		return cyTables;
 	}
 }

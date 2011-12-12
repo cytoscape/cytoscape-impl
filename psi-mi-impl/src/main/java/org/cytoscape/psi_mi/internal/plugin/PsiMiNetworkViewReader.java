@@ -90,7 +90,7 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 	}
 
 	@Override
-	public CyNetwork[] getCyNetworks() {
+	public CyNetwork[] getNetworks() {
 		return new CyNetwork[] { network };
 	}
 

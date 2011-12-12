@@ -48,7 +48,7 @@ public class CSVCyReaderTest {
 						     /* handleEquations = */ false, tableFactory,
 						     null, tableManager);
 		reader.run(taskMonitor);
-		CyTable[] tables = reader.getCyTables();
+		CyTable[] tables = reader.getTables();
 		assertNotNull(tables);
 		assertEquals(1, tables.length);
 		CyTable table = tables[0];
@@ -70,7 +70,7 @@ public class CSVCyReaderTest {
 						     /* handleEquations = */ false, tableFactory,
 						     null, tableManager);
 		reader.run(taskMonitor);
-		CyTable[] tables = reader.getCyTables();
+		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
 		CyRow row = table.getRow(3L);
 		assertEquals("Carol", row.get("name", String.class));
@@ -83,7 +83,7 @@ public class CSVCyReaderTest {
 						     /* handleEquations = */ false, tableFactory,
 						     null, tableManager);
 		reader.run(taskMonitor);
-		CyTable[] tables = reader.getCyTables();
+		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
 		CyRow row = table.getRow(-5L);
 		assertEquals((Double) (-1.234), row.get("weight", Double.class));
@@ -96,7 +96,7 @@ public class CSVCyReaderTest {
 						     /* handleEquations = */ false, tableFactory,
 						     null, tableManager);
 		reader.run(taskMonitor);
-		CyTable[] tables = reader.getCyTables();
+		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
 		CyRow row = table.getRow(50L);
 		assertEquals(Boolean.TRUE, row.get("hidden", Boolean.class));
@@ -109,7 +109,7 @@ public class CSVCyReaderTest {
 						     /* handleEquations = */ false, tableFactory,
 						     null, tableManager);
 		reader.run(taskMonitor);
-		CyTable[] tables = reader.getCyTables();
+		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
 		CyRow row = table.getRow(1L);
 		List<String> list = row.getList("list", String.class);

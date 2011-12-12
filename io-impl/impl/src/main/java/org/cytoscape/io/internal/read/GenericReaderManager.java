@@ -38,7 +38,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 	public void addInputStreamTaskFactory(T factory, @SuppressWarnings("rawtypes") Map props) {
 		if (factory == null)
 			logger.warn("Specified factory is null!");
-		else if (factory.getCyFileFilter().getDataCategory() == category) {
+		else if (factory.getFileFilter().getDataCategory() == category) {
 			logger.debug("adding IO taskFactory (factory = " + factory + 
 			            ", category = " + category + ")");
 			factories.add(factory);
@@ -67,7 +67,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		logger.debug("Number of tunableHandlerFactories: " + factories.size());
 		for (T factory : factories) {
 			
-			final CyFileFilter cff = factory.getCyFileFilter();
+			final CyFileFilter cff = factory.getFileFilter();
 			logger.debug("Trying factory: " + factory + " with filter: " + cff);
 
 			if (cff.accepts(uri, category) && uri != null ) {
@@ -95,7 +95,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 				stream = new MarkSupportedInputStream(stream);
 
 			for (T factory : factories) {
-				CyFileFilter cff = factory.getCyFileFilter();
+				CyFileFilter cff = factory.getFileFilter();
 				logger.debug("trying factory: " + factory + " with filter: " + cff);
 
 				// Because we don't know who will provide the file filter or

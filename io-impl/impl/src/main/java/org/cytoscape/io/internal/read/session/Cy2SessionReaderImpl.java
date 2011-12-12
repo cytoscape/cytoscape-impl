@@ -257,7 +257,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 		reader.run(taskMonitor);
 
-		final CyNetwork[] netArray = reader.getCyNetworks();
+		final CyNetwork[] netArray = reader.getNetworks();
 		CyNetworkView[] views = null;
 
 		if (netArray != null && netArray.length > 0) {
@@ -270,7 +270,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			String netName = null;
 
 			for (CyNetwork net : netArray) {
-				netName = net.getCyRow(net).get(CyNetwork.NAME, String.class);
+				netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				
 				networkLookup.put(netName, net);
 				networks.add(net);
@@ -480,7 +480,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 
 		for (CyNode n : net.getNodeList()) {
-			CyRow row = net.getCyRow(n);
+			CyRow row = net.getRow(n);
 			String name = row.get(CyNetwork.NAME, String.class);
 			
 			if (name == null) // try another column...
@@ -497,7 +497,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			CyNode n = nodeMap.get(name);
 
 			if (n != null)
-				net.getCyRow(n).set(attrName, true);
+				net.getRow(n).set(attrName, true);
 			else 
 				logger.error("Cannot restore boolean node attr \"" + name + "\": node not found.");
 		}
@@ -511,7 +511,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		Map<String, CyEdge> edgeMap = new HashMap<String, CyEdge>();
 		
 		for (CyEdge e : net.getEdgeList()){
-			CyRow row = net.getCyRow(e);
+			CyRow row = net.getRow(e);
 			String name = row.get(CyNetwork.NAME, String.class);
 			
 			if (name == null) // try another column...
@@ -528,7 +528,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			CyEdge e = edgeMap.get(name);
 
 			if (e != null)
-				net.getCyRow(e).set(attrName, true);
+				net.getRow(e).set(attrName, true);
 			else 
 				logger.error("Cannot restore boolean edge attr \"" + name + "\": node not found.");
 		}

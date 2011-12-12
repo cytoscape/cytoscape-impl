@@ -55,7 +55,7 @@ public class PsiMiNetworkViewReaderTest {
 		File file = new File("src/test/resources/testData/dip_sample.xml");
 		CyNetworkReader reader = createReader(file);
 		reader.run(taskMonitor);
-		CyNetwork[] networks = reader.getCyNetworks();
+		CyNetwork[] networks = reader.getNetworks();
 		
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
@@ -73,7 +73,7 @@ public class PsiMiNetworkViewReaderTest {
 		File file = new File("src/test/resources/testData/psi_sample_2_5_1.xml");
 		CyNetworkReader reader = createReader(file);
 		reader.run(taskMonitor);
-		CyNetwork[] networks = reader.getCyNetworks();
+		CyNetwork[] networks = reader.getNetworks();
 		
 		assertNotNull(networks);
 		assertEquals(1, networks.length);

@@ -112,10 +112,10 @@ public class PlotParameterDialog extends VisualizeParameterDialog implements Act
 	 */
 	private Double getAttrValue(CyNetwork network, CyNode node, String attr, Class<?> attrType) {
 		if (attrType == Double.class) {
-			return network.getCyRow(node).get(attr,Double.class);
+			return network.getRow(node).get(attr,Double.class);
 		}
 		if (attrType == Integer.class) {
-			return network.getCyRow(node).get(attr,Integer.class).doubleValue();
+			return network.getRow(node).get(attr,Integer.class).doubleValue();
 		}
 		return null;
 	}
@@ -134,7 +134,7 @@ public class PlotParameterDialog extends VisualizeParameterDialog implements Act
 		// Add title
 		final JPanel panTop = new JPanel(new BorderLayout(0, 0));
 		final JPanel panTitle = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		final JLabel title = new JLabel("<html>" + Messages.DI_PLOT1 + "<b>" + network.getCyRow(network).get("name",String.class)
+		final JLabel title = new JLabel("<html>" + Messages.DI_PLOT1 + "<b>" + network.getRow(network).get("name",String.class)
 				+ "</b>" + Messages.DI_PLOT2);
 		panTitle.add(title);
 		panTop.add(panTitle, BorderLayout.PAGE_START);

@@ -121,7 +121,7 @@ public class ImportAttributeTableTask extends AbstractTask implements CyTableRea
 	}
 
 	@Override
-	public CyTable[] getCyTables() {
+	public CyTable[] getTables() {
 		return cyTables;
 	}
 }

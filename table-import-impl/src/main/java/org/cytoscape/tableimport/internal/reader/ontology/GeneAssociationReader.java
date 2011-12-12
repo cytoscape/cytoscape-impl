@@ -221,7 +221,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		else {
 			this.dagTable = ontologyDAG.getDefaultNodeTable();
 			termIDList = ontologyDAG.getDefaultNodeTable().getColumn(CyTableEntry.NAME).getValues(String.class);
-			logger.debug("DAG Name = " + ontologyDAG.getCyRow(ontologyDAG).get(CyTableEntry.NAME, String.class));
+			logger.debug("DAG Name = " + ontologyDAG.getRow(ontologyDAG).get(CyTableEntry.NAME, String.class));
 		}
 		
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
@@ -518,7 +518,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 	}
 
 	@Override
-	public CyTable[] getCyTables() {
+	public CyTable[] getTables() {
 		return tables;
 	}
 }

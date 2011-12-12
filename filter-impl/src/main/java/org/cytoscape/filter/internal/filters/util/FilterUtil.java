@@ -59,7 +59,7 @@ public class FilterUtil {
 				int next_set_bit = pFilter.getNodeBits().nextSetBit(i);
 				
 				node = nodes_list.get(next_set_bit);
-				network.getCyRow(node).set(CyNetwork.SELECTED, true);
+				network.getRow(node).set(CyNetwork.SELECTED, true);
 				i = next_set_bit;
 			}
 		}
@@ -72,7 +72,7 @@ public class FilterUtil {
 					break;
 				}
 				edge = edges_list.get(next_set_bit);
-				network.getCyRow(edge).set(CyNetwork.SELECTED, true);
+				network.getRow(edge).set(CyNetwork.SELECTED, true);
 				i = next_set_bit;
 			}
 		}
@@ -120,7 +120,7 @@ public class FilterUtil {
 				return false;
 			}
 			CyNode node = nodes.get(0);
-			return network.getCyRow(node).getTable().getColumn(pAttribute) != null;
+			return network.getRow(node).getTable().getColumn(pAttribute) != null;
 		}
 		else if (pType == QuickFind.INDEX_EDGES) {
 			List<CyEdge> edges = network.getEdgeList();
@@ -128,7 +128,7 @@ public class FilterUtil {
 				return false;
 			}
 			CyEdge edge = edges.get(0);
-			return network.getCyRow(edge).getTable().getColumn(pAttribute) != null;
+			return network.getRow(edge).getTable().getColumn(pAttribute) != null;
 		}
 		return false;
 	}

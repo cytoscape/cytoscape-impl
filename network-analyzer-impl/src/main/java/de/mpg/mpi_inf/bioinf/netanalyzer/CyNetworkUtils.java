@@ -96,7 +96,7 @@ public abstract class CyNetworkUtils {
 		final Set<String> computedAttr = CyTableUtil.getColumnNames(table);
 		for (final CyEdge n : aNetwork.getEdgeList()) {
 			for (final CyColumn column : columns) {
-				if (!aNetwork.getCyRow(n).isSet(column.getName()))
+				if (!aNetwork.getRow(n).isSet(column.getName()))
 					computedAttr.remove(column.getName());
 			}
 		}
@@ -117,7 +117,7 @@ public abstract class CyNetworkUtils {
 		final Set<String> computedAttr = CyTableUtil.getColumnNames(table);
 		for (final CyNode n : aNetwork.getNodeList()) {
 			for (final CyColumn column : columns) {
-				if (!aNetwork.getCyRow(n).isSet(column.getName()))
+				if (!aNetwork.getRow(n).isSet(column.getName()))
 					computedAttr.remove(column.getName());
 			}
 		}
@@ -488,7 +488,7 @@ public abstract class CyNetworkUtils {
 	 */
 	private static void saveNumDuplEdges(CyNetwork net, CyEdge aEdge, int aNumEdges) {
 		if (aEdge != null) {
-			net.getCyRow(aEdge).set( Messages.getAttr("dpe"), aNumEdges);
+			net.getRow(aEdge).set( Messages.getAttr("dpe"), aNumEdges);
 		}
 	}
 

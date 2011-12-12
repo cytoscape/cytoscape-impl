@@ -63,7 +63,7 @@ public class GeneAssociationReaderTest {
 		System.out.print("Start read: ");
 		reader.run(tm);
 		
-		final CyTable[] tables = reader.getCyTables();
+		final CyTable[] tables = reader.getTables();
 		assertNotNull(tables);
 		assertEquals(1, tables.length);
 		assertNotNull(tables[0]);

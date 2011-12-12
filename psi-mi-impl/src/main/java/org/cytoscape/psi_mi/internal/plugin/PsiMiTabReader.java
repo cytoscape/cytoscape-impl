@@ -70,7 +70,7 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 	}
 
 	@Override
-	public CyNetwork[] getCyNetworks() {
+	public CyNetwork[] getNetworks() {
 		return new CyNetwork[] {network};
 	}
 

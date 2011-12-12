@@ -213,7 +213,7 @@ public class FilterSettingPanel extends JPanel {
 		}
 		
 		CyTableEntry entry = entries.iterator().next();
-		CyRow row = network.getCyRow(entry);
+		CyRow row = network.getRow(entry);
 		return row.getTable().getColumn(pAttribute).getType();
 	}
 

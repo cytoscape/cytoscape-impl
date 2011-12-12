@@ -164,14 +164,14 @@ public class BioPaxDetailsPanel extends JPanel {
 
 		StringBuffer buf = new StringBuffer("<HTML>");
 
-		CyRow row = network.getCyRow(node);
+		CyRow row = network.getRow(node);
 		
         // name
         stringRef = row.get(CyNode.NAME, String.class);
         buf.append("<h2>" + stringRef + "</h2>");
 
         // type (to the text buffer)
-        String type = network.getCyRow(node).get(BIOPAX_ENTITY_TYPE, String.class);
+        String type = network.getRow(node).get(BIOPAX_ENTITY_TYPE, String.class);
         buf.append("<h3>" + type + "</h3>");
         
         // organism
@@ -207,7 +207,7 @@ public class BioPaxDetailsPanel extends JPanel {
 		
 		// excerpt from the BioPAX OWL
 		stringRef = null;
-        stringRef = network.getCyRow(node,CyNetwork.HIDDEN_ATTRS).get(BioPaxUtil.BIOPAX_DATA, String.class);
+        stringRef = network.getRow(node,CyNetwork.HIDDEN_ATTRS).get(BioPaxUtil.BIOPAX_DATA, String.class);
         //stringRef = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
         if (stringRef != null) {
         	appendHeader("BioPAX L3 (excerpt)", buf);
@@ -226,11 +226,11 @@ public class BioPaxDetailsPanel extends JPanel {
 	//TODO test; remove or upgrade to PC2 api (URI based)
 	@Deprecated
     private void addCPathLink(CyNetwork cyNetwork, CyNode node, StringBuffer buf) {
-    	CyRow networkRow = cyNetwork.getCyRow(cyNetwork);
+    	CyRow networkRow = cyNetwork.getRow(cyNetwork);
         String serverName = networkRow.get("CPATH_SERVER_NAME", String.class);
         String serverDetailsUrl = networkRow.get("CPATH_SERVER_DETAILS_URL", String.class);
         if (serverName != null && serverDetailsUrl != null) {
-        	CyRow nodeRow = cyNetwork.getCyRow(node);
+        	CyRow nodeRow = cyNetwork.getRow(node);
             String type = nodeRow.get(BIOPAX_ENTITY_TYPE, String.class);
             if (BioPaxUtil.getSubclassNames(PhysicalEntity.class).contains(type)) {
                 String url = serverDetailsUrl + node;
@@ -240,7 +240,7 @@ public class BioPaxDetailsPanel extends JPanel {
     }
 
     private void addLinks(CyNetwork network, CyNode node, StringBuffer buf) {
-    	CyRow row = network.getCyRow(node);
+    	CyRow row = network.getRow(node);
 
         addAttributeList(network, node, CyNetwork.HIDDEN_ATTRS,
                 BIOPAX_UNIFICATION_REFERENCES, "Links:", buf);
@@ -257,7 +257,7 @@ public class BioPaxDetailsPanel extends JPanel {
 	{
 		StringBuffer displayString = new StringBuffer();
 		// use private or default table
-		CyRow row = (tableName == null) ? network.getCyRow(node) : network.getCyRow(node,tableName);
+		CyRow row = (tableName == null) ? network.getRow(node) : network.getRow(node,tableName);
 		if (row.getTable().getColumn(attribute) == null) {
 			return;
 		}
@@ -309,7 +309,7 @@ public class BioPaxDetailsPanel extends JPanel {
 	}
 
 	private void addIHOPLinks(CyNetwork network, CyNode node, StringBuffer buf) {
-		CyRow row = network.getCyRow(node,CyNetwork.HIDDEN_ATTRS);
+		CyRow row = network.getRow(node,CyNetwork.HIDDEN_ATTRS);
 		String ihopLinks = row.get(BIOPAX_IHOP_LINKS, String.class);
 
 		if (ihopLinks != null) {

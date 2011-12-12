@@ -117,7 +117,7 @@ public class BatchNetworkAnalyzer extends SwingWorker {
 					throw new RuntimeException();
 				}
 				CyNetworkReader reader = cyNetworkViewReaderMgr.getReader(inputFile.toURI(), inputFile.getName());
-				network = reader.getCyNetworks()[0];
+				network = reader.getNetworks()[0];
 			} catch (RuntimeException e) {
 				writeLine(Messages.SM_READERROR);
 				reports.add(new NetworkAnalysisReport(inputFile, null, AnalysisError.NETWORK_NOT_OPENED));
@@ -176,7 +176,7 @@ public class BatchNetworkAnalyzer extends SwingWorker {
 						analyzer = null;
 					}
 
-					final String networkName = network.getCyRow(network).get("name",String.class);
+					final String networkName = network.getRow(network).get("name",String.class);
 					stats.setTitle(networkName + interpretation.getInterpretSuffix());
 					final String extendedName = networkName + createID(interpretation);
 					try {
@@ -290,10 +290,10 @@ public class BatchNetworkAnalyzer extends SwingWorker {
 			}
 			writer.write("\n");
 			for ( CyNode n : aNetwork.getNodeList()) {
-				final String id = aNetwork.getCyRow(n).get("name", String.class);
+				final String id = aNetwork.getRow(n).get("name", String.class);
 				writer.write(id);
 				for (final String attr : netAnayzerAttr) {
-					final Object attrValue = aNetwork.getCyRow(n).getRaw(attr);
+					final Object attrValue = aNetwork.getRow(n).getRaw(attr);
 					if (attrValue != null) {
 						writer.write("\t" + attrValue.toString());
 					}

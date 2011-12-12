@@ -120,8 +120,8 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
         }
         
         //TODO should interaction be considered or not?
-        String i1 = network1.getCyRow(e1).get("interaction",String.class);
-        String i2 = network2.getCyRow(e2).get("interaction",String.class);
+        String i1 = network1.getRow(e1).get("interaction",String.class);
+        String i2 = network2.getRow(e2).get("interaction",String.class);
 
         if ((i1==null&&i2!=null) || (i1!=null&&i2==null)) {
                 return false;

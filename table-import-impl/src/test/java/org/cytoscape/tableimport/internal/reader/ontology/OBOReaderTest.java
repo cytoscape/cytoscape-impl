@@ -67,7 +67,7 @@ public class OBOReaderTest {
 		
 		reader.run(null);
 		
-		CyNetwork[] networks = reader.getCyNetworks();
+		CyNetwork[] networks = reader.getNetworks();
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
 		

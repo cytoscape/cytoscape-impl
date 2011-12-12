@@ -18,7 +18,7 @@ public abstract class AbstractPresentationWriterFactory implements PresentationW
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return fileFilter;
 	}
 

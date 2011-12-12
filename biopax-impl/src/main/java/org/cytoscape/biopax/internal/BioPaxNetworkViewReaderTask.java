@@ -139,7 +139,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 
 
 	@Override
-	public CyNetwork[] getCyNetworks() {
+	public CyNetwork[] getNetworks() {
 		return new CyNetwork[]{network};
 	}
 

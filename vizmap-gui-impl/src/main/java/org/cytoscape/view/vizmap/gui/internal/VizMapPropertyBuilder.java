@@ -181,7 +181,7 @@ public class VizMapPropertyBuilder {
 
 			for (CyNetwork net : graphObjectSet.keySet()) {
 				for (CyTableEntry go : graphObjectSet.get(net)) {
-					final CyRow row = net.getCyRow(go);
+					final CyRow row = net.getRow(go);
 					final CyTable table = row.getTable();
 					final CyColumn column = table.getColumn(attrName);
 	
@@ -240,19 +240,19 @@ public class VizMapPropertyBuilder {
 
 			for (CyNetwork net : graphObjectSet.keySet()) {
 			for (CyTableEntry go : graphObjectSet.get(net)) {
-				CyColumn column = net.getCyRow(go).getTable().getColumn(attrName);
+				CyColumn column = net.getRow(go).getTable().getColumn(attrName);
 
 				if (column != null) {
 					Class<?> attrClass = column.getType();
 
-					id = net.getCyRow(go).get(CyTableEntry.NAME, String.class);
+					id = net.getRow(go).get(CyTableEntry.NAME, String.class);
 
 					if (attrName.equals(Identifiable.SUID))
 						value = go.getSUID();
 					else if (attrClass.isAssignableFrom(List.class))
-						value = net.getCyRow(go).getList(attrName, column.getListElementType());
+						value = net.getRow(go).getList(attrName, column.getListElementType());
 					else
-						value = net.getCyRow(go).get(attrName, attrClass);
+						value = net.getRow(go).get(attrName, attrClass);
 
 					if (value != null)
 						stringVal = value.toString();

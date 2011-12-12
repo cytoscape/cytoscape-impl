@@ -20,7 +20,7 @@ public class SetTableNameTask extends AbstractTask {
 
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
-		final CyTable[] tables = reader.getCyTables();
+		final CyTable[] tables = reader.getTables();
 		
 		if(tables == null || tables.length == 0)
 			throw new IllegalStateException("Could not find table to be renamed.");

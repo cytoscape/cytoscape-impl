@@ -234,7 +234,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		}
 		
 		if(log.isDebugEnabled())
-			log.debug(network.getCyRow(network).get(CyNetwork.NAME, String.class) 
+			log.debug(network.getRow(network).get(CyNetwork.NAME, String.class) 
 				+ "" + network.getNodeList().size() + " nodes created.");
 	}
 
@@ -517,7 +517,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 			// per db -
 			String key = BIOPAX_XREF_PREFIX + link.getDb().toUpperCase();
 			// Set individual XRefs; Max of 1 per database.
-			String existingId = network.getCyRow(node).get(key, String.class);
+			String existingId = network.getRow(node).get(key, String.class);
 			if (existingId == null) {
 				AttributeUtil.set(network, node, key, link.getId(), String.class);
 			}
@@ -608,7 +608,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 					if (!"".equalsIgnoreCase(value.toString().replaceAll("\\]|\\[", ""))) 
 					{
 						if (editor.isMultipleCardinality()) {
-							CyRow row = network.getCyRow(node);
+							CyRow row = network.getRow(node);
 							List vals = new ArrayList<String>();
 							// consider existing attribute values
 							if (row.isSet(attrName)) {

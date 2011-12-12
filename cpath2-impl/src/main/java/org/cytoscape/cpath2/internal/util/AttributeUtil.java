@@ -10,7 +10,7 @@ import org.cytoscape.model.CyNetwork;
 
 public class AttributeUtil {
 	public static void set(CyNetwork network, CyTableEntry entry, String name, Object value, Class<?> type) {
-		CyRow row = network.getCyRow(entry);
+		CyRow row = network.getRow(entry);
 		CyTable table = row.getTable();
 		CyColumn column = table.getColumn(name);
 		if (column == null) {

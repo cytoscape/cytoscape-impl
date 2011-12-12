@@ -72,7 +72,7 @@ public class SessionWriterFactoryImpl implements CySessionWriterFactory {
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return thisFilter;
 	}
 

@@ -80,12 +80,12 @@ public class PerfTest {
 
 	private CyNetwork[] getNetworks(String file) throws Exception {
 		final SIFNetworkReader snvp = readFile(file);
-		return snvp.getCyNetworks();
+		return snvp.getNetworks();
 	}
 
 	private CyNetworkView[] getViews(String file) throws Exception {
 		final SIFNetworkReader snvp = readFile(file);
-		final CyNetwork[] networks = snvp.getCyNetworks(); 
+		final CyNetwork[] networks = snvp.getNetworks(); 
 		final CyNetworkView[] views = new CyNetworkView[networks.length];
 		int i = 0;
 		for(CyNetwork network: networks) {

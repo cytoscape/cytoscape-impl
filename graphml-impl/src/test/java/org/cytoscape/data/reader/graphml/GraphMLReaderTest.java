@@ -66,7 +66,7 @@ public class GraphMLReaderTest {
 		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
-		final CyNetwork[] networks = reader.getCyNetworks();
+		final CyNetwork[] networks = reader.getNetworks();
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
 		final CyNetwork network = networks[0];
@@ -81,7 +81,7 @@ public class GraphMLReaderTest {
 		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
-		final CyNetwork[] networks = reader.getCyNetworks();
+		final CyNetwork[] networks = reader.getNetworks();
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
 		final CyNetwork network = networks[0];
@@ -103,7 +103,7 @@ public class GraphMLReaderTest {
 		assertEquals(String.class, colorCol.getType());
 		assertEquals(Double.class, weightCol.getType());
 		
-		assertEquals(Double.valueOf(1.0d), network.getCyRow(edge1).get("weight", Double.class));
+		assertEquals(Double.valueOf(1.0d), network.getRow(edge1).get("weight", Double.class));
 	}
 
 	@Test
@@ -113,7 +113,7 @@ public class GraphMLReaderTest {
 		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
-		final CyNetwork[] networks = reader.getCyNetworks();
+		final CyNetwork[] networks = reader.getNetworks();
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
 		final CyNetwork network = networks[0];
@@ -135,13 +135,13 @@ public class GraphMLReaderTest {
 		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
-		final CyNetwork[] networks = reader.getCyNetworks();
+		final CyNetwork[] networks = reader.getNetworks();
 		assertNotNull(networks);
 		assertEquals(4, networks.length);
 		
 		final CyNetwork rootNetwork = networks[0];
 		for(CyNode node: rootNetwork.getNodeList())
-			System.out.println("In root network: " + rootNetwork.getCyRow(node).get(CyTableEntry.NAME, String.class));
+			System.out.println("In root network: " + rootNetwork.getRow(node).get(CyTableEntry.NAME, String.class));
 		
 		assertEquals(11, rootNetwork.getNodeCount());
 		assertEquals(12, rootNetwork.getEdgeCount());
@@ -166,13 +166,13 @@ public class GraphMLReaderTest {
 		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
-		final CyNetwork[] networks = reader.getCyNetworks();
+		final CyNetwork[] networks = reader.getNetworks();
 		assertNotNull(networks);
 		assertEquals(4, networks.length);
 		
 		final CyNetwork rootNetwork = networks[0];
 		for(CyNode node: rootNetwork.getNodeList())
-			System.out.println("In root network: " + rootNetwork.getCyRow(node).get(CyTableEntry.NAME, String.class));
+			System.out.println("In root network: " + rootNetwork.getRow(node).get(CyTableEntry.NAME, String.class));
 		
 		assertEquals(8, rootNetwork.getNodeCount());
 		assertEquals(10, rootNetwork.getEdgeCount());

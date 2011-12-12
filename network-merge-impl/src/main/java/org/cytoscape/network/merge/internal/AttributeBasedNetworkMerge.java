@@ -191,7 +191,7 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
                                 final AttributeMapping attributeMapping) {        
         final int nattr = attributeMapping.getSizeMergedAttributes();
         for (int i=0; i<nattr; i++) {
-            CyColumn attr_merged = newNetwork.getCyRow(toEntry).getTable().getColumn(attributeMapping.getMergedAttribute(i));
+            CyColumn attr_merged = newNetwork.getRow(toEntry).getTable().getColumn(attributeMapping.getMergedAttribute(i));
 
             // merge
             Map<T,CyColumn> mapGOAttr = new HashMap<T,CyColumn>();

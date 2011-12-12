@@ -84,7 +84,7 @@ public class SessionUtil {
 	}
 	
 	public static String getNetworkTableFilename(CyNetwork network, CyTableMetadata metadata) throws UnsupportedEncodingException {
-		CyTable table = metadata.getCyTable();
+		CyTable table = metadata.getTable();
 		Long networkId = network.getSUID();
 		String networkFileName = getNetworkFileName(network);
 		String namespace = escape(metadata.getNamespace());
@@ -107,7 +107,7 @@ public class SessionUtil {
 	}
 	
 	public static String getNetworkFileName(CyNetwork network) throws UnsupportedEncodingException {
-		String name = escape(network.getCyRow(network).get(CyNetwork.NAME, String.class));
+		String name = escape(network.getRow(network).get(CyNetwork.NAME, String.class));
 		
 		if (name == null || name.isEmpty())
 			name = Long.toString(network.getSUID());

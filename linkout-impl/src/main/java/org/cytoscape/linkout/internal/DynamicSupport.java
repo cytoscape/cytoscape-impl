@@ -113,7 +113,7 @@ public class DynamicSupport {
 		tableEntries = entries; 
 
 		for ( CyTableEntry entry : tableEntries )
-			generateExternalLinks(network.getCyRow(entry), menuTitleURLMap);
+			generateExternalLinks(network.getRow(entry), menuTitleURLMap);
 
 		List<String> menuTitles = new ArrayList<String>( menuTitleURLMap.keySet() );
 		Collections.sort(menuTitles);

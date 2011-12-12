@@ -74,7 +74,7 @@ public class LinkoutTask extends AbstractTask {
 			if ( attrName.equals(id) )
 				attrName = "name";
 		
-			Object raw = network.getCyRow(tableEntry).getRaw(attrName);
+			Object raw = network.getRow(tableEntry).getRaw(attrName);
 			if ( raw == null ) {
 				continue;
 			}

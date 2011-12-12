@@ -163,7 +163,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				setBackground(Color.WHITE);
 			}
 			
-			this.setText(network.getCyRow(network).get(CyTableEntry.NAME, String.class));
+			this.setText(network.getRow(network).get(CyTableEntry.NAME, String.class));
 			return this;
 		}
 

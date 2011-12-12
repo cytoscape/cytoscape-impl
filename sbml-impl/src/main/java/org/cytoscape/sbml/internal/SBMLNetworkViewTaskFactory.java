@@ -27,7 +27,7 @@ public class SBMLNetworkViewTaskFactory implements InputStreamTaskFactory {
 		return new TaskIterator(new SBMLNetworkViewReader(stream, networkFactory, viewFactory));
 	}
 
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 

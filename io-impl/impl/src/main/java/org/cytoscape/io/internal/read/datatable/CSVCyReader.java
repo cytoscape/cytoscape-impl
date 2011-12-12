@@ -184,7 +184,7 @@ public class CSVCyReader implements CyTableReader {
 	}
 
 	@Override
-	public CyTable[] getCyTables() {
+	public CyTable[] getTables() {
 		if (table == null) {
 			return null;
 		}

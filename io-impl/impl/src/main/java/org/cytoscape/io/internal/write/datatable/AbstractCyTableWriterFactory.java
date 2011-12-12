@@ -22,7 +22,7 @@ public abstract class AbstractCyTableWriterFactory implements CyTableWriterFacto
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return fileFilter;
 	}
 

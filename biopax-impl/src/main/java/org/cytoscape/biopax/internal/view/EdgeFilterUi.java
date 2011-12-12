@@ -52,7 +52,7 @@ public class EdgeFilterUi extends JDialog {
         checkBoxSet = new HashSet();
         Set interactionSet = new TreeSet();
         for (CyEdge edge : cyNetwork.getEdgeList()) {
-        	CyRow row = cyNetwork.getCyRow(edge);
+        	CyRow row = cyNetwork.getRow(edge);
         	// TODO: Where did Semantics.INTERACTION go?
             String interactionType = row.get("interaction", String.class);
             interactionSet.add(interactionType);

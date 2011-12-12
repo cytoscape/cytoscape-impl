@@ -24,12 +24,12 @@ public class CyTableMetadataImpl implements CyTableMetadata {
 	}
 	
 	@Override
-	public CyTable getCyTable() {
+	public CyTable getTable() {
 		return table;
 	}
 
 	@Override
-	public CyNetwork getCyNetwork() {
+	public CyNetwork getNetwork() {
 		return network;
 	}
 

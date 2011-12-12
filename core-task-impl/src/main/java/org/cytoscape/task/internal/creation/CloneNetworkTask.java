@@ -116,8 +116,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 			cloneNodes(origNet, newNet);
 			cloneEdges(origNet, newNet);
 
-			newNet.getCyRow(newNet).set(CyTableEntry.NAME,
-					naming.getSuggestedNetworkTitle(origNet.getCyRow(origNet).get(CyTableEntry.NAME, String.class)));
+			newNet.getRow(newNet).set(CyTableEntry.NAME,
+					naming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyTableEntry.NAME, String.class)));
 		return newNet;
 	}
 
@@ -126,7 +126,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		for (final CyNode origNode : origNet.getNodeList()) {
 			final CyNode newNode = newNet.addNode();
 			orig2NewNodeMap.put(origNode, newNode);
-			cloneRow(origNet.getCyRow(origNode), newNet.getCyRow(newNode));
+			cloneRow(origNet.getRow(origNode), newNet.getRow(newNode));
 		}
 	}
 
@@ -136,7 +136,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 			final CyNode newTarget = orig2NewNodeMap.get(origEdge.getTarget());
 			final boolean newDirected = origEdge.isDirected();
 			final CyEdge newEdge = newNet.addEdge(newSource, newTarget, newDirected);
-			cloneRow(origNet.getCyRow(origEdge), newNet.getCyRow(newEdge));
+			cloneRow(origNet.getRow(origEdge), newNet.getRow(newEdge));
 		}
 	}
 

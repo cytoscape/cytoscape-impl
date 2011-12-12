@@ -31,21 +31,21 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 	
 	@SuppressWarnings("unchecked")
 	public void addCyWriterFactory(T factory, Map props) {
-		if ( factory != null && factory.getCyFileFilter().getDataCategory() == category ) {
+		if ( factory != null && factory.getFileFilter().getDataCategory() == category ) {
 			logger.info("adding IO taskFactory ");
-			factories.put(factory.getCyFileFilter(), factory);
+			factories.put(factory.getFileFilter(), factory);
 		} else
 			logger.warn("Specified factory is null or has wrong DataCategory (" + category + ")");
 	}
 
 	@SuppressWarnings("unchecked")
 	public void removeCyWriterFactory(T factory, Map props) {
-		factories.remove(factory.getCyFileFilter());
+		factories.remove(factory.getFileFilter());
 	}
 
 	public T getMatchingFactory(CyFileFilter filter, OutputStream stream) {
 		for (T factory : factories.values()) {
-			CyFileFilter cff = factory.getCyFileFilter();
+			CyFileFilter cff = factory.getFileFilter();
 			if ( filter.equals(cff) ) {
 				logger.debug("found factory for file filter: " + filter.toString());
 				factory.setOutputStream(stream);

@@ -82,7 +82,7 @@ class QuickFindImpl implements QuickFind {
 
 		//  Use default index specified by network, if available.
 		//  Otherwise, index by UNIQUE_IDENTIFIER.
-		String controllingAttribute = network.getCyRow(network).get(QuickFind.DEFAULT_INDEX, String.class);
+		String controllingAttribute = network.getRow(network).get(QuickFind.DEFAULT_INDEX, String.class);
 
 		CyTable nodeTable = null;
 		CyNode node = network.getNodeList().iterator().next();
@@ -427,7 +427,7 @@ class QuickFindImpl implements QuickFind {
 	 */
 	private void addToIndex(CyNetwork network, Class<?> attributeType, CyTableEntry graphObject,
 	                        String controllingAttribute, GenericIndex index) {
-		CyRow row = network.getCyRow(graphObject);
+		CyRow row = network.getRow(graphObject);
 		//  Get attribute values, and index
 		if (attributeType == Integer.class) {
 			Integer value = row.get(controllingAttribute, Integer.class);

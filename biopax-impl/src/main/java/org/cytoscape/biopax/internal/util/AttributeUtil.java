@@ -16,7 +16,7 @@ public class AttributeUtil {
 	}
 
 	public static void copyAttributes(CyNetwork network, CyTableEntry source, CyTableEntry target) {
-		CyRow sourceRow = network.getCyRow(source);
+		CyRow sourceRow = network.getRow(source);
 		for (Entry<String, Object> entry : sourceRow.getAllValues().entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -33,7 +33,7 @@ public class AttributeUtil {
 	
 	
 	public static void set(CyNetwork network, CyTableEntry entry, String tableName, String name, Object value, Class<?> type) {
-		CyRow row = (tableName==null) ? network.getCyRow(entry) : network.getCyRow(entry,tableName);
+		CyRow row = (tableName==null) ? network.getRow(entry) : network.getRow(entry,tableName);
 		CyTable table = row.getTable();
 		CyColumn column = table.getColumn(name);
 		if (column == null) {

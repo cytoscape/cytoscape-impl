@@ -30,7 +30,7 @@ public class BuildVisualStyleTask extends AbstractTask {
 	logger.debug("Network: " + targetNetwork);
 	logger.debug("Builder: " + util.vsBuilder);
 	
-	final String networkName = targetNetwork.getCyRow(targetNetwork).get(CyTableEntry.NAME, String.class);
+	final String networkName = targetNetwork.getRow(targetNetwork).get(CyTableEntry.NAME, String.class);
 	tm.setProgress(0.1);
 	final VisualStyle style = util.vsBuilder.buildStyle(networkName + " Style");
 

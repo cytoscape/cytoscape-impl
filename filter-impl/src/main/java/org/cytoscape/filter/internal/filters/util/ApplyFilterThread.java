@@ -85,10 +85,10 @@ class ApplyFilterThread extends Thread {
 
 		if (pObject instanceof CyNode) {
 			CyNode node = (CyNode) pObject;
-			data = network.getCyRow(node);
+			data = network.getRow(node);
 		} else {
 			CyEdge edge = (CyEdge) pObject;
-			data = network.getCyRow(edge);
+			data = network.getRow(edge);
 		}
 
 		if (pAtomicFilter instanceof StringFilter) {

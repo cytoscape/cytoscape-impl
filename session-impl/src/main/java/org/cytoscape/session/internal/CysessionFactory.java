@@ -156,7 +156,7 @@ public class CysessionFactory {
 			final String DEF_STYLE_NAME = vmMgr.getDefaultVisualStyle().getTitle();
 			
 			for (CyNetwork cyNet : networks) {
-				String name = cyNet.getCyRow(cyNet).get(CyNetwork.NAME, String.class);
+				String name = cyNet.getRow(cyNet).get(CyNetwork.NAME, String.class);
 				String styleName = DEF_STYLE_NAME;
 				
 				CyNetworkView cyNetView = nvMgr.getNetworkView(cyNet.getSUID());
@@ -175,7 +175,7 @@ public class CysessionFactory {
 
 				if (cyNet instanceof CySubNetwork) {
 					CySubNetwork cysSubNet = (CySubNetwork) cyNet;
-					String parentName = cysSubNet.getRootNetwork().getCyRow(cysSubNet.getRootNetwork()).get(CyNetwork.NAME, String.class);
+					String parentName = cysSubNet.getRootNetwork().getRow(cysSubNet.getRootNetwork()).get(CyNetwork.NAME, String.class);
 
 					Parent parent = new Parent();
 					parent.setId(parentName);

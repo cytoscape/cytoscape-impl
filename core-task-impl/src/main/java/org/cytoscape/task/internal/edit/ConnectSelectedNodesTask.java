@@ -55,11 +55,11 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 						// connect it
 						final CyEdge newEdge = network.addEdge(source, target, false);
 						newEdges.add(newEdge);
-						network.getCyRow(newEdge).set(
+						network.getRow(newEdge).set(
 							CyTableEntry.NAME,
-							network.getCyRow(source).get(CyTableEntry.NAME, String.class) + " (" + INTERACTION + ") "
-							+ network.getCyRow(target).get(CyTableEntry.NAME, String.class));
-						network.getCyRow(newEdge).set(CyEdge.INTERACTION, INTERACTION);
+							network.getRow(source).get(CyTableEntry.NAME, String.class) + " (" + INTERACTION + ") "
+							+ network.getRow(target).get(CyTableEntry.NAME, String.class));
+						network.getRow(newEdge).set(CyEdge.INTERACTION, INTERACTION);
 					}
 				}
 			}

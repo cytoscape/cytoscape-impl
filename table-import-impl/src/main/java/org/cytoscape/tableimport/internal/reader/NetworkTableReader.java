@@ -131,7 +131,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		//InputStream is = null;
 		String line;
 
-		network.getCyRow(network).set("name", this.getNetworkName());
+		network.getRow(network).set("name", this.getNetworkName());
 		parser.setNetwork(network);
 		
 		try {

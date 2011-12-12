@@ -327,7 +327,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		
 				//VisualLexicon lexicon = engine.getVisualLexicon();
 				//String title = VisualPropertyUtil.get(lexicon, view, "NETWORK_TITLE", MinimalVisualLexicon.NETWORK, String.class);
-				tblFeedBack.getModel().setValueAt(cyNetwork.getCyRow(cyNetwork).get("name", String.class), 0, 0);
+				tblFeedBack.getModel().setValueAt(cyNetwork.getRow(cyNetwork).get("name", String.class), 0, 0);
 
 				String nodeStr = "" + cyNetwork.getNodeCount() + "(" + CyTableUtil.getNodesInState(cyNetwork,"selected",true).size() + ")";
 				tblFeedBack.getModel().setValueAt(nodeStr, 0, 1);
@@ -399,7 +399,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 		
 		CyTableEntry tableEntry = entries.iterator().next();
-		final Collection<CyColumn> columns = network.getCyRow(tableEntry).getTable().getColumns();
+		final Collection<CyColumn> columns = network.getRow(tableEntry).getTable().getColumns();
 		for (final CyColumn column : columns) {
 			//  Show all attributes, with type of String or Number
 			Class<?> type = column.getType();

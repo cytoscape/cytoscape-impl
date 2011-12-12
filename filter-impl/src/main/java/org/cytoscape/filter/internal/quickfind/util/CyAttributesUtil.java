@@ -73,7 +73,7 @@ public class CyAttributesUtil {
 		if (attributeKey.equals(QuickFind.UNIQUE_IDENTIFIER)) {
 			terms = new String[] {String.valueOf(graphObject.getSUID())};
 		} else {
-			CyRow row = network.getCyRow(graphObject);
+			CyRow row = network.getRow(graphObject);
 			Class<?> type = row.getTable().getColumn(attributeKey).getType();
 			boolean hasAttribute = type != null;
 
@@ -191,7 +191,7 @@ public class CyAttributesUtil {
 			return true;
 		}
 		for (CyTableEntry entry : entries) {
-			CyRow row = cyNetwork.getCyRow(entry);
+			CyRow row = cyNetwork.getRow(entry);
 			Class<?> type = row.getTable().getColumn(attributeName).getType();
 			if (row.get(attributeName, type) != null) {
 				return false;

@@ -59,10 +59,10 @@ public class InvertSelectedNodesTask extends AbstractSelectTask {
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));
 		tm.setProgress(0.2);
 		for (final CyNode n : network.getNodeList()) {
-			if (network.getCyRow(n).get(CyNetwork.SELECTED, Boolean.class))
-				network.getCyRow(n).set(CyNetwork.SELECTED, false);
+			if (network.getRow(n).get(CyNetwork.SELECTED, Boolean.class))
+				network.getRow(n).set(CyNetwork.SELECTED, false);
 			else
-				network.getCyRow(n).set(CyNetwork.SELECTED, true);
+				network.getRow(n).set(CyNetwork.SELECTED, true);
 		}
 		tm.setProgress(0.8);
 		eventHelper.flushPayloadEvents();

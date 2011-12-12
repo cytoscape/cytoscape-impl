@@ -76,7 +76,7 @@ public class Cy3SessionReaderFactoryImpl implements InputStreamTaskFactory {
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 

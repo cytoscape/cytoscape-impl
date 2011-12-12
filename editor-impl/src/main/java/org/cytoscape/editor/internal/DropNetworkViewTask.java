@@ -64,7 +64,7 @@ public class DropNetworkViewTask extends AbstractNetworkViewTask {
 			new_node_index++;
 		}
 
-		net.getCyRow(n).set("name", nodeName);
+		net.getRow(n).set("name", nodeName);
 		
 		eh.flushPayloadEvents();
 		View<CyNode> nv = view.getNodeView(n);

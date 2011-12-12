@@ -42,10 +42,10 @@ public class RowViewTracker implements NetworkViewAddedListener,
 				final CyNetwork net = view.getModel(); 
 
 				for ( View<CyNode> nv : view.getNodeViews() )
-					rowViewMap.put( net.getCyRow(nv.getModel()), nv);
+					rowViewMap.put( net.getRow(nv.getModel()), nv);
 		
 				for ( View<CyEdge> ev : view.getEdgeViews() ) 
-					rowViewMap.put( net.getCyRow(ev.getModel()), ev);
+					rowViewMap.put( net.getRow(ev.getModel()), ev);
 			}
 		});
 	}
@@ -57,7 +57,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 				final CyNetwork net = view.getModel(); 
 				
 				for ( View<CyNode> v : e.getNodeViews()) 
-					rowViewMap.put( net.getCyRow(v.getModel()), v );
+					rowViewMap.put( net.getRow(v.getModel()), v );
 			}
 		});
 	}
@@ -69,7 +69,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 				final CyNetwork net = view.getModel(); 
 
 				for ( View<CyEdge> v : e.getEdgeViews()) 
-					rowViewMap.put( net.getCyRow(v.getModel()), v );
+					rowViewMap.put( net.getRow(v.getModel()), v );
 			}
 		});
 	}
@@ -81,7 +81,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 				final CyNetwork net = view.getModel(); 
 
 				for ( View<CyNode> v : e.getNodeViews()) 
-					rowViewMap.remove( net.getCyRow(v.getModel()) );
+					rowViewMap.remove( net.getRow(v.getModel()) );
 			}
 		});
 	}
@@ -93,7 +93,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 				final CyNetwork net = view.getModel(); 
 
 				for ( View<CyEdge> v : e.getEdgeViews()) 
-					rowViewMap.remove( net.getCyRow(v.getModel()) );
+					rowViewMap.remove( net.getRow(v.getModel()) );
 			}
 		});
 	}

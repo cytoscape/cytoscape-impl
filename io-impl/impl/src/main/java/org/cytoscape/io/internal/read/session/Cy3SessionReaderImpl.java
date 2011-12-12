@@ -225,7 +225,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		reader.run(taskMonitor);
 
 		// Assume one table per entry
-		CyTable table = reader.getCyTables()[0];
+		CyTable table = reader.getTables()[0];
 		Matcher matcher = NETWORK_TABLE_PATTERN.matcher(entryName);
 		
 		if (matcher.matches()) {
@@ -270,7 +270,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractNetworks(InputStream is, String entryName) throws Exception {
 		CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		CyNetwork[] netArray = reader.getCyNetworks();
+		CyNetwork[] netArray = reader.getNetworks();
 		
 		for (CyNetwork net : netArray) {
 			networkLookup.put(net.getSUID(), net);
@@ -420,7 +420,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				
 				// Update filename<->table maps
 				String filename = builderFilenameMap.get(builder);
-				filenameTableMap.put(filename, metadata.getCyTable());
+				filenameTableMap.put(filename, metadata.getTable());
 			}
 		}
 	}
@@ -436,7 +436,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 		Map<String, CyTable> tableMap = networkTableManager.getTables(network, type);
 		CyTable targetTable = tableMap.get(namespace);
-		CyTable sourceTable = builder.getCyTable();
+		CyTable sourceTable = builder.getTable();
 		Map<String, Long> mappings = cache.getIdMap();
 		mergeTables(sourceTable, targetTable, mappings);
 		builder.setCyTable(targetTable);

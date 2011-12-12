@@ -64,8 +64,8 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 		
 		final List<CyNode> selectedNodes = new ArrayList<CyNode>();
 		
-		net.getCyRow(node1).set(CyNetwork.SELECTED, true);
-		net.getCyRow(node2).set(CyNetwork.SELECTED, true);
+		net.getRow(node1).set(CyNetwork.SELECTED, true);
+		net.getRow(node2).set(CyNetwork.SELECTED, true);
 		
 		selectedNodes.add(node1);
 		selectedNodes.add(node2);

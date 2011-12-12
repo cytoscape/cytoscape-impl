@@ -59,7 +59,7 @@ public abstract class AbstractNetworkReaderFactory implements InputStreamTaskFac
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 }

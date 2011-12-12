@@ -25,7 +25,7 @@ public class GetAttributePreviewDataTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
 		monitor.setProgress(0.0);
-		CyTable[] tbls = reader.getCyTables();
+		CyTable[] tbls = reader.getTables();
 		
 		CyColumn keyCol = tbls[0].getPrimaryKey();
 		

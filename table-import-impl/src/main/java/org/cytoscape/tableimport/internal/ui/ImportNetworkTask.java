@@ -120,7 +120,7 @@ public class ImportNetworkTask extends AbstractTask { //implements CyNetworkView
 
 		// Give the user some confirmation
 		sb.append("Successfully loaded network from:  ");
-		sb.append(newNetwork.getCyRow(newNetwork).get("title", String.class));
+		sb.append(newNetwork.getRow(newNetwork).get("title", String.class));
 		sb.append("\n\nNetwork contains "
 				+ formatter.format(newNetwork.getNodeCount()));
 		sb.append(" nodes and " + formatter.format(newNetwork.getEdgeCount()));

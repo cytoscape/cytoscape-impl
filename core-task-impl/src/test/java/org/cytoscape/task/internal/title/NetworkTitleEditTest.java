@@ -16,7 +16,7 @@ public class NetworkTitleEditTest {
 	public void runTest() {
 		final CyNetwork network = mock(CyNetwork.class);
 		final CyRow row =  mock(CyRow.class);
-		when(network.getCyRow(network)).thenReturn(row);
+		when(network.getRow(network)).thenReturn(row);
 		when(row.get("name", String.class)).thenReturn("newTitle");
 
 		final NetworkTitleEdit titleEdit = new NetworkTitleEdit(network, "oldTitle");

@@ -112,7 +112,7 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 					final File file = model.getNetwork(r);
 					if (file != null && file.isFile()) {
 						CyNetworkReader reader = cyNetworkViewReaderMgr.getReader(file.toURI(), file.getName());
-						CyNetwork[] networks = reader.getCyNetworks();
+						CyNetwork[] networks = reader.getNetworks();
 						// TODO do something with the networks?
 					}
 				}

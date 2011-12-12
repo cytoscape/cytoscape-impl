@@ -65,7 +65,7 @@ public class GraphMLReader extends AbstractTask implements CyNetworkReader {
 	}
 
 	@Override
-	public CyNetwork[] getCyNetworks() {
+	public CyNetwork[] getNetworks() {
 		if(parser == null)
 			throw new IllegalStateException("Parser is not initialized.");
 		

@@ -154,7 +154,7 @@ public class GraphMLParser extends DefaultHandler {
 					network.removeNodes(toBeRemoved);
 			}
 		}
-		currentNetwork.getCyRow(currentNetwork).set(CyTableEntry.NAME, networkID);
+		currentNetwork.getRow(currentNetwork).set(CyTableEntry.NAME, networkID);
 		
 		networkStack.push(currentNetwork);
 		cyNetworks.add(currentNetwork);
@@ -174,7 +174,7 @@ public class GraphMLParser extends DefaultHandler {
 			currentObject = nodeid2CyNodeMap.get(currentAttributeID);
 			if (currentObject == null) {
 				currentObject = rootNetwork.addNode();
-				rootNetwork.getCyRow(currentObject).set(CyTableEntry.NAME, currentAttributeID);
+				rootNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentAttributeID);
 				nodeid2CyNodeMap.put(currentAttributeID, currentObject);
 			}
 
@@ -188,7 +188,7 @@ public class GraphMLParser extends DefaultHandler {
 			currentObject = nodeid2CyNodeMap.get(currentAttributeID);
 			if (currentObject == null) {
 				currentObject = currentNetwork.addNode();
-				currentNetwork.getCyRow(currentObject).set(CyTableEntry.NAME, currentAttributeID);
+				currentNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentAttributeID);
 				nodeid2CyNodeMap.put(currentAttributeID, currentObject);
 			}
 		}
@@ -207,8 +207,8 @@ public class GraphMLParser extends DefaultHandler {
 		if (networkStack.size() > 1) {
 			final CyNetwork rootNetwork = networkStack.get(0);
 			currentObject = rootNetwork.addEdge(sourceNode, targetNode, directed);
-			rootNetwork.getCyRow(currentObject).set(CyTableEntry.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
-			rootNetwork.getCyRow(currentObject).set(CyEdge.INTERACTION, "-");
+			rootNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
+			rootNetwork.getRow(currentObject).set(CyEdge.INTERACTION, "-");
 
 			for (CyNetwork network : networkStack) {
 				if (network != rootNetwork) {
@@ -218,8 +218,8 @@ public class GraphMLParser extends DefaultHandler {
 		} else {
 			try {
 				currentObject = currentNetwork.addEdge(sourceNode, targetNode, directed);
-				currentNetwork.getCyRow(currentObject).set(CyTableEntry.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
-				currentNetwork.getCyRow(currentObject).set(CyEdge.INTERACTION, "-");
+				currentNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
+				currentNetwork.getRow(currentObject).set(CyEdge.INTERACTION, "-");
 			} catch (Exception e) {
 				logger.warn("Edge entry ignored: " + currentEdgeSourceName + " (-) " + currentEdgeTargetName, e);
 			}
@@ -235,13 +235,13 @@ public class GraphMLParser extends DefaultHandler {
 			if (currentObjectTarget.equals(NODE.getTag()) || currentObjectTarget.equals(EDGE.getTag()) || currentObjectTarget.equals(GRAPH.getTag())) {
 				if (currentAttributeType != null && currentAttributeData.trim().length() != 0) {
 					final String columnName = datanameMap.get(currentAttributeKey);
-					final CyColumn column = currentNetwork.getCyRow(currentObject).getTable().getColumn(columnName);
+					final CyColumn column = currentNetwork.getRow(currentObject).getTable().getColumn(columnName);
 					final GraphMLToken attrTag = GraphMLToken.getType(currentAttributeType);
 					if (attrTag != null && attrTag.getDataType() != null) {
 						if (column == null)
-							currentNetwork.getCyRow(currentObject).getTable().createColumn(columnName, attrTag.getDataType(), false);
+							currentNetwork.getRow(currentObject).getTable().createColumn(columnName, attrTag.getDataType(), false);
 						
-						currentNetwork.getCyRow(currentObject).set(columnName, attrTag.getObjectValue(currentAttributeData));
+						currentNetwork.getRow(currentObject).set(columnName, attrTag.getObjectValue(currentAttributeData));
 					}
 				}
 			}

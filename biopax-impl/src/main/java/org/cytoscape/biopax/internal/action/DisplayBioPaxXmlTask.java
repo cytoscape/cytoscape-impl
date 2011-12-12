@@ -35,7 +35,7 @@ public final class DisplayBioPaxXmlTask implements Task {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		CyNode node = nodeView.getModel();
-		CyRow row = networkView.getModel().getCyRow(node);
+		CyRow row = networkView.getModel().getRow(node);
 		String owlxml = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
 		String label = row.get(CyNode.NAME, String.class);	
 		Component component = factory.getCySwingApplication().getJFrame();

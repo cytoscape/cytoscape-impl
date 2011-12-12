@@ -101,7 +101,7 @@ public class NetworkStats {
 	 */
 	public NetworkStats(CyNetwork aNetwork, String aInterpretName) {
 		params = new HashMap<String, Object>();
-		set("networkTitle", aNetwork.getCyRow(aNetwork).get("name",String.class) + aInterpretName);
+		set("networkTitle", aNetwork.getRow(aNetwork).get("name",String.class) + aInterpretName);
 		set("nodeCount", new Integer(aNetwork.getNodeCount()));
 		network = aNetwork;
 	}

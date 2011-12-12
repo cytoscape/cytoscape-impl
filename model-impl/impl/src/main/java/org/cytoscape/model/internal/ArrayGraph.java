@@ -1036,7 +1036,7 @@ final public class ArrayGraph implements CyRootNetwork {
 	/**
 	 * {@inheritDoc}
 	 */
-	public CyRow getCyRow(CyTableEntry entry, String tableName) {
+	public CyRow getRow(CyTableEntry entry, String tableName) {
 		if ( entry == null )
 			throw new NullPointerException("null entry");
 	
@@ -1062,7 +1062,7 @@ final public class ArrayGraph implements CyRootNetwork {
 	/**
 	 * {@inheritDoc}
 	 */
-	public CyRow getCyRow(CyTableEntry t) {
-		return getCyRow(t,CyNetwork.DEFAULT_ATTRS);
+	public CyRow getRow(CyTableEntry t) {
+		return getRow(t,CyNetwork.DEFAULT_ATTRS);
 	}
 }

@@ -68,7 +68,7 @@ public abstract class AbstractTableReaderFactory implements InputStreamTaskFacto
 		inputName = in;
 	}
 
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 }

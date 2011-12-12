@@ -53,21 +53,21 @@ public class CreateSubnetworkFromSearchTask extends AbstractTask {
 		boolean found = false;
 		List<CyNode> nodeList = target.getNodeList();
 		for (final CyNode node : nodeList) {
-			final String nodeName = target.getCyRow(node).get(CyTableEntry.NAME, String.class);
+			final String nodeName = target.getRow(node).get(CyTableEntry.NAME, String.class);
 
 			if (geneList.contains(nodeName) && state.getDiseaseGenes().contains(nodeName)) {
-				target.getCyRow(node).set(CyNetwork.SELECTED, true);
-				target.getCyRow(node).set(QUERY_GENE_ATTR_NAME, "query and disease");
-				target.getCyRow(node).set(SEARCH_GENE_ATTR_NAME, state.getSearchTerms());
+				target.getRow(node).set(CyNetwork.SELECTED, true);
+				target.getRow(node).set(QUERY_GENE_ATTR_NAME, "query and disease");
+				target.getRow(node).set(SEARCH_GENE_ATTR_NAME, state.getSearchTerms());
 				found = true;
 			} else if (geneList.contains(nodeName)) {
-				target.getCyRow(node).set(CyNetwork.SELECTED, true);
-				target.getCyRow(node).set(QUERY_GENE_ATTR_NAME, "query");
+				target.getRow(node).set(CyNetwork.SELECTED, true);
+				target.getRow(node).set(QUERY_GENE_ATTR_NAME, "query");
 				found = true;
 			} else if (state.getDiseaseGenes().contains(nodeName)) {
-				target.getCyRow(node).set(CyNetwork.SELECTED, true);
-				target.getCyRow(node).set(QUERY_GENE_ATTR_NAME, "disease");
-				target.getCyRow(node).set(SEARCH_GENE_ATTR_NAME, state.getSearchTerms());
+				target.getRow(node).set(CyNetwork.SELECTED, true);
+				target.getRow(node).set(QUERY_GENE_ATTR_NAME, "disease");
+				target.getRow(node).set(SEARCH_GENE_ATTR_NAME, state.getSearchTerms());
 			}
 		}
 

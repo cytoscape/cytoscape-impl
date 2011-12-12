@@ -38,7 +38,7 @@ public class HandleNodeAttribute extends AbstractHandler {
 				}
 			}
 
-			manager.currentAttributes = manager.getCurrentNetwork().getCyRow(manager.currentNode);
+			manager.currentAttributes = manager.getCurrentNetwork().getRow(manager.currentNode);
 			ParseState nextState = attributeValueUtil.handleAttribute(atts, manager.currentAttributes);
 
 			if (nextState != ParseState.NONE) return nextState;

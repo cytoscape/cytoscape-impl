@@ -67,7 +67,7 @@ public class VizmapWriterFactoryImpl implements VizmapWriterFactory {
     }
 
     @Override
-    public CyFileFilter getCyFileFilter() {
+    public CyFileFilter getFileFilter() {
         return fileFilter;
     }
 

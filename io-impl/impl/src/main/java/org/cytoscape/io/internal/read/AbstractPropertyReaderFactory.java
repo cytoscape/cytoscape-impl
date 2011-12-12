@@ -51,7 +51,7 @@ public abstract class AbstractPropertyReaderFactory implements InputStreamTaskFa
 		inputName = in;
 	}
 
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 }

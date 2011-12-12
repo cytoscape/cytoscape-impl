@@ -90,7 +90,7 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 
 		} catch (Exception e) {
 			throw new Exception("Could not create network view for network: "
-				+ network.getCyRow(network).get(CyTableEntry.NAME, String.class), e);
+				+ network.getRow(network).get(CyTableEntry.NAME, String.class), e);
 		}
 
 		if (undoSupport != null)
@@ -100,7 +100,7 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 		
 		taskMonitor.setProgress(1.0);
 		taskMonitor.setStatusMessage("Network view successfully create for:  "
-				+ network.getCyRow(network).get(CyTableEntry.NAME, String.class));
+				+ network.getRow(network).get(CyTableEntry.NAME, String.class));
 		
 		logger.info("Network view creation finished in " + (System.currentTimeMillis() -start) + " msec.");
 	}

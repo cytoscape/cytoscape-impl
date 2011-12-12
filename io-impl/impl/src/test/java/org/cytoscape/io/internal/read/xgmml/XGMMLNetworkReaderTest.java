@@ -166,7 +166,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 				rootNetworkManager, renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
 		snvp.run(taskMonitor);
 
-		final CyNetwork[] networks = snvp.getCyNetworks();
+		final CyNetwork[] networks = snvp.getNetworks();
 		final CyNetworkView[] views = new CyNetworkView[networks.length];
 		int i = 0;
 

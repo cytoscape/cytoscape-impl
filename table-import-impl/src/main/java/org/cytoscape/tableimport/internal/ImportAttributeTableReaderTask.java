@@ -61,11 +61,11 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	}
 
 	@Override
-	public CyTable[] getCyTables() {
+	public CyTable[] getTables() {
 		if (this.importTablePanel.getLoadTask() instanceof ImportAttributeTableTask) {
 			ImportAttributeTableTask importTask = (ImportAttributeTableTask) this.importTablePanel
 					.getLoadTask();
-			return importTask.getCyTables();
+			return importTask.getTables();
 		}
 		
 		

@@ -139,7 +139,7 @@ public class NCBIGenePanel extends AttributeImportPanel {
 		for(final CyNetwork net: networks) {
 			final List<CyNode> nodes = net.getNodeList();
 			for(final CyNode node: nodes) {
-				final String val = net.getCyRow(node).get(attrName, String.class);
+				final String val = net.getRow(node).get(attrName, String.class);
 				if(val != null) {
 					logger.debug("node ID found = " + val);
 					idList.add(val);

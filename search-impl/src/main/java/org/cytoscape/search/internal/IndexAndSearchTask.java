@@ -131,11 +131,11 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 		List<CyNode> nodeList = network.getNodeList();
 		for (CyNode n : nodeList) {
-			network.getCyRow(n).set(CyNetwork.SELECTED,false);
+			network.getRow(n).set(CyNetwork.SELECTED,false);
 		}
 		List<CyEdge> edgeList = network.getEdgeList();
 		for (CyEdge e : edgeList) {
-			network.getCyRow(e).set(CyNetwork.SELECTED, false);
+			network.getRow(e).set(CyNetwork.SELECTED, false);
 		}
 
 		int nodeHitCount = queryHandler.getNodeHitCount();
@@ -154,7 +154,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			int currESPIndex = Integer.parseInt(nodeIt.next().toString());
 			CyNode currNode = network.getNode(currESPIndex);
 			if (currNode != null)
-				network.getCyRow(currNode).set(CyNetwork.SELECTED, true);
+				network.getRow(currNode).set(CyNetwork.SELECTED, true);
 			else
 				System.out.println("Unknown node identifier " + (currESPIndex));
 
@@ -167,7 +167,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			int currESPIndex = Integer.parseInt(edgeIt.next().toString());
 			CyEdge currEdge = network.getEdge(currESPIndex);
 			if (currEdge != null)
-				network.getCyRow(currEdge).set(CyNetwork.SELECTED, true);
+				network.getRow(currEdge).set(CyNetwork.SELECTED, true);
 			else
 				System.out.println("Unknown edge identifier " + (currESPIndex));
 

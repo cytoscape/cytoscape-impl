@@ -339,7 +339,7 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			internalNodeCount++;
 			nodeSet.add(node);
 			updateNode(node);
-			copyDefaultAttrs(parent.getCyRow(node), this.getCyRow(node));
+			copyDefaultAttrs(parent.getRow(node), this.getRow(node));
 		}
 		eventHelper.addEventPayload((CyNetwork)this, node, AddedNodesEvent.class);
 
@@ -377,8 +377,8 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			internalEdgeCount++;
 			edgeSet.add(edge);
 			updateEdge(edge);
-			copyDefaultAttrs(parent.getCyRow(edge), this.getCyRow(edge));
-			copyDefaultEdgeAttrs(parent.getCyRow(edge), this.getCyRow(edge));
+			copyDefaultAttrs(parent.getRow(edge), this.getRow(edge));
+			copyDefaultEdgeAttrs(parent.getRow(edge), this.getRow(edge));
 		}
 		eventHelper.addEventPayload((CyNetwork)this, edge, AddedEdgesEvent.class);
 
@@ -524,14 +524,14 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	/**
 	 * {@inheritDoc}
 	 */
-	public CyRow getCyRow(final CyTableEntry entry) {
-		return getCyRow(entry, CyNetwork.DEFAULT_ATTRS);
+	public CyRow getRow(final CyTableEntry entry) {
+		return getRow(entry, CyNetwork.DEFAULT_ATTRS);
 	}
 
     /**
      * {@inheritDoc}
      */
-    public CyRow getCyRow(CyTableEntry entry, String tableName) {
+    public CyRow getRow(CyTableEntry entry, String tableName) {
         if ( entry == null )
             throw new NullPointerException("null entry");
 
@@ -556,6 +556,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 
 	public String toString() {
-		return "CyNetwork: " + internalSUID + " name: " + getCyRow(this).get("name", String.class); 
+		return "CyNetwork: " + internalSUID + " name: " + getRow(this).get("name", String.class); 
 	}
 }

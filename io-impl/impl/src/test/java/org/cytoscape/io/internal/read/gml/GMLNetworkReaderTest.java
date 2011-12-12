@@ -52,7 +52,7 @@ public class GMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 													   renderingEngineManager, unrecognizedVisualPropertyMgr);
 		reader.run(taskMonitor);
 		
-		final CyNetwork[] networks = reader.getCyNetworks();
+		final CyNetwork[] networks = reader.getNetworks();
 		final CyNetworkView[] networkViews = new CyNetworkView[networks.length];
 		int i = 0;
 		for(CyNetwork network: networks) {

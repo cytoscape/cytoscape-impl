@@ -83,7 +83,7 @@ public class OpenRecentSessionTaskFactory implements TaskFactory {
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			logger.debug("Post processiong for session...");
 
-			final CySession newSession = reader.getCySession();
+			final CySession newSession = reader.getSession();
 			if (newSession == null)
 				throw new NullPointerException("Session could not be read for file: " + targetSession.toString());
 

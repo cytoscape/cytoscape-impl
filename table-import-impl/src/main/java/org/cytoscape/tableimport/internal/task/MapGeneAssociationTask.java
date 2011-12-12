@@ -33,7 +33,7 @@ public class MapGeneAssociationTask extends AbstractTask {
 		taskMonitor.setTitle("Mapping Global Gene Association Table to Local Network Tabels");
 		taskMonitor.setStatusMessage("Mapping global colums to local...");
 		
-		final CyTable[] tables = tableReader.getCyTables();
+		final CyTable[] tables = tableReader.getTables();
 
 		if (tables == null || tables[0] == null)
 			throw new NullPointerException("Could not find table.");

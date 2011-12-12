@@ -109,7 +109,7 @@ abstract class NetworkListDialog extends JDialog implements ListSelectionListene
 		int i = 0;
 		for (final CyNetwork network : networkSet) {
 			networks.add(network);
-			netTitles[i++] = network.getCyRow(network).get("name", String.class);
+			netTitles[i++] = network.getRow(network).get("name", String.class);
 		}
 		listNetNames = new JList(netTitles);
 		listNetNames.addListSelectionListener(this);

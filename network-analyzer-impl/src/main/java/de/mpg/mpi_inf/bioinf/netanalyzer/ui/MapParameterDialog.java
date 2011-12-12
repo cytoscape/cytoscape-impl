@@ -202,7 +202,7 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		Utils.setStandardBorder(contentPane);
 
 		// Add a title label
-		String tt = "<html>" + Messages.DI_APPLYVS + "<b>" + network.getCyRow(network).get("name", String.class) + "</b>";
+		String tt = "<html>" + Messages.DI_APPLYVS + "<b>" + network.getRow(network).get("name", String.class) + "</b>";
 		contentPane.add(new JLabel(tt, SwingConstants.CENTER), BorderLayout.PAGE_START);
 
 		boolean attrCalculated = false;
@@ -486,13 +486,13 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		for (int i = 0; i < attr.length; i++) {
 			for (int j = 0; j < attr[i].length; j++) {
 				final Class<?> attrType =
-					network.getCyRow(entry).getTable().getColumn(attr[i][j]).getType();
+					network.getRow(entry).getTable().getColumn(attr[i][j]).getType();
 
 				Double attrValue = new Double(0.0);
 				if (attrType == Integer.class)
-					attrValue = network.getCyRow(entry).get(attr[i][j], Integer.class).doubleValue();
+					attrValue = network.getRow(entry).get(attr[i][j], Integer.class).doubleValue();
 				else if (attrType == Double.class)
-					attrValue = network.getCyRow(entry).get(attr[i][j], Double.class);
+					attrValue = network.getRow(entry).get(attr[i][j], Double.class);
 
 				if (attrValue != null && !attrValue.isNaN()) {
 					final Double oldMinValue = minAttrValue.get(attr[i][j]);

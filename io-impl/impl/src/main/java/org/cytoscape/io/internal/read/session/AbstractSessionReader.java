@@ -108,7 +108,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	}
 
 	@Override
-	public CySession getCySession() {
+	public CySession getSession() {
 		CySession ret = new CySession.Builder().networks(networks).networkViews(networkViews)
 				.viewVisualStyleMap(visualStyleMap).cytoscapeProperties(cytoscapeProps).visualStyles(visualStyles)
 				.bookmarks(bookmarks).cysession(cysession).appFileListMap(appFileListMap).tables(tableMetadata)

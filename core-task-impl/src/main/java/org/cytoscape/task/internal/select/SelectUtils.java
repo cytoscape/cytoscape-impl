@@ -57,6 +57,6 @@ final class SelectUtils {
 	private void setSelected(final CyNetwork network, final Collection<? extends CyTableEntry> objects, final boolean select) {
 
 		for (final CyTableEntry nodeOrEdge : objects)
-			network.getCyRow(nodeOrEdge).set(CyNetwork.SELECTED, select);
+			network.getRow(nodeOrEdge).set(CyNetwork.SELECTED, select);
 	}
 }

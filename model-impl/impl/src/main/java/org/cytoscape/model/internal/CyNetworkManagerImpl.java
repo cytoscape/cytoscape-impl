@@ -105,9 +105,9 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 	    CyTable edgeTable = network.getDefaultEdgeTable();
 
 		for (CyNode n : network.getNodeList())
-		    network.getCyRow(n).set(CyNetwork.SELECTED, false);
+		    network.getRow(n).set(CyNetwork.SELECTED, false);
 		for (CyEdge e : network.getEdgeList())
-		    network.getCyRow(e).set(CyNetwork.SELECTED, false);
+		    network.getRow(e).set(CyNetwork.SELECTED, false);
 
 	    networkMap.remove(networkId);
 	    

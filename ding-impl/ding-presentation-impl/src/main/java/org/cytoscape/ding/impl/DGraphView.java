@@ -498,7 +498,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		logger.debug("Phase 2: Canvas created: time = "
 				+ (System.currentTimeMillis() - start));
 
-		this.title = model.getCyRow(model).get(CyTableEntry.NAME, String.class);
+		this.title = model.getRow(model).get(CyTableEntry.NAME, String.class);
 
 		// Create view model / presentations for the graph
 		for (final CyNode nn : model.getNodeList())
@@ -1345,7 +1345,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			synchronized (m_lock) {
 				edge = ((DEdgeView) obj).getEdge();
 
-				model.getCyRow(edge,"VIEW").set("hidden", true);
+				model.getRow(edge,"VIEW").set("hidden", true);
 				if (!m_drawPersp.removeEdges(Collections.singletonList(edge)))
 					return false;
 
@@ -1387,7 +1387,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				nView.m_hiddenXMax = m_extentsBuff[2];
 				nView.m_hiddenYMax = m_extentsBuff[3];
 				m_drawPersp.removeNodes(Collections.singletonList(nnode));
-				model.getCyRow(nnode,"VIEW").set("hidden", true);
+				model.getRow(nnode,"VIEW").set("hidden", true);
 				m_spacial.delete(nodeInx);
 				m_contentChanged = true;
 			}
@@ -1450,7 +1450,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					return false;
 				}
 
-				model.getCyRow(nnode,"VIEW").set("hidden", false);
+				model.getRow(nnode,"VIEW").set("hidden", false);
 				if (!m_drawPersp.addNode(nnode))
 					return false;
 
@@ -1500,7 +1500,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 				newEdge = edge;
 
-				model.getCyRow(newEdge,"VIEW").set("hidden", false);
+				model.getRow(newEdge,"VIEW").set("hidden", false);
 				if (!m_drawPersp.addEdge(newEdge))
 					return false;
 

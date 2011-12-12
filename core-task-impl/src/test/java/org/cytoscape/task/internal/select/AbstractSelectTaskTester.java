@@ -77,12 +77,12 @@ public class AbstractSelectTaskTester {
 	r1 = mock(CyRow.class);
 	when(r1.getTable()).thenReturn(table);
 	e1 = mock(CyEdge.class);
-	when(net.getCyRow(e1)).thenReturn(r1);
+	when(net.getRow(e1)).thenReturn(r1);
 
 	r2 = mock(CyRow.class);
 	when(r2.getTable()).thenReturn(table);
 	e2 = mock(CyEdge.class);
-	when(net.getCyRow(e2)).thenReturn(r2);
+	when(net.getRow(e2)).thenReturn(r2);
 
 	List<CyEdge> el = new ArrayList<CyEdge>();
 	el.add(e1);
@@ -92,12 +92,12 @@ public class AbstractSelectTaskTester {
 	r3 = mock(CyRow.class);
 	when(r3.getTable()).thenReturn(table);
 	e3 = mock(CyNode.class);
-	when(net.getCyRow(e3)).thenReturn(r3);
+	when(net.getRow(e3)).thenReturn(r3);
 
 	r4 = mock(CyRow.class);
 	when(r4.getTable()).thenReturn(table);
 	e4 = mock(CyNode.class);
-	when(net.getCyRow(e4)).thenReturn(r4);
+	when(net.getRow(e4)).thenReturn(r4);
 
 	List<CyNode> nl = new ArrayList<CyNode>();
 	nl.add(e3);

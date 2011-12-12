@@ -25,7 +25,7 @@ public abstract class AbstractCyNetworkViewWriterFactory implements CyNetworkVie
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 

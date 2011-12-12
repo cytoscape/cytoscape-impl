@@ -324,7 +324,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      */
 	private void writeNetworkAttributes() throws IOException {
 		// Handle all of the other network attributes, but only if exporting to XGMML directly
-		writeAttributes(network.getCyRow(network));
+		writeAttributes(network.getRow(network));
 
 		// Write sub-graphs first, but only if the XGMML is for a CYS file
 		if (sessionFormat && subNetworks != null) {
@@ -423,7 +423,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			depth++;
 			
 			// Output the node attributes
-			writeAttributes(network.getCyRow(node));
+			writeAttributes(network.getRow(node));
 			
 	        // Write node's sub-graph:
 			CyNetwork subNet = node.getNetworkPointer();
@@ -458,7 +458,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 					write(">\n");
 					depth++;
 					
-					writeAttributes(subNet.getCyRow(subNet));
+					writeAttributes(subNet.getRow(subNet));
 					
 					for (CyNode n : subNet.getNodeList())
 						writeNode(subNet,n);
@@ -535,7 +535,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			depth++;
 
 			// Write the edge attributes
-			writeAttributes(network.getCyRow(edge));
+			writeAttributes(network.getRow(edge));
 	
 			// Write the edge graphics
 			if (networkView != null) {
@@ -952,7 +952,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     }
 
     private String getLabel(CyNetwork network, CyTableEntry entry) {
-        String label = encode(network.getCyRow(entry).get(CyNetwork.NAME, String.class));
+        String label = encode(network.getRow(entry).get(CyNetwork.NAME, String.class));
         
         if (label == null || label.isEmpty())
         	label = Long.toString(entry.getSUID());

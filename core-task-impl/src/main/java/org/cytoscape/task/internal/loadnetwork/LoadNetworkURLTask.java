@@ -103,6 +103,6 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 	}
 	
 	protected CyNetwork[] getCyNetworks() {
-		return reader.getCyNetworks();
+		return reader.getNetworks();
 	}
 }

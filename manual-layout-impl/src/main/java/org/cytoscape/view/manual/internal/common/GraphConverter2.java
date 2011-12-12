@@ -149,7 +149,7 @@ public final class GraphConverter2 {
 					if (noNodesSelected)
 						return true;
 
-					return fixedGraph.getCyRow(node).get(CyNetwork.SELECTED,Boolean.class); 
+					return fixedGraph.getRow(node).get(CyNetwork.SELECTED,Boolean.class); 
 				}
 
 				public void setNodePosition(CyNode node, double xPos, double yPos) {

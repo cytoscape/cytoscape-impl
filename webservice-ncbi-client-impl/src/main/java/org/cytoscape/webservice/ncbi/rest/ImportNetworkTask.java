@@ -78,7 +78,7 @@ public class ImportNetworkTask implements Callable<Double> {
 
 		// This is the center of spokes
 		final CyNode centerNode = network.addNode();
-		network.getCyRow(centerNode).set(CyTableEntry.NAME, geneIDString);
+		network.getRow(centerNode).set(CyTableEntry.NAME, geneIDString);
 		this.nodeName2CyNodeMap.put(geneIDString, centerNode);
 
 		final NodeList ids = result.getElementsByTagName("Gene-commentary");
@@ -154,14 +154,14 @@ public class ImportNetworkTask implements Callable<Double> {
 						nodeName2CyNodeMap.put(id, targetNode);
 					}
 
-					network.getCyRow(targetNode).set(CyTableEntry.NAME, id);
+					network.getRow(targetNode).set(CyTableEntry.NAME, id);
 					logger.debug("New Node Name = " + id);
 					final CyEdge newEdge = network.addEdge(centerNode, targetNode, false);
-					network.getCyRow(newEdge).set(
+					network.getRow(newEdge).set(
 							CyTableEntry.NAME,
-							network.getCyRow(centerNode).get(CyTableEntry.NAME, String.class) + " ("
+							network.getRow(centerNode).get(CyTableEntry.NAME, String.class) + " ("
 									+ processor.getInteractionType() + ") "
-									+ network.getCyRow(targetNode).get(CyTableEntry.NAME, String.class));
+									+ network.getRow(targetNode).get(CyTableEntry.NAME, String.class));
 				}
 			}
 		}

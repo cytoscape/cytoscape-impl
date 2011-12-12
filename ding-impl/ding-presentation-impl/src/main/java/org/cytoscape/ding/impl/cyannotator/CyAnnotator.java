@@ -100,7 +100,7 @@ public class CyAnnotator {
 			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE,String.class,false,Collections.EMPTY_LIST);
 		}
 
-		List<String> annotations = view.getModel().getCyRow(view.getModel()).getList(ANNOTATION_ATTRIBUTE,String.class);
+		List<String> annotations = view.getModel().getRow(view.getModel()).getList(ANNOTATION_ATTRIBUTE,String.class);
 		Map<Integer, Annotation> idMap = new HashMap<Integer, Annotation>(); // Keep a map of the original annotation ID's
 		List<Map<String,String>> arrowList = new ArrayList<Map<String, String>>(); // Keep a list of arrows
 		for (String s: annotations) {
@@ -167,7 +167,7 @@ public class CyAnnotator {
 		}
 		// Save it in the network attributes
 		List<String>networkAnnotation = convertAnnotationMap(networkAnnotations);
-		network.getCyRow(network).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
+		network.getRow(network).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
 	}
 
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {

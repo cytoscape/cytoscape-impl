@@ -38,7 +38,7 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory, Ta
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 	

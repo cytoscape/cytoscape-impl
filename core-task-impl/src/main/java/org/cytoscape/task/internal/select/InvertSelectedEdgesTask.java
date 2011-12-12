@@ -58,10 +58,10 @@ public class InvertSelectedEdgesTask extends AbstractSelectTask {
 			                  SelectionEdit.SelectionFilter.EDGES_ONLY));
 		tm.setProgress(0.2);
 		for (final CyEdge e : network.getEdgeList()) {
-			if (network.getCyRow(e).get(CyNetwork.SELECTED, Boolean.class))
-				network.getCyRow(e).set(CyNetwork.SELECTED, false);
+			if (network.getRow(e).get(CyNetwork.SELECTED, Boolean.class))
+				network.getRow(e).set(CyNetwork.SELECTED, false);
 			else
-				network.getCyRow(e).set(CyNetwork.SELECTED, true);
+				network.getRow(e).set(CyNetwork.SELECTED, true);
 		}
 		tm.setProgress(0.6);
 		eventHelper.flushPayloadEvents();

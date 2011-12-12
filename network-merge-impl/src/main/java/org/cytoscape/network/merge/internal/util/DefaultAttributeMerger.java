@@ -76,14 +76,14 @@ public class DefaultAttributeMerger implements AttributeMerger {
                     throw new java.lang.IllegalArgumentException("Null argument.");
                 }
                 
-                CyRow cyRow = toNetwork.getCyRow(toGO, toAttr.getTable().getTitle());
+                CyRow cyRow = toNetwork.getRow(toGO, toAttr.getTable().getTitle());
                 CyTable cyTable = cyRow.getTable();
                 ColumnType colType = ColumnType.getType(toAttr);
 
                 for (Map.Entry<T,CyColumn> entryGOAttr : mapGOAttr.entrySet()) {
                         T from = entryGOAttr.getKey();
                         CyColumn fromAttr = entryGOAttr.getValue();
-                        CyRow fromCyRow = fromNetwork.getCyRow(from, fromAttr.getTable().getTitle());
+                        CyRow fromCyRow = fromNetwork.getRow(from, fromAttr.getTable().getTitle());
                         ColumnType fromColType = ColumnType.getType(fromAttr);
 
                         if (colType == ColumnType.STRING) { // the case of inconvertable attributes and simple attributes to String

@@ -49,7 +49,7 @@ public class SBMLNetworkViewReaderTest {
 		File file = new File("src/test/resources/BIOMD0000000003.xml");
 		CyNetworkReader reader = createReader(file);
 		reader.run(taskMonitor);
-		CyNetwork[] networks = reader.getCyNetworks();
+		CyNetwork[] networks = reader.getNetworks();
 		
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
@@ -65,14 +65,14 @@ public class SBMLNetworkViewReaderTest {
 		
 		CyNode cyclin = findNodeById("C", model);
 		assertNotNull(cyclin);
-		CyRow attributes = network.getCyRow(cyclin);
+		CyRow attributes = network.getRow(cyclin);
 		assertEquals("Cyclin", attributes.get(SBMLNetworkViewReader.NODE_NAME_ATTR_LABEL, String.class));
 		assertEquals((Double) 0.01, attributes.get(SBMLNetworkViewReader.SBML_INITIAL_CONCENTRATION_ATTR, Double.class));
 	}
 
 	private CyNode findNodeById(String sbmlId, CyNetwork network) {
 		for (CyNode node : network.getNodeList()) {
-			CyRow attributes = network.getCyRow(node);
+			CyRow attributes = network.getRow(node);
 			String id = attributes.get(SBMLNetworkViewReader.SBML_ID_ATTR, String.class);
 			if (id.equals(sbmlId)) {
 				return node;

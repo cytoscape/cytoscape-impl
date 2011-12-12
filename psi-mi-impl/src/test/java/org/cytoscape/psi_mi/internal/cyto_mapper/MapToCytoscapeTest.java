@@ -128,7 +128,7 @@ public class MapToCytoscapeTest {
 		CyNode sourceNode = edge1.getSource();
 
 		//  Verify that Attributes were mapped over too...
-		CyRow nodeAttributes = network.getCyRow(sourceNode);
+		CyRow nodeAttributes = network.getRow(sourceNode);
 		String taxonomyId = nodeAttributes.get(InteractorVocab.ORGANISM_NCBI_TAXONOMY_ID, String.class); 
 		assertEquals("4932", taxonomyId);
 
@@ -142,7 +142,7 @@ public class MapToCytoscapeTest {
 		assertEquals("RefSeq GI", dbNameList.get(0));
 
 		//  Verify that Interaction Xrefs were mapped over correctly.
-		CyRow edgeAttributes = network.getCyRow(edge1);
+		CyRow edgeAttributes = network.getRow(edge1);
 		dbNameList = edgeAttributes.getList(CommonVocab.XREF_DB_NAME, String.class);
 
 		List<?> dbIdList = edgeAttributes.getList(CommonVocab.XREF_DB_ID, String.class);
@@ -159,7 +159,7 @@ public class MapToCytoscapeTest {
 	}
 
 	private boolean checkEdge(CyNetwork network, CyEdge edge, String source, String target, String experimentalSystem, String interactionShortName) {
-		CyRow attributes = network.getCyRow(edge);
+		CyRow attributes = network.getRow(edge);
 		return getName(network, edge.getSource()).equals(source) &&
 			   getName(network, edge.getTarget()).equals(target) &&
 			   attributes.get(InteractionVocab.EXPERIMENTAL_SYSTEM_NAME, String.class).equals(experimentalSystem) &&
@@ -167,7 +167,7 @@ public class MapToCytoscapeTest {
 	}
 	
 	private String getName(CyNetwork network, CyNode node) {
-		return network.getCyRow(node).get(AttributeUtil.NODE_NAME_ATTR_LABEL, String.class);
+		return network.getRow(node).get(AttributeUtil.NODE_NAME_ATTR_LABEL, String.class);
 	}
 
 	/**

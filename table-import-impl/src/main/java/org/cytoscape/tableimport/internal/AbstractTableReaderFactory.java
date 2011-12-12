@@ -30,7 +30,7 @@ public abstract class AbstractTableReaderFactory implements InputStreamTaskFacto
 		this.streamName = name;
 	}
 
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 }

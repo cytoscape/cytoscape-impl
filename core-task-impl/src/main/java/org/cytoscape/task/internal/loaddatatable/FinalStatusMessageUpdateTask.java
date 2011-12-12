@@ -23,7 +23,7 @@ class FinalStatusMessageUpdateTask extends AbstractTask {
 
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		
-		if (reader.getCyTables().length == 1){
+		if (reader.getTables().length == 1){
 			// If this is a global table, update its title
 			String tableTitle = "ThisIsAGlobalTable";
 			CyTable globalTable = getTableByTitle(tableMgr, tableTitle);
@@ -32,7 +32,7 @@ class FinalStatusMessageUpdateTask extends AbstractTask {
 			}
 		}
 		
-		for (CyTable table : reader.getCyTables())
+		for (CyTable table : reader.getTables())
 			taskMonitor.setStatusMessage("Successfully loaded attribute table: " + table.getTitle());
 
 		taskMonitor.setProgress(1.0);

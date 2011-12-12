@@ -28,10 +28,10 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 		CyNetworkView[] views = getViews("sample.sif");
 		for ( CyNetworkView view : views ) {
 			for (CyNode n : view.getModel().getNodeList()) {
-				System.out.println("sample.sif: NODE " + view.getModel().getCyRow(n).get("name",String.class));
+				System.out.println("sample.sif: NODE " + view.getModel().getRow(n).get("name",String.class));
 			}
 			for (CyEdge e : view.getModel().getEdgeList()) {
-				System.out.println("sample.sif: EDGE " + view.getModel().getCyRow(e).get("name",String.class));
+				System.out.println("sample.sif: EDGE " + view.getModel().getRow(e).get("name",String.class));
 			}
 		}
 		CyNetwork net = checkSingleNetwork(views, 31, 27);
@@ -51,7 +51,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 		CyNetwork net = checkSingleNetwork(views, 9, 0);
 
 		for (CyNode n : net.getNodeList())
-			assertTrue(net.getCyRow(n).get("name", String.class).startsWith("Y"));
+			assertTrue(net.getRow(n).get("name", String.class).startsWith("Y"));
 	}
 
 	@Test
@@ -93,12 +93,12 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
 
 	private CyNetwork[] getNetworks(String file) throws Exception {
 		final SIFNetworkReader snvp = readFile(file);
-		return snvp.getCyNetworks();
+		return snvp.getNetworks();
 	}
 
 	private CyNetworkView[] getViews(String file) throws Exception {
 		final SIFNetworkReader snvp = readFile(file);
-		final CyNetwork[] networks = snvp.getCyNetworks(); 
+		final CyNetwork[] networks = snvp.getNetworks(); 
 		final CyNetworkView[] views = new CyNetworkView[networks.length];
 		int i = 0;
 		for(CyNetwork network: networks) {

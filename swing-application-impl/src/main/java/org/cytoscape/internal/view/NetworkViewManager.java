@@ -517,7 +517,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		String title = view.getVisualProperty(MinimalVisualLexicon.NETWORK_TITLE);
 		
 		if (title == null || title.isEmpty())
-			title = view.getModel().getCyRow(view.getModel()).get(CyTableEntry.NAME, String.class);
+			title = view.getModel().getRow(view.getModel()).get(CyTableEntry.NAME, String.class);
 		
 		return title;
 	}

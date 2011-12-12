@@ -22,7 +22,7 @@ public abstract class AbstractPropertyWriterFactory implements CyPropertyWriterF
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return thisFilter;
 	}
 

@@ -34,7 +34,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	}
 
 	@Override
-	public CyNetwork[] getCyNetworks() {
+	public CyNetwork[] getNetworks() {
 		return cyNetworks;
 	}
 }

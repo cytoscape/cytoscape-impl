@@ -60,7 +60,7 @@ public class SupportedFileTypesManager {
 
 		Set<String> allExtensions = new HashSet<String>();
 		for (final CyFileFilterProvider factory : factories) {
-			CyFileFilter filter = factory.getCyFileFilter();
+			CyFileFilter filter = factory.getFileFilter();
 			if (filter.getDataCategory() != category)
 				continue;
 

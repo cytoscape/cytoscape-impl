@@ -33,11 +33,11 @@ final class ConnectSelectedNodesEdit extends AbstractCyEdit {
 			final CyNode source = edge.getSource();
 			final CyNode target = edge.getTarget();
 			final CyEdge newEdge = network.addEdge(source, target, /* isDirected = */ false);
-			network.getCyRow(newEdge).set(CyTableEntry.NAME,
-			                       network.getCyRow(source).get(CyTableEntry.NAME, String.class)
+			network.getRow(newEdge).set(CyTableEntry.NAME,
+			                       network.getRow(source).get(CyTableEntry.NAME, String.class)
 			                       + " (" + ConnectSelectedNodesTask.INTERACTION + ") "
-			                       + network.getCyRow(target).get(CyTableEntry.NAME, String.class));
-			network.getCyRow(newEdge).set(CyEdge.INTERACTION, ConnectSelectedNodesTask.INTERACTION);
+			                       + network.getRow(target).get(CyTableEntry.NAME, String.class));
+			network.getRow(newEdge).set(CyEdge.INTERACTION, ConnectSelectedNodesTask.INTERACTION);
 			newEdges.add(newEdge);
 		}
 

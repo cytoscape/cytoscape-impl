@@ -99,7 +99,7 @@ public class OpenSessionTask extends AbstractTask {
 	}
 	
 	CySession getCySession() {
-		return reader.getCySession();
+		return reader.getSession();
 	}
 	
 	
@@ -112,7 +112,7 @@ public class OpenSessionTask extends AbstractTask {
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-			final CySession newSession = reader.getCySession();
+			final CySession newSession = reader.getSession();
 			if ( newSession == null )
 				throw new NullPointerException("Session could not be read for file: " + file);
 

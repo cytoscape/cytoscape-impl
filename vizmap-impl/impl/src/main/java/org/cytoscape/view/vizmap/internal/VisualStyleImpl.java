@@ -211,7 +211,7 @@ public class VisualStyleImpl implements VisualStyle {
 
 			for (View<?> v : views) {
 				View<? extends CyTableEntry> view = (View<? extends CyTableEntry>)v;
-				mapping.apply( net.getCyRow( view.getModel() ), view);
+				mapping.apply( net.getRow( view.getModel() ), view);
 				
 				if (view.getVisualProperty(vp) == vpDefault)
 					view.setVisualProperty(vp, styleDefaultValue);

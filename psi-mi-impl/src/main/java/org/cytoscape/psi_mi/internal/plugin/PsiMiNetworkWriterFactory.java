@@ -32,7 +32,7 @@ public class PsiMiNetworkWriterFactory implements CyNetworkViewWriterFactory {
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 

@@ -68,7 +68,7 @@ public class PsiMiTabReaderTest {
 		final CyNetworkReader reader = createReader(file);
 
 		reader.run(taskMonitor);
-		CyNetwork[] networks = reader.getCyNetworks();
+		CyNetwork[] networks = reader.getNetworks();
 
 		assertNotNull(networks);
 		assertEquals(1, networks.length);

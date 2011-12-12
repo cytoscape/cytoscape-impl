@@ -27,7 +27,7 @@ public abstract class AbstractTableReader extends AbstractTask
 		this.tableFactory = tableFactory;
 	}
 	
-	public CyTable[] getCyTables(){
+	public CyTable[] getTables(){
 		return cyTables;
 	}
 }

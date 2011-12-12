@@ -76,7 +76,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	}
 
 	@Override
-	public CyNetwork[] getCyNetworks() {
+	public CyNetwork[] getNetworks() {
 		return networks;
 	}
 }

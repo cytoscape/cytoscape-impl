@@ -77,7 +77,7 @@ public class AbstractLoadNetworkTaskTester {
 		net = mock(CyNetwork.class);
 		when(net.getNodeCount()).thenReturn(2);
 		when(net.getEdgeCount()).thenReturn(1);
-		when(net.getCyRow(net)).thenReturn(attrs);
+		when(net.getRow(net)).thenReturn(attrs);
 
 		view = mock(CyNetworkView.class);
 		when(view.getModel()).thenReturn(net);
@@ -85,7 +85,7 @@ public class AbstractLoadNetworkTaskTester {
 		networks = new CyNetwork[] { net };
 
 		reader = mock(CyNetworkReader.class);
-		when(reader.getCyNetworks()).thenReturn(networks);
+		when(reader.getNetworks()).thenReturn(networks);
 		when(reader.buildCyNetworkView(net)).thenReturn(view);
 
 		mgr = mock(CyNetworkReaderManager.class);

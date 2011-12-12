@@ -78,7 +78,7 @@ public class RemoveSelfLoopsAction extends NetAnalyzerAction {
 				String[] networkNames = new String[size];
 				for (int i = 0; i < size; ++i) {
 					final CyNetwork currentNet = networks[i];
-					networkNames[i] = currentNet.getCyRow(currentNet).get("name",String.class);
+					networkNames[i] = currentNet.getRow(currentNet).get("name",String.class);
 					removedLoops[i] = CyNetworkUtils.removeSelfLoops(currentNet);
 				}
 

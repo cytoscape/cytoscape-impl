@@ -28,7 +28,7 @@ public class FilterWriterFactoryImpl implements CyPropertyWriterFactory  {
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return thisFilter;
 	}
 

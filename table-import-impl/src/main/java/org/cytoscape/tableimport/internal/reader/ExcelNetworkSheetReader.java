@@ -96,7 +96,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	 */
 	@Override
 	public void readTable(CyTable table) throws IOException {
-		network.getCyRow(network).set("name", this.getNetworkName());		
+		network.getRow(network).set("name", this.getNetworkName());		
 		parser.setNetwork(network);
 
 		Row row;

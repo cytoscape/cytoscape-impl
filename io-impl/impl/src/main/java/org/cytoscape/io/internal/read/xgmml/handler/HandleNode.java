@@ -25,7 +25,7 @@ public class HandleNode extends AbstractHandler {
 			manager.currentNode = node;
 			
 			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) {
-				manager.getCurrentNetwork().getCyRow(node).set(CyNode.NAME, label);
+				manager.getCurrentNetwork().getRow(node).set(CyNode.NAME, label);
 			}
 		} else {
 			// Try to get the node from the internal cache

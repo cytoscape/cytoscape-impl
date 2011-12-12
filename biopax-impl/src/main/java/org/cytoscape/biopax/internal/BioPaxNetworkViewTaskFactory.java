@@ -45,7 +45,7 @@ public class BioPaxNetworkViewTaskFactory implements InputStreamTaskFactory {
 	}
 
 	@Override
-	public CyFileFilter getCyFileFilter() {
+	public CyFileFilter getFileFilter() {
 		return filter;
 	}
 

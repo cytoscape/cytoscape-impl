@@ -224,7 +224,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		
 		try {
 			for (CyTableMetadata metadata : session.getTables()) {
-				CyTable table = metadata.getCyTable();
+				CyTable table = metadata.getTable();
 				String targetTable = tableFilenamesBySUID.get(table.getSUID());
 				
 				if (targetTable == null) {
@@ -436,7 +436,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		Set<CyTableMetadata> tableData = session.getTables();
 		
 		for (CyTableMetadata metadata : tableData) {
-			CyTable table = metadata.getCyTable();
+			CyTable table = metadata.getTable();
 			
 			if (table.getSavePolicy() == SavePolicy.DO_NOT_SAVE) {
 				continue;
@@ -444,7 +444,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
 			String tableTitle = SessionUtil.escape(table.getTitle());
 			String fileName;
-			CyNetwork network = metadata.getCyNetwork();
+			CyNetwork network = metadata.getNetwork();
 			
 			if (network == null) {
 				fileName = String.format("global/%d-%s.cytable", table.getSUID(), tableTitle);

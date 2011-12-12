@@ -19,14 +19,14 @@ final class NetworkTitleEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		final String savedTitle = network.getCyRow(network).get(CyTableEntry.NAME, String.class);
-		network.getCyRow(network).set(CyTableEntry.NAME, previousTitle);
+		final String savedTitle = network.getRow(network).get(CyTableEntry.NAME, String.class);
+		network.getRow(network).set(CyTableEntry.NAME, previousTitle);
 		previousTitle = savedTitle;
 	}
 
 	public void undo() {
-		final String savedTitle = network.getCyRow(network).get(CyTableEntry.NAME, String.class);
-		network.getCyRow(network).set(CyTableEntry.NAME, previousTitle);
+		final String savedTitle = network.getRow(network).get(CyTableEntry.NAME, String.class);
+		network.getRow(network).set(CyTableEntry.NAME, previousTitle);
 		previousTitle = savedTitle;
 	}
 }

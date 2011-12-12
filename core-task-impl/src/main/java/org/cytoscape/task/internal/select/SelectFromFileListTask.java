@@ -89,8 +89,8 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 			// Loop through all the node of the graph selecting those in the file:
 			List<CyNode> nodeList = network.getNodeList();
 			for (final CyNode node : nodeList) {
-				if (fileNodes.contains(network.getCyRow(node).get(CyTableEntry.NAME, String.class)))
-					network.getCyRow(node).set(CyNetwork.SELECTED, true);
+				if (fileNodes.contains(network.getRow(node).get(CyTableEntry.NAME, String.class)))
+					network.getRow(node).set(CyNetwork.SELECTED, true);
 			}
 			tm.setProgress(0.8);
 			updateView();

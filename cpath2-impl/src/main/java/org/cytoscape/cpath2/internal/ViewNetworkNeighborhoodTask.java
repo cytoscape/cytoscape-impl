@@ -28,7 +28,7 @@ public class ViewNetworkNeighborhoodTask implements Task {
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
 		CyNetwork network = networkView.getModel();
-        CyRow row = network.getCyRow(network);
+        CyRow row = network.getRow(network);
         // grab web services url from network attributes
         String webServicesURL = row.get("biopax.web_services_url", String.class);
         if (webServicesURL == null) {
@@ -43,7 +43,7 @@ public class ViewNetworkNeighborhoodTask implements Task {
 
         // generate menu url
         CyNode cyNode = nodeView.getModel();
-        CyRow nodeRow = network.getCyRow(cyNode);
+        CyRow nodeRow = network.getRow(cyNode);
         String biopaxID = nodeRow.get(MapBioPaxToCytoscape.BIOPAX_RDF_ID, String.class);
         biopaxID = biopaxID.replace("CPATH-", "");
         String neighborhoodParam = "Neighborhood: " + nodeRow.get(CyNode.NAME, String.class);
@@ -80,7 +80,7 @@ public class ViewNetworkNeighborhoodTask implements Task {
 		   return false;
 	   }
 	   
-	   Boolean value = cyNetwork.getCyRow(cyNetwork).get(MapBioPaxToCytoscape.BIOPAX_NETWORK, Boolean.class);
+	   Boolean value = cyNetwork.getRow(cyNetwork).get(MapBioPaxToCytoscape.BIOPAX_NETWORK, Boolean.class);
 	   if (value == null || !value) {
 		   return false;
 	   }

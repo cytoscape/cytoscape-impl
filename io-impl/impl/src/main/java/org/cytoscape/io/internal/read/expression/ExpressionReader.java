@@ -418,8 +418,8 @@ public class ExpressionReader extends AbstractTableReader {
 		List<CyNode> allNodes = network.getNodeList(); 
 
 		for (CyNode node : allNodes) {
-			String nodeName = network.getCyRow(node).get("name",String.class);
-			Object attrValue = network.getCyRow(node).getRaw(keyAttributeName);
+			String nodeName = network.getRow(node).get("name",String.class);
+			Object attrValue = network.getRow(node).getRaw(keyAttributeName);
 
 			if (attrValue != null) {
 				String attributeValue = attrValue.toString();
@@ -748,7 +748,7 @@ public class ExpressionReader extends AbstractTableReader {
 	}
 
 	@Override
-	public CyTable[] getCyTables() {
+	public CyTable[] getTables() {
 		if (table == null)
 			return null;
 		return new CyTable[] { table };

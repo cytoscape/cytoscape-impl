@@ -88,7 +88,7 @@ public class LoadNetworkFromUrlTask implements Task {
             }
 			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 			reader.run(taskMonitor);
-			CyNetwork[] networks = reader.getCyNetworks();
+			CyNetwork[] networks = reader.getNetworks();
 			CyNetwork cyNetwork = networks[0];
 
 			// TODO: Does CPath2 listen for this?

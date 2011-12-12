@@ -264,10 +264,10 @@ public class CySessionManagerImpl implements CySessionManager {
 	private void restoreTables(CySession sess) {
 		// Register global tables
 		for (CyTableMetadata metadata : sess.getTables()) {
-			CyNetwork network = metadata.getCyNetwork();
+			CyNetwork network = metadata.getNetwork();
 			
 			if (network == null) {
-				tblMgr.addTable(metadata.getCyTable());
+				tblMgr.addTable(metadata.getTable());
 			}
 		}
 	}

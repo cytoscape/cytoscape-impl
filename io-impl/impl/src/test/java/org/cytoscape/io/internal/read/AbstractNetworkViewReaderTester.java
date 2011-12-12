@@ -78,7 +78,7 @@ public class AbstractNetworkViewReaderTester {
 	 */
 	protected void findInteraction(CyNetwork net, String source, String target, String interaction, int count) {
 		for (CyNode n : net.getNodeList()) {
-			String sname = net.getCyRow(n).get(CyNode.NAME, String.class);
+			String sname = net.getRow(n).get(CyNode.NAME, String.class);
 			assertNotNull("Source name is NULL", sname);
 			
 			if (source.equals(sname)) {
@@ -86,7 +86,7 @@ public class AbstractNetworkViewReaderTester {
 				assertEquals("wrong number of neighbors", count, neigh.size());
 				
 				for (CyNode nn : neigh) {
-					String tname = net.getCyRow(nn).get(CyNode.NAME, String.class);
+					String tname = net.getRow(nn).get(CyNode.NAME, String.class);
 					assertNotNull("Target name is NULL", tname);
 					
 					if (tname.equals(target)) {
@@ -94,7 +94,7 @@ public class AbstractNetworkViewReaderTester {
 						assertTrue("Connecting edge list is empty", con.size() > 0);
 						
 						for (CyEdge e : con) {
-							String inter = net.getCyRow(e).get(CyEdge.INTERACTION, String.class);
+							String inter = net.getRow(e).get(CyEdge.INTERACTION, String.class);
 							assertNotNull("Edge interaction is NULL", inter);
 							
 							if (inter.equals(interaction)) {
