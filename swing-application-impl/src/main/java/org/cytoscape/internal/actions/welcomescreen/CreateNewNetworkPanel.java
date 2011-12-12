@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -41,10 +42,16 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class CreateNewNetworkPanel extends JPanel {
+public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 	
-	private final String VIEW_THRESHOLD = "viewThreshold";
+	private static final long serialVersionUID = -8750909701276867389L;
+	
+	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
+	
+	private static final String VIEW_THRESHOLD = "viewThreshold";
 	private static final int DEF_VIEW_THRESHOLD = 3000;
 
 	private static final String ICON_OPEN = "images/Icons/net_file_import_small.png";
@@ -67,6 +74,8 @@ public class CreateNewNetworkPanel extends JPanel {
 	private final Map<String, String> dataSourceMap;
 
 	private final int viewThreshold;
+	
+	private boolean firstSelection = false;
 
 	CreateNewNetworkPanel(Window parent, final TaskManager guiTaskManager, final ImportNetworksTaskFactory loadTF,
 			final NetworkTaskFactory createViewTaskFactory, final CyApplicationConfiguration config,
@@ -79,11 +88,14 @@ public class CreateNewNetworkPanel extends JPanel {
 		this.viewThreshold = getViewThreshold(props);
 
 		this.dataSourceMap = new HashMap<String, String>();
-
 		this.networkList = new JComboBox();
+		
 		setFromDataSource();
 
 		initComponents();
+		
+		// Enable combo box listener here to avoid unnecessary reaction.
+		this.networkList.addActionListener(this);
 	}
 
 	private void setFromDataSource() {
@@ -118,7 +130,7 @@ public class CreateNewNetworkPanel extends JPanel {
 			openIconImg = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(ICON_OPEN));
 			databaseIconImg = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(ICON_DATABASE));
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Could not load icons", e);
 		}
 
 		ImageIcon openIcon = new ImageIcon(openIconImg);
@@ -130,8 +142,8 @@ public class CreateNewNetworkPanel extends JPanel {
 
 		this.loadNetwork = new JLabel("From file...");
 		this.loadNetwork.setIcon(openIcon);
+		
 		loadNetwork.addMouseListener(new MouseAdapter() {
-
 			@Override
 			public void mouseClicked(MouseEvent ev) {
 				// Load network from file.
@@ -149,42 +161,19 @@ public class CreateNewNetworkPanel extends JPanel {
 		this.add(fromDB);
 		this.add(networkList);
 		this.add(layout);
-
-		this.networkList.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent ae) {
-				try {
-					loadNetwork();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		
 	}
-
-	private boolean firstSelection = false;
 
 	private void loadNetwork() throws URISyntaxException, MalformedURLException {
 
-		Object file = networkList.getSelectedItem();
-		if (file == null || firstSelection == false) {
-			firstSelection = true;
+		// Get selected file from the combo box
+		final Object file = networkList.getSelectedItem();
+		if (file == null)
 			return;
-		}
 
-		// final URL url = taskFactory.getMap().get(file);
 		final URL url = new URL(dataSourceMap.get(file));
-		// if(layout.isSelected())
-		// loadTF.setApplyLayout(true);
-		// else
-		// loadTF.setApplyLayout(false);
-
-		// loadTF.setURL(url);
 
 		parent.dispose();
-		// Set<CyNetwork> networks = this.loadNetworkFileTF.loadCyNetworks(url);
-		// createViewTaskFactory.setNetwork(networks.iterator().next());
 		guiTaskManager.execute(new TaskFactory() {
 
 			@Override
@@ -241,5 +230,14 @@ public class CreateNewNetworkPanel extends JPanel {
 			taskMonitor.setProgress(1.0);
 		}
 
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		try {
+			loadNetwork();
+		} catch (Exception ex) {
+			logger.error("Could not load network.", ex);
+		}	
 	}
 }
