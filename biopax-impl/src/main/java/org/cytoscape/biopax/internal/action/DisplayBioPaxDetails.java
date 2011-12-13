@@ -33,7 +33,7 @@ package org.cytoscape.biopax.internal.action;
 
 
 import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.MapBioPaxToCytoscape;
+import org.cytoscape.biopax.BioPaxMapper;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -56,7 +56,7 @@ public class DisplayBioPaxDetails implements RowsSetListener {
 	private BioPaxDetailsPanel bpPanel;
 	private BioPaxContainer bpContainer;
 	private CyNetworkView view;
-	private MapBioPaxToCytoscape mapBioPaxToCytoscape;
+	private BioPaxMapper mapBioPaxToCytoscape;
 
 	/**
 	 * Constructor.
@@ -64,7 +64,7 @@ public class DisplayBioPaxDetails implements RowsSetListener {
 	 * @param bpPanel BioPaxDetailsPanel Object that will actually display
 	 *                the BioPax details.
 	 */
-	public DisplayBioPaxDetails(CyNetworkView view, BioPaxDetailsPanel bpPanel, BioPaxContainer bpContainer, MapBioPaxToCytoscape mapBioPaxToCytoscape) {
+	public DisplayBioPaxDetails(CyNetworkView view, BioPaxDetailsPanel bpPanel, BioPaxContainer bpContainer, BioPaxMapper mapBioPaxToCytoscape) {
 		this.bpPanel = bpPanel;
 		this.bpContainer = bpContainer;
 		this.view = view;

@@ -54,6 +54,16 @@
 	        <artifactId>biopax-api</artifactId>
 	        <scope>provided</scope>
 	    </dependency>
+        <dependency>
+	        <groupId>cytoscape-temp</groupId>
+	        <artifactId>paxtools-core</artifactId>
+	        <version>4.0.1</version>
+	    </dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>biopax-converter</artifactId>
+			<version>4.0.1</version>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

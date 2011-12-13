@@ -2,7 +2,7 @@ package org.cytoscape.biopax.internal;
 
 import java.io.InputStream;
 
-import org.cytoscape.biopax.NetworkListener;
+import org.cytoscape.biopax.BioPaxViewTracker;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -18,14 +18,14 @@ public class BioPaxNetworkViewTaskFactory implements InputStreamTaskFactory {
 	private final CyNetworkFactory networkFactory;
 	private final CyNetworkViewFactory viewFactory;
 	private final CyNetworkNaming naming;
-	private final NetworkListener networkListener;
+	private final BioPaxViewTracker networkListener;
 
 	private InputStream inputStream;
 	private String inputName;
 	private VisualMappingManager mappingManager;
 	private BioPaxVisualStyleUtil bioPaxVisualStyleUtil;
 
-	public BioPaxNetworkViewTaskFactory(CyFileFilter filter, CyNetworkFactory networkFactory, CyNetworkViewFactory viewFactory, CyNetworkNaming naming, NetworkListener networkListener, VisualMappingManager mappingManager, BioPaxVisualStyleUtil bioPaxVisualStyleUtil) {
+	public BioPaxNetworkViewTaskFactory(CyFileFilter filter, CyNetworkFactory networkFactory, CyNetworkViewFactory viewFactory, CyNetworkNaming naming, BioPaxViewTracker networkListener, VisualMappingManager mappingManager, BioPaxVisualStyleUtil bioPaxVisualStyleUtil) {
 		this.filter = filter;
 		this.networkFactory = networkFactory;
 		this.viewFactory = viewFactory;

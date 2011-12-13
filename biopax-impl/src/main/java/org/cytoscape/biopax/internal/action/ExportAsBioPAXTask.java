@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import org.cytoscape.biopax.util.BioPaxUtil;
+import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;

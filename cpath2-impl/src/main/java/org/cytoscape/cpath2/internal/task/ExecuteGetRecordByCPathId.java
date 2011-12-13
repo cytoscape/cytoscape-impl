@@ -22,12 +22,13 @@ import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.Complex;
 import org.biopax.paxtools.model.level3.EntityReference;
+import org.biopax.paxtools.model.level3.Named;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
+import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
 import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.MapBioPaxToCytoscape;
-import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
-import org.cytoscape.biopax.NetworkListener;
-import org.cytoscape.biopax.util.BioPaxUtil;
+import org.cytoscape.biopax.BioPaxMapper;
+import org.cytoscape.biopax.BioPaxMapperFactory;
+import org.cytoscape.biopax.BioPaxViewTracker;
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.cpath2.internal.util.SelectUtil;
@@ -71,8 +72,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	private Logger logger = LoggerFactory.getLogger(ExecuteGetRecordByCPathId.class);
 	private final CPath2Factory cPathFactory;
 	private final BioPaxContainer bpContainer;
-	private final MapBioPaxToCytoscapeFactory mapperFactory;
-	private final NetworkListener networkListener;
+	private final BioPaxMapperFactory mapperFactory;
+	private final BioPaxViewTracker bpViewTracker;
 	private final VisualMappingManager mappingManager;
 
 
@@ -97,8 +98,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			CyNetwork mergedNetwork, 
 			CPath2Factory cPathFactory, 
 			BioPaxContainer bpContainer,
-			MapBioPaxToCytoscapeFactory mapperFactory, 
-			NetworkListener networkListener, 
+			BioPaxMapperFactory mapperFactory, 
+			BioPaxViewTracker bpViewTracker, 
 			VisualMappingManager mappingManager) 
 	{
 		this.webApi = webApi;
@@ -109,7 +110,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		this.cPathFactory = cPathFactory;
 		this.bpContainer = bpContainer;
 		this.mapperFactory = mapperFactory;
-		this.networkListener = networkListener;
+		this.bpViewTracker = bpViewTracker;
 		this.mappingManager = mappingManager;
 	}
 
@@ -261,7 +262,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	private void postProcessingBinarySif(final CyNetworkView view, TaskMonitor taskMonitor) {
 		// Init the node attribute meta data, e.g. description, visibility, etc.
 		// TODO: What happened to attribute descriptions?
-		// MapBioPaxToCytoscape.initAttributes(nodeAttributes);
+		// BioPaxMapper.initAttributes(nodeAttributes);
 
 		final CyNetwork cyNetwork = view.getModel();
 
@@ -269,7 +270,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNode.NAME, String.class);
 
 		// Specify that this is a BINARY_NETWORK
-		AttributeUtil.set(cyNetwork, cyNetwork, MapBioPaxToCytoscape.BINARY_NETWORK, Boolean.TRUE, Boolean.class);
+		AttributeUtil.set(cyNetwork, cyNetwork, BioPaxMapper.BINARY_NETWORK, Boolean.TRUE, Boolean.class);
 
 		// Get all node details.
 		getNodeDetails(cyNetwork, taskMonitor);
@@ -288,7 +289,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 
 				VisualStyle visualStyle = cPathFactory.getBinarySifVisualStyleUtil().getVisualStyle();
 				mappingManager.setVisualStyle(visualStyle, view);
-				networkListener.registerNetwork(view);
+				bpViewTracker.registerBioPaxView(view);
 
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -437,7 +438,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		if (batchList.size() == 0) {
 			logger.info("Skipping node details.  Already have all the details new need.");
 		}
-		MapBioPaxToCytoscape mapBioPaxToCytoscape = mapperFactory.getInstance(null, taskMonitor);
+		BioPaxMapper mapBioPaxToCytoscape = mapperFactory.createBioPaxMapper(null, taskMonitor);
 		for (int i = 0; i < batchList.size(); i++) {
 			if (haltFlag == true) {
 				break;
@@ -461,7 +462,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 					model = (new OneTwoThree()).filter(model);
 				}
 				//normalize/infer properties: displayName, organism, dataSource
-				BioPaxUtil.fixDisplayName(model);
+				fixDisplayName(model);
 				ModelUtils mu = new ModelUtils(model);
 				mu.inferPropertyFromParent("dataSource");
 				mu.inferPropertyFromParent("organism");
@@ -554,18 +555,48 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	// return view;
 	// }
 	
-}
 
-class NullTaskMonitor implements TaskMonitor {
-	@Override
-	public void setProgress(double arg0) {
+	class NullTaskMonitor implements TaskMonitor {
+		@Override
+		public void setProgress(double arg0) {
+		}
+
+		@Override
+		public void setStatusMessage(String arg0) {
+		}
+
+		@Override
+		public void setTitle(String arg0) {
+		}
 	}
 
-	@Override
-	public void setStatusMessage(String arg0) {
-	}
-
-	@Override
-	public void setTitle(String arg0) {
+	private void fixDisplayName(Model model) {
+		if (logger.isInfoEnabled())
+			logger.info("Trying to auto-fix 'null' displayName...");
+		// where it's null, set to the shortest name if possible
+		for (Named e : model.getObjects(Named.class)) {
+			if (e.getDisplayName() == null) {
+				if (e.getStandardName() != null) {
+					e.setDisplayName(e.getStandardName());
+				} else if (!e.getName().isEmpty()) {
+					String dsp = e.getName().iterator().next();
+					for (String name : e.getName()) {
+						if (name.length() < dsp.length())
+							dsp = name;
+					}
+					e.setDisplayName(dsp);
+				}
+			}
+		}
+		// if required, set PE name to (already fixed) ER's name...
+		for(EntityReference er : model.getObjects(EntityReference.class)) {
+			for(SimplePhysicalEntity spe : er.getEntityReferenceOf()) {
+				if(spe.getDisplayName() == null || spe.getDisplayName().trim().length() == 0) {
+					if(er.getDisplayName() != null && er.getDisplayName().trim().length() > 0) {
+						spe.setDisplayName(er.getDisplayName());
+					}
+				}
+			}
+		}
 	}
 }

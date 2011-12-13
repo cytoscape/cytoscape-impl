@@ -38,9 +38,8 @@ import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
-import static org.cytoscape.biopax.MapBioPaxToCytoscape.*;
+import static org.cytoscape.biopax.BioPaxMapper.*;
 
-import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
@@ -308,16 +307,16 @@ public class BioPaxVisualStyleUtil {
 	private void createTargetArrows(VisualStyle style) {
 		// DiscreteMapping discreteMapping = new
 		// DiscreteMapping(ArrowShape.NONE,
-		// MapBioPaxToCytoscape.BIOPAX_EDGE_TYPE,
+		// BioPaxMapper.BIOPAX_EDGE_TYPE,
 		// ObjectMapping.EDGE_MAPPING);
 		//
-		// discreteMapping.putMapValue(MapBioPaxToCytoscape.RIGHT,
+		// discreteMapping.putMapValue(BioPaxMapper.RIGHT,
 		// ArrowShape.DELTA);
-		// discreteMapping.putMapValue(MapBioPaxToCytoscape.CONTROLLED,
+		// discreteMapping.putMapValue(BioPaxMapper.CONTROLLED,
 		// ArrowShape.DELTA);
-		// discreteMapping.putMapValue(MapBioPaxToCytoscape.COFACTOR,
+		// discreteMapping.putMapValue(BioPaxMapper.COFACTOR,
 		// ArrowShape.DELTA);
-		// discreteMapping.putMapValue(MapBioPaxToCytoscape.CONTAINS,
+		// discreteMapping.putMapValue(BioPaxMapper.CONTAINS,
 		// ArrowShape.CIRCLE);
 		//
 		// // Inhibition Edges
@@ -355,10 +354,10 @@ public class BioPaxVisualStyleUtil {
 		// String id = nodeView.getNode().getIdentifier();
 		// String tip =
 		// nodeAttributes.getStringAttribute(id,
-		// MapBioPaxToCytoscape.BIOPAX_ENTITY_TYPE)
+		// BioPaxMapper.BIOPAX_ENTITY_TYPE)
 		// + "\n" +
 		// nodeAttributes.getListAttribute(id,
-		// MapBioPaxToCytoscape.BIOPAX_CELLULAR_LOCATIONS);
+		// BioPaxMapper.BIOPAX_CELLULAR_LOCATIONS);
 		//
 		// nodeView.setToolTip(tip);
 		//

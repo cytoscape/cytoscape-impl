@@ -42,11 +42,11 @@ import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
-import org.cytoscape.biopax.MapBioPaxToCytoscape;
+import org.cytoscape.biopax.BioPaxMapper;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
+import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
-import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -62,11 +62,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Maps a BioPAX Model to Cytoscape Nodes/Edges.
  *
- * @author Ethan Cerami, Igor Rodchenkov (re-factoring using PaxTools API)
+ * @author Ethan Cerami, Igor Rodchenkov (major re-factoring using PaxTools API)
  */
-public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
+public class BioPaxMapperImpl implements BioPaxMapper {
 	
-	public static final Logger log = LoggerFactory.getLogger(MapBioPaxToCytoscapeImpl.class);
+	public static final Logger log = LoggerFactory.getLogger(BioPaxMapperImpl.class);
 	
 	// custom node images (phosphorylation)
 	private static final String PHOSPHORYLATION_GRAPHICS = "PHOSPHORYLATION_GRAPHICS";
@@ -79,15 +79,15 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	static {
 		try {
 			phosNode = javax.imageio.ImageIO.read
-                    (MapBioPaxToCytoscapeImpl.class.getResource("phos-node.jpg"));
+                    (BioPaxMapperImpl.class.getResource("phos-node.jpg"));
 			phosNodeSelectedTop = javax.imageio.ImageIO.read
-                    (MapBioPaxToCytoscapeImpl.class.getResource("phos-node-selected-top.jpg"));
+                    (BioPaxMapperImpl.class.getResource("phos-node-selected-top.jpg"));
 			phosNodeSelectedRight = javax.imageio.ImageIO.read
-                    (MapBioPaxToCytoscapeImpl.class.getResource("phos-node-selected-right.jpg"));
+                    (BioPaxMapperImpl.class.getResource("phos-node-selected-right.jpg"));
 			phosNodeSelectedBottom = javax.imageio.ImageIO.read
-                    (MapBioPaxToCytoscapeImpl.class.getResource("phos-node-selected-bottom.jpg"));
+                    (BioPaxMapperImpl.class.getResource("phos-node-selected-bottom.jpg"));
 			phosNodeSelectedLeft = javax.imageio.ImageIO.read
-                    (MapBioPaxToCytoscapeImpl.class.getResource("phos-node-selected-left.jpg"));
+                    (BioPaxMapperImpl.class.getResource("phos-node-selected-left.jpg"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -149,32 +149,18 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	/**
 	 * Constructor. 
 	 * Use this one if you do not plan to create new networks.
-	 *
-	 * @param bpUtil      BioPAX Utility Class.
-	 * @param taskMonitor TaskMonitor Object.
-	 */
-	public MapBioPaxToCytoscapeImpl(Model model, TaskMonitor taskMonitor) {
-		this.model = model;
-		this.taskMonitor = taskMonitor;	
-	}
-
-	/**
-	 * Constructor.
 	 * 
-	 * @param networkFactory
 	 * @param model
+	 * @param cyNetworkFactory
 	 * @param taskMonitor
 	 */
-	public MapBioPaxToCytoscapeImpl(Model model, CyNetworkFactory networkFactory, TaskMonitor taskMonitor) {
-		this(model, taskMonitor);
-		this.networkFactory = networkFactory;
+	public BioPaxMapperImpl(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor) {
+		this.model = model;
+		this.networkFactory = cyNetworkFactory;
+		this.taskMonitor = taskMonitor;	
 	}
 	
-	/**
-	 * Execute the Mapping.
-	 *
-	 */
-	@Override
+
 	public CyNetwork createCyNetwork(String networkName)  {		
 		CyNetwork network = networkFactory.createNetwork();
 	
@@ -191,7 +177,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		AttributeUtil.set(network, network, CyNetwork.NAME, networkName, String.class);
 		
 		// an attribute which indicates this network is a BioPAX network
-		AttributeUtil.set(network, network, MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.TRUE, Boolean.class);
+		AttributeUtil.set(network, network, BioPaxMapperImpl.BIOPAX_NETWORK, Boolean.TRUE, Boolean.class);
 	
 		//  default Quick Find Index
 		AttributeUtil.set(network, network, "quickfind.default_index", CyNode.NAME, String.class);
@@ -565,7 +551,6 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 	}
 
 
-	@Override
 	public void createAttributesFromProperties(final BioPAXElement element,
 			final CyNode node, final CyNetwork network) 
 	{
@@ -687,12 +672,7 @@ public class MapBioPaxToCytoscapeImpl implements MapBioPaxToCytoscape {
 		createExtraXrefAttributes(element, network, node);
 	}
 
-    /**
-	 * Adds custom node shapes to BioPAX nodes.
-	 *
-	 * @param networkView CyNetworkView
-	 */
-	@Override
+
 	public void customNodes(CyNetworkView networkView) {
 		// grab node attributes
 		CyNetwork cyNetwork = networkView.getModel();

@@ -1,4 +1,4 @@
-// $Id: NetworkListener.java,v 1.13 2006/06/15 22:02:52 grossb Exp $
+// $Id: BioPaxViewTracker.java,v 1.13 2006/06/15 22:02:52 grossb Exp $
 //------------------------------------------------------------------------------
 /** Copyright (c) 2006 Memorial Sloan-Kettering Cancer Center.
  **
@@ -37,11 +37,11 @@ import java.util.Map;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.MapBioPaxToCytoscape;
-import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
-import org.cytoscape.biopax.NetworkListener;
+import org.cytoscape.biopax.BioPaxMapper;
+import org.cytoscape.biopax.BioPaxMapperFactory;
+import org.cytoscape.biopax.BioPaxViewTracker;
+import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
-import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -58,12 +58,12 @@ import org.cytoscape.view.model.events.NetworkViewAddedListener;
  *
  * @author Ethan Cerami / Benjamin Gross / Igor Rodchenkov.
  */
-public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedListener,
+public class BioPaxViewTrackerImpl implements BioPaxViewTracker, NetworkViewAddedListener,
 	NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, RowsSetListener {
 	
 	private final BioPaxDetailsPanel bpPanel;
 	private final BioPaxContainer bpContainer;
-	private final MapBioPaxToCytoscape mapBioPaxToCytoscape;
+	private final BioPaxMapper mapBioPaxToCytoscape;
 	private final CyNetworkViewManager viewManager;
 	private final Map<CyNetworkView, RowsSetListener> listeners;
 
@@ -72,12 +72,12 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 *
 	 * @param bpPanel BioPaxDetails Panel Object.
 	 */
-	public NetworkListenerImpl(BioPaxDetailsPanel bpPanel, BioPaxContainer bpContainer, 
-			MapBioPaxToCytoscapeFactory mapBioPaxToCytoscapeFactory, CyNetworkViewManager viewManager) 
+	public BioPaxViewTrackerImpl(BioPaxDetailsPanel bpPanel, BioPaxContainer bpContainer, 
+			BioPaxMapperFactory mapBioPaxToCytoscapeFactory, CyNetworkViewManager viewManager) 
 	{
 		this.bpPanel = bpPanel;
 		this.bpContainer = bpContainer;
-		this.mapBioPaxToCytoscape = mapBioPaxToCytoscapeFactory.getInstance(null, null, null);
+		this.mapBioPaxToCytoscape = mapBioPaxToCytoscapeFactory.createBioPaxMapper(null, null);
 		this.viewManager = viewManager;
 		this.listeners = new HashMap<CyNetworkView, RowsSetListener>();
 	}
@@ -88,7 +88,7 @@ public class NetworkListenerImpl implements NetworkListener, NetworkViewAddedLis
 	 * @param cyNetwork Object.
 	 */
 	@Override
-	public void registerNetwork(CyNetworkView view) {
+	public void registerBioPaxView(CyNetworkView view) {
 		if (BioPaxUtil.isBioPAXNetwork(view.getModel())
 				|| BioPaxUtil.isBiopaxSifNetwork(view.getModel())) {
 			registerNodeSelectionEvents(view);

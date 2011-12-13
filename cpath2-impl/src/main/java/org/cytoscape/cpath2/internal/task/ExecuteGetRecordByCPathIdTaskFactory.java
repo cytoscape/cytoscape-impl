@@ -1,8 +1,8 @@
 package org.cytoscape.cpath2.internal.task;
 
 import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
-import org.cytoscape.biopax.NetworkListener;
+import org.cytoscape.biopax.BioPaxMapperFactory;
+import org.cytoscape.biopax.BioPaxViewTracker;
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.web_service.CPathResponseFormat;
 import org.cytoscape.cpath2.internal.web_service.CPathWebService;
@@ -20,14 +20,14 @@ public class ExecuteGetRecordByCPathIdTaskFactory implements TaskFactory {
 	private final CyNetwork networkToMerge;
 	private final CPath2Factory cPathFactory;
 	private final BioPaxContainer bpContainer;
-	private final MapBioPaxToCytoscapeFactory mapperFactory;
-	private final NetworkListener networkListener;
+	private final BioPaxMapperFactory mapperFactory;
+	private final BioPaxViewTracker networkListener;
 	private final VisualMappingManager mappingManager;
 
 	public ExecuteGetRecordByCPathIdTaskFactory(CPathWebService webApi,
 			long[] ids, CPathResponseFormat format, String networkTitle,
 			CyNetwork networkToMerge, CPath2Factory cPathFactory, BioPaxContainer bpContainer,
-			MapBioPaxToCytoscapeFactory mapperFactory, NetworkListener networkListener, VisualMappingManager mappingManager) {
+			BioPaxMapperFactory mapperFactory, BioPaxViewTracker networkListener, VisualMappingManager mappingManager) {
 		this.webApi = webApi;
 		this.ids = ids;
 		this.format = format;

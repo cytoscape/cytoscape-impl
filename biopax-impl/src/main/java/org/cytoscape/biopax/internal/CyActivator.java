@@ -15,22 +15,22 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 
 import org.cytoscape.biopax.internal.BioPaxFilter;
-import org.cytoscape.biopax.internal.action.NetworkListenerImpl;
+import org.cytoscape.biopax.internal.action.BioPaxViewTrackerImpl;
 import org.cytoscape.biopax.internal.BioPaxNetworkViewTaskFactory;
 import org.cytoscape.biopax.internal.BioPaxFactory;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.view.BioPaxContainerImpl;
-import org.cytoscape.biopax.internal.MapBioPaxToCytoscapeFactoryImpl;
+import org.cytoscape.biopax.internal.BioPaxMapperFactoryImpl;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
 import org.cytoscape.biopax.internal.view.BioPaxCytoPanelComponent;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.biopax.MapBioPaxToCytoscapeFactory;
+import org.cytoscape.biopax.BioPaxMapperFactory;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.biopax.BioPaxContainer;
 import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.biopax.NetworkListener;
+import org.cytoscape.biopax.BioPaxViewTracker;
 
 
 import org.osgi.framework.BundleContext;
@@ -50,7 +50,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CySwingApplication cySwingApplicationRef = getService(bc,CySwingApplication.class);
-		TaskManager taskManagerRef = getService(bc,TaskManager.class);
+		TaskManager<?,?> taskManagerRef = getService(bc,TaskManager.class);
 		OpenBrowser openBrowserRef = getService(bc,OpenBrowser.class);
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyNetworkViewManager cyNetworkViewManagerRef = getService(bc,CyNetworkViewManager.class);
@@ -64,24 +64,24 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory discreteMappingFunctionFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
 		VisualMappingFunctionFactory passthroughMappingFunctionFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		
-		MapBioPaxToCytoscapeFactoryImpl mapBioPaxToCytoscapeFactory = new MapBioPaxToCytoscapeFactoryImpl();
+		BioPaxMapperFactory bioPaxMapperFactory = new BioPaxMapperFactoryImpl(cyNetworkFactoryRef);
 		BioPaxFilter bioPaxFilter = new BioPaxFilter(streamUtilRef);
 		LaunchExternalBrowser launchExternalBrowser = new LaunchExternalBrowser(openBrowserRef);
 		BioPaxFactory bioPaxFactory = new BioPaxFactory(cyNetworkViewManagerRef,fileUtilRef,cyApplicationManagerRef,bioPaxFilter,taskManagerRef,launchExternalBrowser,cySwingApplicationRef);
 		BioPaxDetailsPanel bioPaxDetailsPanel = new BioPaxDetailsPanel(launchExternalBrowser);
 		BioPaxContainerImpl bioPaxContainer = new BioPaxContainerImpl(launchExternalBrowser,cyApplicationManagerRef,cyNetworkViewManagerRef,bioPaxDetailsPanel,cySwingApplicationRef);
-		NetworkListenerImpl networkListener = new NetworkListenerImpl(bioPaxDetailsPanel,bioPaxContainer,mapBioPaxToCytoscapeFactory,cyNetworkViewManagerRef);
+		BioPaxViewTrackerImpl bioPaxViewTracker = new BioPaxViewTrackerImpl(bioPaxDetailsPanel,bioPaxContainer,bioPaxMapperFactory,cyNetworkViewManagerRef);
 		BioPaxCytoPanelComponent bioPaxCytoPanelComponent = new BioPaxCytoPanelComponent(bioPaxContainer);
 		BioPaxVisualStyleUtil bioPaxVisualStyleUtil = new BioPaxVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFunctionFactoryRef,passthroughMappingFunctionFactoryRef);
-		BioPaxNetworkViewTaskFactory bioPaxNetworkViewTaskFactory = new BioPaxNetworkViewTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef,networkListener,visualMappingManagerRef,bioPaxVisualStyleUtil);
+		BioPaxNetworkViewTaskFactory bioPaxNetworkViewTaskFactory = new BioPaxNetworkViewTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef,bioPaxViewTracker,visualMappingManagerRef,bioPaxVisualStyleUtil);
 		
-		registerService(bc,mapBioPaxToCytoscapeFactory,MapBioPaxToCytoscapeFactory.class, new Properties());
+		registerService(bc,bioPaxMapperFactory,BioPaxMapperFactory.class, new Properties());
 		registerService(bc,bioPaxNetworkViewTaskFactory,InputStreamTaskFactory.class, new Properties());
 		registerService(bc,bioPaxContainer,BioPaxContainer.class, new Properties());
 		registerService(bc,bioPaxCytoPanelComponent,CytoPanelComponent.class, new Properties());
-		registerService(bc,networkListener,NetworkListener.class, new Properties());
-		registerService(bc,networkListener,RowsSetListener.class, new Properties());
-
+		registerService(bc,bioPaxViewTracker,BioPaxViewTracker.class, new Properties());
+		registerService(bc,bioPaxViewTracker,RowsSetListener.class, new Properties());
+		registerService(bc,bioPaxFactory,BioPaxFactory.class, new Properties());
 	}
 }
 

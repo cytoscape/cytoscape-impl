@@ -4,13 +4,10 @@ import java.io.InputStream;
 
 import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.model.Model;
-import org.biopax.paxtools.model.level3.EntityReference;
-import org.biopax.paxtools.model.level3.Named;
-import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
-import org.cytoscape.biopax.MapBioPaxToCytoscape;
-import org.cytoscape.biopax.NetworkListener;
+import org.cytoscape.biopax.BioPaxMapper;
+import org.cytoscape.biopax.BioPaxViewTracker;
+import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
-import org.cytoscape.biopax.util.BioPaxUtil;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -40,7 +37,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 	private final CyNetworkNaming naming;
 	private final VisualMappingManager mappingManager;
 	private final BioPaxVisualStyleUtil bioPaxVisualStyleUtil;
-	private final NetworkListener networkListener;
+	private final BioPaxViewTracker biopaxViewTracker;
 
 	private InputStream stream;
 
@@ -65,7 +62,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 	 */
 	public BioPaxNetworkViewReaderTask(InputStream stream, String inputName, 
 			CyNetworkFactory networkFactory, CyNetworkViewFactory viewFactory, 
-			CyNetworkNaming naming, NetworkListener networkListener, 
+			CyNetworkNaming naming, BioPaxViewTracker networkListener, 
 			VisualMappingManager mappingManager, BioPaxVisualStyleUtil bioPaxVisualStyleUtil) 
 	{
 		this.stream = stream;
@@ -73,7 +70,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 		this.networkFactory = networkFactory;
 		this.viewFactory = viewFactory;
 		this.naming = naming;
-		this.networkListener = networkListener;
+		this.biopaxViewTracker = networkListener;
 		this.mappingManager = mappingManager;
 		this.bioPaxVisualStyleUtil = bioPaxVisualStyleUtil;
 	}
@@ -103,7 +100,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 		mu.inferPropertyFromParent("cellularLocation");
 		
 		// Map BioPAX Data to Cytoscape Nodes/Edges (run as task)
-		MapBioPaxToCytoscape mapper = new MapBioPaxToCytoscapeImpl(model, networkFactory, taskMonitor);
+		BioPaxMapper mapper = new BioPaxMapperImpl(model, networkFactory, taskMonitor);
 		String networkName = getNetworkName(model);
 		network = mapper.createCyNetwork(networkName);
 		
@@ -146,7 +143,7 @@ public class BioPaxNetworkViewReaderTask extends AbstractTask implements CyNetwo
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		CyNetworkView view = viewFactory.createNetworkView(network);
-		networkListener.registerNetwork(view);
+		biopaxViewTracker.registerBioPaxView(view);
 		
 		//  Set-up the BioPax Visual Style
 		VisualStyle bioPaxVisualStyle = bioPaxVisualStyleUtil.getBioPaxVisualStyle();

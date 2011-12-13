@@ -47,7 +47,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.internal.MapBioPaxToCytoscapeImpl;
+import org.cytoscape.biopax.internal.BioPaxMapperImpl;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -142,7 +142,7 @@ public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
         CardLayout cl = (CardLayout)(cards.getLayout());
         CyNetwork network = applicationManager.getCurrentNetwork();
         CyRow row = network.getRow(network);
-        Boolean isBioPaxNetwork = row.get(MapBioPaxToCytoscapeImpl.BIOPAX_NETWORK, Boolean.class);
+        Boolean isBioPaxNetwork = row.get(BioPaxMapperImpl.BIOPAX_NETWORK, Boolean.class);
         if (isBioPaxNetwork != null) {
             cl.show(cards, LEGEND_BIOPAX_CARD);
         } else {

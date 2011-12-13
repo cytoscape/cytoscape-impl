@@ -41,7 +41,7 @@ import javax.swing.event.MenuEvent;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.biopax.internal.BioPaxFactory;
-import org.cytoscape.biopax.util.BioPaxUtil;
+import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
