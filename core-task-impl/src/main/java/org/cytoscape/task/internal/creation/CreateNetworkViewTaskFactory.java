@@ -60,8 +60,12 @@ public class CreateNetworkViewTaskFactory extends AbstractNetworkTaskFactory {
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, network, viewFactory,
-		                                                     networkViewManager, layouts,
-		                                                     eventHelper));
+		// Create visualization + layout (optional)
+		if (layouts == null)
+			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, network, viewFactory, networkViewManager,
+					layouts, eventHelper));
+		else
+			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, network, viewFactory, networkViewManager,
+					layouts, eventHelper));
 	}
 }

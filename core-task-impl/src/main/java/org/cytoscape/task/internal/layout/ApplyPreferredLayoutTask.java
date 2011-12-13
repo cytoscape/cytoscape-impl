@@ -69,16 +69,18 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 		this.layouts = layouts;
 	}
 
+	
+	@Override
 	public void run(TaskMonitor tm) {
-		tm.setProgress(0.0);
+		tm.setProgress(0.0d);
+		tm.setStatusMessage("Applying Default Layout...");
 		if (undoSupport != null)
-			undoSupport.postEdit(new LayoutEdit(eventHelper,
-			                                                             view));
+			undoSupport.postEdit(new LayoutEdit(eventHelper, view));
 		tm.setProgress(0.1);
 		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
-		if(props != null) 
+		if (props != null)
 			pref = props.getProperty("preferredLayoutAlgorithm", DEF_LAYOUT);
-		tm.setProgress(0.2);
+		tm.setProgress(0.2d);
 		final CyLayoutAlgorithm layout = layouts.getLayout(pref);
 
 		if (layout != null) {
