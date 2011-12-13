@@ -178,7 +178,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 			@Override
 			public TaskIterator createTaskIterator() {
-				return new TaskIterator(new CreateNetworkViewTask(url, loadNetworkFileTF, createViewTaskFactory));
+				return new TaskIterator(2, new CreateNetworkViewTask(url, loadNetworkFileTF, createViewTaskFactory));
 			}
 		});
 
@@ -214,10 +214,12 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			taskMonitor.setTitle("Loading network...");
 			taskMonitor.setStatusMessage("Loading network.  Please wait...");
-			taskMonitor.setProgress(0.01);
-			Set<CyNetwork> networks = this.loadNetworkFileTF.loadCyNetworks(url);
-			taskMonitor.setProgress(0.4);
+			taskMonitor.setProgress(0.01d);
+			
+			final Set<CyNetwork> networks = this.loadNetworkFileTF.loadCyNetworks(url);
+			taskMonitor.setProgress(0.4d);
 			if (networks.size() != 0) {
+				taskMonitor.setTitle("Creating View for the new network");
 				CyNetwork network = networks.iterator().next();
 				final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
 				if (numGraphObjects >= viewThreshold) {
@@ -227,7 +229,6 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 					insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator());
 				}
 			}
-			taskMonitor.setProgress(1.0);
 		}
 
 	}
