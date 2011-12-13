@@ -6,10 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +18,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.work.TaskMonitor;
 
 public class PsiMiTabParser {
 
@@ -37,10 +36,8 @@ public class PsiMiTabParser {
 	private static final String INTERACTION = "interaction";
 
 	// Attr Names
-	private static final String DETECTION_METHOD = ATTR_PREFIX
-			+ "interaction detection method";
-	private static final String INTERACTION_TYPE = ATTR_PREFIX
-			+ "interaction type";
+	private static final String DETECTION_METHOD = ATTR_PREFIX + "interaction detection method";
+	private static final String INTERACTION_TYPE = ATTR_PREFIX + "interaction type";
 	private static final String SOURCE_DB = ATTR_PREFIX + "source database";
 	private static final String INTERACTION_ID = ATTR_PREFIX + "Interaction ID";
 	private static final String EDGE_SCORE = ATTR_PREFIX + "confidence score";
@@ -52,32 +49,30 @@ public class PsiMiTabParser {
 
 	private static final String CHEBI = "chebi";
 
-	private static final String INTERACTOR_TYPE = ATTR_PREFIX
-			+ "interactor type";
+	private static final String INTERACTOR_TYPE = ATTR_PREFIX + "interactor type";
 	private static final String COMPOUND = "compound";
 
 	private Matcher matcher;
-	
-	private final Map<String, CyNode> nodeMap;
+
+	private Map<String, CyNode> nodeMap;
 
 	private final InputStream inputStream;
 	private final CyNetworkFactory cyNetworkFactory;
 
-	public PsiMiTabParser(final InputStream inputStream,
-			final CyNetworkFactory cyNetworkFactory) {
+	public PsiMiTabParser(final InputStream inputStream, final CyNetworkFactory cyNetworkFactory) {
 		this.inputStream = inputStream;
 		this.cyNetworkFactory = cyNetworkFactory;
-		this.nodeMap = new HashMap<String, CyNode>();
-
 	}
 
-	public CyNetwork parse() throws IOException {
+	public CyNetwork parse(final TaskMonitor taskMonitor) throws IOException {
+		this.nodeMap = new HashMap<String, CyNode>();
+
 		String[] entry;
 		String[] sourceID;
 		String[] targetID;
 
 		String[] detectionMethods;
-		
+
 		String[] sourceDB;
 		String[] interactionID;
 		String[] interactionType;
@@ -85,38 +80,38 @@ public class PsiMiTabParser {
 		String[] edgeScore;
 
 		final CyNetwork network = cyNetworkFactory.createNetwork();
-		
+
 		final CyTable nodeTable = network.getDefaultNodeTable();
-		if(nodeTable.getColumn(INTERACTOR_TYPE) == null)
+		if (nodeTable.getColumn(INTERACTOR_TYPE) == null)
 			nodeTable.createColumn(INTERACTOR_TYPE, String.class, false);
-		if(nodeTable.getColumn(INTERACTOR_TYPE + ".name") == null)
+		if (nodeTable.getColumn(INTERACTOR_TYPE + ".name") == null)
 			nodeTable.createColumn(INTERACTOR_TYPE + ".name", String.class, false);
-		
+
 		final CyTable edgeTable = network.getDefaultEdgeTable();
-		if(edgeTable.getColumn(INTERACTION_ID) == null)
+		if (edgeTable.getColumn(INTERACTION_ID) == null)
 			edgeTable.createColumn(INTERACTION_ID, String.class, false);
-		if(edgeTable.getColumn(INTERACTION_TYPE) == null) {
+		if (edgeTable.getColumn(INTERACTION_TYPE) == null) {
 			edgeTable.createListColumn(INTERACTION_TYPE, String.class, false);
 			edgeTable.createListColumn(INTERACTION_TYPE + ".name", String.class, false);
 		}
-		if(edgeTable.getColumn(DETECTION_METHOD) == null) {
+		if (edgeTable.getColumn(DETECTION_METHOD) == null) {
 			edgeTable.createListColumn(DETECTION_METHOD, String.class, false);
 			edgeTable.createListColumn(DETECTION_METHOD + ".name", String.class, false);
 		}
-		if(edgeTable.getColumn(SOURCE_DB) == null)
+		if (edgeTable.getColumn(SOURCE_DB) == null)
 			edgeTable.createListColumn(SOURCE_DB, String.class, false);
-		if(edgeTable.getColumn(EDGE_SCORE) == null)
+		if (edgeTable.getColumn(EDGE_SCORE) == null)
 			edgeTable.createListColumn(EDGE_SCORE, Double.class, false);
-		
 
 		String line;
 		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
+		long interactionCount = 0;
 		while ((line = br.readLine()) != null) {
 			// Ignore comment line
-			if(line.startsWith("#"))
+			if (line.startsWith("#"))
 				continue;
-			
+
 			try {
 				entry = line.split(TAB);
 
@@ -128,18 +123,18 @@ public class PsiMiTabParser {
 				targetID = entry[1].split(SEPARATOR);
 				final String sourceRawID = sourceID[0].split(":")[1];
 				final String targetRawID = targetID[0].split(":")[1];
-				
+
 				CyNode source = nodeMap.get(sourceRawID);
-				if(source == null) {
+				if (source == null) {
 					source = network.addNode();
 					nodeMap.put(sourceRawID, source);
 				}
 				CyNode target = nodeMap.get(targetRawID);
-				if(target == null) {
+				if (target == null) {
 					target = network.addNode();
 					nodeMap.put(targetRawID, target);
 				}
-				
+
 				network.getRow(source).set(CyTableEntry.NAME, sourceRawID);
 				network.getRow(target).set(CyTableEntry.NAME, targetRawID);
 
@@ -182,8 +177,9 @@ public class PsiMiTabParser {
 
 				network.getRow(e).set(INTERACTION_ID, interactionID[0]);
 
-				setPublication(network.getRow(e), entry[8].split(SEPARATOR),
-						entry[7].split(SEPARATOR));
+				setPublication(network.getRow(e), entry[8].split(SEPARATOR), entry[7].split(SEPARATOR));
+				interactionCount++;
+				taskMonitor.setStatusMessage(interactionCount + " interactions loaded.");
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				continue;
@@ -193,7 +189,8 @@ public class PsiMiTabParser {
 
 		br.close();
 		nodeMap.clear();
-		
+		nodeMap = null;
+
 		return network;
 	}
 
@@ -203,18 +200,17 @@ public class PsiMiTabParser {
 		String taxonName;
 		if (buf != null && buf.length == 2) {
 			attrName = ATTR_PREFIX + buf[0];
-			
-			if(row.getTable().getColumn(attrName) == null) {
+
+			if (row.getTable().getColumn(attrName) == null) {
 				row.getTable().createColumn(attrName, String.class, false);
 				row.getTable().createColumn(attrName + ".name", String.class, false);
 			}
-				
+
 			matcher = miNamePttr.matcher(buf[1]);
 			if (matcher.find()) {
 				taxonName = matcher.group();
 				row.set(attrName, buf[1].split("\\(")[0]);
-				row.set(attrName + ".name",
-						taxonName.substring(1, taxonName.length() - 1));
+				row.set(attrName + ".name", taxonName.substring(1, taxonName.length() - 1));
 			} else {
 				row.set(attrName, buf[1]);
 			}
@@ -284,17 +280,17 @@ public class PsiMiTabParser {
 			scoreString = parts[1];
 			scoreType = parts[0];
 			final String colName = key + "." + scoreType;
-			
-			if(row.getTable().getColumn(colName) == null)
+
+			if (row.getTable().getColumn(colName) == null)
 				row.getTable().createListColumn(colName, Double.class, false);
 
 			try {
 				final Double score = Double.parseDouble(scoreString);
 				row.set(key + "." + scoreType, score);
 			} catch (Exception e) {
-//				if (scoreString != null
-//						&& scoreString.trim().equals("") == false)
-//					row.set(key + "." + scoreType, scoreString);
+				// if (scoreString != null
+				// && scoreString.trim().equals("") == false)
+				// row.set(key + "." + scoreType, scoreString);
 
 				continue;
 			}
@@ -302,9 +298,9 @@ public class PsiMiTabParser {
 	}
 
 	private void listAttrMapper(CyRow row, String attrName, String value) {
-		if(row.getTable().getColumn(attrName) == null)
+		if (row.getTable().getColumn(attrName) == null)
 			row.getTable().createListColumn(attrName, String.class, false);
-		
+
 		List<String> currentAttr = row.getList(attrName, String.class);
 
 		if (currentAttr == null) {
