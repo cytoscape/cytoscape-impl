@@ -27,7 +27,8 @@ public class PsiMiNetworkViewTaskFactory implements InputStreamTaskFactory {
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new PsiMiNetworkViewReader(inputStream, networkFactory, networkViewFactory, layouts));
+		// Usually 3 tasks: load, visualize, and layout.
+		return new TaskIterator(3, new PsiMiNetworkViewReader(inputStream, networkFactory, networkViewFactory, layouts));
 	}
 
 	@Override

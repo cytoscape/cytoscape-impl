@@ -63,10 +63,12 @@ public class WelcomeScreenDialog extends JDialog {
 	private final DataSourceManager dsManager;
 	
 	private final CyProperty<Properties> cyProps;
+	
+	private final TaskFactory importNetworkFileTF;
 
 	public WelcomeScreenDialog(OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory,
 			TaskManager guiTaskManager, final CyApplicationConfiguration config,
-			final ImportNetworksTaskFactory importNetworkTF, final NetworkTaskFactory networkTaskFactory,
+			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworkTF, final NetworkTaskFactory networkTaskFactory,
 			final DataSourceManager dsManager, final CyProperty<Properties> cyProps) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.fileTracker = fileTracker;
@@ -75,6 +77,7 @@ public class WelcomeScreenDialog extends JDialog {
 		this.networkTaskFactory = networkTaskFactory;
 		this.dsManager = dsManager;
 		this.openSessionTaskFactory = openSessionTaskFactory;
+		this.importNetworkFileTF = importNetworkFileTF;
 
 		this.guiTaskManager = guiTaskManager;
 		this.cyProps = cyProps;
@@ -167,7 +170,7 @@ public class WelcomeScreenDialog extends JDialog {
 		panel4.setBackground(PANEL_COLOR);
 
 		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, openSessionTaskFactory), "Open a Recent Session");
-		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, guiTaskManager, loadNetworkTF, networkTaskFactory, config, dsManager, cyProps.getProperties()),
+		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, guiTaskManager, importNetworkFileTF, loadNetworkTF, networkTaskFactory, config, dsManager, cyProps.getProperties()),
 				"Create New Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");

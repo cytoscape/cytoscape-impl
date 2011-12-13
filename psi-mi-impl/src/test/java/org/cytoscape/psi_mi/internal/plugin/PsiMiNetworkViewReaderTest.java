@@ -23,8 +23,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PsiMiNetworkViewReaderTest {
+	
+	private static final Logger logger = LoggerFactory.getLogger(PsiMiNetworkViewReaderTest.class);
+
 	@Mock CyLayoutAlgorithmManager layouts;
 	@Mock CyLayoutAlgorithm layout;
 	@Mock TaskMonitor taskMonitor;
@@ -84,5 +89,36 @@ public class PsiMiNetworkViewReaderTest {
 		// Spoke model: 40 interactors, 1 bait = 39 interactions
 		assertEquals(40, network.getNodeCount());
 		assertEquals(39, network.getEdgeCount());
+	}
+	
+	// The following is for performance testing.  Enable when necessary.
+	//@Test
+	public void testReadPsiMi25Large() throws Exception {
+		long total = 0;
+
+		for (int i = 0; i < 5; i++) {
+			long start = System.currentTimeMillis();
+			logger.debug("HPRD Data Import start");
+			File file = new File("src/test/resources/testData/HPRD_SINGLE_PSIMI_041210.xml");
+			CyNetworkReader reader = createReader(file);
+			reader.run(taskMonitor);
+			CyNetwork[] networks = reader.getNetworks();
+
+			long time = System.currentTimeMillis() - start;
+			total+= time;
+			
+			logger.debug("HPRD Data Import finihsed in " + time + " msec.");
+
+			assertNotNull(networks);
+			assertEquals(1, networks.length);
+
+			final CyNetwork network = networks[0];
+			assertNotNull(network);
+
+			assertEquals(9869, network.getNodeCount());
+			assertEquals(62226, network.getEdgeCount());
+		}
+		
+		logger.debug("Average loading time = " + total/5 + " msec.");
 	}
 }

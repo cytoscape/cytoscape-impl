@@ -67,7 +67,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	private Window parent;
 
-	private final ImportNetworksTaskFactory loadNetworkFileTF;
+	private final ImportNetworksTaskFactory importNetworkFromURLTF;
+	private final TaskFactory importNetworkFileTF;
 	private final NetworkTaskFactory createViewTaskFactory;
 
 	private final DataSourceManager dsManager;
@@ -77,12 +78,13 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 	
 	private boolean firstSelection = false;
 
-	CreateNewNetworkPanel(Window parent, final TaskManager guiTaskManager, final ImportNetworksTaskFactory loadTF,
+	CreateNewNetworkPanel(Window parent, final TaskManager guiTaskManager, final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory loadTF,
 			final NetworkTaskFactory createViewTaskFactory, final CyApplicationConfiguration config,
 			final DataSourceManager dsManager, final Properties props) {
 		this.parent = parent;
-		this.loadNetworkFileTF = loadTF;
+		this.importNetworkFromURLTF = loadTF;
 		this.createViewTaskFactory = createViewTaskFactory;
+		this.importNetworkFileTF = importNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
 		this.viewThreshold = getViewThreshold(props);
@@ -148,7 +150,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			public void mouseClicked(MouseEvent ev) {
 				// Load network from file.
 				parent.dispose();
-				guiTaskManager.execute((TaskFactory) loadNetworkFileTF);
+				guiTaskManager.execute(importNetworkFileTF);
 			}
 		});
 		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
@@ -178,7 +180,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 			@Override
 			public TaskIterator createTaskIterator() {
-				return new TaskIterator(2, new CreateNetworkViewTask(url, loadNetworkFileTF, createViewTaskFactory));
+				return new TaskIterator(2, new CreateNetworkViewTask(url, importNetworkFromURLTF, createViewTaskFactory));
 			}
 		});
 

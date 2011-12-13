@@ -65,6 +65,7 @@ public class LoadNetworkFileTaskFactoryImpl implements TaskFactory {
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming));
+		// Load, visualize, and layout.
+		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming));
 	}
 }

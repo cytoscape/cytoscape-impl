@@ -118,12 +118,9 @@ class SwingTaskMonitor implements TaskMonitor {
 			if (dialog != null)
 				dialog.setPercentCompleted(-1);
 		} else {
-			logger.info("Set Progeress called: " + progress);
 			double completed = (double)currentTaskNum/(double)expectedNumTasks;
 			double adjustedProgress = (progress * fractionOfOverall) + completed;
-			this.progress = (int) Math.floor(100.0 * adjustedProgress); 
-			
-			logger.info("## Set Progeress converted: " + this.progress);
+			this.progress = (int) Math.floor(100.0 * adjustedProgress); 			
 			if (dialog != null)
 				dialog.setPercentCompleted(this.progress);
 		}

@@ -35,13 +35,14 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	
 	private final NetworkTaskFactory networkTaskFactory;
 	private final TaskFactory openSessionTaskFactory;
+	private final TaskFactory importNetworkFileTF;
 
 	private final CySwingApplication app;
 	private final CyProperty<Properties> cyProps;
 
 	public WelcomeScreenAction(final CySwingApplication app, final CyApplicationManager applicationManager,
 			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory, TaskManager guiTaskManager,
-			final ImportNetworksTaskFactory importNetworksTaskFactory, final NetworkTaskFactory networkTaskFactory,
+			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworksTaskFactory, final NetworkTaskFactory networkTaskFactory,
 			final CyApplicationConfiguration config, final DataSourceManager dsManager, final CyProperty<Properties> cyProps) {
 		super(MENU_NAME, applicationManager);
 		setPreferredMenu(PARENT_NAME);
@@ -56,13 +57,14 @@ public class WelcomeScreenAction extends AbstractCyAction {
 		this.app = app;
 		this.cyProps = cyProps;
 		this.openSessionTaskFactory = openSessionTaskFactory;
+		this.importNetworkFileTF = importNetworkFileTF;
 
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		final JDialog welcomeScreen = new WelcomeScreenDialog(openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config,
-				importNetworksTaskFactory, networkTaskFactory, dsManager, cyProps);
+				importNetworkFileTF, importNetworksTaskFactory, networkTaskFactory, dsManager, cyProps);
 		welcomeScreen.setLocationRelativeTo(app.getJFrame());
 		welcomeScreen.setVisible(true);
 	}

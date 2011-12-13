@@ -337,23 +337,17 @@
 		</category>
 	</category>
 	<category name="network">
-		<dataSource name="Yeast Protein-Protein: Ideker, T. et al. (galFiltered.sif)"
-			xlink:href="http://chianti.ucsd.edu/kono/data/galFiltered.sif"
+		<dataSource name="Yeast Protein-Protein: Ideker, T. et al. (362 Interactions, galFiltered.sif)"
+			xlink:href="http://www.cytoscape.org/datasets/galFiltered.sif"
 			format="sif" />
-		<dataSource name="Human Protein-Protein: HPRD Literature Curated Interactions"
-			xlink:href="http://cytoscape.org/datasets/HPRD.sif"
-			format="sif" />
+		<dataSource name="Human Protein-Protein: HPRD (62226 Interactions w/annotations, Rev. 4/12/2010)"
+			xlink:href="http://www.cytoscape.org/datasets/HPRD_SINGLE_PSIMI_041210.xml"
+			format="psimi25" />
 		<dataSource name="Human Protein-Protein: Rual et al. Toward a proteome-scale map of the human protein-protein interaction network. Nature 2005."
 			xlink:href="http://cytoscape.org/datasets/rual.sif"
 			format="sif" />
 		<dataSource name="Human Protein-Protein: Rual et al. (Subnetwork for tutorial)"
 			xlink:href="http://www.cytoscape.org/tut/getting.started/RUAL.subset.sif"
-			format="sif" />
-		<dataSource name="Human Protein-Protein: Stelzl et al. A human protein-protein interaction network: a resource for annotating the proteome. Cell 2005."
-			xlink:href="http://cytoscape.org/datasets/stelzl.sif"
-			format="sif" />
-		<dataSource name="Yeast Protein-Protein: Ptacek et al. Global analysis of protein phosphorylation in yeast. Nature 2005"
-			xlink:href="http://cytoscape.org/datasets/ptacek.sif"
 			format="sif" />
 	</category>
 	

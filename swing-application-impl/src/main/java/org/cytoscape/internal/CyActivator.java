@@ -145,6 +145,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		
 		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class, "(id=loadNetworkURLTaskFactory)");
+		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
 		NetworkTaskFactory createNetworkViewTaskFactory = getService(bc, NetworkTaskFactory.class, "(id=createNetworkViewTaskFactory)");
 		TaskFactory openSessionTaskFactory = getService(bc, TaskFactory.class, "(id=openSessionTaskFactory)");
 
@@ -293,7 +294,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cyApplicationManagerServiceRef);
 		
 		// Show Welcome Screen
-		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(cytoscapeDesktop, cyApplicationManagerServiceRef, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
+		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(cytoscapeDesktop, cyApplicationManagerServiceRef, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
 		
 		registerService(bc, welcomeScreenAction, CyAction.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());

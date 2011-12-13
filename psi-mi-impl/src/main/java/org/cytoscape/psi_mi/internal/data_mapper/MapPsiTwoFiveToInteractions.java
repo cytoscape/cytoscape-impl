@@ -59,6 +59,8 @@ import org.cytoscape.psi_mi.internal.schema.mi25.InteractorElementType;
 import org.cytoscape.psi_mi.internal.schema.mi25.NamesType;
 import org.cytoscape.psi_mi.internal.schema.mi25.ParticipantType;
 import org.cytoscape.psi_mi.internal.schema.mi25.XrefType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -68,21 +70,28 @@ import org.cytoscape.psi_mi.internal.schema.mi25.XrefType;
  * @author Nisha Vinod
  */
 public class MapPsiTwoFiveToInteractions implements Mapper {
-	private HashMap<String, InteractorElementType> interactorMap;
-	private Map<String, ExperimentType> experimentMap;
-	private List<Interaction> interactions;
-	private String xml;
-	private static final boolean DEBUG = false;
+	
+	private static final Logger logger = LoggerFactory.getLogger(MapPsiTwoFiveToInteractions.class);
+		
+	private final Map<String, InteractorElementType> interactorMap;
+	private final Map<String, ExperimentType> experimentMap;
+	
+	private final List<Interaction> interactions;
+	private final String xml;
+	
 
 	/**
 	 * Constructor.
 	 *
-	 * @param xml          XML Document.
+	 * @param xml XML Document.
 	 * @param interactions ArrayList of Interaction objects.
 	 */
-	public MapPsiTwoFiveToInteractions(String xml, List<Interaction> interactions) {
+	public MapPsiTwoFiveToInteractions(final String xml, final List<Interaction> interactions) {
 		this.xml = xml;
 		this.interactions = interactions;
+		
+		interactorMap = new HashMap<String, InteractorElementType>();
+		experimentMap = new HashMap<String, ExperimentType>();
 	}
 
 	/**
@@ -90,46 +99,57 @@ public class MapPsiTwoFiveToInteractions implements Mapper {
 	 *
 	 * @throws MapperException Problem Performing mapping.
 	 */
+	@Override
 	public void doMapping() throws MapperException {
 		parseXml(xml);
 	}
 
 	/**
 	 * Parses the PSI XML Document.
+	 * @throws MapperException 
 	 */
-	private void parseXml(String content) throws MapperException {
+	private void parseXml(final String xml) throws MapperException {
+
+		final StringReader reader = new StringReader(xml);
+
+		JAXBContext jc = null;
 		try {
-			interactorMap = new HashMap<String, InteractorElementType>();
-			experimentMap = new HashMap<String, ExperimentType>();
-
-			StringReader reader = new StringReader(content);
-			JAXBContext jc = JAXBContext.newInstance(MapInteractionsToPsiTwoFive.SCHEMA_NAMESPACE, getClass().getClassLoader());
-			Unmarshaller u = jc.createUnmarshaller();
-
-			EntrySet entrySet = (EntrySet) u.unmarshal(reader);
-			int entryCount = entrySet.getEntry().size();
-
-			for (int i = 0; i < entryCount; i++) {
-				EntrySet.Entry entry = entrySet.getEntry().get(i);
-				extractEntry(entry);
-			}
+			jc = JAXBContext.newInstance(MapInteractionsToPsiTwoFive.SCHEMA_NAMESPACE, getClass()
+					.getClassLoader());
 		} catch (JAXBException e) {
-			throw new MapperException(e, "PSI-MI XML File is invalid:  " + e.getMessage());
+			logger.error("Could not create JAXBContext", e);
 		}
+		
+		Unmarshaller u = null;
+		try {
+			u = jc.createUnmarshaller();
+		} catch (JAXBException e) {
+			logger.error("Could not create Unmarshaller", e);
+		}
+
+		EntrySet entrySet = null;
+		try {
+			entrySet = (EntrySet) u.unmarshal(reader);
+		} catch (JAXBException e) {
+			logger.error("unmarshal operation failed", e);
+		}
+		
+		final int entryCount = entrySet.getEntry().size();
+		for (int i = 0; i < entryCount; i++)
+			extractEntry(entrySet.getEntry().get(i));
 	}
 
 	/**
 	 * Extracts PSI Entry Root Element.
 	 */
 	private void extractEntry(EntrySet.Entry entry) throws MapperException {
-		EntrySet.Entry.ExperimentList expList = entry.getExperimentList();
+		final EntrySet.Entry.ExperimentList expList = entry.getExperimentList();
 		extractExperimentList(expList);
 
-		EntrySet.Entry.InteractorList interactorList = entry.getInteractorList();
-
+		final EntrySet.Entry.InteractorList interactorList = entry.getInteractorList();
 		extractInteractorList(interactorList);
 
-		EntrySet.Entry.InteractionList interactionList = entry.getInteractionList();
+		final EntrySet.Entry.InteractionList interactionList = entry.getInteractionList();
 		extractInteractionList(interactionList);
 	}
 
@@ -137,68 +157,57 @@ public class MapPsiTwoFiveToInteractions implements Mapper {
 	 * Extracts Experiment List, and places into HashMap.
 	 */
 	private void extractExperimentList(EntrySet.Entry.ExperimentList expList) {
-		log("Extracting Experiment List: Start");
-
-		if (expList != null) {
-			int count = expList.getExperimentDescription().size();
-
+		if(expList != null) {
+			final int count = expList.getExperimentDescription().size();
 			for (int i = 0; i < count; i++) {
-				ExperimentType expType = expList.getExperimentDescription().get(i);
-				String id = "" + expType.getId();
-				experimentMap.put(id, expType);
+				final ExperimentType expType = expList.getExperimentDescription().get(i);
+				experimentMap.put(Integer.toString(expType.getId()), expType);
 			}
 		}
-
-		log("Extracting Experiment List: End");
 	}
 
 	/**
 	 * Extracts PSI InteractorList, and places into HashMap.
 	 */
 	private void extractInteractorList(EntrySet.Entry.InteractorList interactorList) {
-		log("Extracting Interactor List: Start");
+		logger.debug("Extracting Interactor List: Start");
 
 		if (interactorList != null) {
-			for (InteractorElementType cProtein : interactorList.getInteractor()) {
-				String id = "" + cProtein.getId();
-				log("Extracting:  " + id + " --> " + cProtein);
-				interactorMap.put(id, cProtein);
-			}
+			for (InteractorElementType cProtein : interactorList.getInteractor())
+				interactorMap.put(Integer.toString(cProtein.getId()), cProtein);
 		}
 
-		log("Extracting Interactor List: End");
+		logger.debug("Extracting Interactor List: End");
 	}
 
 	/**
 	 * Extracts PSI Interaction List
 	 */
-	private void extractInteractionList(EntrySet.Entry.InteractionList interactionList)
-	    throws MapperException {
-		log("Extracting Interaction List: Start");
+	private void extractInteractionList(EntrySet.Entry.InteractionList interactionList) throws MapperException {
+		logger.debug("Extracting Interaction List: Start");
 
 		for (EntrySet.Entry.InteractionList.Interaction cInteraction : interactionList.getInteraction()) {
 			Interaction interaction = new Interaction();
-            List<CvType> interactionTypes = cInteraction.getInteractionType();
+			final List<CvType> interactionTypes = cInteraction.getInteractionType();
 
-			InteractionElementType.ParticipantList pList = cInteraction.getParticipantList();
-			int pCount = pList.getParticipant().size();
-			ArrayList<Interactor> interactorList = new ArrayList<Interactor>();
-			Map<String, String> interactorRoles = new HashMap<String, String>();
+			final InteractionElementType.ParticipantList pList = cInteraction.getParticipantList();
+			final int pCount = pList.getParticipant().size();
+			final List<Interactor> interactorList = new ArrayList<Interactor>();
+			final Map<String, String> interactorRoles = new HashMap<String, String>();
 
 			for (int j = 0; j < pCount; j++) {
 				Interactor interactor = extractInteractorRefOrElement(pList, j);
-				log("Getting interactor:  " + interactor);
+				logger.debug("Getting interactor:  " + interactor);
 				interactorList.add(interactor);
 
 				ParticipantType participant = pList.getParticipant().get(j);
 				ParticipantType.ExperimentalRoleList role = participant.getExperimentalRoleList();
 
 				if (role != null) {
-					for (ParticipantType.ExperimentalRoleList.ExperimentalRole expRole : role
-					                                                                                                                                                                                                              .getExperimentalRole()) {
+					for (ParticipantType.ExperimentalRoleList.ExperimentalRole expRole : role.getExperimentalRole()) {
 						NamesType namesType = expRole.getNames();
 						String roleName = namesType.getShortLabel();
-						log("Storing role for:  " + interactor.getName() + " --> " + roleName);
+						logger.debug("Storing role for:  " + interactor.getName() + " --> " + roleName);
 						interactorRoles.put(interactor.getName(), roleName);
 					}
 				}
@@ -209,37 +218,36 @@ public class MapPsiTwoFiveToInteractions implements Mapper {
 
 			List<Interaction> expDatalist = extractExperimentalData(cInteraction, interaction);
 
-			//  Add BAIT MAP / Names To all Interactions.
+			// Add BAIT MAP / Names To all Interactions.
 			for (int j = 0; j < expDatalist.size(); j++) {
 				interaction = expDatalist.get(j);
 				interaction.addAttribute(InteractionVocab.BAIT_MAP, interactorRoles);
 				extractInteractionNamesXrefs(cInteraction, interaction);
-                addInteractorType(interactionTypes, interaction);
-            }
+				addInteractorType(interactionTypes, interaction);
+			}
 
-			log("Adding num interactions:  " + expDatalist.size());
+			logger.debug("Adding num interactions:  " + expDatalist.size());
 			interactions.addAll(expDatalist);
 		}
 
-		log("Extracting Interaction List: End");
+		logger.debug("Extracting Interaction List: End");
 	}
 
-    private void addInteractorType(List<CvType> interactionTypes,
-        org.cytoscape.psi_mi.internal.model.Interaction interaction) {
-        if (interactionTypes != null) {
-            if (interactionTypes.size() ==1) {
-                CvType interactionType = interactionTypes.get(0);
-                NamesType namesType = interactionType.getNames();
-                if (namesType != null) {
-                    String shortName = namesType.getShortLabel();
-                    if (shortName != null) {
-                        interaction.addAttribute(InteractionVocab.INTERACTION_TYPE_NAME,
-                            shortName);
-                    }
-                }
-            }
-        }
-    }    
+	private void addInteractorType(List<CvType> interactionTypes,
+			org.cytoscape.psi_mi.internal.model.Interaction interaction) {
+		if (interactionTypes != null) {
+			if (interactionTypes.size() == 1) {
+				CvType interactionType = interactionTypes.get(0);
+				NamesType namesType = interactionType.getNames();
+				if (namesType != null) {
+					String shortName = namesType.getShortLabel();
+					if (shortName != null) {
+						interaction.addAttribute(InteractionVocab.INTERACTION_TYPE_NAME, shortName);
+					}
+				}
+			}
+		}
+	}
 
     /**
 	 * Extracts Interaction Names.
@@ -252,20 +260,18 @@ public class MapPsiTwoFiveToInteractions implements Mapper {
 			String shortLabel = names.getShortLabel();
 			String fullName = names.getFullName();
 
-			if (shortLabel != null) {
+			if (shortLabel != null)
 				interaction.addAttribute(InteractionVocab.INTERACTION_SHORT_NAME, shortLabel);
-			}
 
-			if (fullName != null) {
+			if (fullName != null)
 				interaction.addAttribute(InteractionVocab.INTERACTION_FULL_NAME, fullName);
-			}
 		}
 
 		XrefType xref = cInteraction.getXref();
 		ExternalReference[] refs = extractExternalRefs(xref);
 
 		if ((refs != null) && (refs.length > 0)) {
-			log("Got refs:  " + refs.length);
+			logger.debug("Got refs:  " + refs.length);
 			interaction.setExternalRefs(refs);
 		}
 	}
@@ -273,18 +279,17 @@ public class MapPsiTwoFiveToInteractions implements Mapper {
 	/**
 	 * Extracts Interactor From Reference or Element.
 	 */
-	private Interactor extractInteractorRefOrElement(InteractionElementType.ParticipantList pList,
-	                                                 int j) throws MapperException {
+	private Interactor extractInteractorRefOrElement(InteractionElementType.ParticipantList pList, int j)
+			throws MapperException {
 		Interactor interactor;
 		InteractorElementType cInteractor = null;
 		ParticipantType participant = pList.getParticipant().get(j);
 		Integer ref = participant.getInteractorRef();
 
-		if (ref != null) {
-			cInteractor = interactorMap.get("" + ref);
-		} else {
+		if (ref != null)
+			cInteractor = interactorMap.get(ref.toString());
+		else
 			cInteractor = participant.getInteractor();
-		}
 
 		interactor = createInteractor(cInteractor);
 
@@ -408,12 +413,15 @@ public class MapPsiTwoFiveToInteractions implements Mapper {
 	/**
 	 * Gets Interaction Detection.
 	 */
-	private void extractInteractionDetection(ExperimentType expDesc, Interaction interaction) {
+	private void extractInteractionDetection(final ExperimentType expDesc, final Interaction interaction) {
 		String expSystem;
 
 		if (expDesc != null) {
-			CvType detection = expDesc.getInteractionDetectionMethod();
-			NamesType names = detection.getNames();
+			final CvType detection = expDesc.getInteractionDetectionMethod();
+			if(detection == null)
+				return;
+			
+			final NamesType names = detection.getNames();
 			expSystem = names.getShortLabel();
 
 			if (expSystem != null) {
@@ -527,11 +535,5 @@ public class MapPsiTwoFiveToInteractions implements Mapper {
 			                        Integer.toString(ncbiTaxID));
             }
         }
-	}
-
-	private void log(String msg) {
-		if (DEBUG) {
-			System.out.println(msg);
-		}
 	}
 }
