@@ -1,7 +1,6 @@
 package org.cytoscape.work.internal.task;
 
 
-import java.awt.Dialog.ModalityType;
 import java.awt.Window;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -40,8 +39,8 @@ class SwingTaskMonitor implements TaskMonitor {
 		this.parent = parent;
 	}
 
-	public void setExpectedNumTasks(int numTasks) {
-		this.expectedNumTasks = numTasks;
+	public void setExpectedNumTasks(final int expectedNumTasks) {
+		this.expectedNumTasks = expectedNumTasks;
 		this.fractionOfOverall = 1.0/(double)expectedNumTasks;
 	}
 
@@ -119,9 +118,12 @@ class SwingTaskMonitor implements TaskMonitor {
 			if (dialog != null)
 				dialog.setPercentCompleted(-1);
 		} else {
+			logger.info("Set Progeress called: " + progress);
 			double completed = (double)currentTaskNum/(double)expectedNumTasks;
 			double adjustedProgress = (progress * fractionOfOverall) + completed;
 			this.progress = (int) Math.floor(100.0 * adjustedProgress); 
+			
+			logger.info("## Set Progeress converted: " + this.progress);
 			if (dialog != null)
 				dialog.setPercentCompleted(this.progress);
 		}
