@@ -87,7 +87,8 @@ public class LoadNetworkURLTaskFactoryImpl implements TaskFactory, ImportNetwork
 
 	public TaskIterator createTaskIterator() {
 		task = new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil);
-		return new TaskIterator(task);
+		// Usually we need to create view, so expected number is 2.
+		return new TaskIterator(2, task);
 	}
 	
 	@Override
