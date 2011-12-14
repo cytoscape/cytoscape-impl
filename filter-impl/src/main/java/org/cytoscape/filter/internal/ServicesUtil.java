@@ -2,7 +2,9 @@ package org.cytoscape.filter.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.filter.internal.read.filter.FilterReader;
@@ -35,6 +37,8 @@ public class ServicesUtil {
 
 	public static CyNetworkViewFactory cyNetworkViewFactoryServiceRef;
 	public static CyLayoutAlgorithmManager cyLayoutsServiceRef;
+	public static CyVersion cytoscapeVersionService;
+	public static CyApplicationConfiguration cyApplicationConfigurationServiceRef;
 
 	public static FilterReader filterReader;
 }
