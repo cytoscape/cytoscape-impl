@@ -89,7 +89,7 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 		if (cancelled)
 			return;
 
-		taskMonitor.setStatusMessage("Finding network reader...");
+		taskMonitor.setStatusMessage("Finding compatible network reader for this file...");
 		reader = mgr.getReader(url.toURI(),url.toString());
 
 		if (cancelled)

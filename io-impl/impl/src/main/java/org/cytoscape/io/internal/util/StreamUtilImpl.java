@@ -40,16 +40,14 @@ import org.cytoscape.io.util.StreamUtil;
 public class StreamUtilImpl implements StreamUtil {
 
 	private static final String GZIP = ".gz";
-
 	private static final String ZIP = ".zip";
-
 	private static final String JAR = ".jar";
 
-	private static int msConnectionTimeout = 2000;
-	/**
-	 * 
-	 */
-	public static boolean STOP = false;
+	private static final int msConnectionTimeout = 2000;
+	
+	
+	// TODO: Inject this!
+	private Proxy cytoProxy; // ProxyHandler.getProxyServer();
 
 	/**
 	 * Gets the an input stream given a URL.
@@ -60,46 +58,31 @@ public class StreamUtilImpl implements StreamUtil {
 	 * @throws IOException
 	 * 
 	 */
+	@Override
 	public InputStream getInputStream(URL source) throws IOException {
+		if(source == null)
+			throw new NullPointerException("Source URL is null");
+		
 		final InputStream newIs;
+		
 		final InputStream proxyIs;
-		proxyIs = getBasicInputStream(source);
-		if (source.toString().toLowerCase().endsWith(GZIP)) {
+		if(cytoProxy != null)
+			proxyIs = source.openConnection(cytoProxy).getInputStream();
+		else
+			proxyIs = source.openStream();
+		
+		// These are mainly for Session loading.
+		if (source.toString().toLowerCase().endsWith(GZIP))
 			newIs = new GZIPInputStream(proxyIs);
-		} else if (source.toString().toLowerCase().endsWith(ZIP)) {
-			// System.err.println(source.toString() + " ZIP ");
+		else if (source.toString().toLowerCase().endsWith(ZIP))
 			newIs = new ZipInputStream(proxyIs);
-		} else if (source.toString().toLowerCase().endsWith(JAR)) {
+		else if (source.toString().toLowerCase().endsWith(JAR))
 			newIs = new JarInputStream(proxyIs);
-		} else {
+		else
 			newIs = proxyIs;
-		}
 		return newIs;
 	}
 
-	/**
-	 * Obtain an InputStream for a given URL. Ensure proxy servers and an input
-	 * stream to the real URL source is created--not a locally cached and out of
-	 * date source. Proxy servers and other characteristics can cause pages to
-	 * be cached.
-	 * 
-	 * @param source
-	 *            the non-null URL from which to obtain an InputStream.
-	 * @return InputStream from the source URL.
-	 * @throws IllegalStateException
-	 *             if source is null.
-	 * @throws IOException
-	 *             if a connection to the URL can't be opened or a problem
-	 *             occurs with the InputStream.
-	 */
-	public InputStream getBasicInputStream(URL source) throws IOException {
-		if (source == null) {
-			throw new IllegalStateException(
-					"getBasicInputStream was given a null 'source' argument.");
-		}
-		URLConnection uc = getURLConnection(source);
-		return uc.getInputStream();
-	}
 
 	/**
 	 * Obtain a URLConnection for a given URL. Ensure proxy servers are
@@ -113,14 +96,13 @@ public class StreamUtilImpl implements StreamUtil {
 	 * @throws IOException
 	 *             if a connection to the URL can't be opened.
 	 */
-	public URLConnection getURLConnection(URL source) throws IOException {
-		if (source == null) {
-			throw new IllegalStateException(
-					"getURLConnection was given a null 'source' argument.");
-		}
-		// TODO add proxy support back -- should be inserted as a service
-		Proxy cytoProxy = null; // ProxyHandler.getProxyServer();
+	@Override
+	public URLConnection getURLConnection(final URL source) throws IOException {
+		if (source == null)
+			throw new NullPointerException("getURLConnection was given a null 'source' argument.");
+		
 		URLConnection uc = null;
+		
 		if (cytoProxy == null) {
 			uc = source.openConnection();
 		} else {
@@ -139,70 +121,4 @@ public class StreamUtilImpl implements StreamUtil {
 		uc.setConnectTimeout(msConnectionTimeout); // set timeout for connection
 		return uc;
 	}
-
-	// /**
-	// * Download the file specified by the url string to the given File object
-	// *
-	// * @param urlString
-	// * @param downloadFile
-	// * @param taskMonitor
-	// * @return
-	// * @throws IOException
-	// */
-	// public static void download(String urlString, File downloadFile,
-	// TaskMonitor taskMonitor) throws IOException {
-	// URL url = new URL(urlString);
-	// InputStream is = null;
-	// int maxCount = 0; // -1 if unknown
-	// int progressCount = 0;
-	// URLConnection conn = getURLConnection(url);
-	// maxCount = conn.getContentLength();
-	// is = conn.getInputStream();
-	// FileOutputStream os = new FileOutputStream(downloadFile);
-	// double percent = 0.0d;
-	// byte[] buffer = new byte[1];
-	// while (((is.read(buffer)) != -1) && !STOP) {
-	// progressCount += buffer.length;
-	// // Report on Progress
-	// if (taskMonitor != null) {
-	// percent = ((double) progressCount / maxCount) * 100.0;
-	// if (maxCount == -1) { // file size unknown
-	// percent = -1;
-	// }
-	// JTask jTask = (JTask) taskMonitor;
-	// if (jTask.haltRequested()) { // abort
-	// downloadFile = null;
-	// taskMonitor.setStatus("Canceling the download ...");
-	// taskMonitor.setPercentCompleted(100);
-	// break;
-	// }
-	// taskMonitor.setPercentCompleted((int) percent);
-	// }
-	// os.write(buffer);
-	// }
-	// os.flush();
-	// os.close();
-	// is.close();
-	// if (STOP) {
-	// downloadFile.delete();
-	// }
-	// }
-	//
-	// /**
-	// * Get the the contents of the given URL as a string.
-	// *
-	// * @param source
-	// * @return String
-	// * @throws IOException
-	// */
-	// public static String download(URL source) throws IOException {
-	// InputStream is = getInputStream(source);
-	// StringBuffer buffer = new StringBuffer();
-	// int c;
-	// while ((c = is.read()) != -1) {
-	// buffer.append((char) c);
-	// }
-	// is.close();
-	// return buffer.toString();
-	// }
 }

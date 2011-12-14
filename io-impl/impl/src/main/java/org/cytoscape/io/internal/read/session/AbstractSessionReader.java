@@ -168,9 +168,8 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 * @throws Exception
 	 */
 	protected void readSessionFile() throws Exception {
-		if (!sourceInputStream.markSupported()) {
+		if (!sourceInputStream.markSupported())
 			throw new RuntimeException("Mark/Reset not supported!");
-		}
 		
 		if (inputStreamRead)
 			sourceInputStream.reset();
@@ -206,7 +205,6 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 						is = null;
 					}
 				}
-	
 				zis.closeEntry();
 			}
 		} finally {

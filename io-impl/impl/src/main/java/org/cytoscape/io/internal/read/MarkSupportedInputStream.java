@@ -16,7 +16,7 @@ public class MarkSupportedInputStream extends InputStream {
 
 	private InputStream is;
 
-	public MarkSupportedInputStream(InputStream eis) throws IOException {
+	public MarkSupportedInputStream(final InputStream eis) throws IOException {
 		super();
 		ByteArrayOutputStream copy = new ByteArrayOutputStream();
 		int read = 0;

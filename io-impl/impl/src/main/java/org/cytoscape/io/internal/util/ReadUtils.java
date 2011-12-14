@@ -96,7 +96,7 @@ public class ReadUtils {
 				// Use URLUtil to get the InputStream since we might be using a
 				// proxy server
 				// and because pages may be cached:
-				in = streamUtil.getBasicInputStream(u);
+				in = streamUtil.getInputStream(u);
 			} else
 				in = new FileInputStream(name);
 		} catch (IOException ioe) {

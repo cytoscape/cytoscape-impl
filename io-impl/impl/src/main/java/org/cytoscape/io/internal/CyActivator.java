@@ -134,6 +134,7 @@ public class CyActivator extends AbstractCyActivator {
 		EquationCompiler equationCompilerServiceRef = getService(bc,EquationCompiler.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
 		
+		// TODO: set proxy
 		StreamUtilImpl streamUtil = new StreamUtilImpl();
 		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix (.pvals) File", DataCategory.TABLE, streamUtil);
 		
@@ -159,11 +160,11 @@ public class CyActivator extends AbstractCyActivator {
 		VizmapXMLFileFilter vizmapXMLFilter = new VizmapXMLFileFilter(new String[]{"xml"}, new String[]{}, "Vizmap XML files",DataCategory.VIZMAP, streamUtil);
 		VizmapPropertiesFileFilter vizmapPropertiesFilter = new VizmapPropertiesFileFilter(new String[]{"props","properties"}, new String[]{}, "Vizmap Java Properties files",DataCategory.VIZMAP, streamUtil);
 
-		CyNetworkReaderManagerImpl cyNetworkReaderManager = new CyNetworkReaderManagerImpl();
-		CyTableReaderManagerImpl cyDataTableReaderManager = new CyTableReaderManagerImpl();
-		CySessionReaderManagerImpl cySessionReaderManager = new CySessionReaderManagerImpl();
-		VizmapReaderManagerImpl vizmapReaderManager = new VizmapReaderManagerImpl();
-		CyPropertyReaderManagerImpl cyPropertyReaderManager = new CyPropertyReaderManagerImpl();
+		CyNetworkReaderManagerImpl cyNetworkReaderManager = new CyNetworkReaderManagerImpl(streamUtil);
+		CyTableReaderManagerImpl cyDataTableReaderManager = new CyTableReaderManagerImpl(streamUtil);
+		CySessionReaderManagerImpl cySessionReaderManager = new CySessionReaderManagerImpl(streamUtil);
+		VizmapReaderManagerImpl vizmapReaderManager = new VizmapReaderManagerImpl(streamUtil);
+		CyPropertyReaderManagerImpl cyPropertyReaderManager = new CyPropertyReaderManagerImpl(streamUtil);
 		PresentationWriterManagerImpl viewWriterManager = new PresentationWriterManagerImpl();
 		CyNetworkViewWriterManagerImpl networkViewWriterManager = new CyNetworkViewWriterManagerImpl();
 		SessionWriterManagerImpl sessionWriterManager = new SessionWriterManagerImpl();

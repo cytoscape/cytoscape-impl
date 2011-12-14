@@ -24,8 +24,13 @@ public class CopyInputStream {
 			copy.write(data, 0, chunk);
 		}
 	
-		if ( is.markSupported() )
-			is.reset();
+		if (is.markSupported()) {
+			try {
+				is.reset();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 
 		return new ByteArrayInputStream( copy.toByteArray() );
 	}
