@@ -40,7 +40,10 @@ import java.io.OutputStream;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.filter.internal.ServicesUtil;
 import org.cytoscape.filter.internal.filters.CompositeFilter;
+import org.cytoscape.filter.internal.filters.FilterIO;
+
 import java.util.Vector;
 
 public class FilterWriterImpl extends AbstractTask implements CyWriter {
@@ -49,9 +52,10 @@ public class FilterWriterImpl extends AbstractTask implements CyWriter {
 	private final Vector<CompositeFilter> compositeFilters;
 
 	public FilterWriterImpl(final OutputStream outputStream, final Object props) {
+
 		this.outputStream = outputStream;
 		if ( props instanceof CompositeFilter )
-			compositeFilters = (Vector<CompositeFilter>)props;
+			compositeFilters = (Vector<CompositeFilter>) props;
 		else
 			throw new IllegalArgumentException("Properties must be of type Bookmarks");
 	}
@@ -64,10 +68,8 @@ public class FilterWriterImpl extends AbstractTask implements CyWriter {
 //		Marshaller m = jc.createMarshaller();
 //		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 //		m.marshal(bookmarks, outputStream);
-		
-//		final File globalFilterFile = new File(cyConfigVerDir + File.separator + "filters.props");		
-//		filterIO.saveGlobalPropFile(globalFilterFile);		
-
-
+	
+		// save global filter if any
+		FilterIO.saveGlobalPropFile(compositeFilters, outputStream);		
 	}
 }
