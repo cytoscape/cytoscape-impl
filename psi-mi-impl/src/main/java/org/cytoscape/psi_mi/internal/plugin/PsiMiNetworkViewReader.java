@@ -39,6 +39,8 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 	private CyNetwork network;
 
 	private CyLayoutAlgorithmManager layouts;
+	
+	private TaskMonitor parentTaskMonitor;
 
 	public PsiMiNetworkViewReader(InputStream inputStream, CyNetworkFactory networkFactory, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layouts) {
 		this.inputStream = inputStream;
@@ -49,6 +51,7 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		parentTaskMonitor = taskMonitor;
 		long start = System.currentTimeMillis();
 		logger.info("==================== PSI-MI XML Data Import start ==============");
 		
@@ -85,7 +88,7 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 		final MapToCytoscape mapper2 = new MapToCytoscape(network, interactions, MapToCytoscape.SPOKE_VIEW);
 		mapper2.doMapping();
 		taskMonitor.setProgress(1.0d);
-		logger.info("PSI-MI 2.5 XML Data Import finihsed in " + (System.currentTimeMillis() - start) + " msec.");
+		logger.info("PSI-MI XML Data Import finihsed in " + (System.currentTimeMillis() - start) + " msec.");
 	}
 
 
@@ -120,16 +123,20 @@ public class PsiMiNetworkViewReader extends AbstractTask implements CyNetworkRea
 	}
 
 	@Override
-	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		
-		final CyNetworkView networkView = networkViewFactory.createNetworkView(network);
-		
-		CyLayoutAlgorithm taskFactory = layouts.getDefaultLayout();
-		taskFactory.setNetworkView(networkView);
-		TaskIterator taskIterator = taskFactory.createTaskIterator();
-		Task task = taskIterator.next();
-		insertTasksAfterCurrentTask(task);
-		
-		return networkView;
+	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
+		final CyNetworkView view = networkViewFactory.createNetworkView(network);
+		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
+		layout.setNetworkView(view);
+		// Force to run this task here to avoid concurrency problem.
+		TaskIterator itr = layout.createTaskIterator();
+		Task nextTask = itr.next();
+		try {
+			nextTask.run(parentTaskMonitor);
+		} catch (Exception e) {
+			throw new RuntimeException("Could not finish layout", e);
+		}
+
+		parentTaskMonitor.setProgress(1.0d);
+		return view;		
 	}
 }
