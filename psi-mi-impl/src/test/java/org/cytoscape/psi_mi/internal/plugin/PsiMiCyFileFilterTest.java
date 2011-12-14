@@ -33,11 +33,6 @@ public class PsiMiCyFileFilterTest {
 			public InputStream getInputStream(URL source) throws IOException {
 				return source.openStream();
 			}
-			
-			@Override
-			public InputStream getBasicInputStream(URL source) throws IOException {
-				return null;
-			}
 		};
 		filter = new PsiMiCyFileFilter("PSI", streamUtil);
 	}
