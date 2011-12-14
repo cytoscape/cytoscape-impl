@@ -33,6 +33,7 @@ package org.cytoscape.internal.layout.ui;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 
@@ -46,8 +47,10 @@ public class SettingsAction extends AbstractCyAction {
 	private CyLayoutAlgorithmManager cyl;
 	private CySwingApplication desk;
 	private PanelTaskManager tm;
+	private CyProperty cytoscapePropertiesServiceRef;
 
-	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, final PanelTaskManager tm)
+	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, 
+			final PanelTaskManager tm, CyProperty cytoscapePropertiesServiceRef)
 	{
 		super("Settings...",appMgr,"networkAndView");
 		setPreferredMenu("Layout");
@@ -55,10 +58,11 @@ public class SettingsAction extends AbstractCyAction {
 		this.cyl = cyl;
 		this.desk = desk;
 		this.tm = tm;
+		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		LayoutSettingsDialog settingsDialog = new LayoutSettingsDialog(cyl, desk, applicationManager, tm);
+		LayoutSettingsDialog settingsDialog = new LayoutSettingsDialog(cyl, desk, applicationManager, tm, this.cytoscapePropertiesServiceRef);
 		settingsDialog.actionPerformed(e);
 	}
 }

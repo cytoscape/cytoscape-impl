@@ -252,7 +252,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                           cyServiceRegistrarServiceRef);
 		SettingsAction settingsAction = new SettingsAction(cyLayoutsServiceRef, cytoscapeDesktop,
 		                                                   cyApplicationManagerServiceRef,
-		                                                   panelTaskManagerServiceRef);
+		                                                   panelTaskManagerServiceRef, cytoscapePropertiesServiceRef);
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker,
 		                                                                              cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
