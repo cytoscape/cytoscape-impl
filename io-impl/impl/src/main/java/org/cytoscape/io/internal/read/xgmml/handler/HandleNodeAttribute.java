@@ -29,17 +29,16 @@ public class HandleNodeAttribute extends AbstractHandler {
 					// Writing locked visual properties as regular <att> tags is deprecated!
 					name = name.replace(".", "").toLowerCase();
 					String value = atts.getValue("value");
-					manager.addGraphicsAttribute(manager.currentNode, name, value);
+					manager.addGraphicsAttribute(manager.getCurrentNode(), name, value);
 				} else if (name.equals("nested_network_id")) {
 					// Handle 2.x nested network as network pointer
 					final String netId = atts.getValue("value");
-					final CyNode node = manager.currentNode;
+					final CyNode node = manager.getCurrentNode();
 					manager.getCache().addNetworkPointer(node.getSUID(), netId);
 				}
 			}
 
-			manager.currentAttributes = manager.getCurrentNetwork().getRow(manager.currentNode);
-			ParseState nextState = attributeValueUtil.handleAttribute(atts, manager.currentAttributes);
+			ParseState nextState = attributeValueUtil.handleAttribute(atts);
 
 			if (nextState != ParseState.NONE) return nextState;
 		}

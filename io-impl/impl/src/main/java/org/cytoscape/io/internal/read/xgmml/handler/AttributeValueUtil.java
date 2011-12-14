@@ -26,7 +26,7 @@ public class AttributeValueUtil {
     static final String ATTR_VALUE = "value";
     static final String LOCKED_VISUAL_PROPS = "lockedVisualProperties";
     
-    static final Pattern XLINK_PATTERN = Pattern.compile(".*#(\\d+)");
+    static final Pattern XLINK_PATTERN = Pattern.compile(".*#(-?\\d+)");
 
     private Locator locator;
 
@@ -137,9 +137,10 @@ public class AttributeValueUtil {
             return atts.getValue(key);
     }
 
-    protected ParseState handleAttribute(Attributes atts, CyRow row) throws SAXParseException {
+    protected ParseState handleAttribute(Attributes atts) throws SAXParseException {
     	ParseState parseState = ParseState.NONE;
     	
+    	final CyRow row = manager.getCurrentRow();
     	String name = atts.getValue("name");
         String type = atts.getValue("type");
         String equationStr = atts.getValue("cy:equation");

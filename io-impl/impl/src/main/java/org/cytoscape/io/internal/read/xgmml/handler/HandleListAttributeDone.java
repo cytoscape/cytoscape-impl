@@ -10,7 +10,7 @@ public class HandleListAttributeDone extends AbstractHandler {
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
         try {
             if (manager.listAttrHolder != null) {
-                manager.currentAttributes.set(manager.currentAttributeID, manager.listAttrHolder);
+                manager.getCurrentRow().set(manager.currentAttributeID, manager.listAttrHolder);
                 manager.listAttrHolder = null;
             }
         } catch (Exception e) {

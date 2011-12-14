@@ -48,14 +48,12 @@ public class ReadDataManager {
 	
 	/* Stack of original network IDs */
 	private Stack<String> networkStack;
+	/* Stack of nodes that have a nested graph*/
+	private Stack<CyNode> compoundNodeStack;
 	
-	protected CyNode currentNode;
-	protected CyEdge currentEdge;
-
 	/* Attribute values */
 	protected ParseState attState = ParseState.NONE;
 	protected String currentAttributeID;
-	protected CyRow currentAttributes;
 
 	/** Edge handle list */
 	protected List<String> handleList;
@@ -80,9 +78,11 @@ public class ReadDataManager {
 	
 	private boolean viewFormat;
 	private double documentVersion;
-	private CyNetwork currentNetwork;
 	private CyRootNetwork parentNetwork;
-	
+	private CyNetwork currentNetwork;
+	private CyNode currentNode;
+	private CyEdge currentEdge;
+	private CyRow currentRow;
 	
 	// Network view format properties
 	private String networkViewId;
@@ -137,7 +137,7 @@ public class ReadDataManager {
 
 		attState = ParseState.NONE;
 		currentAttributeID = null;
-		currentAttributes = null;
+		currentRow = null;
 
 		/* Edge handle list */
 		handleList = null;
@@ -146,6 +146,7 @@ public class ReadDataManager {
 		edgeBendY = null;
 		
 		networkStack = new Stack<String>();
+		compoundNodeStack = new Stack<CyNode>();
 		
 		networks = new LinkedHashSet<CyNetwork>();
 		equations = new Hashtable<CyRow, Map<String, String>>();
@@ -352,6 +353,10 @@ public class ReadDataManager {
 		return networkStack;
 	}
 
+	public Stack<CyNode> getCompoundNodeStack() {
+		return compoundNodeStack;
+	}
+
 	protected CyRootNetwork createRootNetwork() {
 		final CyNetwork baseNet = networkFactory.createNetwork();
 		final CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(baseNet);
@@ -386,13 +391,17 @@ public class ReadDataManager {
 	        node = this.getCurrentNetwork().addNode();
         }
         
+        this.currentNode = node;
+        this.currentRow = this.getCurrentNetwork().getRow(node);
+        
         // Add to internal cache
         cache.cache(node, id);
         
         return node;
     }
 
-    protected CyEdge createEdge(CyNode source, CyNode target, String id, String label, boolean directed) {
+	protected CyEdge createEdge(CyNode source, CyNode target, String id, String label, String interaction,
+			boolean directed) {
 		if (id == null) id = label;
 		CyEdge edge = null;
         
@@ -415,23 +424,36 @@ public class ReadDataManager {
         	CyNode actualSrc = net.getNode(source.getIndex());
         	CyNode actualTgt = net.getNode(target.getIndex());
         	
-        	if (actualSrc == null || actualTgt == null) {
-				if ((getDocumentVersion() < 3.0 || !isSessionFormat()) && (net == getRootNetwork().getBaseNetwork())) {
-	        		// The nodes might have been added to the root network only, but not the base one in this case,
-	        		// because the root-graph element of old and generic XGMML formats are handled as base-network in 3.0
-	        		// (3.0 session XGMML has the root-graph as the CyRootNetwork, though).
-	        		if (actualSrc == null) {
-	        			((CySubNetwork) net).addNode(source);
+        	if (getDocumentVersion() < 3.0 || !isSessionFormat()) {
+        		if (actualSrc == null || actualTgt == null) {
+	        		// The nodes might have been added to other sub-networks, but not to the current one.
+	        		// If that is the case, the root network should have all both nodes,
+	        		// so let's just add the edge to the root
+					logger.warn("Cannot add edge \"" + id
+							+ "\" to the expected sub-network, because it does not contain the source or target node." +
+							" Will try to add the edge to the root-network instead.");
+	        		
+	        		net = getRootNetwork();
+					
+	        		if (actualSrc == null)
 	        			actualSrc = net.getNode(source.getIndex());
-	        		}
-	        		if (actualTgt == null) {
-	        			((CySubNetwork) net).addNode(target);
+	        		
+	        		if (actualTgt == null)
 	        			actualTgt = net.getNode(target.getIndex());
-	        		}
-	        	}
+        		}
         	}
         	
-			edge = this.getCurrentNetwork().addEdge(actualSrc, actualTgt, directed);
+        	edge = net.addEdge(actualSrc, actualTgt, directed);
+        	this.currentEdge = edge;
+        	this.currentRow = net.getRow(edge);
+        	
+        	if (getDocumentVersion() < 3.0 || !isSessionFormat()) {
+        		CyRow row = net.getRow(edge);
+				row.set(CyEdge.NAME, label);
+				
+				if (interaction != null)
+					row.set(CyEdge.INTERACTION, interaction);
+        	}
         }
         
         // Add to internal cache
@@ -504,6 +526,30 @@ public class ReadDataManager {
 
 	protected void setCurrentElementId(String currentElementId) {
 		this.currentElementId = currentElementId;
+	}
+
+	public CyNode getCurrentNode() {
+		return currentNode;
+	}
+
+	public void setCurrentNode(CyNode currentNode) {
+		this.currentNode = currentNode;
+	}
+
+	public CyEdge getCurrentEdge() {
+		return currentEdge;
+	}
+
+	public void setCurrentEdge(CyEdge currentEdge) {
+		this.currentEdge = currentEdge;
+	}
+
+	public CyRow getCurrentRow() {
+		return currentRow;
+	}
+
+	public void setCurrentRow(CyRow currentRow) {
+		this.currentRow = currentRow;
 	}
 
 	/**

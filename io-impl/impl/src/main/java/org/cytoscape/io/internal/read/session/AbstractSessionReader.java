@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -68,8 +69,8 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected Cysession cysession;
 	protected Bookmarks bookmarks;
 	protected Properties cytoscapeProps;
-	protected final Set<CyNetwork> networks = new HashSet<CyNetwork>();
-	protected final Set<CyNetworkView> networkViews = new HashSet<CyNetworkView>();
+	protected final Set<CyNetwork> networks = new LinkedHashSet<CyNetwork>();
+	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<CyNetworkView>();
 	protected final Set<VisualStyle> visualStyles = new HashSet<VisualStyle>();
 	protected final Map<CyNetworkView, String> visualStyleMap = new HashMap<CyNetworkView, String>();
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<CyTableMetadata>();
@@ -205,6 +206,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 						is = null;
 					}
 				}
+	
 				zis.closeEntry();
 			}
 		} finally {

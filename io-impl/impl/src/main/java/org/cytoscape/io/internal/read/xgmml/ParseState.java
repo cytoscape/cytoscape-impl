@@ -11,6 +11,7 @@ public enum ParseState {
     LIST_ATT("List Attribute"),
     LIST_ELEMENT("List Element"),
     NET_GRAPHICS("Network Graphics"),
+    NODE_GRAPH("Node Graph"),
     NODE_GRAPHICS("Node Graphics"),
     EDGE_GRAPHICS("Edge Graphics"),
     LOCKED_VISUAL_PROP_ATT("Bypass Attribute"),

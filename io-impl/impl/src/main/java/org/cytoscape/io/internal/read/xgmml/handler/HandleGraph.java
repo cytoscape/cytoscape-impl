@@ -115,13 +115,16 @@ public class HandleGraph extends AbstractHandler {
 		manager.getNetworkStack().push(oldId);
 		
 		if (net != null) {
+			manager.setCurrentRow(net.getRow(net));
 			manager.getCache().cache(net, oldId);
 			
 			if (!(net instanceof CyRootNetwork))
 				manager.addNetwork(net);
 			
 			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0)
-				setNetworkNameFromLabel(net, atts);
+				setNetworkName(net, atts);
+		} else {
+			manager.setCurrentRow(null);
 		}
 		
 		return oldId;
@@ -129,10 +132,31 @@ public class HandleGraph extends AbstractHandler {
 	
 	/**
 	 * Should be used when handling 2.x format only or importing the network from a standalone XGMML file.
-	 * @param atts
 	 */
-	protected void setNetworkNameFromLabel(CyNetwork net, Attributes atts) {
-		final String name = getLabel(atts);
+	protected void setNetworkName(CyNetwork net, Attributes atts) {
+		String name = getLabel(atts);
+		
+		if (name == null || name.trim().isEmpty()) {
+			if (net instanceof CyRootNetwork) {
+				name = "Root-Network " + net.getSUID();
+			} else if (manager.graphCount == 1) {
+				name = "Network " + net.getSUID();
+			} else {
+				CyRootNetwork root = manager.getRootNetwork();
+				
+				if (root != null) {
+					name = root.getBaseNetwork().getRow(root.getBaseNetwork()).get(CyNetwork.NAME, String.class);
+					
+					if (name == null || name.trim().isEmpty())
+						name = root.getRow(root).get(CyNetwork.NAME, String.class);
+				}
+			}
+			
+			if (name == null || name.trim().isEmpty())
+				name = "Network " + net.getSUID();
+			
+			name += " - " + manager.graphCount;
+		}
 		
 		if (net != null && name != null) {
 			CyRow netRow = net.getRow(net);

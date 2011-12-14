@@ -19,7 +19,7 @@ public class HandleEdgeHandleList extends AbstractHandler {
                 }
             }
 
-            manager.addGraphicsAttribute(manager.currentEdge, "edgeHandleList", list);
+            manager.addGraphicsAttribute(manager.getCurrentEdge(), "edgeHandleList", list);
             manager.handleList = null;
         }
         return current;

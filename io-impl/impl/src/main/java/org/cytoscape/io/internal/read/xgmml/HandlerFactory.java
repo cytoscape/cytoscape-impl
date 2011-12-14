@@ -13,6 +13,7 @@ import static org.cytoscape.io.internal.read.xgmml.ParseState.NET_ATT;
 import static org.cytoscape.io.internal.read.xgmml.ParseState.NET_GRAPHICS;
 import static org.cytoscape.io.internal.read.xgmml.ParseState.NODE;
 import static org.cytoscape.io.internal.read.xgmml.ParseState.NODE_ATT;
+import static org.cytoscape.io.internal.read.xgmml.ParseState.NODE_GRAPH;
 import static org.cytoscape.io.internal.read.xgmml.ParseState.NODE_GRAPHICS;
 import static org.cytoscape.io.internal.read.xgmml.ParseState.NONE;
 import static org.cytoscape.io.internal.read.xgmml.ParseState.RDF;
@@ -36,6 +37,7 @@ import org.cytoscape.io.internal.read.xgmml.handler.HandleListAttributeDone;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleNode;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleNodeAttribute;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleNodeGraph;
+import org.cytoscape.io.internal.read.xgmml.handler.HandleNodeGraphDone;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleNodeGraphics;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleRDF;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleRDFDate;
@@ -125,12 +127,14 @@ public class HandlerFactory {
 					{ NET_ATT, "graph", GRAPH, new HandleGraph() },
 					// Handle nodes
 					{ GRAPH, "node", NODE, new HandleNode() },
+					{ NODE_GRAPH, "node", NODE, new HandleNode() },
 					{ NODE, "graphics", NODE_GRAPHICS, new HandleNodeGraphics() },
 					{ NODE, "att", NODE_ATT, new HandleNodeAttribute() },
-					{ NODE_ATT, "graph", GRAPH, new HandleNodeGraph() },
+					{ NODE_ATT, "graph", NODE_GRAPH, new HandleNodeGraph() },
 					{ NODE_GRAPHICS, "att", NODE_GRAPHICS, new HandleNodeGraphics() },
 					// Handle edges
 					{ GRAPH, "edge", EDGE, new HandleEdge() },
+					{ NODE_GRAPH, "edge", EDGE, new HandleEdge() },
 					{ EDGE, "att", EDGE_ATT, new HandleEdgeAttribute() },
 					{ EDGE, "graphics", EDGE_GRAPHICS, new HandleEdgeGraphics() },
 					{ EDGE_GRAPHICS, "att", EDGE_GRAPHICS, new HandleEdgeGraphics() },
@@ -166,6 +170,7 @@ public class HandlerFactory {
 					{ RDF_DESC, "format", RDF_DESC, new HandleRDFFormat() },
 					{ EDGE_HANDLE, "att", EDGE_BEND, new HandleEdgeHandleDone() },
 					{ EDGE_BEND, "att", EDGE_BEND, new HandleEdgeHandleList() },
+					{ NODE_GRAPH, "graph", NODE, new HandleNodeGraphDone() },
 					{ GRAPH, "graph", NONE, new HandleGraphDone() },
 					{ LIST_ATT, "att", NONE, new HandleListAttributeDone() } };
 			return tbl;

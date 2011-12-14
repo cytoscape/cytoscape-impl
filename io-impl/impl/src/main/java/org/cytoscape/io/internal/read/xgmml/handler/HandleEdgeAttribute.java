@@ -8,7 +8,9 @@ public class HandleEdgeAttribute extends AbstractHandler {
 
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-		if (atts == null) return current;
+		if (atts == null)
+			return current;
+		
 		manager.attState = current;
 
 		// Since version 3.0, the CYS file's XGMML should not contain node or edge <att> tags,
@@ -28,14 +30,14 @@ public class HandleEdgeAttribute extends AbstractHandler {
     				// It is a bypass attribute...
     				name = name.replace(".", "").toLowerCase();
     				String value = atts.getValue("value");
-    				manager.addGraphicsAttribute(manager.currentEdge, name, value);
+    				manager.addGraphicsAttribute(manager.getCurrentEdge(), name, value);
     			}
 			}
 
-			manager.currentAttributes = manager.getCurrentNetwork().getRow(manager.currentEdge);
-			ParseState nextState = attributeValueUtil.handleAttribute(atts, manager.currentAttributes);
+			ParseState nextState = attributeValueUtil.handleAttribute(atts);
 
-			if (nextState != ParseState.NONE) return nextState;
+			if (nextState != ParseState.NONE)
+				return nextState;
 		}
 
 		return current;

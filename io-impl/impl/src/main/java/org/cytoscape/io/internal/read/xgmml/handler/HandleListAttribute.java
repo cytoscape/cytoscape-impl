@@ -36,7 +36,7 @@ public class HandleListAttribute extends AbstractHandler {
         }
 
         String name = manager.currentAttributeID;
-        CyRow row = manager.currentAttributes;
+        CyRow row = manager.getCurrentRow();
         CyColumn column = row.getTable().getColumn(name);
 
         if (column == null) {

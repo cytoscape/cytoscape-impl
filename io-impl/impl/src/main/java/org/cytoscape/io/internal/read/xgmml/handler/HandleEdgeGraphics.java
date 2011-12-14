@@ -11,7 +11,7 @@ public class HandleEdgeGraphics extends AbstractHandler {
 	@Override
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
         if (tag.equals("graphics")) {
-        	manager.addGraphicsAttributes(manager.currentEdge, atts);
+        	manager.addGraphicsAttributes(manager.getCurrentEdge(), atts);
         } else if (tag.equals("att")) {
             // Handle special edge graphics attributes
             String name = atts.getValue("name");
@@ -20,7 +20,7 @@ public class HandleEdgeGraphics extends AbstractHandler {
                 manager.handleList = new ArrayList<String>();
                 return ParseState.EDGE_BEND;
             } else if (name != null && !name.equals("cytoscapeEdgeGraphicsAttributes")) {
-            	manager.addGraphicsAttribute(manager.currentEdge, name, atts.getValue("value"));
+            	manager.addGraphicsAttribute(manager.getCurrentEdge(), name, atts.getValue("value"));
             }
         }
         

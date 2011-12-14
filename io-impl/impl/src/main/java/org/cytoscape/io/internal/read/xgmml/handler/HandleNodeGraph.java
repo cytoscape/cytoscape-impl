@@ -14,10 +14,11 @@ public class HandleNodeGraph extends HandleGraph {
 
 	@Override
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-		ParseState state = current;
 		manager.graphCount++;
 		
-		final CyNode node = manager.currentNode;
+		final CyNode node = manager.getCurrentNode();
+		manager.getCompoundNodeStack().push(node);
+		
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
 		String netId = null;
 		CyNetwork network = null;
@@ -43,6 +44,6 @@ public class HandleNodeGraph extends HandleGraph {
 		if (netId != null)
 			manager.getCache().addNetworkPointer(node.getSUID(), netId);
 
-		return state;
+		return current;
     }
 }
