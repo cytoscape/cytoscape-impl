@@ -89,7 +89,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 		initializeOnce(); // Initialize the components we only do once
 
-		
 		initComponents();
 		
 		this.cyLayoutAlgorithmManager = cyLayoutAlgorithmManager;
@@ -104,7 +103,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");		
 		this.lbSelectLayoutAlgorithm.setText("Default preferred layout algorithm is "+pref);
 		
-		this.setPreferredSize(new Dimension(350, 200));
+		this.setPreferredSize(new Dimension(400, 250));
 	}
 
 	/**
@@ -236,8 +235,12 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
     private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {
 		CyLayoutAlgorithm layout = (CyLayoutAlgorithm) this.cmbLayoutAlgorithms.getSelectedItem();
 
-		SetPreferredLayoutTaskFactory factory = new SetPreferredLayoutTaskFactory(layout, this.cytoscapePropertiesServiceRef);
-		this.taskManager.execute(factory);
+		String pref = layout.getName(); 
+		
+		Properties props = (Properties) this.cytoscapePropertiesServiceRef.getProperties();
+		if(props != null) 
+			props.setProperty("preferredLayoutAlgorithm", pref);
+
 		this.dispose();
     }
 
