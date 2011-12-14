@@ -231,6 +231,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 		SetPreferredLayoutTaskFactory factory = new SetPreferredLayoutTaskFactory(layout, this.cytoscapePropertiesServiceRef);
 		this.taskManager.execute(factory);
+		this.dispose();
     }
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {
