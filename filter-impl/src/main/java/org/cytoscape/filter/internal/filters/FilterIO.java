@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -53,6 +54,7 @@ import org.cytoscape.filter.internal.ServicesUtil;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.OutputStreamWriter;
 
 
 
@@ -481,42 +483,45 @@ public class FilterIO {
 	}
 	
 	
-	public void saveGlobalPropFile(File pPropFile) {
+	public static void saveGlobalPropFile(Vector<CompositeFilter> filterVect, final OutputStream outputStream) {
 		
-//		// Because one filter may depend on the other, CompositeFilters must 
-//		// be sorted in the order of depthLevel before save
-//		Vector<CompositeFilter> allFilterVect = filterPlugin.getAllFilterVect();
-//		Object [] sortedFilters = getSortedCompositeFilter(allFilterVect);
-//		Object[] globalFilters = getFiltersByScope(sortedFilters, "global");
-//		
-//		try {
+		// Because one filter may depend on the other, CompositeFilters must 
+		// be sorted in the order of depthLevel before save
+		Vector<CompositeFilter> allFilterVect = filterVect; // filterPlugin.getAllFilterVect();
+		Object [] sortedFilters = getSortedCompositeFilter(allFilterVect);
+		Object[] globalFilters = getFiltersByScope(sortedFilters, "global");
+		
+		
+		
+		
+		try {
 //			BufferedWriter writer = new BufferedWriter(new FileWriter(pPropFile));
-//
-//            try {
-//                // Need to allow writing of header only so that when the last
-//                // global filter is deleted, the props file is updated to reflect this
-//                writer.write("FilterVersion=0.2\n");
-//
-//                if (globalFilters != null) {
-//                    for (int i = 0; i < globalFilters.length; i++) {
-//                        CompositeFilter theFilter = (CompositeFilter) globalFilters[i];
-//                        writer.write(theFilter.toSerializedForm());
-//                        writer.newLine();
-//                    }
-//                }
-//            }
-//            finally {
-//                if (writer != null) {
-//                    writer.close();
-//                }
-//            }
-//		} catch (Exception ex) {
-//			logger.error("Global filter Write error",ex);
-//		}
+			OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+
+            try {
+                // Need to allow writing of header only so that when the last
+                // global filter is deleted, the props file is updated to reflect this
+                writer.write("FilterVersion=0.2\n");
+
+                if (globalFilters != null) {
+                    for (int i = 0; i < globalFilters.length; i++) {
+                        CompositeFilter theFilter = (CompositeFilter) globalFilters[i];
+                        writer.write(theFilter.toSerializedForm());
+                        writer.write("\n");
+                    }
+                }
+            }
+            finally {
+                if (writer != null) {
+                    writer.close();
+                }
+            }
+		} catch (Exception ex) {
+			//logger.error("Global filter Write error",ex);
+		}
 	}
 	
-	
-	private Object[] getFiltersByScope(Object[] pFilters, String pScope) {
+	private static Object[] getFiltersByScope(Object[] pFilters, String pScope) {
 		if (pFilters == null || pFilters.length == 0) {
 			return null;
 		}
@@ -605,7 +610,7 @@ public class FilterIO {
 
 	
 	// Determine the nest level of the given CompositeFilter
-	private int getTreeDepth(CompositeFilter pFilter, int pDepthLevel){
+	public static int getTreeDepth(CompositeFilter pFilter, int pDepthLevel){
 		List<CyFilter> childrenList = pFilter.getChildren();
 		List<CompositeFilter> theList = new ArrayList<CompositeFilter>();
 		
@@ -630,7 +635,7 @@ public class FilterIO {
 		return depths[depths.length-1];		
 	}
 	
-	public Object [] getSortedCompositeFilter(List<?> pAllFilterVect) {
+	public static Object [] getSortedCompositeFilter(List<?> pAllFilterVect) {
 		if (pAllFilterVect == null || pAllFilterVect.size() == 0) {
 			return null;
 		}
@@ -661,25 +666,26 @@ public class FilterIO {
 		return sortedFilterVect.toArray();
 	}
 	
-	class CompositeFilterCmp<T> implements Comparator<CompositeFilter> {
-		
-		public int compare(CompositeFilter o1, CompositeFilter o2){
-			int depth1 = getTreeDepth(o1, 0);
-			int depth2 = getTreeDepth(o2, 0);
+}
 
-			if (depth1 > depth2) {
-				return 1;
-			}
-			if (depth1 == depth2) {
-				return 0;
-			}
-			return -1;//depth1 < depth2
+class CompositeFilterCmp<T> implements Comparator<CompositeFilter> {
+	
+	public int compare(CompositeFilter o1, CompositeFilter o2){
+		int depth1 = FilterIO.getTreeDepth(o1, 0);
+		int depth2 = FilterIO.getTreeDepth(o2, 0);
+
+		if (depth1 > depth2) {
+			return 1;
 		}
-		
-		public boolean equals(Object obj) {
-			return false;
+		if (depth1 == depth2) {
+			return 0;
 		}
-		 
+		return -1;//depth1 < depth2
 	}
+	
+	public boolean equals(Object obj) {
+		return false;
+	}
+	 
 }
 
