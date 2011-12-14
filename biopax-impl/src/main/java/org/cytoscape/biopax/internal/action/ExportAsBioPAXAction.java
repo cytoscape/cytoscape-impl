@@ -64,10 +64,9 @@ public class ExportAsBioPAXAction extends AbstractCyAction {
     private final BioPaxFactory factory;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public ExportAsBioPAXAction(Map configProps, BioPaxFactory factory) {
-		super(configProps, factory.getCyApplicationManager());
-//		super("BioPAX Network to File...");
-//		setPreferredMenu("File.Export");
+	public ExportAsBioPAXAction(BioPaxFactory factory) {
+		super("BioPAX", factory.getCyApplicationManager(),"network");
+		setPreferredMenu("File.Export.Network");
 		this.factory = factory;
 	}
 
@@ -118,7 +117,7 @@ public class ExportAsBioPAXAction extends AbstractCyAction {
         CyNetwork cyNetwork = manager.getCurrentNetwork();
 
         if( BioPaxUtil.isBioPAXNetwork(cyNetwork) )
-            enableForNetwork();
+            updateEnableState(); 
         else
             setEnabled(false);
     }

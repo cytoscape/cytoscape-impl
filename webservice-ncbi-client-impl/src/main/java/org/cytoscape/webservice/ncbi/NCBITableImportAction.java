@@ -2,7 +2,6 @@ package org.cytoscape.webservice.ncbi;
 
 import java.awt.event.ActionEvent;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.webservice.ncbi.ui.NCBIGeneDialog;
@@ -17,8 +16,8 @@ public class NCBITableImportAction extends AbstractCyAction {
 	private final TaskManager taskManager;
 
 	public NCBITableImportAction(final NCBITableImportClient client, final TaskManager taskManager,
-			final CyNetworkManager netManager, CyApplicationManager applicationManager) {
-		super("Import Data Table from NCBI...", applicationManager);
+			final CyNetworkManager netManager) {
+		super("Import Data Table from NCBI...");
 		setPreferredMenu("File.Import.Table.WebService");
 		this.netManager = netManager;
 		this.client = client;

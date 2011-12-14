@@ -61,8 +61,8 @@ public class UndoAction extends AbstractCyAction {
 	/**
 	 * Constructs the action.
 	 */
-	public UndoAction(SwingUndoSupport undo,CyApplicationManager appMgr) {
-		super("Undo",appMgr);
+	public UndoAction(SwingUndoSupport undo) {
+		super("Undo");
 		setAcceleratorKeyStroke(
 			KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit()
 				.getMenuShortcutKeyMask()));

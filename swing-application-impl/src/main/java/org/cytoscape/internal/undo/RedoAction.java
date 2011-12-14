@@ -60,8 +60,8 @@ public class RedoAction extends AbstractCyAction {
 	/**
 	 * Constructs the action. 
 	 */
-	public RedoAction(SwingUndoSupport undo, CyApplicationManager appMgr ) {
-		super("Redo",appMgr);
+	public RedoAction(SwingUndoSupport undo) {
+		super("Redo");
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		setPreferredMenu("Edit");
 		setEnabled(true);

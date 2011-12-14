@@ -57,7 +57,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		
 		this.currentMenuItems = new HashSet<OpenRecentSessionTaskFactory>();
 
-		factory = new DummyAction(appManager);
+		factory = new DummyAction();
 		
 		updateMenuItems();
 	}
@@ -105,8 +105,8 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 		private static final long serialVersionUID = 4904285068314580548L;
 
-		public DummyAction(CyApplicationManager applicationManager) {
-			super("(No recent session files)", applicationManager);
+		public DummyAction() {
+			super("(No recent session files)");
 			setPreferredMenu(MENU_CATEGORY);
 			setMenuGravity(6.0f);
 			this.setEnabled(false);

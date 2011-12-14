@@ -35,7 +35,6 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		DialogTaskManager taskManagerServiceRef = getService(bc,DialogTaskManager.class);
@@ -46,7 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		NCBIWebServiceClient ncbiClient = new NCBIWebServiceClient("http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl","NCBI Network Import Client","REST version of NCBI Web Service Client.",cyNetworkFactoryServiceRef,cyDataTableFactoryServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef);
 		NCBITableImportClient ncbiTableImportClient = new NCBITableImportClient("http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl","NCBI Table Import Client","REST version of NCBI Web Service Client for importing tables.",cyDataTableFactoryServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerServiceRef,cyTableManagerServiceRef,cyRootNetworkFactoryServiceRef);
-		NCBITableImportAction ncbiTableImportAction = new NCBITableImportAction(ncbiTableImportClient,taskManagerServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerRef);
+		NCBITableImportAction ncbiTableImportAction = new NCBITableImportAction(ncbiTableImportClient,taskManagerServiceRef,cyNetworkManagerServiceRef);
 		
 		registerAllServices(bc,ncbiClient, new Properties());
 		registerService(bc,ncbiTableImportAction,CyAction.class, new Properties());

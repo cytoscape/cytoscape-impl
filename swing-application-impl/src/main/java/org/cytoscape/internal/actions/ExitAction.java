@@ -63,8 +63,8 @@ public class ExitAction extends AbstractCyAction {
     /**
      * Creates a new ExitAction object.
      */
-    public ExitAction(CyApplicationManager appMgr, CyShutdown shutdown) {
-	super("Quit", appMgr);
+    public ExitAction(CyShutdown shutdown) {
+	super("Quit");
 	this.shutdown = shutdown;
 	setPreferredMenu("File");
 

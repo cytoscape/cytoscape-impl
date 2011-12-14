@@ -34,6 +34,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 public abstract class NetAnalyzerAction extends AbstractCyAction {
 
 	protected final CySwingApplication swingApp;
+	protected final CyApplicationManager applicationManager;
 	
 	/**
 	 * Target network for the action.
@@ -47,8 +48,9 @@ public abstract class NetAnalyzerAction extends AbstractCyAction {
 	 *            Name of the action as it will appear in a menu.
 	 */
 	protected NetAnalyzerAction(final String aName, final CyApplicationManager appMgr, final CySwingApplication swingApp) {
-		super(aName,appMgr);
+		super(aName);
 		this.swingApp = swingApp;
+		this.applicationManager = appMgr;
 		network = null;
 	}
 

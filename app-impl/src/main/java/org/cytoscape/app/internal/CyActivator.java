@@ -103,7 +103,6 @@ public class CyActivator extends AbstractCyActivator {
 		AppLoaderTaskFactory appLoaderTaskFactory = new AppLoaderTaskFactory(cyAppAdapter);
 		AppManagerAction appManagerAction = new AppManagerAction(
 				cySwingApplicationRef,
-				cyApplicationManagerRef,
 				cytoscapeVersionService,
 				bookmarkServiceRef,
 				bookmarksUtilServiceRef,

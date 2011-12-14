@@ -29,11 +29,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		
-		NetworkMergeAction networkMergeAction = new NetworkMergeAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef,cyNetworkFactoryServiceRef,cyNetworkNamingServiceRef,taskManagerServiceRef);
+		NetworkMergeAction networkMergeAction = new NetworkMergeAction(cySwingApplicationServiceRef,cyNetworkManagerServiceRef,cyNetworkFactoryServiceRef,cyNetworkNamingServiceRef,taskManagerServiceRef);
 		
 		registerService(bc,networkMergeAction,CyAction.class, new Properties());
 	}

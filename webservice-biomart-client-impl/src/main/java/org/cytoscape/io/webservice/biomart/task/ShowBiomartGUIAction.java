@@ -37,7 +37,7 @@ public class ShowBiomartGUIAction extends AbstractCyAction {
 			final TaskManager taskManager,
 			final CyApplicationManager appManager,
 			final CySwingApplication app) {
-		super("from Biomart...", appManager);
+		super("from Biomart...");
 		setPreferredMenu("File.Import.Table.WebService");
 
 		this.appManager = appManager;

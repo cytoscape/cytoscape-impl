@@ -79,7 +79,7 @@ public abstract class AbstractManualLayoutAction
 	 * @param title The title of the menu item. 
 	 */
 	public AbstractManualLayoutAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr, float menuGravity) {
-		super(comp.getTitle(), appMgr);
+		super(comp.getTitle(), appMgr,"networkAndView");
 		this.title = comp.getTitle();
 		this.swingApp = swingApp;
 		this.comp = comp;
@@ -156,7 +156,7 @@ public abstract class AbstractManualLayoutAction
 			setEnabled(true);
 
 		// enable the menu based on presence of network 
-		enableForNetworkAndView();
+		updateEnableState();
 	}
 
 	/**

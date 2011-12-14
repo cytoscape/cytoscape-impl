@@ -58,7 +58,6 @@ import org.cytoscape.app.internal.AppManagerInquireTaskFactory;
 import org.cytoscape.app.internal.AppStatus;
 import org.cytoscape.app.internal.ui.AppManageDialog;
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -89,12 +88,12 @@ public class AppManagerAction extends AbstractCyAction {
 	/**
 	 * Creates a new BookmarkAction object.
 	 */
-	public AppManagerAction(CySwingApplication desktop, CyApplicationManager appMgr, CyVersion version,
+	public AppManagerAction(CySwingApplication desktop, CyVersion version,
 			CyProperty<Bookmarks> bookmarksProp, BookmarksUtil bookmarksUtil, DialogTaskManager guiTaskManagerServiceRef
 			, CyProperty<Properties> cytoscapePropertiesServiceRef, CyAppAdapter adapter, TaskFactory appLoaderTaskFactory,
 			final CyApplicationConfiguration config) {
 				
-		super("App Manager", appMgr);
+		super("App Manager");
 
 		this.desktop = desktop;
 

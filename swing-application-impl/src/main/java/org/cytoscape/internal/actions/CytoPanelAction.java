@@ -33,7 +33,6 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import java.awt.event.ActionEvent;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
@@ -50,10 +49,9 @@ public class CytoPanelAction extends AbstractCyAction {
 	protected CytoPanelName position;
 	private CySwingApplication desktop;
 
-	public CytoPanelAction(final CytoPanelName position, final boolean show, final CySwingApplication desktop, final CyApplicationManager applicationManager, float menuGravity)
+	public CytoPanelAction(final CytoPanelName position, final boolean show, final CySwingApplication desktop, float menuGravity)
 	{
-		super(show ? HIDE + " " + position.getTitle() : SHOW + " " + position.getTitle(),
-		      applicationManager);
+		super(show ? HIDE + " " + position.getTitle() : SHOW + " " + position.getTitle());
 
 		this.title = position.getTitle();
 		this.position = position;

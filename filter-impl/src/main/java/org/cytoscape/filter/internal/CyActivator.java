@@ -67,7 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		FilterMainPanel filterMainPanel = new FilterMainPanel(cyApplicationManagerServiceRef,filterPlugin,cyNetworkManagerServiceRef,cyServiceRegistrarServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
 		FilterCytoPanelComponent filterCytoPanelComponent = new FilterCytoPanelComponent(filterMainPanel);
 		FilterPanelSelectedListener filterPanelSelectedListener = new FilterPanelSelectedListener(filterMainPanel);
-		FilterMenuItemAction filterAction = new FilterMenuItemAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,filterMainPanel);
+		FilterMenuItemAction filterAction = new FilterMenuItemAction(cySwingApplicationServiceRef,filterMainPanel);
 		//FiltersProperty filtersProps = new FiltersProperty(cyApplicationConfigurationServiceRef);
 				
 		registerService(bc,filterCytoPanelComponent,CytoPanelComponent.class, new Properties());

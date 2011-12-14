@@ -1,7 +1,6 @@
 package org.cytoscape.webservice.internal;
 
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import org.cytoscape.webservice.internal.ui.UnifiedNetworkImportDialog;
@@ -23,13 +22,12 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
 		DialogTaskManager taskManagerServiceRef = getService(bc, DialogTaskManager.class);
 
 		UnifiedNetworkImportDialog unifiedNetworkImportDialog = new UnifiedNetworkImportDialog(taskManagerServiceRef);
 		ShowNetworkImportDialogAction showNetworkImportDialogAction = new ShowNetworkImportDialogAction(
-				cyApplicationManagerServiceRef, cySwingApplicationServiceRef, unifiedNetworkImportDialog);
+				cySwingApplicationServiceRef, unifiedNetworkImportDialog);
 
 		registerService(bc, showNetworkImportDialogAction, CyAction.class, new Properties());
 		registerServiceListener(bc, unifiedNetworkImportDialog, "addNetworkImportClient", "removeNetworkImportClient",

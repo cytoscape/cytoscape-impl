@@ -40,11 +40,11 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private final CySwingApplication app;
 	private final CyProperty<Properties> cyProps;
 
-	public WelcomeScreenAction(final CySwingApplication app, final CyApplicationManager applicationManager,
+	public WelcomeScreenAction(final CySwingApplication app, 
 			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory, TaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworksTaskFactory, final NetworkTaskFactory networkTaskFactory,
 			final CyApplicationConfiguration config, final DataSourceManager dsManager, final CyProperty<Properties> cyProps) {
-		super(MENU_NAME, applicationManager);
+		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 
 		this.openBrowser = openBrowserServiceRef;

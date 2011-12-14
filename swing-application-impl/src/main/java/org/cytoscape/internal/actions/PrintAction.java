@@ -65,12 +65,15 @@ public class PrintAction extends AbstractCyAction {
 
 	private final static String MENU_LABEL = "Print Current Network...";
 	private final Properties props;
+	private final CyApplicationManager appMgr;
 
 	/**
 	 * Creates a new PrintAction object.
 	 */
 	public PrintAction(CyApplicationManager appMgr, CyProperty<Properties> coreProp) {
 		super(MENU_LABEL, appMgr, "networkAndView" );
+		this.appMgr = appMgr;
+
 		setPreferredMenu("File");
 		setMenuGravity(7.0f);
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -78,7 +81,7 @@ public class PrintAction extends AbstractCyAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		final RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
+		final RenderingEngine<CyNetwork> engine = appMgr.getCurrentRenderingEngine();
 
 		final PrinterJob printJob = PrinterJob.getPrinterJob();
 		

@@ -16,7 +16,7 @@ public class CustomGraphicsManagerAction extends AbstractCyAction {
 	public CustomGraphicsManagerAction(final CustomGraphicsManager manager,
 	                                   final CyApplicationManager applicationManager)
 	{
-		super("Open Custom Graphics Manager", applicationManager);
+		super("Open Custom Graphics Manager");
 		setPreferredMenu("View");
 		
 		this.dialog = new CustomGraphicsManagerDialog(manager, applicationManager);

@@ -56,6 +56,7 @@ import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskFactoryPredicate;
 import org.cytoscape.work.swing.DynamicSubmenuListener;
 
 
@@ -274,17 +275,11 @@ class PopupMenuHelper {
 		// no title and no preferred menu
 		if ( title == null && pref == null ) {
 			title = "Unidentified Task: " + Integer.toString(tf.hashCode());
-			if(useCheckBoxMenuItem)
-				popup.add( new JCheckBoxMenuItem( new PopupAction(tf, title) ) );
-			else
-				popup.add( new JMenuItem( new PopupAction(tf, title) ) );
+			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem) );
 
 		// title, but no preferred menu
 		} else if ( title != null && pref == null ) {
-			if(useCheckBoxMenuItem)
-				popup.add( new JCheckBoxMenuItem( new PopupAction(tf, title) ) );
-			else
-				popup.add( new JMenuItem( new PopupAction(tf, title) ) );
+			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem) );
 
 		// no title, but preferred menu
 		} else if ( title == null && pref != null ) {
@@ -295,29 +290,37 @@ class PopupMenuHelper {
 				title = pref.substring(last + 1);
 				pref = pref.substring(0, last);
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+				JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem);
 				if (useCheckBoxMenuItem) {
-					final JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem(new PopupAction(tf, title));
+					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem)item; 
 					checkBox.setSelected(isSelected);
-					gravityTracker.addMenuItem(checkBox, ++largeValue);
-				} else
-					gravityTracker.addMenuItem(new JMenuItem(new PopupAction(tf, title)), ++largeValue);
+				}
+				gravityTracker.addMenuItem(item, ++largeValue);
 			// otherwise just use the preferred menu as the menuitem name
 			} else {
 				title = pref;
-				if (useCheckBoxMenuItem)
-					popup.add( new JCheckBoxMenuItem( new PopupAction(tf, title) ) );
-				else
-					popup.add( new JMenuItem( new PopupAction(tf, title) ) );
+				popup.add( createMenuItem(tf, title, useCheckBoxMenuItem) );
 			}
 
 		// title and preferred menu
 		} else {
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-			if (useCheckBoxMenuItem)
-				gravityTracker.addMenuItem(new JCheckBoxMenuItem(new PopupAction(tf, title)), ++largeValue);
-			else
-				gravityTracker.addMenuItem(new JMenuItem(new PopupAction(tf, title)), ++largeValue);
+			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem), ++largeValue);
 		}
+	}
+
+	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem) {
+		JMenuItem item;
+		PopupAction action = new PopupAction(tf,title);
+		if ( useCheckBoxMenuItem )
+			item = new JCheckBoxMenuItem(action);
+		else
+			item = new JMenuItem(action);
+
+		if ( tf instanceof TaskFactoryPredicate )
+			item.setEnabled( ((TaskFactoryPredicate)tf).isReady() );
+
+		return item;
 	}
 
 	/**

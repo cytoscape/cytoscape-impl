@@ -42,7 +42,7 @@ import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.swing.DynamicSubmenuListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.MenuEnableSupport;
+import org.cytoscape.application.swing.StringEnableSupport;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
@@ -112,9 +112,9 @@ public class LayoutMenuPopulator {
 	}
 
 	private class LayoutMenuEnabler implements MenuListener {
-		private final MenuEnableSupport parentMenuSupport; 
+		private final StringEnableSupport parentMenuSupport; 
 		LayoutMenuEnabler(JMenu parentMenu, String enableFor, CyApplicationManager appMgr) {
-			parentMenuSupport = new MenuEnableSupport(parentMenu,enableFor,appMgr);
+			parentMenuSupport = new StringEnableSupport(parentMenu,enableFor,appMgr);
 		}
 		public void menuSelected(MenuEvent m) {
 			parentMenuSupport.updateEnableState();

@@ -48,11 +48,13 @@ public class SettingsAction extends AbstractCyAction {
 	private CySwingApplication desk;
 	private PanelTaskManager tm;
 	private CyProperty cytoscapePropertiesServiceRef;
+	private CyApplicationManager appMgr;
 
 	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, 
 			final PanelTaskManager tm, CyProperty cytoscapePropertiesServiceRef)
 	{
 		super("Settings...",appMgr,"networkAndView");
+		this.appMgr = appMgr;
 		setPreferredMenu("Layout");
 		setMenuGravity(3.0f);
 		this.cyl = cyl;
@@ -62,7 +64,7 @@ public class SettingsAction extends AbstractCyAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		LayoutSettingsDialog settingsDialog = new LayoutSettingsDialog(cyl, desk, applicationManager, tm, this.cytoscapePropertiesServiceRef);
+		LayoutSettingsDialog settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, tm, this.cytoscapePropertiesServiceRef);
 		settingsDialog.actionPerformed(e);
 	}
 }

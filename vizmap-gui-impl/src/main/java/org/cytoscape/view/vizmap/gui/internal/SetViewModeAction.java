@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.event.MenuEvent;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.event.CyEventHelper;
 
@@ -17,8 +16,8 @@ public class SetViewModeAction extends AbstractCyAction {
 	private final static String BASIC = "Show All Visual Properties";
 	private final static String ALL = "Hide Advanced Visual Proeprties";
 	
-	public SetViewModeAction(final CyApplicationManager applicationManager) {
-		super(BASIC, applicationManager);
+	public SetViewModeAction() {
+		super(BASIC);
 
 		PropertySheetUtil.setMode(false);
 

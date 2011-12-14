@@ -45,7 +45,6 @@ package org.cytoscape.internal.actions;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.internal.dialogs.PreferencesDialogImpl;
@@ -70,9 +69,9 @@ public class PreferenceAction extends AbstractCyAction {
 	private HashMap<String, Properties> propMap = new HashMap<String,Properties>();
 	private HashMap<String, Bookmarks> bookmarkMap = new HashMap<String,Bookmarks>();
 	
-	public PreferenceAction(CySwingApplication desktop, CyApplicationManager appMgr, PreferencesDialogFactoryImpl pdf,
+	public PreferenceAction(CySwingApplication desktop, PreferencesDialogFactoryImpl pdf,
 			BookmarksUtil bkUtil) {
-		super("Properties...",appMgr);
+		super("Properties...");
 		this.desktop = desktop;
 		this.pdf = pdf;
 

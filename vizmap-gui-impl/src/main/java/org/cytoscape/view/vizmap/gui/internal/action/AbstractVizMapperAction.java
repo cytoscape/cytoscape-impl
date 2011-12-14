@@ -79,10 +79,13 @@ public abstract class AbstractVizMapperAction extends AbstractCyAction {
 	
 	protected SelectedVisualStyleManager manager;
 
+	protected final CyApplicationManager applicationManager;
+
 
 	public AbstractVizMapperAction(String name, CyApplicationManager applicationManager, final PropertySheetPanel propertySheetPanel) {
-		super(name, applicationManager);
+		super(name);
 		this.propertySheetPanel = propertySheetPanel;
+		this.applicationManager = applicationManager;
 	}
 	
 	/**

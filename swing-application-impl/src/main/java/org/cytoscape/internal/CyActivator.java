@@ -195,8 +195,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
 
-		UndoAction undoAction = new UndoAction(undoSupportServiceRef, cyApplicationManagerServiceRef);
-		RedoAction redoAction = new RedoAction(undoSupportServiceRef, cyApplicationManagerServiceRef);
+		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
+		RedoAction redoAction = new RedoAction(undoSupportServiceRef);
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(dialogTaskManagerServiceRef,
 		                                                                              propertyWriterManagerRef,
 		                                                                              cyApplicationConfigurationServiceRef);
@@ -231,17 +231,12 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         dialogTaskManagerServiceRef);
 		SessionShutdownHandler sessionShutdownHandler = new SessionShutdownHandler(cytoscapeDesktop,
 		                                                                           cyNetworkManagerServiceRef);
-		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef,
-		                                          cytoscapePropertiesServiceRef);
-		ExitAction exitAction = new ExitAction(cyApplicationManagerServiceRef,
-		                                       cytoscapeShutdownServiceRef);
+		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cytoscapePropertiesServiceRef);
+		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,
-		                                                         cyApplicationManagerServiceRef,
 		                                                         preferencesDialogFactory,
 		                                                         bookmarksUtilServiceRef);
-		BookmarkAction bookmarkAction = new BookmarkAction(cytoscapeDesktop,
-		                                                   cyApplicationManagerServiceRef,
-		                                                   bookmarkDialogFactory);
+		BookmarkAction bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 		LayoutMenuPopulator layoutMenuPopulator = new LayoutMenuPopulator(cytoscapeDesktop,
 		                                                                  cyApplicationManagerServiceRef,
 		                                                                  submenuTaskManagerServiceRef);
@@ -264,19 +259,11 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                         HORIZONTAL);
 		ArrangeTaskFactory arrangeVerticalTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
 		                                                                       VERTICAL);
-		CytoPanelAction cytoPanelWestAction = new CytoPanelAction(WEST, true, cytoscapeDesktop,
-		                                                          cyApplicationManagerServiceRef,
-		                                                          1.0f);
-		CytoPanelAction cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop,
-		                                                           cyApplicationManagerServiceRef,
-		                                                           1.1f);
-		CytoPanelAction cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop,
-		                                                          cyApplicationManagerServiceRef,
-		                                                          1.2f);
-		CytoPanelAction cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false,
-		                                                               cytoscapeDesktop,
-		                                                               cyApplicationManagerServiceRef,
-		                                                               1.3f);
+		CytoPanelAction cytoPanelWestAction = new CytoPanelAction(WEST, true, cytoscapeDesktop, 1.0f);
+		CytoPanelAction cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop, 1.1f);
+		CytoPanelAction cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop, 1.2f);
+		CytoPanelAction cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
+
 		UndoMonitor undoMonitor = new UndoMonitor(undoSupportServiceRef,
 		                                          cytoscapePropertiesServiceRef);
 		RowViewTracker rowViewTracker = new RowViewTracker();
@@ -294,7 +281,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cyApplicationManagerServiceRef);
 		
 		// Show Welcome Screen
-		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(cytoscapeDesktop, cyApplicationManagerServiceRef, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
+		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(cytoscapeDesktop, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
 		
 		registerService(bc, welcomeScreenAction, CyAction.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());

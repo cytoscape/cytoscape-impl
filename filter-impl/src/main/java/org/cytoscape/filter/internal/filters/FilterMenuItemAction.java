@@ -43,7 +43,6 @@ import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -65,8 +64,8 @@ public class FilterMenuItemAction extends AbstractCyAction {
 	 * @param icon  DOCUMENT ME!
 	 * @param csfilter  DOCUMENT ME!
 	 */
-	public FilterMenuItemAction(CyApplicationManager applicationManager, CySwingApplication application, FilterMainPanel filterPanel) {
-		super("Use Filters", applicationManager);
+	public FilterMenuItemAction(CySwingApplication application, FilterMainPanel filterPanel) {
+		super("Use Filters");
 		setPreferredMenu("Select");
 
 		ImageIcon icon = new ImageIcon(getClass().getResource("/images/filter.png"));

@@ -33,11 +33,10 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	public GraphicsDetailAction(final CyApplicationManager applicationManager, final TaskManager taskManagerServiceRef, 
 			final CyProperty<Properties> defaultProps)
 	{
-		super(SHOW + " " + GraphicsDetails, applicationManager);
+		super(SHOW + " " + GraphicsDetails, applicationManager,"networkAndView");
 
 		setPreferredMenu("View");
 		setMenuGravity(5.0f);
-		this.enableForNetworkAndView();
 		
 		this.applicationManager = applicationManager;
 		this.defaultProps = defaultProps;

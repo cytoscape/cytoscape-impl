@@ -7,7 +7,6 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.KeyStroke;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.webservice.internal.ui.UnifiedNetworkImportDialog;
@@ -24,9 +23,8 @@ public class ShowNetworkImportDialogAction extends AbstractCyAction {
 
 	private final Window parent;
 
-	public ShowNetworkImportDialogAction(final CyApplicationManager applicationManager, final CySwingApplication app,
-			final UnifiedNetworkImportDialog dialog) {
-		super("Public Databases...", applicationManager);
+	public ShowNetworkImportDialogAction(final CySwingApplication app, final UnifiedNetworkImportDialog dialog) {
+		super("Public Databases...");
 		
 		setPreferredMenu("File.Import.Network");
 		final KeyStroke shortcut = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);

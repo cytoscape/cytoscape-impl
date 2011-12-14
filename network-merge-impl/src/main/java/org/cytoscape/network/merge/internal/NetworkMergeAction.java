@@ -61,9 +61,9 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private final CyNetworkNaming cnn;
 	private final TaskManager taskManager;
 
-	public NetworkMergeAction(CyApplicationManager appMgr, CySwingApplication swingApp, CyNetworkManager cnm,
+	public NetworkMergeAction(CySwingApplication swingApp, CyNetworkManager cnm,
 			CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager) {
-		super(APP_MENU_TITLE, appMgr);
+		super(APP_MENU_TITLE);
 		setPreferredMenu(PARENT_MENU);
 		
 		this.swingApp = swingApp;
