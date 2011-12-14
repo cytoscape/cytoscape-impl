@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import javax.swing.filechooser.FileSystemView;
 
 import org.cytoscape.datasource.DataSource;
 import org.cytoscape.datasource.DefaultDataSource;
@@ -56,6 +59,29 @@ public class BiogridDataLoader {
 		if (localFile.exists() == false)
 			localFile.mkdir();
 	}
+	
+	/**
+	 * Check local file is available or not.
+	 * 
+	 * @return true if files are already exists.
+	 */
+	private boolean isExist() {
+		if(localFile.isDirectory()) {
+			final String[] fileNames = localFile.list();
+			if(fileNames == null || fileNames.length == 0)
+				return false;
+			else {
+				for(String fileName: fileNames) {
+					if(fileName.contains("mitab"))
+						return true;
+				}
+			}
+		} else {
+			throw new IllegalStateException("given location is not a directory.");
+		}
+		
+		return false;
+	}
 
 	
 	/**
@@ -64,6 +90,12 @@ public class BiogridDataLoader {
 	 * @throws IOException
 	 */
 	void extract() throws IOException {
+		
+		if(isExist()) {
+			processExistingFiles();
+			return;
+		}
+		
 		ZipInputStream zis = new ZipInputStream(source.openStream());
 
 		try {
@@ -93,6 +125,20 @@ public class BiogridDataLoader {
 				zis.close();
 			zis = null;
 		}
+	}
+	
+	private void processExistingFiles() throws IOException {
+		// Just need to create from existing files.
+		final File[] dataFiles = localFile.listFiles();
+
+		for (File file : dataFiles) {
+			final String[] data = createName(file.getName());
+			final DataSource ds = new DefaultDataSource(data[0], data[1], data[2], DataCategory.NETWORK, file.toURI()
+					.toURL());
+			sources.add(ds);
+		}
+
+		return;
 	}
 
 
