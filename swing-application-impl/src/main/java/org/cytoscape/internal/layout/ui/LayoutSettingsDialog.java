@@ -50,6 +50,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.lang.reflect.Field;
 import java.util.Set;
+import java.util.Properties;
 
 
 /**
@@ -96,6 +97,12 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.appMgr = appMgr;
 		this.taskManager = taskManager;
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
+		
+		Properties props = (Properties)this.cytoscapePropertiesServiceRef.getProperties();
+		
+		//
+		String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");		
+		this.lbSelectLayoutAlgorithm.setText("Default preferred layout algorithm is "+pref);
 		
 		this.setPreferredSize(new Dimension(350, 200));
 	}
@@ -336,6 +343,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			if (!(o instanceof String)) {
 				final CyLayoutAlgorithm newLayout = (CyLayoutAlgorithm)o;
 				JPanel tunablePanel = taskManager.getConfiguration(newLayout);
+				
+				System.out.println("tunablePanel = "+tunablePanel);
+				
 				algorithmPanel.add(tunablePanel);
 				currentLayout = newLayout; 
 			}
