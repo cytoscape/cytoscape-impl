@@ -6,7 +6,8 @@ import java.util.Properties;
 import javax.swing.JDialog;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.datasource.DataSourceManager;
@@ -19,7 +20,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 
-public class WelcomeScreenAction extends AbstractCyAction {
+public class WelcomeScreenAction extends AbstractCyAction implements CyStartListener {
 
 	private static final long serialVersionUID = 2584201062371825221L;
 
@@ -67,6 +68,12 @@ public class WelcomeScreenAction extends AbstractCyAction {
 				importNetworkFileTF, importNetworksTaskFactory, networkTaskFactory, dsManager, cyProps);
 		welcomeScreen.setLocationRelativeTo(app.getJFrame());
 		welcomeScreen.setVisible(true);
+	}
+	
+	@Override
+	public void handleEvent(CyStartEvent e) {
+		// Simply displays the dialog after startup.
+		actionPerformed(null);
 	}
 
 }

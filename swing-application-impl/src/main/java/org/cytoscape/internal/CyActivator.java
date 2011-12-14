@@ -137,11 +137,7 @@ public class CyActivator extends AbstractCyActivator {
 		super();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param bc DOCUMENT ME!
-	 */
+	@Override
 	public void start(BundleContext bc) {
 		
 		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class, "(id=loadNetworkURLTaskFactory)");
@@ -282,8 +278,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(cytoscapeDesktop, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
-		
-		registerService(bc, welcomeScreenAction, CyAction.class, new Properties());
+		registerAllServices(bc, welcomeScreenAction, new Properties());
+
 		registerService(bc, undoAction, CyAction.class, new Properties());
 		registerService(bc, redoAction, CyAction.class, new Properties());
 		registerService(bc, printAction, CyAction.class, new Properties());
@@ -400,16 +396,5 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
-		
-		// Show Welcome screen
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				welcomeScreenAction.actionPerformed(null);
-			}
-		});
-		
 	}
 }
