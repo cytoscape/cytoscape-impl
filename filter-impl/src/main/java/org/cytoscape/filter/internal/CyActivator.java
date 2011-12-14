@@ -57,6 +57,8 @@ public class CyActivator extends AbstractCyActivator {
 		ServicesUtil.cyServiceRegistrarServiceRef = cyServiceRegistrarServiceRef;
 		ServicesUtil.cyEventHelperServiceRef = cyEventHelperServiceRef;
 		ServicesUtil.taskManagerServiceRef = taskManagerServiceRef;
+		ServicesUtil.cytoscapeVersionService = cytoscapeVersionService;
+		ServicesUtil.cyApplicationConfigurationServiceRef = cyApplicationConfigurationServiceRef;
 		//
 				
 		FilterReader filterReader = new FilterReader("props.filters");
@@ -68,7 +70,6 @@ public class CyActivator extends AbstractCyActivator {
 		FilterCytoPanelComponent filterCytoPanelComponent = new FilterCytoPanelComponent(filterMainPanel);
 		FilterPanelSelectedListener filterPanelSelectedListener = new FilterPanelSelectedListener(filterMainPanel);
 		FilterMenuItemAction filterAction = new FilterMenuItemAction(cySwingApplicationServiceRef,filterMainPanel);
-		//FiltersProperty filtersProps = new FiltersProperty(cyApplicationConfigurationServiceRef);
 				
 		registerService(bc,filterCytoPanelComponent,CytoPanelComponent.class, new Properties());
 		registerAllServices(bc,filterMainPanel, new Properties());
@@ -76,13 +77,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,filterAction,CyAction.class, new Properties());
 		registerAllServices(bc,quickFindApp, new Properties());
 		registerAllServices(bc,filterPlugin, new Properties());
-		
-		//registerAllServices(bc,filtersProps, new Properties());
+
+		//
 		Properties filterReaderProps = new Properties();
 		filterReaderProps.setProperty("cyPropertyName","filters");
 		filterReaderProps.setProperty("serviceType","property");
-
-		registerAllServices(bc,filterReader, filterReaderProps);
+		//registerAllServices(bc,filterReader, filterReaderProps);
 		
 	}
 }
