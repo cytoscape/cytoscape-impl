@@ -102,8 +102,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		//
 		String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");		
 		this.lbSelectLayoutAlgorithm.setText("Default preferred layout algorithm is "+pref);
-		
-		this.setPreferredSize(new Dimension(400, 250));
+
+		this.pack();
 	}
 
 	/**
@@ -346,11 +346,15 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			if (!(o instanceof String)) {
 				final CyLayoutAlgorithm newLayout = (CyLayoutAlgorithm)o;
 				JPanel tunablePanel = taskManager.getConfiguration(newLayout);
-				
-				System.out.println("tunablePanel = "+tunablePanel);
-				
+
+				if (tunablePanel == null){
+					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting, because tunable info is not avialable!", "Warning", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				algorithmPanel.removeAll();
 				algorithmPanel.add(tunablePanel);
-				currentLayout = newLayout; 
+				currentLayout = newLayout;
+				LayoutSettingsDialog.this.pack();
 			}
 		}
 	}
