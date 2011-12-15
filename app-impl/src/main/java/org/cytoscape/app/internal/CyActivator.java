@@ -113,11 +113,7 @@ public class CyActivator extends AbstractCyActivator {
 				cyApplicationConfigurationServiceRef);
 		StartupMostlyFinished startupMostlyFinished = new StartupMostlyFinished(cyEventHelperRef);
 		
-		
-		Properties appLoaderTaskFactoryProps = new Properties();
-		appLoaderTaskFactoryProps.setProperty("preferredMenu","Apps");
-//		appLoaderTaskFactoryProps.setProperty("title","Import App...");
-		registerService(bc,appLoaderTaskFactory,TaskFactory.class, appLoaderTaskFactoryProps);
+		registerService(bc,appLoaderTaskFactory,TaskFactory.class, new Properties());
 		registerService(bc,appManagerAction,CyAction.class, new Properties());
 	}
 }
