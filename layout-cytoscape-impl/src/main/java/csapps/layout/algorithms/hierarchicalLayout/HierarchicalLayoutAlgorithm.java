@@ -73,27 +73,27 @@ import org.cytoscape.work.undo.UndoSupport;
 */
 public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm implements TunableValidator {
 	@Tunable(description="Horizontal spacing between nodes")
-	private int nodeHorizontalSpacing = 64;
+	public int nodeHorizontalSpacing = 64;
 	@Tunable(description="Vertical spacing between nodes")
-	private int nodeVerticalSpacing = 32;
+	public int nodeVerticalSpacing = 32;
 	@Tunable(description="Component spacing")
-	private int componentSpacing = 64;
+	public int componentSpacing = 64;
 	@Tunable(description="Band gap")
-	private int bandGap = 64;
+	public int bandGap = 64;
 	@Tunable(description="Left edge margin")
-	private int leftEdge = 32;
+	public int leftEdge = 32;
 	@Tunable(description="Top edge margin")
-	private int topEdge = 32;
+	public int topEdge = 32;
 	@Tunable(description="Right edge margin")
-	private int rightMargin = 7000;
+	public int rightMargin = 7000;
 	@Tunable(description="layout selected nodes only")
-	private boolean selected_only = false;
+	public boolean selected_only = false;
 
 	/**
 	 * Creates a new HierarchicalLayoutAlgorithm object.
 	 */
 	public HierarchicalLayoutAlgorithm(UndoSupport undoSupport) {
-		super(undoSupport, "hierarchical", "Hierarchical Layout",true);
+		super(undoSupport, "hierarchical", "Hierarchical Layout",true);		
 	}
 
 	@Override // TODO
