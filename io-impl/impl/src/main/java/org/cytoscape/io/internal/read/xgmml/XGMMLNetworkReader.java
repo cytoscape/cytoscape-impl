@@ -71,14 +71,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.ParserAdapter;
 
+// TODO: create separate readers for Cy2, Cy3-Network, Cy3-View, standalone XGMML. 
 /**
- * XGMML file reader.<br>
- * This version is Metanode-compatible.
- * 
- * @version 1.0
- * @since Cytoscape 2.3
- * @see cytoscape.data.writers.XGMMLWriter
- * @author kono
+ * This XGMML reader is able to handle:
+ * <ul><li>XGMML files contained in Cytoscape 2.x session files</li>
+ *     <li>XGMML files that serialize CyNetworks in Cy3 session files</li>
+ *     <li>XGMML files that serialize CyNetworkViews in Cy3 session files</li>
+ *     <li>Generic XGMML files that are not loaded from Cytoscape session files</li></ul>
  */
 public class XGMMLNetworkReader extends AbstractNetworkReader {
 

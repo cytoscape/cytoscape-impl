@@ -1027,8 +1027,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     
     /**
      * @param rootNetwork
-     * @return A set with all the sub-networks that are registered in the network manager,
-     *         except the base-network, which is the de facto root-network for serialization purposes.
+     * @return A set with all the sub-networks that are registered in the network manager.
      */
     private Set<CySubNetwork> getRegisteredSubNetworks(CyRootNetwork rootNetwork) {
 		List<CySubNetwork> subNetList = rootNetwork.getSubNetworkList();
