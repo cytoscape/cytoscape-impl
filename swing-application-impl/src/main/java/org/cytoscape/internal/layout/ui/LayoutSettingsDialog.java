@@ -348,11 +348,13 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				JPanel tunablePanel = taskManager.getConfiguration(newLayout);
 
 				if (tunablePanel == null){
-					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting, because tunable info is not avialable!", "Warning", JOptionPane.WARNING_MESSAGE);
-					return;
+					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not avialable!", "Warning", JOptionPane.WARNING_MESSAGE);
+					algorithmPanel.removeAll();
 				}
-				algorithmPanel.removeAll();
-				algorithmPanel.add(tunablePanel);
+				else {
+					algorithmPanel.removeAll();
+					algorithmPanel.add(tunablePanel);					
+				}
 				currentLayout = newLayout;
 				LayoutSettingsDialog.this.pack();
 			}
