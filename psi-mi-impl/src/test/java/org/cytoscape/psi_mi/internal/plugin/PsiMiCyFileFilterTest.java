@@ -51,6 +51,11 @@ public class PsiMiCyFileFilterTest {
 		File file = new File("src/test/resources/testData/psi_sample_2_5_2.xml");
 		assertTrue(filter25.accepts(new FileInputStream(file), DataCategory.NETWORK));
 		assertTrue(filter25.accepts(file.toURI(), DataCategory.NETWORK));
+		
+		// This is v2.5.4
+		final File intactFile = new File("src/test/resources/testData/intact_21798944_arath-2011-2_04.xml");
+		assertTrue(filter25.accepts(new FileInputStream(intactFile), DataCategory.NETWORK));
+		assertTrue(filter25.accepts(intactFile.toURI(), DataCategory.NETWORK));
 	}
 	
 	@Test

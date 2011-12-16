@@ -51,6 +51,7 @@ public class PSIMIXMLLibTest {
 		assertEquals(400, itrs.size());
 	}
 	
+	// This takes a long time, so execute it only when necessary.
 	//@Test
 	public void PSIMILibraryLightweightTest() throws Exception {
 
