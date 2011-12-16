@@ -37,21 +37,39 @@ public class CyActivator extends AbstractCyActivator {
 		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 
 		
-		PsiMiCyFileFilter psiMiFilter = new PsiMiCyFileFilter("PSI-MI files (*.xml)",streamUtilRef);
-		PsiMiCyFileFilter psiMi1Filter = new PsiMiCyFileFilter("PSI-MI Level 1",streamUtilRef);
-		PsiMiCyFileFilter psiMi25Filter = new PsiMiCyFileFilter("PSI-MI Level 2.5",streamUtilRef);
+		// PsiMiCyFileFilter psiMiFilter = new
+		// PsiMiCyFileFilter("PSI-MI files (*.xml)",streamUtilRef,
+		// PsiMiCyFileFilter);
+		PsiMiCyFileFilter psiMi1Filter = new PsiMiCyFileFilter("PSI-MI Level 1", streamUtilRef,
+				PsiMiCyFileFilter.PSIMIVersion.PXIMI10);
+		PsiMiCyFileFilter psiMi25Filter = new PsiMiCyFileFilter("PSI-MI Level 2.5", streamUtilRef,
+				PsiMiCyFileFilter.PSIMIVersion.PSIMI25);
 		PsiMiTabCyFileFilter psiMiTabFilter = new PsiMiTabCyFileFilter();
-		PsiMiNetworkViewTaskFactory psiMiNetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(psiMiFilter,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyLayoutsServiceRef);
+		
+		PsiMiNetworkViewTaskFactory psiMi25NetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(
+				PsiMiCyFileFilter.PSIMIVersion.PSIMI25, psiMi25Filter, cyNetworkFactoryServiceRef,
+				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef);
+		PsiMiNetworkViewTaskFactory psiMi10NetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(
+				PsiMiCyFileFilter.PSIMIVersion.PXIMI10, psiMi1Filter, cyNetworkFactoryServiceRef,
+				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef);
+
 		PsiMiNetworkWriterFactory psiMi1NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_1,psiMi1Filter);
 		PsiMiNetworkWriterFactory psiMi25NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_2_5,psiMi25Filter);
 		PsiMiTabReaderFactory psiMiTabReaderFactory = new PsiMiTabReaderFactory(psiMiTabFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyLayoutsServiceRef, cyPropertyServiceRef);
 		
+		// For level 1
+		Properties psiMi1NetworkViewTaskFactoryProps = new Properties();
+		psiMi1NetworkViewTaskFactoryProps.setProperty("serviceType","psiMiNetworkViewTaskFactory");
+		psiMi1NetworkViewTaskFactoryProps.setProperty("readerDescription","PSI-MI Level 1 file reader");
+		psiMi1NetworkViewTaskFactoryProps.setProperty("readerId","psiMi1NetworkViewReader");
+		registerService(bc,psiMi10NetworkViewTaskFactory,InputStreamTaskFactory.class, psiMi1NetworkViewTaskFactoryProps);
 		
-		Properties psiMiNetworkViewTaskFactoryProps = new Properties();
-		psiMiNetworkViewTaskFactoryProps.setProperty("serviceType","psiMiNetworkViewTaskFactory");
-		psiMiNetworkViewTaskFactoryProps.setProperty("readerDescription","PSI-MI Level 1/2.5 file reader");
-		psiMiNetworkViewTaskFactoryProps.setProperty("readerId","psiMiNetworkViewReader");
-		registerService(bc,psiMiNetworkViewTaskFactory,InputStreamTaskFactory.class, psiMiNetworkViewTaskFactoryProps);
+		// For level 2
+		Properties psiMi25NetworkViewTaskFactoryProps = new Properties();
+		psiMi25NetworkViewTaskFactoryProps.setProperty("serviceType","psiMiNetworkViewTaskFactory");
+		psiMi25NetworkViewTaskFactoryProps.setProperty("readerDescription","PSI-MI Level 2.5 file reader");
+		psiMi25NetworkViewTaskFactoryProps.setProperty("readerId","psiMi25NetworkViewReader");
+		registerService(bc,psiMi25NetworkViewTaskFactory,InputStreamTaskFactory.class, psiMi25NetworkViewTaskFactoryProps);
 
 		Properties psiMiTabReaderFactoryProps = new Properties();
 		psiMiTabReaderFactoryProps.setProperty("serviceType","psiMiTabReaderFactory");

@@ -17,7 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class PsiMiCyFileFilterTest {
-	private CyFileFilter filter;
+	private CyFileFilter filter1;
+	private CyFileFilter filter25;
 
 
 	@Before
@@ -34,27 +35,28 @@ public class PsiMiCyFileFilterTest {
 				return source.openStream();
 			}
 		};
-		filter = new PsiMiCyFileFilter("PSI", streamUtil);
+		filter1 = new PsiMiCyFileFilter("PSI 1", streamUtil, PsiMiCyFileFilter.PSIMIVersion.PXIMI10);
+		filter25 = new PsiMiCyFileFilter("PSI 25", streamUtil, PsiMiCyFileFilter.PSIMIVersion.PSIMI25);
 	}
 	
 	@Test
 	public void testAcceptPsiMi1() throws Exception {
 		File file = new File("src/test/resources/testData/psi_sample1.xml");
-		assertTrue(filter.accepts(new FileInputStream(file), DataCategory.NETWORK));
-		assertTrue(filter.accepts(file.toURI(), DataCategory.NETWORK));
+		assertTrue(filter1.accepts(new FileInputStream(file), DataCategory.NETWORK));
+		assertTrue(filter1.accepts(file.toURI(), DataCategory.NETWORK));
 	}
 	
 	@Test
 	public void testAcceptPsiMi25() throws Exception {
 		File file = new File("src/test/resources/testData/psi_sample_2_5_2.xml");
-		assertTrue(filter.accepts(new FileInputStream(file), DataCategory.NETWORK));
-		assertTrue(filter.accepts(file.toURI(), DataCategory.NETWORK));
+		assertTrue(filter25.accepts(new FileInputStream(file), DataCategory.NETWORK));
+		assertTrue(filter25.accepts(file.toURI(), DataCategory.NETWORK));
 	}
 	
 	@Test
 	public void testAcceptRandomXml() throws Exception {
 		File file = new File("src/test/resources/testData/galFiltered.xgmml");
-		assertFalse(filter.accepts(new FileInputStream(file), DataCategory.NETWORK));
-		assertFalse(filter.accepts(file.toURI(), DataCategory.NETWORK));
+		assertFalse(filter25.accepts(new FileInputStream(file), DataCategory.NETWORK));
+		assertFalse(filter25.accepts(file.toURI(), DataCategory.NETWORK));
 	}
 }

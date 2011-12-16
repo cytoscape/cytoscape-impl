@@ -15,17 +15,28 @@ import org.cytoscape.io.util.StreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// Thi sis for 2.5
 public class PsiMiCyFileFilter implements CyFileFilter {
 	private static final String PSI_MI_XML_NAMESPACE = "net:sf:psidev:mi";
+	
+	private static final String PSI_MI_254_KEY1 = "psi.hupo.org/mi";
+	private static final String PSI_MI_254_KEY2 = "psidev.sourceforge.net/mi";
+	
 
 	private static final int DEFAULT_LINES_TO_CHECK = 20;
 
+	public enum PSIMIVersion {
+		PXIMI10, PSIMI25;
+	}
+	
 	private final StreamUtil streamUtil;
 	private final Set<String> extensions;
 	private final Set<String> contentTypes;
 	private final String description;
+	
+	private final PSIMIVersion version;
 
-	public PsiMiCyFileFilter(String description, StreamUtil streamUtil) {
+	public PsiMiCyFileFilter(String description, StreamUtil streamUtil, final PSIMIVersion version) {
 		this.streamUtil = streamUtil;
 		
 		extensions = new HashSet<String>();
@@ -35,7 +46,8 @@ public class PsiMiCyFileFilter implements CyFileFilter {
 		contentTypes.add("text/psi-mi");
 		contentTypes.add("text/psi-mi+xml");
 		
-		this.description = description; 
+		this.description = description;
+		this.version = version;
 	}
 	
 	@Override
@@ -61,8 +73,16 @@ public class PsiMiCyFileFilter implements CyFileFilter {
 		int linesToCheck = DEFAULT_LINES_TO_CHECK;
 		while (linesToCheck > 0) {
 			String line = reader.readLine();
-			if (line != null && line.contains(PSI_MI_XML_NAMESPACE)) {
-				return true;
+			if(line == null)
+				continue;
+			
+			if (version == PSIMIVersion.PSIMI25) {
+				if ((line.contains(PSI_MI_XML_NAMESPACE) || line.contains(PSI_MI_254_KEY1) || line
+						.contains(PSI_MI_254_KEY2)) && line.contains("level=\"2\""))
+					return true;
+			} else if(version == PSIMIVersion.PXIMI10) {
+				if (line.contains(PSI_MI_XML_NAMESPACE) && line.contains("level=\"1\""))
+					return true;
 			}
 			linesToCheck--;
 		}
