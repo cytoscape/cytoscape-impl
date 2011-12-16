@@ -11,12 +11,15 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 
+import com.sun.istack.FinalArrayList;
+
 import psidev.psi.mi.xml.model.Alias;
 import psidev.psi.mi.xml.model.Attribute;
 import psidev.psi.mi.xml.model.Entry;
 import psidev.psi.mi.xml.model.EntrySet;
 import psidev.psi.mi.xml.model.ExperimentDescription;
 import psidev.psi.mi.xml.model.Interaction;
+import psidev.psi.mi.xml.model.InteractionType;
 import psidev.psi.mi.xml.model.Interactor;
 import psidev.psi.mi.xml.model.InteractorType;
 import psidev.psi.mi.xml.model.Names;
@@ -180,28 +183,41 @@ public class PSIMI25EntryMapper {
 				final Participant source = itr.next();
 				final Participant target = itr.next();
 				
-				final CyNode sourceCyNode = id2NodeMap.get(source.getInteractor().getId());
-				final CyNode targetCyNode = id2NodeMap.get(target.getInteractor().getId());
-				// PPI does not have directinarity
-				final CyEdge edge = network.addEdge(sourceCyNode, targetCyNode, false);
-				edgeTable.getRow(edge.getSUID()).set(CyEdge.INTERACTION, "pp");
-				final String sourceName = nodeTable.getRow(sourceCyNode.getSUID()).get(CyTableEntry.NAME, String.class);
-				final String targetName = nodeTable.getRow(targetCyNode.getSUID()).get(CyTableEntry.NAME, String.class);
-				edgeTable.getRow(edge.getSUID()).set(CyTableEntry.NAME,  sourceName + " (pp) " + targetName);
-				
-				mapNames(edgeTable, edge.getSUID(), interaction.getNames(), null);
+				processEdge(source, target, interaction, nodes, nodeTable, edgeTable);
 			} else {
-				createClique(nodes);
+				// TODO: do we need Clique, too?
+				createSpokeModel(interaction, nodes, nodeTable, edgeTable);
 			}
 		}
 		
 	}
 	
 	
-	private void createClique(final Collection<Participant> nodes) {
-//		for(Participant p: nodes) {
-//			ref = p.getInteractorRef().getRef();
-//		}
+	private void createSpokeModel(final Interaction interaction, final Collection<Participant> nodes,
+			CyTable nodeTable, CyTable edgeTable) {
+		final Participant hub = nodes.iterator().next();
+
+		for (Participant target : nodes) {
+			if (hub != target)
+				processEdge(hub, target, interaction, nodes, nodeTable, edgeTable);
+
+		}
+	}
+	
+	private void processEdge(final Participant source, final Participant target, final Interaction interaction,
+			final Collection<Participant> nodes, CyTable nodeTable, CyTable edgeTable) {
+		final CyNode sourceCyNode = id2NodeMap.get(source.getInteractor().getId());
+		final CyNode targetCyNode = id2NodeMap.get(target.getInteractor().getId());
+		// PPI does not have directinarity
+		final CyEdge edge = network.addEdge(sourceCyNode, targetCyNode, false);
+
+		// TODO: what's the best value for interaction?
+		edgeTable.getRow(edge.getSUID()).set(CyEdge.INTERACTION, "pp");
+		final String sourceName = nodeTable.getRow(sourceCyNode.getSUID()).get(CyTableEntry.NAME, String.class);
+		final String targetName = nodeTable.getRow(targetCyNode.getSUID()).get(CyTableEntry.NAME, String.class);
+		edgeTable.getRow(edge.getSUID()).set(CyTableEntry.NAME, sourceName + " (pp) " + targetName);
+
+		mapNames(edgeTable, edge.getSUID(), interaction.getNames(), null);
 	}
 	
 	private void mapAttributes(final Collection<Attribute> attrs, final CyTable table) {

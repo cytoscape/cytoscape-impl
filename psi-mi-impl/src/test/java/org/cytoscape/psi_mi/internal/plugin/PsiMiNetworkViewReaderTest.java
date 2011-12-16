@@ -13,6 +13,7 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.psi_mi.internal.plugin.PsiMiCyFileFilter.PSIMIVersion;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -53,17 +54,24 @@ public class PsiMiNetworkViewReaderTest {
 		networkViewFactory = new NetworkViewTestSupport().getNetworkViewFactory();
 	}
 
-	CyNetworkReader createReader(File file) throws IOException {
-		PSIMI25XMLNetworkViewReader reader = new PSIMI25XMLNetworkViewReader(new FileInputStream(file), networkFactory,
-				networkViewFactory, layouts);
-		reader.setTaskIterator(new TaskIterator(reader));
-		return reader;
+	CyNetworkReader createReader(File file, PsiMiCyFileFilter.PSIMIVersion version) throws IOException {
+		if (version == PSIMIVersion.PSIMI25) {
+			PSIMI25XMLNetworkViewReader reader = new PSIMI25XMLNetworkViewReader(new FileInputStream(file),
+					networkFactory, networkViewFactory, layouts);
+			reader.setTaskIterator(new TaskIterator(reader));
+			return reader;
+		} else {
+			PSIMI10XMLNetworkViewReader reader = new PSIMI10XMLNetworkViewReader(new FileInputStream(file),
+					networkFactory, networkViewFactory, layouts);
+			reader.setTaskIterator(new TaskIterator(reader));
+			return reader;
+		}
 	}
 
-	// @Test
+	@Test
 	public void testReadPsiMi1() throws Exception {
 		File file = new File("src/test/resources/testData/dip_sample.xml");
-		CyNetworkReader reader = createReader(file);
+		CyNetworkReader reader = createReader(file, PSIMIVersion.PXIMI10);
 		reader.run(taskMonitor);
 		CyNetwork[] networks = reader.getNetworks();
 
@@ -78,10 +86,10 @@ public class PsiMiNetworkViewReaderTest {
 		assertEquals(4, network.getEdgeCount());
 	}
 
-	// @Test
+	@Test
 	public void testReadPsiMi25() throws Exception {
 		File file = new File("src/test/resources/testData/psi_sample_2_5_1.xml");
-		CyNetworkReader reader = createReader(file);
+		CyNetworkReader reader = createReader(file, PSIMIVersion.PSIMI25);
 		reader.run(taskMonitor);
 		CyNetwork[] networks = reader.getNetworks();
 
@@ -104,7 +112,7 @@ public class PsiMiNetworkViewReaderTest {
 		long start = System.currentTimeMillis();
 		logger.debug("HPRD Data Import start");
 		File file = new File("src/test/resources/testData/HPRD_SINGLE_PSIMI_041210.xml");
-		CyNetworkReader reader = createReader(file);
+		CyNetworkReader reader = createReader(file, PSIMIVersion.PSIMI25);
 		reader.run(taskMonitor);
 		CyNetwork[] networks = reader.getNetworks();
 

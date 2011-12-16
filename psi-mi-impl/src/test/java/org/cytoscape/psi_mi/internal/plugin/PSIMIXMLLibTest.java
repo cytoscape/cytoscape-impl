@@ -56,7 +56,6 @@ public class PSIMIXMLLibTest {
 	public void PSIMILibraryLightweightTest() throws Exception {
 
 		final PsimiXmlVersion xmlVersion = PsimiXmlVersion.VERSION_25_UNDEFINED;
-//		final File intactFile = new File("src/test/resources/testData/intact_21798944_arath-2011-2_04.xml");
 		File intactFile = new File("src/test/resources/testData/HPRD_SINGLE_PSIMI_041210.xml");
 		// Test Lightweight reader
 		final long start = System.currentTimeMillis();
