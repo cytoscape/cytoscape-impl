@@ -17,6 +17,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.io.write.CyPropertyWriterFactory;
 
 public class ServicesUtil {
 
@@ -41,4 +42,5 @@ public class ServicesUtil {
 	public static CyApplicationConfiguration cyApplicationConfigurationServiceRef;
 
 	public static FilterReader filterReader;
+	public static CyPropertyWriterFactory filterWriter;
 }
