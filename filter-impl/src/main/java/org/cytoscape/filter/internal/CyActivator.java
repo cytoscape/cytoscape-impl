@@ -30,6 +30,10 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import java.util.Properties;
 import org.cytoscape.filter.internal.read.filter.FilterReader;
 import org.cytoscape.filter.internal.ServicesUtil;
+import org.cytoscape.filter.internal.write.filter.FilterWriterFactoryImpl;
+import org.cytoscape.io.BasicCyFileFilter;
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.util.StreamUtil;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -48,6 +52,7 @@ public class CyActivator extends AbstractCyActivator {
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
+		StreamUtil streamUtil = getService(bc,StreamUtil.class);
 
 		//
 		ServicesUtil.cySwingApplicationServiceRef = cySwingApplicationServiceRef;
@@ -59,10 +64,14 @@ public class CyActivator extends AbstractCyActivator {
 		ServicesUtil.taskManagerServiceRef = taskManagerServiceRef;
 		ServicesUtil.cytoscapeVersionService = cytoscapeVersionService;
 		ServicesUtil.cyApplicationConfigurationServiceRef = cyApplicationConfigurationServiceRef;
+		
 		//
-				
+		BasicCyFileFilter filterFilter = new BasicCyFileFilter(new String[]{"filters"}, new String[]{"text/plain"}, "Filters file",DataCategory.PROPERTIES, streamUtil);
 		FilterReader filterReader = new FilterReader("props.filters");
+		FilterWriterFactoryImpl filterWriter = new FilterWriterFactoryImpl(filterFilter);
+		
 		ServicesUtil.filterReader = filterReader;
+		ServicesUtil.filterWriter = filterWriter;
 		
 		FilterPlugin filterPlugin = new FilterPlugin();
 		QuickFindApp quickFindApp = new QuickFindApp(cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
@@ -79,11 +88,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,filterPlugin, new Properties());
 
 		//
-		Properties filterReaderProps = new Properties();
-		filterReaderProps.setProperty("cyPropertyName","filters");
-		filterReaderProps.setProperty("serviceType","property");
-		//registerAllServices(bc,filterReader, filterReaderProps);
-		
+//		Properties filterReaderProps = new Properties();
+//		filterReaderProps.setProperty("cyPropertyName","filters");
+//		filterReaderProps.setProperty("serviceType","property");
+//		registerAllServices(bc,filterReader, filterReaderProps);
+//
+//		
+//		Properties filterWriterProps = new Properties();
+////		filterWriterProps.setProperty("cyPropertyName","filters");
+////		filterWriterProps.setProperty("serviceType","property");
+//		registerAllServices(bc,filterWriter, filterWriterProps);
+
 	}
 }
 
