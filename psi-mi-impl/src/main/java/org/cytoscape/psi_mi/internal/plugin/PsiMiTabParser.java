@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,9 +19,16 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.property.session.Network;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PsiMiTabParser {
+	
+	private static final Logger logger = LoggerFactory.getLogger(PsiMiTabParser.class);
+	
+	private static final int BUFFER_SIZE = 100000;
 
 	// Separator for multiple entries.
 	private static final String SEPARATOR = "\\|";
@@ -58,6 +66,8 @@ public class PsiMiTabParser {
 
 	private final InputStream inputStream;
 	private final CyNetworkFactory cyNetworkFactory;
+	
+	private boolean cancelFlag = false;
 
 	public PsiMiTabParser(final InputStream inputStream, final CyNetworkFactory cyNetworkFactory) {
 		this.inputStream = inputStream;
@@ -65,6 +75,9 @@ public class PsiMiTabParser {
 	}
 
 	public CyNetwork parse(final TaskMonitor taskMonitor) throws IOException {
+		
+		long start = System.currentTimeMillis();
+		
 		this.nodeMap = new HashMap<String, CyNode>();
 
 		String[] entry;
@@ -104,10 +117,16 @@ public class PsiMiTabParser {
 			edgeTable.createListColumn(EDGE_SCORE, Double.class, false);
 
 		String line;
-		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream), BUFFER_SIZE);
 
 		long interactionCount = 0;
 		while ((line = br.readLine()) != null) {
+			
+			if(cancelFlag) {
+				cleanup(br);
+				return network;
+			}
+			
 			// Ignore comment line
 			if (line.startsWith("#"))
 				continue;
@@ -178,19 +197,21 @@ public class PsiMiTabParser {
 				network.getRow(e).set(INTERACTION_ID, interactionID[0]);
 
 				setPublication(network.getRow(e), entry[8].split(SEPARATOR), entry[7].split(SEPARATOR));
-				interactionCount++;
-				taskMonitor.setStatusMessage(interactionCount + " interactions loaded.");
+				
+//				interactionCount++;
+//				taskMonitor.setStatusMessage(interactionCount + " interactions loaded.");
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				logger.warn("Could not parse this line: " + line, ex);
 				continue;
 			}
-
 		}
 
 		br.close();
 		nodeMap.clear();
 		nodeMap = null;
 
+		logger.info("MITAB Parse finished in " + (System.currentTimeMillis() - start) + " msec.");
+		
 		return network;
 	}
 
@@ -340,6 +361,16 @@ public class PsiMiTabParser {
 		}
 
 		return miName;
+	}
+	
+	public void cancel() {
+		cancelFlag = true;
+	}
+	
+	private void cleanup(Reader br) throws IOException {
+		br.close();
+		nodeMap.clear();
+		nodeMap = null;
 	}
 
 }

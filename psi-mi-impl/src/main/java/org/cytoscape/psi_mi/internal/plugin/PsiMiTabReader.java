@@ -58,10 +58,13 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 
 	private void createNetwork(TaskMonitor taskMonitor) throws IOException {
 
-		taskMonitor.setStatusMessage("Loading PSI-MI-TAB file.");
+		taskMonitor.setTitle("Loading PSIMI-TAB File");
+		taskMonitor.setStatusMessage("Loading PSI-MI-TAB25 file.");
 		taskMonitor.setProgress(0.01d);
+		
 		network = parser.parse(taskMonitor);
-		taskMonitor.setProgress(0.4d);
+		
+		taskMonitor.setProgress(1.0d);
 	}
 
 	@Override
@@ -90,7 +93,11 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 			throw new RuntimeException("Could not finish layout", e);
 		}
 
-		parentTaskMonitor.setProgress(1.0d);
 		return view;
+	}
+	
+	@Override
+	public void cancel() {
+		parser.cancel();
 	}
 }

@@ -1,17 +1,18 @@
 package org.cytoscape.psi_mi.internal.data_mapper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
-
-import com.sun.istack.FinalArrayList;
 
 import psidev.psi.mi.xml.model.Alias;
 import psidev.psi.mi.xml.model.Attribute;
@@ -30,16 +31,19 @@ import psidev.psi.mi.xml.model.Source;
 public class PSIMI25EntryMapper {
 	
 	private static final String NAME_FULL = "Full Name";
-	private static final String NAME_SHORT = CyTableEntry.NAME;
+	private static final String NAME_SHORT = "Short Label";
 	
 	private static final String INTERACTOR_TYPE = "Interactor Type";
 	private static final String TAX_ID = "Species (NCBI TAX ID)";
-	private static final String SPECIES = "Species";
+	
+	private static final String INTERACTION_TYPE = "Interaction Type";
 	
 	private final EntrySet es;
 	private final CyNetwork network;
 	
 	private final Map<Integer, CyNode>id2NodeMap;
+	
+	private boolean cancelFlag = false;
 	
 	public PSIMI25EntryMapper(final CyNetwork network, final EntrySet es) {
 		this.es = es;
@@ -143,11 +147,17 @@ public class PSIMI25EntryMapper {
 		// Create default columns
 		nodeTable.createColumn(INTERACTOR_TYPE, String.class, false);
 		nodeTable.createColumn(TAX_ID, String.class, false);
-		nodeTable.createColumn(SPECIES, String.class, false);
 		
 		for(final Interactor interactor: interactors) {
+			if(cancelFlag)
+				return;
+			
 			final int id = interactor.getId();
+			
 			final CyNode node = network.addNode();
+			final String nameColumn = interactor.getNames().getShortLabel();
+			nodeTable.getRow(node.getSUID()).set(CyTableEntry.NAME, nameColumn);
+			
 			final InteractorType itrType = interactor.getInteractorType();
 			final Names typeNames = itrType.getNames();
 			if(typeNames != null) {
@@ -164,6 +174,9 @@ public class PSIMI25EntryMapper {
 				
 			}
 			mapNames(nodeTable, node.getSUID(), interactor.getNames(), null);
+			
+			mapAttributes(interactor.getAttributes(), nodeTable, node.getSUID());
+			
 			id2NodeMap.put(id, node);
 		}
 	}
@@ -173,8 +186,12 @@ public class PSIMI25EntryMapper {
 		final CyTable edgeTable = network.getDefaultEdgeTable();
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		
+		edgeTable.createListColumn(INTERACTION_TYPE, String.class, false);
+		
 		for(Interaction interaction: interactions) {
-			final int id = interaction.getId();
+			if(cancelFlag)
+				return;
+			
 			final Collection<Participant> nodes = interaction.getParticipants();
 			
 			// Regular edge
@@ -189,7 +206,6 @@ public class PSIMI25EntryMapper {
 				createSpokeModel(interaction, nodes, nodeTable, edgeTable);
 			}
 		}
-		
 	}
 	
 	
@@ -208,6 +224,7 @@ public class PSIMI25EntryMapper {
 			final Collection<Participant> nodes, CyTable nodeTable, CyTable edgeTable) {
 		final CyNode sourceCyNode = id2NodeMap.get(source.getInteractor().getId());
 		final CyNode targetCyNode = id2NodeMap.get(target.getInteractor().getId());
+		
 		// PPI does not have directinarity
 		final CyEdge edge = network.addEdge(sourceCyNode, targetCyNode, false);
 
@@ -218,22 +235,48 @@ public class PSIMI25EntryMapper {
 		edgeTable.getRow(edge.getSUID()).set(CyTableEntry.NAME, sourceName + " (pp) " + targetName);
 
 		mapNames(edgeTable, edge.getSUID(), interaction.getNames(), null);
+		mapAttributes(interaction.getAttributes(), edgeTable, edge.getSUID());
+		final Collection<InteractionType> types = interaction.getInteractionTypes();
+		mapInteractionType(types, edgeTable, edge.getSUID());
 	}
 	
-	private void mapAttributes(final Collection<Attribute> attrs, final CyTable table) {
+	private void mapInteractionType(final Collection<InteractionType> types, final CyTable table, final Long suid) {
+		if(types == null)
+			return;
+		
+		final List<String> typeList = new ArrayList<String>();
+		for(final InteractionType type: types) {
+			final String label = type.getNames().getShortLabel();
+			typeList.add(label);
+		}
+		table.getRow(suid).set(INTERACTION_TYPE, typeList);
+	}
+	
+	private void mapAttributes(final Collection<Attribute> attrs, final CyTable table, final Long suid) {
 		for(Attribute attr: attrs) {
 			final String name = attr.getName();
 			
 			if(table.getColumn(name) == null)
-				table.createColumn(name, String.class, false);
+				table.createListColumn(name, String.class, false);
+			
+			final CyRow row = table.getRow(suid);
+			List<String> list = row.getList(name, String.class);
+			if(list == null)
+				list = new ArrayList<String>();
 			
 			final String nameAc = attr.getNameAc();
 			final String value = attr.getValue();
+			list.add(value);
+			row.set(name, list);
 		}
 	}
 	
 	private void mapXref() {
 		
+	}
+	
+	public void cancel() {
+		cancelFlag = true;
 	}
 
 }

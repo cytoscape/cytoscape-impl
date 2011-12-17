@@ -86,6 +86,7 @@ public class PsiMiNetworkViewReaderTest {
 		assertEquals(4, network.getEdgeCount());
 	}
 
+
 	@Test
 	public void testReadPsiMi25() throws Exception {
 		File file = new File("src/test/resources/testData/psi_sample_2_5_1.xml");
