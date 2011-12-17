@@ -18,6 +18,7 @@ import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.session.Parent;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -132,9 +133,11 @@ public class PSICQUICSearchUI extends JPanel {
 			statesPanel = new SourceStatusPanel(queryPane.getText(), client, regManager,networkManager, result, taskManager, (SearchMode)searchModeBox.getSelectedItem(), createViewTaskFactory);
 			add(statesPanel, BorderLayout.SOUTH);
 
-			((Window) getRootPane().getParent()).pack();
+			Window parentWindow = ((Window) getRootPane().getParent());
+			parentWindow.pack();
 			repaint();
-
+			
+			parentWindow.toFront();
 		}
 	}
 }
