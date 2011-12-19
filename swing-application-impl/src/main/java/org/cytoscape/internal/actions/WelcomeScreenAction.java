@@ -9,6 +9,7 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.internal.actions.welcomescreen.WelcomeScreenDialog;
@@ -19,6 +20,7 @@ import org.cytoscape.task.creation.ImportNetworksTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
+import org.osgi.framework.BundleContext;
 
 public class WelcomeScreenAction extends AbstractCyAction implements CyStartListener {
 
@@ -40,8 +42,10 @@ public class WelcomeScreenAction extends AbstractCyAction implements CyStartList
 
 	private final CySwingApplication app;
 	private final CyProperty<Properties> cyProps;
+	
+	private final BundleContext bc;
 
-	public WelcomeScreenAction(final CySwingApplication app, 
+	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, 
 			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory, TaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworksTaskFactory, final NetworkTaskFactory networkTaskFactory,
 			final CyApplicationConfiguration config, final DataSourceManager dsManager, final CyProperty<Properties> cyProps) {
@@ -59,12 +63,13 @@ public class WelcomeScreenAction extends AbstractCyAction implements CyStartList
 		this.cyProps = cyProps;
 		this.openSessionTaskFactory = openSessionTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
+		this.bc = bc;
 
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final JDialog welcomeScreen = new WelcomeScreenDialog(openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config,
+		final JDialog welcomeScreen = new WelcomeScreenDialog(bc,openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config,
 				importNetworkFileTF, importNetworksTaskFactory, networkTaskFactory, dsManager, cyProps);
 		welcomeScreen.setLocationRelativeTo(app.getJFrame());
 		welcomeScreen.setVisible(true);

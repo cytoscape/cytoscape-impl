@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -31,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.datasource.DataSource;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.DataCategory;
@@ -42,15 +42,18 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CreateNewNetworkPanel extends JPanel implements ActionListener {
-	
+
 	private static final long serialVersionUID = -8750909701276867389L;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
-	
+
 	private static final String VIEW_THRESHOLD = "viewThreshold";
 	private static final int DEF_VIEW_THRESHOLD = 3000;
 
@@ -59,6 +62,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	private JLabel loadNetwork;
 	private JLabel fromDB;
+	private JLabel fromWebService;
 
 	private JComboBox networkList;
 	private JCheckBox layout;
@@ -66,6 +70,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 	private final TaskManager guiTaskManager;
 
 	private Window parent;
+
+	private final BundleContext bc;
 
 	private final ImportNetworksTaskFactory importNetworkFromURLTF;
 	private final TaskFactory importNetworkFileTF;
@@ -75,13 +81,16 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 	private final Map<String, String> dataSourceMap;
 
 	private final int viewThreshold;
-	
+
 	private boolean firstSelection = false;
 
-	CreateNewNetworkPanel(Window parent, final TaskManager guiTaskManager, final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory loadTF,
+	CreateNewNetworkPanel(Window parent, final BundleContext bc, final TaskManager guiTaskManager,
+			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory loadTF,
 			final NetworkTaskFactory createViewTaskFactory, final CyApplicationConfiguration config,
 			final DataSourceManager dsManager, final Properties props) {
 		this.parent = parent;
+		this.bc = bc;
+
 		this.importNetworkFromURLTF = loadTF;
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
@@ -91,11 +100,11 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 		this.dataSourceMap = new HashMap<String, String>();
 		this.networkList = new JComboBox();
-		
+
 		setFromDataSource();
 
 		initComponents();
-		
+
 		// Enable combo box listener here to avoid unnecessary reaction.
 		this.networkList.addActionListener(this);
 	}
@@ -144,7 +153,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 		this.loadNetwork = new JLabel("From file...");
 		this.loadNetwork.setIcon(openIcon);
-		
+
 		loadNetwork.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent ev) {
@@ -158,12 +167,27 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		this.fromDB = new JLabel("From Reference Network Data:");
 		this.fromDB.setIcon(databaseIcon);
 
-		this.setLayout(new GridLayout(4, 1));
+		this.fromWebService = new JLabel("From Public Web Service...");
+		this.fromWebService.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent ev) {
+				// Load network from web service.
+				parent.dispose();
+				try {
+					execute(bc);
+				} catch (InvalidSyntaxException e) {
+					logger.error("Could not execute the action", e);
+				}
+			}
+		});
+
+		this.setLayout(new GridLayout(5, 1));
 		this.add(loadNetwork);
+		this.add(fromWebService);
 		this.add(fromDB);
 		this.add(networkList);
 		this.add(layout);
-		
+
 	}
 
 	private void loadNetwork() throws URISyntaxException, MalformedURLException {
@@ -180,12 +204,13 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 			@Override
 			public TaskIterator createTaskIterator() {
-				return new TaskIterator(2, new CreateNetworkViewTask(url, importNetworkFromURLTF, createViewTaskFactory));
+				return new TaskIterator(2,
+						new CreateNetworkViewTask(url, importNetworkFromURLTF, createViewTaskFactory));
 			}
 		});
 
 	}
-	
+
 	private int getViewThreshold(final Properties props) {
 		final String vts = props.getProperty(VIEW_THRESHOLD);
 		int threshold;
@@ -217,7 +242,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			taskMonitor.setTitle("Loading network...");
 			taskMonitor.setStatusMessage("Loading network.  Please wait...");
 			taskMonitor.setProgress(0.01d);
-			
+
 			final Set<CyNetwork> networks = this.loadNetworkFileTF.loadCyNetworks(url);
 			taskMonitor.setProgress(0.4d);
 			if (networks.size() != 0) {
@@ -241,6 +266,24 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			loadNetwork();
 		} catch (Exception ex) {
 			logger.error("Could not load network.", ex);
-		}	
+		}
+	}
+
+	/**
+	 * Due to its dependency, we need to import this service dynamically.
+	 * 
+	 * @throws InvalidSyntaxException
+	 */
+	private void execute(BundleContext bc) throws InvalidSyntaxException {
+		final ServiceReference[] actions = bc.getAllServiceReferences("org.cytoscape.application.swing.CyAction",
+				"(id=showImportNetworkFromWebServiceDialogAction)");
+		if (actions == null || actions.length != 1) {
+			logger.error("Could not find action");
+			return;
+		}
+
+		final ServiceReference ref = actions[0];
+		final CyAction action = (CyAction) bc.getService(ref);
+		action.actionPerformed(null);
 	}
 }

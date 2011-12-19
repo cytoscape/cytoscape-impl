@@ -47,8 +47,6 @@ import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
 
 import java.util.Properties;
 
-import javax.swing.SwingUtilities;
-
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
@@ -144,7 +142,7 @@ public class CyActivator extends AbstractCyActivator {
 		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
 		NetworkTaskFactory createNetworkViewTaskFactory = getService(bc, NetworkTaskFactory.class, "(id=createNetworkViewTaskFactory)");
 		TaskFactory openSessionTaskFactory = getService(bc, TaskFactory.class, "(id=openSessionTaskFactory)");
-
+		
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
 		
 		
@@ -277,7 +275,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cyApplicationManagerServiceRef);
 		
 		// Show Welcome Screen
-		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(cytoscapeDesktop, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
+		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(bc,cytoscapeDesktop, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
 
 		registerService(bc, undoAction, CyAction.class, new Properties());

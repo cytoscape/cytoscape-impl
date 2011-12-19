@@ -22,6 +22,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
@@ -30,6 +31,7 @@ import org.cytoscape.task.creation.ImportNetworksTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
+import org.osgi.framework.BundleContext;
 
 public class WelcomeScreenDialog extends JDialog {
 	private static final long serialVersionUID = -2783045197802550425L;
@@ -45,7 +47,7 @@ public class WelcomeScreenDialog extends JDialog {
 	private static final String IMAGE_LOCATION = "images/background.png";
 	private BufferedImage bgImage;
 
-	private static final Dimension DEF_SIZE = new Dimension(600, 450);
+	private static final Dimension DEF_SIZE = new Dimension(600, 500);
 
 	private BackgroundImagePanel basePanel;
 	private JPanel mainPanel;
@@ -65,8 +67,9 @@ public class WelcomeScreenDialog extends JDialog {
 	private final CyProperty<Properties> cyProps;
 	
 	private final TaskFactory importNetworkFileTF;
+	private final BundleContext bc;
 
-	public WelcomeScreenDialog(OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory,
+	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory,
 			TaskManager guiTaskManager, final CyApplicationConfiguration config,
 			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworkTF, final NetworkTaskFactory networkTaskFactory,
 			final DataSourceManager dsManager, final CyProperty<Properties> cyProps) {
@@ -78,6 +81,7 @@ public class WelcomeScreenDialog extends JDialog {
 		this.dsManager = dsManager;
 		this.openSessionTaskFactory = openSessionTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
+		this.bc = bc;
 
 		this.guiTaskManager = guiTaskManager;
 		this.cyProps = cyProps;
@@ -169,8 +173,11 @@ public class WelcomeScreenDialog extends JDialog {
 		panel3.setBackground(PANEL_COLOR);
 		panel4.setBackground(PANEL_COLOR);
 
-		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, openSessionTaskFactory), "Open a Recent Session");
-		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, guiTaskManager, importNetworkFileTF, loadNetworkTF, networkTaskFactory, config, dsManager, cyProps.getProperties()),
+		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, openSessionTaskFactory),
+				"Open a Recent Session");
+		buildHelpPanel(panel2,
+				new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, networkTaskFactory,
+						config, dsManager, cyProps.getProperties()),
 				"Create New Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
