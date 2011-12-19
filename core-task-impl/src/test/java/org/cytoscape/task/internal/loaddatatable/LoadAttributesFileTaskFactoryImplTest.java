@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -21,9 +20,6 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	CyTableReaderManager rmgr;
 	
 	@Mock
-	CyTableManager tmgr;
-	
-	@Mock
 	TaskMonitor tm;
 	
 	@Before
@@ -35,7 +31,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesFileTaskFactory() throws Exception {
 
-		final LoadAttributesFileTaskFactoryImpl factory = new LoadAttributesFileTaskFactoryImpl(rmgr, tmgr);
+		final LoadAttributesFileTaskFactoryImpl factory = new LoadAttributesFileTaskFactoryImpl(rmgr);
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 

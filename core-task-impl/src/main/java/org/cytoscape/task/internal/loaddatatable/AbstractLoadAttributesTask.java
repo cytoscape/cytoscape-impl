@@ -5,7 +5,6 @@ import java.net.URI;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -13,11 +12,9 @@ import org.cytoscape.work.TaskMonitor;
 abstract class AbstractLoadAttributesTask extends AbstractTask {
 
 	private final CyTableReaderManager mgr;
-	private CyTableManager tableMgr;
 
-	public AbstractLoadAttributesTask(final CyTableReaderManager mgr, CyTableManager tableMgr) {
+	public AbstractLoadAttributesTask(final CyTableReaderManager mgr) {
 		this.mgr = mgr;
-		this.tableMgr = tableMgr;
 	}
 
 	void loadTable(final String name, final URI uri, final TaskMonitor taskMonitor) throws Exception {
@@ -30,7 +27,7 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 
 		taskMonitor.setStatusMessage("Importing Data Table...");
 
-		insertTasksAfterCurrentTask(reader, new FinalStatusMessageUpdateTask(reader, tableMgr, name));
+		insertTasksAfterCurrentTask(reader, new FinalStatusMessageUpdateTask(reader));
 	}
 }
 

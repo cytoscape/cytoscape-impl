@@ -33,7 +33,6 @@ public class ImportTaskUtil {
 	
 	protected final Set<InteractionFilePreprocessor> processors;
 	
-	protected CyTableManager tblMgr;
 	protected CyTableReaderManager tblReaderMgr;
 	
 	protected final CyApplicationManager appManager;
@@ -44,7 +43,7 @@ public class ImportTaskUtil {
 		     CyNetworkManager netmgr,
 		     final CyNetworkViewManager networkViewManager,
 		     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
-		     StreamUtil streamUtil, CyTableManager tblMgr,CyTableReaderManager tblReaderMgr, 
+		     StreamUtil streamUtil, CyTableReaderManager tblReaderMgr, 
 		     final CyApplicationManager appManager) {
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -53,7 +52,6 @@ public class ImportTaskUtil {
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.streamUtil = streamUtil;
 		this.processors = new HashSet<InteractionFilePreprocessor>();
-		this.tblMgr = tblMgr;
 		this.tblReaderMgr = tblReaderMgr;
 		this.appManager = appManager;
 		this.cyProps = cyProps;
@@ -93,7 +91,7 @@ public class ImportTaskUtil {
 	}
 
 	public Task getURLImportTableTask() {
-		return new LoadAttributesURLTask(this.tblReaderMgr, this.tblMgr);
+		return new LoadAttributesURLTask(this.tblReaderMgr);
 	}
 	
 	public CyApplicationManager getAppManager() {

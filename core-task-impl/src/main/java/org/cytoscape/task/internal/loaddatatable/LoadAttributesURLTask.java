@@ -13,8 +13,8 @@ public class LoadAttributesURLTask extends AbstractLoadAttributesTask {
 	@Tunable(description="Attribute Table URL", params="fileCategory=table;input=true")
 	public URL url;
 
-	public LoadAttributesURLTask(final CyTableReaderManager mgr, CyTableManager tableMgr) {
-		super(mgr, tableMgr);
+	public LoadAttributesURLTask(final CyTableReaderManager mgr) {
+		super(mgr);
 	}
 
 	/**

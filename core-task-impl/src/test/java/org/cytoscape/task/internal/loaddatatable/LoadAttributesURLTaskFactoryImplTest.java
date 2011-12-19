@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.net.URL;
 
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -21,9 +20,6 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	private CyTableReaderManager rmgr;
 	
 	@Mock
-	private CyTableManager tmgr;
-	
-	@Mock
 	private TaskMonitor tm;
 	
 	@Before
@@ -35,7 +31,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesURLTaskFactory() throws Exception {
 
-		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr, tmgr);
+		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr);
 		
 		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

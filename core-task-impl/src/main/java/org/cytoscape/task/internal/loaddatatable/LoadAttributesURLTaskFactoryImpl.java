@@ -10,14 +10,12 @@ import org.cytoscape.work.TaskFactory;
 public class LoadAttributesURLTaskFactoryImpl implements TaskFactory {
 	
 	private CyTableReaderManager mgr;
-	private CyTableManager tableMgr;
 	
-	public LoadAttributesURLTaskFactoryImpl(CyTableReaderManager mgr, CyTableManager tableMgr) {
+	public LoadAttributesURLTaskFactoryImpl(CyTableReaderManager mgr) {
 		this.mgr = mgr;
-		this.tableMgr = tableMgr;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadAttributesURLTask(mgr, tableMgr));
+		return new TaskIterator(2, new LoadAttributesURLTask(mgr));
 	}
 }
