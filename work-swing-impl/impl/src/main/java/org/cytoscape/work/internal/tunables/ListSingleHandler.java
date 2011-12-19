@@ -70,6 +70,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 		combobox.setFont(new Font("sansserif", Font.PLAIN, 11));
 		combobox.addActionListener(this);
 		panel.add(combobox, BorderLayout.EAST);
+		
+		combobox.getModel().setSelectedItem(listSingleSelection.getSelectedValue());
 	}
 
 	/**

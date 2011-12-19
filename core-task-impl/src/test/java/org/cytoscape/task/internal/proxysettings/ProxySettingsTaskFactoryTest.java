@@ -4,7 +4,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import java.util.Properties;
+
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
@@ -15,7 +20,9 @@ public class ProxySettingsTaskFactoryTest {
 
 		StreamUtil streamUtil = mock(StreamUtil.class);
 
-		ProxySettingsTaskFactory factory = new ProxySettingsTaskFactory(streamUtil);
+		Properties properties = new Properties();
+		final CyProperty<Properties> proxyProperties = new SimpleCyProperty(properties , SavePolicy.DO_NOT_SAVE);
+		ProxySettingsTaskFactory factory = new ProxySettingsTaskFactory(proxyProperties, streamUtil);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

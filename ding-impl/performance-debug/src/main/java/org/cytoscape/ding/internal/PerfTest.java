@@ -3,46 +3,36 @@ package org.cytoscape.ding.internal;
 
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.io.InputStream;
-
-import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JComponent;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
-
-import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.io.internal.read.sif.SIFNetworkReader;
-import org.cytoscape.model.CyEdge;
+import org.cytoscape.io.internal.util.ReadUtils;
+import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.property.SimpleCyProperty;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.internal.CyLayoutsImpl;
+import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.view.layout.internal.CyLayoutsImpl;
-import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 
 
 public class PerfTest {
@@ -72,7 +62,9 @@ public class PerfTest {
 	
 		viewFactory = nvts.getNetworkViewFactory();
 
-		readUtil = new ReadUtils(new StreamUtilImpl());
+		Properties properties = new Properties();
+		CyProperty<Properties> cyProperties = new SimpleCyProperty(properties, CyProperty.SavePolicy.DO_NOT_SAVE);	
+		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
 	}
 
 	private  SIFNetworkReader readFile(String file) throws Exception {

@@ -134,8 +134,7 @@ public class CyActivator extends AbstractCyActivator {
 		EquationCompiler equationCompilerServiceRef = getService(bc,EquationCompiler.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
 		
-		// TODO: set proxy
-		StreamUtilImpl streamUtil = new StreamUtilImpl();
+		StreamUtilImpl streamUtil = new StreamUtilImpl(cyPropertyServiceRef);
 		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix (.pvals) File", DataCategory.TABLE, streamUtil);
 		
 		// Always register CYS filters from higher to lower version!

@@ -3,11 +3,15 @@ package org.cytoscape.io.internal.read.session;
 import static org.junit.Assert.*;
 
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.property.CyProperty.SavePolicy;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +24,10 @@ public class SessionFileFilterTest {
 	public void setUp() {
 		extensions = new HashSet<String>();
 		contentTypes = new HashSet<String>();
-		streamUtil = new StreamUtilImpl();
+		
+		Properties properties = new Properties();
+		CyProperty<Properties> cyProperties = new SimpleCyProperty(properties, SavePolicy.DO_NOT_SAVE);		
+		streamUtil = new StreamUtilImpl(cyProperties);
 	}
 	
 	@Test

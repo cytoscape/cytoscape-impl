@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.Properties;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.CyProperty.SavePolicy;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +26,9 @@ public class ProxySettingTaskTest {
 	
 	@Test
 	public void testRun() throws Exception {
-		final ProxySettingsTask2 t = new ProxySettingsTask2(streamUtil);
+		Properties properties = new Properties();
+		final CyProperty<Properties> proxyProperties = new SimpleCyProperty(properties , SavePolicy.DO_NOT_SAVE);
+		final ProxySettingsTask2 t = new ProxySettingsTask2(proxyProperties, streamUtil);
 
 		final String type = "http";
 		final String hostName = "dummy";
@@ -35,10 +40,8 @@ public class ProxySettingTaskTest {
 		
 		t.run(tm);
 		
-		final Properties newProps = System.getProperties();
-		
-		assertEquals(hostName, newProps.getProperty("http.proxyHost"));
-		assertEquals(Integer.toString(portNumber), newProps.getProperty("http.proxyPort"));
+		assertEquals(hostName, properties.getProperty(ProxySettingsTask2.PROXY_HOST));
+		assertEquals(Integer.toString(portNumber), properties.getProperty(ProxySettingsTask2.PROXY_PORT));
 	}
 
 }

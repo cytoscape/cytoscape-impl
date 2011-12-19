@@ -6,11 +6,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.property.CyProperty.SavePolicy;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +26,10 @@ public class GMLFileFilterTest {
 		Set<String> extensions = new HashSet<String>();
 		Set<String> contentTypes = new HashSet<String>();
 		String description = "GML";
-		filter = new GMLFileFilter(extensions, contentTypes, description , DataCategory.NETWORK, new StreamUtilImpl());
+		
+		Properties properties = new Properties();
+		CyProperty<Properties> cyProperties = new SimpleCyProperty(properties, SavePolicy.DO_NOT_SAVE);		
+		filter = new GMLFileFilter(extensions, contentTypes, description , DataCategory.NETWORK, new StreamUtilImpl(cyProperties));
 	}
 	
 	@Test

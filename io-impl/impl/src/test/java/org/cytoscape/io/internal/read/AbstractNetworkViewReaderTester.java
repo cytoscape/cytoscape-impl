@@ -66,7 +66,7 @@ public class AbstractNetworkViewReaderTester {
 		
 		viewFactory = nvts.getNetworkViewFactory();
 
-		readUtil = new ReadUtils(new StreamUtilImpl());
+		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
 	}
 
 	protected void setViewThreshold(int threshold) {

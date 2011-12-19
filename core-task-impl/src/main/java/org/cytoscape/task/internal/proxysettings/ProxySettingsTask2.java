@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -25,8 +26,11 @@ import org.cytoscape.work.util.ListSingleSelection;
  * Dialog for assigning proxy settings.
  */
 public class ProxySettingsTask2 extends AbstractTask implements TunableValidator {
+	static final String PROXY_HOST = "proxy.server";
+	static final String PROXY_PORT = "proxy.server.port";
+	static final String PROXY_TYPE = "proxy.server.type";
 	
-	private static final List<String> KEYS = Arrays.asList("http.proxyHost", "http.proxyPort", "socks.proxyHost", "socks.proxyPort");
+	private static final List<String> KEYS = Arrays.asList(PROXY_HOST, PROXY_PORT, PROXY_TYPE);
 
 	@Tunable(description="Type")
 	public ListSingleSelection<String> type = new ListSingleSelection<String>("direct", "http", "socks");
@@ -42,10 +46,19 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	private final Map<String,String> oldSettings;
 	private final Properties properties;
 
-	public ProxySettingsTask2(final StreamUtil streamUtil) {
+	public ProxySettingsTask2(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil) {
 		this.streamUtil = streamUtil;
 		oldSettings = new HashMap<String,String>();
-		properties = System.getProperties();
+		properties = proxyProperties.getProperties();
+		try {
+			type.setSelectedValue(properties.getProperty(PROXY_TYPE));
+			hostname = properties.getProperty(PROXY_HOST);
+			port = Integer.parseInt(properties.getProperty(PROXY_PORT));
+		} catch (IllegalArgumentException e) {
+			type.setSelectedValue("direct");
+			hostname = "";
+			port = 0;
+		}
 	}
 
 	public ValidationState getValidationState(final Appendable errMsg) {
@@ -92,23 +105,16 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 		for (String key : KEYS) {
 			if (properties.getProperty(key) != null)
 				oldSettings.put(key, properties.getProperty(key));
+			properties.remove(key);
 		}
 
-		if (type.getSelectedValue().equals("direct")) {
-			for (String key : KEYS) {
-				if (properties.getProperty(key) != null)
-					properties.remove(key);
-			}
-		} else if (type.getSelectedValue().equals("http")) {
-			properties.remove("socks.proxyHost");
-			properties.remove("socks.proxyPort");
-			properties.setProperty("http.proxyHost", hostname);
-			properties.setProperty("http.proxyPort", Integer.toString(port));
-		} else if (type.getSelectedValue().equals("socks")) {
-			properties.remove("http.proxyHost");
-			properties.remove("http.proxyPort");
-			properties.setProperty("socks.proxyHost", hostname);
-			properties.setProperty("socks.proxyPort", Integer.toString(port));
+		String proxyType = type.getSelectedValue(); 
+		if ("direct".equals(proxyType)) {
+			properties.setProperty(PROXY_TYPE, proxyType);
+		} else if ("http".equals(proxyType) || "socks".equals(proxyType)) {
+			properties.setProperty(PROXY_TYPE, proxyType);
+			properties.setProperty(PROXY_HOST, hostname);
+			properties.setProperty(PROXY_PORT, Integer.toString(port));
 		}
 	}
 

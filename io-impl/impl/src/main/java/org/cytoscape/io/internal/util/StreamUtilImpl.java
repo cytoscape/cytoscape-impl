@@ -25,14 +25,18 @@ package org.cytoscape.io.internal.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Properties;
 import java.util.jar.JarInputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.property.CyProperty;
 
 /**
  * 
@@ -44,11 +48,12 @@ public class StreamUtilImpl implements StreamUtil {
 	private static final String JAR = ".jar";
 
 	private static final int msConnectionTimeout = 2000;
+	private Properties properties;
 	
+	public StreamUtilImpl(CyProperty<Properties> proxyProperties) {
+		properties = proxyProperties.getProperties();
+	}
 	
-	// TODO: Inject this!
-	private Proxy cytoProxy; // ProxyHandler.getProxyServer();
-
 	/**
 	 * Gets the an input stream given a URL.
 	 * 
@@ -66,10 +71,7 @@ public class StreamUtilImpl implements StreamUtil {
 		final InputStream newIs;
 		
 		final InputStream proxyIs;
-		if(cytoProxy != null)
-			proxyIs = source.openConnection(cytoProxy).getInputStream();
-		else
-			proxyIs = source.openStream();
+		proxyIs = getURLConnection(source).getInputStream();
 		
 		// These are mainly for Session loading.
 		if (source.toString().toLowerCase().endsWith(GZIP))
@@ -81,6 +83,27 @@ public class StreamUtilImpl implements StreamUtil {
 		else
 			newIs = proxyIs;
 		return newIs;
+	}
+
+
+	private Proxy getProxy() {
+		String proxyType = properties.getProperty("proxy.server.type");
+		if ("direct".equals(proxyType)) {
+			return Proxy.NO_PROXY;
+		}
+		String hostName = properties.getProperty("proxy.server");
+		String portString = properties.getProperty("proxy.server.port");
+		try {
+			int port = Integer.parseInt(portString);
+			if ("http".equals(proxyType)) {
+				return new Proxy(Type.HTTP, new InetSocketAddress(hostName, port));
+			}
+			if ("socks".equals(proxyType)) {
+				return new Proxy(Type.SOCKS, new InetSocketAddress(hostName, port));
+			}
+		} catch (NumberFormatException e) {
+		}
+		return Proxy.NO_PROXY;
 	}
 
 
@@ -103,6 +126,7 @@ public class StreamUtilImpl implements StreamUtil {
 		
 		URLConnection uc = null;
 		
+		Proxy cytoProxy = getProxy();
 		if (cytoProxy == null) {
 			uc = source.openConnection();
 		} else {

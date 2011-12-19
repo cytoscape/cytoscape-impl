@@ -53,10 +53,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,cytoscapeVersion, new Properties());
 		registerAllServices(bc,cyApplicationConfiguration, new Properties());
 
-//		Properties cyApplicationCorePropertyProps = new Properties();
-//		cyApplicationCorePropertyProps.setProperty("cyPropertyName","cytoscape3.props");
-//		cyApplicationCorePropertyProps.setProperty("serviceType","property");
-//		registerAllServices(bc,cyApplicationCoreProperty, cyApplicationCorePropertyProps);
+		Properties cyApplicationCorePropertyProps = new Properties();
+		cyApplicationCorePropertyProps.setProperty("cyPropertyName","cytoscape3.props");
+		cyApplicationCorePropertyProps.setProperty("serviceType","property");
+		registerAllServices(bc,cyApplicationCoreProperty, cyApplicationCorePropertyProps);
 
 		
 
