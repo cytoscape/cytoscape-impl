@@ -13,7 +13,6 @@ import java.io.FileInputStream;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.internal.read.AbstractNetworkViewReaderTester;
-import org.cytoscape.io.internal.read.xgmml.handler.AttributeValueUtil;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
@@ -43,7 +42,6 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 	RenderingEngineManager renderingEngineMgr;
 	ReadDataManager readDataMgr;
 	ReadCache readCache;
-	AttributeValueUtil attributeValueUtil;
 	UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	XGMMLParser parser;
 	XGMMLNetworkReader reader;
@@ -68,15 +66,13 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 		
 		readCache = new ReadCache();
 		readDataMgr = new ReadDataManager(readCache, mock(EquationCompiler.class), networkFactory, rootNetworkManager);
-		ObjectTypeMap objectTypeMap = new ObjectTypeMap();
-		attributeValueUtil = new AttributeValueUtil(objectTypeMap, readDataMgr);
-		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr, attributeValueUtil);
+		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr);
 		handlerFactory.init();
 		parser = new XGMMLParser(handlerFactory, readDataMgr);
 		
 		ByteArrayInputStream is = new ByteArrayInputStream("".getBytes("UTF-8")); // TODO: use XGMML string or load from file
 
-		reader = new XGMMLNetworkReader(is, networkViewFactory, networkFactory, rootNetworkManager, renderingEngineMgr,
+		reader = new XGMMLNetworkReader(is, networkViewFactory, networkFactory, renderingEngineMgr, rootNetworkManager,
 				readDataMgr, parser, unrecognizedVisualPropertyMgr);
 
 		CyTableManager tableMgr= mock(CyTableManager.class);
@@ -163,7 +159,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 	private CyNetworkView[] getViews(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
 		XGMMLNetworkReader snvp = new XGMMLNetworkReader(new FileInputStream(f), viewFactory, netFactory,
-				rootNetworkManager, renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
+				renderingEngineMgr, rootNetworkManager, readDataMgr, parser, unrecognizedVisualPropertyMgr);
 		snvp.run(taskMonitor);
 
 		final CyNetwork[] networks = snvp.getNetworks();

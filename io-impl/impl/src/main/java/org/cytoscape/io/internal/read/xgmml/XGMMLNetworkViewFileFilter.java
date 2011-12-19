@@ -27,39 +27,28 @@
  */
 package org.cytoscape.io.internal.read.xgmml;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class XGMMLFileFilter extends BasicCyFileFilter {
-	
-	public static final Pattern XGMML_HEADER_PATTERN = Pattern
-			.compile("<graph[^<>]+[\\'\"]http://www.cs.rpi.edu/XGMML[\\'\"][^<>]*>");
-	
-	public static final Pattern XGMML_VIEW_ATTRIBUTE_PATTERN = Pattern.compile("cy:view=[\\'\"](1|true)[\\'\"]");
-	
-	private static final Logger logger = LoggerFactory.getLogger(XGMMLFileFilter.class);
-	
+/**
+ * Filters XGMML files that are used to save CyNetworkViews as part of a session file. 
+ */
+public class XGMMLNetworkViewFileFilter extends XGMMLFileFilter {
 
-	public XGMMLFileFilter(Set<String> extensions, Set<String> contentTypes,
+	public XGMMLNetworkViewFileFilter(Set<String> extensions, Set<String> contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
 
-	public XGMMLFileFilter(String[] extensions, String[] contentTypes,
+	public XGMMLNetworkViewFileFilter(String[] extensions, String[] contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
-
+	
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
 		// Check data category
@@ -72,23 +61,13 @@ public class XGMMLFileFilter extends BasicCyFileFilter {
 		if (matcher.find()) {
 			// It looks like an XGMML graph tag
 			final String graph = matcher.group(0);
-			// But we still have to check if it is NOT the session-view type:
+			
+			// But it also needs to have the 'cy:view="1"' flag:
 			matcher = XGMML_VIEW_ATTRIBUTE_PATTERN.matcher(graph);
 			
-			if (!matcher.find())
-				return true;
+			return (matcher.find());
 		}
 		
 		return false;
-	}
-
-	@Override
-	public boolean accepts(URI uri, DataCategory category) {
-		try {
-			return accepts(uri.toURL().openStream(), category);
-		} catch (IOException e) {
-			logger.error("Error while opening stream: " + uri, e);
-			return false;
-		}
 	}
 }

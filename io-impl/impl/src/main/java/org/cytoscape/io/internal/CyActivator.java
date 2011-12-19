@@ -34,11 +34,11 @@ import org.cytoscape.io.internal.read.vizmap.VizmapPropertiesReaderFactory;
 import org.cytoscape.io.internal.read.vizmap.VizmapXMLFileFilter;
 import org.cytoscape.io.internal.read.vizmap.VizmapXMLReaderFactory;
 import org.cytoscape.io.internal.read.xgmml.HandlerFactory;
-import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.read.xgmml.XGMMLFileFilter;
 import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReaderFactory;
+import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkViewFileFilter;
+import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkViewReaderFactory;
 import org.cytoscape.io.internal.read.xgmml.XGMMLParser;
-import org.cytoscape.io.internal.read.xgmml.handler.AttributeValueUtil;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.ReadUtils;
@@ -152,6 +152,7 @@ public class CyActivator extends AbstractCyActivator {
 		BasicCyFileFilter csvFilter = new BasicCyFileFilter(new String[]{"csv"}, new String[]{"text/plain"}, "CSV file",DataCategory.TABLE, streamUtil);
 		BasicCyFileFilter sessionTableFilter = new BasicCyFileFilter(new String[]{"cytable"}, new String[]{"text/plain"}, "Session table file",DataCategory.TABLE, streamUtil);
 		XGMMLFileFilter xgmmlFilter = new XGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML files",DataCategory.NETWORK, streamUtil);
+		XGMMLNetworkViewFileFilter xgmmlViewFilter = new XGMMLNetworkViewFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "View XGMML files",DataCategory.NETWORK, streamUtil);
 		GMLFileFilter gmlFilter = new GMLFileFilter(new String[]{"gml"}, new String[]{"text/gml"}, "GML files",DataCategory.NETWORK, streamUtil);
 		CysessionFileFilter cysessionFilter = new CysessionFileFilter(new String[]{"xml"}, new String[]{}, "Cysession XML files",DataCategory.PROPERTIES, streamUtil);
 		BookmarkFileFilter bookmarksFilter = new BookmarkFileFilter(new String[]{"xml"}, new String[]{}, "Bookmark XML files",DataCategory.PROPERTIES, streamUtil);
@@ -180,11 +181,11 @@ public class CyActivator extends AbstractCyActivator {
 		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);
 		ReadCache readCache = new ReadCache();
 		ReadDataManager readDataManager = new ReadDataManager(readCache,equationCompilerServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkFactoryServiceRef);
-		ObjectTypeMap objectTypeMap = new ObjectTypeMap();
-		AttributeValueUtil attributeValueUtil = new AttributeValueUtil(objectTypeMap,readDataManager);
-		HandlerFactory handlerFactory = new HandlerFactory(readDataManager,attributeValueUtil);
+		
+		HandlerFactory handlerFactory = new HandlerFactory(readDataManager);
 		XGMMLParser xgmmlParser = new XGMMLParser(handlerFactory,readDataManager);
-		XGMMLNetworkReaderFactory xgmmlNetworkViewReaderFactory = new XGMMLNetworkReaderFactory(xgmmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
+		XGMMLNetworkReaderFactory xgmmlNetworkReaderFactory = new XGMMLNetworkReaderFactory(xgmmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
+		XGMMLNetworkViewReaderFactory xgmmlNetworkViewReaderFactory = new XGMMLNetworkViewReaderFactory(xgmmlViewFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
 		CSVCyReaderFactory sessionTableReaderFactory = new CSVCyReaderFactory(sessionTableFilter,true,true,cyTableFactoryServiceRef,compilerServiceRef,cyTableManagerServiceRef);
 		Cy3SessionReaderFactoryImpl cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,sessionTableReaderFactory,cyNetworkTableManagerServiceRef);
 		Cy2SessionReaderFactoryImpl cy2SessionReaderFactory = new Cy2SessionReaderFactoryImpl(cys2Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,cyRootNetworkFactoryServiceRef);
@@ -223,6 +224,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,vizmapWriterManager,VizmapWriterManager.class, new Properties());
 		registerService(bc,sifNetworkViewReaderFactory,InputStreamTaskFactory.class, new Properties());
 
+		registerService(bc,xgmmlNetworkReaderFactory,InputStreamTaskFactory.class, new Properties());
 		registerService(bc,xgmmlNetworkViewReaderFactory,InputStreamTaskFactory.class, new Properties());
 
 		registerService(bc,attrsDataReaderFactory,InputStreamTaskFactory.class, new Properties());

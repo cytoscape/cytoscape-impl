@@ -27,11 +27,11 @@
  */
 package org.cytoscape.io.internal.read.session;
 
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CY_PROPS;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_ROOT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_PROPS;
 import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
 
@@ -47,7 +47,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -82,6 +81,7 @@ import org.cytoscape.property.session.NetworkFrame;
 import org.cytoscape.property.session.Node;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * Session reader implementation that handles the Cytoscape 2.x session format.
@@ -96,7 +96,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private final CyRootNetworkManager rootNetworkManager;
 
 	private final Map<String, CyNetwork> networkLookup = new HashMap<String, CyNetwork>();
-	private final Map<String, CyNetworkView[]> networkViewLookup = new HashMap<String, CyNetworkView[]>();
+	private final Map<String, CyNetworkView> networkViewLookup = new HashMap<String, CyNetworkView>();
 	private Map<String, String> xgmmlEntries;
 
 	/**
@@ -156,7 +156,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	}
 	
 	@Override
-	protected void complete() throws Exception {
+	protected void complete(TaskMonitor tm) throws Exception {
 		if (cysession == null) {
 			throw new FileNotFoundException("Cannot find the " + CYSESSION + " file.");
 		}
@@ -164,17 +164,17 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		tm.setProgress(0.4);
 		tm.setTitle("Recreate networks");
 		tm.setStatusMessage("Recreating networks...");
-		extractNetworks();
+		extractNetworks(tm);
 		
 		tm.setProgress(0.8);
 		tm.setTitle("Process networks");
 		tm.setStatusMessage("Processing networks...");
 		processNetworks();
 		
-		super.complete();
+		super.complete(tm);
 	}
 	
-	private void extractNetworks() throws JAXBException, IOException {
+	private void extractNetworks(TaskMonitor tm) throws JAXBException, IOException {
 		// Extract the XGMML files
 		Map<String, Network> netMap = new HashMap<String, Network>();
 
@@ -182,10 +182,11 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			netMap.put(curNet.getId(), curNet);
 		}
 
-		walkNetworkTree(netMap.get(NETWORK_ROOT), null, netMap);
+		walkNetworkTree(netMap.get(NETWORK_ROOT), null, netMap, tm);
 	}
 	
-	private void walkNetworkTree(final Network net, final CyRootNetwork parent, Map<String, Network> netMap) {
+	private void walkNetworkTree(final Network net, final CyRootNetwork parent, Map<String, Network> netMap,
+			TaskMonitor tm) {
 		// Get the list of children under this root
 		final List<Child> children = net.getChild();
 
@@ -206,6 +207,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				is = findEntry(entryName);
 				
 				if (is != null) {
+					tm.setStatusMessage("Extracting network: " + entryName);
 					rootNetwork = extractNetworksAndViews(is, entryName, parent, childNet.isViewAvailable());
 				} else {
 					logger.error("Cannot find network file \"" + entryName + "\": ");
@@ -226,7 +228,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 				// Always try to load child networks, even if the parent network is bad
 				if (childNet.getChild().size() != 0)
-					walkNetworkTree(childNet, rootNetwork, netMap);
+					walkNetworkTree(childNet, rootNetwork, netMap, tm);
 			}
 		}
 	}
@@ -241,8 +243,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	 */
 	private CyRootNetwork extractNetworksAndViews(InputStream is, String entryName, CyRootNetwork parent,
 			boolean createView) throws Exception {
-		this.tm.setStatusMessage("Extracting network: " + entryName);
-		
 		CyRootNetwork rootNetwork = null;
 		CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 
@@ -258,33 +258,28 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		reader.run(taskMonitor);
 
 		final CyNetwork[] netArray = reader.getNetworks();
-		CyNetworkView[] views = null;
-
+		
 		if (netArray != null && netArray.length > 0) {
 			rootNetwork = rootNetworkManager.getRootNetwork(netArray[0]);
-			
-			if (createView)
-				views = new CyNetworkView[netArray.length];
 
-			int i = 0;
-			String netName = null;
-
-			for (CyNetwork net : netArray) {
-				netName = net.getRow(net).get(CyNetwork.NAME, String.class);
-				
+			for (int i = 0; i < netArray.length; i++) {
+				CyNetwork net = netArray[i];
+				String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				networkLookup.put(netName, net);
-				networks.add(net);
-				
-				if (createView) {
-					CyNetworkView netView = reader.buildCyNetworkView(net);
-					views[i] = netView;
-					i++;
-				}
-			}
 
-			if (views != null) {
-				networkViewLookup.put(netName, views);
-				networkViews.addAll(Arrays.asList(views));
+				// TODO: handle 2.x groups
+//				if (i == 0) {
+//					// Sub-networks (other than the base-network) generated from the same 2.x XGMML file
+//					// should not be registered, because they are probably 2.x groups.
+					networks.add(net);
+				
+					if (i == 0 && createView) {
+						// Create a network view for the first network only, which is supposed to be the base-network
+						CyNetworkView view = reader.buildCyNetworkView(net);
+						networkViewLookup.put(netName, view);
+						networkViews.add(view);
+					}
+//				}
 			}
 		}
 		
@@ -392,15 +387,13 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				}
 				
 				// Populate the visual style map
-				final CyNetworkView[] views = getNetworkViews(netName);
+				final CyNetworkView view = getNetworkView(netName);
 				
-				if (views != null) {
-					for (CyNetworkView nv : views) {
-						String vsName = net.getVisualStyle();
-		
-						if (vsName != null)
-							visualStyleMap.put(nv, vsName);
-					}
+				if (view != null) {
+					String vsName = net.getVisualStyle();
+	
+					if (vsName != null)
+						visualStyleMap.put(view, vsName);
 				}
 			}
 		}
@@ -414,26 +407,24 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 				for (NetworkFrame nf : frames) {
 					// Set sizes
-					CyNetworkView[] views = getNetworkViews(nf.getFrameID());
+					CyNetworkView view = getNetworkView(nf.getFrameID());
 					
-					if (views != null) {
-						for (CyNetworkView nv : views) {
-							BigInteger w = nf.getWidth();
-							BigInteger h = nf.getHeight();
-	
-							if (w != null)
-								nv.setVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH, w.doubleValue());
-							if (h != null)
-								nv.setVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT, h.doubleValue());
-						}
+					if (view != null) {
+						BigInteger w = nf.getWidth();
+						BigInteger h = nf.getHeight();
+
+						if (w != null)
+							view.setVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH, w.doubleValue());
+						if (h != null)
+							view.setVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT, h.doubleValue());
 					}
 				}
 			}
 		}
 	}
 
-	private CyNetworkView[] getNetworkViews(final String name) {
-		CyNetworkView[] views = null;
+	private CyNetworkView getNetworkView(final String name) {
+		CyNetworkView view = null;
 		
 		for (String s : networkViewLookup.keySet()) {
 			String decode = s;
@@ -443,14 +434,15 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				
 				if (decode.equals(name)) {
 					// this is OK since XGMML only ever reads one network
-					views = networkViewLookup.get(s);
+					view = networkViewLookup.get(s);
+					break;
 				}
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
 		}
 
-		return views;
+		return view;
 	}
 
 	private CyNetwork getNetwork(final String name) {

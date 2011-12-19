@@ -63,7 +63,6 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected InputStream sourceInputStream;
 	protected final ReadCache cache;
 	
-	protected TaskMonitor tm;
 	protected DummyTaskMonitor taskMonitor;
 	
 	protected Cysession cysession;
@@ -97,14 +96,12 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 */
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		this.tm = tm;
-		
 		try {
-			init();
-			readSessionFile();
-			complete();
+			init(tm);
+			readSessionFile(tm);
+			complete(tm);
 		} finally {
-			cleanUp();
+			cleanUp(tm);
 		}
 	}
 
@@ -121,7 +118,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	/**
 	 * Every action that needs to happen before reading the cys file should be executed here.
 	 */
-	protected void init() throws Exception {
+	protected void init(TaskMonitor tm) throws Exception {
 		inputStreamRead = false;
 		
 		SessionUtil.setReadingSessionFile(true);
@@ -137,7 +134,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	/**
 	 * Hook method for actions that need to be executed after reading the entries of the cys file.
 	 */
-	protected void complete() throws Exception {
+	protected void complete(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.9);
 		tm.setTitle("Process network pointers");
 		tm.setStatusMessage("Processing network pointers...");
@@ -149,7 +146,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	/**
 	 * Use this methods to dispose temporary resources.
 	 */
-	protected void cleanUp() {
+	protected void cleanUp(TaskMonitor tm) {
 		try {
 			((ReusableInputStream) sourceInputStream).reallyClose();
 		} catch (Exception e) {
@@ -168,7 +165,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 * Extract Zip entries from the cys file.
 	 * @throws Exception
 	 */
-	protected void readSessionFile() throws Exception {
+	protected void readSessionFile(TaskMonitor tm) throws Exception {
 		if (!sourceInputStream.markSupported())
 			throw new RuntimeException("Mark/Reset not supported!");
 		
@@ -187,7 +184,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 			// Extract cysession.xml and the other files, except the XGMML ones:
 			while ((zen = zis.getNextEntry()) != null) {
-				this.tm.setStatusMessage("Extracting zip entry #" + ++count);
+				tm.setStatusMessage("Extracting zip entry #" + ++count);
 				
 				String entryName = zen.getName();
 				InputStream is = new MarkSupportedInputStream(zis);

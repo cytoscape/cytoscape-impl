@@ -351,7 +351,13 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 			
 			// Write the XGMML file for the CYS file
 			if (writer instanceof XGMMLWriter) {
+				// TODO: there should be a better way of doing that without having to cast the writer. 
 				((XGMMLWriter) writer).setSessionFormat(true);
+				
+				final String visualStyleName = session.getViewVisualStyleMap().get(view);
+				
+				if (visualStyleName != null)
+					((XGMMLWriter) writer).setVisualStyleName(visualStyleName);
 			}
 			
 			writer.run(taskMonitor);

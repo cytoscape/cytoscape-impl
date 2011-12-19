@@ -62,8 +62,7 @@ public class SessionUtil {
 	
 	public static final String NETWORK_ROOT = "Network Root";
 	
-	private static boolean readingSessionFile;
-	private static boolean writingSessionFile;
+	private static boolean readingSessionFile; // TODO: delete it and find a better solution!
 	
 	private static final Logger logger = LoggerFactory.getLogger(SessionUtil.class);
 	
@@ -145,13 +144,5 @@ public class SessionUtil {
 
 	public static void setReadingSessionFile(boolean readingSessionFile) {
 		SessionUtil.readingSessionFile = readingSessionFile;
-	}
-
-	public static boolean isWritingSessionFile() {
-		return writingSessionFile;
-	}
-
-	public static void setWritingSessionFile(boolean writingSessionFile) {
-		SessionUtil.writingSessionFile = writingSessionFile;
 	}
 }

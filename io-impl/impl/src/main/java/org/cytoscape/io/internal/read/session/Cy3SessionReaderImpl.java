@@ -28,13 +28,13 @@
 package org.cytoscape.io.internal.read.session;
 
 
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CY_PROPS;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML;
@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
-import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReader;
+import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkViewReader;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.internal.util.session.VirtualColumnSerializer;
@@ -82,6 +82,7 @@ import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * Session reader implementation that handles the Cytoscape 3 session format.
@@ -111,8 +112,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private boolean networksExtracted;
 
 
-	/**
-	 */
 	public Cy3SessionReaderImpl(final InputStream sourceInputStream,
 							    final ReadCache cache,
 							    final CyNetworkReaderManager networkReaderMgr,
@@ -183,7 +182,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	@Override
-	protected void complete() throws Exception {
+	protected void complete(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.4);
 		tm.setTitle("Set network tables");
 		tm.setStatusMessage("Setting network tables...");
@@ -199,9 +198,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		tm.setStatusMessage("Extracting network views...");
 		// Read the session file again, this time to extract the network views
 		networksExtracted = true;
-		readSessionFile();
+		readSessionFile(tm);
 		
-		super.complete();
+		super.complete(tm);
 	}
 
 	private void extractCyTableMetadata(InputStream tmpIs, String entryName) throws IOException {
@@ -296,28 +295,28 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			final CyNetwork network = networkLookup.get(netId);
 			
 			if (network != null) {
-				CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
+				// Create the view
+				final CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
+				reader.run(taskMonitor);
 				
-				if (reader instanceof XGMMLNetworkReader) {
-					((XGMMLNetworkReader) reader).setViewFormat(true); // TODO: let the Reader factory decide based on XGMML content
-					reader.run(taskMonitor);
+				final CyNetworkView view = reader.buildCyNetworkView(network);
+				networkViews.add(view);
+				
+				// Get its visual style name
+				if (reader instanceof XGMMLNetworkViewReader) {
+					final String vsName = ((XGMMLNetworkViewReader) reader).getVisualStyleName();
 					
-					final CyNetworkView view = reader.buildCyNetworkView(network);
-					networkViews.add(view);
-				} else {
-					logger.error("CyNetworkReader should be an instance of XGMMLNetworkReader! "
-							+ "Cannot extract network view: " + entryName);
+					if (vsName != null && !vsName.isEmpty())
+						this.visualStyleMap.put(view, vsName);
 				}
 			}
 		} else {
 			logger.error("The network view entry is invalid: " + entryName);
 		}
-		
-		// TODO: populate visual style map
 	}
 
 	private void extractAppEntry(InputStream is, String entryName) {
-		String[] items = entryName.split("/");
+		final String[] items = entryName.split("/");
 
 		if (items.length < 3) {
 			// It's a directory name, not a file name

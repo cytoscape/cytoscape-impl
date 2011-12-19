@@ -65,9 +65,9 @@ public class HandlerFactory {
 	private ReadDataManager manager;
 	private AttributeValueUtil attributeValueUtil;
 
-	public HandlerFactory(ReadDataManager manager, AttributeValueUtil attributeValueUtil) {
+	public HandlerFactory(ReadDataManager manager) {
 		this.manager = manager;
-		this.attributeValueUtil = attributeValueUtil;
+		this.attributeValueUtil = new AttributeValueUtil(manager);
 	}
 	
 	public void init() {
