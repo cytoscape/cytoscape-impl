@@ -13,7 +13,6 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>webservice-impl</artifactId>
 
 	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
@@ -102,6 +101,7 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
 		</dependency>
+		
 		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
