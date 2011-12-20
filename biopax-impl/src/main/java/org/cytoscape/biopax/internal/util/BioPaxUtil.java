@@ -57,7 +57,7 @@ import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
 import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
-import org.cytoscape.biopax.BioPaxMapper;
+import org.cytoscape.biopax.internal.BioPaxMapper;
 import org.cytoscape.model.CyNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -552,12 +552,6 @@ public final class BioPaxUtil {
 	public static boolean isBioPAXNetwork(CyNetwork cyNetwork) {
 		return Boolean.TRUE == cyNetwork.getRow(cyNetwork)
 			.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
-	}
-	
-	
-	public static boolean isBiopaxSifNetwork(CyNetwork cyNetwork) {
-		return Boolean.TRUE == cyNetwork.getRow(cyNetwork)
-			.get(BioPaxMapper.BINARY_NETWORK, Boolean.class);
 	}
 	
 	

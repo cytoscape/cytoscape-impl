@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 
-import org.cytoscape.biopax.BioPaxMapper;
+import org.cytoscape.cpath2.internal.util.BioPaxUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -16,7 +16,6 @@ import org.cytoscape.work.TaskMonitor;
 public class ViewNetworkNeighborhoodTask implements Task {
 
     private static final String PC_WEB_SERVICE_URL = "/webservice.do?version=3.0&cmd=get_neighbors&q=";
-    
 	private final View<CyNode> nodeView;
 	private final CyNetworkView networkView;
 
@@ -44,7 +43,7 @@ public class ViewNetworkNeighborhoodTask implements Task {
         // generate menu url
         CyNode cyNode = nodeView.getModel();
         CyRow nodeRow = network.getRow(cyNode);
-        String biopaxID = nodeRow.get(BioPaxMapper.BIOPAX_RDF_ID, String.class);
+        String biopaxID = nodeRow.get(BioPaxUtil.BIOPAX_RDF_ID, String.class);
         biopaxID = biopaxID.replace("CPATH-", "");
         String neighborhoodParam = "Neighborhood: " + nodeRow.get(CyNode.NAME, String.class);
 
@@ -69,21 +68,4 @@ public class ViewNetworkNeighborhoodTask implements Task {
 	public void cancel() {
 	}
 
-    /*
-     * Method determines if given network is a biopax network.
-     *
-     * @param cyNetwork CyNetwork
-     * @return boolean if any network views that we have created remain.
-     */
-   private boolean isBioPaxNetwork(CyNetwork cyNetwork) {
-	   if (cyNetwork == null) {
-		   return false;
-	   }
-	   
-	   Boolean value = cyNetwork.getRow(cyNetwork).get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
-	   if (value == null || !value) {
-		   return false;
-	   }
-	   return (value != null && value);
-   }
 }

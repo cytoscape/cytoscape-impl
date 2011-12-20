@@ -1,25 +1,25 @@
 package org.cytoscape.biopax.internal.action;
 
-import org.cytoscape.biopax.internal.BioPaxFactory;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class DisplayBioPaxXmlActionNodeViewTaskFactory implements NodeViewTaskFactory {
+public class DisplayBioPaxXmlTaskFactory implements NodeViewTaskFactory {
 
 	private View<CyNode> nodeView;
 	private CyNetworkView networkView;
-	private final BioPaxFactory factory;
+	private CySwingApplication cySwingApplication;
 
-	public DisplayBioPaxXmlActionNodeViewTaskFactory(BioPaxFactory factory) {
-		this.factory = factory;
+	public DisplayBioPaxXmlTaskFactory(CySwingApplication cySwingApplication) {
+		this.cySwingApplication = cySwingApplication;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new DisplayBioPaxXmlTask(nodeView, networkView, factory));
+		return new TaskIterator(new DisplayBioPaxXmlTask(nodeView, networkView, cySwingApplication));
 	}
 
 	@Override

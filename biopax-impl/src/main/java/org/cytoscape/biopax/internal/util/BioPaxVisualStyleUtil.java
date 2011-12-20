@@ -38,7 +38,8 @@ import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
-import static org.cytoscape.biopax.BioPaxMapper.*;
+
+import static org.cytoscape.biopax.internal.BioPaxMapper.*;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;

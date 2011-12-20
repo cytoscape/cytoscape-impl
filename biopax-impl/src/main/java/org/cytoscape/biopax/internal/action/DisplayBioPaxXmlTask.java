@@ -4,9 +4,8 @@ import java.awt.Component;
 
 import javax.swing.JOptionPane;
 
-import org.cytoscape.biopax.internal.BioPaxFactory;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
-import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
@@ -20,12 +19,12 @@ public final class DisplayBioPaxXmlTask implements Task {
 	public static final Logger log = LoggerFactory.getLogger(DisplayBioPaxXmlTask.class);
 	private final View<CyNode> nodeView;
 	private final CyNetworkView networkView;
-	private final BioPaxFactory factory;
+	private CySwingApplication cySwingApplication;
 
-	public DisplayBioPaxXmlTask(View<CyNode> nodeView, CyNetworkView networkView, BioPaxFactory factory) {
+	public DisplayBioPaxXmlTask(View<CyNode> nodeView, CyNetworkView networkView, CySwingApplication cySwingApplication) {
 		this.nodeView = nodeView;
 		this.networkView = networkView;
-		this.factory = factory;
+		this.cySwingApplication = cySwingApplication;
 	}
 	
 	@Override
@@ -38,7 +37,7 @@ public final class DisplayBioPaxXmlTask implements Task {
 		CyRow row = networkView.getModel().getRow(node);
 		String owlxml = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
 		String label = row.get(CyNode.NAME, String.class);	
-		Component component = factory.getCySwingApplication().getJFrame();
+		Component component = cySwingApplication.getJFrame();
 		JOptionPane.showMessageDialog(component, owlxml, label, JOptionPane.PLAIN_MESSAGE);
 	}
 	

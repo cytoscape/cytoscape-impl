@@ -56,7 +56,9 @@ import javax.swing.text.html.StyleSheet;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.cytoscape.application.CyApplicationManager;
-import static org.cytoscape.biopax.BioPaxMapper.*;
+
+import static org.cytoscape.biopax.internal.BioPaxMapper.*;
+
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.model.CyNetwork;

@@ -46,8 +46,7 @@ import javax.swing.event.HyperlinkListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.internal.BioPaxMapperImpl;
+import org.cytoscape.biopax.internal.BioPaxMapper;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -66,7 +65,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
  *
  * @author Ethan Cerami
  */
-public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
+public class BioPaxContainer extends JPanel {
 	private static final long serialVersionUID = 1L;
 	/**
 	 * CytoPanel Location of this Panel
@@ -85,7 +84,7 @@ public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
      * @param factory 
      * @param applicationManager 
 	 */
-	public BioPaxContainerImpl(LaunchExternalBrowser browser, CyApplicationManager applicationManager, CyNetworkViewManager viewManager, BioPaxDetailsPanel bpDetailsPanel, CySwingApplication application) {
+	public BioPaxContainer(LaunchExternalBrowser browser, CyApplicationManager applicationManager, CyNetworkViewManager viewManager, BioPaxDetailsPanel bpDetailsPanel, CySwingApplication application) {
 		this.applicationManager = applicationManager;
 		
         cards = new JPanel(new CardLayout());
@@ -127,7 +126,6 @@ public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
     /**
      * Show Details Panel.
      */
-	@Override
     public void showDetails() {
         CardLayout cl = (CardLayout)(cards.getLayout());
         cl.show(cards, DETAILS_CARD);
@@ -137,12 +135,11 @@ public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
     /**
      * Show Legend Panel.
      */
-	@Override
     public void showLegend() {
         CardLayout cl = (CardLayout)(cards.getLayout());
         CyNetwork network = applicationManager.getCurrentNetwork();
         CyRow row = network.getRow(network);
-        Boolean isBioPaxNetwork = row.get(BioPaxMapperImpl.BIOPAX_NETWORK, Boolean.class);
+        Boolean isBioPaxNetwork = row.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
         if (isBioPaxNetwork != null) {
             cl.show(cards, LEGEND_BIOPAX_CARD);
         } else {
@@ -151,8 +148,4 @@ public class BioPaxContainerImpl extends JPanel implements BioPaxContainer {
         label.setText("<a href='DETAILS'>View Details</a>");
     }
 
-	@Override
-	public Component getComponent() {
-		return this;
-	}
 }

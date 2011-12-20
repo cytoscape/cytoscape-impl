@@ -8,7 +8,6 @@ import javax.swing.ImageIcon;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.biopax.BioPaxContainer;
 
 public class BioPaxCytoPanelComponent implements CytoPanelComponent {
 
@@ -23,7 +22,7 @@ public class BioPaxCytoPanelComponent implements CytoPanelComponent {
 	
 	@Override
 	public Component getComponent() {
-		return bpContainer.getComponent();
+		return bpContainer;
 	}
 
 	@Override

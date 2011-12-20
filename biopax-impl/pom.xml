@@ -50,11 +50,6 @@
         	<scope>provided</scope>
         </dependency>
         <dependency>
-	        <groupId>org.cytoscape</groupId>
-	        <artifactId>biopax-api</artifactId>
-	        <scope>provided</scope>
-	    </dependency>
-        <dependency>
 	        <groupId>cytoscape-temp</groupId>
 	        <artifactId>paxtools-core</artifactId>
 	        <version>4.0.1</version>

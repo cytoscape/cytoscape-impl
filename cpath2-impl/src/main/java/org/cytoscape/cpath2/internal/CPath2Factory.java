@@ -10,9 +10,6 @@ import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.BioPaxMapperFactory;
-import org.cytoscape.biopax.BioPaxViewTracker;
 import org.cytoscape.cpath2.internal.cytoscape.BinarySifVisualStyleUtil;
 import org.cytoscape.cpath2.internal.cytoscape.MergeNetworkEdit;
 import org.cytoscape.cpath2.internal.mapping.MapCPathToCytoscape;
@@ -63,13 +60,10 @@ public class CPath2Factory {
 	private final CyNetworkFactory networkFactory;
 	private final CyLayoutAlgorithmManager layoutManager;
 	private final UndoSupport undoSupport;
-	private final BioPaxContainer bpContainer;
-	private final BioPaxMapperFactory mapperFactory;
-	private final BioPaxViewTracker networkListener;
 	private final BinarySifVisualStyleUtil binarySifVisualStyleUtil;
 	private final VisualMappingManager mappingManager;
 	
-	public CPath2Factory(CySwingApplication application, TaskManager taskManager, OpenBrowser openBrowser, CyNetworkManager networkManager, CyApplicationManager applicationManager, CyNetworkViewManager networkViewManager, CyNetworkReaderManager networkViewReaderManager, CyNetworkNaming naming, CyNetworkFactory networkFactory, CyLayoutAlgorithmManager layouts, UndoSupport undoSupport, BioPaxContainer bpContainer, BioPaxMapperFactory mapperFactory, BioPaxViewTracker networkListener, BinarySifVisualStyleUtil binarySifVisualStyleUtil, VisualMappingManager mappingManager) {
+	public CPath2Factory(CySwingApplication application, TaskManager taskManager, OpenBrowser openBrowser, CyNetworkManager networkManager, CyApplicationManager applicationManager, CyNetworkViewManager networkViewManager, CyNetworkReaderManager networkViewReaderManager, CyNetworkNaming naming, CyNetworkFactory networkFactory, CyLayoutAlgorithmManager layouts, UndoSupport undoSupport, BinarySifVisualStyleUtil binarySifVisualStyleUtil, VisualMappingManager mappingManager) {
 		this.application = application;
 		this.taskManager = taskManager;
 		this.openBrowser = openBrowser;
@@ -81,22 +75,19 @@ public class CPath2Factory {
 		this.layoutManager = layouts;
 		this.networkFactory = networkFactory;
 		this.undoSupport = undoSupport;
-		this.bpContainer = bpContainer;
-		this.mapperFactory = mapperFactory;
-		this.networkListener = networkListener;
 		this.binarySifVisualStyleUtil = binarySifVisualStyleUtil;
 		this.mappingManager = mappingManager;
 	}
 	
 	public ExecuteGetRecordByCPathIdTaskFactory createExecuteGetRecordByCPathIdTaskFactory(CPathWebService webApi, long[] ids, CPathResponseFormat format, String networkTitle, CyNetwork networkToMerge) {
 		networkTitle = naming.getSuggestedNetworkTitle(networkTitle);
-		return new ExecuteGetRecordByCPathIdTaskFactory(webApi, ids, format, networkTitle, networkToMerge, this, bpContainer, mapperFactory, networkListener, mappingManager);
+		return new ExecuteGetRecordByCPathIdTaskFactory(webApi, ids, format, networkTitle, networkToMerge, this, mappingManager);
 	}
 
 	public ExecuteGetRecordByCPathIdTaskFactory createExecuteGetRecordByCPathIdTaskFactory(
 			CPathWebService webApi, long[] ids, CPathResponseFormat format, String title) {
 		title = naming.getSuggestedNetworkTitle(title);
-		return new ExecuteGetRecordByCPathIdTaskFactory(webApi, ids, format, title, null, this, bpContainer, mapperFactory, networkListener, mappingManager);
+		return new ExecuteGetRecordByCPathIdTaskFactory(webApi, ids, format, title, null, this, mappingManager);
 	}
 
 	public SearchBoxPanel createSearchBoxPanel(CPathWebService webApi) {

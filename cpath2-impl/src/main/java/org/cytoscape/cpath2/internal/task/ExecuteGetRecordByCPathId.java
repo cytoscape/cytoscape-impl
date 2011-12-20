@@ -25,12 +25,9 @@ import org.biopax.paxtools.model.level3.EntityReference;
 import org.biopax.paxtools.model.level3.Named;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
-import org.cytoscape.biopax.BioPaxContainer;
-import org.cytoscape.biopax.BioPaxMapper;
-import org.cytoscape.biopax.BioPaxMapperFactory;
-import org.cytoscape.biopax.BioPaxViewTracker;
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
+import org.cytoscape.cpath2.internal.util.BioPaxUtil;
 import org.cytoscape.cpath2.internal.util.SelectUtil;
 import org.cytoscape.cpath2.internal.web_service.CPathException;
 import org.cytoscape.cpath2.internal.web_service.CPathProperties;
@@ -71,9 +68,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	private final static String CPATH_SERVER_DETAILS_URL = "CPATH_SERVER_DETAILS_URL";
 	private Logger logger = LoggerFactory.getLogger(ExecuteGetRecordByCPathId.class);
 	private final CPath2Factory cPathFactory;
-	private final BioPaxContainer bpContainer;
-	private final BioPaxMapperFactory mapperFactory;
-	private final BioPaxViewTracker bpViewTracker;
 	private final VisualMappingManager mappingManager;
 
 
@@ -96,10 +90,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			CPathResponseFormat format,
 			String networkTitle, 
 			CyNetwork mergedNetwork, 
-			CPath2Factory cPathFactory, 
-			BioPaxContainer bpContainer,
-			BioPaxMapperFactory mapperFactory, 
-			BioPaxViewTracker bpViewTracker, 
+			CPath2Factory cPathFactory,  
 			VisualMappingManager mappingManager) 
 	{
 		this.webApi = webApi;
@@ -108,9 +99,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		this.networkTitle = networkTitle;
 		this.mergedNetwork = mergedNetwork;
 		this.cPathFactory = cPathFactory;
-		this.bpContainer = bpContainer;
-		this.mapperFactory = mapperFactory;
-		this.bpViewTracker = bpViewTracker;
 		this.mappingManager = mappingManager;
 	}
 
@@ -270,7 +258,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNode.NAME, String.class);
 
 		// Specify that this is a BINARY_NETWORK
-		AttributeUtil.set(cyNetwork, cyNetwork, BioPaxMapper.BINARY_NETWORK, Boolean.TRUE, Boolean.class);
+		AttributeUtil.set(cyNetwork, cyNetwork, "BIOPAX_NETWORK", Boolean.TRUE, Boolean.class);
 
 		// Get all node details.
 		getNodeDetails(cyNetwork, taskMonitor);
@@ -289,13 +277,9 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 
 				VisualStyle visualStyle = cPathFactory.getBinarySifVisualStyleUtil().getVisualStyle();
 				mappingManager.setVisualStyle(visualStyle, view);
-				bpViewTracker.registerBioPaxView(view);
 
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						// CytoscapeWrapper.activateBioPaxPlugInTab(bpContainer);
-						bpContainer.showLegend();
-						// view.fitContent();
 						String networkTitleWithUnderscores = networkTitle.replaceAll(": ", "");
 						networkTitleWithUnderscores = networkTitleWithUnderscores.replaceAll(" ", "_");
 						CyNetworkNaming naming = cPathFactory.getCyNetworkNaming();
@@ -390,17 +374,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		// Cytoscape.setCurrentNetwork(mergedNetwork.getIdentifier());
 		// Cytoscape.setCurrentNetworkView(mergedNetwork.getIdentifier());
 
-		// final BioPaxContainer bpContainer = BioPaxContainer.getInstance();
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				// CytoscapeWrapper.activateBioPaxPlugInTab(bpContainer);
-				bpContainer.showLegend();
-				// VisualMappingManager vizmapper =
-				// Cytoscape.getVisualMappingManager();
-				// vizmapper.applyAppearances();
-			}
-		});
-
 		// Select only the new nodes
 		SelectUtil.unselectAllNodes(mergedNetwork);
 		SelectUtil.unselectAllEdges(mergedNetwork);
@@ -438,7 +411,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		if (batchList.size() == 0) {
 			logger.info("Skipping node details.  Already have all the details new need.");
 		}
-		BioPaxMapper mapBioPaxToCytoscape = mapperFactory.createBioPaxMapper(null, taskMonitor);
+		
 		for (int i = 0; i < batchList.size(); i++) {
 			if (haltFlag == true) {
 				break;
@@ -476,7 +449,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 							id = id.replaceAll("CPATH-", "");
 							CyNode node = nodes.get(id);
 							if(node != null)
-								mapBioPaxToCytoscape.createAttributesFromProperties(e, node, cyNetwork);
+								BioPaxUtil.createAttributesFromProperties(e, node, cyNetwork);
 							// - this will also update the 'name' attribute (to a biol. label)
 							else {
 								logger.debug("Oops: no node for " + e.getRDFId());
@@ -599,4 +572,5 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			}
 		}
 	}
+		
 }

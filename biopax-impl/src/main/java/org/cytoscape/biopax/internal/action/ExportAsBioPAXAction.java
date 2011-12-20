@@ -34,14 +34,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.biopax.internal.BioPaxFactory;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
+import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -61,13 +60,23 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ExportAsBioPAXAction extends AbstractCyAction {
-    private final BioPaxFactory factory;
+
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public ExportAsBioPAXAction(BioPaxFactory factory) {
-		super("BioPAX", factory.getCyApplicationManager(),"network");
+	private final FileUtil fileUtil;
+	private final CyApplicationManager applicationManager;
+	private final CyFileFilter bioPaxFilter;
+	private final TaskManager taskManager;	
+	
+	public ExportAsBioPAXAction(FileUtil fileUtil, CyApplicationManager applicationManager, 
+			CyFileFilter bioPaxFilter, TaskManager taskManager) 
+	{
+		super("BioPAX", applicationManager,"network");
 		setPreferredMenu("File.Export.Network");
-		this.factory = factory;
+		this.fileUtil = fileUtil;
+		this.applicationManager = applicationManager;
+		this.bioPaxFilter = bioPaxFilter;
+		this.taskManager = taskManager;
 	}
 
     /**
@@ -84,24 +93,21 @@ public class ExportAsBioPAXAction extends AbstractCyAction {
 	 * @param e ActionEvent Object.
 	 */
     public void actionPerformed(ActionEvent event) {
-    	FileUtil fileUtil = factory.getFileUtil();
 		Collection<FileChooserFilter> filters = new ArrayList<FileChooserFilter>();
 		filters.add(new FileChooserFilter("BioPAX format", "rdf"));
 		File file = fileUtil.getFile((Component) event.getSource(), 
-				"Save BioPAX Network (experimental feature)", 
-				FileUtil.SAVE, filters);
+			"Save BioPAX Network (experimental feature)", FileUtil.SAVE, filters);
 		if (file != null) {
 			String fileName = file.getAbsolutePath();
 
 			if (!fileName.endsWith(".xml"))
 				fileName = fileName + ".xml";
 
-			ExportAsBioPAXTaskFactory taskFactory = factory.createExportAsBioPAXTaskFactory(fileName);
+			ExportAsBioPAXTaskFactory taskFactory = new ExportAsBioPAXTaskFactory(fileName, bioPaxFilter);
 			try {
 				FileOutputStream stream = new FileOutputStream(fileName);
 				taskFactory.setOutputStream(stream);
 				try {
-					TaskManager taskManager = factory.getTaskManager();
 					taskManager.execute(taskFactory);
 				} finally {
 					stream.close();
@@ -113,8 +119,7 @@ public class ExportAsBioPAXAction extends AbstractCyAction {
     }
 
     public void menuSelected(MenuEvent e) {
-    	CyApplicationManager manager = factory.getCyApplicationManager();
-        CyNetwork cyNetwork = manager.getCurrentNetwork();
+        CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 
         if( BioPaxUtil.isBioPAXNetwork(cyNetwork) )
             updateEnableState(); 

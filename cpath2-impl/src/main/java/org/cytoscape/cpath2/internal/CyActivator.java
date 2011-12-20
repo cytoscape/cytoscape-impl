@@ -1,18 +1,15 @@
 package org.cytoscape.cpath2.internal;
 
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.biopax.BioPaxMapperFactory;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.biopax.BioPaxContainer;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.biopax.BioPaxViewTracker;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.io.read.CyNetworkReaderManager;
@@ -41,26 +38,23 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CySwingApplication cySwingApplicationRef = getService(bc,CySwingApplication.class);
-		TaskManager taskManagerRef = getService(bc,TaskManager.class);
+		TaskManager<?, ?> taskManagerRef = getService(bc,TaskManager.class);
 		OpenBrowser openBrowserRef = getService(bc,OpenBrowser.class);
 		CyNetworkManager cyNetworkManagerRef = getService(bc,CyNetworkManager.class);
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyNetworkViewManager cyNetworkViewManagerRef = getService(bc,CyNetworkViewManager.class);
-		CyNetworkReaderManager cyNetworkViewReaderManagerRef = getService(bc,CyNetworkReaderManager.class);
+		CyNetworkReaderManager cyNetworkReaderManagerRef = getService(bc,CyNetworkReaderManager.class);
 		CyNetworkNaming cyNetworkNamingRef = getService(bc,CyNetworkNaming.class);
 		CyNetworkFactory cyNetworkFactoryRef = getService(bc,CyNetworkFactory.class);
 		CyLayoutAlgorithmManager cyLayoutsRef = getService(bc,CyLayoutAlgorithmManager.class);
 		UndoSupport undoSupportRef = getService(bc,UndoSupport.class);
-		BioPaxContainer bioPaxContainerRef = getService(bc,BioPaxContainer.class);
-		BioPaxMapperFactory mapBioPaxToCytoscapeFactoryRef = getService(bc,BioPaxMapperFactory.class);
-		BioPaxViewTracker networkListenerRef = getService(bc,BioPaxViewTracker.class);
 		VisualMappingManager visualMappingManagerRef = getService(bc,VisualMappingManager.class);
 		VisualStyleFactory visualStyleFactoryRef = getService(bc,VisualStyleFactory.class);
 		VisualMappingFunctionFactory discreteMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
 		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		
 		BinarySifVisualStyleUtil binarySifVisualStyleUtil = new BinarySifVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFactoryRef,passthroughMappingFactoryRef);
-		CPath2Factory cPath2Factory = new CPath2Factory(cySwingApplicationRef,taskManagerRef,openBrowserRef,cyNetworkManagerRef,cyApplicationManagerRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkNamingRef,cyNetworkFactoryRef,cyLayoutsRef,undoSupportRef,bioPaxContainerRef,mapBioPaxToCytoscapeFactoryRef,networkListenerRef,binarySifVisualStyleUtil,visualMappingManagerRef);
+		CPath2Factory cPath2Factory = new CPath2Factory(cySwingApplicationRef,taskManagerRef, openBrowserRef,cyNetworkManagerRef,cyApplicationManagerRef,cyNetworkViewManagerRef,cyNetworkReaderManagerRef,cyNetworkNamingRef,cyNetworkFactoryRef,cyLayoutsRef,undoSupportRef,binarySifVisualStyleUtil,visualMappingManagerRef);
 		CytoscapeCPathWebService cPathWebService = new CytoscapeCPathWebService(cPath2Factory);
 		
 		registerAllServices(bc,cPathWebService, new Properties());

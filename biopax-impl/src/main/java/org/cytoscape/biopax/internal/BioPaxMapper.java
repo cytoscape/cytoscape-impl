@@ -42,11 +42,12 @@ import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
-import org.cytoscape.biopax.BioPaxMapper;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
+import org.cytoscape.biopax.internal.util.ExternalLink;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
+import org.cytoscape.biopax.internal.util.NodeAttributesWrapper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -64,12 +65,79 @@ import org.slf4j.LoggerFactory;
  *
  * @author Ethan Cerami, Igor Rodchenkov (major re-factoring using PaxTools API)
  */
-public class BioPaxMapperImpl implements BioPaxMapper {
+public class BioPaxMapper {
 	
-	public static final Logger log = LoggerFactory.getLogger(BioPaxMapperImpl.class);
+	/**
+	 * Cytoscape Attribute:  BioPAX Network.
+	 * Stores boolean indicating this CyNetwork
+	 * is a BioPAX network.
+	 */
+	public static final String BIOPAX_NETWORK = "BIOPAX_NETWORK";
+	
+	/**
+	 * Cytoscape Attribute:  BioPAX Edge Type.
+	 */
+	public static final String BIOPAX_EDGE_TYPE = "BIOPAX_EDGE_TYPE";
+
+	/**
+	 * Cytoscape Attribute:  BioPAX RDF ID.
+	 */
+	public static final String BIOPAX_RDF_ID = "URI";
+
+	/**
+	 * BioPax Node Attribute: Entity TYPE
+	 */
+	public static final String BIOPAX_ENTITY_TYPE = "biopax_type";
+
+	/**
+	 * BioPax Node Attribute: CHEMICAL_MODIFICATIONS_MAP
+	 */
+	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_MAP = "chemical_modifications_map";
+
+	/**
+	 * BioPax Node Attribute: CHEMICAL_MODIFICATIONS_LIST
+	 */
+	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "chemical_modifications";
+
+	/**
+	 * Node Attribute: UNIFICATION_REFERENCES
+	 */
+	public static final String BIOPAX_UNIFICATION_REFERENCES = "unification_references";
+
+	/**
+	 * Node Attribute: RELATIONSHIP_REFERENCES
+	 */
+	public static final String BIOPAX_RELATIONSHIP_REFERENCES = "relationship_references";
+
+	/**
+	 * Node Attribute: PUBLICATION_REFERENCES
+	 */
+	public static final String BIOPAX_PUBLICATION_REFERENCES = "publication_references";
+
+	/**
+	 * Node Attribute:  XREF_IDs.
+	 */
+	public static final String BIOPAX_XREF_IDS = "identifiers";
+
+	/**
+	 * Node Attribute:  BIOPAX_XREF_PREFIX.
+	 */
+	public static final String BIOPAX_XREF_PREFIX = "xref.";
+
+	/**
+	 * Node Attribute: IHOP_LINKS
+	 */
+	public static final String BIOPAX_IHOP_LINKS = "ihop_links";
+
+	/**
+	 * Node Attribute: AFFYMETRIX_REFERENCES
+	 */
+	public static final String BIOPAX_AFFYMETRIX_REFERENCES_LIST = "affymetrix_references";
+	
+	
+	public static final Logger log = LoggerFactory.getLogger(BioPaxMapper.class);
 	
 	// custom node images (phosphorylation)
-	private static final String PHOSPHORYLATION_GRAPHICS = "PHOSPHORYLATION_GRAPHICS";
 	private static BufferedImage phosNode = null;
 	private static BufferedImage phosNodeSelectedTop = null;
 	private static BufferedImage phosNodeSelectedRight = null;
@@ -79,15 +147,15 @@ public class BioPaxMapperImpl implements BioPaxMapper {
 	static {
 		try {
 			phosNode = javax.imageio.ImageIO.read
-                    (BioPaxMapperImpl.class.getResource("phos-node.jpg"));
+                    (BioPaxMapper.class.getResource("phos-node.jpg"));
 			phosNodeSelectedTop = javax.imageio.ImageIO.read
-                    (BioPaxMapperImpl.class.getResource("phos-node-selected-top.jpg"));
+                    (BioPaxMapper.class.getResource("phos-node-selected-top.jpg"));
 			phosNodeSelectedRight = javax.imageio.ImageIO.read
-                    (BioPaxMapperImpl.class.getResource("phos-node-selected-right.jpg"));
+                    (BioPaxMapper.class.getResource("phos-node-selected-right.jpg"));
 			phosNodeSelectedBottom = javax.imageio.ImageIO.read
-                    (BioPaxMapperImpl.class.getResource("phos-node-selected-bottom.jpg"));
+                    (BioPaxMapper.class.getResource("phos-node-selected-bottom.jpg"));
 			phosNodeSelectedLeft = javax.imageio.ImageIO.read
-                    (BioPaxMapperImpl.class.getResource("phos-node-selected-left.jpg"));
+                    (BioPaxMapper.class.getResource("phos-node-selected-left.jpg"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -110,41 +178,6 @@ public class BioPaxMapperImpl implements BioPaxMapper {
 	private final Map<BioPAXElement, CyNode> 
 		uriToCyNodeMap = new HashMap<BioPAXElement, CyNode>();
 	
-	/**
-	 * Inner class to store a given nodes's
-	 * chemical modification(s), etc.,
-	 * along with a string of abbreviations for the respective attribute
-	 * (which is used in the construction of the node label).
-	 */
-	class NodeAttributesWrapper {
-		// map of cellular location
-		// or chemical modifications
-		private Map<String, Object> attributesMap;
-
-		// abbreviations string
-		private String abbreviationString;
-
-		// contructor
-		NodeAttributesWrapper(Map<String,Object> attributesMap, String abbreviationString) {
-			this.attributesMap = attributesMap;
-			this.abbreviationString = abbreviationString;
-		}
-
-		// gets the attributes map
-		Map<String,Object> getMap() {
-			return attributesMap;
-		}
-
-		// gets the attributes map as list
-		List<String> getList() {
-			return (attributesMap != null) ? new ArrayList<String>(attributesMap.keySet()) : null;
-		}
-
-		// gets the abbrevation string (used in node label)
-		String getAbbreviationString() {
-			return abbreviationString;
-		}
-	}
 
 	/**
 	 * Constructor. 
@@ -154,7 +187,7 @@ public class BioPaxMapperImpl implements BioPaxMapper {
 	 * @param cyNetworkFactory
 	 * @param taskMonitor
 	 */
-	public BioPaxMapperImpl(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor) {
+	public BioPaxMapper(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor) {
 		this.model = model;
 		this.networkFactory = cyNetworkFactory;
 		this.taskMonitor = taskMonitor;	
@@ -177,7 +210,7 @@ public class BioPaxMapperImpl implements BioPaxMapper {
 		AttributeUtil.set(network, network, CyNetwork.NAME, networkName, String.class);
 		
 		// an attribute which indicates this network is a BioPAX network
-		AttributeUtil.set(network, network, BioPaxMapperImpl.BIOPAX_NETWORK, Boolean.TRUE, Boolean.class);
+		AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, Boolean.TRUE, Boolean.class);
 	
 		//  default Quick Find Index
 		AttributeUtil.set(network, network, "quickfind.default_index", CyNode.NAME, String.class);
@@ -673,93 +706,7 @@ public class BioPaxMapperImpl implements BioPaxMapper {
 	}
 
 
-	public void customNodes(CyNetworkView networkView) {
-		// grab node attributes
-		CyNetwork cyNetwork = networkView.getModel();
 
-		// iterate through the nodes
-		Iterator<CyNode> nodesIt = cyNetwork.getNodeList().iterator();
-		if (nodesIt.hasNext()) {
-			// grab the node
-			CyNode node = nodesIt.next();
-
-			// get chemical modifications
-			int count = 0;
-			boolean isPhosphorylated = false;
-			// TODO: MultiHashMap
-//			MultiHashMapDefinition mhmdef = nodeAttributes.getMultiHashMapDefinition();
-//
-//			if (mhmdef.getAttributeValueType(BIOPAX_CHEMICAL_MODIFICATIONS_MAP) != -1) {
-//				MultiHashMap mhmap = nodeAttributes.getMultiHashMap();
-//				CountedIterator modsIt = mhmap.getAttributeKeyspan(node.getIdentifier(),
-//                               BIOPAX_CHEMICAL_MODIFICATIONS_MAP, null);
-//
-//				// do we have phosphorylation ?
-//				while (modsIt.hasNext()) {
-//					String modification = (String) modsIt.next();
-//
-//					if (modification.equals(BioPaxUtil.PHOSPHORYLATION_SITE)) {
-//						isPhosphorylated = true;
-//
-//						Object[] key = { BioPaxUtil.PHOSPHORYLATION_SITE };
-//						String countStr = (String) mhmap.getAttributeValue(node.getIdentifier(),
-//                            BIOPAX_CHEMICAL_MODIFICATIONS_MAP, key);
-//						count = ((Integer) Integer.valueOf(countStr)).intValue();
-//
-//						break;
-//					}
-//				}
-//			}
-
-			// if phosphorylated, add custom node
-			if (isPhosphorylated) {
-				addCustomShapes(networkView, node, PHOSPHORYLATION_GRAPHICS, count);
-			}
-		}
-	}
-
-
-	/**
-	 * Based on given arguments, adds proper custom node shape to node.
-	 */
-	private static void addCustomShapes(CyNetworkView networkView, CyNode node, String shapeType,
-	                                    int modificationCount) {
-		// TODO: Custom graphics
-//		// create refs to help views
-//		CyNetwork cyNetwork = networkView.getModel();
-//		View<CyNode> nodeView = networkView.getNodeView(node);
-//		DNodeView dingNodeView = (DNodeView) nodeView;
-//
-//		// remove existing custom nodes
-//		Iterator<CustomGraphic> it = dingNodeView.customGraphicIterator();
-//		while ( it.hasNext() ) {
-//			dingNodeView.removeCustomGraphic( it.next() );
-//		}
-//
-//		for (int lc = 0; lc < modificationCount; lc++) {
-//			// set image
-//			BufferedImage image = null;
-//
-//			if (shapeType.equals(PHOSPHORYLATION_GRAPHICS)) {
-//				image = (cyNetwork.isSelected(node)) ? customPhosGraphics[lc] : phosNode;
-//			}
-//
-//			// set rect
-//			Rectangle2D rect = getCustomShapeRect(image, lc);
-//
-//			// create our texture paint
-//			Paint paint = null;
-//
-//			try {
-//				paint = new java.awt.TexturePaint(image, rect);
-//			} catch (Exception exc) {
-//				paint = java.awt.Color.black;
-//			}
-//
-//			// add the graphic
-//			dingNodeView.addCustomGraphic(rect, paint, NodeDetails.ANCHOR_CENTER);
-//		}
-	}
 
 	/**
 	 * Based on given arguments, determines proper rectangle coordinates
@@ -956,4 +903,93 @@ public class BioPaxMapperImpl implements BioPaxMapper {
 		return null;
 	}
 
+	
+	public static void customNodes(CyNetworkView networkView) {
+		// grab node attributes
+		CyNetwork cyNetwork = networkView.getModel();
+
+		// iterate through the nodes
+		Iterator<CyNode> nodesIt = cyNetwork.getNodeList().iterator();
+		if (nodesIt.hasNext()) {
+			// grab the node
+			CyNode node = nodesIt.next();
+
+			// get chemical modifications
+			int count = 0;
+			boolean isPhosphorylated = false;
+			// TODO: MultiHashMap
+//			MultiHashMapDefinition mhmdef = nodeAttributes.getMultiHashMapDefinition();
+//
+//			if (mhmdef.getAttributeValueType(BIOPAX_CHEMICAL_MODIFICATIONS_MAP) != -1) {
+//				MultiHashMap mhmap = nodeAttributes.getMultiHashMap();
+//				CountedIterator modsIt = mhmap.getAttributeKeyspan(node.getIdentifier(),
+//                               BIOPAX_CHEMICAL_MODIFICATIONS_MAP, null);
+//
+//				// do we have phosphorylation ?
+//				while (modsIt.hasNext()) {
+//					String modification = (String) modsIt.next();
+//
+//					if (modification.equals(BioPaxUtil.PHOSPHORYLATION_SITE)) {
+//						isPhosphorylated = true;
+//
+//						Object[] key = { BioPaxUtil.PHOSPHORYLATION_SITE };
+//						String countStr = (String) mhmap.getAttributeValue(node.getIdentifier(),
+//                            BIOPAX_CHEMICAL_MODIFICATIONS_MAP, key);
+//						count = ((Integer) Integer.valueOf(countStr)).intValue();
+//
+//						break;
+//					}
+//				}
+//			}
+
+			// if phosphorylated, add custom node
+			if (isPhosphorylated) {
+				addCustomShapes(networkView, node, "PHOSPHORYLATION_GRAPHICS", count);
+			}
+		}
+	}
+
+
+	/**
+	 * Based on given arguments, adds proper custom node shape to node.
+	 */
+	private static void addCustomShapes(CyNetworkView networkView, CyNode node, String shapeType,
+	                                    int modificationCount) {
+		// TODO: Custom graphics
+//		// create refs to help views
+//		CyNetwork cyNetwork = networkView.getModel();
+//		View<CyNode> nodeView = networkView.getNodeView(node);
+//		DNodeView dingNodeView = (DNodeView) nodeView;
+//
+//		// remove existing custom nodes
+//		Iterator<CustomGraphic> it = dingNodeView.customGraphicIterator();
+//		while ( it.hasNext() ) {
+//			dingNodeView.removeCustomGraphic( it.next() );
+//		}
+//
+//		for (int lc = 0; lc < modificationCount; lc++) {
+//			// set image
+//			BufferedImage image = null;
+//
+//			if (shapeType.equals(PHOSPHORYLATION_GRAPHICS)) {
+//				image = (cyNetwork.isSelected(node)) ? customPhosGraphics[lc] : phosNode;
+//			}
+//
+//			// set rect
+//			Rectangle2D rect = getCustomShapeRect(image, lc);
+//
+//			// create our texture paint
+//			Paint paint = null;
+//
+//			try {
+//				paint = new java.awt.TexturePaint(image, rect);
+//			} catch (Exception exc) {
+//				paint = java.awt.Color.black;
+//			}
+//
+//			// add the graphic
+//			dingNodeView.addCustomGraphic(rect, paint, NodeDetails.ANCHOR_CENTER);
+//		}
+	}
+	
 }
