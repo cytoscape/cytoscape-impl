@@ -38,7 +38,7 @@ public class PSICQUICRestClient {
 	private static final Logger logger = LoggerFactory.getLogger(PSICQUICRestClient.class);
 
 	public enum SearchMode {
-		MIQL("MIQL Mode"), INTERACTOR("Search by Interactor ID");
+		MIQL("Search by Query (MIQL)"), INTERACTOR("Search by gene/protein ID list");
 
 		private final String name;
 
@@ -121,7 +121,7 @@ public class PSICQUICRestClient {
 					sBuilder.append(regManager.getSource2NameMap().get(sourceStr) + " ");
 				}
 				
-				tm.setStatusMessage(i + " / " + targetServices.size() + " tasks finished.\n"
+				tm.setStatusMessage((i+1) + " / " + targetServices.size() + " tasks finished.\n"
 						+ "Still waiting responses from the following databases:\n\n" + sBuilder.toString());
 				
 			} catch (InterruptedException ie) {

@@ -17,13 +17,11 @@ import java.util.concurrent.TimeUnit;
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.SearchWebServiceClient;
 import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
 import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
@@ -51,15 +49,18 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 	private final NetworkTaskFactory createViewTaskFactory;
 
 	private SearchRecoredsTask searchTask;
+	
+	private final OpenBrowser openBrowser;
 
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
 			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager, final TaskManager tManager,
-			final NetworkTaskFactory createViewTaskFactory) {
+			final NetworkTaskFactory createViewTaskFactory, final OpenBrowser openBrowser) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;
 		this.tManager = tManager;
 		this.createViewTaskFactory = createViewTaskFactory;
+		this.openBrowser = openBrowser;
 
 		// Initialize registry manager in different thread.
 		initRegmanager(networkFactory);
@@ -100,7 +101,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 		
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
-		System.out.println("RegistryManager initialized in " + sec + " sec.");
+		logger.info("RegistryManager initialized in " + sec + " sec.");
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -143,6 +144,6 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 
 	@Override
 	public Container getQueryBuilderGUI() {
-		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory);
+		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, openBrowser);
 	}
 }

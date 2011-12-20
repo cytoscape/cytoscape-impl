@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableEntry;
 
 /**
@@ -18,7 +19,7 @@ public class Mitab25Mapper {
 
 	// Separator for multiple entries.
 	private static final String SEPARATOR = "\\|";
-	private static final String ATTR_PREFIX = "PSI-MI-25.";
+	private static final String ATTR_PREFIX = "PSI-MI-25: ";
 
 	private static final int COLUMN_COUNT = 15;
 
@@ -121,9 +122,9 @@ public class Mitab25Mapper {
 //		setAliases(nodeAttr, source.getIdentifier(), entry[4].split(SEPARATOR));
 //		setAliases(nodeAttr, target.getIdentifier(), entry[5].split(SEPARATOR));
 //
-//		// Tax ID (pick first one only)
-//		setTaxID(nodeAttr, source.getIdentifier(), entry[9].split(SEPARATOR)[0]);
-//		setTaxID(nodeAttr, target.getIdentifier(), entry[10].split(SEPARATOR)[0]);
+		// Tax ID (pick first one only)
+		setTaxID(network.getRow(source), entry[9].split(SEPARATOR)[0]);
+		setTaxID(network.getRow(target), entry[10].split(SEPARATOR)[0]);
 
 //		sourceDB = entry[12].split(SEPARATOR);
 		interactionID = entry[13].split(SEPARATOR);
@@ -152,23 +153,28 @@ public class Mitab25Mapper {
 	}
 
 
-//	private void setTaxID(String id, String value) {
-//		String[] buf = value.split(":", 2);
-//		String attrName;
-//		String taxonName;
-//		if (buf != null && buf.length == 2) {
-//			attrName = ATTR_PREFIX + buf[0];
-//
-//			matcher = miNamePttr.matcher(buf[1]);
-//			if (matcher.find()) {
-//				taxonName = matcher.group();
-//				attr.setAttribute(id, attrName, buf[1].split("\\(")[0]);
-//				attr.setAttribute(id, attrName + ".name", taxonName.substring(1, taxonName.length() - 1));
-//			} else {
-//				attr.setAttribute(id, attrName, buf[1]);
-//			}
-//		}
-//	}
+	private void setTaxID(final CyRow row, String value) {
+		String[] buf = value.split(":", 2);
+		String attrName;
+		String taxonName;
+		if (buf != null && buf.length == 2) {
+			attrName = ATTR_PREFIX + buf[0];
+			
+			if(row.getTable().getColumn(attrName) == null)
+				row.getTable().createColumn(attrName, String.class, false);
+			if(row.getTable().getColumn(attrName+ ".name") == null)
+				row.getTable().createColumn(attrName+ ".name", String.class, false);
+
+			matcher = miNamePttr.matcher(buf[1]);
+			if (matcher.find()) {
+				taxonName = matcher.group();
+				row.set(attrName, buf[1].split("\\(")[0]);
+				row.set(attrName + ".name", taxonName.substring(1, taxonName.length() - 1));
+			} else {
+				row.set(attrName, buf[1]);
+			}
+		}
+	}
 //
 //	private void setPublication(CyAttributes attr, String id, String[] pubID, String[] authors) {
 //		String key = null;

@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.management.modelmbean.ModelMBean;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -19,7 +18,6 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import javax.swing.text.ViewFactory;
 
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.NetworkTaskFactory;
@@ -49,6 +47,8 @@ public class SourceStatusPanel extends JPanel {
 	private final SearchMode mode;
 
 	private final NetworkTaskFactory createViewTaskFactory;
+	
+	private volatile boolean enableItem = true;
 
 	/**
 	 * Creates new form PSICQUICResultDialog
@@ -68,6 +68,18 @@ public class SourceStatusPanel extends JPanel {
 		setTableModel(result);
 		initComponents();
 		setCoumnWidth();
+	}
+	
+	public void enableComponents(final boolean enable) {
+		this.clearButtonActionPerformed(null);
+		
+		this.resultTable.setEnabled(enable);
+		this.resultScrollPane.setEnabled(enable);
+		this.selectAllButton.setEnabled(enable);
+		this.importNetworkButton.setEnabled(enable);
+		this.clearSelectionButton.setEnabled(enable);
+		this.setEnabled(enable);
+		this.enableItem = enable;
 	}
 
 	public Set<String> getSelected() {
@@ -118,8 +130,6 @@ public class SourceStatusPanel extends JPanel {
 
 			rowValues[1] = serviceName;
 			if (result != null) {
-				System.out.println("ServiceName = " + serviceName);
-				System.out.println("Source = " + manager.getActiveServices().get(serviceName));
 				final String targetURL = manager.getActiveServices().get(serviceName);
 				if (targetURL != null) {
 					Integer count = result.get(targetURL).intValue();
@@ -382,6 +392,9 @@ public class SourceStatusPanel extends JPanel {
 				this.setBackground(table.getBackground());
 
 			this.setHorizontalAlignment(SwingConstants.CENTER);
+			
+			this.setEnabled(enableItem);
+
 			return this;
 		}
 	}
