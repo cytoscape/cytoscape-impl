@@ -5,6 +5,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyNetwork;
@@ -171,6 +172,11 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 		byType.put(type, new WeakReference<Map<String,CyTable>>(tableMap));
 	}
 
+	@Override
+	public Set<CyNetwork> getNetworkSet() {
+		return Collections.unmodifiableSet(tables.keySet());
+	}
+	
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
 		tables.remove(e.getNetwork());

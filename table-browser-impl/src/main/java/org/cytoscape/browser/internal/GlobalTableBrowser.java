@@ -111,7 +111,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 	private boolean isGlobalTable(final CyTable table) {
 		
 		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
-		final Set<CyNetwork> networks = this.networkManager.getNetworkSet();
+		final Set<CyNetwork> networks = this.networkTableManager.getNetworkSet();
 		for(CyNetwork network: networks) {
 			for(Class<?> type:OBJECT_TYPES) {
 				final Map<String, CyTable> objTables = this.networkTableManager.getTables(network, (Class<? extends CyTableEntry>) type);

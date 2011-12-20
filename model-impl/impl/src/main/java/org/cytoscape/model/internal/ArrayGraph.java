@@ -42,17 +42,15 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 /**
@@ -131,6 +129,15 @@ final public class ArrayGraph implements CyRootNetwork {
 		subNetworks = new ArrayList<CySubNetwork>();
 
 		base = addSubNetwork(); 
+		registerAllTables(netTables.values());
+		registerAllTables(nodeTables.values());
+		registerAllTables(edgeTables.values());
+	}
+
+	private void registerAllTables(Collection<CyTable> tables) {
+		for (CyTable table : tables) {
+			tableMgr.addTable(table);
+		}
 	}
 
 	private Map<String,CyTable> createNetworkTables(long suidx) {
