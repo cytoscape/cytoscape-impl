@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
@@ -16,9 +18,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.property.session.Parent;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -41,13 +43,28 @@ public class PSICQUICSearchUI extends JPanel {
 	private final NetworkTaskFactory createViewTaskFactory;
 
 	private JComboBox searchModeBox;
-	private JTextArea queryPane;
+	private JTextArea queryArea;
 	private SourceStatusPanel statesPanel;
 	private JScrollPane scrollPane;
 
 	private JPanel searchPanel;
 	private JLabel modeLabel;
+	private JButton helpButton;
 	private JButton searchButton;
+	
+	private JPanel queryBuilderPanel;
+	
+	private static final String MIQL_MODE = "MIQL Query";
+	private static final String INTERACTOR_ID_LIST = "List of Interactors";
+	
+	private static final String MIQL_BUILDER_PANEL = "MIQL Query Builder";
+	
+	private static final String MIQL_QUERY_AREA_MESSAGE_STRING = "Please enter MIQL query here.";
+	private static final String INTERACTOR_LIST_AREA_MESSAGE_STRING = "Please enter MIQL query here.";
+	
+	private String searchAreaTitle = MIQL_MODE;
+	
+	private boolean firstClick = true;
 
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
 			final PSICQUICRestClient client, final TaskManager tmManager, final NetworkTaskFactory createViewTaskFactory) {
@@ -84,6 +101,10 @@ public class PSICQUICSearchUI extends JPanel {
 			}
 		});
 		modeLabel = new JLabel("Search Mode:");
+		
+		// Help menu
+		this.helpButton = new JButton("");
+		
 		searchPanel.add(modeLabel);
 		searchPanel.add(searchModeBox);
 		searchPanel.add(searchButton);
@@ -91,22 +112,42 @@ public class PSICQUICSearchUI extends JPanel {
 		this.add(searchPanel, BorderLayout.NORTH);
 
 		// Query Panel
-		queryPane = new JTextArea();
+		queryArea = new JTextArea();
+		queryArea.setText(MIQL_QUERY_AREA_MESSAGE_STRING);
+		queryArea.addMouseListener(new MouseAdapter() {
+			
+			@Override
+			public void mouseEntered(MouseEvent ev) {
+				if(firstClick) {
+					queryArea.setText("");
+					firstClick = false;
+				}
+			}
+		});
+		
+		
 		scrollPane = new JScrollPane();
+		scrollPane.setBackground(Color.white);
+		scrollPane.setBorder(new TitledBorder(searchAreaTitle));
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setPreferredSize(new Dimension(150, 150));
-		scrollPane.setViewportView(queryPane);
+		scrollPane.setViewportView(queryArea);
 		this.add(scrollPane, BorderLayout.CENTER);
 
 		// Source Status
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, (SearchMode)searchModeBox.getSelectedItem(), createViewTaskFactory);
 		this.add(statesPanel, BorderLayout.SOUTH);
 	}
+	
+	private void switchMode() {
+		
+		// Disable query builder
+	}
 
 	private void search() {
 		final SearchRecoredsTask searchTask = new SearchRecoredsTask(client, (SearchMode)searchModeBox.getSelectedItem());
 		final Map<String, String> activeSource = regManager.getActiveServices();
-		final String query = this.queryPane.getText();
+		final String query = this.queryArea.getText();
 		searchTask.setQuery(query);
 		searchTask.setTargets(activeSource.values());
 
@@ -130,7 +171,7 @@ public class PSICQUICSearchUI extends JPanel {
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			final Map<String, Long> result = searchTask.getResult();
 			remove(statesPanel);
-			statesPanel = new SourceStatusPanel(queryPane.getText(), client, regManager,networkManager, result, taskManager, (SearchMode)searchModeBox.getSelectedItem(), createViewTaskFactory);
+			statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager,networkManager, result, taskManager, (SearchMode)searchModeBox.getSelectedItem(), createViewTaskFactory);
 			add(statesPanel, BorderLayout.SOUTH);
 
 			Window parentWindow = ((Window) getRootPane().getParent());

@@ -42,6 +42,11 @@ public class SearchRecoredsTask extends AbstractTask {
 		taskMonitor.setProgress(1.0d);
 	}
 	
+	@Override
+	public void cancel() {
+		client.cancel();
+	}
+	
 	public void setTargets(final Collection<String> targetServices) {
 		this.targetServices = targetServices;
 	}

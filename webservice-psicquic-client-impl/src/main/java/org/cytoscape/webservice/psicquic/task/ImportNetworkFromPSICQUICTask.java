@@ -44,6 +44,8 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	
 	private final SearchMode mode;
 	
+	private volatile boolean canceled = false;
+	
 	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client, final CyNetworkManager manager,
 			final RegistryManager registryManager, final Set<String> searchResult, final SearchMode mode, final NetworkTaskFactory createViewTaskFactory) {
 		this.client = client;
@@ -89,6 +91,13 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			throw new NullPointerException("Target service set is null");
 
 		result = client.importNetwork(query, targetServices, mode, taskMonitor);
+		
+		if(canceled) {
+			result.clear();
+			result = null;
+			return;
+		}
+			
 
 		final Date date = new Date();
 		final SimpleDateFormat timestamp = new SimpleDateFormat("yyyy/MM/dd K:mm:ss a, z");
@@ -104,14 +113,22 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			networks.add(network);
 		}		
 
-		int retValue = JOptionPane.showConfirmDialog(null, "Do you want to create views?");
-		if(retValue == JOptionPane.YES_OPTION) {
-			// Create View
-			for(final CyNetwork network: networks) {
-				createViewTaskFactory.setNetwork(network);
-				insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator());
+		if (!canceled) {
+			int retValue = JOptionPane.showConfirmDialog(null, "Do you want to create views?");
+			if (retValue == JOptionPane.YES_OPTION) {
+				// Create View
+				for (final CyNetwork network : networks) {
+					createViewTaskFactory.setNetwork(network);
+					insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator());
+				}
 			}
 		}
+	}
+	
+	@Override
+	public void cancel() {
+		this.canceled = true;
+		client.cancel();
 	}
 	
 	private void addNetworkData(final CyNetwork network) {

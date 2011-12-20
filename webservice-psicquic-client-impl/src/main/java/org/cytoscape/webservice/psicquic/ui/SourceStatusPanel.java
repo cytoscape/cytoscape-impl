@@ -284,6 +284,12 @@ public class SourceStatusPanel extends JPanel {
 				return new TaskIterator(networkTask);
 			}
 		});
+		
+		Window parentWindow = ((Window) getRootPane().getParent());
+		parentWindow.pack();
+		repaint();
+		
+		parentWindow.toFront();
 	}
 
 	private void cancelButtonActionPerformed(ActionEvent evt) {

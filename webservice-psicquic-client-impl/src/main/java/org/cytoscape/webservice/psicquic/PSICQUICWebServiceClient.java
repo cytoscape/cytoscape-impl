@@ -41,7 +41,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 	// Timeout value for registry manager.
 	private static final Long TIMEOUT = 30l;
 
-	private final PSICQUICRestClient client;
+	private PSICQUICRestClient client;
 	private RegistryManager regManager;
 	private final CyNetworkManager networkManager;
 
@@ -61,13 +61,11 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 		this.tManager = tManager;
 		this.createViewTaskFactory = createViewTaskFactory;
 
-		client = new PSICQUICRestClient(networkFactory);
-
 		// Initialize registry manager in different thread.
-		initRegmanager();
+		initRegmanager(networkFactory);
 	}
 
-	private void initRegmanager() {
+	private void initRegmanager(CyNetworkFactory factory) {
 		final ExecutorService exe = Executors.newCachedThreadPool();
 		final long startTime = System.currentTimeMillis();
 
@@ -97,6 +95,9 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceClient implement
 				return;
 			}
 		}
+		
+		client = new PSICQUICRestClient(factory, regManager);
+		
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
 		System.out.println("RegistryManager initialized in " + sec + " sec.");
