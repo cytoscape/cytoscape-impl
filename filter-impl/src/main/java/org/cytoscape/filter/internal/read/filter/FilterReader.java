@@ -47,18 +47,21 @@ public final class FilterReader implements CyProperty<Vector<CompositeFilter>>, 
 				ServicesUtil.cytoscapeVersionService.getMinorVersion()).getAbsolutePath();
 		final File globalFilterFile = new File(cyConfigVerDir + File.separator + resourceLocation);
 
-		try 
-		{
-			is = new FileInputStream(globalFilterFile);
+		if (globalFilterFile.exists()){
+			try 
+			{
+				is = new FileInputStream(globalFilterFile);
+			}
+			catch (Exception e){
+				e.printStackTrace();
+			}			
 		}
-		catch (Exception e){
-		}
-
+		
+		// Load global filters from ".cytoscape" directory
 		if (is != null) {
 			final InputStreamReader inputStreamReader = new InputStreamReader(is);
 			this.FilterVect = FilterIO.getFilterVectFromPropFile(inputStreamReader);			
 		}
-
 
 		// If there is no global filters, load a default one
 		if (this.FilterVect.size() == 0) {
