@@ -30,14 +30,14 @@ package org.cytoscape.io.internal.read.session;
 
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION;
+import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CY_PROPS;
+import static org.cytoscape.io.internal.util.session.SessionUtil.PROPS_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML;
+import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
 
 import java.io.BufferedReader;
@@ -146,11 +146,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			// First pass..
 			if (entryName.contains("/" + APPS_FOLDER)) {
 				extractAppEntry(is, entryName);
-			} else if (entryName.endsWith(CYSESSION)) {
+			} else if (entryName.endsWith(CYSESSION_FILE)) {
 				extractSessionState(is, entryName);
-			} else if (entryName.endsWith(VIZMAP_XML)) {
+			} else if (entryName.endsWith(VIZMAP_XML_FILE)) {
 				extractVizmap(is, entryName);
-			} else if (entryName.endsWith(CY_PROPS)) {
+			} else if (entryName.endsWith(PROPS_EXT)) {
 				extractCytoscapeProps(is, entryName);
 			} else if (entryName.endsWith(XGMML_EXT)) {
 				// Ignore network view files for now...
@@ -430,7 +430,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		String namespace = builder.getNamespace();
 
 		if ("VIEW".equals(namespace)) {
-			return; // TODO: disabled due to timing conflicts with Ding.
+			return; // TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
 		}
 
 		Map<String, CyTable> tableMap = networkTableManager.getTables(network, type);

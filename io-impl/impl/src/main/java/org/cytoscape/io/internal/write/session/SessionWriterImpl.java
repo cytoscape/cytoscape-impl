@@ -35,7 +35,7 @@
 package org.cytoscape.io.internal.write.session;
 
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION;
+import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_VERSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
@@ -377,7 +377,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		cysess.setId(cysessionDocId);
 		cysess.setDocumentVersion(CYSESSION_VERSION);
 		
-		zos.putNextEntry(new ZipEntry(sessionDir + CYSESSION) );
+		zos.putNextEntry(new ZipEntry(sessionDir + CYSESSION_FILE) );
 
 		CyWriter cysessionWriter = propertyWriterMgr.getWriter(cysess, cysessionFilter, zos);
 		cysessionWriter.run(taskMonitor);

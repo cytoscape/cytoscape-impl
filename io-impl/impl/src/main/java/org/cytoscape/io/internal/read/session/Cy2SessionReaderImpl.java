@@ -29,11 +29,12 @@ package org.cytoscape.io.internal.read.session;
 
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CY_PROPS;
+import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_ROOT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_PROPS;
+import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_PROPS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
+import static org.cytoscape.model.CyNetwork.SELECTED;
+import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -88,7 +89,13 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
+	public static final String CY_PROPS = "session_cytoscape.props";
 	public static final Pattern NETWORK_PATTERN = Pattern.compile(".*/(([^/]+)[.]xgmml)");
+	public static final String IGNORED_PROPS =
+			"(cytoscape|proxy|logger|render|undo|vizmapper)\\.[^\\.]+.*" +
+			"|canonicalizeNames|defaultPluginDownloadUrl|defaultVisualStyle|defaultWebBrowser|exportTextAsShape" +
+			"|maximizeViewOnCreate|moduleNetworkViewCreationThreshold|secondaryViewThreshold|showQuickStartAtStartup" +
+			"|viewThreshold";
 	
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
@@ -132,9 +139,9 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	protected void handleEntry(InputStream is, String entryName) throws Exception {
 		if (entryName.contains("/" + APPS_FOLDER + "/")) {
 			extractAppEntry(is, entryName);
-		} else if (entryName.endsWith(CYSESSION)) {
+		} else if (entryName.endsWith(CYSESSION_FILE)) {
 			extractSessionState(is, entryName);
-		} else if (entryName.endsWith(VIZMAP_PROPS)) {
+		} else if (entryName.endsWith(VIZMAP_PROPS_FILE)) {
 			extractVizmap(is, entryName);
 		} else if (entryName.endsWith(CY_PROPS)) {
 			extractCytoscapeProps(is, entryName);
@@ -158,7 +165,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	@Override
 	protected void complete(TaskMonitor tm) throws Exception {
 		if (cysession == null) {
-			throw new FileNotFoundException("Cannot find the " + CYSESSION + " file.");
+			throw new FileNotFoundException("Cannot find the " + CYSESSION_FILE + " file.");
 		}
 
 		tm.setProgress(0.4);
@@ -340,7 +347,17 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private void extractCytoscapeProps(InputStream is, String entryName) throws Exception {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		cytoscapeProps = (Properties) reader.getProperty();
+		final Properties props = (Properties) reader.getProperty();
+		
+		if (props != null) {
+			// Only add properties that should have the SESSION_FILE save policy
+			for (String key : props.stringPropertyNames()) {
+				if (isSessionProperty(key)) {
+					String value = props.getProperty(key);
+					cytoscapeProps.setProperty(key, value);
+				}
+			}
+		}
 	}
 
 	private void extractBookmarks(InputStream is, String entryName) throws Exception {
@@ -372,18 +389,17 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				final CyNetwork cyNet = getNetwork(netName);
 	
 				if (cyNet != null) {
-					// TODO: check if should delete from sub-network
-//					if (net.getHiddenNodes() != null)
-//						setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode().iterator(), "hidden");
-//					if (net.getHiddenEdges() != null)
-//						setBooleanEdgeAttr(cyNet, net.getHiddenEdges().getEdge().iterator(), "hidden");
-	
-					// From Cytoscape 3.0, the selection info is stored inside CyTables,
-					// but 2.x stores that info in the cysession.xml file.
+					// From Cytoscape 3.0, the selection and hidden attributes are stored inside CyTables.
 					if (net.getSelectedNodes() != null)
-						setBooleanNodeAttr(cyNet, net.getSelectedNodes().getNode().iterator(), CyNetwork.SELECTED);
+						setBooleanNodeAttr(cyNet, net.getSelectedNodes().getNode().iterator(), SELECTED, DEFAULT_ATTRS);
 					if (net.getSelectedEdges() != null)
-						setBooleanEdgeAttr(cyNet, net.getSelectedEdges().getEdge().iterator(), CyNetwork.SELECTED);
+						setBooleanEdgeAttr(cyNet, net.getSelectedEdges().getEdge().iterator(), SELECTED, DEFAULT_ATTRS);
+					
+					// TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
+//					if (net.getHiddenNodes() != null)
+//						setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode().iterator(), "hidden", "VIEW");
+//					if (net.getHiddenEdges() != null)
+//						setBooleanEdgeAttr(cyNet, net.getHiddenEdges().getEdge().iterator(), "hidden", "VIEW");
 				}
 				
 				// Populate the visual style map
@@ -464,7 +480,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		return null;
 	}
 
-	private void setBooleanNodeAttr(final CyNetwork net, Iterator<?> it, final String attrName) {
+	private void setBooleanNodeAttr(final CyNetwork net, Iterator<?> it, final String attrName, final String tableName) {
 		if (it == null)
 			return;
 
@@ -489,13 +505,14 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			CyNode n = nodeMap.get(name);
 
 			if (n != null)
-				net.getRow(n).set(attrName, true);
+				net.getRow(n, tableName).set(attrName, true);
 			else 
 				logger.error("Cannot restore boolean node attr \"" + name + "\": node not found.");
 		}
 	}
 
-	private void setBooleanEdgeAttr(final CyNetwork net, final Iterator<?> it, final String attrName) {
+	private void setBooleanEdgeAttr(final CyNetwork net, final Iterator<?> it, final String attrName,
+			final String tableName) {
 		if (it == null)
 			return;
 
@@ -520,9 +537,13 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			CyEdge e = edgeMap.get(name);
 
 			if (e != null)
-				net.getRow(e).set(attrName, true);
+				net.getRow(e, tableName).set(attrName, true);
 			else 
 				logger.error("Cannot restore boolean edge attr \"" + name + "\": node not found.");
 		}
+	}
+	
+	boolean isSessionProperty(String key) {
+		return !key.matches(IGNORED_PROPS);
 	}
 }

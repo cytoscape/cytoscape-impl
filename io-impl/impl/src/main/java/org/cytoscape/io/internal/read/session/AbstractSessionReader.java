@@ -67,7 +67,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 	protected Cysession cysession;
 	protected Bookmarks bookmarks;
-	protected Properties cytoscapeProps;
+	protected Properties cytoscapeProps = new Properties();
 	protected final Set<CyNetwork> networks = new LinkedHashSet<CyNetwork>();
 	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<CyNetworkView>();
 	protected final Set<VisualStyle> visualStyles = new HashSet<VisualStyle>();

@@ -45,20 +45,21 @@ public class SessionUtil {
 	public static final String CYS_VERSION = "3.0.0";
 	public static final String CYSESSION_VERSION = "3.0";
 	
-	public static final String BOOKMARKS_FILE = "session_bookmarks.xml";
-	public static final String CYSESSION = "cysession.xml";
-	public static final String VIZMAP_PROPS = "vizmap.props";
-	public static final String VIZMAP_XML = "vizmap.xml";
-	public static final String CY_PROPS = "cytoscape3.props";
-	public static final String XGMML_EXT = ".xgmml";
-	public static final String VERSION_EXT = ".version";
-	public static final String TABLE_EXT = ".cytable";
-	public static final String CYTABLE_METADATA_FILE = "cytable.metadata";
-	
 	public static final String NETWORKS_FOLDER = "networks/";
 	public static final String NETWORK_VIEWS_FOLDER = "views/";
 	public static final String TABLES_FOLDER = "tables/";
 	public static final String APPS_FOLDER = "apps/";
+	
+	public static final String BOOKMARKS_FILE = "session_bookmarks.xml";
+	public static final String CYSESSION_FILE = "cysession.xml";
+	public static final String CYTABLE_METADATA_FILE = "cytable.metadata";
+	public static final String VIZMAP_PROPS_FILE = "vizmap.props";
+	public static final String VIZMAP_XML_FILE = "vizmap.xml";
+	
+	public static final String PROPS_EXT = ".props";
+	public static final String TABLE_EXT = ".cytable";
+	public static final String VERSION_EXT = ".version";
+	public static final String XGMML_EXT = ".xgmml";
 	
 	public static final String NETWORK_ROOT = "Network Root";
 	
