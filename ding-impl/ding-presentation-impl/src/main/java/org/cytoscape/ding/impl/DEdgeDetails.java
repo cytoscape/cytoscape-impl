@@ -33,11 +33,20 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.EdgeView;
+import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.util.intr.IntEnumerator;
+import org.cytoscape.util.intr.IntIterator;
 import org.cytoscape.util.intr.IntObjHash;
+import org.cytoscape.util.intr.MinIntHeap;
 
 class DEdgeDetails extends IntermediateEdgeDetails {
 
@@ -65,6 +74,9 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 	Map<Integer, Paint> m_unselectedPaints = new HashMap<Integer, Paint>();
 	Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
+	
+	// Curved or not
+	Map<Integer, Integer> m_lineType = new HashMap<Integer, Integer>();
 
 	private Byte m_sourceArrowDefault;
 	private Paint m_sourceArrowPaintDefault;
@@ -84,6 +96,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 	private Paint m_colorLowDetailDefault;
 	private Color m_selectedColorLowDetailDefault;
+	
+	private Integer m_lineTypeDefault;
 
 	private boolean isCleared = false;
 
@@ -118,6 +132,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_selectedColorsLowDetail = new IntObjHash();
 
 		selected = new HashSet<Integer>();
+		
+		m_lineType = new HashMap<Integer, Integer>();
 
 		isCleared = true;
 	}
@@ -147,6 +163,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 
 		m_selectedPaints.remove(edgeIdx);
 		m_unselectedPaints.remove(edgeIdx);
+		
+		m_lineType.remove(edgeIdx);
 
 		selected.remove(edgeIdx);
 	}
@@ -677,5 +695,222 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		// less egregiously big arrows.
 		else
 			return (segmentThickness(edge) + DEdgeView.DEFAULT_ARROW_SIZE);
+	}
+	
+	
+	
+	public Integer lineType(final int edge) {
+		final Integer lineType = m_lineType.get(edge);
+		if (lineType == null)
+			if (m_lineTypeDefault == null)
+				return EdgeView.STRAIGHT_LINES;
+			else
+				return m_lineTypeDefault;
+
+		return lineType;
+	}
+	
+	public void setLineTypeDefault(int lineType) {
+		this.m_lineTypeDefault = lineType;
+	}
+	
+	
+	// Used by bends
+	private final MinIntHeap m_heap = new MinIntHeap();
+	private final float[] m_extentsBuff = new float[4];
+	
+	@Override
+	public EdgeAnchors anchors(final int edge) {
+		//TODO: Why NOT op is here?
+//		final EdgeAnchors returnThis = (EdgeAnchors) (m_view.getDEdgeView(~edge));
+		final DEdgeView edgeView = (DEdgeView) m_view.getDEdgeView(edge);
+		final EdgeAnchors returnThis = edgeView;
+
+		if (returnThis.numAnchors() > 0) 
+			return returnThis;
+
+		final CyNetwork graph = m_view.m_drawPersp;
+		
+		final int srcNodeIndex = edgeView.getModel().getSource().getIndex();
+		final int trgNodeIndex = edgeView.getModel().getTarget().getIndex();
+
+		// Calculate anchors necessary for self edges.
+		if (srcNodeIndex == trgNodeIndex) { 
+			m_view.m_spacial.exists(srcNodeIndex, m_extentsBuff, 0);
+
+			final double w = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
+			final double h = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
+			final double x = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
+			final double y = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
+			final double nodeSize = Math.max(w, h);
+			int i = 0;
+			
+			final List<CyEdge> selfEdgeList = graph.getConnectingEdgeList(edgeView.getModel().getSource(), edgeView.getModel().getSource(), CyEdge.Type.ANY);
+			//final IntIterator selfEdges = graph.edgesConnecting(srcNodeIndex, srcNodeIndex, true, true, true);
+
+			for(final CyEdge selfEdge: selfEdgeList) {
+//			while (selfEdges.hasNext()) {
+//				final int e2 = selfEdges.nextInt();
+				final int e2 = selfEdge.getIndex();
+
+				if (e2 == edge)
+					break;
+
+				if (((EdgeAnchors) m_view.getDEdgeView(e2)).numAnchors() == 0)
+					i++;
+			}
+
+			final int inx = i;
+
+			return new EdgeAnchors() {
+					public int numAnchors() {
+						return 2;
+					}
+
+					public void getAnchor(int anchorInx, float[] anchorArr, int offset) {
+						if (anchorInx == 0) {
+							anchorArr[offset] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
+							anchorArr[offset + 1] = (float) y;
+						} else if (anchorInx == 1) {
+							anchorArr[offset] = (float) x;
+							anchorArr[offset + 1] = (float) (y - (((inx + 3) * nodeSize) / 2.0d));
+						}
+					}
+				};
+		}
+
+		// Now add "invisible" anchors to edges for the case where multiple edges
+		// exist between two nodes. This has no effect if user specified anchors
+		// exist on the edge.
+		while (true) {
+
+			// By consistently ordering the source and target nodes, dx and dy will always
+			// be calculated according to the same orientation. This allows the offset
+			// calculation to toggle the edges from side to side without any overlap.
+			final int tmpSrcIndex = Math.min( srcNodeIndex, trgNodeIndex ); 
+			final int tmpTrgIndex = Math.max( srcNodeIndex, trgNodeIndex ); 
+
+			// Sort the connecting edges.
+			final CyNode tmpSrc = graph.getNode(tmpSrcIndex);
+			final CyNode tmpTrg = graph.getNode(tmpTrgIndex);
+			final List<CyEdge> conEdgeList = graph.getConnectingEdgeList(tmpSrc, tmpTrg, CyEdge.Type.ANY);
+//			final IntIterator conEdges = graph.edgesConnecting(tmpSrc, tmpTrg,
+//			                                                   true, true, true);
+			m_heap.empty();
+
+			for(final CyEdge conEdge: conEdgeList) {
+//			while (conEdges.hasNext()) {
+//				m_heap.toss(conEdges.nextInt());
+				m_heap.toss(conEdge.getIndex());
+			}
+
+			final IntEnumerator otherEdges = m_heap.orderedElements(false);
+
+			int otherEdge = otherEdges.nextInt();
+
+			// If the first other edge is the same as this edge, 
+			// (i.e. we're at the end of the list?).
+			if (otherEdge == edge)
+				break;
+
+			// So we don't count the other edge twice?
+			int i = (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0) ? 1 : 0;
+
+			// Count the number of other edges.
+			while (true) {
+				if (edge == (otherEdge = otherEdges.nextInt()))
+					break;
+
+				if (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0)
+					i++;
+			}
+
+			final int inx = i;
+
+			// Get source node size and position.
+			m_view.m_spacial.exists(tmpSrcIndex, m_extentsBuff, 0);
+			final double srcW = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
+			final double srcH = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
+			final double srcX = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
+			final double srcY = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
+
+			// Get target node size and position.
+			m_view.m_spacial.exists(tmpTrgIndex, m_extentsBuff, 0);
+			final double trgW = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
+			final double trgH = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
+			final double trgX = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
+			final double trgY = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
+
+			// Used for determining the space between the edges.
+			final double nodeSize = Math.max(Math.max(Math.max(srcW, srcH), trgW), trgH);
+
+			// Midpoint between nodes.
+			final double midX = (srcX + trgX) / 2;
+			final double midY = (srcY + trgY) / 2;
+
+			// Distance in X and Y dimensions.
+			// Note that dx and dy may be negative.  This is OK, because this will ensure
+			// that the handle is always correctly placed offset from the midpoint of, 
+			// and perpendicular to, the original edge.
+			final double dx = trgX - srcX;
+			final double dy = trgY - srcY;
+
+			// Distance or length between nodes.
+			final double len = Math.sqrt((dx * dx) + (dy * dy));
+
+			if (((float) len) == 0.0f) 
+				break;
+
+			// This determines which side of the first edge and how far from the first
+			// edge the other edge should be placed.
+			// -  Divide by 2 puts consecutive edges at the same distance from the center
+			//    because of integer math.
+			// -  Modulo puts consecutive edges on opposite sides.
+			// -  Node size is for consistent scaling.
+			final double offset = ((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize;
+
+			// Depending on orientation sine or cosine. This adjusts the length
+			// of the offset according the appropriate X and Y dimensions.
+			final double normX = dx / len;
+			final double normY = dy / len;
+
+			// Calculate the anchor points.
+			final double anchorX = midX + (offset * normY);
+			final double anchorY = midY - (offset * normX);
+
+			return new EdgeAnchors() {
+					public int numAnchors() {
+						return 1;
+					}
+
+					public void getAnchor(int inx, float[] arr, int off) {
+						arr[off] = (float) anchorX;
+						arr[off + 1] = (float) anchorY;
+					}
+				};
+		}
+
+		return returnThis;
+	}
+
+	@Override
+	public float anchorSize(final int edge, final int anchorInx) {
+		if (m_view.getDEdgeView(edge).isSelected() && (((DEdgeView) m_view.getDEdgeView(edge)).numAnchors() > 0))
+			return m_view.getAnchorSize();
+		else
+			return 0.0f;
+	}
+
+	@Override
+	public Paint anchorPaint(final int edge, int anchorInx) {
+//		final DEdgeView edgeView = (DEdgeView) m_view.getDEdgeView(edge);
+
+		if (lineType(edge) == DEdgeView.STRAIGHT_LINES)
+			anchorInx = anchorInx / 2;
+
+		if (m_view.m_selectedAnchors.count((edge << 6) | anchorInx) > 0)
+			return m_view.getAnchorSelectedPaint();
+		else
+			return m_view.getAnchorUnselectedPaint();
 	}
 }

@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -51,6 +52,7 @@ import org.cytoscape.ding.impl.strokes.SineWaveStroke;
 import org.cytoscape.ding.impl.strokes.VerticalSlashStroke;
 import org.cytoscape.ding.impl.strokes.ZigzagStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
+import org.cytoscape.ding.impl.visualproperty.EdgeBendVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
@@ -236,6 +238,14 @@ public class DVisualLexicon extends RichVisualLexicon {
 			Color.BLACK, MinimalVisualLexicon.PAINT_RANGE,
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
+	
+	public static final VisualProperty<Bend> EDGE_BEND = new EdgeBendVisualProperty(
+			EdgeBendVisualProperty.DEFAULT_EDGE_BEND, "EDGE_BEND",
+			"Edge Bend");
+	
+	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(false, "EDGE_CURVED",
+			"Edge Curved", CyEdge.class);
+	
 
 	// TODO: Implement if possible (in rendering engine)
 //	public static final VisualProperty<ObjectPosition> EDGE_LABEL_POSITION = new ObjectPositionVisualProperty(
@@ -390,6 +400,10 @@ public class DVisualLexicon extends RichVisualLexicon {
 		addVisualProperty(EDGE_TARGET_ARROW_SELECTED_PAINT, EDGE_SELECTED_PAINT);
 		addVisualProperty(EDGE_SOURCE_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
 		addVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
+		
+		// Define edge end related VP
+		addVisualProperty(EDGE_BEND, EDGE);
+		addVisualProperty(EDGE_CURVED, EDGE);
 
 		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
 
@@ -419,6 +433,9 @@ public class DVisualLexicon extends RichVisualLexicon {
 		// addIdentifierMapping(CyEdge.class,"edgeOpacity",EDGE_TRANPARENCY);
 
 		// TODO add more!
+		
+		addIdentifierMapping(CyEdge.class, "edgeBend", EDGE_BEND);
+		addIdentifierMapping(CyEdge.class, "edgeCurved", EDGE_CURVED);
 	}
 
 	static Set<VisualProperty<?>> getGraphicsPositionVP() {

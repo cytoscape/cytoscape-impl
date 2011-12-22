@@ -496,51 +496,51 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	private int toggleSelectedEdge(int chosenEdge, MouseEvent e) {
 		int chosenEdgeSelected = 0;
+		
+		// Set Edge Bend.
 		if (e.isControlDown() && ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
-				m_view.m_selectedAnchors.empty();
+			
+			m_view.m_selectedAnchors.empty();
+			m_ptBuff[0] = m_lastXMousePos;
+			m_ptBuff[1] = m_lastYMousePos;
+			m_view.xformComponentToNodeCoords(m_ptBuff);
+			// Store current handle list
+			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", m_undo);
+			final int chosenInx = ((DEdgeView) m_view.getDEdgeView(chosenEdge)).addHandleFoo(new Point2D.Float(
+					(float) m_ptBuff[0], (float) m_ptBuff[1]));
+			
+			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
+		}
+
+		final boolean wasSelected = m_view.getDEdgeView(chosenEdge).isSelected();
+
+		if (wasSelected && e.isShiftDown()) {
+			((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
+			chosenEdgeSelected = -1;
+		} else if (!wasSelected) {
+			((DEdgeView) m_view.getDEdgeView(chosenEdge)).selectInternal(false);
+			chosenEdgeSelected = 1;
+
+			if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
 				m_ptBuff[0] = m_lastXMousePos;
 				m_ptBuff[1] = m_lastYMousePos;
 				m_view.xformComponentToNodeCoords(m_ptBuff);
-				// Store current handle list 
-				m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Add Edge Handle",m_undo);
-				final int chosenInx = ((DEdgeView) m_view.getDEdgeView(chosenEdge))
-																												.addHandleFoo(new Point2D.Float((float) m_ptBuff[0],
-																												(float) m_ptBuff[1]));
-				m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
-			}
 
-			final boolean wasSelected = m_view.getDEdgeView(chosenEdge).isSelected();
+				final IntEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0], (float) m_ptBuff[1],
+						(float) m_ptBuff[0], (float) m_ptBuff[1], null, 0, false);
 
-			if (wasSelected && e.isShiftDown()) {
-				((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
-				chosenEdgeSelected = -1;
-			} else if (!wasSelected) {
-				((DEdgeView) m_view.getDEdgeView(chosenEdge)).selectInternal(false);
-				chosenEdgeSelected = 1;
+				if (hits.numRemaining() > 0) {
+					final int hit = hits.nextInt();
 
-				if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
-					m_ptBuff[0] = m_lastXMousePos;
-					m_ptBuff[1] = m_lastYMousePos;
-					m_view.xformComponentToNodeCoords(m_ptBuff);
-
-					final IntEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0],
-					                                                          (float) m_ptBuff[1],
-					                                                          (float) m_ptBuff[0],
-					                                                          (float) m_ptBuff[1],
-					                                                          null, 0, false);
-
-					if (hits.numRemaining() > 0) {
-						final int hit = hits.nextInt();
-
-						if (m_view.m_selectedAnchors.count(hit) == 0)
-							m_view.m_selectedAnchors.insert(hit);
-					}
+					if (m_view.m_selectedAnchors.count(hit) == 0)
+						m_view.m_selectedAnchors.insert(hit);
 				}
 			}
+		}
 
-			m_button1NodeDrag = true;
-			m_view.m_contentChanged = true;
-			return chosenEdgeSelected;
+		m_button1NodeDrag = true;
+		m_view.m_contentChanged = true;
+		return chosenEdgeSelected;
 	}
 	
 
@@ -1061,7 +1061,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		@Override
 		void singleLeftClick(MouseEvent e) {
-			//System.out.println("MousePressed ----> singleLeftClick");
 			m_undoable_edit = null;
 		
 			m_currMouseButton = 1;
@@ -1113,9 +1112,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					toggleChosenAnchor(chosenAnchor, e);
 				}
 	
-				if (chosenEdge >= 0) {
+				if (chosenEdge >= 0)
 					chosenEdgeSelected = toggleSelectedEdge(chosenEdge, e);
-				}
 	
 				if ((chosenNode < 0) && (chosenEdge < 0) && (chosenAnchor < 0)) {
 					m_selectionRect = new Rectangle(m_lastXMousePos, m_lastYMousePos, 0, 0);
@@ -1161,11 +1159,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 		@Override
 		void singleLeftControlClick(MouseEvent e) {
-			//System.out.println("MousePressed ----> singleLeftControlClick");
+			System.out.println("MousePressed ----> singleLeftControlClick");
+			
 			// clicking on empty space
 			if ((getChosenNode() < 0) && (getChosenEdge() < 0) && (getChosenAnchor() < 0)) {
 				popup.createEmptySpaceMenu(e.getX(), e.getY(),"NEW"); 
 			}
+			
+			// Cascade
+			this.singleLeftClick(e);
 		}
 	
 		@Override

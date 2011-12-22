@@ -3,6 +3,7 @@ package org.cytoscape.ding;
 import java.awt.geom.Point2D;
 import java.util.List;
 
+
 /**
  * A class that encapsulates the representation of the bend used for a
  * particular EdgeView.
@@ -10,6 +11,15 @@ import java.util.List;
  * @author Mike Smoot (mes5k)
  */
 public interface Bend {
+	
+//	List<Handle> getAllHandles();
+//	void addHandle(final Handle handle);
+//
+//	void removeHandle(final int handleIndex);
+//	void removeHandle(final Handle handle);
+//	void removeAllHandles();
+//
+//	int getIndex(final Handle handle);
 
 	/**
 	 * Given a list of points removes all existing handles/handlePoints and adds

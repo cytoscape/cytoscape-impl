@@ -80,8 +80,10 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	Paint m_targetSelectedPaint;
 	int m_sourceEdgeEnd; // One of the EdgeView edge end constants.
 	int m_targetEdgeEnd; // Ditto.
-	ArrayList<Point2D> m_anchors; // A list of Point2D objects.
-	int m_lineType;
+	
+	List<Point2D> m_anchors; // A list of Point2D objects.
+	
+	//int m_lineType;
 	String m_toolTipText = null;
 	
 	private LineType lineType;
@@ -111,7 +113,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		m_sourceEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_targetEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_anchors = null;
-		m_lineType = EdgeView.STRAIGHT_LINES;
+		//m_lineType = EdgeView.STRAIGHT_LINES;
 	}
 
 	@Override
@@ -177,41 +179,28 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Stroke getStroke() {
 		synchronized (m_view.m_lock) {
 			return m_view.m_edgeDetails.segmentStroke(m_inx);
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param lineType
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setLineType(int lineType) {
 		if ((lineType == EdgeView.CURVED_LINES)
 				|| (lineType == EdgeView.STRAIGHT_LINES)) {
 			synchronized (m_view.m_lock) {
-				m_lineType = lineType;
+				m_view.m_edgeDetails.m_lineType.put(m_inx, lineType);
 				m_view.m_contentChanged = true;
 			}
 		} else
 			throw new IllegalArgumentException("unrecognized line type");
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public int getLineType() {
-		return m_lineType;
+		return m_view.m_edgeDetails.lineType(m_inx);
 	}
 
 	
@@ -690,11 +679,6 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	}
 
 	// Interface org.cytoscape.ding.Bend:
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public int numHandles() {
 		synchronized (m_view.m_lock) {
 			if (m_anchors == null)
@@ -823,19 +807,15 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		addHandleFoo(pt);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param pt
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	public int addHandleFoo(Point2D pt) {
 		synchronized (m_view.m_lock) {
+			
+			System.out.println("!!ADD Ancor called: ");
+			
 			if ((m_anchors == null) || (m_anchors.size() == 0)) {
 				addHandle(0, pt);
-
+				// Index of this handle, which is first (0)
 				return 0;
 			}
 
@@ -876,22 +856,18 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param insertInx
-	 *            DOCUMENT ME!
-	 * @param pt
-	 *            DOCUMENT ME!
-	 */
-	public void addHandle(int insertInx, Point2D pt) {
+	@Override
+	public void addHandle(final int insertInx, final Point2D pt) {
 		synchronized (m_view.m_lock) {
 			final Point2D.Float addThis = new Point2D.Float();
 			addThis.setLocation(pt);
 
-			if (m_anchors == null)
+			// This is the first time to use this data structure.
+			if (m_anchors == null) {
+				System.out.println("manc is null.  Create arraylist");
 				m_anchors = new ArrayList<Point2D>();
-
+			}
+				
 			m_anchors.add(insertInx, addThis);
 
 			if (m_selected) {
@@ -1025,11 +1001,7 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Point2D[] getDrawPoints() {
 		synchronized (m_view.m_lock) {
 			final Point2D[] returnThis = new Point2D[(m_anchors == null) ? 0
@@ -1045,36 +1017,22 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 	}
 
 	// Interface org.cytoscape.graph.render.immed.EdgeAnchors:
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public int numAnchors() {
 		if (m_anchors == null)
 			return 0;
-
-		if (m_lineType == EdgeView.CURVED_LINES)
+		
+		if (m_view.m_edgeDetails.lineType(m_inx) == EdgeView.CURVED_LINES)
 			return m_anchors.size();
 		else
-
 			return 2 * m_anchors.size();
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param anchorIndex
-	 *            DOCUMENT ME!
-	 * @param anchorArr
-	 *            DOCUMENT ME!
-	 * @param offset
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void getAnchor(int anchorIndex, float[] anchorArr, int offset) {
 		final Point2D.Float anchor;
 
-		if (m_lineType == EdgeView.CURVED_LINES)
+		if (m_view.m_edgeDetails.lineType(m_inx) == EdgeView.CURVED_LINES)
 			anchor = (Point2D.Float) m_anchors.get(anchorIndex);
 		else
 			anchor = (Point2D.Float) m_anchors.get(anchorIndex / 2);
@@ -1083,32 +1041,16 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		anchorArr[offset + 1] = anchor.y;
 	}
 
-	// Auxillary methods for edge anchors.
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param position
-	 *            DOCUMENT ME!
-	 */
+	// TODO: Can we remove this?
 	public void setTextAnchor(int position) {
 		// System.out.println("setTextAnchor");
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param justify
-	 *            DOCUMENT ME!
-	 */
+	
 	public void setJustify(int justify) {
 		// System.out.println("setJustify");
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public int getTextAnchor() {
 		// System.out.println("getTextAnchor");
 
@@ -1343,6 +1285,12 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 				m_view.showGraphObject(this);
 			else
 				m_view.hideGraphObject(this);
+		} else if(vp == DVisualLexicon.EDGE_CURVED) {
+			final Boolean curved = (Boolean) value;
+			if(curved)
+				setLineType(EdgeView.CURVED_LINES);
+			else
+				setLineType(EdgeView.STRAIGHT_LINES);
 		}
 		
 		visualProperties.put(vp, value);

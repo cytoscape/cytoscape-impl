@@ -34,6 +34,7 @@ import java.awt.Paint;
 import java.awt.Stroke;
 
 import org.cytoscape.ding.DArrowShape;
+import org.cytoscape.ding.EdgeView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.RichVisualLexicon;
@@ -63,6 +64,7 @@ class EdgeViewDefaultSupport {
 	private Paint selectedPaint;
 	
 	private Color labelColor;
+	
 
 	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vp, V value) {
 		
@@ -115,6 +117,17 @@ class EdgeViewDefaultSupport {
 				labelTransparency = ((Number) value).intValue();
 				setTextPaint(labelColor);
 			}
+		} else if(vp == DVisualLexicon.EDGE_CURVED) {
+			setCurved((Boolean) value);
+		}
+	}
+	
+	void setCurved(final Boolean curved) {
+		synchronized (lock) {
+			if(curved)
+				edgeDetails.setLineTypeDefault(EdgeView.CURVED_LINES);
+			else
+				edgeDetails.setLineTypeDefault(EdgeView.STRAIGHT_LINES);
 		}
 	}
 		
