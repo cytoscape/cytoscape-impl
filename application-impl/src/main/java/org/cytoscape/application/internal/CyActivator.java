@@ -10,7 +10,6 @@ import org.cytoscape.model.CyNetworkManager;
 
 import org.cytoscape.application.internal.CyApplicationManagerImpl;
 import org.cytoscape.application.internal.CyApplicationConfigurationImpl;
-import org.cytoscape.application.internal.CyApplicationCoreProperty;
 import org.cytoscape.application.internal.ShutdownHandler;
 import org.cytoscape.application.internal.CyVersionImpl;
 
@@ -43,7 +42,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManagerImpl cyApplicationManager = new CyApplicationManagerImpl(cyEventHelperServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef);
 		ShutdownHandler cytoscapeShutdown = new ShutdownHandler(cyEventHelperServiceRef);
 		CyApplicationConfigurationImpl cyApplicationConfiguration = new CyApplicationConfigurationImpl();
-		CyProperty cyApplicationCoreProperty = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");  
+		CyProperty cyApplicationCoreProperty = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		CyVersionImpl cytoscapeVersion = new CyVersionImpl(cyApplicationCoreProperty);
 		
 		registerService(bc,cyApplicationManager,CyApplicationManager.class, new Properties());
@@ -52,13 +51,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,cytoscapeShutdown, new Properties());
 		registerAllServices(bc,cytoscapeVersion, new Properties());
 		registerAllServices(bc,cyApplicationConfiguration, new Properties());
-
-		Properties cyApplicationCorePropertyProps = new Properties();
-		cyApplicationCorePropertyProps.setProperty("cyPropertyName","cytoscape3.props");
-		cyApplicationCorePropertyProps.setProperty("serviceType","property");
-		registerAllServices(bc,cyApplicationCoreProperty, cyApplicationCorePropertyProps);
-
-		
 
 	}
 }

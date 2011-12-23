@@ -194,12 +194,9 @@ public class CyActivator extends AbstractCyActivator {
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(dialogTaskManagerServiceRef,
 		                                                                              propertyWriterManagerRef,
 		                                                                              cyApplicationConfigurationServiceRef);
-		CyOperatingContextImpl cyOperatingContext = new CyOperatingContextImpl(cytoscapePropertiesServiceRef,
-		                                                                       cyApplicationConfigurationServiceRef);
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
 		AboutDialogFactoryImpl aboutDialogFactory = new AboutDialogFactoryImpl(openBrowserServiceRef);
-		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyOperatingContext,
-		                                                                                         cyEventHelperServiceRef);
+		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyEventHelperServiceRef);
 		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(bookmarkServiceRef,
 		                                                                                bookmarksUtilServiceRef);
 		CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar();

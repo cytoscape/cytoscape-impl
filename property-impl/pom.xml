@@ -76,6 +76,10 @@
             <artifactId>session-api</artifactId>
         </dependency>
 		<dependency>
+            <groupId>org.cytoscape</groupId>
+            <artifactId>application-api</artifactId>
+        </dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>

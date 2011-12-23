@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.internal.CyOperatingContextImpl;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -51,10 +50,8 @@ import org.cytoscape.property.bookmark.BookmarksUtil;
 public class PreferencesDialogFactoryImpl {
 
 	private CyEventHelper eh;
-	private CyOperatingContextImpl coc;
 
-	public PreferencesDialogFactoryImpl(CyOperatingContextImpl coc, CyEventHelper eh) {
-		this.coc = coc;
+	public PreferencesDialogFactoryImpl(CyEventHelper eh) {
 		this.eh = eh;
 	}
 

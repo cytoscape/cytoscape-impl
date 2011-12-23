@@ -71,7 +71,6 @@ import javax.swing.table.TableModel;
 import org.cytoscape.application.swing.events.PreferencesUpdatedEvent;
 import org.cytoscape.event.CyEventHelper;
 
-import org.cytoscape.internal.CyOperatingContextImpl;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
