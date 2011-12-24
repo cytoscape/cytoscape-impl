@@ -2,13 +2,9 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Paint;
-import java.lang.reflect.Field;
 import java.util.Properties;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.application.CyApplicationConfiguration;

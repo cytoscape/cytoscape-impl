@@ -56,7 +56,7 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 
-class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, Bend, EdgeAnchors {
+public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, Bend, EdgeAnchors {
 	
 	static final float DEFAULT_ARROW_SIZE = 8.0f;
 	static final Paint DEFAULT_ARROW_PAINT = Color.BLACK;
@@ -954,9 +954,9 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 */
+	
+	
+	@Override
 	public void removeAllHandles() {
 		synchronized (m_view.m_lock) {
 			if (m_anchors == null)
@@ -970,18 +970,12 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 			}
 
 			m_anchors = null;
+			
 			m_view.m_contentChanged = true;
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param pt
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	public boolean handleAlreadyExists(Point2D pt) {
 		synchronized (m_view.m_lock) {
 			final float x = (float) pt.getX();
@@ -1291,6 +1285,8 @@ class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, B
 				setLineType(EdgeView.CURVED_LINES);
 			else
 				setLineType(EdgeView.STRAIGHT_LINES);
+		} else if(vp == DVisualLexicon.EDGE_BEND) {
+			// TODO: implememt set method
 		}
 		
 		visualProperties.put(vp, value);

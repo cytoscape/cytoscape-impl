@@ -15,14 +15,10 @@ public class ObjectPositionEditor extends
 	 * Constructor. Should instantiate one editor per VisualProperty.
 	 */
 	public ObjectPositionEditor(final ValueEditor<ObjectPosition> valueEditor) {
-		super(ObjectPosition.class,
-		      new CyObjectPositionPropertyEditor(valueEditor));
+		super(ObjectPosition.class, new CyObjectPositionPropertyEditor(valueEditor));
 
 		discreteTableCellRenderer = new ObjectPositionCellRenderer();
-//		continuousTableCellRenderer = new ColorContinuousMappingCellRenderer();
-//
-//		continuousEditor = new GradientEditor(manager, appManager,
-//				selectedManager, editorManager, vmm);
+
 	}
 
 }

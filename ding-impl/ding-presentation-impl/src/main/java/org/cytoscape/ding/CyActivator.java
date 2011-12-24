@@ -3,6 +3,7 @@ package org.cytoscape.ding;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.dependency.CustomGraphicsSizeDependency;
 import org.cytoscape.ding.dependency.EdgePaintToArrowHeadPaintDependency;
@@ -12,11 +13,21 @@ import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.BasicGraphicalEntity;
+import org.cytoscape.ding.impl.cyannotator.tasks.DropAnnotationTaskFactory;
+import org.cytoscape.ding.impl.editor.EdgeBendPropertyEditor;
+import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.dnd.GraphicalEntity;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
@@ -34,20 +45,14 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
-import org.cytoscape.ding.action.GraphicsDetailAction;
-import org.cytoscape.ding.impl.cyannotator.tasks.BasicGraphicalEntity;
-import org.cytoscape.ding.impl.cyannotator.tasks.DropAnnotationTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.BoundedAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -72,6 +77,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
 		
+		CyNetworkFactory cyNetworkFactory = getService(bc,CyNetworkFactory.class);
+		
 		DVisualLexicon dVisualLexicon = new DVisualLexicon(customGraphicsManagerServiceRef);
 		
 		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener();
@@ -81,12 +88,19 @@ public class CyActivator extends AbstractCyActivator {
 		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,dialogTaskManager,submenuTaskManager,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef,renderingEngineManagerServiceRef, vtfListener,annotationFactoryManager);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(dVisualLexicon,renderingEngineManagerServiceRef,applicationManagerManagerServiceRef);
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(cyNetworkManagerServiceRef);
+		
+		// Object Position Editor
 		ObjectPositionValueEditor objectPositionValueEditor = new ObjectPositionValueEditor();
 		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor);
+		
 		EdgePaintToArrowHeadPaintDependency edgeColor2arrowColorDependency = new EdgePaintToArrowHeadPaintDependency();
 		CustomGraphicsSizeDependency nodeCustomGraphicsSizeDependency = new CustomGraphicsSizeDependency();
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,dialogTaskManager,submenuTaskManager,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef, vtfListener,annotationFactoryManager);
 
+		// Edge Bend editor
+		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,dingRenderingEngineFactory);
+		EdgeBendPropertyEditor edgeBendPropertyEditor = new EdgeBendPropertyEditor(edgeBendValueEditor);
+		
 		BasicGraphicalEntity imageGraphicalEntity = new BasicGraphicalEntity("Image","Image Attr","Image Value", "An Image annotation", "/images/imageIcon.png");
 //		BasicGraphicalEntity arrowGraphicalEntity = new BasicGraphicalEntity("Arrow","Arrow Attr","Arrow Value", "An Arrow annotation", "/images/arrowIcon.png");
 //		BasicGraphicalEntity boundedGraphicalEntity = new BasicGraphicalEntity("Bounded","Bounded Attr","Bounded Value", "A Bounded annotation", "/images/boundedIcon.png");
@@ -126,8 +140,18 @@ public class CyActivator extends AbstractCyActivator {
 		dVisualLexiconProps.setProperty("serviceType","visualLexicon");
 		dVisualLexiconProps.setProperty("id","ding");
 		registerService(bc,dVisualLexicon,VisualLexicon.class, dVisualLexiconProps);
-		registerAllServices(bc,objectPositionValueEditor, new Properties());
-		registerAllServices(bc,objectPositionEditor, new Properties());
+		
+		final Properties positionEditorProp = new Properties();
+		positionEditorProp.setProperty("id","objectPositionValueEditor");
+		registerService(bc,objectPositionValueEditor, ValueEditor.class, positionEditorProp);
+		
+		final Properties objectPositionEditorProp = new Properties();
+		objectPositionEditorProp.setProperty("id","objectPositionEditor");
+		registerService(bc,objectPositionEditor, VisualPropertyEditor.class, objectPositionEditorProp);
+		
+		registerAllServices(bc, edgeBendValueEditor, new Properties());
+		registerAllServices(bc, edgeBendPropertyEditor, new Properties());
+		
 		registerAllServices(bc,edgeColor2arrowColorDependency, new Properties());
 		registerAllServices(bc,nodeCustomGraphicsSizeDependency, new Properties());
 
@@ -178,7 +202,24 @@ public class CyActivator extends AbstractCyActivator {
 		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef, dialogTaskManager,
 				 cyPropertyServiceRef);
 		registerAllServices(bc,graphicsDetailAction, new Properties());
+		
+//		// Debug:
+//		try {
+//			final ServiceReference[] refs = bc.getServiceReferences("org.cytoscape.view.vizmap.gui.editor.ValueEditor",
+//					null);
+//
+//			System.out.println("%%%%%% REFS in DING = " + refs);
+//			for (ServiceReference ref : refs) {
+//				final Object service = bc.getService(ref);
+//
+//				System.out.println("* serv = " + service);
+//			}
+//			
+//			System.out.println("---------------\n\n\n");
+//		} catch (InvalidSyntaxException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
-	
 }
 

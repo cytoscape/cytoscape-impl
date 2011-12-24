@@ -3,7 +3,6 @@ package org.cytoscape.view.vizmap.gui.internal;
 import java.awt.Color;
 import java.awt.Font;
 import java.beans.PropertyEditor;
-import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

@@ -20,13 +20,11 @@ package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.ItemSelectable;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.management.modelmbean.ModelMBean;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;

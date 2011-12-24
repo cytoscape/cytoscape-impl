@@ -6,7 +6,6 @@ import javax.swing.Action;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.event.CyEventHelper;
 
 public class SetViewModeAction extends AbstractCyAction {
 	

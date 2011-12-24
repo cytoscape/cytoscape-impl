@@ -9,8 +9,12 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RenderingEngineManagerImpl implements RenderingEngineManager {
+	
+	private static final Logger logger = LoggerFactory.getLogger(RenderingEngineManagerImpl.class);
 
 	private final Map<View<?>, RenderingEngine<?>> renderingEngineMap;
 	
@@ -81,10 +85,10 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 		this.factoryMap.put(id, factory);
 		
 		// Register default lexicon
-		if(id.equals(DEFAULT_FACTORY_ID)) {
+		if(id.equals(DEFAULT_FACTORY_ID))
 			defaultLexicon = factory.getVisualLexicon();
-		}
-				
+		
+		logger.warn("@@@@@@@ New engine registered: " + factory.getClass());
 	}
 
 	public void removeRenderingEngineFactory(

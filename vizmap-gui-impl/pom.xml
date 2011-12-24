@@ -58,6 +58,7 @@
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Import-Package>*, org.cytoscape.view.vizmap.gui, org.cytoscape.view.vizmap.gui.*, org.cytoscape.view.vizmap.gui.editor</Import-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.internal.CyActivator</Bundle-Activator>
 					</instructions>

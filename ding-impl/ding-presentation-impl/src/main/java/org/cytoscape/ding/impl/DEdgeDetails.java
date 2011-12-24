@@ -37,14 +37,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.EdgeView;
+import org.cytoscape.ding.impl.visualproperty.EdgeBendVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.IntIterator;
 import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.util.intr.MinIntHeap;
 
@@ -77,6 +78,9 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	
 	// Curved or not
 	Map<Integer, Integer> m_lineType = new HashMap<Integer, Integer>();
+	
+	// Edge Bends
+	Map<Integer, Bend> m_edgeBends = new HashMap<Integer, Bend>();
 
 	private Byte m_sourceArrowDefault;
 	private Paint m_sourceArrowPaintDefault;
@@ -98,6 +102,9 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	private Color m_selectedColorLowDetailDefault;
 	
 	private Integer m_lineTypeDefault;
+	
+	// Default value for Edge Bends
+	private Bend m_edgeBendDefault;
 
 	private boolean isCleared = false;
 
@@ -134,6 +141,8 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		selected = new HashSet<Integer>();
 		
 		m_lineType = new HashMap<Integer, Integer>();
+		
+		m_edgeBends = new HashMap<Integer, Bend>();
 
 		isCleared = true;
 	}
@@ -165,6 +174,7 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		m_unselectedPaints.remove(edgeIdx);
 		
 		m_lineType.remove(edgeIdx);
+		m_edgeBends.remove(edgeIdx);
 
 		selected.remove(edgeIdx);
 	}
@@ -698,7 +708,6 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 	
 	
-	
 	public Integer lineType(final int edge) {
 		final Integer lineType = m_lineType.get(edge);
 		if (lineType == null)
@@ -712,6 +721,28 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	
 	public void setLineTypeDefault(int lineType) {
 		this.m_lineTypeDefault = lineType;
+	}
+
+
+	/**
+	 * Returns current Edge Bend value.
+	 * @param edge
+	 * @return edge Bend
+	 */
+	public Bend bend(final int edge) {		
+		final Bend bend = m_edgeBends.get(edge);
+		
+		if(bend == null)
+			if (m_edgeBendDefault == null)
+				return EdgeBendVisualProperty.DEFAULT_EDGE_BEND;
+			else
+				return m_edgeBendDefault;
+
+		return bend;
+	}
+	
+	public void setEdgeBendDefault(final Bend bend) {
+		this.m_edgeBendDefault = bend;
 	}
 	
 	
