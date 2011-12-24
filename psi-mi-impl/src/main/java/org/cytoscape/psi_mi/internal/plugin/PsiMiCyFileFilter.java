@@ -71,11 +71,11 @@ public class PsiMiCyFileFilter implements CyFileFilter {
 	private boolean checkHeader(InputStream stream) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		int linesToCheck = DEFAULT_LINES_TO_CHECK;
-		while (linesToCheck > 0) {
+		while (linesToCheck-- > 0) {
 			String line = reader.readLine();
 			if(line == null)
 				continue;
-			
+		
 			if (version == PSIMIVersion.PSIMI25) {
 				if ((line.contains(PSI_MI_XML_NAMESPACE) || line.contains(PSI_MI_254_KEY1) || line
 						.contains(PSI_MI_254_KEY2)) && line.contains("level=\"2\""))
@@ -84,7 +84,6 @@ public class PsiMiCyFileFilter implements CyFileFilter {
 				if (line.contains(PSI_MI_XML_NAMESPACE) && line.contains("level=\"1\""))
 					return true;
 			}
-			linesToCheck--;
 		}
 		return false;
 	}
