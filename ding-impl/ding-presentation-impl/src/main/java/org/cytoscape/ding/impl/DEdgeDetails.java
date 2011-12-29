@@ -730,13 +730,16 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 * @return edge Bend
 	 */
 	public Bend bend(final int edge) {		
-		final Bend bend = m_edgeBends.get(edge);
+		Bend bend = m_edgeBends.get(edge);
 		
-		if(bend == null)
-			if (m_edgeBendDefault == null)
-				return EdgeBendVisualProperty.DEFAULT_EDGE_BEND;
-			else
-				return m_edgeBendDefault;
+		if(bend == null) {
+			bend = new BendImpl();
+			m_edgeBends.put(edge, bend);
+//			if (m_edgeBendDefault == null)
+//				return EdgeBendVisualProperty.DEFAULT_EDGE_BEND;
+//			else
+//				return m_edgeBendDefault;
+		}
 
 		return bend;
 	}
@@ -746,14 +749,14 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	}
 	
 	
+	
+	
 	// Used by bends
 	private final MinIntHeap m_heap = new MinIntHeap();
 	private final float[] m_extentsBuff = new float[4];
 	
 	@Override
 	public EdgeAnchors anchors(final int edge) {
-		//TODO: Why NOT op is here?
-//		final EdgeAnchors returnThis = (EdgeAnchors) (m_view.getDEdgeView(~edge));
 		final DEdgeView edgeView = (DEdgeView) m_view.getDEdgeView(edge);
 		final EdgeAnchors returnThis = edgeView;
 
@@ -924,17 +927,26 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		return returnThis;
 	}
 
+	
+	/**
+	 * Size of handle graphics (square)
+	 */
 	@Override
 	public float anchorSize(final int edge, final int anchorInx) {
-		if (m_view.getDEdgeView(edge).isSelected() && (((DEdgeView) m_view.getDEdgeView(edge)).numAnchors() > 0))
+		final DEdgeView eView = (DEdgeView) m_view.getDEdgeView(edge);
+		
+		if (eView.isSelected() && (eView.numAnchors() > 0))
 			return m_view.getAnchorSize();
 		else
 			return 0.0f;
 	}
 
+	
+	/**
+	 * Color of handles.
+	 */
 	@Override
 	public Paint anchorPaint(final int edge, int anchorInx) {
-//		final DEdgeView edgeView = (DEdgeView) m_view.getDEdgeView(edge);
 
 		if (lineType(edge) == DEdgeView.STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;

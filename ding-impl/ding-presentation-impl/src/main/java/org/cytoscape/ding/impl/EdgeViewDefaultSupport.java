@@ -33,6 +33,7 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 
+import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.view.model.VisualProperty;
@@ -119,9 +120,15 @@ class EdgeViewDefaultSupport {
 			}
 		} else if(vp == DVisualLexicon.EDGE_CURVED) {
 			setCurved((Boolean) value);
+		} else if(vp == DVisualLexicon.EDGE_BEND) {
+			setBend((Bend)value);
 		}
 	}
 	
+	private void setBend(final Bend bend) {
+		edgeDetails.setEdgeBendDefault(bend);
+	}
+
 	void setCurved(final Boolean curved) {
 		synchronized (lock) {
 			if(curved)

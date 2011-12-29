@@ -152,7 +152,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		
 		this.setVisible(true);
 		
-		return edgeView;
+		return edgeView.getBend();
 	}
 
 	@Override

@@ -94,7 +94,9 @@ public class ViewState {
 			linetype = new HashMap<CyEdge, Integer>();
 			for (CyEdge e: view.getNetwork().getEdgeList()) {
 				EdgeView ev = view.getDEdgeView(e);
-				anchors.put(e, ev.getBend().getHandles());
+				
+				// FIXME!
+				//anchors.put(e, ev.getBend().getHandles());
 				linetype.put(e, ev.getLineType());
 			}
 		}
@@ -120,7 +122,8 @@ public class ViewState {
 			while (edgeIter.hasNext()) {
 				CyEdge e = edgeIter.next();
 				EdgeView ev = view.getDEdgeView(e);
-				anchors.put(e, ev.getBend().getHandles());
+				// FIXME!
+				//anchors.put(e, ev.getBend().getHandles());
 				linetype.put(e, ev.getLineType());
 			}
 		}
@@ -167,10 +170,10 @@ public class ViewState {
 		}
 
 		if (anchors != null) {
-			if (vs.anchors == null || anchors.size() != vs.anchors.size()) {
+			if (vs.anchors == null || anchors.size() != vs.anchors.size())
 				return false;
-			}
-			for (CyEdge e: anchors.keySet()) {
+			
+			for(final CyEdge e: anchors.keySet()) {
 				if ( !anchors.get(e).equals(vs.anchors.get(e))) {
 					return false;
 				}
@@ -206,9 +209,10 @@ public class ViewState {
 		view.updateView();
 
 		if (anchors != null) {
-			for (CyEdge e: anchors.keySet()) {
-				EdgeView ev = view.getDEdgeView(e);
-				ev.getBend().setHandles( anchors.get(e) );
+			for(final CyEdge e: anchors.keySet()) {
+				final EdgeView ev = view.getDEdgeView(e);
+				// FIXME!
+				//ev.getBend().setHandles( anchors.get(e) );
 				ev.setLineType( linetype.get(e).intValue() );
 			}
 		}

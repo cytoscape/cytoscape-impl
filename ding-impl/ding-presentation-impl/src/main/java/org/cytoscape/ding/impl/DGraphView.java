@@ -2479,11 +2479,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return ev;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	
 	public final float getAnchorSize() {
 		return DEFAULT_ANCHOR_SIZE;
 	}

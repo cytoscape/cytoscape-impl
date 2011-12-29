@@ -506,7 +506,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.xformComponentToNodeCoords(m_ptBuff);
 			// Store current handle list
 			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", m_undo);
-			final int chosenInx = ((DEdgeView) m_view.getDEdgeView(chosenEdge)).addHandleFoo(new Point2D.Float(
+			final int chosenInx = ((DEdgeView) m_view.getDEdgeView(chosenEdge)).addHandlePoint(new Point2D.Float(
 					(float) m_ptBuff[0], (float) m_ptBuff[1]));
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
