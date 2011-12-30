@@ -125,8 +125,6 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 	@Override
 	public void processEvent(PropertyChangeEvent e) {
 
-		System.out.println("$$$$$$$$ Got Property Sheet event: " + e);
-
 		final Object newVal = e.getNewValue();
 		final Object oldVal = e.getOldValue();
 
