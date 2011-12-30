@@ -6,8 +6,8 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 public class EdgeBendEditor extends AbstractVisualPropertyEditor<Bend>{
 
-	public EdgeBendEditor(Class<Bend> type, ValueEditor<Bend> valueEditor) {
-		super(type, new EdgeBendPropertyEditor(valueEditor));
+	public EdgeBendEditor(ValueEditor<Bend> valueEditor) {
+		super(Bend.class, new EdgeBendPropertyEditor(valueEditor));
 	}
 
 }

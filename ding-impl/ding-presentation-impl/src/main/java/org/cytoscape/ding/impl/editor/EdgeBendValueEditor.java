@@ -18,6 +18,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.ding.Bend;
+import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.DEdgeView;
 import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.model.CyEdge;
@@ -38,9 +39,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
 	private static final long serialVersionUID = 9145223127932839836L;
 
-	private static final int BORDER_WIDTH = 10;
-
-	private static final Dimension DEF_PANEL_SIZE = new Dimension(400, 200);
+	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 300);
 	
 	private static final Color NODE_COLOR = Color.gray;
 	private static final Color EDGE_COLOR = Color.BLACK;
@@ -48,12 +47,14 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	
 	private DEdgeView edgeView;
 
-	private JPanel innerPanel;
+	private final CyNetworkFactory cyNetworkFactory;
+	private final CyNetworkViewFactory cyNetworkViewFactory;
+	private final RenderingEngineFactory<CyNetwork> presentationFactory;
 
 	public EdgeBendValueEditor(final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory) {
 		super();
-
+		
 		// Null check
 		if (cyNetworkFactory == null)
 			throw new NullPointerException("CyNetworkFactory is null.");
@@ -61,22 +62,28 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 			throw new NullPointerException("CyNetworkViewFactory is null.");
 		if (presentationFactory == null)
 			throw new NullPointerException("RenderingEngineFactory is null.");
-
-		initUI(cyNetworkFactory, cyNetworkViewFactory, presentationFactory);
+		
+		this.cyNetworkFactory = cyNetworkFactory;
+		this.cyNetworkViewFactory = cyNetworkViewFactory;
+		this.presentationFactory = presentationFactory;
+		
 		
 		this.setModal(true);
 	}
 
 	private void initUI(final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory) {
+		
+		this.getContentPane().removeAll();
+		
 		setTitle("Edge Bend Editor");
 
 		// Create Dummy View for this editor
-		innerPanel = new JPanel();
-		this.innerPanel.setBorder(new TitledBorder("CTRL-Click to add new Edge Handle / Drag Handles to adjust Bend"));
-		this.setPreferredSize(DEF_PANEL_SIZE);
-		this.setLayout(new BorderLayout());
-		this.add(innerPanel, BorderLayout.CENTER);
+		JPanel innerPanel = new JPanel();
+		innerPanel.setBorder(new TitledBorder("CTRL-Click to add new Edge Handle / Drag Handles to adjust Bend"));
+		setPreferredSize(DEF_PANEL_SIZE);
+		setLayout(new BorderLayout());
+		add(innerPanel, BorderLayout.CENTER);
 
 		// Create very simple dummy view.
 		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables();
@@ -108,13 +115,16 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		edgeView.setVisualProperty(RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_COLOR);
 		
+		final Bend newBend = new BendImpl();
+		edgeView.setVisualProperty(DVisualLexicon.EDGE_BEND, newBend);
+		
 		
 		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
-		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 0d);
+		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 20d);
 		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 200d);
 		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 0d);
 
-		this.innerPanel.setBackground(BACKGROUND_COLOR);
+		innerPanel.setBackground(BACKGROUND_COLOR);
 		// Render it in this panel
 		final RenderingEngine<CyNetwork> renderingEngine = presentationFactory.createRenderingEngine(innerPanel, dummyview);
 		dummyview.fitContent();
@@ -145,13 +155,9 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
 	@Override
 	public <S extends Bend> Bend showEditor(Component parent, S initialValue) {
-		if (parent != null)
-			this.setLocationRelativeTo(parent);
-		else
-			this.setLocationByPlatform(true);
-		
-		this.setVisible(true);
-		
+		initUI(cyNetworkFactory, cyNetworkViewFactory, presentationFactory);
+		this.setLocationRelativeTo(parent);
+		this.setVisible(true);		
 		return edgeView.getBend();
 	}
 

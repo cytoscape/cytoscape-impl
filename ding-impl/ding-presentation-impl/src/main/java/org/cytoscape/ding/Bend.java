@@ -1,15 +1,7 @@
 package org.cytoscape.ding;
 
-import java.awt.geom.Point2D;
 import java.util.List;
 
-
-/**
- * A class that encapsulates the representation of the bend used for a
- * particular EdgeView.
- * 
- * @author Mike Smoot (mes5k)
- */
 public interface Bend {
 	
 	List<Handle> getAllHandles();

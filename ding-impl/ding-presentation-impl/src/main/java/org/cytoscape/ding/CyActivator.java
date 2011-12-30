@@ -20,6 +20,7 @@ import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.BasicGraphicalEntity;
 import org.cytoscape.ding.impl.cyannotator.tasks.DropAnnotationTaskFactory;
+import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendPropertyEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
@@ -99,7 +100,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,dingRenderingEngineFactory);
-		EdgeBendPropertyEditor edgeBendPropertyEditor = new EdgeBendPropertyEditor(edgeBendValueEditor);
+		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor);
 		
 		BasicGraphicalEntity imageGraphicalEntity = new BasicGraphicalEntity("Image","Image Attr","Image Value", "An Image annotation", "/images/imageIcon.png");
 //		BasicGraphicalEntity arrowGraphicalEntity = new BasicGraphicalEntity("Arrow","Arrow Attr","Arrow Value", "An Arrow annotation", "/images/arrowIcon.png");
@@ -150,7 +151,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,objectPositionEditor, VisualPropertyEditor.class, objectPositionEditorProp);
 		
 		registerAllServices(bc, edgeBendValueEditor, new Properties());
-		registerAllServices(bc, edgeBendPropertyEditor, new Properties());
+		registerService(bc, edgeBendEditor, VisualPropertyEditor.class, new Properties());
 		
 		registerAllServices(bc,edgeColor2arrowColorDependency, new Properties());
 		registerAllServices(bc,nodeCustomGraphicsSizeDependency, new Properties());
@@ -203,9 +204,10 @@ public class CyActivator extends AbstractCyActivator {
 				 cyPropertyServiceRef);
 		registerAllServices(bc,graphicsDetailAction, new Properties());
 		
+		
 //		// Debug:
 //		try {
-//			final ServiceReference[] refs = bc.getServiceReferences("org.cytoscape.view.vizmap.gui.editor.ValueEditor",
+//			final ServiceReference[] refs = bc.getServiceReferences("org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor",
 //					null);
 //
 //			System.out.println("%%%%%% REFS in DING = " + refs);

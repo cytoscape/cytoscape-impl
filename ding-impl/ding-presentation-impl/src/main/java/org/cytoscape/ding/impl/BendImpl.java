@@ -56,4 +56,9 @@ public class BendImpl implements Bend {
 	public void insertHandle(final int index, final Handle handle) {
 		this.handles.add(index, handle);
 	}
+	
+	@Override
+	public String toString() {
+		return "Handles[ " + handles.size() + " ]" ;
+	}
 }

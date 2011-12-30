@@ -1159,7 +1159,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 		@Override
 		void singleLeftControlClick(MouseEvent e) {
-			System.out.println("MousePressed ----> singleLeftControlClick");
+			//System.out.println("MousePressed ----> singleLeftControlClick");
 			
 			// clicking on empty space
 			if ((getChosenNode() < 0) && (getChosenEdge() < 0) && (getChosenAnchor() < 0)) {

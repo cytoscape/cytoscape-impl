@@ -12,67 +12,46 @@ import org.cytoscape.view.model.View;
  */
 public class HandleImpl implements Handle {
 
-	private static final double MIN = Double.MIN_VALUE;
-	private static final double MAX = Double.MAX_VALUE;
+//	private static final double MIN = Double.MIN_VALUE;
+//	private static final double MAX = Double.MAX_VALUE;
 
 	private double x;
 	private double y;
-
-	private final DGraphView graphView;
-	private final DEdgeView view;
-
-	private Point2D absolute;
+	
 	private Point2D ratio;
 
 	public HandleImpl(DGraphView graphView, DEdgeView view, final double x,
 			final double y) {
-		this.graphView = graphView;
-		this.view = view;
-
-		if (validate(x) && validate(y)) {
-			this.x = x;
-			this.y = y;
-		} else {
-			throw new IllegalArgumentException("Given value is out-of-range.");
-		}
-	}
-
-	private boolean validate(final double value) {
-		if (value >= MIN && value <= MAX)
-			return true;
-		else
-			return false;
-	}
-
-	@Override
-	public double getXFraction() {
-		
-		System.out.println("!!!!!! Get X called: " + x);
-		return x;
-	}
-
-	@Override
-	public double getYFraction() {
-		return y;
+		this.x = x;
+		this.y = y;		
 	}
 
 //	@Override
-//	public void setXFraction(double x) {
-//		if (validate(x))
-//			this.x = x;
+//	public double getXFraction(DGraphView graphView, DEdgeView view) {
+//		
+//		System.out.println("!!!!!! Get X called: " + x);
+//		if(ratio == null)
+//			return x;
 //		else
-//			throw new IllegalArgumentException("Given value is out-of-range.");
+//			return convertToAbsolute(true);
 //	}
 //
 //	@Override
-//	public void setYFraction(double y) {
-//		if (validate(y))
-//			this.y = y;
+//	public double getYFraction() {
+//		System.out.println("!!!!!! Get Y called: " + y);
+//		if(ratio == null)
+//			return y;
 //		else
-//			throw new IllegalArgumentException("Given value is out-of-range.");
+//			return convertToAbsolute(false);
 //	}
+	
+	@Override
+	public Point2D getPoint(DGraphView graphView, DEdgeView view) {
+		return convertToAbsolute(graphView, view);
+	}
 
-	private double convertToRelativePosition() {
+
+	private Point2D convertToAbsolute(DGraphView graphView, DEdgeView view) {
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
 		final View<CyNode> sourceView = graphView.getNodeView(source);
@@ -88,11 +67,19 @@ public class HandleImpl implements Handle {
 		final Double targetY = targetView
 				.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
-		// graphView.getNodeView(node);
-		return 0d;
+		final Point2D newPoint = new Point2D.Double();
+		if(ratio != null) {
+		double newX = getAbsolute(sourceX, targetX, ratio.getX());
+		double newY = getAbsolute(sourceY, targetY, ratio.getY());
+		newPoint.setLocation(newX, newY);
+		} else {
+			newPoint.setLocation(x, y);
+		}
+		
+		return newPoint;
 	}
 
-	private Point2D convertToRatio(final Point2D absolutePoint) {
+	private Point2D convertToRatio(DGraphView graphView, DEdgeView view, final Point2D absolutePoint) {
 		final Point2D relativePoint = new Point2D.Float();
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
@@ -109,50 +96,33 @@ public class HandleImpl implements Handle {
 		final Double targetY = targetView
 				.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
-		double xRatio = getRatio(sourceX, targetX, absolutePoint.getX());
-		double yRatio = getRatio(sourceY, targetY, absolutePoint.getY());
+		final double xRatio = getRatio(sourceX, targetX, absolutePoint.getX());
+		final double yRatio = getRatio(sourceY, targetY, absolutePoint.getY());
+		
 		relativePoint.setLocation(xRatio, yRatio);
 		
 		return relativePoint;
 	}
 
 	private double getRatio(double p1, double p2, double p) {
-		double ratio;
-		
-		final double distance;
-		if (p1 < p2) {
-			distance = p2-p1;
-			if(p1<p) {
-				ratio = (p-p1)/distance;
-			} else {
-				ratio = (p1-p)/distance;
-			}
-		} else {
-			distance = p1-p2;
-			if(p2<p) {
-				ratio = (p-p2)/distance;
-			} else {
-				ratio = (p2-p)/distance;
-			}
-		}
-		
-		return Math.abs(ratio);
+		final double distance = Math.abs(p2-p1);
+		if(distance == 0)
+			return 0.5;
+		else
+			return (p-p1)/distance;			
+	}
+	
+	private double getAbsolute(double p1, double p2, double r) {
+		final double distance = Math.abs(p2-p1);
+		return p1 + (distance * r);
 	}
 
 	@Override
-	public void setPoint(double x, double y) {
-		if (validate(x))
-			this.x = x;
-		else
-			throw new IllegalArgumentException("Given value is out-of-range.");
-		
-		if (validate(y))
-			this.y = y;
-		else
-			throw new IllegalArgumentException("Given value is out-of-range.");
-		ratio = convertToRatio(new Point2D.Double(x, y));
-		
-		System.out.println("#### Ratio = " + ratio);
+	public void setPoint(DGraphView graphView, DEdgeView view, double x, double y) {
+		this.x = x;
+		this.y = y;
+
+		ratio = convertToRatio(graphView, view, new Point2D.Double(x, y));		
 	}
 
 }

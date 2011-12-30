@@ -733,12 +733,10 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 		Bend bend = m_edgeBends.get(edge);
 		
 		if(bend == null) {
-			bend = new BendImpl();
-			m_edgeBends.put(edge, bend);
-//			if (m_edgeBendDefault == null)
-//				return EdgeBendVisualProperty.DEFAULT_EDGE_BEND;
-//			else
-//				return m_edgeBendDefault;
+			if (m_edgeBendDefault == null)
+				return EdgeBendVisualProperty.DEFAULT_EDGE_BEND;
+			else
+				return m_edgeBendDefault;
 		}
 
 		return bend;

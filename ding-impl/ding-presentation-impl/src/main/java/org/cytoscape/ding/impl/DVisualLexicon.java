@@ -243,7 +243,7 @@ public class DVisualLexicon extends RichVisualLexicon {
 			EdgeBendVisualProperty.DEFAULT_EDGE_BEND, "EDGE_BEND",
 			"Edge Bend");
 	
-	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(false, "EDGE_CURVED",
+	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(true, "EDGE_CURVED",
 			"Edge Curved", CyEdge.class);
 	
 
