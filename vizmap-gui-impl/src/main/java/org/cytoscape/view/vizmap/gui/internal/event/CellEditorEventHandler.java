@@ -192,8 +192,6 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 		// 2. Switch mapping type
 		if (prop.getCellType().equals(CellType.MAPPING_TYPE)) {
-			System.out.println("Mapping type changed from: " + e.getOldValue());
-			System.out.println("Mapping type new = " + e.getNewValue());
 
 			if (e.getNewValue() == e.getOldValue())
 				return;
