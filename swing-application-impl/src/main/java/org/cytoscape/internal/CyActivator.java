@@ -50,6 +50,7 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
@@ -118,16 +119,19 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.osgi.framework.BundleContext;
 
+import com.apple.eawt.AboutHandler;
+import com.apple.eawt.AppEvent.AboutEvent;
+import com.apple.eawt.AppEvent.QuitEvent;
 import com.apple.eawt.Application;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
-import com.apple.eawt.AppEvent.QuitEvent;
 
 /**
  *
@@ -200,7 +204,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                              propertyWriterManagerRef,
 		                                                                              cyApplicationConfigurationServiceRef);
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
-		AboutDialogFactoryImpl aboutDialogFactory = new AboutDialogFactoryImpl(openBrowserServiceRef);
 		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyEventHelperServiceRef);
 		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(bookmarkServiceRef,
 		                                                                                bookmarksUtilServiceRef);
@@ -276,6 +279,9 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     sessionReaderManagerServiceRef,
 		                                                                     cyApplicationManagerServiceRef);
 		
+		CyVersion version = getService(bc, CyVersion.class);
+		AboutDialogFactoryImpl aboutDialogFactory = new AboutDialogFactoryImpl(version);
+		
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(bc,cytoscapeDesktop, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
@@ -292,7 +298,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
 
 		if (isMac()) {
-			registerMacExitHandler(cytoscapeShutdownServiceRef);
+			registerMacMenuHandlers(cytoscapeShutdownServiceRef, submenuTaskManagerServiceRef, aboutDialogFactory);
 		} else {
 			registerService(bc, exitAction, CyAction.class, new Properties());
 		}
@@ -403,12 +409,18 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyLayoutAlgorithm.class);
 	}
 
-	private void registerMacExitHandler(final CyShutdown shutdown) {
+	private void registerMacMenuHandlers(final CyShutdown shutdown, final TaskManager<?, ?> taskManager, final TaskFactory aboutTaskFactory) {
 		Application application = Application.getApplication();
 		application.setQuitHandler(new QuitHandler() {
 			@Override
 			public void handleQuitRequestWith(QuitEvent event, QuitResponse response) {
 				shutdown.exit(0);
+			}
+		});
+		application.setAboutHandler(new AboutHandler() {
+			@Override
+			public void handleAbout(AboutEvent event) {
+				taskManager.execute(aboutTaskFactory);
 			}
 		});
 	}

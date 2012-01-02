@@ -35,24 +35,19 @@
 */
 package org.cytoscape.internal.dialogs;
 
-import java.awt.Window;
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 
-import org.cytoscape.util.swing.OpenBrowser;
+public class AboutDialogFactoryImpl implements TaskFactory {
+	private CyVersion version;
 
-/**
- */
-public class AboutDialogFactoryImpl {
-
-	private OpenBrowser ob;
-
-	public AboutDialogFactoryImpl(OpenBrowser ob) {	
-		if ( ob == null )
-			throw new NullPointerException("open browser class is null!");
-		else 
-			this.ob = ob;
+	public AboutDialogFactoryImpl(CyVersion version) {
+		this.version = version;
 	}
-
-	public AboutDialogImpl getAboutDialog(Window parent, boolean modal) {
-		return new AboutDialogImpl(parent,modal,ob);
+	
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new AboutDialogTask(version));
 	}
 }
