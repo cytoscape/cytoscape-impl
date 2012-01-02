@@ -59,7 +59,9 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
+import org.cytoscape.property.session.Desktop;
 import org.cytoscape.property.session.NetworkFrame;
+import org.cytoscape.property.session.SessionState;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -170,6 +172,7 @@ public class CySessionManagerImpl implements CySessionManager {
 				if (!allNetworks.contains(rootNet)) {
 					allNetworks.add(rootNet);
 				
+					// TODO: remove it once manager is fixed to return all tables
 					for (Class<? extends CyTableEntry> type : TYPES) {
 						Map<String, CyTable> tableMap = netTblMgr.getTables(rootNet, type);
 						allTables.addAll(tableMap.values());
@@ -252,7 +255,6 @@ public class CySessionManagerImpl implements CySessionManager {
 			restoreNetworkViews(sess);
 			restoreTables(sess);
 			restoreVisualStyles(sess);
-//			restoreSelection(sess);
 		}
 		
 		currentSession = sess;
@@ -351,98 +353,36 @@ public class CySessionManagerImpl implements CySessionManager {
 		}
 
 		final Cysession cysess = sess.getCysession();
+		final SessionState sessionState = cysess.getSessionState();
 
 		// Get network frames info
-		if (cysess.getSessionState().getDesktop().getNetworkFrames() != null) {
-			List<NetworkFrame> frames = cysess.getSessionState().getDesktop().getNetworkFrames().getNetworkFrame();
-			Map<String, NetworkFrame> framesLookup = new HashMap<String, NetworkFrame>();
-
-			for (NetworkFrame nf : frames)
-				framesLookup.put(nf.getFrameID(), nf);
-
-			// Set visual styles to network views
-			final Map<CyNetworkView, String> netStyleMap = sess.getViewVisualStyleMap();
-
-			for (Entry<CyNetworkView, String> entry : netStyleMap.entrySet()) {
-				final CyNetworkView netView = entry.getKey();
-				final String stName = entry.getValue();
-				final VisualStyle vs = stylesMap.get(stName);
-
-				if (vs != null) {
-					vmMgr.setVisualStyle(vs, netView);
-					vs.apply(netView);
-					netView.updateView();
+		if (sessionState != null) {
+			final Desktop desktop = sessionState.getDesktop();
+			
+			if (desktop != null && desktop.getNetworkFrames() != null) {
+				final List<NetworkFrame> frames = desktop.getNetworkFrames().getNetworkFrame();
+				final Map<String, NetworkFrame> framesLookup = new HashMap<String, NetworkFrame>();
+	
+				for (NetworkFrame nf : frames)
+					framesLookup.put(nf.getFrameID(), nf);
+	
+				// Set visual styles to network views
+				final Map<CyNetworkView, String> netStyleMap = sess.getViewVisualStyleMap();
+	
+				for (Entry<CyNetworkView, String> entry : netStyleMap.entrySet()) {
+					final CyNetworkView netView = entry.getKey();
+					final String stName = entry.getValue();
+					final VisualStyle vs = stylesMap.get(stName);
+	
+					if (vs != null) {
+						vmMgr.setVisualStyle(vs, netView);
+						vs.apply(netView);
+						netView.updateView();
+					}
 				}
 			}
 		}
 	}
-
-//	private void restoreSelection(CySession sess) {
-//		final Cysession cysess = sess.getCysession();
-//		float version = 0;
-//
-//		try {
-//			version = Float.valueOf(cysess.getDocumentVersion());
-//		} catch (Exception e) {
-//		}
-//
-//		if (version < 3.0) {
-//			logger.debug("Restoring node/edge selection...");
-//
-//			// First create network_title -> element_name lookup maps
-//			final Map<String, Set<String>> selectedNodesMap = new HashMap<String, Set<String>>();
-//			final Map<String, Set<String>> selectedEdgesMap = new HashMap<String, Set<String>>();
-//			final List<Network> networks = cysess.getNetworkTree().getNetwork();
-//
-//			for (Network net : networks) {
-//				String netTitle = net.getId();
-//
-//				if (net.getSelectedNodes() != null) {
-//					// Store selected node names for future reference
-//					Set<String> selectedNodes = new HashSet<String>();
-//					selectedNodesMap.put(netTitle, selectedNodes);
-//
-//					for (Node n : net.getSelectedNodes().getNode()) {
-//						selectedNodes.add(n.getId());
-//					}
-//				}
-//
-//				if (net.getSelectedEdges() != null) {
-//					// Store selected edge names for future reference
-//					Set<String> selectedEdges = new HashSet<String>();
-//					selectedEdgesMap.put(netTitle, selectedEdges);
-//
-//					for (Edge e : net.getSelectedEdges().getEdge()) {
-//						selectedEdges.add(e.getId());
-//					}
-//				}
-//			}
-//
-//			// Now iterate through all CyNodes/Edges and select the ones that are found in the lookup maps
-//			Set<CyNetwork> cyNetworks = netMgr.getNetworkSet();
-//
-//			if (cyNetworks != null) {
-//				for (CyNetwork cyNet : cyNetworks) {
-//					String netTitle = cyNet.getCyRow().get(CyNetwork.NAME, String.class);
-//
-//					selectElementsByName(cyNet.getNodeList(), selectedNodesMap.get(netTitle));
-//					selectElementsByName(cyNet.getEdgeList(), selectedEdgesMap.get(netTitle));
-//				}
-//			}
-//		}
-//	}
-//
-//	private <T extends CyTableEntry> void selectElementsByName(List<T> entries, Set<String> names) {
-//		if (entries != null && names != null) {
-//			for (T entry : entries) {
-//				CyRow row = entry.getCyRow();
-//
-//				if (names.contains(row.get(CyNetwork.NAME, String.class))) {
-//					row.set(CyNetwork.SELECTED, true);
-//				}
-//			}
-//		}
-//	}
 
 	private void disposeCurrentSession(boolean removeVisualStyles) {
 		logger.debug("Disposing current session...");

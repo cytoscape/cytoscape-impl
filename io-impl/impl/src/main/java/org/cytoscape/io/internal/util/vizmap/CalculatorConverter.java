@@ -199,15 +199,24 @@ public class CalculatorConverter {
 	private Object getMappingFunction(Properties props, String mapperName, VisualProperty vp) {
 		// e.g. "edgeColorCalculator.MyStyle-Edge Color-Discrete Mapper.mapping."
 		String baseKey = (legacyKey != null ? legacyKey : key) + "." + mapperName + ".mapping.";
-
 		String functionType = props.getProperty(baseKey + "type");
+		
+		if (functionType == null) {
+			// Try 2.3 calculator names...
+			if (baseKey.startsWith("nodeFillColorCalculator.")) {
+				baseKey = "nodeColorCalculator." + mapperName + ".mapping.";
+				functionType = props.getProperty(baseKey + "type");
+			}
+		}
+		
 		String attrName = props.getProperty(baseKey + "controller");
 
 		// "ID" is actually the "name" column!!!
 		if ("ID".equalsIgnoreCase(attrName)) attrName = "name";
 
 		if ("DiscreteMapping".equalsIgnoreCase(functionType)) {
-			byte controllerType = Byte.parseByte(props.getProperty(baseKey + "controllerType"));
+			String controllerTypeProp = props.getProperty(baseKey + "controllerType");
+			byte controllerType = controllerTypeProp != null ? Byte.parseByte(controllerTypeProp) : TYPE_STRING;
 			AttributeType attrType = null;
 
 			switch (controllerType) {

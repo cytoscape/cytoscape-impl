@@ -40,7 +40,7 @@ public class PropertiesFileFilter extends BasicCyFileFilter {
 
 		// These two tests are so that we don't mistakenly accept a cysession 
 		// or bookmarks file, which might otherwise match the pattern above.
-		if (header.contains("<cysession") && header.contains("xmlns"))
+		if (header.contains("<cysession"))
 			return false;
 		if (header.contains("<bookmarks") && header.contains("xmlns"))
 			return false;
