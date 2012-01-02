@@ -197,19 +197,31 @@ public class CalculatorConverter {
 	 *           {@link org.cytoscape.io.internal.util.vizmap.model.PassThroughMapping} object
 	 */
 	private Object getMappingFunction(Properties props, String mapperName, VisualProperty vp) {
-		// e.g. "edgeColorCalculator.MyStyle-Edge Color-Discrete Mapper.mapping."
-		String baseKey = (legacyKey != null ? legacyKey : key) + "." + mapperName + ".mapping.";
-		String functionType = props.getProperty(baseKey + "type");
+		String baseKey = null;
+		String functionType = null;
 		
-		if (functionType == null) {
-			// Try 2.3 calculator names...
-			if (baseKey.startsWith("nodeFillColorCalculator.")) {
-				baseKey = "nodeColorCalculator." + mapperName + ".mapping.";
-				functionType = props.getProperty(baseKey + "type");
+		while (functionType == null) {
+			// e.g. "edgeColorCalculator.MyStyle-Edge Color-Discrete Mapper.mapping."
+			baseKey = (legacyKey != null ? legacyKey : key) + "." + mapperName + ".mapping.";
+			functionType = props.getProperty(baseKey + "type");
+			
+			if (functionType == null) {
+				// Try with Cytoscape v2.3 calculator names...
+				if (baseKey.startsWith("nodeFillColorCalculator.")) {
+					legacyKey = "nodeColorCalculator";
+				} else if (baseKey.startsWith("edgeSourceArrowCalculator.") || 
+						   baseKey.startsWith("edgeTargetArrowCalculator.")) {
+					legacyKey = "edgeArrowCalculator";
+				} else {
+					return null;
+				}
 			}
 		}
 		
 		String attrName = props.getProperty(baseKey + "controller");
+		
+		if (attrName == null)
+			return null;
 
 		// "ID" is actually the "name" column!!!
 		if ("ID".equalsIgnoreCase(attrName)) attrName = "name";
