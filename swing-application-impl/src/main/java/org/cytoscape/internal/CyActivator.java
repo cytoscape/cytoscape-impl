@@ -124,6 +124,11 @@ import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.osgi.framework.BundleContext;
 
+import com.apple.eawt.Application;
+import com.apple.eawt.QuitHandler;
+import com.apple.eawt.QuitResponse;
+import com.apple.eawt.AppEvent.QuitEvent;
+
 /**
  *
  */
@@ -278,7 +283,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, undoAction, CyAction.class, new Properties());
 		registerService(bc, redoAction, CyAction.class, new Properties());
 		registerService(bc, printAction, CyAction.class, new Properties());
-		registerService(bc, exitAction, CyAction.class, new Properties());
 		registerService(bc, preferenceAction, CyAction.class, new Properties());
 		registerService(bc, bookmarkAction, CyAction.class, new Properties());
 		registerService(bc, settingsAction, CyAction.class, new Properties());
@@ -286,6 +290,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
+
+		if (isMac()) {
+			registerMacExitHandler(cytoscapeShutdownServiceRef);
+		} else {
+			registerService(bc, exitAction, CyAction.class, new Properties());
+		}
 
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty("preferredMenu", "Help");
@@ -391,5 +401,19 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
+	}
+
+	private void registerMacExitHandler(final CyShutdown shutdown) {
+		Application application = Application.getApplication();
+		application.setQuitHandler(new QuitHandler() {
+			@Override
+			public void handleQuitRequestWith(QuitEvent event, QuitResponse response) {
+				shutdown.exit(0);
+			}
+		});
+	}
+
+	private boolean isMac() {
+		return System.getProperty("os.name").startsWith("Mac OS X");
 	}
 }

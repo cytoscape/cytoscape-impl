@@ -63,7 +63,9 @@ public class CytoscapeMenus {
 	menuBar.addSeparator("File", 2.0);
 	menuBar.addSeparator("File", 4.0);
 	menuBar.addSeparator("File", 6.0);
-	menuBar.addSeparator("File", 8.0);
+	if (!isMac()) {
+		menuBar.addSeparator("File", 8.0);
+	}
 
 	menuBar.addSeparator("Edit", 2.0);
 	menuBar.addSeparator("Edit", 4.0);
@@ -92,7 +94,11 @@ public class CytoscapeMenus {
 	toolBar.addSeparator(8.0f);
     }
 
-    public JMenu getJMenu(String s) {
+	private boolean isMac() {
+		return System.getProperty("os.name").startsWith("Mac OS X");
+	}
+
+	public JMenu getJMenu(String s) {
 	return menuBar.getMenu(s);
     }
 

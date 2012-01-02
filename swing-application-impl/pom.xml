@@ -127,5 +127,12 @@
             <artifactId>jhall</artifactId>
             <version>1.0</version>
         </dependency>
+        
+        <dependency>
+        	<groupId>com.apple.developer</groupId>
+        	<artifactId>AppleJavaExtensions</artifactId>
+        	<version>1.6</version>
+        	<scope>compile</scope>
+        </dependency>
 	</dependencies>
 </project>
