@@ -19,6 +19,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.property.CyProperty;
 
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -40,7 +41,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,CyNetworkViewManager.class);
 		
 		CyApplicationManagerImpl cyApplicationManager = new CyApplicationManagerImpl(cyEventHelperServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef);
-		ShutdownHandler cytoscapeShutdown = new ShutdownHandler(cyEventHelperServiceRef);
+		Bundle rootBundle = bc.getBundle(0);
+		ShutdownHandler cytoscapeShutdown = new ShutdownHandler(cyEventHelperServiceRef, rootBundle);
 		CyApplicationConfigurationImpl cyApplicationConfiguration = new CyApplicationConfigurationImpl();
 		CyProperty cyApplicationCoreProperty = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		CyVersionImpl cytoscapeVersion = new CyVersionImpl(cyApplicationCoreProperty);

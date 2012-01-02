@@ -41,6 +41,8 @@ package org.cytoscape.application.internal;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,17 +55,23 @@ public class ShutdownHandler implements CyShutdown {
 	
 	private final CyEventHelper eh;
 
-	public ShutdownHandler(CyEventHelper eh) {
+	private Bundle rootBundle;
+
+	public ShutdownHandler(CyEventHelper eh, Bundle rootBundle) {
 		this.eh = eh;
+		this.rootBundle = rootBundle;
 	}
 
 	public void exit(int retVal) {
 		CyShutdownEvent ev =  new CyShutdownEvent(ShutdownHandler.this);
 		eh.fireEvent( ev );
 
-		// TODO figure out a way to do a clean shutdown of the OSGi container.
 		if ( ev.actuallyShutdown() )
-			System.exit(retVal);
+			try {
+				rootBundle.stop();
+			} catch (BundleException e) {
+				logger.error("Error while shutting down", e);
+			}
 		else
 			logger.info("NOT shutting down, per listener instruction: " + ev.abortShutdownReason() );
 	}
