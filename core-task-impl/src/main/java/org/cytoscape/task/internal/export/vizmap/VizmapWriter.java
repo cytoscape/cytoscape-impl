@@ -9,6 +9,7 @@ import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.Tunable;
 
 public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterManager> {
 
@@ -28,5 +29,11 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterManager> {
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 
 		return writerManager.getWriter(styles, filter, file);
+	}
+	
+	@Tunable(description="Save Vizmap As:", params="fileCategory=vizmap;input=false")
+	@Override
+	public File getOutputFile() {
+		return outputFile;
 	}
 }
