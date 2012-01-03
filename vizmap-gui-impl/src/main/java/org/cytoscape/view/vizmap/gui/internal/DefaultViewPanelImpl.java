@@ -39,7 +39,11 @@ import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.List;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -146,6 +150,15 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		renderingEngine = presentationFactory
 				.createRenderingEngine(innerPanel, dummyview);
 		dummyview.fitContent();
+		
+		// Remove unnecessary mouse listeners.
+		final int compCount = innerPanel.getComponentCount();
+		for(int i=0; i<compCount; i++) {
+			final Component comp = innerPanel.getComponent(i);
+			final MouseListener[] listeners = comp.getMouseListeners();
+			for(MouseListener ml: listeners)
+				comp.removeMouseListener(ml);
+		}
 	}
 
 	
