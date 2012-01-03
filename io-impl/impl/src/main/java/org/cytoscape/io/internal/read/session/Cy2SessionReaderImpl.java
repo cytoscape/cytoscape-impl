@@ -89,6 +89,8 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
+	public static final String CY2_PARENT_NETWORK_COLUMN = "Cytoscape2 Parent Network";
+	
 	public static final String CY_PROPS = "session_cytoscape.props";
 	public static final Pattern NETWORK_PATTERN = Pattern.compile(".*/(([^/]+)[.]xgmml)");
 	public static final String IGNORED_PROPS =
@@ -192,8 +194,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		walkNetworkTree(netMap.get(NETWORK_ROOT), null, netMap, tm);
 	}
 	
-	private void walkNetworkTree(final Network net, final CyRootNetwork parent, Map<String, Network> netMap,
-			TaskMonitor tm) {
+	private void walkNetworkTree(final Network net, CyNetwork parent, final Map<String, Network> netMap,
+			final TaskMonitor tm) {
 		// Get the list of children under this root
 		final List<Child> children = net.getChild();
 
@@ -201,21 +203,25 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		final int numChildren = children.size();
 		Child child = null;
 		Network childNet = null;
-
+		
 		for (int i = 0; i < numChildren; i++) {
 			child = children.get(i);
 			childNet = netMap.get(child.getId());
 
 			String entryName = xgmmlEntries.get(childNet.getFilename());
-			CyRootNetwork rootNetwork = null;
 			InputStream is = null;
+			CyNetwork cy2Parent = null; // This is the original Cytoscape 2 parent.
 			
 			try {
 				is = findEntry(entryName);
 				
 				if (is != null) {
 					tm.setStatusMessage("Extracting network: " + entryName);
-					rootNetwork = extractNetworksAndViews(is, entryName, parent, childNet.isViewAvailable());
+					cy2Parent = extractNetworksAndViews(is, entryName, parent, childNet.isViewAvailable());
+					
+					// Every 2.x network should be a child of the same root-network.
+					if (parent == null)
+						parent = rootNetworkManager.getRootNetwork(cy2Parent);
 				} else {
 					logger.error("Cannot find network file \"" + entryName + "\": ");
 				}
@@ -235,7 +241,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 				// Always try to load child networks, even if the parent network is bad
 				if (childNet.getChild().size() != 0)
-					walkNetworkTree(childNet, rootNetwork, netMap, tm);
+					walkNetworkTree(childNet, cy2Parent, netMap, tm);
 			}
 		}
 	}
@@ -245,13 +251,13 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	 * @param entryName
 	 * @param parent
 	 * @param createView
-	 * @return The root-network of the extracted networks
+	 * @return The top-level network that was extracted from the XGMML file.
 	 * @throws Exception
 	 */
-	private CyRootNetwork extractNetworksAndViews(InputStream is, String entryName, CyRootNetwork parent,
-			boolean createView) throws Exception {
-		CyRootNetwork rootNetwork = null;
-		CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
+	private CyNetwork extractNetworksAndViews(final InputStream is, final String entryName, final CyNetwork parent,
+			final boolean createView) throws Exception {
+		CyNetwork topNetwork = null;
+		final CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 
 		if (parent != null) {
 			if (reader instanceof XGMMLNetworkReader) {
@@ -267,12 +273,22 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		final CyNetwork[] netArray = reader.getNetworks();
 		
 		if (netArray != null && netArray.length > 0) {
-			rootNetwork = rootNetworkManager.getRootNetwork(netArray[0]);
+			topNetwork = netArray[0];
 
 			for (int i = 0; i < netArray.length; i++) {
 				CyNetwork net = netArray[i];
 				String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				networkLookup.put(netName, net);
+				
+				// Add parent network attribute, to preserve the network hierarchy info from Cytoscape 2.x
+				if (parent != null && !(parent instanceof CyRootNetwork)) {
+					CyRow row = net.getRow(net);
+					
+					if (row.getTable().getColumn(CY2_PARENT_NETWORK_COLUMN) == null)
+						row.getTable().createColumn(CY2_PARENT_NETWORK_COLUMN, Long.class, false);
+						
+					row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
+				}
 
 				// TODO: handle 2.x groups
 //				if (i == 0) {
@@ -281,7 +297,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					networks.add(net);
 				
 					if (i == 0 && createView) {
-						// Create a network view for the first network only, which is supposed to be the base-network
+						// Create a network view for the first network only,
+						// which is supposed to be the top-level one
 						CyNetworkView view = reader.buildCyNetworkView(net);
 						networkViewLookup.put(netName, view);
 						networkViews.add(view);
@@ -290,7 +307,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			}
 		}
 		
-		return rootNetwork;
+		return topNetwork;
 	}
 
 	private void extractAppEntry(InputStream is, String entryName) {

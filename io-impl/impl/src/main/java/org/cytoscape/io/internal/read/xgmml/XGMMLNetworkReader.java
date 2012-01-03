@@ -73,11 +73,7 @@ public class XGMMLNetworkReader extends AbstractXGMMLReader {
 	}
 
 	public void setParent(CyNetwork n) {
-		if (n != null) {
-			this.parent = (n instanceof CyRootNetwork) ? (CyRootNetwork) n : cyRootNetworkManager.getRootNetwork(n);
-		} else {
-			this.parent = null;
-		}
+		this.parent = n != null ? cyRootNetworkManager.getRootNetwork(n) : null;
 	}
 	
 	@Override
