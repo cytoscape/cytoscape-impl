@@ -24,23 +24,15 @@ public class BendImpl implements Bend {
 		return handles;
 	}
 
-	@Override
-	public void addHandle(final Handle handle) {
-		this.handles.add(handle);
-	}
 
 	@Override
-	public void removeHandle(final int handleIndex) {
+	public void removeHandleAt(final int handleIndex) {
 		if(handleIndex > handles.size())
 			throw new IllegalArgumentException("handleIndex is out of range: " + handleIndex);
 		
 		this.handles.remove(handleIndex);
 	}
 
-	@Override
-	public void removeHandle(final Handle handle) {
-		this.handles.remove(handle);
-	}
 
 	@Override
 	public void removeAllHandles() {
@@ -53,7 +45,7 @@ public class BendImpl implements Bend {
 	}
 
 	@Override
-	public void insertHandle(final int index, final Handle handle) {
+	public void insertHandleAt(final int index, final Handle handle) {
 		this.handles.add(index, handle);
 	}
 	

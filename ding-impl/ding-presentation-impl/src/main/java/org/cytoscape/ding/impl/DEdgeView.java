@@ -818,7 +818,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 //			}
 				
 			//m_anchors.add(insertInx, addThis);
-			bend.insertHandle(insertInx, handle);
+			bend.insertHandleAt(insertInx, handle);
 
 			if (m_selected) {
 				for (int j = bend.getAllHandles().size() - 1; j > insertInx; j--) {
@@ -871,7 +871,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public void removeHandle(int inx) {
 		synchronized (m_view.m_lock) {
 			final Bend bend = m_view.m_edgeDetails.bend(m_inx);
-			bend.removeHandle(inx);
+			bend.removeHandleAt(inx);
 			//m_anchors.remove(inx);
 
 			if (m_selected) {
