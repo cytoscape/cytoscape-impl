@@ -73,6 +73,8 @@ import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.events.GraphViewChangeListenerChain;
 import org.cytoscape.ding.impl.events.GraphViewEdgesHiddenEvent;
 import org.cytoscape.ding.impl.events.GraphViewEdgesRestoredEvent;
@@ -83,9 +85,6 @@ import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
-import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
@@ -99,7 +98,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AboutToRemoveNodesEvent;
@@ -125,6 +123,8 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
+import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.FitContentEvent;
 import org.cytoscape.view.model.events.FitContentEventListener;
 import org.cytoscape.view.model.events.FitSelectedEvent;
@@ -815,6 +815,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin,
 				m_defaultNodeXMax, m_defaultNodeYMax);
 		
+		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyNode>) dNodeView, AddedNodeViewsEvent.class);
 		return dNodeView;
 	}
 
@@ -878,6 +879,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					makeList(dEdgeView.getEdge())));
 		}
 
+		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyEdge>) dEdgeView, AddedEdgeViewsEvent.class);
 		return dEdgeView;
 	}
 
