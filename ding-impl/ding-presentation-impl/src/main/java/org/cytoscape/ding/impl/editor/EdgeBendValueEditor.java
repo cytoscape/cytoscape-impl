@@ -39,7 +39,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
 	private static final long serialVersionUID = 9145223127932839836L;
 
-	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 300);
+	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 350);
 	
 	private static final Color NODE_COLOR = Color.gray;
 	private static final Color EDGE_COLOR = Color.BLACK;
@@ -101,6 +101,12 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		
 		sourceView.setVisualProperty(RichVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
 		targetView.setVisualProperty(RichVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
+		sourceView.setVisualProperty(RichVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
+		targetView.setVisualProperty(RichVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
+		sourceView.setVisualProperty(RichVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
+		targetView.setVisualProperty(RichVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
+		sourceView.setVisualProperty(RichVisualLexicon.NODE_LABEL, "S");
+		targetView.setVisualProperty(RichVisualLexicon.NODE_LABEL, "T");
 		
 		sourceView.setVisualProperty(RichVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 		targetView.setVisualProperty(RichVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
@@ -114,6 +120,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		edgeView.setVisualProperty(RichVisualLexicon.EDGE_WIDTH, 4d);
 		edgeView.setVisualProperty(RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_COLOR);
+		edgeView.setVisualProperty(DVisualLexicon.EDGE_CURVED, true);
 		
 		final Bend newBend = new BendImpl();
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_BEND, newBend);
@@ -121,7 +128,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		
 		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
 		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 20d);
-		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 200d);
+		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 300d);
 		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 0d);
 
 		innerPanel.setBackground(BACKGROUND_COLOR);

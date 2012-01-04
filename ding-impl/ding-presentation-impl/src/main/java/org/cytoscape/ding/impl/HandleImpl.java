@@ -12,44 +12,23 @@ import org.cytoscape.view.model.View;
  */
 public class HandleImpl implements Handle {
 
-//	private static final double MIN = Double.MIN_VALUE;
-//	private static final double MAX = Double.MAX_VALUE;
-
 	private double x;
 	private double y;
-	
-	private Point2D ratio;
+
+	private double[] orthVector;
+	private double originalDist;
+	private double positionRatioOnEdge;
 
 	public HandleImpl(DGraphView graphView, DEdgeView view, final double x,
 			final double y) {
 		this.x = x;
-		this.y = y;		
+		this.y = y;
 	}
 
-//	@Override
-//	public double getXFraction(DGraphView graphView, DEdgeView view) {
-//		
-//		System.out.println("!!!!!! Get X called: " + x);
-//		if(ratio == null)
-//			return x;
-//		else
-//			return convertToAbsolute(true);
-//	}
-//
-//	@Override
-//	public double getYFraction() {
-//		System.out.println("!!!!!! Get Y called: " + y);
-//		if(ratio == null)
-//			return y;
-//		else
-//			return convertToAbsolute(false);
-//	}
-	
 	@Override
 	public Point2D getPoint(DGraphView graphView, DEdgeView view) {
 		return convertToAbsolute(graphView, view);
 	}
-
 
 	private Point2D convertToAbsolute(DGraphView graphView, DEdgeView view) {
 		final CyNode source = view.getModel().getSource();
@@ -57,72 +36,84 @@ public class HandleImpl implements Handle {
 		final View<CyNode> sourceView = graphView.getNodeView(source);
 		final View<CyNode> targetView = graphView.getNodeView(target);
 
-		final Double sourceX = sourceView
+		final Double sX = sourceView
 				.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double sourceY = sourceView
+		final Double sY = sourceView
 				.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
-		final Double targetX = targetView
+		final Double tX = targetView
 				.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double targetY = targetView
+		final Double tY = targetView
 				.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
 		final Point2D newPoint = new Point2D.Double();
-		if(ratio != null) {
-		double newX = getAbsolute(sourceX, targetX, ratio.getX());
-		double newY = getAbsolute(sourceY, targetY, ratio.getY());
-		newPoint.setLocation(newX, newY);
+		if (orthVector != null) {
+			final double newDist = Math.sqrt(Math.pow(tX - sX, 2) + Math.pow(tY - sY, 2));
+			final double newRatio = newDist / originalDist;
+			final double[] newOrth = new double[2];
+			newOrth[0] = orthVector[0] * newRatio;
+			newOrth[1] = orthVector[1] * newRatio;
+			
+			final double newX = newOrth[0] + positionRatioOnEdge * (tX - sX) + sX;
+			final double newY = newOrth[1] + positionRatioOnEdge * (tY - sY) + sY;
+
+			newPoint.setLocation(newX, newY);
 		} else {
 			newPoint.setLocation(x, y);
 		}
-		
+
 		return newPoint;
 	}
 
-	private Point2D convertToRatio(DGraphView graphView, DEdgeView view, final Point2D absolutePoint) {
-		final Point2D relativePoint = new Point2D.Float();
+	private void convertToRatio(DGraphView graphView, DEdgeView view,
+			final Point2D absolutePoint) {
+		orthVector = new double[2];
+
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
 		final View<CyNode> sourceView = graphView.getNodeView(source);
 		final View<CyNode> targetView = graphView.getNodeView(target);
 
-		final Double sourceX = sourceView
+		final Double sX = sourceView
 				.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double sourceY = sourceView
+		final Double sY = sourceView
 				.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
-		final Double targetX = targetView
+		final Double tX = targetView
 				.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double targetY = targetView
+		final Double tY = targetView
 				.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
-		final double xRatio = getRatio(sourceX, targetX, absolutePoint.getX());
-		final double yRatio = getRatio(sourceY, targetY, absolutePoint.getY());
-		
-		relativePoint.setLocation(xRatio, yRatio);
-		
-		return relativePoint;
-	}
+		final double hX = absolutePoint.getX();
+		final double hY = absolutePoint.getY();
 
-	private double getRatio(double p1, double p2, double p) {
-		final double distance = Math.abs(p2-p1);
-		if(distance == 0)
-			return 0.5;
-		else
-			return (p-p1)/distance;			
-	}
-	
-	private double getAbsolute(double p1, double p2, double r) {
-		final double distance = Math.abs(p2-p1);
-		return p1 + (distance * r);
+		final double oX;
+		final double oY;
+		final double k;
+
+		// Solved the equation to find orthogonal vector manually...  Can be replaced once we find better 2D Vector library.
+		k = -((tX - sY) * (sX - tX) + (tY - sY) * (sY - tY))
+				/ (hX * tX - hX * sX + hY * tY - hY * sY + sX * sX - sX * tX
+						+ sY * sY - sY * tY);
+		oX = (tX - sX + k * sX) / k;
+		oY = (tY - sY + k * sY) / k;
+
+		orthVector[0] = hX - oX;
+		orthVector[1] = hY - oY;
+
+		originalDist = Math.sqrt(Math.pow(tX - sX, 2) + Math.pow(tY - sY, 2));
+		positionRatioOnEdge = Math.sqrt(Math.pow(oX - sX, 2)
+				+ Math.pow(oY - sY, 2))
+				/ originalDist;
 	}
 
 	@Override
-	public void setPoint(DGraphView graphView, DEdgeView view, double x, double y) {
+	public void setPoint(DGraphView graphView, DEdgeView view, double x,
+			double y) {
 		this.x = x;
 		this.y = y;
 
-		ratio = convertToRatio(graphView, view, new Point2D.Double(x, y));		
+		convertToRatio(graphView, view, new Point2D.Double(x, y));
 	}
 
 }
