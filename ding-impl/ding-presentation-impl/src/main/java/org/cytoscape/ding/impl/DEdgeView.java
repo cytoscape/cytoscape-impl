@@ -806,7 +806,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	private void addHandleInternal(final int insertInx, final Point2D handleLocation) {
 		synchronized (m_view.m_lock) {
 			final Bend bend = m_view.m_edgeDetails.bend(m_inx);
-			final Handle handle = new HandleImpl(this.m_view, this, handleLocation.getX(), handleLocation.getY());
+			final Handle handle = new HandleImpl(handleLocation.getX(), handleLocation.getY());
 			
 			//final Point2D.Float addThis = new Point2D.Float();
 			//addThis.setLocation(handleLocation);

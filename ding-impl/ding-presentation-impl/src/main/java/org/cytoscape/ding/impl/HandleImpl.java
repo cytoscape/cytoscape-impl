@@ -12,6 +12,7 @@ import org.cytoscape.view.model.View;
  */
 public class HandleImpl implements Handle {
 
+	// Original handle location
 	private double x;
 	private double y;
 
@@ -19,18 +20,14 @@ public class HandleImpl implements Handle {
 	private double originalDist;
 	private double positionRatioOnEdge;
 
-	public HandleImpl(DGraphView graphView, DEdgeView view, final double x,
-			final double y) {
+	public HandleImpl(final double x, final double y) {
 		this.x = x;
 		this.y = y;
 	}
 
 	@Override
-	public Point2D getPoint(DGraphView graphView, DEdgeView view) {
-		return convertToAbsolute(graphView, view);
-	}
+	public Point2D getPoint(final DGraphView graphView, final DEdgeView view) {
 
-	private Point2D convertToAbsolute(DGraphView graphView, DEdgeView view) {
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
 		final View<CyNode> sourceView = graphView.getNodeView(source);
@@ -63,6 +60,14 @@ public class HandleImpl implements Handle {
 		}
 
 		return newPoint;
+	}
+	
+	@Override
+	public void setPoint(DGraphView graphView, DEdgeView view, double x, double y) {
+		this.x = x;
+		this.y = y;
+
+		convertToRatio(graphView, view, new Point2D.Double(x, y));
 	}
 
 	private void convertToRatio(DGraphView graphView, DEdgeView view,
@@ -106,14 +111,4 @@ public class HandleImpl implements Handle {
 				+ Math.pow(oY - sY, 2))
 				/ originalDist;
 	}
-
-	@Override
-	public void setPoint(DGraphView graphView, DEdgeView view, double x,
-			double y) {
-		this.x = x;
-		this.y = y;
-
-		convertToRatio(graphView, view, new Point2D.Double(x, y));
-	}
-
 }

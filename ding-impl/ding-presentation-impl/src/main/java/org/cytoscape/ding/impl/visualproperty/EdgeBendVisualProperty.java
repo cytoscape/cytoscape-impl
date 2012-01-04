@@ -22,12 +22,13 @@ public class EdgeBendVisualProperty extends AbstractVisualProperty<Bend> {
 
 	@Override
 	public String toSerializableString(final Bend value) {
+		
+		
 		return value.toString();
 	}
 
 	@Override
 	public Bend parseSerializableString(String value) {
-		// TODO: Implement parser for String representation of Bend.
 		return DEFAULT_EDGE_BEND;
 	}
 }
