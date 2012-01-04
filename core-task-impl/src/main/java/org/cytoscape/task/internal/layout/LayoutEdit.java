@@ -7,6 +7,7 @@ import static org.cytoscape.view.presentation.property.RichVisualLexicon.NODE_Z_
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION;
 import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION;
 import static org.cytoscape.view.presentation.property.RichVisualLexicon.NETWORK_CENTER_Z_LOCATION;
+import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_SCALE_FACTOR;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,7 @@ final class LayoutEdit extends AbstractCyEdit {
 	private final CyEventHelper eventHelper;
 	private final CyNetworkView view;
 	private List<NodeViewAndLocations> nodeViewsAndLocations;
+	private double networkScale;
 	private double networkCenterX;
 	private double networkCenterY;
 	private double networkCenterZ;
@@ -51,19 +53,25 @@ final class LayoutEdit extends AbstractCyEdit {
 
 	private void saveAndRestore() {
 		final List<NodeViewAndLocations> oldNodeViewsAndLocations = nodeViewsAndLocations;
+		final double oldNetworkScale = networkScale;
+		final double oldNetworkCenterX = networkCenterX;
+		final double oldNetworkCenterY = networkCenterY;
+		final double oldNetworkCenterZ = networkCenterZ;
 		saveNodeViewsAndLocations();
 		for (final NodeViewAndLocations nodeViewAndLocation : oldNodeViewsAndLocations)
 			nodeViewAndLocation.restoreLocations();
 
-		view.setVisualProperty(NETWORK_CENTER_X_LOCATION, networkCenterX);
-		view.setVisualProperty(NETWORK_CENTER_Y_LOCATION, networkCenterY);
-		view.setVisualProperty(NETWORK_CENTER_Z_LOCATION, networkCenterZ);
+		view.setVisualProperty(NETWORK_SCALE_FACTOR, oldNetworkScale);
+		view.setVisualProperty(NETWORK_CENTER_X_LOCATION, oldNetworkCenterX);
+		view.setVisualProperty(NETWORK_CENTER_Y_LOCATION, oldNetworkCenterY);
+		view.setVisualProperty(NETWORK_CENTER_Z_LOCATION, oldNetworkCenterZ);
 
 		eventHelper.flushPayloadEvents();
 		view.updateView();
 	}
 
 	private void saveNodeViewsAndLocations() {
+		networkScale = view.getVisualProperty(NETWORK_SCALE_FACTOR);
 		networkCenterX = view.getVisualProperty(NETWORK_CENTER_X_LOCATION);
 		networkCenterY = view.getVisualProperty(NETWORK_CENTER_Y_LOCATION);
 		networkCenterZ = view.getVisualProperty(NETWORK_CENTER_Z_LOCATION);
