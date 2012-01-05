@@ -47,6 +47,7 @@ public class SessionUtil {
 	
 	public static final String NETWORKS_FOLDER = "networks/";
 	public static final String NETWORK_VIEWS_FOLDER = "views/";
+	public static final String PROPERTIES_FOLDER = "properties/";
 	public static final String TABLES_FOLDER = "tables/";
 	public static final String APPS_FOLDER = "apps/";
 	

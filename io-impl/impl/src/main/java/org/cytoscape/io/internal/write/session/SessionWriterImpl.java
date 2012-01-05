@@ -34,6 +34,7 @@
  */
 package org.cytoscape.io.internal.write.session;
 
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_VERSION;
@@ -41,7 +42,7 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLES_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 
@@ -282,7 +283,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * Writes the cytoscape.props file to the session zip.
 	 */
 	private void zipCytoscapeProps() throws Exception {
-		zos.putNextEntry(new ZipEntry(sessionDir + CYPROP_FILE) );
+		zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER + CYPROP_FILE) );
 
 		CyWriter propertiesWriter = propertyWriterMgr.getWriter(session.getCytoscapeProperties(), propertiesFilter, zos);
 		propertiesWriter.run(taskMonitor);
@@ -295,7 +296,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * Writes the bookmarks.xml file to the session zip.
 	 */
 	private void zipBookmarks() throws Exception {
-		zos.putNextEntry(new ZipEntry(sessionDir + BOOKMARKS_FILE) );
+		zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER +BOOKMARKS_FILE) );
 
 		CyWriter bookmarksWriter = propertyWriterMgr.getWriter(session.getBookmarks(), bookmarksFilter, zos);
 		bookmarksWriter.run(taskMonitor);
