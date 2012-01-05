@@ -238,7 +238,9 @@ public class CyActivator extends AbstractCyActivator {
 		BookmarkAction bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 		LayoutMenuPopulator layoutMenuPopulator = new LayoutMenuPopulator(cytoscapeDesktop,
 		                                                                  cyApplicationManagerServiceRef,
-		                                                                  submenuTaskManagerServiceRef);
+		                                                                  submenuTaskManagerServiceRef,
+		                                                                  undoSupportServiceRef,
+		                                                                  cyEventHelperServiceRef);
 		CytoscapeMenuPopulator cytoscapeMenuPopulator = new CytoscapeMenuPopulator(cytoscapeDesktop,
 		                                                                           dialogTaskManagerServiceRef,
 		                                                                           panelTaskManagerServiceRef,
