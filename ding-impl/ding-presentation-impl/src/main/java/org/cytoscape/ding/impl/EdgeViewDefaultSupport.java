@@ -32,10 +32,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.util.Collection;
 
 import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.EdgeView;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.RichVisualLexicon;
@@ -47,10 +50,12 @@ class EdgeViewDefaultSupport {
 
 	private final Object lock;
 	private final DEdgeDetails edgeDetails;
+	private final VisualLexicon lexicon;
 	
-	EdgeViewDefaultSupport(DEdgeDetails edgeDetails, Object lock) {
+	EdgeViewDefaultSupport(final VisualLexicon lexicon, DEdgeDetails edgeDetails, Object lock) {
 		this.edgeDetails = edgeDetails;
 		this.lock = lock;
+		this.lexicon = lexicon;
 	}
 
 	private Font font;
@@ -67,17 +72,47 @@ class EdgeViewDefaultSupport {
 	private Color labelColor;
 	
 
-	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vp, V value) {
+	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vpOriginal, V value) {
+		
+		final VisualProperty<?> vp;
+		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
+		
+		if(treeNode == null)
+			return;
+		
+		if(treeNode.getChildren().size() != 0) {
+			final Collection<VisualLexiconNode> children = treeNode.getChildren();
+			boolean shouldApply = false;
+			for(VisualLexiconNode node: children) {
+				if(node.isDepend()) {
+					shouldApply = true;
+					break;
+				}
+			}
+			if(shouldApply == false)
+				return;
+		}
+		
+		if(treeNode.isDepend())
+			return;
+		else
+			vp = vpOriginal;
 		
 		if(value == null)
 			value = (V) vp.getDefault();
 		
 		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
 			setSelectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
-			setTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
+		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
+			// This is the parent of unselected color related visual property.
+			// Will be called if dependency exists.
+			setUnselectedPaint((Paint) value);
+			setSourceEdgeEndUnselectedPaint((Paint) value);
+			setTargetEdgeEndUnselectedPaint((Paint) value);
+		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
+			setTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
 			final float newWidth = ((Number) value).floatValue();	
 			if(strokeWidth != newWidth) {
@@ -89,10 +124,6 @@ class EdgeViewDefaultSupport {
 			lineType = (LineType) value;
 			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(strokeWidth);
 			setStroke(newStroke);
-		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
-			//setSourceEdgeEndSelectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {
-			//setTargetEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
 			setSourceEdgeEndUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
@@ -158,7 +189,7 @@ class EdgeViewDefaultSupport {
 		}
 	}
 
-	void setUnselectedPaint(final Paint paint) {
+	void setUnselectedPaint(final Paint paint) {		
 		synchronized (lock) {
 			unselectedPaint = paint;
 			final Paint transColor = getTransparentColor(paint);
@@ -189,7 +220,7 @@ class EdgeViewDefaultSupport {
 		}
 	}
 
-	public void setSourceEdgeEndUnselectedPaint(Paint paint) {
+	public void setSourceEdgeEndUnselectedPaint(final Paint paint) {
 		synchronized (lock) {
 			edgeDetails.setSourceArrowPaintDefault(paint);
 		}

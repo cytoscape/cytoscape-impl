@@ -159,47 +159,6 @@ public interface EdgeView  extends GraphViewObject {
 	public boolean isHidden();
 
 	/**
-	 * Add a PHandle to the edge at the point specified.
-	 *
-	 * @param pt The point at which to draw the PHandle and to which the
-	 *        PHandle will be attached via the locator.
-	 */
-	//  public void addHandle ( Point2D pt );
-
-	/**
-	 * Removes the PHandle at the specified point.
-	 *
-	 * @param pt If this point intersects an existing PHandle, then remove that
-	 *        PHandle.
-	 */
-	// public void removeHandle ( Point2D pt );
-
-	/**
-	 * Checks to see if a PHandle already exists for the given point.
-	 *
-	 * @param pt If this point intersects a currently existing PHandle, then
-	 *        return true, else return false.
-	 */
-	//public boolean handleAlreadyExists ( Point2D pt );
-
-	/**
-	 * This is the main method called to update the drawing of the edge.
-	 */
-	public void updateEdgeView ();
-
-	/**
-	 * Draws the EdgeEnd, also sets the Source/Target Points to values such
-	 * that the edge does not "go through" the end
-	 */
-	public void updateTargetArrow ();
-
-	/**
-	 * Draws the EdgeEnd, also sets the Source/Target Points to values such
-	 * that the edge does not "go through" the end
-	 */
-	public void updateSourceArrow ();
-
-	/**
 	 * Sets the Drawing style for the edge end.
 	 */
 	public void setSourceEdgeEnd(int type);
@@ -220,42 +179,22 @@ public interface EdgeView  extends GraphViewObject {
 	 */
 	public int getTargetEdgeEnd();
 
-	/**
-	 * Draws the Edge
-	 */
-	public void updateLine();
-
-	/**
-	 * Draws the edge as red and draws any handles previously added.
-	 */
-	public void drawSelected();
-
-	/**
-	 * Draws the edge as black and removes any handles from the display.
-	 */
-	public void drawUnselected();
 
 	/**
 	 * @return the Bend used 
 	 */
-	public Bend getBend ();
-  
-	public void clearBends ();
+	Bend getBend ();
+	void setBend(final Bend bend);
+	
+	void clearBends ();
 
 	public Label getLabel();
 
 	/**
 	 * Sets what the tooltip will be for this EdgeView
 	 */
-	public void setToolTip ( String tip );
-
-	public void setLabelOffsetX(double x);
-	public void setLabelOffsetY(double y);
-	public void setEdgeLabelAnchor(int position);
-
-	public double getLabelOffsetX();
-	public double getLabelOffsetY();
-	public int getEdgeLabelAnchor();
+	void setToolTip ( String tip );
+	String getToolTip();
 
 	
 	int getTransparency();

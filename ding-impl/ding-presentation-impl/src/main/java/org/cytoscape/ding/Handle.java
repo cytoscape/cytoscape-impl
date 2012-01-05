@@ -3,7 +3,6 @@ package org.cytoscape.ding;
 import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DEdgeView;
-import org.cytoscape.ding.impl.DGraphView;
 
 
 /**
@@ -20,7 +19,7 @@ public interface Handle {
 	 * 
 	 * @return Absolute position of this handle in the network view.
 	 */
-	Point2D getPoint(final DGraphView graphView, final DEdgeView edgeView);
+	Point2D getPoint(final DEdgeView edgeView);
 	
 	/**
 	 * Set a new position of this handle.
@@ -33,5 +32,5 @@ public interface Handle {
 	 * @param x Absolute value for X-location.
 	 * @param y Absolute value for Y-location.
 	 */
-	void setPoint(final DGraphView graphView, final DEdgeView edgeView, final double x, final double y);
+	void setPoint(final DEdgeView edgeView, final double x, final double y);
 }

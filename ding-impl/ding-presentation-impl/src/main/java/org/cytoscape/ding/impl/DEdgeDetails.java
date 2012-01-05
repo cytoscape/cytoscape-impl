@@ -447,16 +447,15 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 */
 	@Override
 	public Paint segmentPaint(final int edge) {
-		boolean isSelected = selected.contains(edge);
+		final boolean isSelected = selected.contains(edge);
 
 		if (isSelected)
 			return selectedPaint(edge);
-		else {
+		else
 			return unselectedPaint(edge);
-		}
 	}
 
-	void setSegmentPaintDefault(Paint p) {
+	void setSegmentPaintDefault(final Paint p) {
 		m_unselectedPaintDefault = p;
 	}
 
@@ -469,7 +468,6 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 			else
 				return m_unselectedPaintDefault;
 		}
-
 		return paint;
 	}
 

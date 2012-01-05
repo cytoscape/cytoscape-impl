@@ -476,7 +476,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_nodeDetails = new DNodeDetails(this);
 		m_edgeDetails = new DEdgeDetails(this);
 		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
-		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
+		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(dingLexicon, m_edgeDetails, m_lock);
 		m_nodeViewMap = new HashMap<Integer, NodeView>();
 		m_edgeViewMap = new HashMap<Integer, EdgeView>();
 		m_printLOD = new PrintLOD();

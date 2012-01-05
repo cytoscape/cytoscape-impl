@@ -34,7 +34,6 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -47,7 +46,6 @@ import org.cytoscape.ding.Label;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -73,6 +71,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	static final Font DEFAULT_LABEL_FONT = new Font("SansSerif", Font.PLAIN, 12);
 	static final Paint DEFAULT_LABEL_PAINT = Color.black;
 	
+	// Parent network view.  This view exists only in this network view.
 	final DGraphView m_view;
 	
 	final int m_inx; // Positive index of this edge view.
@@ -86,10 +85,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	Paint m_targetSelectedPaint;
 	int m_sourceEdgeEnd; // One of the EdgeView edge end constants.
 	int m_targetEdgeEnd; // Ditto.
-	
-	//List<Point2D> m_anchors; // A list of Point2D objects.
-	
-	String m_toolTipText = null;
+		
+	private String m_toolTipText;
 	
 	private LineType lineType;
 	private Float fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault().floatValue();
@@ -97,8 +94,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	// Visual Properties used in this node view.
 	private final VisualLexicon lexicon;
 
-	/*
-	 * @param inx the RootGraph index of edge (a negative number).
+	
+	/**
+	 * 
+	 * @param lexicon
+	 * @param view
+	 * @param inx
+	 * @param model
 	 */
 	DEdgeView(final VisualLexicon lexicon, final DGraphView view, final int inx, final CyEdge model) {
 		super(model);
@@ -117,7 +119,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		m_targetSelectedPaint = Color.red;
 		m_sourceEdgeEnd = GraphGraphics.ARROW_NONE;
 		m_targetEdgeEnd = GraphGraphics.ARROW_NONE;
-		//m_anchors = null;
 	}
 
 	@Override
@@ -243,57 +244,33 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
+	@Override
 	public Paint getSelectedPaint() {
 		return m_view.m_edgeDetails.selectedPaint(m_inx);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint getSourceEdgeEndPaint() {
 		return m_sourceUnselectedPaint;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint getSourceEdgeEndSelectedPaint() {
 		return m_sourceSelectedPaint;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint getTargetEdgeEndPaint() {
 		return m_targetUnselectedPaint;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Paint getTargetEdgeEndSelectedPaint() {
 		return m_targetSelectedPaint;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setSourceEdgeEndSelectedPaint(Paint paint) {
 		synchronized (m_view.m_lock) {
 			if (paint == null)
@@ -309,12 +286,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
+
+	@Override
 	public void setTargetEdgeEndSelectedPaint(Paint paint) {
 		
 		synchronized (m_view.m_lock) {
@@ -332,12 +305,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	}
 
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setSourceEdgeEndPaint(Paint paint) {
 		synchronized (m_view.m_lock) {
 			if (paint == null)
@@ -351,12 +319,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param paint
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setTargetEdgeEndPaint(Paint paint) {
 		synchronized (m_view.m_lock) {
 			if (paint == null)
@@ -388,27 +351,19 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			return false;
 
 		m_selected = true;
-		m_view.m_edgeDetails.select(m_inx);
-		
+		m_view.m_edgeDetails.select(m_inx);		
 		m_view.m_selectedEdges.insert(m_inx);
 
 		for (int j = 0; j < numHandles(); j++) {
 			getHandleInternal(j, m_view.m_anchorsBuff);
-			m_view.m_spacialA
-					.insert((m_inx << 6) | j,
-							(float) (m_view.m_anchorsBuff[0] - (m_view
-									.getAnchorSize() / 2.0d)),
-							(float) (m_view.m_anchorsBuff[1] - (m_view
-									.getAnchorSize() / 2.0d)),
-							(float) (m_view.m_anchorsBuff[0] + (m_view
-									.getAnchorSize() / 2.0d)),
-							(float) (m_view.m_anchorsBuff[1] + (m_view
-									.getAnchorSize() / 2.0d)));
-
+			m_view.m_spacialA.insert((m_inx << 6) | j,
+					(float) (m_view.m_anchorsBuff[0] - (m_view.getAnchorSize() / 2.0d)),
+					(float) (m_view.m_anchorsBuff[1] - (m_view.getAnchorSize() / 2.0d)),
+					(float) (m_view.m_anchorsBuff[0] + (m_view.getAnchorSize() / 2.0d)),
+					(float) (m_view.m_anchorsBuff[1] + (m_view.getAnchorSize() / 2.0d)));
 			if (selectAnchors)
 				m_view.m_selectedAnchors.insert((m_inx << 6) | j);
 		}
-
 		return true;
 	}
 
@@ -431,14 +386,12 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 		m_selected = false;
 		m_view.m_edgeDetails.unselect(m_inx);
-		
 		m_view.m_selectedEdges.delete(m_inx);
 
 		for (int j = 0; j < numHandles(); j++) {
 			m_view.m_selectedAnchors.delete((m_inx << 6) | j);
 			m_view.m_spacialA.delete((m_inx << 6) | j);
 		}
-
 		return true;
 	}
 
@@ -462,20 +415,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		return m_selected;
 	}
 
+	
+	@Override
 	final public boolean isHidden() {
 		return m_view.isHidden(this);
-	}
-
-	@Override
-	public void updateEdgeView() {
-	}
-
-	@Override
-	public void updateTargetArrow() {
-	}
-
-	@Override
-	public void updateSourceArrow() {
 	}
 
 	
@@ -510,23 +453,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		return m_targetEdgeEnd;
 	}
 
-	
-	@Override public void drawSelected() {
-		select();
-	}
-
-
-	@Override public void drawUnselected() {
-		unselect();
-	}
-
-	
-//	public Bend getBend() {
-//		synchronized (m_view.m_lock) {
-//			return m_view.m_edgeDetails.bend(m_inx);
-//		}
-//	}
-
 	@Override
 	public void clearBends() {
 		removeAllHandles();
@@ -542,11 +468,11 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		m_toolTipText = tip;
 	}
 
+	@Override
 	public String getToolTip() {
 		return m_toolTipText;
 	}
 
-	// Interface org.cytoscape.ding.Label:
 	
 	/**
 	 * {@inheritDoc}
@@ -606,11 +532,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	
 	public int numHandles() {
 		synchronized (m_view.m_lock) {
-//			if (m_anchors == null)
-//				return 0;
-//
-//			return m_anchors.size();
-			
 			// Extract number of bends from bend object.
 			return m_view.m_edgeDetails.bend(m_inx).getAllHandles().size();
 		}
@@ -628,46 +549,11 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 	}
 
-	
-//	public List<Point2D> getHandles() {
-//		synchronized (m_view.m_lock) {
-//			final ArrayList<Point2D> returnThis = new ArrayList<Point2D>();
-//
-//			if (m_anchors == null)
-//				return returnThis;
-//
-//			for (int i = 0; i < m_anchors.size(); i++) {
-//				final Point2D addThis = new Point2D.Float();
-//				addThis.setLocation((Point2D) m_anchors.get(i));
-//				returnThis.add(addThis);
-//			}
-//
-//			return returnThis;
-//		}
-//	}
-
-//	/**
-//	 * DOCUMENT ME!
-//	 * 
-//	 * @param inx
-//	 *            DOCUMENT ME!
-//	 * @param pt
-//	 *            DOCUMENT ME!
-//	 */
-//	public void moveHandle(int inx, Point2D pt) {
-//		synchronized (m_view.m_lock) {
-//			moveHandleInternal(inx, pt.getX(), pt.getY());
-//			m_view.m_contentChanged = true;
-//		}
-//	}
 
 	final void moveHandleInternal(final int inx, double x, double y) {
 		final Bend bend = m_view.m_edgeDetails.bend(m_inx);
 		final Handle handle = bend.getAllHandles().get(inx);
-		
-//		final Point2D movePt = (Point2D) m_anchors.get(inx);
-//		movePt.setLocation(x, y);
-		handle.setPoint(m_view, this, x, y);
+		handle.setPoint(this, x, y);
 
 		if (m_view.m_spacialA.delete((m_inx << 6) | inx))
 			m_view.m_spacialA.insert((m_inx << 6) | inx,
@@ -678,54 +564,14 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	}
 
 	final void getHandleInternal(int inx, float[] buff) {
-		//final Point2D.Float pt = (Point2D.Float) m_anchors.get(inx);
 		
 		final Bend bend = m_view.m_edgeDetails.bend(m_inx);
 		final Handle handle = bend.getAllHandles().get(inx);
-		final Point2D newPoint = handle.getPoint(m_view, this);
+		final Point2D newPoint = handle.getPoint(this);
 		buff[0] = (float) newPoint.getX();
 		buff[1] = (float) newPoint.getY();
 	}
 
-//	/**
-//	 * DOCUMENT ME!
-//	 * 
-//	 * @return DOCUMENT ME!
-//	 */
-//	public Point2D getSourceHandlePoint() {
-//		synchronized (m_view.m_lock) {
-//			if ((m_anchors == null) || (m_anchors.size() == 0))
-//				return null;
-//
-//			final Point2D returnThis = new Point2D.Float();
-//			returnThis.setLocation((Point2D) m_anchors.get(0));
-//
-//			return returnThis;
-//		}
-//	}
-
-//	/**
-//	 * DOCUMENT ME!
-//	 * 
-//	 * @return DOCUMENT ME!
-//	 */
-//	public Point2D getTargetHandlePoint() {
-//		synchronized (m_view.m_lock) {
-//			if ((m_anchors == null) || (m_anchors.size() == 0))
-//				return null;
-//
-//			final Point2D returnThis = new Point2D.Float();
-//			returnThis
-//					.setLocation((Point2D) m_anchors.get(m_anchors.size() - 1));
-//
-//			return returnThis;
-//		}
-//	}
-
-	
-//	public void addHandle(Point2D pt) {
-//		addHandleFoo(pt);
-//	}
 
 	/**
 	 * Add a new handle and returns its index.
@@ -748,26 +594,16 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			final Point2D sourcePt = m_view.getDNodeView(getEdge().getSource()).getOffset();
 			final Point2D targetPt = m_view.getDNodeView(getEdge().getTarget()).getOffset();
 			final Handle firstHandle = bend.getAllHandles().get(0); 
-			final Point2D point = firstHandle.getPoint(m_view, this);
-			//point.setLocation(firstHandle.getXFraction(), firstHandle.getYFraction());
-			
-//			double bestDist = (pt.distance(sourcePt) + pt.distance((Point2D) m_anchors.get(0)))
-//					- sourcePt.distance((Point2D) m_anchors.get(0));
+			final Point2D point = firstHandle.getPoint(this);
 			double bestDist = (pt.distance(sourcePt) + pt.distance(point)) - sourcePt.distance(point);
 			int bestInx = 0;
 
 			for (int i = 1; i < bend.getAllHandles().size(); i++) {
 				final Handle handle1 = bend.getAllHandles().get(i);
 				final Handle handle2 = bend.getAllHandles().get(i-1);
-				final Point2D point1 = handle1.getPoint(m_view, this);
-				final Point2D point2 = handle2.getPoint(m_view, this);
-//				point1.setLocation(handle1.getXFraction(), handle1.getYFraction());
-//				point2.setLocation(handle2.getXFraction(), handle2.getYFraction());
-				
-//				final double distCand = (pt.distance((Point2D) m_anchors
-//						.get(i - 1)) + pt.distance((Point2D) m_anchors.get(i)))
-//						- ((Point2D) m_anchors.get(i))
-//								.distance((Point2D) m_anchors.get(i - 1));
+				final Point2D point1 = handle1.getPoint(this);
+				final Point2D point2 = handle2.getPoint(this);
+
 				final double distCand = (pt.distance(point2) + pt.distance(point1)) - point1.distance(point2);
 
 				if (distCand < bestDist) {
@@ -776,12 +612,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				}
 			}
 
-//			final double lastCand = (pt.distance(targetPt) + pt.distance((Point2D) m_anchors.get(m_anchors.size() - 1)))
-//					- targetPt.distance((Point2D) m_anchors.get(m_anchors.size() - 1));
 			final int lastIndex = bend.getAllHandles().size() - 1;
 			final Handle lastHandle = bend.getAllHandles().get(lastIndex);
-			final Point2D lastPoint = lastHandle.getPoint(m_view, this);
-			//lastPoint.setLocation(lastHandle.getXFraction(), lastHandle.getYFraction());
+			final Point2D lastPoint = lastHandle.getPoint(this);
 			
 			final double lastCand = (pt.distance(targetPt) + pt.distance(lastPoint)) - targetPt.distance(lastPoint);
 
@@ -808,16 +641,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			final Bend bend = m_view.m_edgeDetails.bend(m_inx);
 			final Handle handle = new HandleImpl(handleLocation.getX(), handleLocation.getY());
 			
-			//final Point2D.Float addThis = new Point2D.Float();
-			//addThis.setLocation(handleLocation);
-
-			// This is the first time to use this data structure.
-//			if (m_anchors == null) {
-//				System.out.println("manc is null.  Create arraylist");
-//				m_anchors = new ArrayList<Point2D>();
-//			}
-				
-			//m_anchors.add(insertInx, addThis);
 			bend.insertHandleAt(insertInx, handle);
 
 			if (m_selected) {
@@ -833,7 +656,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 						m_view.m_selectedAnchors.insert((m_inx << 6) | j);
 				}
 
-				final Point2D newPoint = handle.getPoint(m_view, this);
+				final Point2D newPoint = handle.getPoint(this);
 				
 				m_view.m_spacialA.insert((m_inx << 6) | insertInx,
 						(float) (newPoint.getX() - (m_view.getAnchorSize() / 2.0d)),
@@ -847,28 +670,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	}
 
 	
-//	public void removeHandle(Point2D pt) {
-//		synchronized (m_view.m_lock) {
-//			final float x = (float) pt.getX();
-//			final float y = (float) pt.getY();
-//
-//			if (m_anchors == null)
-//				return;
-//
-//			for (int i = 0; i < m_anchors.size(); i++) {
-//				final Point2D.Float currPt = (Point2D.Float) m_anchors.get(i);
-//
-//				if ((x == currPt.x) && (y == currPt.y)) {
-//					removeHandle(i);
-//
-//					break;
-//				}
-//			}
-//		}
-//	}
-
-	
-	public void removeHandle(int inx) {
+	void removeHandle(int inx) {
 		synchronized (m_view.m_lock) {
 			final Bend bend = m_view.m_edgeDetails.bend(m_inx);
 			bend.removeHandleAt(inx);
@@ -890,10 +692,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 						m_view.m_selectedAnchors.insert((m_inx << 6) | j);
 				}
 			}
-
-//			if (m_anchors.size() == 0)
-//				m_anchors = null;
-
 			m_view.m_contentChanged = true;
 		}
 	}
@@ -901,9 +699,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	
 	void removeAllHandles() {
 		synchronized (m_view.m_lock) {
-//			if (m_anchors == null)
-//				return;
-
 			final Bend bend = m_view.m_edgeDetails.bend(m_inx);
 			
 			if (m_selected) {
@@ -912,45 +707,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					m_view.m_selectedAnchors.delete((m_inx << 6) | j);
 				}
 			}
-
-//			m_anchors = null;
 			m_view.m_contentChanged = true;
 		}
 	}
 
-	
-//	public boolean handleAlreadyExists(Point2D pt) {
-//		synchronized (m_view.m_lock) {
-//			final float x = (float) pt.getX();
-//			final float y = (float) pt.getY();
-//
-//			if (m_anchors == null)
-//				return false;
-//
-//			for (int i = 0; i < m_anchors.size(); i++) {
-//				final Point2D.Float currPt = (Point2D.Float) m_anchors.get(i);
-//
-//				if ((x == currPt.x) && (y == currPt.y))
-//					return true;
-//			}
-//
-//			return false;
-//		}
-//	}
-
-//	public Point2D[] getDrawPoints() {
-//		synchronized (m_view.m_lock) {
-//			final Point2D[] returnThis = new Point2D[(m_anchors == null) ? 0
-//					: m_anchors.size()];
-//
-//			for (int i = 0; i < returnThis.length; i++) {
-//				returnThis[i] = new Point2D.Float();
-//				returnThis[i].setLocation((Point2D) m_anchors.get(i));
-//			}
-//
-//			return returnThis;
-//		}
-//	}
 
 	// Interface org.cytoscape.graph.render.immed.EdgeAnchors:
 	@Override
@@ -970,79 +730,18 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	@Override
 	public void getAnchor(int anchorIndex, float[] anchorArr, int offset) {
 		final Bend bend = m_view.m_edgeDetails.bend(m_inx);
-		
-//		final Point2D.Float anchor;
 
 		final Handle handle;
 		if (m_view.m_edgeDetails.lineType(m_inx) == EdgeView.CURVED_LINES)
 			handle = bend.getAllHandles().get(anchorIndex);
-//			anchor = (Point2D.Float) m_anchors.get(anchorIndex);
 		else
 			handle = bend.getAllHandles().get(anchorIndex/2);
-//			anchor = (Point2D.Float) m_anchors.get(anchorIndex / 2);
 
-		final Point2D newPoint = handle.getPoint(m_view, this);
+		final Point2D newPoint = handle.getPoint(this);
 		anchorArr[offset] = (float) newPoint.getX();
 		anchorArr[offset + 1] = (float) newPoint.getY();
 	}
 
-//	// TODO: Can we remove this?
-//	public void setTextAnchor(int position) {
-//		// System.out.println("setTextAnchor");
-//	}
-//
-//	
-//	public void setJustify(int justify) {
-//		// System.out.println("setJustify");
-//	}
-//
-//	public int getTextAnchor() {
-//		// System.out.println("getTextAnchor");
-//
-//		return 0;
-//	}
-//
-//	
-//	public int getJustify() {
-//		// System.out.println("getJustify");
-//
-//		return 0;
-//	}
-
-	@Override
-	public void setLabelOffsetX(double x) {
-		// System.out.println("setLabelOffsetX");
-	}
-
-	@Override
-	public void setLabelOffsetY(double y) {
-		// System.out.println("setLabelOffsetY");
-	}
-
-	@Override
-	public void setEdgeLabelAnchor(int position) {
-		// System.out.println("setEdgeLabelAnchor");
-	}
-
-	
-	public double getLabelOffsetX() {
-		// System.out.println("getLabelOffsetX");
-
-		return 0.0;
-	}
-
-	
-	public double getLabelOffsetY() {
-		// System.out.println("getLabelOffsetY");
-
-		return 0.0;
-	}
-
-	public int getEdgeLabelAnchor() {
-		// System.out.println("getEdgeLabelAnchor");
-
-		return 0;
-	}
 
 	public void setLabelWidth(double width) {
 		synchronized (m_view.m_lock) {
@@ -1101,9 +800,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public void setBend(final Bend bend) {
 		synchronized (m_view.m_lock) {
 			m_view.m_edgeDetails.m_edgeBends.put(m_inx, bend);
-
-			// TODO: move bends here!
-
 		}
 		m_view.m_contentChanged = true;
 	}
@@ -1122,7 +818,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vpOriginal, V value) {
 		
 		final VisualProperty<?> vp;
-		VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
+		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
+		
+		// TODO: This should not happen.  Maybe this should throw an exception?
 		if(treeNode == null)
 			return;
 		
@@ -1242,11 +940,5 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 		
 		visualProperties.put(vp, value);
-	}
-
-	@Override
-	public void updateLine() {
-		// TODO Auto-generated method stub
-		
 	}
 }

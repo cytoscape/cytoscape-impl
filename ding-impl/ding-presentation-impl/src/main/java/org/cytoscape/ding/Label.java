@@ -66,26 +66,5 @@ public interface Label {
 	 * very large font sizes can slow performance.
 	 */
 	void setFont(Font aFont) ;
-
-
-//	/**
-//	 *
-//	 */
-//	public void setTextAnchor ( int position );
-//
-//	/**
-//	 *
-//	 */
-//	public int getTextAnchor ( );
-//
-//	/**
-//	 *
-//	 */
-//	public void setJustify ( int justify );
-//
-//	/**
-//	 *
-//	 */
-//	public int getJustify ( );
-
+	
 }

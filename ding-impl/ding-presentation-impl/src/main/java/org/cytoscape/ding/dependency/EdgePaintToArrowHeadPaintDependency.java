@@ -15,6 +15,7 @@ public class EdgePaintToArrowHeadPaintDependency extends
 		group.add(DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT);
 		group.add(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 		group.add(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+		
 		group.add(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
 		group.add(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 	}
