@@ -36,6 +36,7 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -46,6 +47,11 @@ public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 	@Tunable(description = "Network file to load", params = "fileCategory=network;input=true")
 	public File file;
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Load Network from File";
+	}
+	
 	public LoadNetworkFileTask(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, final Properties props, CyNetworkNaming namingUtil) {
 		super(mgr, netmgr, networkViewManager, props, namingUtil);

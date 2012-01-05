@@ -2,8 +2,7 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.Window;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -352,5 +351,20 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		}
 
 		return handlers;
+	}
+	
+	protected String getTitle(Object objectWithTunables) {
+		Method method = titleProviderMap.get(objectWithTunables);
+		if (method != null) {
+			try {
+				String title = (String) method.invoke(objectWithTunables);
+				if (title != null) {
+					return title;
+				}
+			} catch (final Exception e) {
+				logger.error("Can't retrieve @ProvidesTitle String: ", e);
+			}
+		}
+		return "Set Parameters";
 	}
 }
