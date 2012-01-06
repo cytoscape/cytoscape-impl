@@ -31,22 +31,23 @@ public class PropsReader extends  AbstractConfigDirPropsReader
 
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		logger.debug("Updating Properties from loaded session...");
-		
-		Properties newProps = null;
-		CySession sess = e.getLoadedSession();
-		
-		if (sess != null)
-			newProps = sess.getCytoscapeProperties();
-		else
-			logger.warn("Loaded session is null.");
-		
-		if (newProps == null) {
-			logger.warn("Could not get new properties from loaded session - using empty properties.");
-			newProps = new Properties();
-		}
-
-		props.clear();
-	 	props.putAll(newProps);	
+		// TODO: should not worry about session related props, since the save policy is CONFIG_DIR (?)
+//		logger.debug("Updating Properties from loaded session...");
+//		
+//		Properties newProps = null;
+//		CySession sess = e.getLoadedSession();
+//		
+//		if (sess != null)
+//			newProps = sess.getProperties();
+//		else
+//			logger.warn("Loaded session is null.");
+//		
+//		if (newProps == null) {
+//			logger.warn("Could not get new properties from loaded session - using empty properties.");
+//			newProps = new Properties();
+//		}
+//
+//		props.clear();
+//	 	props.putAll(newProps);	
 	}
 }
