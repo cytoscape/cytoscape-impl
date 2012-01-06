@@ -68,7 +68,7 @@ public class HelpPanel extends JPanel {
 		urlMap.put(about, "http://www.cytoscape.org/what_is_cytoscape.html");
 		urlMap.put(manual, "http://www.cytoscape.org/documentation_users.html");
 		urlMap.put(tutorial, "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape");
-		urlMap.put(bugReport, "http://chianti.ucsd.edu/cyto_web/bugreport?cyversion="+cyversion+"&os="+os_str);
+		urlMap.put(bugReport, "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php?cyversion="+cyversion+"&os="+os_str);
 		
 		for(final JLabel label: labelSet) {
 			label.setFont(LABEL_FONT);
