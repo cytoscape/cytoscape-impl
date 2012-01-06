@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.OpenBrowser;
 
 public class HelpPanel extends JPanel {
@@ -35,11 +37,13 @@ public class HelpPanel extends JPanel {
 	private final Map<JLabel, String> urlMap;
 	
 	private final OpenBrowser openBrowserServiceRef;
+	private final CyProperty<Properties> cyProps;
 	
-	HelpPanel(final OpenBrowser openBrowserServiceRef) {
+	HelpPanel(final OpenBrowser openBrowserServiceRef, CyProperty<Properties> cyProps) {
 		labelSet = new ArrayList<JLabel>();
 		urlMap = new HashMap<JLabel, String>();
 		this.openBrowserServiceRef = openBrowserServiceRef;
+		this.cyProps = cyProps;
 		initComponents();
 	}
 
@@ -50,6 +54,13 @@ public class HelpPanel extends JPanel {
 		tutorial = new JLabel("     Tutorials >>");
 		bugReport = new JLabel("     Report a bug >>");
 		
+		// get Cytoscape version
+		String cyversion = this.cyProps.getProperties().getProperty("cytoscape.version.number");
+		
+		// get OS string
+		String os_str = System.getProperty("os.name")+ "_"+ System.getProperty("os.version");
+		os_str = os_str.replace(" ", "_");
+		
 		labelSet.add(about);
 		labelSet.add(manual);
 		labelSet.add(tutorial);
@@ -57,7 +68,7 @@ public class HelpPanel extends JPanel {
 		urlMap.put(about, "http://www.cytoscape.org/what_is_cytoscape.html");
 		urlMap.put(manual, "http://www.cytoscape.org/documentation_users.html");
 		urlMap.put(tutorial, "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape");
-		urlMap.put(bugReport, "http://www.cytoscape.org/");
+		urlMap.put(bugReport, "http://chianti.ucsd.edu/cyto_web/bugreport?cyversion="+cyversion+"&os="+os_str);
 		
 		for(final JLabel label: labelSet) {
 			label.setFont(LABEL_FONT);
