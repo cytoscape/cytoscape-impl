@@ -91,8 +91,10 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	 */
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		CyNetworkView view = e.getNetworkView();
+		
 		// update bpPanel accordingly
-       	if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+       	if (view != null && BioPaxUtil.isBioPAXNetwork(view.getModel())) {
             bpPanel.resetText();
         }
 	}
