@@ -396,69 +396,6 @@ public class VizMapPropertySheetBuilder {
 			props.remove(p);
 	}
 
-	// TODO: this should be gone
-	public void setAttrComboBox() {
-		// Attribute Names
-		final List<String> names = new ArrayList<String>();
-		//
-		// CyTable attr = /* TODO */getTargetNetwork().getNodeCyDataTables()
-		// .get(CyNetwork.DEFAULT_ATTRS);
-		//
-		// // TODO remove the next line too!
-		// if (attr == null)
-		// return;
-		//
-		// Map<String, Class<?>> cols = attr.getColumnTypeMap();
-		// names.addAll(cols.keySet());
-		//
-		// Collections.sort(names);
-		//
-		// // nodeAttrEditor.setAvailableValues(names.toArray());
-		// spcs.firePropertyChange("UPDATE_AVAILABLE_VAL", "nodeAttrEditor",
-		// names
-		// .toArray());
-		//
-		// names.clear();
-		//
-		// for (String name : cols.keySet()) {
-		// Class<?> dataClass = cols.get(name);
-		//
-		// if ((dataClass == Integer.class) || (dataClass == Double.class))
-		// names.add(name);
-		// }
-		//
-		// Collections.sort(names);
-		// // nodeNumericalAttrEditor.setAvailableValues(names.toArray());
-		// spcs.firePropertyChange("UPDATE_AVAILABLE_VAL",
-		// "nodeNumericalAttrEditor", names.toArray());
-		//
-		// names.clear();
-		//
-		// attr = getTargetNetwork().getEdgeCyDataTables().get(
-		// CyNetwork.DEFAULT_ATTRS);
-		// cols = attr.getColumnTypeMap();
-		// names.addAll(cols.keySet());
-		// Collections.sort(names);
-		//
-		// // edgeAttrEditor.setAvailableValues(names.toArray());
-		// spcs.firePropertyChange("UPDATE_AVAILABLE_VAL", "edgeAttrEditor",
-		// names
-		// .toArray());
-		// names.clear();
-		//
-		// for (String name : cols.keySet()) {
-		// Class<?> dataClass = cols.get(name);
-		//
-		// if ((dataClass == Integer.class) || (dataClass == Double.class))
-		// names.add(name);
-		// }
-		//
-		// Collections.sort(names);
-		// // edgeNumericalAttrEditor.setAvailableValues(names.toArray());
-		// spcs.firePropertyChange("UPDATE_AVAILABLE_VAL",
-		// "edgeNumericalAttrEditor", names.toArray());
-		// propertySheetPanel.repaint();
-	}
 
 	public VizMapPropertyBuilder getPropertyBuilder() {
 		return this.vizMapPropertyBuilder;

@@ -203,7 +203,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		editorWindowManager.closeAllEditorWindows();
 		
 		vizMapPropertySheetBuilder.setPropertyTable(style);
-		updateAttributeList();
 
 		// Apply style to the current network view if necessary.
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
@@ -293,9 +292,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		defaultImageManager.put(vs, engine.createImage((int) size.getWidth(), (int) size.getHeight()));
 	}
 
-	public void updateAttributeList() {
-		vizMapPropertySheetBuilder.setAttrComboBox();
-	}
 
 	/**
 	 * 
