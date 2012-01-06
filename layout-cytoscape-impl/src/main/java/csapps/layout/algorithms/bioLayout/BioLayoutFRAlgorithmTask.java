@@ -11,10 +11,9 @@ import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.work.Tunable;
 
 
-public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithm {
+public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	/**
 	 * Sets the number of iterations for each update
 	 */
@@ -118,9 +117,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithm {
 		int update_iterations, final double attraction_multiplier,final double repulsion_multiplier,  
 		final double gravity_multiplier,final double conflict_avoidance, final double max_distance_factor,
 		final double spread_factor,final double temperature,final int nIterations,
-		final boolean supportWeights, final boolean singlePartition)
+		final boolean supportWeights, final boolean singlePartition, final boolean randomize)
 	{		
-		super(networkView, name, selectedOnly, staticNodes, singlePartition);
+		super(networkView, name, selectedOnly, staticNodes, singlePartition, randomize);
 
 		this.update_iterations =update_iterations;
 		this.attraction_multiplier =attraction_multiplier;
@@ -431,7 +430,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithm {
 
 				if (debug) {
 					try {
-						Thread.currentThread().sleep(100);
+						Thread.sleep(100);
 					} catch (InterruptedException e) {
 					}
 				}

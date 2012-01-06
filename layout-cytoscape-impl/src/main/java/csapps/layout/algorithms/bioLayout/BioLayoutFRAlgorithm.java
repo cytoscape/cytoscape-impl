@@ -31,7 +31,6 @@
 package csapps.layout.algorithms.bioLayout;
 
 
-import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
@@ -53,7 +52,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * @author <a href="mailto:scooter@cgl.ucsf.edu">Scooter Morris</a>
  * @version 0.9
  */
-public class BioLayoutFRAlgorithm extends AbstractLayoutAlgorithm implements TunableValidator {
+public class BioLayoutFRAlgorithm extends BioLayoutAlgorithm implements TunableValidator {
 	/**
 	 * Sets the number of iterations for each update
 	 */
@@ -127,7 +126,7 @@ public class BioLayoutFRAlgorithm extends AbstractLayoutAlgorithm implements Tun
 				networkView, getName(), selectedOnly, staticNodes, update_iterations,
 				attraction_multiplier, repulsion_multiplier, gravity_multiplier,
 				conflict_avoidance, max_distance_factor, spread_factor,
-				temperature, nIterations, supportWeights, singlePartition));
+				temperature, nIterations, supportWeights, singlePartition, randomize));
 	}
 	
 	@Override // TODO

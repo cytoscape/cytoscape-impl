@@ -15,13 +15,11 @@ import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.undo.UndoSupport;
 
 import csapps.layout.Profile;
 
 
-public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithm {
+public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 
 	/**
 	 * A small value used to avoid division by zero
@@ -31,25 +29,40 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithm {
 	/**
 	 * The total number of layout passes
 	 */
-	//@Tunable(description="Number of layout passes", groups="Algorithm settings")
-	public int m_numLayoutPasses = 10;
+	private int m_numLayoutPasses = 10;
 
 	/**
 	 * The average number of iterations per Node
 	 */
-	//@Tunable(description="Average number of iteratations for each node", groups="Algorithm settings")
-	public double m_averageIterationsPerNode = 40;
-	//@Tunable(description="Spring strength", groups="Algorithm settings")
-	public double m_nodeDistanceStrengthConstant=15.0;
-	//@Tunable(description="Spring rest length", groups="Algorithm settings")
-	public double m_nodeDistanceRestLengthConstant=45.0;
+	private double m_averageIterationsPerNode = 40;
+	
+	/**
+	 * Spring strength
+	 */
+	private double m_nodeDistanceStrengthConstant=15.0;
+	
+	/** 
+	 * Spring rest length"
+	 */
+	private double m_nodeDistanceRestLengthConstant=45.0;
+	
 	private double[] m_nodeDistanceSpringScalars;
-	//@Tunable(description="Strength of a 'disconnected' spring", groups="Algorithm settings")
-	public double m_disconnectedNodeDistanceSpringStrength=0.05;
-	//@Tunable(description="Rest length of a 'disconnected' spring", groups="Algorithm settings")
-	public double m_disconnectedNodeDistanceSpringRestLength=2000.0;
-	//@Tunable(description="Strength to apply to avoid collisions", groups="Algorithm settings")
-	public double m_anticollisionSpringStrength;
+	
+	/**
+	 * Strength of a 'disconnected' spring
+	 */
+	private double m_disconnectedNodeDistanceSpringStrength=0.05;
+	
+	/**
+	 * Rest length of a 'disconnected' spring"
+	 */
+	private double m_disconnectedNodeDistanceSpringRestLength=2000.0;
+	
+	/**
+	 * Strength to apply to avoid collisions
+	 */
+	private double m_anticollisionSpringStrength;
+	
 	private double[] m_anticollisionSpringScalars;
 
 	/**
@@ -61,8 +74,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithm {
 	/**
 	 * Current layout pass
 	 */
-	@Tunable(description="Number of layout passes", groups="Algorithm settings")
-	public int m_layoutPass = 2;
+	private int m_layoutPass = 2;
 
 	/**
 	 * The number of nodes
@@ -93,9 +105,9 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithm {
 		final double m_disconnectedNodeDistanceSpringStrength,
 		final double m_disconnectedNodeDistanceSpringRestLength,
 		final double m_anticollisionSpringStrength,
-		final boolean supportWeights, final boolean singlePartition)
+		final boolean supportWeights, final boolean singlePartition, final int m_layoutPass, final boolean randomize)
 	{
-		super(networkView, name, selectedOnly, staticNodes, singlePartition);
+		super(networkView, name, selectedOnly, staticNodes, singlePartition, randomize);
 		this.m_averageIterationsPerNode = m_averageIterationsPerNode;
 		this.m_nodeDistanceStrengthConstant = m_nodeDistanceStrengthConstant;
 		this.m_nodeDistanceRestLengthConstant = m_nodeDistanceRestLengthConstant;
@@ -103,7 +115,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithm {
 		this.m_disconnectedNodeDistanceSpringRestLength = m_disconnectedNodeDistanceSpringRestLength;
 		this.m_anticollisionSpringStrength = m_anticollisionSpringStrength;
 		this.supportWeights = supportWeights;
-
+		this.m_layoutPass = m_layoutPass;
 	}
 
 	/**
