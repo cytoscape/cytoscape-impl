@@ -42,6 +42,7 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLES_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
@@ -59,6 +60,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -198,7 +201,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		zipVizmap();
 		taskMonitor.setProgress(0.5);
 		taskMonitor.setStatusMessage("Zip Cytoscape properties...");
-		zipCytoscapeProps();
+		zipProperties();
 		taskMonitor.setProgress(0.6);
 		taskMonitor.setStatusMessage("Zip bookmarks...");
 		zipBookmarks();
@@ -282,14 +285,19 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	/**
 	 * Writes the cytoscape.props file to the session zip.
 	 */
-	private void zipCytoscapeProps() throws Exception {
-		zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER + CYPROP_FILE) );
-
-		CyWriter propertiesWriter = propertyWriterMgr.getWriter(session.getCytoscapeProperties(), propertiesFilter, zos);
-		propertiesWriter.run(taskMonitor);
-
-		zos.closeEntry();
-		propertiesWriter = null;
+	private void zipProperties() throws Exception {
+		for (Entry<String, Properties> entry : session.getProperties().entrySet()) {
+			String fileName = entry.getKey() + PROPERTIES_EXT;
+			Properties props = entry.getValue(); 
+			
+			zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER + fileName) );
+	
+			CyWriter propertiesWriter = propertyWriterMgr.getWriter(props, propertiesFilter, zos);
+			propertiesWriter.run(taskMonitor);
+	
+			zos.closeEntry();
+			propertiesWriter = null;
+		}
 	}
 
 	/**

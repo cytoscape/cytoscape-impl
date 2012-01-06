@@ -91,13 +91,15 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
 	public static final String CY2_PARENT_NETWORK_COLUMN = "Cytoscape2 Parent Network";
 	
-	public static final String CY_PROPS = "session_cytoscape.props";
+	public static final String CY_PROPS_FILE = "session_cytoscape.props";
 	public static final Pattern NETWORK_PATTERN = Pattern.compile(".*/(([^/]+)[.]xgmml)");
+	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/(([^/]+)[.]xgmml)");
 	public static final String IGNORED_PROPS =
-			"(cytoscape|proxy|logger|render|undo|vizmapper)\\.[^\\.]+.*" +
-			"|canonicalizeNames|defaultPluginDownloadUrl|defaultVisualStyle|defaultWebBrowser|exportTextAsShape" +
-			"|maximizeViewOnCreate|moduleNetworkViewCreationThreshold|secondaryViewThreshold|showQuickStartAtStartup" +
-			"|viewThreshold";
+			"(cytoscape|proxy|logger|render|undo|vizmapper|nodelinkouturl|edgelinkouturl)\\.[^\\.]+.*" +
+			"|canonicalizeNames|defaultPluginDownloadUrl|defaultVisualStyle|defaultWebBrowser" +
+			"|exportTextAsShape|Linkout\\.externalLinkName|maximizeViewOnCreate|moduleNetworkViewCreationThreshold" +
+			"|nestedNetwork\\.imageScaleFactor|nestedNetworkSnapshotSize|preferredLayoutAlgorithm" +
+			"|secondaryViewThreshold|showQuickStartAtStartup|viewThreshold";
 	
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
@@ -145,8 +147,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			extractSessionState(is, entryName);
 		} else if (entryName.endsWith(VIZMAP_PROPS_FILE)) {
 			extractVizmap(is, entryName);
-		} else if (entryName.endsWith(CY_PROPS)) {
-			extractCytoscapeProps(is, entryName);
+		} else if (entryName.endsWith(CY_PROPS_FILE)) {
+			extractProperties(is, entryName);
 		} else if (entryName.endsWith(XGMML_EXT)) {
 			// Don't extract the network now!
 			// Just save the entry path, so it can be extracted
@@ -361,18 +363,23 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		visualStyles.addAll(reader.getVisualStyles());
 	}
 
-	private void extractCytoscapeProps(InputStream is, String entryName) throws Exception {
+	private void extractProperties(InputStream is, String entryName) throws Exception {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
 		final Properties props = (Properties) reader.getProperty();
+		final Properties newProps = new Properties();
 		
 		if (props != null) {
 			// Only add properties that should have the SESSION_FILE save policy
 			for (String key : props.stringPropertyNames()) {
 				if (isSessionProperty(key)) {
 					String value = props.getProperty(key);
-					cytoscapeProps.setProperty(key, value);
+					newProps.put(key, value);
 				}
+			}
+			
+			if (newProps.size() > 0) {
+				propertiesMap.put("session", newProps); // TODO: choose a better name
 			}
 		}
 	}

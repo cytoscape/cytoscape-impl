@@ -685,31 +685,6 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
             depth--;
             writeElement("</graphics>\n");
         }
-
-        // TODO: Handle bends
-        if (element instanceof CyEdge) {
-			//   final CyEdge edge = (CyEdge) element;
-			//   final Bend bendData = edge.getBend();
-            //   final List<Point2D> handles = new ArrayList<Point2D>(); //final List<Point2D> handles = bendData.getHandles();
-            //
-            //   if (handles.size() == 0) {
-            //       write("/>\n");
-            //   } else {
-            //       write(">\n");
-            //       depth++;
-            //       writeElement("<att name=\"edgeBend\">\n");
-            //       depth++;
-            //       for (Point2D handle: handles) {
-            //           String x = Double.toString(handle.getX());
-            //           String y = Double.toString(handle.getY());
-            //           writeElement("<att name=\"handle\" x=\""+x+"\" y=\""+y+"\" />\n");
-            //       }
-            //       depth--;
-            //       writeElement("</att>\n");
-            //       depth--;
-            //       writeElement("</graphics>\n");
-            //   }
-        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -57,11 +57,13 @@ import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.property.session.Desktop;
 import org.cytoscape.property.session.NetworkFrame;
 import org.cytoscape.property.session.SessionState;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -90,6 +92,7 @@ public class CySessionManagerImpl implements CySessionManager {
 	private final VisualMappingManager vmMgr;
 	private final CyNetworkViewManager nvMgr;
 	private final CyRootNetworkManager rootNetMgr;
+	private final CyServiceRegistrar registrar;
 
 	private final Map<CyProperty<?>, Map<String, String>> sessionProperties;
 
@@ -101,7 +104,8 @@ public class CySessionManagerImpl implements CySessionManager {
 								final CyNetworkTableManager netTblMgr,
 								final VisualMappingManager vmMgr,
 								final CyNetworkViewManager nvMgr,
-								final CyRootNetworkManager rootNetMgr) {
+								final CyRootNetworkManager rootNetMgr,
+								final CyServiceRegistrar registrar) {
 		this.cyEventHelper = cyEventHelper;
 		this.netMgr = netMgr;
 		this.tblMgr = tblMgr;
@@ -109,6 +113,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		this.vmMgr = vmMgr;
 		this.nvMgr = nvMgr;
 		this.rootNetMgr = rootNetMgr;
+		this.registrar = registrar;
 		sessionProperties = new HashMap<CyProperty<?>, Map<String, String>>();
 	}
 
@@ -142,12 +147,12 @@ public class CySessionManagerImpl implements CySessionManager {
 		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
 		Set<CyTable> tables = tblMgr.getAllTables(true);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-		Properties props = getProperties();
+		Map<String, Properties> props = getProperties();
 		Bookmarks bkmarks = getBookmarks();
-
 		Set<CyTableMetadata> metadata = buildMetadata(tables, networks);
+		
 		// Build the session
-		CySession sess = new CySession.Builder().cytoscapeProperties(props).bookmarks(bkmarks).cysession(cysess)
+		CySession sess = new CySession.Builder().properties(props).bookmarks(bkmarks).cysession(cysess)
 				.appFileListMap(appMap).tables(metadata).networks(networks).networkViews(netViews)
 				.visualStyles(styles).viewVisualStyleMap(stylesMap).build();
 
@@ -171,7 +176,7 @@ public class CySessionManagerImpl implements CySessionManager {
 				
 				if (!allNetworks.contains(rootNet)) {
 					allNetworks.add(rootNet);
-				
+					
 					// TODO: remove it once manager is fixed to return all tables
 					for (Class<? extends CyTableEntry> type : TYPES) {
 						Map<String, CyTable> tableMap = netTblMgr.getTables(rootNet, type);
@@ -244,13 +249,14 @@ public class CySessionManagerImpl implements CySessionManager {
 			// Cysession info
 			Cysession cysess = new CysessionFactory(netMgr, nvMgr, vmMgr).createDefaultCysession();
 
-			Properties props = getProperties();
+			Map<String, Properties> props = getProperties();
 			Bookmarks bkmarks = getBookmarks();
 
-			sess = new CySession.Builder().cytoscapeProperties(props).bookmarks(bkmarks).cysession(cysess)
-					.visualStyles(styles).build();
+			sess = new CySession.Builder().properties(props).bookmarks(bkmarks).cysession(cysess).visualStyles(styles)
+					.build();
 		} else {
 			logger.debug("Restoring the session...");
+			restoreProperties(sess);
 			restoreNetworks(sess);
 			restoreNetworkViews(sess);
 			restoreTables(sess);
@@ -306,19 +312,39 @@ public class CySessionManagerImpl implements CySessionManager {
 		return bookmarks;
 	}
 
-	private Properties getProperties() {
-		Properties props = new Properties();
+	/**
+	 * @return Map of session Properties by property name.
+	 */
+	private Map<String/*property name*/, Properties> getProperties() {
+		Map<String, Properties> map = new HashMap<String, Properties>();
 
-		for (CyProperty<?> cyProps : sessionProperties.keySet()) {
+		for (Entry<CyProperty<?>, Map<String, String>> entry : sessionProperties.entrySet()) {
+			CyProperty<?> cyProps = entry.getKey();
+			Map<String, String> metadata = entry.getValue();
+			
 			if (cyProps.getProperties() instanceof Properties) {
-				Properties p = (Properties) cyProps.getProperties();
-				props.putAll(p);
+				map.put(metadata.get("cyPropertyName"), (Properties) cyProps.getProperties());
 			}
 		}
 
-		return props;
+		return map;
 	}
 
+	private void restoreProperties(CySession sess) {
+		final Map<String, Properties> sessionPropsMap = sess.getProperties();
+		
+		for (Entry<String, Properties> entry : sessionPropsMap.entrySet()) {
+			final Properties props = entry.getValue();
+			CyProperty<Properties> cyProps = new SimpleCyProperty(props, CyProperty.SavePolicy.SESSION_FILE);
+			
+			final Properties serviceProps = new Properties();
+			serviceProps.setProperty("cyPropertyName", entry.getKey());
+			serviceProps.setProperty("serviceType", "property");
+	        
+			registrar.registerAllServices(cyProps, serviceProps);
+		}
+	}
+	
 	private void restoreNetworks(CySession sess) {
 		logger.debug("Restoring networks...");
 		Set<CyNetwork> networks = sess.getNetworks();
@@ -386,15 +412,9 @@ public class CySessionManagerImpl implements CySessionManager {
 
 	private void disposeCurrentSession(boolean removeVisualStyles) {
 		logger.debug("Disposing current session...");
-
-		// Destroy network views
-		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
-
-		for (CyNetworkView nv : netViews)
-			nvMgr.destroyNetworkView(nv);
 		
 		// Destroy networks
-		Set<CyNetwork> networks = netMgr.getNetworkSet();
+		final Set<CyNetwork> networks = netMgr.getNetworkSet();
 		
 		for (CyNetwork n : networks)
 			netMgr.destroyNetwork(n);
@@ -416,5 +436,14 @@ public class CySessionManagerImpl implements CySessionManager {
 
 		// Destroy tables
 		tblMgr.reset();
+		
+		// Unregister session properties
+		final Set<CyProperty<?>> cyPropsSet = new HashSet<CyProperty<?>>(sessionProperties.keySet());
+		
+		for (CyProperty<?> cyProps : cyPropsSet) {
+			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {
+				registrar.unregisterAllServices(cyProps);
+			}
+		}
 	}
 }

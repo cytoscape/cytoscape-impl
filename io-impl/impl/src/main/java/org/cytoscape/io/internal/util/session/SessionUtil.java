@@ -57,7 +57,7 @@ public class SessionUtil {
 	public static final String VIZMAP_PROPS_FILE = "vizmap.props";
 	public static final String VIZMAP_XML_FILE = "vizmap.xml";
 	
-	public static final String PROPS_EXT = ".props";
+	public static final String PROPERTIES_EXT = ".props";
 	public static final String TABLE_EXT = ".cytable";
 	public static final String VERSION_EXT = ".version";
 	public static final String XGMML_EXT = ".xgmml";

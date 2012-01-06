@@ -32,9 +32,10 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PROPS_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML_FILE;
@@ -95,6 +96,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	public static final Pattern NETWORK_VIEW_NAME_PATTERN = Pattern.compile("(\\d+)_(\\d+)(_[^_]+)?"); // netId_viewId_title
 	public static final Pattern NETWORK_TABLE_PATTERN = Pattern.compile(".*/(([^/]+)/([^/]+)-([^/]+)-([^/]+)[.]cytable)");
 	public static final Pattern GLOBAL_TABLE_PATTERN = Pattern.compile(".*/(global/(\\d+)-([^/]+)[.]cytable)");
+	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/"+PROPERTIES_FOLDER+"?(([^/]+)[.](props|properties))");
 	
 	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new HashMap<Long, CyNetwork>();
 	private final Map<String/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<String, Set<CyTableMetadataBuilder>>();
@@ -150,8 +152,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				extractSessionState(is, entryName);
 			} else if (entryName.endsWith(VIZMAP_XML_FILE)) {
 				extractVizmap(is, entryName);
-			} else if (entryName.endsWith(PROPS_EXT)) {
-				extractCytoscapeProps(is, entryName);
+			} else if (entryName.endsWith(PROPERTIES_EXT)) {
+				extractProperties(is, entryName);
 			} else if (entryName.endsWith(XGMML_EXT)) {
 				// Ignore network view files for now...
 				Matcher matcher = NETWORK_PATTERN.matcher(entryName);
@@ -365,10 +367,21 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		visualStyles.addAll(reader.getVisualStyles());
 	}
 
-	private void extractCytoscapeProps(InputStream is, String entryName) throws Exception {
+	private void extractProperties(InputStream is, String entryName) throws Exception {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		cytoscapeProps = (Properties) reader.getProperty();
+		Properties props = (Properties) reader.getProperty();
+		
+		if (props != null && props.size() > 0) {
+			Matcher matcher = PROPERTIES_PATTERN.matcher(entryName);
+			
+			if (matcher.matches()) {
+				String propsName = matcher.group(2);
+				
+				if (propsName != null)
+					propertiesMap.put(propsName, props);
+			}
+		}
 	}
 
 	private void extractBookmarks(InputStream is, String entryName) throws Exception {
