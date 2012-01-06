@@ -179,7 +179,7 @@ public class WelcomeScreenDialog extends JDialog {
 				new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, networkTaskFactory,
 						config, dsManager, cyProps.getProperties()),
 				"Create New Network");
-		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef), "Help");
+		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef, cyProps), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
 
 		mainPanel.setBorder(border);
