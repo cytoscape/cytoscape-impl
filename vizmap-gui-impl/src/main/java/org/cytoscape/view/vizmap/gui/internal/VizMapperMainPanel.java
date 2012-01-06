@@ -73,6 +73,8 @@ import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
+import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedEvent;
 import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedListener;
 import org.cytoscape.view.vizmap.gui.internal.task.ImportDefaultVizmapTaskFactory;
@@ -100,7 +102,7 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  */
 public class VizMapperMainPanel extends AbstractVizMapperPanel implements VisualStyleAddedListener,
 		VisualStyleAboutToBeRemovedListener, PopupMenuListener, NetworkViewAddedListener, CytoPanelComponent,
-		SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener, PropertyChangeListener {
+		SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener, PropertyChangeListener, LexiconStateChangedListener {
 
 	private final static long serialVersionUID = 1202339867854959L;
 
@@ -476,5 +478,13 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		if(fromSetViewMode.getPropertyName().equals(SetViewModeAction.VIEW_MODE_CHANGED))
 			switchVS(manager.getCurrentVisualStyle(), true);
 
+	}
+
+	@Override
+	public void handleEvent(LexiconStateChangedEvent e) {
+		logger.warn("Main panel got Lexicon update event.");
+		vizMapPropertySheetBuilder.setPropertyTable(manager.getCurrentVisualStyle());
+		// Set the default view to the panel.
+		propertySheetPanel.setSorting(true);
 	}
 }

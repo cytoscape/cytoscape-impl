@@ -20,6 +20,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -280,20 +281,28 @@ public class VizMapPropertySheetBuilder {
 		final Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
 		for(VisualLexicon lex: lexSet) {
 
-			for (VisualProperty<?> type : lex.getAllVisualProperties()) {
+			for (final VisualProperty<?> vp : lex.getAllVisualProperties()) {
 				
-				if(VisualPropertyFilter.isCompatible(type) == false)
+				if(VisualPropertyFilter.isCompatible(vp) == false)
 					continue;
 				
 				if (PropertySheetUtil.isAdvancedMode() == false) {
-					if (PropertySheetUtil.isBasic(type) == false)
+					if (PropertySheetUtil.isBasic(vp) == false)
 						continue;
 				}
 				
-				mapping = style.getVisualMappingFunction(type);
+				mapping = style.getVisualMappingFunction(vp);
 	
-				if (mapping == null && lex.getVisualLexiconNode(type).getChildren().size() == 0)
-					unusedVisualPropType.add(type);
+				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
+				if (mapping == null) {
+					if(treeNode != null && treeNode.isDepend() == false && treeNode.getChildren().size() == 0)
+						unusedVisualPropType.add(vp);
+					else if(treeNode.isDepend()) {
+						final VisualProperty<?> parentVP = treeNode.getParent().getVisualProperty();
+						if(unusedVisualPropType.contains(parentVP) == false)
+							unusedVisualPropType.add(parentVP);
+					}
+				}
 	
 				mapping = null;
 			}

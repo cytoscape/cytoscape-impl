@@ -542,14 +542,13 @@ public class DefaultViewEditorImpl extends JDialog implements
 		
 		final VisualLexicon lex = currentEngine.getVisualLexicon();
 		
-
 		for (Class<? extends CyTableEntry> key : vpSets.keySet()) {
 			final DefaultListModel model = new DefaultListModel();
-			JList list = listMap.get(key);
+			final JList list = listMap.get(key);
 			
 			list.setModel(model);
 			Set<VisualProperty<?>> vps = vpSets.get(key);
-			for (VisualProperty<?> vp : vps) {
+			for(final VisualProperty<?> vp : vps) {
 				
 				// Check supported or not.
 				if(VisualPropertyFilter.isCompatible(vp) == false)
@@ -561,6 +560,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 					continue;
 				}
 				
+				// Filter based on dependency:
 				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
 				if(treeNode != null && treeNode.isDepend() == false)
 					model.addElement(vp);
@@ -573,28 +573,6 @@ public class DefaultViewEditorImpl extends JDialog implements
 			}
 			list.setCellRenderer(renderer);
 		}
-
-		// mainView.updateView();
-		// mainView.repaint();
-	}
-
-	private void lockSize() {
-		// TODO fix lock function
-		// if (lockNodeSizeCheckBox.isSelected()) {
-		// nodeVp.remove(NODE_WIDTH);
-		// nodeVp.remove(NODE_HEIGHT);
-		// nodeVp.add(NODE_SIZE);
-		// nac.setNodeSizeLocked(true);
-		// } else {
-		// nodeVp.add(NODE_WIDTH);
-		// nodeVp.add(NODE_HEIGHT);
-		// nodeVp.remove(NODE_SIZE);
-		// nac.setNodeSizeLocked(false);
-		// }
-		//
-		// buildList();
-		// mainView.updateView();
-		// repaint();
 	}
 
 	
@@ -689,7 +667,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 	@Override
 	public void handleEvent(LexiconStateChangedEvent e) {
-		logger.debug("Def editor got Lex event.");
+		logger.debug("Def editor got Lexicon update event.");
 		buildList();
 		
 		mainView.updateView();
