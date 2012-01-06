@@ -51,7 +51,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 		}
 
 		if ( listSingleSelection.getPossibleValues().isEmpty() ) {
-			panel = null;
+			panel = new JPanel();
 			combobox = null;
 			return;
 		}
