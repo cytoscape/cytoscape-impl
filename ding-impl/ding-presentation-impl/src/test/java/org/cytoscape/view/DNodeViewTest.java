@@ -222,7 +222,7 @@ public class DNodeViewTest {
 	@Test
 	public void testGetBorderPaint() {
 		final Paint borderPaint = dnv1.getBorderPaint();
-		assertEquals(Color.DARK_GRAY, borderPaint);
+		assertEquals(Color.BLACK, borderPaint);
 	}
 
 	@Test

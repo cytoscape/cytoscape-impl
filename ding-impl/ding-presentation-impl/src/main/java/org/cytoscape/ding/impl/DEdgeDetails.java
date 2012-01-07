@@ -42,14 +42,16 @@ import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.impl.visualproperty.EdgeBendVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.util.intr.MinIntHeap;
+import org.cytoscape.view.presentation.property.values.LineType;
 
-class DEdgeDetails extends IntermediateEdgeDetails {
+class DEdgeDetails extends EdgeDetails {
 
 	final DGraphView m_view;
 	final Object m_deletedEntry = new Object();
@@ -383,6 +385,11 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 */
 	@Override
 	public float segmentThickness(final int edge) {
+		//  Bypass check
+		final DEdgeView edv = m_view.getDEdgeView(edge);
+		if (edv.isValueLocked(DVisualLexicon.EDGE_WIDTH))
+			return edv.getVisualProperty(DVisualLexicon.EDGE_WIDTH).floatValue();
+		
 		final Float thickness = m_segmentThicknesses.get(edge);
 		if (thickness == null)
 			if (m_segmentThicknessDefault == null)
@@ -415,6 +422,13 @@ class DEdgeDetails extends IntermediateEdgeDetails {
 	 */
 	@Override
 	public Stroke segmentStroke(final int edge) {
+		// Bypass check
+		final DEdgeView edv = m_view.getDEdgeView(edge);
+		if (edv.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE)) {
+			final LineType lineType = edv.getVisualProperty(DVisualLexicon.EDGE_LINE_TYPE);
+			return DLineType.getDLineType(lineType).getStroke(edv.getStrokeWidth());
+		}
+		
 		final Stroke stroke = m_segmentStrokes.get(edge);
 
 		if (stroke == null)

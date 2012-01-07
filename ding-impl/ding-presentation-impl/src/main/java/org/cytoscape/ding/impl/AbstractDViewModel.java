@@ -20,7 +20,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	 * Create an instance of view model, but not firing event to upper layer.
 	 * 
 	 * @param model
-	 * @param cyEventHelper
 	 */
 	public AbstractDViewModel(final M model) {
 		if (model == null)

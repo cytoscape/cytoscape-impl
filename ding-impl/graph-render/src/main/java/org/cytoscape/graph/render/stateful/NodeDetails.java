@@ -35,7 +35,9 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.TexturePaint;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -129,14 +131,8 @@ public class NodeDetails {
 	 * by GraphRenderer.renderGraph() to render selected nodes on top of
 	 * unselected nodes.
 	 */
-	java.util.Map<Integer, Boolean> selectedMap = new java.util.HashMap<Integer, Boolean>();
+	Map<Integer, Boolean> selectedMap = new HashMap<Integer, Boolean>();
 
-	/**
-	 * Instantiates node details with defaults.  Documentation on each method
-	 * describes defaults.  To override defaults, extend this class.
-	 */
-	public NodeDetails() {
-	}
 
 	/**
 	 * Returns the color of node in low detail rendering mode.
@@ -188,7 +184,7 @@ public class NodeDetails {
 	 * a value greater than zero.
 	 */
 	public Paint borderPaint(final int node) {
-		return null;
+		return Color.DARK_GRAY;
 	}
 
 	/**
@@ -250,7 +246,7 @@ public class NodeDetails {
 	 *   which node label in question.
 	 */
 	public Paint labelPaint(final int node, final int labelInx) {
-		return null;
+		return Color.DARK_GRAY;
 	}
 
 	/**

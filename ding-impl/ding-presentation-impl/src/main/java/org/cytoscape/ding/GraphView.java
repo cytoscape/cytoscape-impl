@@ -17,6 +17,8 @@ import java.util.List;
 
 import javax.swing.JLayeredPane;
 
+import org.cytoscape.ding.impl.DEdgeView;
+import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -244,14 +246,14 @@ public interface GraphView {
 	 * 
 	 * @return The NodeView of the given Node
 	 */
-	public NodeView getDNodeView(CyNode node);
+	public DNodeView getDNodeView(CyNode node);
 
 	/**
 	 * @param index
 	 *            the index of the node whose view is requested
 	 * @return The NodeView of the given Node
 	 */
-	public NodeView getDNodeView(int index);
+	public DNodeView getDNodeView(int index);
 
 	/**
 	 * Return all of the EdgeViews in this GraphView
@@ -275,7 +277,7 @@ public interface GraphView {
 	/**
 	 * @return the EdgeView that corresponds to the given index
 	 */
-	public EdgeView getDEdgeView(int edge_index);
+	public DEdgeView getDEdgeView(int edge_index);
 
 	/**
 	 * Return all of the EdgeViews in this GraphView
@@ -285,7 +287,7 @@ public interface GraphView {
 	/**
 	 * @return the EdgeView that corresponds to the given Edge
 	 */
-	public EdgeView getDEdgeView(CyEdge edge);
+	public DEdgeView getDEdgeView(CyEdge edge);
 
 	/**
 	 * @return the number of edges

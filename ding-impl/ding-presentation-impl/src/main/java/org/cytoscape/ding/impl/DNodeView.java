@@ -426,7 +426,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean setWidth(final double width) {
+	public boolean setWidth(final double originalWidth) {
+		final Double width;
+		// Check bypass
+		if(isValueLocked(DVisualLexicon.NODE_WIDTH))
+			width = getVisualProperty(DVisualLexicon.NODE_WIDTH);
+		else
+			width = originalWidth;
+		
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
 				return false;
@@ -472,7 +479,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean setHeight(double height) {
+	public boolean setHeight(double originalHeight) {
+		final Double height;
+		// Check bypass
+		if(isValueLocked(DVisualLexicon.NODE_HEIGHT))
+			height = getVisualProperty(DVisualLexicon.NODE_HEIGHT);
+		else
+			height = originalHeight;
+		
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
 				return false;
@@ -517,14 +531,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return this;
 	}
 
-	/**
-	 * FIXME: need to separate Label from this.
-	 * 
-	 * @param x
-	 *            DOCUMENT ME!
-	 * @param y
-	 *            DOCUMENT ME!
-	 */
+
 	@Override
 	public void setOffset(double x, double y) {
 		synchronized (graphView.m_lock) {

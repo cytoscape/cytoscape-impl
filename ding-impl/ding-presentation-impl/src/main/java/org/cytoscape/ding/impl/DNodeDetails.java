@@ -41,8 +41,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.DNodeShape;
+import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
+import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
+import org.cytoscape.ding.Position;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
@@ -51,16 +54,19 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
 /*
  * Access to the methods of this class should be synchronized externally if
  * there is a threat of multiple threads.
  */
-class DNodeDetails extends IntermediateNodeDetails {
+class DNodeDetails extends NodeDetails {
 	
+	private static final byte DEF_NODE_SHAPE = DNodeShape.getDShape(NodeShapeVisualProperty.RECTANGLE).getNativeShape();
 	
-	final DGraphView m_view;
+	private final DGraphView m_view;
 	
 	final Object m_deletedEntry = new Object();
 
@@ -100,7 +106,6 @@ class DNodeDetails extends IntermediateNodeDetails {
 	private Paint m_unselectedPaintDefault; 
 	private Paint m_selectedPaintDefault;
 
-	
 	private DNodeShape m_shapeDefault; 
 	private Float m_borderWidthDefault; 
 	private Paint m_borderPaintDefault; 
@@ -125,8 +130,9 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	private boolean isCleared = false;
 	
+	
 	DNodeDetails(final DGraphView view) {
-		m_view = view;
+		this.m_view = view;
 		
 		defaultCustomGraphicsMap = new HashMap<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>>();
 		defaultCustomGraphicsPositionMap = new HashMap<ObjectPositionVisualProperty, ObjectPosition>();
@@ -209,7 +215,7 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	
 	@Override
-	public Color colorLowDetail(int node) {
+	public Color colorLowDetail(final int node) {
 		boolean isSelected = selected.contains(node);
 		
 		if(isSelected)
@@ -253,6 +259,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	
 	public Paint selectedPaint(int node) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_SELECTED_PAINT))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_SELECTED_PAINT);
+		
 		final Paint o = m_selectedPaints.get(node);
 
 		if (o == null)
@@ -271,6 +282,17 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	@Override
 	public byte shape(final int node) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if(dnv.isValueLocked(DVisualLexicon.NODE_SHAPE)) {
+			final NodeShape nodeShape = dnv.getVisualProperty(DVisualLexicon.NODE_SHAPE);
+			final DNodeShape dShape = DNodeShape.getDShape(nodeShape);
+			if(dShape == null)
+				return DEF_NODE_SHAPE;
+			else
+				return dShape.getNativeShape();
+		}
+		
 		final Byte shape = m_shapes.get(node);
 
 		if (shape == null)
@@ -302,6 +324,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 	 * 
 	 */
 	public Paint unselectedPaint(final int node) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_FILL_COLOR))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR);
+		
 		final Paint o = m_unselectedPaints.get(node);
 
 		if (o == null)
@@ -354,6 +381,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	@Override
 	public float borderWidth(final int node) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_WIDTH))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH).floatValue();
+				
 		final Float o = m_borderWidths.get(node);
 
 		if (o == null)
@@ -383,6 +415,14 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	@Override
 	public Paint borderPaint(final int node) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if(dnv == null)
+			return DVisualLexicon.NODE_BORDER_PAINT.getDefault();
+		
+		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_PAINT))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT);
+
 		final Paint o = m_borderPaints.get(node);
 
 		if (o == null)
@@ -441,6 +481,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	@Override
 	public String labelText(final int node, final int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL);
+				
 		final long key = (((long) node) << 32) | ((long) labelInx);
 		final String o = m_labelTexts.get(key);
 
@@ -473,6 +518,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 	
 	
 	public String tooltipText(final int node) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_TOOLTIP))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_TOOLTIP);
+		
 		final String o = m_tooltipTexts.get(node);
 
 		if (o == null)
@@ -505,16 +555,41 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	@Override
 	public Font labelFont(int node, int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		
+		Integer size = null;
+		Font fontFace = null;
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_FONT_SIZE))
+			size = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_FONT_SIZE);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_FONT_FACE))
+			fontFace = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_FONT_FACE);
+		
+		if(size != null && fontFace != null)
+			return fontFace.deriveFont(size.floatValue());
+		
 		final long key = (((long) node) << 32) | ((long) labelInx);
-		final Font o = m_labelFonts.get(key);
+		final Font font = m_labelFonts.get(key);
 
-		if (o == null)
+		if (font == null) {
 			if ( m_labelFontDefault == null )
-				return super.labelFont(node, labelInx);
-			else
-				return m_labelFontDefault;
-
-		return o;
+				return DVisualLexicon.NODE_LABEL_FONT_FACE.getDefault();
+			else {
+				if(size != null)
+					return m_labelFontDefault.deriveFont(size.floatValue());
+				else if(fontFace != null)
+					return fontFace.deriveFont((float)m_labelFontDefault.getSize());
+				else
+					return m_labelFontDefault;
+			}
+		}
+		
+		if(size != null)
+			return font.deriveFont(size.floatValue());
+		else if(fontFace != null)
+			return fontFace.deriveFont((float)font.getSize());
+		else
+			return font;
 	}
 
 	void setLabelFontDefault(Font f) {
@@ -537,6 +612,11 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	@Override
 	public Paint labelPaint(int node, int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_COLOR))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_COLOR);
+	
 		final long key = (((long) node) << 32) | ((long) labelInx);
 		final Object o = m_labelPaints.get(Long.valueOf(key));
 
@@ -575,10 +655,6 @@ class DNodeDetails extends IntermediateNodeDetails {
 	}
 
 
-	/**
-	 * Return value of this will be used actual rendering code.
-	 * 
-	 */
 	@Override
 	public Iterator<CustomGraphic> customGraphics (final int node) {
 		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);
@@ -586,96 +662,17 @@ class DNodeDetails extends IntermediateNodeDetails {
 	}
 	
 
-//	void setCustomGraphicsDefault(final CustomGraphicsVisualProperty vp,
-//			final CyCustomGraphics<CustomGraphic> customGraphics) {
-//		
-//		if(customGraphics == null || customGraphics == NullCustomGraphics.getNullObject()) {
-//			// Setting NullCustomGraphics means remove current custom graphics.
-//			defaultCustomGraphicsMap.remove(vp);
-//		} else {
-//			// Create new default values.  Need to apply positions, too.
-//			defaultCustomGraphicsMap.put(vp, customGraphics);
-//			
-//			this.defaultCGList = new ArrayList<CustomGraphic>();
-//			final Collection<CyCustomGraphics<CustomGraphic>> defCGList = defaultCustomGraphicsMap.values();
-//			
-//			for (final CyCustomGraphics<CustomGraphic> val:defCGList) {
-//				List<Layer<CustomGraphic>> layers = val.getLayers();
-//				for(Layer<CustomGraphic> layer: layers)
-//					defaultCGList.add(layer.getLayerObject());
-//			}
-//		}
-//	}
-//	
-//	private CustomGraphicsVisualProperty getParentVP(final ObjectPositionVisualProperty vp) {
-//		final VisualLexiconNode lexNode = m_view.dingLexicon.getVisualLexiconNode(vp);
-//		final Collection<VisualLexiconNode> leavs = lexNode.getParent().getChildren();
-//
-//		CustomGraphicsVisualProperty parent = null;
-//		for (VisualLexiconNode vlNode : leavs) {
-//			if (vlNode.getVisualProperty().getRange().getType().equals(CyCustomGraphics.class)) {
-//				parent = (CustomGraphicsVisualProperty) vlNode.getVisualProperty();
-//				break;
-//			}
-//		}
-//
-//		if (parent == null)
-//			throw new NullPointerException("Associated Custom Graphics VP is missing for " + vp.getDisplayName());
-//		
-//		return parent;
-//	}
-//	
-//	void setCustomGraphicsPositionDefault(final ObjectPositionVisualProperty vp, final ObjectPosition position) {
-//		
-//		System.out.println("#Setting called: " + vp.getDisplayName());
-//		
-//		if (position == null || position.equals(ObjectPositionImpl.DEFAULT_POSITION))
-//			defaultCustomGraphicsPositionMap.remove(vp);
-//		else {
-//			defaultCustomGraphicsPositionMap.put(vp, position);
-//			
-//			final CustomGraphicsVisualProperty parent = getParentVP(vp);
-//			final CyCustomGraphics<CustomGraphic> cg = defaultCustomGraphicsMap.get(parent);
-//			if(cg == null)
-//				return;
-//			
-//			System.out.println("#Setting new location for: " + parent.getDisplayName() + " -- " + vp.getDisplayName());
-//
-//			// This is the set of all Custom Graphics.
-//			final Collection<CyCustomGraphics<CustomGraphic>> defCGList = defaultCustomGraphicsMap.values();
-//			
-//			for (final View<CyNode> dnv : m_view.getNodeViews()) {
-//				final List<CustomGraphic> newCGList = new ArrayList<CustomGraphic>();
-//				for (final Layer<CustomGraphic> layer : cg.getLayers()) {
-//					final CustomGraphic newCG = moveCustomGraphicsToNewPosition(layer.getLayerObject(), position,
-//							(DNodeView) dnv);
-//					newCGList.add(newCG);
-//				}
-//
-//				for (final CyCustomGraphics<CustomGraphic> val : defCGList) {
-//					if (val != cg) {
-//						List<Layer<CustomGraphic>> layers = val.getLayers();
-//						for (Layer<CustomGraphic> layer : layers)
-//							newCGList.add(layer.getLayerObject());
-//					}
-//				}
-//				this.m_customGraphics.put(((DNodeView) dnv).m_inx, newCGList);
-//			}
-//		}
-//	}
-//	
-//	private CustomGraphic moveCustomGraphicsToNewPosition(final CustomGraphic cg, final ObjectPosition newPosition, final DNodeView dnv) {
-//		if (cg == null || newPosition == null)
-//			throw new NullPointerException("CustomGraphic and Position cannot be null.");
-//
-//		// Create new graphics
-//		final CustomGraphic newCg = CustomGraphicsPositionCalculator.transform(newPosition, dnv, cg);
-//		return newCg;
-//	}
-
 
 	@Override
 	public byte labelTextAnchor(final int node, final int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+			final Position anchor = lp.getAnchor();
+			return convertG2ND(anchor.getConversionConstant());
+		}
+		
 		final Integer p = m_labelTextAnchors.get(node);
 
 		if (p == null)
@@ -702,6 +699,14 @@ class DNodeDetails extends IntermediateNodeDetails {
 
 	@Override
 	public byte labelNodeAnchor(final int node, final int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+			final Position anchor = lp.getTargetAnchor();
+			return convertG2ND(anchor.getConversionConstant());
+		}
+		
 		final Integer o = m_labelNodeAnchors.get(node);
 
 		if (o == null)
@@ -726,15 +731,15 @@ class DNodeDetails extends IntermediateNodeDetails {
 		}
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param node DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public float labelOffsetVectorX(final int node, final int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+			return (float) lp.getOffsetX();
+		}
+		
 		final Object o = m_labelOffsetXs.get(Integer.valueOf(node));
 
 		if (o == null)
@@ -759,15 +764,15 @@ class DNodeDetails extends IntermediateNodeDetails {
 		}
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param node DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public float labelOffsetVectorY(final int node, final int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+			return (float) lp.getOffsetY();
+		}
+		
 		final Object o = m_labelOffsetYs.get(Integer.valueOf(node));
 
 		if (o == null)
@@ -792,15 +797,17 @@ class DNodeDetails extends IntermediateNodeDetails {
 		}
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param node DOCUMENT ME!
-	 * @param labelInx DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	
+	@Override
 	public byte labelJustify(final int node, final int labelInx) {
+		// Check bypass
+		final DNodeView dnv = m_view.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+			final Justification justify = lp.getJustify();
+			return convertG2ND(justify.getConversionConstant());
+		}
+		
 		Integer o = m_labelJustifys.get(node);
 
 		if (o == null)

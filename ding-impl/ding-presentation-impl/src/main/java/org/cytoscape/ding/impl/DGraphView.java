@@ -1192,23 +1192,19 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 
-	public NodeView getDNodeView(final CyNode node) {
+	@Override
+	public DNodeView getDNodeView(final CyNode node) {
 		return getDNodeView(node.getIndex());
 	}
 	
 	@Override
-	public NodeView getDNodeView(final int nodeInx) {
+	public DNodeView getDNodeView(final int nodeInx) {
 		synchronized (m_lock) {
-			return m_nodeViewMap.get(nodeInx);
+			return (DNodeView) m_nodeViewMap.get(nodeInx);
 		}
 	}
 
-	/**
-	 * Returns a list of all edge views, including those that are currently
-	 * hidden.
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public List<EdgeView> getEdgeViewsList() {
 		synchronized (m_lock) {
 			final ArrayList<EdgeView> returnThis = new ArrayList<EdgeView>(
@@ -1287,18 +1283,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EdgeView getDEdgeView(final int edgeInx) {
+	public DEdgeView getDEdgeView(final int edgeInx) {
 		synchronized (m_lock) {
-			return m_edgeViewMap.get(edgeInx);
+			return (DEdgeView) m_edgeViewMap.get(edgeInx);
 		}
 	}
 
-	/**
-	 * Returns an iterator of all edge views, including those that are currently
-	 * hidden.
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Iterator<EdgeView> getEdgeViewsIterator() {
 		synchronized (m_lock) {
 			return m_edgeViewMap.values().iterator();
@@ -1307,34 +1298,21 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	
 	@Override
-	public EdgeView getDEdgeView(final CyEdge edge) {
+	public DEdgeView getDEdgeView(final CyEdge edge) {
 		return getDEdgeView(edge.getIndex());
 	}
 
-	/**
-	 * Alias to getEdgeViewCount().
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public int edgeCount() {
 		return getEdgeViewCount();
 	}
 
-	/**
-	 * Alias to getNodeViewCount().
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public int nodeCount() {
 		return getNodeViewCount();
 	}
 
-	/**
-	 * @param obj
-	 *            should be either a DEdgeView or a DNodeView.
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public boolean hideGraphObject(Object obj) {
 		return hideGraphObjectInternal(obj, true);
 	}
@@ -2036,12 +2014,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return m_networkCanvas.m_fontMetrics.charsWidth(lab, 0, lab.length);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param lod
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setGraphLOD(GraphLOD lod) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_lod[0] = lod;
