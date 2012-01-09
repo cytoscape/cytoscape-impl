@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Properties;
+
+import javax.swing.text.View;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
@@ -52,6 +55,7 @@ public final class BypassManager {
 		// Tree traversal
 		final VisualLexiconNode nodeRootNode = lexicon.getVisualLexiconNode(nodeRoot);
 		final VisualLexiconNode edgeRootNode = lexicon.getVisualLexiconNode(edgeRoot);
+		
 		depthFirst(PARENT_MENU_ITEM, nodeRootNode);
 		depthFirst(PARENT_MENU_ITEM, edgeRootNode);
 	}
@@ -68,10 +72,10 @@ public final class BypassManager {
 			final String newMenu = menuText + "." + vp.getDisplayName();
 			if (child.getChildren().size() == 0) {
 				// Leaf
-				final Dictionary<String, Object> vpProp = new Hashtable<String, Object>();
+				final Properties vpProp = new Properties();
 				vpProp.put(MENU_KEY, newMenu);
 				vpProp.put("useCheckBoxMenuItem", "true");
-				vpProp.put("targetVP", vp);
+				vpProp.put("targetVP", vp.getIdString());
 
 				if (vp.getTargetDataType().equals(CyNode.class)) {
 					final NodeViewTaskFactory ntf = new NodeBypassMenuTaskFactory(null, vp,

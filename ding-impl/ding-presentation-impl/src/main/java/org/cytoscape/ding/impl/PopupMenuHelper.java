@@ -248,7 +248,7 @@ class PopupMenuHelper {
 		final Object targetVisualProperty = props.get("targetVP");
 		boolean isSelected = false;
 		if(view != null) {
-			if ( targetVisualProperty instanceof String ) {
+			if (targetVisualProperty != null && targetVisualProperty instanceof String ) {
 				// TODO remove this at first opportunity whenever lookup gets refactored. 
 				Class<?> clazz = CyNetwork.class;
 				if ( view.getModel() instanceof CyNode )
@@ -256,10 +256,13 @@ class PopupMenuHelper {
 				else if ( view.getModel() instanceof CyEdge )
 					clazz = CyEdge.class;
 
-				isSelected = view.isValueLocked(m_view.dingLexicon.lookup(clazz, (String)targetVisualProperty));
-			} else if ( targetVisualProperty instanceof VisualProperty ) {
+				final VisualProperty<?> vp = m_view.dingLexicon.lookup(clazz, targetVisualProperty.toString());
+				if (vp == null)
+					isSelected = false;
+				else
+					isSelected = view.isValueLocked(vp);
+			} else if ( targetVisualProperty instanceof VisualProperty )
 				isSelected = view.isValueLocked((VisualProperty<?>)targetVisualProperty);
-			}
 		}
 
 		if ( useCheckBox != null ) {
@@ -290,7 +293,7 @@ class PopupMenuHelper {
 				title = pref.substring(last + 1);
 				pref = pref.substring(0, last);
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem);
+				final JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem);
 				if (useCheckBoxMenuItem) {
 					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem)item; 
 					checkBox.setSelected(isSelected);

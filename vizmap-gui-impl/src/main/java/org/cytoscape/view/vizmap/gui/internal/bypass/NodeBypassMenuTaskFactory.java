@@ -10,15 +10,16 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.work.TaskIterator;
 
 public class NodeBypassMenuTaskFactory extends AbstractNodeViewTaskFactory {
-	
+
 	private final VisualProperty<?> vp;
 	private final ValueEditor<?> editor;
 
 	private final Component parent;
-	
+
 	private final SelectedVisualStyleManager selectedManager;
-		
-	NodeBypassMenuTaskFactory(final Component parent, final VisualProperty<?> vp, final ValueEditor<?> editor, final SelectedVisualStyleManager selectedManager) {
+
+	NodeBypassMenuTaskFactory(final Component parent, final VisualProperty<?> vp, final ValueEditor<?> editor,
+			final SelectedVisualStyleManager selectedManager) {
 		this.vp = vp;
 		this.editor = editor;
 		this.parent = parent;
