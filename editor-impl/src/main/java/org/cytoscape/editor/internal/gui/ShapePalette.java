@@ -77,6 +77,8 @@ import javax.swing.border.TitledBorder;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.dnd.GraphicalEntity;
 
+import org.cytoscape.editor.internal.GravityTracker;
+
 /**
  *
  * The <b>ShapePalette</b> class implements a palette from which the user drags and drops shapes onto the canvas
@@ -110,6 +112,8 @@ public class ShapePalette extends JPanel {
 	protected JPanel shapePane;
 
 	private final CySwingApplication app;
+
+	private final GravityTracker<BasicCytoShapeEntity> gravityTracker = new GravityTracker<BasicCytoShapeEntity>();
 
 	/**
 	 * Creates a new ShapePalette object.
@@ -218,12 +222,30 @@ public class ShapePalette extends JPanel {
 	}
 
 	public void addGraphicalEntity(GraphicalEntity cytoShape, Map props) {
-        shapeMap.put(cytoShape.getTitle(), new BasicCytoShapeEntity(app,cytoShape));
-        shapePane.add( shapeMap.get( cytoShape.getTitle() ) );
+		BasicCytoShapeEntity shape = new BasicCytoShapeEntity(app,cytoShape);
+        shapeMap.put(cytoShape.getTitle(), shape);
+		int index = gravityTracker.add( shape, getDouble((String)(props.get("editorGravity"))) );
+		System.out.println("adding " + cytoShape.getTitle() + " at index: " + index + " with gravity " + props.get("editorGravity"));
+        shapePane.add( shape, index );
     }
 
+	private double getDouble(String s) {
+		if ( s == null )
+			return 100.0;
+
+		double d;
+		try {
+			d = Double.parseDouble(s);
+		} catch (Exception e) {
+			d = 100.0;
+		}
+		return d;
+	}
+
 	public void removeGraphicalEntity(GraphicalEntity cytoShape, Map props) {
-		shapePane.remove( shapeMap.remove(cytoShape.getTitle()) );
+		BasicCytoShapeEntity shape = shapeMap.remove(cytoShape.getTitle());
+		shapePane.remove( shape );
+		gravityTracker.remove( shape );
     }
 
 	/**

@@ -161,11 +161,20 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,dingNetworkViewFactory,CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
 
-		registerService(bc,imageGraphicalEntity,GraphicalEntity.class,new Properties());
-		registerService(bc,shapeGraphicalEntity,GraphicalEntity.class,new Properties());
-//		registerService(bc,arrowGraphicalEntity,GraphicalEntity.class,new Properties());
-		registerService(bc,textGraphicalEntity,GraphicalEntity.class,new Properties());
+		final Properties imageGraphicalEntityProps = new Properties();
+		imageGraphicalEntityProps.setProperty("editorGravity","12.0"); 
+		registerService(bc,imageGraphicalEntity,GraphicalEntity.class,imageGraphicalEntityProps);
+
+		final Properties shapeGraphicalEntityProps = new Properties();
+		shapeGraphicalEntityProps.setProperty("editorGravity","10.0"); 
+		registerService(bc,shapeGraphicalEntity,GraphicalEntity.class,shapeGraphicalEntityProps);
+
+		final Properties textGraphicalEntityProps = new Properties();
+		textGraphicalEntityProps.setProperty("editorGravity","11.0"); 
+		registerService(bc,textGraphicalEntity,GraphicalEntity.class,textGraphicalEntityProps);
+
 //		registerService(bc,boundedGraphicalEntity,GraphicalEntity.class,new Properties());
+//		registerService(bc,arrowGraphicalEntity,GraphicalEntity.class,new Properties());
 
 		Properties dropImageTaskFactoryProps = new Properties();
 		dropImageTaskFactoryProps.setProperty("preferredAction","Image");

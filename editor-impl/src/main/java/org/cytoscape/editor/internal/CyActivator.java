@@ -115,9 +115,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,currentNetworkViewListener,SetCurrentNetworkViewListener.class, new Properties());
 		registerService(bc,editorPanelSelectedListener,CytoPanelComponentSelectedListener.class, new Properties());
 
-		registerService(bc,nodeEntity,GraphicalEntity.class, new Properties());
-		registerService(bc,edgeEntity,GraphicalEntity.class, new Properties());
-		registerService(bc,netEntity,GraphicalEntity.class, new Properties());
+		Properties nodeEntityProps = new Properties();
+		nodeEntityProps.setProperty("editorGravity","1.0");
+		registerService(bc,nodeEntity,GraphicalEntity.class, nodeEntityProps);
+
+		Properties edgeEntityProps = new Properties();
+		edgeEntityProps.setProperty("editorGravity","2.0");
+		registerService(bc,edgeEntity,GraphicalEntity.class, edgeEntityProps);
+
+		Properties netEntityProps = new Properties();
+		netEntityProps.setProperty("editorGravity","3.0");
+		registerService(bc,netEntity,GraphicalEntity.class, netEntityProps);
 
 		registerServiceListener(bc,shapePalette,"addGraphicalEntity","removeGraphicalEntity",GraphicalEntity.class);
 
