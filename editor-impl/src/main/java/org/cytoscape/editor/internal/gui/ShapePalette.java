@@ -79,6 +79,9 @@ import org.cytoscape.dnd.GraphicalEntity;
 
 import org.cytoscape.editor.internal.GravityTracker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * The <b>ShapePalette</b> class implements a palette from which the user drags and drops shapes onto the canvas
@@ -96,6 +99,7 @@ import org.cytoscape.editor.internal.GravityTracker;
 public class ShapePalette extends JPanel {
 
 	private static final long serialVersionUID = -4018789452330887392L;
+	private static final Logger logger = LoggerFactory.getLogger(ShapePalette.class);
 
 	/**
 	 * mapping of shapes to their titles
@@ -225,7 +229,7 @@ public class ShapePalette extends JPanel {
 		BasicCytoShapeEntity shape = new BasicCytoShapeEntity(app,cytoShape);
         shapeMap.put(cytoShape.getTitle(), shape);
 		int index = gravityTracker.add( shape, getDouble((String)(props.get("editorGravity"))) );
-		System.out.println("adding " + cytoShape.getTitle() + " at index: " + index + " with gravity " + props.get("editorGravity"));
+		logger.debug("adding " + cytoShape.getTitle() + " at index: " + index + " with gravity " + props.get("editorGravity"));
         shapePane.add( shape, index );
     }
 
