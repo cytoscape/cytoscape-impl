@@ -126,13 +126,6 @@ import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.osgi.framework.BundleContext;
 
-import com.apple.eawt.AboutHandler;
-import com.apple.eawt.AppEvent.AboutEvent;
-import com.apple.eawt.AppEvent.QuitEvent;
-import com.apple.eawt.Application;
-import com.apple.eawt.QuitHandler;
-import com.apple.eawt.QuitResponse;
-
 /**
  *
  */
@@ -299,11 +292,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
 
-		if (isMac()) {
-			registerMacMenuHandlers(cytoscapeShutdownServiceRef, submenuTaskManagerServiceRef, aboutDialogFactory);
-		} else {
+		// Temporarily disabled: See ticket #559
+//		if (isMac()) {
+//			registerMacMenuHandlers(cytoscapeShutdownServiceRef, submenuTaskManagerServiceRef, aboutDialogFactory);
+//		} else {
 			registerService(bc, exitAction, CyAction.class, new Properties());
-		}
+//		}
 
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty("preferredMenu", "Help");
@@ -412,6 +406,8 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	private void registerMacMenuHandlers(final CyShutdown shutdown, final TaskManager<?, ?> taskManager, final TaskFactory aboutTaskFactory) {
+		// Temporarily disabled: See ticket #559
+		/*
 		Application application = Application.getApplication();
 		application.setQuitHandler(new QuitHandler() {
 			@Override
@@ -425,6 +421,7 @@ public class CyActivator extends AbstractCyActivator {
 				taskManager.execute(aboutTaskFactory);
 			}
 		});
+		*/
 	}
 
 	private boolean isMac() {

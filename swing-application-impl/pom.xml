@@ -128,11 +128,14 @@
             <version>1.0</version>
         </dependency>
         
+        <!--  Temporarily disabled: See ticket #559 -->
+        <!--
         <dependency>
         	<groupId>com.apple.developer</groupId>
         	<artifactId>AppleJavaExtensions</artifactId>
         	<version>1.6</version>
         	<scope>compile</scope>
         </dependency>
+        -->
 	</dependencies>
 </project>
