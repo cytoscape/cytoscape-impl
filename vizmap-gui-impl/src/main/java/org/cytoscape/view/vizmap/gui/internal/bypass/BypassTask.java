@@ -25,11 +25,10 @@ public class BypassTask<T extends CyTableEntry> extends AbstractTask {
 
 	private final Component parent;
 	private final CyNetworkView networkView;
-	
+
 	private final SelectedVisualStyleManager selectedManager;
 
-	public BypassTask(Component parent, ValueEditor<?> editor,
-			final VisualProperty<?> vp, final View<T> view,
+	public BypassTask(Component parent, ValueEditor<?> editor, final VisualProperty<?> vp, final View<T> view,
 			final CyNetworkView networkView, final SelectedVisualStyleManager selectedManager) {
 		this.view = view;
 		this.vp = (VisualProperty<Object>) vp;
@@ -46,14 +45,13 @@ public class BypassTask<T extends CyTableEntry> extends AbstractTask {
 		final boolean lock = view.isValueLocked(vp);
 
 		if (!lock) {
-			final Object newValue = editor.showEditor(parent,
-					view.getVisualProperty(vp));
+			final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
 			view.setLockedValue(vp, newValue);
 		} else {
 			// Unlock it
 			view.clearValueLock(vp);
 		}
-		
+
 		selectedManager.getCurrentVisualStyle().apply(networkView);
 		networkView.updateView();
 	}
