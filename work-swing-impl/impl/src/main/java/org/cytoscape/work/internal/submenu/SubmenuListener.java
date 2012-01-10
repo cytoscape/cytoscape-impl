@@ -65,8 +65,10 @@ class SubmenuListener implements DynamicSubmenuListener {
 		JMenu parentMenu = (JMenu)(e.getSource());
 		lastMenuItem = stm.buildConfiguration(tf);
 		if ( lastMenuItem != null ) {
-			if ( lastMenuItem instanceof JMenu )
+			String title = lastMenuItem.getText(); 
+			if (title == null || title.isEmpty()) {
 				lastMenuItem.setText(menuName);
+			}
 			lastMenuItem.setEnabled(enableState);
 			parentMenu.add( lastMenuItem );
 		}

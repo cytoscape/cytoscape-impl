@@ -11,7 +11,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JMenu;
 import java.util.List; 
 import java.util.Collections; 
-import java.util.ArrayList; 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -25,7 +24,6 @@ public class SubmenuTunableHandlerImpl extends AbstractTunableHandler implements
 	
 	private DialogTaskManager dtm; 
 	private TaskFactory tf;
-	private static final String TEMP_TITLE = "Temporary Title"; 
 	private static final Logger logger = LoggerFactory.getLogger(SubmenuTunableHandlerImpl.class);
 
 	public SubmenuTunableHandlerImpl(final Field field, final Object instance, final Tunable tunable) {
@@ -51,16 +49,14 @@ public class SubmenuTunableHandlerImpl extends AbstractTunableHandler implements
 			menuTitles = ((ListSingleSelection<String>)o).getPossibleValues();
 
 		if ( menuTitles.size() <= 0 ) {
-			// no list means no menu
-			menuItem = null; 
+			menuItem = new SubmenuItem(null,this,dtm,tf);		
 		} else if ( menuTitles.size() == 1 ) {
 			// assume the lone entry in the list is the title
 			menuItem = new SubmenuItem(menuTitles.get(0),this,dtm,tf);		
 		} else {
-			// The temporary title will be replaced
-			menuItem = new JMenu(TEMP_TITLE);
+			menuItem = new JMenu((String) null);
 			for ( String title : menuTitles )
-				((JMenu)menuItem).add(new SubmenuItem(title,this,dtm,tf));		
+				((JMenu)menuItem).add(new SubmenuItem(title,this,dtm,tf));
 		}
 
 		} catch (Exception e) { e.printStackTrace(); }
