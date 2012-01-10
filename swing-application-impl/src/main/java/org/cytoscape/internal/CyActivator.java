@@ -50,7 +50,6 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
-import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
@@ -65,7 +64,6 @@ import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
 import org.cytoscape.internal.actions.WelcomeScreenAction;
-import org.cytoscape.internal.dialogs.AboutDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
@@ -119,7 +117,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SubmenuTaskManager;
@@ -138,7 +135,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	@Override
-	public void start(BundleContext bc) {
+	public void start(BundleContext bc) throws Exception {
 		
 		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class, "(id=loadNetworkURLTaskFactory)");
 		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
@@ -274,9 +271,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     sessionReaderManagerServiceRef,
 		                                                                     cyApplicationManagerServiceRef);
 		
-		CyVersion version = getService(bc, CyVersion.class);
-		AboutDialogFactoryImpl aboutDialogFactory = new AboutDialogFactoryImpl(version);
-		
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(bc,cytoscapeDesktop, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
@@ -292,12 +286,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
 
-		// Temporarily disabled: See ticket #559
-//		if (isMac()) {
-//			registerMacMenuHandlers(cytoscapeShutdownServiceRef, submenuTaskManagerServiceRef, aboutDialogFactory);
-//		} else {
+		if (isMac()) {
+			new MacCyActivator().start(bc);
+		} else {
 			registerService(bc, exitAction, CyAction.class, new Properties());
-//		}
+		}
 
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty("preferredMenu", "Help");
@@ -403,25 +396,6 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
-	}
-
-	private void registerMacMenuHandlers(final CyShutdown shutdown, final TaskManager<?, ?> taskManager, final TaskFactory aboutTaskFactory) {
-		// Temporarily disabled: See ticket #559
-		/*
-		Application application = Application.getApplication();
-		application.setQuitHandler(new QuitHandler() {
-			@Override
-			public void handleQuitRequestWith(QuitEvent event, QuitResponse response) {
-				shutdown.exit(0);
-			}
-		});
-		application.setAboutHandler(new AboutHandler() {
-			@Override
-			public void handleAbout(AboutEvent event) {
-				taskManager.execute(aboutTaskFactory);
-			}
-		});
-		*/
 	}
 
 	private boolean isMac() {
