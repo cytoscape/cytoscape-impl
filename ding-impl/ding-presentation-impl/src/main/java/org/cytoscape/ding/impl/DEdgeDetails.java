@@ -38,7 +38,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.Bend;
+import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.EdgeView;
+import org.cytoscape.ding.impl.visualproperty.ArrowShapeTwoDVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.EdgeBendVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -49,6 +51,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.util.intr.MinIntHeap;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 class DEdgeDetails extends EdgeDetails {
@@ -225,6 +229,14 @@ class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public byte sourceArrow(final int edge) {
+		// Check bypass
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE)) {
+			final ArrowShape tgtArrow = dev.getVisualProperty(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE);
+			final String shapeID = tgtArrow.getSerializableString();
+			return DArrowShape.parseArrowText(shapeID).getRendererTypeID();
+		}
+		
 		final Byte arrow = m_sourceArrows.get(edge);
 		if (arrow == null)
 			if (m_sourceArrowDefault == null)
@@ -267,6 +279,11 @@ class DEdgeDetails extends EdgeDetails {
 	}
 
 	private Paint sourceArrowUnselectedPaint(final int edge) {
+		// Check bypass
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
+		
 		final Paint paint = this.m_sourceArrowPaints.get(edge);
 
 		if (paint == null) {
@@ -299,6 +316,14 @@ class DEdgeDetails extends EdgeDetails {
 	 */
 	@Override
 	public byte targetArrow(final int edge) {
+		// Check bypass
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE)) {
+			final ArrowShape tgtArrow = dev.getVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
+			final String shapeID = tgtArrow.getSerializableString();
+			return DArrowShape.parseArrowText(shapeID).getRendererTypeID();
+		}
+		
 		final Byte arrow = m_targetArrows.get(edge);
 
 		if (arrow == null)
@@ -340,7 +365,12 @@ class DEdgeDetails extends EdgeDetails {
 			return targetArrowUnselectedPaint(edge);
 	}
 
-	private Paint targetArrowUnselectedPaint(final int edge) {
+	private Paint targetArrowUnselectedPaint(final int edge) {		
+		// Check bypass
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+
 		final Paint paint = this.m_targetArrowPaints.get(edge);
 
 		if (paint == null) {
@@ -423,17 +453,18 @@ class DEdgeDetails extends EdgeDetails {
 	@Override
 	public Stroke segmentStroke(final int edge) {
 		// Bypass check
-		final DEdgeView edv = m_view.getDEdgeView(edge);
-		if (edv.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE)) {
-			final LineType lineType = edv.getVisualProperty(DVisualLexicon.EDGE_LINE_TYPE);
-			return DLineType.getDLineType(lineType).getStroke(edv.getStrokeWidth());
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE)) {
+			final LineType lineType = dev.getVisualProperty(DVisualLexicon.EDGE_LINE_TYPE);
+			return DLineType.getDLineType(lineType).getStroke(segmentThickness(edge));
 		}
 		
 		final Stroke stroke = m_segmentStrokes.get(edge);
 
 		if (stroke == null)
-			if (m_segmentStrokeDefault == null)
+			if (m_segmentStrokeDefault == null) {
 				return super.segmentStroke(edge);
+			}
 			else
 				return m_segmentStrokeDefault;
 
@@ -474,6 +505,13 @@ class DEdgeDetails extends EdgeDetails {
 	}
 
 	public Paint unselectedPaint(final int edge) {
+		// Check bypass
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_UNSELECTED_PAINT))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_UNSELECTED_PAINT);
+		
 		final Paint paint = m_unselectedPaints.get(edge);
 
 		if (paint == null) {
@@ -486,6 +524,13 @@ class DEdgeDetails extends EdgeDetails {
 	}
 
 	public Paint selectedPaint(final int edge) {
+		// Check bypass
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_SELECTED_PAINT))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_SELECTED_PAINT);
+		
 		final Paint paint = m_selectedPaints.get(edge);
 		if (paint == null)
 			if (m_selectedPaintDefault == null)
@@ -628,6 +673,11 @@ class DEdgeDetails extends EdgeDetails {
 	 */
 	@Override
 	public Paint labelPaint(final int edge, final int labelInx) {
+		// Check bypass
+		final DEdgeView dev = m_view.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_COLOR))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_COLOR);
+
 		final long key = (((long) edge) << 32) | ((long) labelInx);
 		final Paint paint = m_labelPaints.get(key);
 
