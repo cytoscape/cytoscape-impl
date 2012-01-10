@@ -256,9 +256,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			logger.info("Attempting to set current network : null network ");
 			return;
 		}
-
-		logger.info("Attempting to set current network model: Model ID = " + e.getNetwork().getSUID());
-		setFocus(networkViewManager.getNetworkView(e.getNetwork().getSUID()));
 	}
 
 	@Override
