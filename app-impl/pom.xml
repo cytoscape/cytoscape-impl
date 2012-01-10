@@ -55,6 +55,9 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<!-- Dynamic import is necessary, because it allows apps to
+						     access packages that aren't imported as because of the code
+						     in this bundle. -->
 						<DynamicImport-Package>*</DynamicImport-Package>
 					</instructions>
 				</configuration>
