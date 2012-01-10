@@ -26,7 +26,7 @@ public class SessionFileFilterTest {
 		contentTypes = new HashSet<String>();
 		
 		Properties properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty(properties, SavePolicy.DO_NOT_SAVE);		
+		CyProperty<Properties> cyProperties = new SimpleCyProperty("test", properties, SavePolicy.DO_NOT_SAVE);		
 		streamUtil = new StreamUtilImpl(cyProperties);
 	}
 	

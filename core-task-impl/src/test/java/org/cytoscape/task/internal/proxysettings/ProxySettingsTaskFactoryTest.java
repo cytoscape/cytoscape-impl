@@ -21,7 +21,7 @@ public class ProxySettingsTaskFactoryTest {
 		StreamUtil streamUtil = mock(StreamUtil.class);
 
 		Properties properties = new Properties();
-		final CyProperty<Properties> proxyProperties = new SimpleCyProperty(properties , SavePolicy.DO_NOT_SAVE);
+		final CyProperty<Properties> proxyProperties = new SimpleCyProperty("Test", properties, SavePolicy.DO_NOT_SAVE);
 		ProxySettingsTaskFactory factory = new ProxySettingsTaskFactory(proxyProperties, streamUtil);
 		
 		TaskIterator ti = factory.createTaskIterator();

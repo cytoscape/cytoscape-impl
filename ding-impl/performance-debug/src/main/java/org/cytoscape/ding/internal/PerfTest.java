@@ -1,7 +1,7 @@
 package org.cytoscape.ding.internal;
 
 
-
+import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
 import static org.mockito.Mockito.mock;
 
 import java.awt.Color;
@@ -37,7 +37,6 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class PerfTest {
 
-
 	public static void main(String[] args) {
 		PerfTest pt = new PerfTest();
 		//pt.runTestLoop();
@@ -63,7 +62,7 @@ public class PerfTest {
 		viewFactory = nvts.getNetworkViewFactory();
 
 		Properties properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty(properties, CyProperty.SavePolicy.DO_NOT_SAVE);	
+		CyProperty<Properties> cyProperties = new SimpleCyProperty("Test",properties, DO_NOT_SAVE);	
 		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
 	}
 
@@ -143,7 +142,7 @@ public class PerfTest {
 
 	private CyLayoutAlgorithmManager getLayouts() {
 		Properties p = new Properties();
-		CyProperty<Properties> props = new SimpleCyProperty(p,CyProperty.SavePolicy.DO_NOT_SAVE);
+		CyProperty<Properties> props = new SimpleCyProperty("Test",p,DO_NOT_SAVE);
 		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(props);
 		CyLayoutAlgorithm gridNodeLayout = new GridNodeLayout(mock(UndoSupport.class));
 		cyLayouts.addLayout(gridNodeLayout,p);

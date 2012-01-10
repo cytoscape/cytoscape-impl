@@ -80,6 +80,8 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.view.model.CyNetworkView;
@@ -372,15 +374,20 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		reader.run(taskMonitor);
 		Properties props = (Properties) reader.getProperty();
 		
-		if (props != null && props.size() > 0) {
+		if (props != null) {
 			Matcher matcher = PROPERTIES_PATTERN.matcher(entryName);
 			
 			if (matcher.matches()) {
 				String propsName = matcher.group(2);
 				
-				if (propsName != null)
-					propertiesMap.put(propsName, props);
+				if (propsName != null) {
+					CyProperty<Properties> cyProps = new SimpleCyProperty(propsName, props,
+							CyProperty.SavePolicy.SESSION_FILE);
+					properties.add(cyProps);
+				}
 			}
+		} else {
+			logger.error("Cannot extract CyProperty name from: " + entryName);
 		}
 	}
 

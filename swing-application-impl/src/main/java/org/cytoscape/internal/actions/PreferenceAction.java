@@ -81,43 +81,32 @@ public class PreferenceAction extends AbstractCyAction {
 		setMenuGravity(10.0f);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		preferencesDialog = pdf.getPreferencesDialog(desktop.getJFrame(), propMap, bookmarkMap, bkUtil); 
 		preferencesDialog.setVisible(true);
 	} 
 	
-	//
 	public void addCyProperty(CyProperty<?> p, Dictionary d){
-		
-		String propertyName = (String) d.get("cyPropertyName");
-
+		String propertyName = p.getName();
 		Object obj = p.getProperties();
 		
 		if (obj instanceof Properties){		
 			propMap.put(propertyName, (Properties)obj);
-		}
-		else if (obj instanceof Bookmarks){
+		} else if (obj instanceof Bookmarks){
 			bookmarkMap.put(propertyName, (Bookmarks)obj);
-		}
-		else {
+		} else {
 			System.out.println("PreferenceAction: Do not know what kind of properties it is!");
 		}
 	}
 	
 	public void removeCyProperty(CyProperty<?> p, Dictionary d){
-
 		String propertyName = (String) d.get("cyPropertyName");
-		
 		Object obj = p.getProperties();
+		
 		if (obj instanceof Properties){
 			propMap.remove(propertyName);
-		}
-		else if (obj instanceof Bookmarks){
+		} else if (obj instanceof Bookmarks){
 			bookmarkMap.remove(propertyName);
 		}
 	}

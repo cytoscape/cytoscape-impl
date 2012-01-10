@@ -1,7 +1,7 @@
 package org.cytoscape.io.read.sif; 
 
 
-
+import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +32,6 @@ import org.cytoscape.work.TaskMonitor;
 
 public class PerfTest {
 
-
 	public static void main(String[] args) {
 		new PerfTest().runTestLoop();
 	}
@@ -60,7 +59,7 @@ public class PerfTest {
 		netFactory = nts.getNetworkFactory();
 
 		properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty(properties, CyProperty.SavePolicy.DO_NOT_SAVE);	
+		CyProperty<Properties> cyProperties = new SimpleCyProperty("Test", properties, DO_NOT_SAVE);	
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		setViewThreshold(DEF_THRESHOLD);
 	

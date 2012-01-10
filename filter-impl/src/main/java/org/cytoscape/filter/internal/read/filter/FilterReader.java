@@ -26,6 +26,7 @@ public final class FilterReader implements CyProperty<Vector<CompositeFilter>>, 
 	// This is in the resource file (jar)
 	private static final String DEF_PROP_FILE_NAME = "default_filters.props";
 
+	private String name;
 	private Vector<CompositeFilter> FilterVect;
 
 	public static String cyConfigVerDir;
@@ -33,12 +34,14 @@ public final class FilterReader implements CyProperty<Vector<CompositeFilter>>, 
 	/**
 	 * Creates a new BookmarkReader object.
 	 */
-	public FilterReader(String resourceLocation) {
-
+	public FilterReader(String name, String resourceLocation) {
+		if ( name == null )
+			throw new NullPointerException("name is null");
+		
 		if ( resourceLocation == null )
 			throw new NullPointerException("resource Location is null");
 
-		InputStream is = null;
+		this.name = name;
 		this.FilterVect = new Vector<CompositeFilter>();
 
 		// Load global filtrers if any
@@ -47,12 +50,12 @@ public final class FilterReader implements CyProperty<Vector<CompositeFilter>>, 
 				ServicesUtil.cytoscapeVersionService.getMinorVersion()).getAbsolutePath();
 		final File globalFilterFile = new File(cyConfigVerDir + File.separator + resourceLocation);
 
-		if (globalFilterFile.exists()){
-			try 
-			{
+		InputStream is = null;
+		
+		if (globalFilterFile.exists()) {
+			try {
 				is = new FileInputStream(globalFilterFile);
-			}
-			catch (Exception e){
+			} catch (Exception e){
 				e.printStackTrace();
 			}			
 		}
@@ -93,18 +96,20 @@ public final class FilterReader implements CyProperty<Vector<CompositeFilter>>, 
 		//		System.out.println("\n\n\tFilterReader  this.FilterVect.size()="+this.FilterVect.size()+ "\n");
 	}
 
-
+	@Override
+	public String getName() {
+		return name;
+	}
+	
 	@Override
 	public Vector<CompositeFilter> getProperties() {
 		return this.FilterVect;
 	}
 
-
 	@Override
 	public CyProperty.SavePolicy getSavePolicy() {
 		return CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR;
 	}
-
 
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {

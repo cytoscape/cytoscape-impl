@@ -57,7 +57,6 @@ import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.property.session.Desktop;
@@ -94,7 +93,7 @@ public class CySessionManagerImpl implements CySessionManager {
 	private final CyRootNetworkManager rootNetMgr;
 	private final CyServiceRegistrar registrar;
 
-	private final Map<CyProperty<?>, Map<String, String>> sessionProperties;
+	private final Set<CyProperty<?>> sessionProperties;
 
 	private static final Logger logger = LoggerFactory.getLogger(CySessionManagerImpl.class);
 
@@ -114,7 +113,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		this.nvMgr = nvMgr;
 		this.rootNetMgr = rootNetMgr;
 		this.registrar = registrar;
-		sessionProperties = new HashMap<CyProperty<?>, Map<String, String>>();
+		this.sessionProperties = new HashSet<CyProperty<?>>();
 	}
 
 	@Override
@@ -147,7 +146,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
 		Set<CyTable> tables = tblMgr.getAllTables(true);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-		Map<String, Properties> props = getProperties();
+		Set<CyProperty<Properties>> props = getProperties();
 		Bookmarks bkmarks = getBookmarks();
 		Set<CyTableMetadata> metadata = buildMetadata(tables, networks);
 		
@@ -249,7 +248,7 @@ public class CySessionManagerImpl implements CySessionManager {
 			// Cysession info
 			Cysession cysess = new CysessionFactory(netMgr, nvMgr, vmMgr).createDefaultCysession();
 
-			Map<String, Properties> props = getProperties();
+			Set<CyProperty<Properties>> props = getProperties();
 			Bookmarks bkmarks = getBookmarks();
 
 			sess = new CySession.Builder().properties(props).bookmarks(bkmarks).cysession(cysess).visualStyles(styles)
@@ -289,7 +288,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		CyProperty.SavePolicy sp = newCyProperty.getSavePolicy();
 
 		if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR)
-			sessionProperties.put(newCyProperty, properties);
+			sessionProperties.add(newCyProperty);
 	}
 
 	public void removeCyProperty(final CyProperty<?> oldCyProperty, final Map<String, String> properties) {
@@ -302,7 +301,7 @@ public class CySessionManagerImpl implements CySessionManager {
 	private Bookmarks getBookmarks() {
 		Bookmarks bookmarks = null;
 
-		for (CyProperty<?> cyProps : sessionProperties.keySet()) {
+		for (CyProperty<?> cyProps : sessionProperties) {
 			if (cyProps.getProperties() instanceof Bookmarks) {
 				bookmarks = (Bookmarks) cyProps.getProperties();
 				break;
@@ -312,33 +311,25 @@ public class CySessionManagerImpl implements CySessionManager {
 		return bookmarks;
 	}
 
-	/**
-	 * @return Map of session Properties by property name.
-	 */
-	private Map<String/*property name*/, Properties> getProperties() {
-		Map<String, Properties> map = new HashMap<String, Properties>();
+	@SuppressWarnings("unchecked")
+	private Set<CyProperty<Properties>> getProperties() {
+		Set<CyProperty<Properties>> set = new HashSet<CyProperty<Properties>>();
 
-		for (Entry<CyProperty<?>, Map<String, String>> entry : sessionProperties.entrySet()) {
-			CyProperty<?> cyProps = entry.getKey();
-			Map<String, String> metadata = entry.getValue();
-			
+		for (CyProperty<?> cyProps : sessionProperties) {
 			if (cyProps.getProperties() instanceof Properties) {
-				map.put(metadata.get("cyPropertyName"), (Properties) cyProps.getProperties());
+				set.add((CyProperty<Properties>) cyProps);
 			}
 		}
 
-		return map;
+		return set;
 	}
 
 	private void restoreProperties(CySession sess) {
-		final Map<String, Properties> sessionPropsMap = sess.getProperties();
+		final Set<CyProperty<Properties>> set = sess.getProperties();
 		
-		for (Entry<String, Properties> entry : sessionPropsMap.entrySet()) {
-			final Properties props = entry.getValue();
-			CyProperty<Properties> cyProps = new SimpleCyProperty(props, CyProperty.SavePolicy.SESSION_FILE);
-			
+		for (CyProperty<Properties> cyProps : set) {
 			final Properties serviceProps = new Properties();
-			serviceProps.setProperty("cyPropertyName", entry.getKey());
+			serviceProps.setProperty("cyPropertyName", cyProps.getName());
 			serviceProps.setProperty("serviceType", "property");
 	        
 			registrar.registerAllServices(cyProps, serviceProps);
@@ -438,9 +429,9 @@ public class CySessionManagerImpl implements CySessionManager {
 		tblMgr.reset();
 		
 		// Unregister session properties
-		final Set<CyProperty<?>> cyPropsSet = new HashSet<CyProperty<?>>(sessionProperties.keySet());
+		final Set<CyProperty<?>> cyPropsClone = new HashSet<CyProperty<?>>(sessionProperties);
 		
-		for (CyProperty<?> cyProps : cyPropsSet) {
+		for (CyProperty<?> cyProps : cyPropsClone) {
 			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {
 				registrar.unregisterAllServices(cyProps);
 			}

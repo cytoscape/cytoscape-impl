@@ -20,25 +20,28 @@ public final class BookmarkReader implements CyProperty<Bookmarks>, SessionLoade
 	private static final String BOOKMARK_PACKAGE = Bookmarks.class.getPackage().getName();
 	private static final Logger logger = LoggerFactory.getLogger(BookmarkReader.class);
 
+	private String name;
 	private Bookmarks bookmarks;
 
 	/**
 	 * Creates a new BookmarkReader object.
 	 */
-	public BookmarkReader(String resourceLocation) {
+	public BookmarkReader(final String name, final String resourceLocation) {
+		if ( name == null )
+			throw new NullPointerException("name is null");
+		
+		if ( resourceLocation == null )
+			throw new NullPointerException("resourceLocation is null");
 		
 		InputStream is = null;
 
 		try {
-			if ( resourceLocation == null )
-				throw new NullPointerException("resourceLocation is null");
-
 			is = this.getClass().getClassLoader().getResourceAsStream(resourceLocation);
 
 			if (is == null)
 				throw new IllegalArgumentException("Failed to open resource: " + resourceLocation);
 
-			final JAXBContext jaxbContext = JAXBContext.newInstance(BOOKMARK_PACKAGE,getClass().getClassLoader());
+			final JAXBContext jaxbContext = JAXBContext.newInstance(BOOKMARK_PACKAGE, getClass().getClassLoader());
 
 			final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
@@ -54,6 +57,11 @@ public final class BookmarkReader implements CyProperty<Bookmarks>, SessionLoade
 		}
 	}
 
+	@Override
+	public String getName() {
+		return name;
+	}
+	
 	@Override
 	public Bookmarks getProperties() {
 		return bookmarks;

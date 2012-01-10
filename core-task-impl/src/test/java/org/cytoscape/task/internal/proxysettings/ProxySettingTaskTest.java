@@ -27,7 +27,7 @@ public class ProxySettingTaskTest {
 	@Test
 	public void testRun() throws Exception {
 		Properties properties = new Properties();
-		final CyProperty<Properties> proxyProperties = new SimpleCyProperty(properties , SavePolicy.DO_NOT_SAVE);
+		final CyProperty<Properties> proxyProperties = new SimpleCyProperty("Test", properties, SavePolicy.DO_NOT_SAVE);
 		final ProxySettingsTask2 t = new ProxySettingsTask2(proxyProperties, streamUtil);
 
 		final String type = "http";

@@ -72,6 +72,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Child;
 import org.cytoscape.property.session.Cysession;
@@ -288,7 +290,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					
 					if (row.getTable().getColumn(CY2_PARENT_NETWORK_COLUMN) == null)
 						row.getTable().createColumn(CY2_PARENT_NETWORK_COLUMN, Long.class, false);
-						
+					
 					row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
 				}
 
@@ -377,10 +379,10 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					newProps.put(key, value);
 				}
 			}
-			
-			if (newProps.size() > 0) {
-				propertiesMap.put("session", newProps); // TODO: choose a better name
-			}
+
+			CyProperty<Properties> cyProps = new SimpleCyProperty("session", newProps,
+					CyProperty.SavePolicy.SESSION_FILE);
+			properties.add(cyProps);
 		}
 	}
 
@@ -397,8 +399,9 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	private void processNetworks() throws Exception {
-		if (cysession == null) return;
-		
+		if (cysession == null)
+			return;
+
 		// Network attributes and visual styles
 		if (cysession.getNetworkTree() != null) {
 			for (final Network net : cysession.getNetworkTree().getNetwork()) {
@@ -406,12 +409,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				// so let's ignore a network with that name.
 				if (net.getId().equals(NETWORK_ROOT))
 					continue;
-	
+				
 				final String netName = net.getId();
 				
 				// Set attribute values that are saved in the cysession.xml
 				final CyNetwork cyNet = getNetwork(netName);
-	
+				
 				if (cyNet != null) {
 					// From Cytoscape 3.0, the selection and hidden attributes are stored inside CyTables.
 					if (net.getSelectedNodes() != null)
@@ -431,7 +434,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				
 				if (view != null) {
 					String vsName = net.getVisualStyle();
-	
+					
 					if (vsName != null)
 						visualStyleMap.put(view, vsName);
 				}
@@ -530,7 +533,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 			if (n != null)
 				net.getRow(n, tableName).set(attrName, true);
-			else 
+			else
 				logger.error("Cannot restore boolean node attr \"" + name + "\": node not found.");
 		}
 	}
@@ -543,7 +546,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		// create an id map
 		Map<String, CyEdge> edgeMap = new HashMap<String, CyEdge>();
 		
-		for (CyEdge e : net.getEdgeList()){
+		for (CyEdge e : net.getEdgeList()) {
 			CyRow row = net.getRow(e);
 			String name = row.get(CyNetwork.NAME, String.class);
 			
@@ -562,7 +565,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 			if (e != null)
 				net.getRow(e, tableName).set(attrName, true);
-			else 
+			else
 				logger.error("Cannot restore boolean edge attr \"" + name + "\": node not found.");
 		}
 	}

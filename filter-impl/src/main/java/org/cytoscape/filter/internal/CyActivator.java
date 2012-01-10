@@ -67,7 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//
 		BasicCyFileFilter filterFilter = new BasicCyFileFilter(new String[]{"filters"}, new String[]{"text/plain"}, "Filters file",DataCategory.PROPERTIES, streamUtil);
-		FilterReader filterReader = new FilterReader("props.filters");
+		FilterReader filterReader = new FilterReader("filters", "props.filters");
 		FilterWriterFactoryImpl filterWriter = new FilterWriterFactoryImpl(filterFilter);
 		
 		ServicesUtil.filterReader = filterReader;

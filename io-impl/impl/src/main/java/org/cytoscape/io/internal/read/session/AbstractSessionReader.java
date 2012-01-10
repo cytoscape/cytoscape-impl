@@ -46,6 +46,7 @@ import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.session.CySession;
@@ -67,7 +68,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 	protected Cysession cysession;
 	protected Bookmarks bookmarks;
-	protected Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
+	protected Set<CyProperty<Properties>> properties = new HashSet<CyProperty<Properties>>();
 	protected final Set<CyNetwork> networks = new LinkedHashSet<CyNetwork>();
 	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<CyNetworkView>();
 	protected final Set<VisualStyle> visualStyles = new HashSet<VisualStyle>();
@@ -108,7 +109,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	@Override
 	public CySession getSession() {
 		CySession ret = new CySession.Builder().networks(networks).networkViews(networkViews)
-				.viewVisualStyleMap(visualStyleMap).properties(propertiesMap).visualStyles(visualStyles)
+				.viewVisualStyleMap(visualStyleMap).properties(properties).visualStyles(visualStyles)
 				.bookmarks(bookmarks).cysession(cysession).appFileListMap(appFileListMap).tables(tableMetadata)
 				.build();
 	

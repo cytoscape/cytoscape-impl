@@ -28,7 +28,7 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowser openBrowserServiceRef = getService(bc,OpenBrowser.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
-		PropsReader linkoutProps = new PropsReader("linkout.props",CyProperty.SavePolicy.CONFIG_DIR);
+		PropsReader linkoutProps = new PropsReader("linkout","linkout.props",CyProperty.SavePolicy.CONFIG_DIR);
 
 		LinkOut linkout = new LinkOut(linkoutProps,cyServiceRegistrarServiceRef,openBrowserServiceRef,cyApplicationConfigurationServiceRef);
 		

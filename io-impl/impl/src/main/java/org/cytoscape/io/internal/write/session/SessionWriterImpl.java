@@ -60,7 +60,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -83,6 +82,7 @@ import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
@@ -114,7 +114,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	
 	// Name of CySession file.
 	private static final String VIZMAP_FILE = "session_vizmap.xml";
-	private static final String CYPROP_FILE = "session_cytoscape.props";
 	
 	private final String cysessionDocId;
 	private final String sessionDir;
@@ -286,9 +285,9 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * Writes the cytoscape.props file to the session zip.
 	 */
 	private void zipProperties() throws Exception {
-		for (Entry<String, Properties> entry : session.getProperties().entrySet()) {
-			String fileName = entry.getKey() + PROPERTIES_EXT;
-			Properties props = entry.getValue(); 
+		for (CyProperty<Properties> cyProps : session.getProperties()) {
+			String fileName = cyProps.getName() + PROPERTIES_EXT;
+			Properties props = cyProps.getProperties(); 
 			
 			zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER + fileName) );
 	
