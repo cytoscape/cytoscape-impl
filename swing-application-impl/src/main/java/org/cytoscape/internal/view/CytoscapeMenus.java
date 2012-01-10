@@ -92,6 +92,7 @@ public class CytoscapeMenus {
 	toolBar.addSeparator(4.0f);
 	toolBar.addSeparator(6.0f);
 	toolBar.addSeparator(8.0f);
+	toolBar.addSeparator(10.0f);
     }
 
 	private boolean isMac() {

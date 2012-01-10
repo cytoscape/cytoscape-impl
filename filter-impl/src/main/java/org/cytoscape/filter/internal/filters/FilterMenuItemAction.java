@@ -67,6 +67,7 @@ public class FilterMenuItemAction extends AbstractCyAction {
 	public FilterMenuItemAction(CySwingApplication application, FilterMainPanel filterPanel) {
 		super("Use Filters");
 		setPreferredMenu("Select");
+		setToolbarGravity(9.9f);
 
 		ImageIcon icon = new ImageIcon(getClass().getResource("/images/filter.png"));
 		ImageIcon smallIcon = new ImageIcon(getClass().getResource("/images/filter-small.png"));

@@ -304,7 +304,7 @@ public class CyActivator extends AbstractCyActivator {
 		helpContentsTaskFactoryProps.setProperty("largeIconURL", getClass().getResource("/images/ximian/stock_help.png").toString());
 		helpContentsTaskFactoryProps.setProperty("title", "Contents...");
 		helpContentsTaskFactoryProps.setProperty("tooltip", "Show Help Contents...");
-		helpContentsTaskFactoryProps.setProperty("toolBarGravity", "7.0f");
+		helpContentsTaskFactoryProps.setProperty("toolBarGravity", "20.0f");
 		helpContentsTaskFactoryProps.setProperty("inToolBar", "true");
 		registerService(bc, helpContentsTaskFactory, TaskFactory.class, helpContentsTaskFactoryProps);
 

@@ -233,6 +233,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkFileTaskFactoryProps.setProperty("commandNamespace","network");
 		loadNetworkFileTaskFactoryProps.setProperty("command","load");
 		loadNetworkFileTaskFactoryProps.setProperty("menuGravity","1.0");
+		loadNetworkFileTaskFactoryProps.setProperty("toolBarGravity","3.0");
 		loadNetworkFileTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_file_import.png").toString());
 		loadNetworkFileTaskFactoryProps.setProperty("inToolBar","true");
 		loadNetworkFileTaskFactoryProps.setProperty("tooltip","Import Network From File");
@@ -243,6 +244,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty("preferredMenu","File.Import.Network");
 		loadNetworkURLTaskFactoryProps.setProperty("accelerator","cmd shift l");
 		loadNetworkURLTaskFactoryProps.setProperty("menuGravity","2.0");
+		loadNetworkURLTaskFactoryProps.setProperty("toolBarGravity","3.1");
 		loadNetworkURLTaskFactoryProps.setProperty("title","URL...");
 		loadNetworkURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_db_import.png").toString());
 		loadNetworkURLTaskFactoryProps.setProperty("inToolBar","true");
@@ -259,6 +261,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties loadAttrsFileTaskFactoryProps = new Properties();
 		loadAttrsFileTaskFactoryProps.setProperty("preferredMenu","File.Import.Table");
 		loadAttrsFileTaskFactoryProps.setProperty("menuGravity","1.1");
+		loadAttrsFileTaskFactoryProps.setProperty("toolBarGravity","3.2");
 		loadAttrsFileTaskFactoryProps.setProperty("title","File...");
 		loadAttrsFileTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_file_import.png").toString());
 		loadAttrsFileTaskFactoryProps.setProperty("inToolBar","true");
@@ -268,6 +271,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties loadAttrsURLTaskFactoryProps = new Properties();
 		loadAttrsURLTaskFactoryProps.setProperty("preferredMenu","File.Import.Table");
 		loadAttrsURLTaskFactoryProps.setProperty("menuGravity","1.2");
+		loadAttrsURLTaskFactoryProps.setProperty("toolBarGravity","3.3");
 		loadAttrsURLTaskFactoryProps.setProperty("title","URL...");
 		loadAttrsURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_db_import.png").toString());
 		loadAttrsURLTaskFactoryProps.setProperty("inToolBar","true");
@@ -334,9 +338,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,selectConnectedNodesTaskFactory,NetworkTaskFactory.class, selectConnectedNodesTaskFactoryProps);
 
 		Properties selectFirstNeighborsTaskFactoryProps = new Properties();
-		selectFirstNeighborsTaskFactoryProps.setProperty("enableFor","network");
+		selectFirstNeighborsTaskFactoryProps.setProperty("enableFor","selectedNodesOrEdges");
 		selectFirstNeighborsTaskFactoryProps.setProperty("preferredMenu","Select.Nodes.First Neighbors of Selected Nodes");
 		selectFirstNeighborsTaskFactoryProps.setProperty("menuGravity","6.0");
+		selectFirstNeighborsTaskFactoryProps.setProperty("toolBarGravity","9.1");
 		selectFirstNeighborsTaskFactoryProps.setProperty("accelerator","cmd 6");
 		selectFirstNeighborsTaskFactoryProps.setProperty("title","Undirected");
 		selectFirstNeighborsTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/select_firstneighbors.png").toString());
@@ -392,9 +397,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,invertSelectedEdgesTaskFactory,NetworkTaskFactory.class, invertSelectedEdgesTaskFactoryProps);
 
 		Properties invertSelectedNodesTaskFactoryProps = new Properties();
-		invertSelectedNodesTaskFactoryProps.setProperty("enableFor","network");
+		invertSelectedNodesTaskFactoryProps.setProperty("enableFor","selectedNodes");
 		invertSelectedNodesTaskFactoryProps.setProperty("preferredMenu","Select.Nodes");
 		invertSelectedNodesTaskFactoryProps.setProperty("menuGravity","1.0");
+		invertSelectedNodesTaskFactoryProps.setProperty("toolBarGravity","9.2");
 		invertSelectedNodesTaskFactoryProps.setProperty("accelerator","cmd i");
 		invertSelectedNodesTaskFactoryProps.setProperty("title","Invert node selection");
 		invertSelectedNodesTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/invert_selection.png").toString());
@@ -415,9 +421,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,selectFirstNeighborsNodeViewTaskFactory,NodeViewTaskFactory.class, selectFirstNeighborsNodeViewTaskFactoryProps);
 
 		Properties hideSelectedTaskFactoryProps = new Properties();
-		hideSelectedTaskFactoryProps.setProperty("enableFor","networkAndView");
+		hideSelectedTaskFactoryProps.setProperty("enableFor","selectedNodesOrEdges");
 		hideSelectedTaskFactoryProps.setProperty("preferredMenu","Select");
 		hideSelectedTaskFactoryProps.setProperty("menuGravity","3.1");
+		hideSelectedTaskFactoryProps.setProperty("toolBarGravity","9.5");
 		hideSelectedTaskFactoryProps.setProperty("title","Hide selected nodes and edges");
 		hideSelectedTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/hide_selected.png").toString());
 		hideSelectedTaskFactoryProps.setProperty("inToolBar","true");
@@ -425,14 +432,14 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,hideSelectedTaskFactory,NetworkViewTaskFactory.class, hideSelectedTaskFactoryProps);
 
 		Properties hideSelectedNodesTaskFactoryProps = new Properties();
-		hideSelectedNodesTaskFactoryProps.setProperty("enableFor","networkAndView");
+		hideSelectedNodesTaskFactoryProps.setProperty("enableFor","selectedNodes");
 		hideSelectedNodesTaskFactoryProps.setProperty("preferredMenu","Select.Nodes");
 		hideSelectedNodesTaskFactoryProps.setProperty("menuGravity","2.0");
 		hideSelectedNodesTaskFactoryProps.setProperty("title","Hide selected nodes");
 		registerService(bc,hideSelectedNodesTaskFactory,NetworkViewTaskFactory.class, hideSelectedNodesTaskFactoryProps);
 
 		Properties hideSelectedEdgesTaskFactoryProps = new Properties();
-		hideSelectedEdgesTaskFactoryProps.setProperty("enableFor","networkAndView");
+		hideSelectedEdgesTaskFactoryProps.setProperty("enableFor","selectedEdges");
 		hideSelectedEdgesTaskFactoryProps.setProperty("preferredMenu","Select.Edges");
 		hideSelectedEdgesTaskFactoryProps.setProperty("menuGravity","2.0");
 		hideSelectedEdgesTaskFactoryProps.setProperty("title","Hide selected edges");
@@ -442,6 +449,7 @@ public class CyActivator extends AbstractCyActivator {
 		unHideAllTaskFactoryProps.setProperty("enableFor","networkAndView");
 		unHideAllTaskFactoryProps.setProperty("preferredMenu","Select");
 		unHideAllTaskFactoryProps.setProperty("menuGravity","3.0");
+		unHideAllTaskFactoryProps.setProperty("toolBarGravity","9.6");
 		unHideAllTaskFactoryProps.setProperty("title","Show all nodes and edges");
 		unHideAllTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/unhide_all.png").toString());
 		unHideAllTaskFactoryProps.setProperty("inToolBar","true");
@@ -520,7 +528,7 @@ public class CyActivator extends AbstractCyActivator {
 		zoomInTaskFactoryProps.setProperty("enableFor","networkAndView");
 		zoomInTaskFactoryProps.setProperty("title","Zoom In");
 		zoomInTaskFactoryProps.setProperty("tooltip","Zoom In");
-		zoomInTaskFactoryProps.setProperty("toolBarGravity","3.1");
+		zoomInTaskFactoryProps.setProperty("toolBarGravity","5.1");
 		zoomInTaskFactoryProps.setProperty("inToolBar","true");
 		registerService(bc,zoomInTaskFactory,NetworkViewTaskFactory.class, zoomInTaskFactoryProps);
 
@@ -530,7 +538,7 @@ public class CyActivator extends AbstractCyActivator {
 		zoomOutTaskFactoryProps.setProperty("enableFor","networkAndView");
 		zoomOutTaskFactoryProps.setProperty("title","Zoom Out");
 		zoomOutTaskFactoryProps.setProperty("tooltip","Zoom Out");
-		zoomOutTaskFactoryProps.setProperty("toolBarGravity","3.2");
+		zoomOutTaskFactoryProps.setProperty("toolBarGravity","5.2");
 		zoomOutTaskFactoryProps.setProperty("inToolBar","true");
 		registerService(bc,zoomOutTaskFactory,NetworkViewTaskFactory.class, zoomOutTaskFactoryProps);
 
@@ -540,7 +548,7 @@ public class CyActivator extends AbstractCyActivator {
 		fitSelectedTaskFactoryProps.setProperty("enableFor","networkAndView");
 		fitSelectedTaskFactoryProps.setProperty("title","Fit Selected");
 		fitSelectedTaskFactoryProps.setProperty("tooltip","Zoom selected region");
-		fitSelectedTaskFactoryProps.setProperty("toolBarGravity","3.4");
+		fitSelectedTaskFactoryProps.setProperty("toolBarGravity","5.4");
 		fitSelectedTaskFactoryProps.setProperty("inToolBar","true");
 		registerService(bc,fitSelectedTaskFactory,NetworkViewTaskFactory.class, fitSelectedTaskFactoryProps);
 
@@ -550,7 +558,7 @@ public class CyActivator extends AbstractCyActivator {
 		fitContentTaskFactoryProps.setProperty("enableFor","networkAndView");
 		fitContentTaskFactoryProps.setProperty("title","Fit Content");
 		fitContentTaskFactoryProps.setProperty("tooltip","Zoom out to display all of current Network");
-		fitContentTaskFactoryProps.setProperty("toolBarGravity","3.3");
+		fitContentTaskFactoryProps.setProperty("toolBarGravity","5.3");
 		fitContentTaskFactoryProps.setProperty("inToolBar","true");
 		registerService(bc,fitContentTaskFactory,NetworkViewTaskFactory.class, fitContentTaskFactoryProps);
 
@@ -576,7 +584,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkImageTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/img_file_export.png").toString());
 		exportNetworkImageTaskFactoryProps.setProperty("enableFor","networkAndView");
 		exportNetworkImageTaskFactoryProps.setProperty("title","Graphics");
-		exportNetworkImageTaskFactoryProps.setProperty("toolBarGravity","5.0");
+		exportNetworkImageTaskFactoryProps.setProperty("toolBarGravity","3.7");
 		exportNetworkImageTaskFactoryProps.setProperty("inToolBar","true");
 		exportNetworkImageTaskFactoryProps.setProperty("tooltip","Export Network Image to File");
 		registerService(bc,exportNetworkImageTaskFactory,NetworkViewTaskFactory.class, exportNetworkImageTaskFactoryProps);
@@ -585,6 +593,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkViewTaskFactoryProps.setProperty("enableFor","networkAndView");
 		exportNetworkViewTaskFactoryProps.setProperty("preferredMenu","File.Export.Network View");
 		exportNetworkViewTaskFactoryProps.setProperty("menuGravity","5.1");
+		exportNetworkViewTaskFactoryProps.setProperty("toolBarGravity","3.5");
 		exportNetworkViewTaskFactoryProps.setProperty("title","File");
 		exportNetworkViewTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_file_export.png").toString());
 		exportNetworkViewTaskFactoryProps.setProperty("inToolBar","true");
@@ -609,6 +618,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportCurrentTableTaskFactoryProps.setProperty("enableFor","table");
 		exportCurrentTableTaskFactoryProps.setProperty("preferredMenu","File.Export.Table");
 		exportCurrentTableTaskFactoryProps.setProperty("menuGravity","1.2");
+		exportCurrentTableTaskFactoryProps.setProperty("toolBarGravity","3.6");
 		exportCurrentTableTaskFactoryProps.setProperty("title","File...");
 		exportCurrentTableTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_file_export.png").toString());
 		exportCurrentTableTaskFactoryProps.setProperty("inToolBar","true");
@@ -664,7 +674,7 @@ public class CyActivator extends AbstractCyActivator {
 		applyPreferredLayoutTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/apply_layout.png").toString());
 		applyPreferredLayoutTaskFactoryProps.setProperty("enableFor","networkAndView");
 		applyPreferredLayoutTaskFactoryProps.setProperty("title","Apply Preferred Layout");
-		applyPreferredLayoutTaskFactoryProps.setProperty("toolBarGravity","9.0");
+		applyPreferredLayoutTaskFactoryProps.setProperty("toolBarGravity","7.0");
 		applyPreferredLayoutTaskFactoryProps.setProperty("inToolBar","true");
 		applyPreferredLayoutTaskFactoryProps.setProperty("menuGravity","5.0");
 		applyPreferredLayoutTaskFactoryProps.setProperty("tooltip","Apply Preferred Layout");

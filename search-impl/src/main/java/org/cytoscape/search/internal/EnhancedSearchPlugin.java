@@ -63,7 +63,7 @@ public class EnhancedSearchPlugin extends AbstractToolBarComponent
 		searchMgr = new EnhancedSearchManager();
 		// Add a text-field and a search button on tool-bar
 		searchPnl = new EnhancedSearchPanel(appManager, viewManager, searchMgr, taskMgr);
-		this.setToolBarGravity(150.0f);
+		this.setToolBarGravity(9.8f);
 		EnhancedSearchPlugin.eventHelper = eventHelper;
 	}
 
