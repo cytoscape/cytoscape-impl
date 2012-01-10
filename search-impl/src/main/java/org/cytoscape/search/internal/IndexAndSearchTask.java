@@ -87,8 +87,11 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		final String status = enhancedSearch.getNetworkIndexStatus(network);
 		logger.debug("Index status = " + status);
 		
-		if (status != null && status.equalsIgnoreCase(EnhancedSearch.INDEX_SET))
+		if (status != null && status.equalsIgnoreCase(EnhancedSearch.INDEX_SET) && !EnhancedSearchPlugin.attributeChanged)
+		{
 			idx = enhancedSearch.getNetworkIndex(network);
+			EnhancedSearchPlugin.attributeChanged = false;
+		}
 		else {
 			taskMonitor.setStatusMessage("Indexing network");
 			final EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network);
