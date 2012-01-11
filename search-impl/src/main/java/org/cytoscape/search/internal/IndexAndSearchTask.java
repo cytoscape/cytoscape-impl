@@ -93,7 +93,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		}
 		else {
 			taskMonitor.setStatusMessage("Indexing network");
-			final EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network);
+			final EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network, taskMonitor);
 			idx = indexHandler.getIndex();
 			enhancedSearch.setNetworkIndex(network, idx);
 			EnhancedSearchPlugin.attributeChanged = false;

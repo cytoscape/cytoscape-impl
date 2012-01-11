@@ -47,16 +47,17 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.search.internal.util.EnhancedSearchUtils;
+import org.cytoscape.work.TaskMonitor;
 
 
 public class EnhancedSearchIndex {
 	RAMDirectory idx;
-
+	final TaskMonitor taskMonitor;
 	// Index the given network
-	public EnhancedSearchIndex(final CyNetwork network) {
+	public EnhancedSearchIndex(final CyNetwork network, final TaskMonitor taskMonitor) {
 		if(network == null)
 			throw new NullPointerException("Network is null.");
-		
+		this.taskMonitor = taskMonitor;
 		// Construct a RAMDirectory to hold the in-memory representation of the index.		
 		idx = new RAMDirectory();
 		BuildIndex(idx, network);
@@ -72,9 +73,11 @@ public class EnhancedSearchIndex {
 			// Add a document for each graph object - node and edge
 			List<CyNode> nodeList = network.getNodeList();
 			
+			this.taskMonitor.setProgress(0.1);
 			for (CyNode cyNode : nodeList) {
 				writer.addDocument(createDocument(network, cyNode, EnhancedSearch.NODE_TYPE, cyNode.getIndex()));
 			}
+			this.taskMonitor.setProgress(0.6);
 		
 			List<CyEdge> edgeList = network.getEdgeList();
 			for (CyEdge cyEdge : edgeList) {
@@ -88,6 +91,7 @@ public class EnhancedSearchIndex {
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
+		this.taskMonitor.setProgress(0.95);
 
 	}
 

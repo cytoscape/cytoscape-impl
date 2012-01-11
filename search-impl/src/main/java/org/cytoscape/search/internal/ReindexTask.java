@@ -61,7 +61,7 @@ public class ReindexTask extends AbstractNetworkTask {
 		RAMDirectory idx = null;
 
 		taskMonitor.setStatusMessage("Re-indexing network");
-		EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network);
+		EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network, taskMonitor);
 		idx = indexHandler.getIndex();
 		enhancedSearch.setNetworkIndex(network, idx);
 
