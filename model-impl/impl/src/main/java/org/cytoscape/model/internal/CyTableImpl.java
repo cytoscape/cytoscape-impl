@@ -695,10 +695,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	synchronized Object getValueOrEquation(final Object key, final String columnName) {
+		return getValueOrEquation(key,columnName,virtualColumnMap.get(columnName));
+	}
+
+	private synchronized Object getValueOrEquation(final Object key, final String columnName, final VirtualColumn virtColumn) {
 		if (columnName.equals(primaryKey))
 			return key;
 
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
 		if (virtColumn != null)
 			return virtColumn.getRawValue(key);
 
@@ -731,7 +734,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (virtColumn != null)
 			return virtColumn.getValue(key);
 
-		final Object vl = getValueOrEquation(key, columnName);
+		final Object vl = getValueOrEquation(key, columnName, virtColumn);
 		if (vl == null)
 			return null;
 
@@ -783,7 +786,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (virtColumn != null)
 			return (List<T>)virtColumn.getListValue(key);
 
-		final Object vl = getValueOrEquation(key, columnName);
+		final Object vl = getValueOrEquation(key, columnName, virtColumn);
 		if (vl == null)
 			return getDefaultValue(columnName,defaultValue);
 
