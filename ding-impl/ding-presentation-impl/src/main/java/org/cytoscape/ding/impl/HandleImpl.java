@@ -34,7 +34,7 @@ public class HandleImpl implements Handle {
 
 	
 	@Override
-	public Point2D getPoint(final DEdgeView view) {
+	public Point2D calculateHandleLocation(final DEdgeView view) {
 		final DGraphView graphView = (DGraphView) view.getGraphView();
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
@@ -81,7 +81,7 @@ public class HandleImpl implements Handle {
 
 	
 	@Override
-	public void setPoint(final DEdgeView view, double x, double y) {
+	public void defineHandle(final DEdgeView view, double x, double y) {
 		final DGraphView graphView = (DGraphView) view.getGraphView();
 		this.x = x;
 		this.y = y;

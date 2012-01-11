@@ -12,17 +12,17 @@ import org.cytoscape.ding.impl.DEdgeView;
 public interface Handle {
 
 	/**
-	 * Calculate absolute position of this handle.
+	 * Calculate absolute position of this handle for the given edge view.
 	 * 
 	 * @param graphView graph view for this handle
 	 * @param edgeView The handle belongs to this edge view.
 	 * 
 	 * @return Absolute position of this handle in the network view.
 	 */
-	Point2D getPoint(final DEdgeView edgeView);
+	Point2D calculateHandleLocation(final DEdgeView edgeView);
 	
 	/**
-	 * Set a new position of this handle.
+	 * Define this handle.  Handle will be described as a relative location from source and target node.
 	 * 
 	 * NOTE: in the implementation, the given (x, y) values will be converted to relative position.
 	 * The conversion equation is exchangeable.
@@ -32,5 +32,5 @@ public interface Handle {
 	 * @param x Absolute value for X-location.
 	 * @param y Absolute value for Y-location.
 	 */
-	void setPoint(final DEdgeView edgeView, final double x, final double y);
+	void defineHandle(final DEdgeView edgeView, final double x, final double y);
 }

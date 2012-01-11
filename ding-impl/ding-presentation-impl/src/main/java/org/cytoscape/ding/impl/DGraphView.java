@@ -172,9 +172,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	static final float DEFAULT_ANCHOR_SIZE = 9.0f;
+	// Size of square for moving handle
+	static final float DEFAULT_ANCHOR_SIZE = 25.0f;
+	
 	static final Paint DEFAULT_ANCHOR_SELECTED_PAINT = Color.red;
-	static final Paint DEFAULT_ANCHOR_UNSELECTED_PAINT = Color.black;
+	static final Paint DEFAULT_ANCHOR_UNSELECTED_PAINT = Color.DARK_GRAY;
 
 	boolean calledFromGetSnapshot = false;
 	
@@ -2455,25 +2457,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	
-	public final float getAnchorSize() {
+	final float getAnchorSize() {
 		return DEFAULT_ANCHOR_SIZE;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public final Paint getAnchorSelectedPaint() {
+	
+	final Paint getAnchorSelectedPaint() {
 		return DEFAULT_ANCHOR_SELECTED_PAINT;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public final Paint getAnchorUnselectedPaint() {
+	final Paint getAnchorUnselectedPaint() {
 		return DEFAULT_ANCHOR_UNSELECTED_PAINT;
 	}
 
