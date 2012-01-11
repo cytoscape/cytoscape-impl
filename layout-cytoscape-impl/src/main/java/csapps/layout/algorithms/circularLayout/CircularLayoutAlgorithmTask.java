@@ -122,12 +122,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		for (int i = 0; i < bc.length; i++)
 			if (bc[i].length > 3) {
 				for (int j = 0; j < bc[i].length; j++) {
-					if (!node2BiComp.containsKey(bc[i][j]))
-						node2BiComp.put(Integer.valueOf(bc[i][j]), Integer.valueOf(i));
-					else if (bc[i].length > bc[node2BiComp.get(bc[i][j]).intValue()].length) {
-						node2BiComp.remove(Integer.valueOf(bc[i][j])); // check this
-						node2BiComp.put(Integer.valueOf(bc[i][j]), Integer.valueOf(i));
-					}
+					node2BiComp.put(bc[i][j], i);
 				}
 			}
 
@@ -240,8 +235,9 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		innerDeltaAngle = (2 * Math.PI) / bc[compIndex].length;
 
 		if (firstTouched != -1) {
-			pointX = nodeViews.get(firstTouched).getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION);
-			pointY = nodeViews.get(firstTouched).getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
+			View<CyNode> view = nodeViews.get(firstTouched);
+			pointX = view.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION);
+			pointY = view.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
 			theAngle = Math.asin((startY - pointY) / Math.sqrt(((pointX - startX) * (pointX
 			                                                                        - startX))
 			                                                   + ((pointY - startY) * (pointY
@@ -382,8 +378,9 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 					continue;
 				}
 
-				pointX = nodeViews.get(currentNeighbour).getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION);
-				pointY = nodeViews.get(currentNeighbour).getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
+				View<CyNode> view = nodeViews.get(currentNeighbour);
+				pointX = view.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION);
+				pointY = view.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
 
 				theAngle = Math.asin((startY - pointY) / Math.sqrt(((pointX - startX) * (pointX
 				                                                                        - startX))
@@ -846,9 +843,10 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 			int count = 0;
 			//System.out.print(j + " ");
 
-			if (((outerPositionsTaken[i % outerPositionsTaken.length] > innerCirclePos)
-			    && ((outerPositionsTaken[i % outerPositionsTaken.length] - innerCirclePos) < (0.7 * innerCSize)))
-			    || ((innerCirclePos - outerPositionsTaken[i % outerPositionsTaken.length]) > (0.7 * innerCSize))) {
+			int index = (i % outerPositionsTaken.length + outerPositionsTaken.length) % outerPositionsTaken.length;
+			if (((outerPositionsTaken[index] > innerCirclePos)
+			    && ((outerPositionsTaken[index] - innerCirclePos) < (0.7 * innerCSize)))
+			    || ((innerCirclePos - outerPositionsTaken[index]) > (0.7 * innerCSize))) {
 				j--;
 				i--;
 			}
