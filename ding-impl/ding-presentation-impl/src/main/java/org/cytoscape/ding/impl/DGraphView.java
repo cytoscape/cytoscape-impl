@@ -342,7 +342,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * Used for holding edge anchors.
 	 */
-	final float[] m_anchorsBuff = new float[2];
+	final float[] handleLocationBuffer = new float[2];
 
 	/**
 	 *

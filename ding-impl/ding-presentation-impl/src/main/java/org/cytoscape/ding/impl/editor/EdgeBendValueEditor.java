@@ -127,8 +127,8 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		
 		
 		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
-		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 20d);
-		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 300d);
+		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 200d);
+		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 200d);
 		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 0d);
 
 		innerPanel.setBackground(BACKGROUND_COLOR);
@@ -163,8 +163,10 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	@Override
 	public <S extends Bend> Bend showEditor(Component parent, S initialValue) {
 		initUI(cyNetworkFactory, cyNetworkViewFactory, presentationFactory);
+		EditMode.setMode(true);
 		this.setLocationRelativeTo(parent);
-		this.setVisible(true);		
+		this.setVisible(true);
+		EditMode.setMode(false);
 		return edgeView.getBend();
 	}
 

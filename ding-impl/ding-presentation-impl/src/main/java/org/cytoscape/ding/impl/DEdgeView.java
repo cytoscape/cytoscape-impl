@@ -354,13 +354,21 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		m_view.m_edgeDetails.select(m_inx);		
 		m_view.m_selectedEdges.insert(m_inx);
 
-		for (int j = 0; j < numHandles(); j++) {
-			getHandleInternal(j, m_view.m_anchorsBuff);
+		final int numHandles = m_view.m_edgeDetails.bend(m_inx).getAllHandles().size();
+		for (int j = 0; j < numHandles; j++) {
+			//getHandleInternal(j, m_view.m_anchorsBuff);
+			
+			final Bend bend = m_view.m_edgeDetails.bend(m_inx);
+			final Handle handle = bend.getAllHandles().get(j);
+			final Point2D newPoint = handle.getPoint(this);
+			m_view.handleLocationBuffer[0] = (float) newPoint.getX();
+			m_view.handleLocationBuffer[1] = (float) newPoint.getY();
+			
 			m_view.m_spacialA.insert((m_inx << 6) | j,
-					(float) (m_view.m_anchorsBuff[0] - (m_view.getAnchorSize() / 2.0d)),
-					(float) (m_view.m_anchorsBuff[1] - (m_view.getAnchorSize() / 2.0d)),
-					(float) (m_view.m_anchorsBuff[0] + (m_view.getAnchorSize() / 2.0d)),
-					(float) (m_view.m_anchorsBuff[1] + (m_view.getAnchorSize() / 2.0d)));
+					(float) (m_view.handleLocationBuffer[0] - (m_view.getAnchorSize() / 2.0d)),
+					(float) (m_view.handleLocationBuffer[1] - (m_view.getAnchorSize() / 2.0d)),
+					(float) (m_view.handleLocationBuffer[0] + (m_view.getAnchorSize() / 2.0d)),
+					(float) (m_view.handleLocationBuffer[1] + (m_view.getAnchorSize() / 2.0d)));
 			if (selectAnchors)
 				m_view.m_selectedAnchors.insert((m_inx << 6) | j);
 		}
@@ -388,7 +396,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		m_view.m_edgeDetails.unselect(m_inx);
 		m_view.m_selectedEdges.delete(m_inx);
 
-		for (int j = 0; j < numHandles(); j++) {
+		final int numHandles = m_view.m_edgeDetails.bend(m_inx).getAllHandles().size();
+		for (int j = 0; j < numHandles; j++) {
 			m_view.m_selectedAnchors.delete((m_inx << 6) | j);
 			m_view.m_spacialA.delete((m_inx << 6) | j);
 		}
@@ -530,24 +539,12 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	}
 	
 	
-	public int numHandles() {
-		synchronized (m_view.m_lock) {
-			// Extract number of bends from bend object.
-			return m_view.m_edgeDetails.bend(m_inx).getAllHandles().size();
-		}
-	}
-
-	public void setHandles(final List<Point2D> bendPoints) {
-		synchronized (m_view.m_lock) {
-			removeAllHandles();
-
-			for (int i = 0; i < bendPoints.size(); i++) {
-				final Point2D nextPt = (Point2D) bendPoints.get(i);
-				addHandleInternal(i, nextPt);
-			}
-			m_view.m_contentChanged = true;
-		}
-	}
+//	public int numHandles() {
+//		synchronized (m_view.m_lock) {
+//			// Extract number of bends from bend object.
+//			return m_view.m_edgeDetails.bend(m_inx).getAllHandles().size();
+//		}
+//	}
 
 
 	final void moveHandleInternal(final int inx, double x, double y) {
@@ -561,15 +558,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					(float) (y - (m_view.getAnchorSize() / 2.0d)),
 					(float) (x + (m_view.getAnchorSize() / 2.0d)),
 					(float) (y + (m_view.getAnchorSize() / 2.0d)));
-	}
-
-	final void getHandleInternal(int inx, float[] buff) {
-		
-		final Bend bend = m_view.m_edgeDetails.bend(m_inx);
-		final Handle handle = bend.getAllHandles().get(inx);
-		final Point2D newPoint = handle.getPoint(this);
-		buff[0] = (float) newPoint.getX();
-		buff[1] = (float) newPoint.getY();
 	}
 
 
@@ -655,14 +643,12 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					if (m_view.m_selectedAnchors.delete((m_inx << 6) | (j - 1)))
 						m_view.m_selectedAnchors.insert((m_inx << 6) | j);
 				}
-
-				final Point2D newPoint = handle.getPoint(this);
 				
 				m_view.m_spacialA.insert((m_inx << 6) | insertInx,
-						(float) (newPoint.getX() - (m_view.getAnchorSize() / 2.0d)),
-						(float) (newPoint.getY() - (m_view.getAnchorSize() / 2.0d)),
-						(float) (newPoint.getX() + (m_view.getAnchorSize() / 2.0d)),
-						(float) (newPoint.getY() + (m_view.getAnchorSize() / 2.0d)));
+						(float) (handleLocation.getX() - (m_view.getAnchorSize() / 2.0d)),
+						(float) (handleLocation.getY() - (m_view.getAnchorSize() / 2.0d)),
+						(float) (handleLocation.getX() + (m_view.getAnchorSize() / 2.0d)),
+						(float) (handleLocation.getY() + (m_view.getAnchorSize() / 2.0d)));
 			}
 
 			m_view.m_contentChanged = true;

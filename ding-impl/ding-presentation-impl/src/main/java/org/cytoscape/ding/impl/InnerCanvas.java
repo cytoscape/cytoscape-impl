@@ -56,8 +56,10 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphViewChangeListener;
+import org.cytoscape.ding.Handle;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.events.GraphViewEdgesSelectedEvent;
@@ -506,7 +508,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.xformComponentToNodeCoords(m_ptBuff);
 			// Store current handle list
 			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", m_undo);
-			final int chosenInx = ((DEdgeView) m_view.getDEdgeView(chosenEdge)).addHandlePoint(new Point2D.Float(
+			final int chosenInx = m_view.getDEdgeView(chosenEdge).addHandlePoint(new Point2D.Float(
 					(float) m_ptBuff[0], (float) m_ptBuff[1]));
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
@@ -1023,7 +1025,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final int edge = edgeAndAnchor >>> 6;
 				final int anchorInx = edgeAndAnchor & 0x0000003f;
 				final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
-				ev.getHandleInternal(anchorInx, m_floatBuff1);
+				//ev.getHandleInternal(anchorInx, m_floatBuff1);
+				
+				final Bend bend = ev.getBend();
+				final Handle handle = bend.getAllHandles().get(anchorInx);
+				final Point2D newPoint = handle.getPoint(ev);
+				m_floatBuff1[0] = (float) newPoint.getX();
+				m_floatBuff1[1] = (float) newPoint.getY();
 
 				if (code == KeyEvent.VK_UP) {
 					ev.moveHandleInternal(anchorInx, m_floatBuff1[0], m_floatBuff1[1] - move);
@@ -1357,9 +1365,16 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						final int edge = edgeAndAnchor >>> 6;
 						final int anchorInx = edgeAndAnchor & 0x0000003f;
 						final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
-						ev.getHandleInternal(anchorInx, m_floatBuff1);
-						ev.moveHandleInternal(anchorInx, m_floatBuff1[0] + deltaX,
-						                      m_floatBuff1[1] + deltaY);
+						
+						//ev.getHandleInternal(anchorInx, m_floatBuff1);
+						
+						final Bend bend = ev.getBend();
+						final Handle handle = bend.getAllHandles().get(anchorInx);
+						final Point2D newPoint = handle.getPoint(ev);
+						m_floatBuff1[0] = (float) newPoint.getX();
+						m_floatBuff1[1] = (float) newPoint.getY();
+						
+						ev.moveHandleInternal(anchorInx, m_floatBuff1[0] + deltaX, m_floatBuff1[1] + deltaY);
 					}
 	
 					if ((selectedNodes.length > 0) || (m_view.m_selectedAnchors.size() > 0))
