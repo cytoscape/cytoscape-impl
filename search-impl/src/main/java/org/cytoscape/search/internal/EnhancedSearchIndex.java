@@ -141,8 +141,10 @@ public class EnhancedSearchIndex {
 				field.setDoubleValue(attrValue);
 				doc.add(field);
 			} else if (valueType == Boolean.class) {
-				String attrValue = network.getRow(graphObject).get(attrName, Boolean.class).toString();
-				doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));
+				if (network.getRow(graphObject).get(attrName, Boolean.class) != null){
+					String attrValue = network.getRow(graphObject).get(attrName, Boolean.class).toString();
+					doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));					
+				}
 			} else if (valueType == List.class) {
 				List attrValueList = network.getRow(graphObject).get(attrName, List.class);
 				if (attrValueList != null) {
