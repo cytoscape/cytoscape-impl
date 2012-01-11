@@ -16,6 +16,7 @@ import java.util.concurrent.TimeoutException;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
@@ -26,6 +27,11 @@ import org.cytoscape.work.util.ListSingleSelection;
  * Dialog for assigning proxy settings.
  */
 public class ProxySettingsTask2 extends AbstractTask implements TunableValidator {
+	@ProvidesTitle
+	public String getTitle() {
+		return "Proxy Settings";
+	}
+	
 	static final String PROXY_HOST = "proxy.server";
 	static final String PROXY_PORT = "proxy.server.port";
 	static final String PROXY_TYPE = "proxy.server.type";

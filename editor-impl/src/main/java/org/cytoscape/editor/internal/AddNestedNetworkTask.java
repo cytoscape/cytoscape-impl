@@ -14,6 +14,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -27,11 +28,16 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(AddNestedNetworkTask.class);
 
-	@Tunable(description="Select a Network")
+	@Tunable(description="Network")
 	public ListSingleSelection<CyNetwork> nestedNetwork;
 
 	private final Transferable t;
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Choose Network for Node";
+	}
+	
 	public AddNestedNetworkTask(View<CyNode> nv, CyNetworkView view, CyNetworkManager mgr,
 	                            Transferable t) {
 		super(nv,view);

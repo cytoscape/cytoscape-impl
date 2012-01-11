@@ -24,10 +24,10 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.MapNetworkAttrTask;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +73,11 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	@Tunable(description = "Map table to:")
 	public final ListSingleSelection<TableType> dataTypeOptions;
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Table";
+	}
+	
 	private static int nextTableNumber = 1;
 
 	public CyAttributesReader(final InputStream inputStream, final CyTableFactory tableFactory,

@@ -567,7 +567,7 @@ public class CyActivator extends AbstractCyActivator {
 		editNetworkTitleTaskFactoryProps.setProperty("preferredMenu","Edit");
 		editNetworkTitleTaskFactoryProps.setProperty("scope","limited");
 		editNetworkTitleTaskFactoryProps.setProperty("menuGravity","5.5");
-		editNetworkTitleTaskFactoryProps.setProperty("title","Network Title...");
+		editNetworkTitleTaskFactoryProps.setProperty("title","Rename Network...");
 		registerService(bc,editNetworkTitleTaskFactory,NetworkTaskFactory.class, editNetworkTitleTaskFactoryProps);
 
 		Properties createNetworkViewTaskFactoryProps = new Properties();

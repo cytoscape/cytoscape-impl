@@ -33,6 +33,7 @@ package org.cytoscape.task.internal.title;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
@@ -41,7 +42,12 @@ import org.cytoscape.work.undo.UndoSupport;
 public class EditNetworkTitleTask extends AbstractNetworkTask {
 	private final UndoSupport undoSupport;
 
-	@Tunable(description = "Edit network title")
+	@ProvidesTitle
+	public String getTitle() {
+		return "Rename Network";
+	}
+	
+	@Tunable(description = "New title")
 	public String title;
 
 	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net) {

@@ -31,6 +31,7 @@ package org.cytoscape.task.internal.table;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractTableColumnTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
@@ -41,6 +42,11 @@ import org.cytoscape.work.undo.UndoSupport;
 public final class RenameColumnTask extends AbstractTableColumnTask implements TunableValidator {
 	private final UndoSupport undoSupport;
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Rename Column";
+	}
+	
 	@Tunable(description="New column name:")
 	public String newColumnName;
 

@@ -33,12 +33,18 @@ package org.cytoscape.task.internal.session;
 import org.cytoscape.session.CySessionManager; 
 
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 
 public class NewSessionTask extends AbstractTask {
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "New Session";
+	}
+	
 	@Tunable(description="<html>Current session (all networks/attributes) will be lost.<br />Do you want to continue?</html>")
 	public boolean destroyCurrentSession = true;
 

@@ -6,11 +6,17 @@ import java.net.URI;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 
 
 abstract class AbstractLoadAttributesTask extends AbstractTask {
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Table";
+	}
+	
 	private final CyTableReaderManager mgr;
 
 	public AbstractLoadAttributesTask(final CyTableReaderManager mgr) {

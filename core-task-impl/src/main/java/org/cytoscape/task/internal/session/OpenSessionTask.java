@@ -41,6 +41,7 @@ import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -51,6 +52,11 @@ import org.cytoscape.work.Tunable;
  */
 public class OpenSessionTask extends AbstractTask {
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Open Session";
+	}
+	
 	@Tunable(description="Session file to load", params="fileCategory=session;input=true")
 	public File file;
 	

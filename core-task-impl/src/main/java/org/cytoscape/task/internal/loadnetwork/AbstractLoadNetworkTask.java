@@ -44,12 +44,18 @@ import org.cytoscape.task.creation.ImportNetworksTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 
 /**
  * Task to load a new network.
  */
 abstract public class AbstractLoadNetworkTask extends AbstractTask {
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Network";
+	}
 	
 	private final String VIEW_THRESHOLD = "viewThreshold";
 	private static final int DEF_VIEW_THRESHOLD = 3000;

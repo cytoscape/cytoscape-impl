@@ -8,11 +8,17 @@ import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 public class LoadVizmapFileTask extends AbstractTask {
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Vizmap";
+	}
+	
 	@Tunable(description = "Vizmap file", params = "fileCategory=vizmap;input=true")
 	public File file;
 

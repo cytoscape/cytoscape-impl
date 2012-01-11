@@ -44,6 +44,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
@@ -52,6 +53,11 @@ import org.cytoscape.work.undo.UndoSupport;
 public class SelectFromFileListTask extends AbstractSelectTask {
 	private final UndoSupport undoSupport;
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Select Nodes using ID File";
+	}
+	
 	@Tunable(description = "Node selection file",params="input=true")
 	public File file;
 

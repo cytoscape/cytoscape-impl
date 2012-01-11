@@ -34,6 +34,7 @@ import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CySessionWriter;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -41,6 +42,11 @@ import java.io.File;
 
 
 public class SaveSessionAsTask extends AbstractTask {
+	@ProvidesTitle
+	public String getTitle() {
+		return "Save Session";
+	}
+	
 	@Tunable(description="Save Session As:", params="fileCategory=session;input=false")
 	public File file;
 

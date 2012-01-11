@@ -5,6 +5,7 @@ import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -19,6 +20,11 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 	@Tunable(description="Type in a nodes/edges expression in SIF format, e.g. A inhibits B")
 	public String sifString;
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "SIF Interpreter";
+	}
+	
 	public SIFInterpreterTask(CyNetworkView v) {
 		super(v);
 		network = view.getModel();

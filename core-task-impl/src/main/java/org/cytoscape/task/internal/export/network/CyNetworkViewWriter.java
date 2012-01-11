@@ -8,6 +8,7 @@ import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 
 
@@ -45,5 +46,10 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 	@Tunable(description="Save Network As:", params="fileCategory=network;input=false")
 	@Override public  File getOutputFile() {	
 		return outputFile;
+	}
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Export Network";
 	}
 }

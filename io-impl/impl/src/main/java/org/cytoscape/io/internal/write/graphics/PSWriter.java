@@ -8,6 +8,7 @@ import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.freehep.graphicsio.ps.PSGraphics2D;
@@ -21,6 +22,11 @@ public class PSWriter extends AbstractTask implements CyWriter {
 	@Tunable(description="Export text as font")
 	public boolean exportTextAsFont = true;
 
+	@ProvidesTitle
+	public String getTitle() {
+		return "Export Network";
+	}
+	
 	private final Double width;
 	private final Double height;
 	private final RenderingEngine<?> engine;
