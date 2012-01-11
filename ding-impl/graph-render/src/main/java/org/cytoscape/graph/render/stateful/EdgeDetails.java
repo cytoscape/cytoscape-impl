@@ -46,7 +46,7 @@ import java.awt.BasicStroke;
  * To understand the significance of each method's return value, it makes
  * sense to become familiar with the API cytoscape.render.immed.GraphGraphics.
  */
-public class EdgeDetails {
+public abstract class EdgeDetails {
 	/**
 	 * Specifies that an anchor point lies at the midpoint of an edge.
 	 */
@@ -64,12 +64,6 @@ public class EdgeDetails {
 	 */
 	public static final byte EDGE_ANCHOR_TARGET = 18;
 
-	/**
-	 * Instantiates edge details with defaults.  Documentation on each method
-	 * describes defaults.  To override defaults, extend this class.
-	 */
-	public EdgeDetails() {
-	}
 
 	/**
 	 * Returns the color of edge in low detail rendering mode.

@@ -18,21 +18,15 @@ public class HandleImpl implements Handle {
 	double ratio;
 	
 	// Original handle location
-	private double x;
-	private double y;	
-
-	/**
-	 * Create a handle at the given (x, y) position.
-	 * 
-	 * @param x x location of handle.
-	 * @param y y location of handle.
-	 */
-	public HandleImpl(final double x, final double y) {
+	private double x = 0;
+	private double y = 0;
+	
+	public HandleImpl(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
 
-	
+
 	@Override
 	public Point2D calculateHandleLocation(final DEdgeView view) {
 		final DGraphView graphView = (DGraphView) view.getGraphView();
@@ -43,14 +37,13 @@ public class HandleImpl implements Handle {
 
 		final Double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
 		final Double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
-
 		final Double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
 		final Double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
 		final Point2D newPoint = new Point2D.Double();
 		if (EditMode.isDirectMode() == false) {
 			
-			// edge vector v = (tX-sX, tY-sY)
+			// Original edge vector v = (vx, vy).  (from source to target)
 			final double vx = tX-sX;
 			final double vy = tY-sY;
 			
@@ -58,24 +51,28 @@ public class HandleImpl implements Handle {
 			double newX = vx*cosTheta - vy*sinTheta;
 			double newY = vx*sinTheta + vy*cosTheta;
 			
-			// Translate
-			newX = (newX+sX)*ratio;
-			newY = (newY+sY)*ratio;
-			newPoint.setLocation(newX, newY);
+			// New rotated vector v' = (newX, newY).
+			// Resize vector
+			newX = newX*ratio;
+			newY = newY*ratio;
 			
-			double distedge = Math.sqrt(Math.pow(tX - sX, 2) + Math.pow(tY - sY, 2));
-			double distnew = Math.sqrt(Math.pow(newX - sX, 2) + Math.pow(newY - sY, 2));
+			// ... And this is the new handle position.
+			final double handleX = newX+sX;
+			final double handleY = newY+sY;
+			newPoint.setLocation(handleX, handleY);
+			
 //			System.out.println("(Sx, Sy) = (" + sX + ", " + sY + ")");
 //			System.out.println("(Tx, Ty) = (" + tX + ", " + tY + ")");
-//			System.out.println("newX = " + newX);
-//			System.out.println("newY = " + newY );
-//			System.out.println("edgeLen = " + distedge);
-//			System.out.println("ratio  = " + ratio);
-//			System.out.println("dist to handle = " + distnew );
+//			System.out.println("(handleX, handleY) = (" + handleX + ", " + handleY + ")");
 //			System.out.println("** theta degree = " + Math.acos(cosTheta)* 180 / Math.PI);
-		} else
-			newPoint.setLocation(x, y);
+		} else {
+			if(x==0 && y==0) {
+				// If default, use center
+				newPoint.setLocation(tX - sX, tY - sY);
+			} else
+				newPoint.setLocation(x, y);
 
+		}
 		return newPoint;
 	}
 
@@ -123,10 +120,10 @@ public class HandleImpl implements Handle {
 		
 		// vp is a component vector parallel to v2.
 		// vp = k*v2
-		double r = dotProduct/dist2Squared;
+		final double r = dotProduct/dist2Squared;
 		
 		// Now, we can get the length of the vp
-		double lengthVp = Math.sqrt(Math.pow(r * (hX-sX), 2) + Math.pow(r * (hY-sY), 2));
+		final double lengthVp = Math.sqrt(Math.pow(r * (hX-sX), 2) + Math.pow(r * (hY-sY), 2));
 		
 		// Now we can get the Cos(theta)
 		cosTheta = lengthVp/dist1;
