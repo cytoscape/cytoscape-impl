@@ -77,7 +77,7 @@ public class EnhancedSearchPanel extends javax.swing.JPanel {
 		lbSearch.setName("lbSearch"); // NOI18N
 		add(lbSearch);
 
-		tfSearchText.setToolTipText("Enter search text");
+		tfSearchText.setToolTipText("<html>Enter search text<br>e.g.<br> YL* -- search from all attributes<br>name:YL*  -- Search by attribute 'name', </html>");
 		tfSearchText.setName("tfSearchText"); // NOI18N
 		tfSearchText.setPreferredSize(new java.awt.Dimension(150, 25));
 		tfSearchText.addActionListener(new java.awt.event.ActionListener() {
