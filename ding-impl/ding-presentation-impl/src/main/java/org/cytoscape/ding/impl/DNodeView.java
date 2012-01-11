@@ -577,10 +577,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public void setXPosition(double xPos) {
-		System.out.println("X position set: " + xPos);
-		
-		
-		
 		synchronized (graphView.m_lock) {
 			final double wDiv2;
 			final boolean nodeVisible = graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0);
