@@ -52,6 +52,9 @@ import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.events.RemovedEdgesListener;
 import org.cytoscape.model.events.RemovedEdgesEvent;
+import org.cytoscape.model.events.RowSetRecord;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 public class EnhancedSearchPlugin extends AbstractToolBarComponent
@@ -111,7 +114,17 @@ public class EnhancedSearchPlugin extends AbstractToolBarComponent
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		this.attributeChanged = true;
+		
+		Collection<RowSetRecord> records = e.getPayloadCollection();
+
+		Iterator<RowSetRecord> it= records.iterator();
+		while (it.hasNext()){
+			// Ignore the change of selection attribute 
+			if (!it.next().getColumn().equalsIgnoreCase("selected")){
+				this.attributeChanged = true;
+				break;
+			}			
+		}		
 	}
 	
 	@Override	
