@@ -97,8 +97,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty("enableFor","networkAndView");
-		sifInterpreterTaskFactoryProps.setProperty("preferredAction","OPEN");
-		sifInterpreterTaskFactoryProps.setProperty("preferredMenu","Apps");
+		// Setting preferredAction to OPEN registers this service for double clicks on
+		// the network canvas, something we don't want right now for this task!
+		//sifInterpreterTaskFactoryProps.setProperty("preferredAction","OPEN");
+		sifInterpreterTaskFactoryProps.setProperty("preferredMenu","Tools");
 		sifInterpreterTaskFactoryProps.setProperty("menuGravity","5.0f");
 		sifInterpreterTaskFactoryProps.setProperty("title","SIF Interpreter");
 		registerService(bc,sifInterpreterTaskFactory,NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
