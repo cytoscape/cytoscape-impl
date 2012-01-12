@@ -88,7 +88,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 		if(id.equals(DEFAULT_FACTORY_ID))
 			defaultLexicon = factory.getVisualLexicon();
 		
-		logger.warn("@@@@@@@ New engine registered: " + factory.getClass());
+		logger.debug("New engine registered: " + factory.getClass());
 	}
 
 	public void removeRenderingEngineFactory(
