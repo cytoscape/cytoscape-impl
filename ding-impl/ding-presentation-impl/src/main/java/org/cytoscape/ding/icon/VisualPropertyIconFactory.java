@@ -6,6 +6,7 @@ import java.awt.Shape;
 
 import javax.swing.Icon;
 
+import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
@@ -60,6 +61,8 @@ public class VisualPropertyIconFactory {
 				icon = new TextIcon(value, w, h, ""); // No arrow
 			else
 				icon = new ArrowIcon(dShape.getShape(), w, h, dShape.getDisplayName());
+		} else if(value instanceof Bend) {
+			icon = new EdgeBendIcon((Bend) value, w, h, value.toString());
 		} else {
 			// If not found, use return value of toString() as icon.
 			icon = new TextIcon(value, w, h, value.toString());

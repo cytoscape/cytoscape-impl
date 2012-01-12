@@ -34,9 +34,7 @@
 */
 package org.cytoscape.ding.icon;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -48,23 +46,15 @@ import java.awt.geom.Line2D;
  *
  */
 public class StrokeIcon extends VisualPropertyIcon<Stroke> {
+	
 	private final static long serialVersionUID = 1202339875918391L;
-
-	private Graphics2D g2d;
-
-	// If not null, this message will be shown over the icon.
-	private String superimposedText = null;
-	private Font textFont = null;
-	private Color textColor = null;
-
+	
 	/**
-	 * Creates a new LineTypeIcon object.
-	 *
-	 * @param stroke DOCUMENT ME!
-	 * @param width DOCUMENT ME!
-	 * @param height DOCUMENT ME!
-	 * @param name DOCUMENT ME!
-	 * @param color DOCUMENT ME!
+	 * 
+	 * @param stroke
+	 * @param width
+	 * @param height
+	 * @param name
 	 */
 	public StrokeIcon(final Stroke stroke, int width, int height, String name) {
 		super(stroke, width, height, name);
@@ -72,63 +62,13 @@ public class StrokeIcon extends VisualPropertyIcon<Stroke> {
 
 	
 	@Override public void paintIcon(Component c, Graphics g, int x, int y) {
-		g2d = (Graphics2D) g;
+		final Graphics2D g2d = (Graphics2D) g;
 		g2d.setColor(color);
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		//g2d.translate(leftPad, bottomPad);
 		g2d.setStroke(value);
 		final int yPosition = (height + 20) / 2;
 		g2d.draw(new Line2D.Double(leftPad, yPosition, width*1.5, yPosition));
-
-//		/*
-//		 * Superimpose text if text object is not empty.
-//		 */
-//		if (superimposedText != null) {
-//
-//			if (textColor == null) {
-//				g2d.setColor(Color.DARK_GRAY);
-//			} else
-//				g2d.setColor(textColor);
-//
-//			if (textFont == null) {
-//				g2d.setFont(new Font("SansSerif", Font.BOLD, 24));
-//			} else {
-//				g2d.setFont(textFont);
-//			}
-//
-//			g2d.drawString(superimposedText, 20, (height + 40) / 2);
-//		}
-//
-//		//g2d.translate(-leftPad, -bottomPad);
-//		g2d.setFont(new Font("SansSerif", Font.BOLD, 14));
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param text DOCUMENT ME!
-	 */
-	public void setText(final String text) {
-		this.superimposedText = text;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param font DOCUMENT ME!
-	 */
-	public void setTextFont(final Font font) {
-		this.textFont = font;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param color DOCUMENT ME!
-	 */
-	public void setTextColor(final Color color) {
-		this.textColor = color;
 	}
 }
