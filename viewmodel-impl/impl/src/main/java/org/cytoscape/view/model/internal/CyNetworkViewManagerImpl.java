@@ -98,10 +98,10 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		if (view == null)
 			throw new NullPointerException("view is null");
 
-		final Long viewID = view.getModel().getSUID();
+		final CyNetwork network = view.getModel();
 
 		// do this outside of the lock to fail early
-		if (!networkViewMap.containsKey(viewID))
+		if (!networkViewMap.containsKey(network))
 			throw new IllegalArgumentException("network view is not recognized by this NetworkManager");
 
 		// let everyone know!
@@ -109,15 +109,15 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 
 		synchronized (this) {
 			// do this again within the lock to be safe
-			if (!networkViewMap.containsKey(viewID))
+			if (!networkViewMap.containsKey(network))
 				throw new IllegalArgumentException("network view is not recognized by this NetworkManager");
 
-			networkViewMap.remove(viewID);
+			networkViewMap.remove(network);
 		}
 
 		cyEventHelper.fireEvent(new NetworkViewDestroyedEvent(this));
+		logger.debug("######### Network View deleted: " + view.getSUID());
 		view = null;
-		logger.debug("######### Network View deleted: " + viewID);
 	}
 
 	@Override
