@@ -47,42 +47,22 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Icon for arrow shape.
- *
- * @version 0.5
- * @since Cytoscape 2.5
- * @author kono
  */
 public class ArrowIcon extends VisualPropertyIcon<Shape> {
 	private final static long serialVersionUID = 1202339877462891L;
-	private static final Stroke EDGE_STROKE = new BasicStroke(6.0f, BasicStroke.CAP_SQUARE,
-	                                                          BasicStroke.JOIN_MITER);
+	
+	private static final Stroke EDGE_STROKE = new BasicStroke(6.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
 	private static final Stroke EDGE_STROKE_SMALL = new BasicStroke(4.0f, BasicStroke.CAP_SQUARE,
-	                                                                BasicStroke.JOIN_MITER);
+			BasicStroke.JOIN_MITER);
 	protected Graphics2D g2d;
 	private static final int DEF_L_PAD = 15;
 
 
-	/**
-	 * Creates a new ArrowIcon object.
-	 *
-	 * @param shape DOCUMENT ME!
-	 * @param width DOCUMENT ME!
-	 * @param height DOCUMENT ME!
-	 * @param name DOCUMENT ME!
-	 * @param color DOCUMENT ME!
-	 */
-	public ArrowIcon(Shape shape, int width, int height, String name) {
+	public ArrowIcon(final Shape shape, int width, int height, String name) {
 		super(shape, width, height, name);
 	}
 
-	/**
-	 * Draw icon using Java2D.
-	 *
-	 * @param c DOCUMENT ME!
-	 * @param g DOCUMENT ME!
-	 * @param x DOCUMENT ME!
-	 * @param y DOCUMENT ME!
-	 */
+	
 	public void paintIcon(Component c, Graphics g, int x, int y) {
 		g2d = (Graphics2D) g;
 
@@ -99,8 +79,7 @@ public class ArrowIcon extends VisualPropertyIcon<Shape> {
 			if ((width < 20) || (height < 20)) {
 				g2d.translate(-leftPad, -bottomPad);
 				g2d.setStroke(EDGE_STROKE_SMALL);
-				g2d.drawLine(3, c.getHeight()/2,
-			             width/2 +10, c.getHeight()/2);
+				g2d.drawLine(3, c.getHeight() / 2, width / 2 + 10, c.getHeight() / 2);
 				return;
 			} else {
 //				g2d.setStroke(EDGE_STROKE);
@@ -135,7 +114,7 @@ public class ArrowIcon extends VisualPropertyIcon<Shape> {
 		}
 
 		final double shapeWidth = newShape.getBounds2D().getWidth();
-		final double shapeHeight = newShape.getBounds2D().getHeight();
+		final double shapeHeight = newShape.getBounds2D().getHeight()*2;
 
 		final double originalXYRatio = shapeWidth / shapeHeight;
 

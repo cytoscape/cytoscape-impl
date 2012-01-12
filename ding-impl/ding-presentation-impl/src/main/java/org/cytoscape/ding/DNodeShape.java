@@ -67,8 +67,7 @@ public class DNodeShape implements NodeShape {
 	private final String displayName;
 	private final String serializableString;
 
-	private static final Map<Byte, Shape> nodeShapes = GraphGraphics
-			.getNodeShapes();
+	private static final Map<Byte, Shape> nodeShapes = GraphGraphics.getNodeShapes();
 
 	public DNodeShape(final Byte rendererShapeID, final String displayName,
 			final String serializableString) {

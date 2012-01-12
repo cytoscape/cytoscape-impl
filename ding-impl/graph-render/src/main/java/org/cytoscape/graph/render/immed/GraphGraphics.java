@@ -893,18 +893,18 @@ public final class GraphGraphics {
 		return shapeMap;
 	}
 
-//	/**
-//	 * Get list of arrow heads.
-//	 * 
-//	 * @return A map of arrow shape bytes to Shape objects.
-//	 */
-//	public static Map<Byte, Shape> getArrowShapes() {
-//		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
-//		for ( Arrow a : arrows.values() )
-//			shapeMap.put( a.get.getType(), a.getArrowShape() );
-// 
-//		return shapeMap;
-//	}
+	/**
+	 * Get list of arrow heads.
+	 * 
+	 * @return A map of arrow shape bytes to Shape objects.
+	 */
+	public static Map<Byte, Shape> getArrowShapes() {
+		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
+		for (final Byte key : arrows.keySet()) {
+			shapeMap.put(key, arrows.get(key).getArrowShape() );
+		}
+		return shapeMap;
+	}
 
 	/**
 	 * This is the method that will render an edge very quickly. Translucent

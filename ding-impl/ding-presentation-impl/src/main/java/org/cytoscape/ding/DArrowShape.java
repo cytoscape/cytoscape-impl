@@ -35,10 +35,12 @@
 package org.cytoscape.ding;
 
 
+import java.awt.Shape;
 import java.util.Hashtable;
 import java.util.Map;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 
 
 /**
@@ -48,22 +50,23 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
  *
  */
 public enum DArrowShape {
-	NONE("No Arrow", GraphGraphics.ARROW_NONE),
-	DIAMOND("Diamond", GraphGraphics.ARROW_DIAMOND),
-	DELTA("Delta", GraphGraphics.ARROW_DELTA),
-	ARROW("Arrow", GraphGraphics.ARROW_ARROWHEAD),
-	T("T", GraphGraphics.ARROW_TEE),
-	CIRCLE("Circle", GraphGraphics.ARROW_DISC),
-	HALF_TOP("Half Top", GraphGraphics.ARROW_HALF_TOP),
-	HALF_BOTTOM("Half Top", GraphGraphics.ARROW_HALF_BOTTOM);
+	NONE("None", "NONE", GraphGraphics.ARROW_NONE),
+	DIAMOND("Diamond", "DIAMOND", GraphGraphics.ARROW_DIAMOND),
+	DELTA("Delta", "DELTA", GraphGraphics.ARROW_DELTA),
+	ARROW("Arrow", "ARROW", GraphGraphics.ARROW_ARROWHEAD),
+	T("T", "T", GraphGraphics.ARROW_TEE),
+	CIRCLE("Circle", "CIRCLE", GraphGraphics.ARROW_DISC),
+	HALF_TOP("Half Top", "HALF_TOP", GraphGraphics.ARROW_HALF_TOP),
+	HALF_BOTTOM("Half Top", "HALF_BOTTOM", GraphGraphics.ARROW_HALF_BOTTOM);
 	
 
 	private final String displayName;
+	private final String serializableString;
 	private final byte rendererTypeID;
 	
+	private static final Map<Byte, Shape> ARROW_SHAPES;
 	/** old_key -> ArrowShape */
 	private static final Map<String, DArrowShape> legacyShapes = new Hashtable<String, DArrowShape>();
-
 	static {
 		// We have to support Cytoscape 2.8 XGMML shapes!
 		legacyShapes.put("0", NONE);
@@ -74,11 +77,14 @@ public enum DArrowShape {
 		legacyShapes.put("15", T);
 		legacyShapes.put("16", HALF_TOP);
 		legacyShapes.put("17", HALF_BOTTOM);
+		ARROW_SHAPES = GraphGraphics.getArrowShapes();
 	}
 	
-	private DArrowShape(final String displayName, final byte rendererTypeID) {
+	
+	private DArrowShape(final String displayName, final String serializableString, final byte rendererTypeID) {
 		this.displayName = displayName;
 		this.rendererTypeID = rendererTypeID;
+		this.serializableString = serializableString;
 	}
 
 	/**
@@ -98,6 +104,10 @@ public enum DArrowShape {
 	 */
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	public Shape getShape() {
+		return ARROW_SHAPES.get((Byte) rendererTypeID);
 	}
 
 	/**
@@ -137,10 +147,11 @@ public enum DArrowShape {
 	}
 
 	
-	public static DArrowShape getArrowShape(final int rendererTypeID) {
+	public static DArrowShape getArrowShape(final ArrowShape arrowShape) {
+		final String serializedString = arrowShape.getSerializableString();
 		// first try for an exact match
 		for (DArrowShape shape : values()) {
-			if (shape.getRendererTypeID() == rendererTypeID)
+			if (shape.serializableString.equals(serializedString))
 				return shape;
 		}
 

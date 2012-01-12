@@ -41,7 +41,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 
 /**
@@ -53,19 +52,10 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 	private final static long serialVersionUID = 1202339876280466L;
 
 	private Shape newShape;
-	
 	private Graphics2D g2d;
 
 
-	/**
-	 * Creates a new NodeShapeIcon object.
-	 *
-	 * @param shape DOCUMENT ME!
-	 * @param width DOCUMENT ME!
-	 * @param height DOCUMENT ME!
-	 * @param name DOCUMENT ME!
-	 * @param color DOCUMENT ME!
-	 */
+	
 	public NodeIcon(Shape shape, int width, int height, String name) {
 		super(shape, width, height, name);
 

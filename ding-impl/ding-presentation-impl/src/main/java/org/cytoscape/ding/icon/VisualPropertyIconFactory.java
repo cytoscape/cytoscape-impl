@@ -2,15 +2,19 @@ package org.cytoscape.ding.icon;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Shape;
 
 import javax.swing.Icon;
 
+import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -42,10 +46,22 @@ public class VisualPropertyIconFactory {
 			icon = new CustomGraphicsIcon(((CyCustomGraphics) value), w, h, ((CyCustomGraphics) value).getDisplayName());
 		} else if(value instanceof ObjectPosition) {
 			icon = new ObjectPositionIcon((ObjectPosition) value, w, h, "Label");
-		}  else if(value instanceof Font) {
+		} else if(value instanceof Font) {
 			icon = new FontFaceIcon((Font) value, w, h, "");
+		} else if(value instanceof ArrowShape) {
+			final ArrowShape arrowShape = (ArrowShape) value;
+			final DArrowShape dShape;
+			if(ArrowShapeVisualProperty.isDefaultShape(arrowShape))
+				dShape = DArrowShape.getArrowShape(arrowShape);
+			else
+				dShape = DArrowShape.NONE;
+			
+			if(dShape.getShape() == null)
+				icon = new TextIcon(value, w, h, ""); // No arrow
+			else
+				icon = new ArrowIcon(dShape.getShape(), w, h, dShape.getDisplayName());
 		} else {
-			// If not found, use text as icon.
+			// If not found, use return value of toString() as icon.
 			icon = new TextIcon(value, w, h, value.toString());
 		}
 		
