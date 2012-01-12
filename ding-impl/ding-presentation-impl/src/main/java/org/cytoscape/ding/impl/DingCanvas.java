@@ -52,6 +52,9 @@ import javax.swing.JComponent;
  * and org.cytoscape.ding.impl.ArbitraryGraphicsCanvas.
  */
 public abstract class DingCanvas extends JComponent {
+	
+	private static final long serialVersionUID = -789701521899087090L;
+
 	/**
 	 * ref to image we maintain
 	 */

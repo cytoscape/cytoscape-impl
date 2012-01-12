@@ -83,12 +83,10 @@ import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.work.undo.UndoSupport;
 
 /**
- *
+ * Canvas to be used for drawing actual network visualization
  */
-public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener,
-                                                       DropTargetListener,
-                                                       KeyListener,
-                                                       MouseWheelListener {
+public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener, DropTargetListener,
+		KeyListener, MouseWheelListener {
 
 	private final static long serialVersionUID = 1202416511420671L;
 
@@ -118,18 +116,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private boolean isPrinting = false;
 	private PopupMenuHelper popup;
 
-	//final boolean[] m_printingTextAsShape = new boolean[1];
 	FontMetrics m_fontMetrics = null;
 	
 	private boolean NodeMovement = true;
-
-	/**
-	 * String used to compare against os.name System property -
-	 * to determine if we are running on Windows platform.
-	 */
-	static final String MAC_OS_ID = "mac";
-
-	private DropTarget dropTarget;
 
 	//  for turning selection rectangle on and off
 	private boolean selecting = true;
@@ -166,7 +155,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		addMouseWheelListener(this);
 		addKeyListener(this);
 		setFocusable(true);
-		dropTarget = new DropTarget(this, DnDConstants.ACTION_COPY, this); 
+		new DropTarget(this, DnDConstants.ACTION_COPY, this); 
 		popup = new PopupMenuHelper(m_view, this);
 
 		mousePressedDelegator = new MousePressedDelegator();
@@ -177,14 +166,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		addEdgeMode = new AddEdgeStateMonitor(this,m_view);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param x DOCUMENT ME!
-	 * @param y DOCUMENT ME!
-	 * @param width DOCUMENT ME!
-	 * @param height DOCUMENT ME!
-	 */
+	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
 
@@ -200,8 +182,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 
-	
-	
+
+	@Override
 	public void update(Graphics g) {
 		if (m_grafx == null)
 			return;
@@ -255,20 +237,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param g DOCUMENT ME!
-	 */
+
+	@Override
 	public void paint(Graphics g) {
 		update(g);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param g Usually Graphics2D object for drawing network view as image.
-	 */
+
+	@Override
 	public void print(Graphics g) {
 		isPrinting = true;
 		renderGraph(new GraphGraphics(
@@ -277,11 +253,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		isPrinting = false;
 	}
 
-	/**
-	 * Print routine which corrects bug 1471/1495
-	 *
-	 * @param g DOCUMENT ME!
-	 */
+
+	@Override
 	public void printNoImposter(Graphics g) {
 		isPrinting = true;
 		final Image img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -297,46 +270,43 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return isPrinting; 
 	}
 
-    /**
-     * This method exposes the JComponent processMouseEvent so that
-     * canvases on top of us can pass events they don't want down.
-     *
-     * @param e the MouseEvent to process
-     */
-    public void processMouseEvent(MouseEvent e) {
-        super.processMouseEvent(e);
-    }
-
 	/**
+	 * This method exposes the JComponent processMouseEvent so that canvases on
+	 * top of us can pass events they don't want down.
 	 * 
+	 * @param e
+	 *            the MouseEvent to process
 	 */
+	@Override
+	public void processMouseEvent(MouseEvent e) {
+		super.processMouseEvent(e);
+	}
+
+
+	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		adjustZoom(e.getWheelRotation());
 	}
-
-	//
-	// MouseMotionListener
-	//
-
+	
+	
 	public void mouseDragged(MouseEvent e) {
 		mouseDraggedDelegator.delegateMouseDragEvent(e);
 	}
 
+	@Override
 	public void mouseMoved(MouseEvent e) {
-		if ( addEdgeMode.addingEdge() )
+		
+		if (addEdgeMode.addingEdge())
 			addEdgeMode.drawRubberBand(e);
-		else
-			setToolTipText( getToolTipText( e.getPoint() ) );
+		else {
+			final String tooltipText = getToolTipText(e.getPoint());
+			setToolTipText(tooltipText);
+		}
 	}
 
-	//
-	// MouseListener
-	//
 
 	public void mouseClicked(MouseEvent e) { }
-
 	public void mouseEntered(MouseEvent e) { }
-
 	public void mouseExited(MouseEvent e) { }
 
 	public void mouseReleased(MouseEvent e) {
@@ -351,8 +321,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		requestFocusInWindow();
 	}
 
-
-	// KeyListener
 
 	/**
 	 * Handles key press events. Currently used with the up/down, left/right arrow
@@ -662,12 +630,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	 * Returns the tool tip text for the specified location if any exists first
 	 * checking nodes, then edges, and then returns null if it's empty space.
 	 */
-	private String getToolTipText(Point p) {
+	private String getToolTipText(final Point p) {
 		// display tips for nodes before edges
-		NodeView nv = m_view.getPickedNodeView(p);
-		if (nv != null) 
-			return ((DNodeView) nv).getToolTip();
-
+		final DNodeView nv = (DNodeView) m_view.getPickedNodeView(p);
+		if (nv != null)  {
+			final String tooltip = nv.getToolTip();
+			return tooltip;
+		}
 		// only display edge tool tips if the LOD is sufficient
 		if ((m_lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) != 0) {
 				EdgeView ev = m_view.getPickedEdgeView(p);
@@ -1448,5 +1417,4 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public double getScaleFactor(){
 		return m_scaleFactor;
 	}
-
 }
