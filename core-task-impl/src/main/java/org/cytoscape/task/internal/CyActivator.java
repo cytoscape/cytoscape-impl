@@ -583,7 +583,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkImageTaskFactoryProps.setProperty("preferredMenu","File.Export.Network View");
 		exportNetworkImageTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/img_file_export.png").toString());
 		exportNetworkImageTaskFactoryProps.setProperty("enableFor","networkAndView");
-		exportNetworkImageTaskFactoryProps.setProperty("title","Graphics");
+		exportNetworkImageTaskFactoryProps.setProperty("title","Graphics...");
 		exportNetworkImageTaskFactoryProps.setProperty("toolBarGravity","3.7");
 		exportNetworkImageTaskFactoryProps.setProperty("inToolBar","true");
 		exportNetworkImageTaskFactoryProps.setProperty("tooltip","Export Network Image to File");
@@ -594,7 +594,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkViewTaskFactoryProps.setProperty("preferredMenu","File.Export.Network View");
 		exportNetworkViewTaskFactoryProps.setProperty("menuGravity","5.1");
 		exportNetworkViewTaskFactoryProps.setProperty("toolBarGravity","3.5");
-		exportNetworkViewTaskFactoryProps.setProperty("title","File");
+		exportNetworkViewTaskFactoryProps.setProperty("title","File...");
 		exportNetworkViewTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_file_export.png").toString());
 		exportNetworkViewTaskFactoryProps.setProperty("inToolBar","true");
 		exportNetworkViewTaskFactoryProps.setProperty("tooltip","Export Network to File");
