@@ -465,7 +465,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			if (parentNetwork != null)
 				this.treeNodeMap.put(parentNetwork.getSUID(), parentTreeNode);
 
-			if(networkViewManager.viewExists(network_id))
+			if(networkViewManager.viewExists(network))
 				dmtn.setNodeColor(Color.black);
 			
 			this.treeNodeMap.put(network.getSUID(), dmtn);

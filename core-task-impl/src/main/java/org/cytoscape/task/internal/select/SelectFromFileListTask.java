@@ -74,7 +74,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		if (file == null)
 			throw new NullPointerException("You must specify a non-null file to load!");
 
-		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
+		final CyNetworkView view = networkViewManager.getNetworkView(network);
 		final SelectionEdit edit =
 			new SelectionEdit(eventHelper, "Select Nodes From File", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY);

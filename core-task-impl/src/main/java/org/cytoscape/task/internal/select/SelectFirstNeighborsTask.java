@@ -62,7 +62,7 @@ public class SelectFirstNeighborsTask extends AbstractSelectTask {
 	@Override
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
-		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
+		final CyNetworkView view = networkViewManager.getNetworkView(network);
 		undoSupport.postEdit(
 			new SelectionEdit(eventHelper, "Select First-Neighbour Nodes", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));

@@ -53,7 +53,7 @@ public abstract class AbstractSelectTask extends AbstractNetworkTask {
 		// This is necessary, otherwise, this does not update presentation!
 		eventHelper.flushPayloadEvents();
 		
-		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
+		final CyNetworkView view = networkViewManager.getNetworkView(network);
 		if (view != null)
 			view.updateView();
 	}

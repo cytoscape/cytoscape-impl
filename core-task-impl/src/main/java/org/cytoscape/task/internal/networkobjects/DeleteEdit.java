@@ -66,7 +66,7 @@ final class DeleteEdit extends AbstractCyEdit {
 		// save the positions of the nodes
 		xPos = new double[nodes.size()]; 
 		yPos = new double[nodes.size()]; 
-		CyNetworkView netView = netViewMgr.getNetworkView(net.getSUID());
+		CyNetworkView netView = netViewMgr.getNetworkView(net);
 		if (netView != null) {
 			int i = 0;
 			for (CyNode n : nodes) {
@@ -84,7 +84,7 @@ final class DeleteEdit extends AbstractCyEdit {
 		net.removeNodes(nodes);
 		net.removeEdges(edges);
 
-		CyNetworkView netView = netViewMgr.getNetworkView(net.getSUID());
+		CyNetworkView netView = netViewMgr.getNetworkView(net);
 		
 		// Manually call update presentation
 		netView.updateView();
@@ -100,7 +100,7 @@ final class DeleteEdit extends AbstractCyEdit {
 
 		eventHelper.flushPayloadEvents();
 
-		CyNetworkView netView = netViewMgr.getNetworkView(net.getSUID());
+		CyNetworkView netView = netViewMgr.getNetworkView(net);
 		if (netView != null) {
 			int i = 0;
 			for (final CyNode node : nodes) {

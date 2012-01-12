@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAboutToBeDestroyedListener {
 	private static final Logger logger = LoggerFactory.getLogger(CyNetworkViewManagerImpl.class);
 
-	private final Map<Long, CyNetworkView> networkViewMap;
+	private final Map<CyNetwork, CyNetworkView> networkViewMap;
 	private final CyEventHelper cyEventHelper;
 
 	/**
@@ -62,7 +62,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	 * @param cyEventHelper
 	 */
 	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper) {
-		networkViewMap = new HashMap<Long, CyNetworkView>();
+		networkViewMap = new HashMap<CyNetwork, CyNetworkView>();
 		this.cyEventHelper = cyEventHelper;
 	}
 
@@ -73,9 +73,9 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 
 	@Override
 	public synchronized void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
-		final long networkId = event.getNetwork().getSUID();
-		if (viewExists(networkId))
-			destroyNetworkView(networkViewMap.get(networkId));
+		final CyNetwork network = event.getNetwork();
+		if (viewExists(network))
+			destroyNetworkView(networkViewMap.get(network));
 	}
 
 	@Override
@@ -84,13 +84,13 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	}
 
 	@Override
-	public synchronized CyNetworkView getNetworkView(long networkId) {
-		return networkViewMap.get(networkId);
+	public synchronized CyNetworkView getNetworkView(CyNetwork network) {
+		return networkViewMap.get(network);
 	}
 
 	@Override
-	public synchronized boolean viewExists(long networkId) {
-		return networkViewMap.containsKey(networkId);
+	public synchronized boolean viewExists(CyNetwork network) {
+		return networkViewMap.containsKey(network);
 	}
 
 	@Override
@@ -126,11 +126,11 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 			throw new NullPointerException("CyNetworkView is null");
 
 		final CyNetwork network = view.getModel();
-		long networkId = network.getSUID();
+
 
 		synchronized (this) {
-			logger.debug("Adding new Network View Model: Model ID = " + networkId);
-			networkViewMap.put(networkId, view);
+			logger.debug("Adding new Network View Model: Model ID = " + network.getSUID());
+			networkViewMap.put(network, view);
 		}
 
 		logger.debug("Firing event: NetworkViewAddedEvent");

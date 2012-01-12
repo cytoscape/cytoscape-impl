@@ -159,7 +159,7 @@ public class CysessionFactory {
 				String name = cyNet.getRow(cyNet).get(CyNetwork.NAME, String.class);
 				String styleName = DEF_STYLE_NAME;
 				
-				CyNetworkView cyNetView = nvMgr.getNetworkView(cyNet.getSUID());
+				CyNetworkView cyNetView = nvMgr.getNetworkView(cyNet);
 				
 				if (cyNetView != null) {
 					org.cytoscape.view.vizmap.VisualStyle style = vmMgr.getVisualStyle(cyNetView);
@@ -170,7 +170,7 @@ public class CysessionFactory {
 				net.setId(name);
 				net.setFilename(name + ".xgmml");
 				net.setVisualStyle(styleName);
-				net.setViewAvailable(nvMgr.getNetworkView(cyNet.getSUID()) != null);
+				net.setViewAvailable(nvMgr.getNetworkView(cyNet) != null);
 				net.setVisualStyle(styleName);
 
 				if (cyNet instanceof CySubNetwork) {

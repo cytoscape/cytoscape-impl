@@ -185,7 +185,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 			logger.info("Set current network called.  Current network ID = " + networkId);
 			currentNetwork = network; 
-			currentNetworkView = networkViewManager.getNetworkView(networkId);
+			currentNetworkView = networkViewManager.getNetworkView(network);
 
 			// reset selected networks
 			selectedNetworks.clear();

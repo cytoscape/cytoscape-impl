@@ -118,7 +118,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	 * If view(s) exists for the current network, update them.
 	 */
 	private void updateView() {
-		final CyNetworkView targetView = viewManager.getNetworkView(network.getSUID());
+		final CyNetworkView targetView = viewManager.getNetworkView(network);
 		if(targetView != null)
 			targetView.updateView();
 		

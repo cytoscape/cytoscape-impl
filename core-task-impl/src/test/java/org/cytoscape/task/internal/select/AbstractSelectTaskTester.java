@@ -27,7 +27,7 @@
  */
 package org.cytoscape.task.internal.select;
 
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +70,7 @@ public class AbstractSelectTaskTester {
 	when(view.getModel()).thenReturn(net);
 
 	networkViewManager = mock(CyNetworkViewManager.class);
-	when(networkViewManager.getNetworkView(anyLong())).thenReturn(view);
+	when(networkViewManager.getNetworkView(any(CyNetwork.class))).thenReturn(view);
 
 	tm = mock(TaskMonitor.class);
 

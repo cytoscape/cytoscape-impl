@@ -59,7 +59,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		if ( network == null )
 			return;
 
-		CyNetworkView networkView = vm.getNetworkView(network.getSUID());
+		CyNetworkView networkView = vm.getNetworkView(network);
 		if ( networkView == null )
 			return;
 

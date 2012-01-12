@@ -222,7 +222,7 @@ public class NetworkUtil extends Thread {
     private void postProcess(final CyNetwork cyNetwork, boolean doLayout) {
 
         // ref to view used below
-        CyNetworkView view = factory.getCyNetworkViewManager().getNetworkView(cyNetwork.getSUID());
+        CyNetworkView view = factory.getCyNetworkViewManager().getNetworkView(cyNetwork);
 
         // if do layout, do it
 // TODO: Port this?    

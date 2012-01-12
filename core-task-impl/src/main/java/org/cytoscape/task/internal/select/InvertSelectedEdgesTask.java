@@ -52,7 +52,7 @@ public class InvertSelectedEdgesTask extends AbstractSelectTask {
 
 	public void run(final TaskMonitor tm) {
 		tm.setProgress(0.0);
-		final CyNetworkView view = networkViewManager.getNetworkView(network.getSUID());
+		final CyNetworkView view = networkViewManager.getNetworkView(network);
 		undoSupport.postEdit(
 			new SelectionEdit(eventHelper, "Invert Selected Edges", network, view,
 			                  SelectionEdit.SelectionFilter.EDGES_ONLY));

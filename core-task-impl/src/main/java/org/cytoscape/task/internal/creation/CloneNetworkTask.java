@@ -87,7 +87,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		// Create copied network model
 		final CyNetwork newNet = cloneNetwork(parentNetwork);
 		tm.setProgress(0.4);
-		final CyNetworkView origView = networkViewManager.getNetworkView(parentNetwork.getSUID());
+		final CyNetworkView origView = networkViewManager.getNetworkView(parentNetwork);
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
 

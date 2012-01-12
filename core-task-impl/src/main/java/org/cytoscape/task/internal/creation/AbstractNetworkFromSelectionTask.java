@@ -96,7 +96,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			throw new NullPointerException("Source network is null.");
 		tm.setProgress(0.0);
 
-		final CyNetworkView curView = networkViewManager.getNetworkView(parentNetwork.getSUID());
+		final CyNetworkView curView = networkViewManager.getNetworkView(parentNetwork);
 		tm.setProgress(0.1);
 
 		// Get the selected nodes, but only create network if nodes are actually
@@ -129,7 +129,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		if (curView == null) {
 		
 			// inserted first, happens second
-			final Task setCurrentNetworkView = new SetCurrentNetworkViewTask(newNet.getSUID()); 
+			final Task setCurrentNetworkView = new SetCurrentNetworkViewTask(newNet); 
 			insertTasksAfterCurrentTask(setCurrentNetworkView);
 
 			
@@ -176,13 +176,13 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	}
 
 	private class SetCurrentNetworkViewTask extends AbstractTask {
-		long netId;
-		SetCurrentNetworkViewTask(long netId) {
-			this.netId = netId;
+		CyNetwork net;
+		SetCurrentNetworkViewTask(CyNetwork net) {
+			this.net = net;
 		}
 		public void run(TaskMonitor tm) {
 			tm.setProgress(0.0);
-			CyNetworkView view = networkViewManager.getNetworkView(netId);			
+			CyNetworkView view = networkViewManager.getNetworkView(net);			
 			tm.setProgress(0.5);
 			if ( view != null )
 				appManager.setCurrentNetworkView( view );
