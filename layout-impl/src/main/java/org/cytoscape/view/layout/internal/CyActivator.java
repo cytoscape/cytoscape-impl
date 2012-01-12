@@ -38,7 +38,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,cyLayouts,CyLayoutAlgorithmManager.class, new Properties());
 
 		Properties gridNodeLayoutProps = new Properties();
-		gridNodeLayoutProps.setProperty("preferredMenu","Cytoscape Layouts");
+		gridNodeLayoutProps.setProperty("preferredMenu","Layout.Cytoscape Layouts");
+		gridNodeLayoutProps.setProperty("preferredTaskManager","menu");
+		gridNodeLayoutProps.setProperty("title",gridNodeLayout.toString());
 		registerService(bc,gridNodeLayout,CyLayoutAlgorithm.class, gridNodeLayoutProps);
 
 		registerServiceListener(bc,cyLayouts,"addLayout","removeLayout",CyLayoutAlgorithm.class);
