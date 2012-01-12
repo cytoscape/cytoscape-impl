@@ -3,7 +3,7 @@ package org.cytoscape.prefuse.layouts.internal;
 
 import java.io.IOException;
 
-import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.layout.AbstractEdgeWeightedLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
@@ -18,7 +18,7 @@ import prefuse.util.force.Integrator;
 import org.cytoscape.work.util.ListSingleSelection;
 
 
-public class ForceDirectedLayout extends AbstractLayoutAlgorithm implements TunableValidator {
+public class ForceDirectedLayout extends AbstractEdgeWeightedLayoutAlgorithm implements TunableValidator {
 	@Tunable(description="Number of Iterations")
 	public int numIterations = 100;
 	@Tunable(description="Default Spring Coefficient")
@@ -30,9 +30,7 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm implements Tuna
 	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
 
-	//@Tunable(description="Integration algorithm to use", groups="Algorithm settings")
-	public Integrators integrator = Integrators.RUNGEKUTTA;
-	//public ListSingleSelection<String> integratorChoice = "Runge-Kutta";
+	private Integrators integrator = Integrators.RUNGEKUTTA;
 	
 	public enum Integrators {
 		RUNGEKUTTA ("Runge-Kutta"),
