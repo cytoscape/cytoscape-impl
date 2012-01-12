@@ -45,7 +45,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 
 	public ImportOntologyAndAnnotationAction(final InputStreamTaskFactory factory)
 	{
-		super("Import Ontology and Annotation...");
+		super("Ontology and Annotation...");
 		setPreferredMenu("File.Import");
 
 		this.bookmarksProp = CytoscapeServices.bookmark;
