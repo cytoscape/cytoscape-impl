@@ -6,12 +6,19 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
+import javax.swing.JComponent;
+
 public class TextIcon extends VisualPropertyIcon<Object> {
 
 	private static final long serialVersionUID = -4217147694751380332L;
 
-	private static final int FONT_SIZE = 20;
-	private static final Font FONT = new Font("SansSerif", Font.BOLD, FONT_SIZE);
+	private static final int FONT_SIZE_DEFAULT = 20;
+	private static final int FONT_SIZE_SMALL = 16;
+	
+	private static final int MAX_TEXT_LEN = 5;
+	
+	private static final Font FONT = new Font("SansSerif", Font.BOLD, FONT_SIZE_DEFAULT);
+	private static final Font FONT_SMALL = new Font("SansSerif", Font.BOLD, FONT_SIZE_SMALL);
 
 	public TextIcon(final Object value, final int width, final int height, final String name) {
 		super(value, width, height, name);
@@ -27,10 +34,19 @@ public class TextIcon extends VisualPropertyIcon<Object> {
 		final Font original = g2d.getFont();
 		
 		if (value != null) {
+			String text = value.toString();
+			final int textLen = text.length();
+			
 			g2d.setColor(color);
-			g2d.setFont(FONT);
+			if(textLen>MAX_TEXT_LEN) {
+				text = text.substring(0, 5) + "...";
+				g2d.setFont(FONT_SMALL);
+			} else
+				g2d.setFont(FONT);
+			
 			final int cHeight = c.getHeight();
-			g2d.drawString(value.toString(), x+leftPad+5, y + (cHeight/2) - 5);
+			
+			g2d.drawString(text, x+leftPad+5, y + (cHeight/2) - 5);
 		}
 
 		g2d.setFont(original);

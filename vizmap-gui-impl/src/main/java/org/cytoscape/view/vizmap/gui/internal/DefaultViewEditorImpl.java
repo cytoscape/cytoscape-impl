@@ -608,21 +608,22 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 				final RenderingEngine<?> presentation = cyApplicationManager.getCurrentRenderingEngine();
 
-				if (presentation != null)
+				if (presentation != null) {
+					final Object defValue = selectedStyle.getDefaultValue(vp);
 					icon = presentation.createIcon(vp, selectedStyle.getDefaultValue(vp), ICON_WIDTH, ICON_HEIGHT);
+					if(defValue != null)
+						setToolTipText(defValue.toString());
+				}
 			}
 			
 			setText(vp.getDisplayName());
-			setToolTipText(vp.getDisplayName());
+			
 			setIcon(icon);
 			setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
 
 			this.setVerticalTextPosition(CENTER);
 			this.setVerticalAlignment(CENTER);
 			this.setIconTextGap(ICON_GAP);
-
-			if (vp != null && vp.getRange().getType() != null && vp.getRange().getType().equals(String.class))
-				this.setToolTipText(vp.getDefault().toString());
 
 			setBackground(isSelected ? SELECTED_COLOR : list.getBackground());
 			setForeground(isSelected ? SELECTED_FONT_COLOR : list.getForeground());
