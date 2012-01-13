@@ -2,6 +2,8 @@ package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
@@ -62,11 +64,14 @@ public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor
 	
 		if ( currentNetwork != null ) {
 			final AttributeSet targetSet = this.attrManager.getAttributeSet(currentNetwork, type);
-
 			if(targetSet == null)
 				throw new NullPointerException("AttributeSet is null.");
-		
+			
+			final SortedSet<String> sortedName = new TreeSet<String>();
 			for (String attrName : targetSet.getAttrMap().keySet())
+				sortedName.add(attrName);
+		
+			for (final String attrName : sortedName)
 				box.addItem(attrName);
 
 			// Add new name if not in the list.
