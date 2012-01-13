@@ -23,14 +23,13 @@ public class ObjectPositionVisualProperty extends AbstractVisualProperty<ObjectP
 	}
 
 	@Override
-	public String toSerializableString(ObjectPosition value) {
-		return value.shortString();
+	public String toSerializableString(final ObjectPosition value) {
+		return value.toSerializableString();
 	}
 
 	@Override
-	public ObjectPosition parseSerializableString(String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public ObjectPosition parseSerializableString(String objectPositionString) {
+		return ObjectPositionImpl.parse(objectPositionString);
 	}
 
 }

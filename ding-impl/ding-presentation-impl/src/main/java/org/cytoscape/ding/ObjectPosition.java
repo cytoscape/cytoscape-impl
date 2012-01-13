@@ -78,28 +78,10 @@ public interface ObjectPosition {
 	 */
 	public void setOffsetY(double d);
 
+	
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param lp DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * Create a short String to be used by reader/writer.
+	 * @return serialized string.
 	 */
-	@Override
-	public boolean equals(Object position);
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	@Override
-	public String toString();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public String shortString();
+	String toSerializableString();
 }

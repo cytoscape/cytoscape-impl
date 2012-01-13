@@ -6,6 +6,8 @@ import static org.cytoscape.ding.Position.CENTER;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.ObjectPosition;
@@ -13,7 +15,7 @@ import org.cytoscape.ding.Position;
 
 
 /**
-*
+* An implementation of {@link ObjectPosition}.
 */
 public class ObjectPositionImpl implements ObjectPosition {
 	
@@ -36,8 +38,7 @@ public class ObjectPositionImpl implements ObjectPosition {
 	/**
 	 * Copy constructor
 	 * 
-	 * @param lp
-	 *            DOCUMENT ME!
+	 * @param p original position.
 	 */
 	public ObjectPositionImpl(final ObjectPosition p) {
 		targetAnchor = p.getTargetAnchor();
@@ -71,101 +72,57 @@ public class ObjectPositionImpl implements ObjectPosition {
 	}
 
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#getLabelAnchor()
-	 */
+	@Override
 	public Position getAnchor() {
 		return objectAnchor;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#getTargetAnchor()
-	 */
+	@Override
 	public Position getTargetAnchor() {
 		return targetAnchor;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#getJustify()
-	 */
+	@Override
 	public Justification getJustify() {
 		return justify;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#getOffsetX()
-	 */
+	@Override
 	public double getOffsetX() {
 		return xOffset;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#getOffsetY()
-	 */
+	@Override
 	public double getOffsetY() {
 		return yOffset;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#setLabelAnchor(int)
-	 */
+	@Override
 	public void setAnchor(Position p) {
 		objectAnchor = p;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#setTargetAnchor(int)
-	 */
+	@Override
 	public void setTargetAnchor(Position p) {
 		targetAnchor = p;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#setJustify(int)
-	 */
+	@Override
 	public void setJustify(Justification j) {
 		justify = j;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#setOffsetX(double)
-	 */
+	@Override
 	public void setOffsetX(double d) {
 		xOffset = d;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#setOffsetY(double)
-	 */
+	@Override
 	public void setOffsetY(double d) {
 		yOffset = d;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#equals(java.lang.Object)
-	 */
+	@Override
 	public boolean equals(Object lp) {
 		// Accepts non-null ObjectPosition only.
 		if (lp == null || lp instanceof ObjectPosition == false)
@@ -175,31 +132,27 @@ public class ObjectPositionImpl implements ObjectPosition {
 
 		if (Math.abs(p.getOffsetX() - xOffset) > 0.0000001)
 			return false;
-
+	
 		if (Math.abs(p.getOffsetY() - yOffset) > 0.0000001)
 			return false;
-
+		
 		if (p.getAnchor() != objectAnchor)
 			return false;
 
 		if (p.getTargetAnchor() != targetAnchor)
 			return false;
-
+		
 		if (p.getJustify() != justify)
 			return false;
 
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#toString()
-	 */
+
 	@Override public String toString() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("target: ").append(targetAnchor.getName());
-		sb.append("  label: ").append(objectAnchor.getName());
+		sb.append("  object: ").append(objectAnchor.getName());
 		sb.append("  justify: ").append(justify.getName());
 		sb.append("  X offset: ").append(Double.toString(xOffset));
 		sb.append("  Y offset: ").append(Double.toString(yOffset));
@@ -207,14 +160,10 @@ public class ObjectPositionImpl implements ObjectPosition {
 		return sb.toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.visual.ObjectPosition#shortString()
-	 */
-	@Override public String shortString() {
+	
+	private String shortString() {
 		// force the locale to US so that we consistently serialize
-		DecimalFormat df = new DecimalFormat("#0.00;-#0.00", new DecimalFormatSymbols(Locale.US));
+		final DecimalFormat df = new DecimalFormat("#0.00;-#0.00", new DecimalFormatSymbols(Locale.US));
 
 		final StringBuilder sb = new StringBuilder();
 		sb.append(targetAnchor.getShortName());
@@ -228,5 +177,35 @@ public class ObjectPositionImpl implements ObjectPosition {
 		sb.append(df.format(yOffset));
 
 		return sb.toString();
+	}
+	
+	
+	@Override
+	public String toSerializableString() {
+		return shortString();
+	}
+	
+	
+	/**
+	 * 
+	 * @param serializableString
+	 * @return Never returns null.  If invalid, simply returns default.
+	 */
+	public static ObjectPosition parse(String serializableString) {
+		final Pattern p = Pattern
+				.compile("^([NSEWC]{1,2}+),([NSEWC]{1,2}+),([clr]{1}+),(-?\\d+(.\\d+)?),(-?\\d+(.\\d+)?)$");
+		final Matcher m = p.matcher(serializableString);
+
+		if (m.matches()) {
+			final ObjectPosition lp = new ObjectPositionImpl();
+			lp.setTargetAnchor(Position.parse(m.group(1)));
+			lp.setAnchor(Position.parse(m.group(2)));
+			lp.setJustify(Justification.parse(m.group(3)));
+			lp.setOffsetX(Double.parseDouble(m.group(4)));
+			lp.setOffsetY(Double.parseDouble(m.group(6)));
+			return lp;
+		}
+
+		return DEFAULT_POSITION;
 	}
 }
