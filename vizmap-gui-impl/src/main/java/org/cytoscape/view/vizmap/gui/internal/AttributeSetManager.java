@@ -1,6 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,10 +22,8 @@ import org.cytoscape.model.events.NetworkAddedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-public class AttributeSetManager implements ColumnDeletedListener,
-		ColumnCreatedListener, NetworkAddedListener
-{
+public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener, NetworkAddedListener {
+	
 	private static final Logger logger = LoggerFactory.getLogger(AttributeSetManager.class);
 
 	private static final Set<Class<? extends CyTableEntry>> GRAPH_OBJECTS;
@@ -47,27 +44,15 @@ public class AttributeSetManager implements ColumnDeletedListener,
 
 		this.attrSets = new HashMap<CyNetwork, Map<Class<? extends CyTableEntry>, AttributeSet>>();
 		this.tableSets = new HashMap<CyNetwork, Map<Class<? extends CyTableEntry>, Set<CyTable>>>();
-		
-
-//		final Set<CyNetwork> networkSet = networkMgr.getNetworkSet();
-//		for (final CyNetwork net : networkSet) {
-//			final Map<String, CyTable> tableMap = tableMgr.getTableMap(name, net);
-//			targetTables.addAll(tableMap.values());
-//
-//			for (final CyTable table : tableMap.values())
-//				attrNames.addAll(table.getColumnMap().keySet());
-//		}
 	}
 
 	public AttributeSet getAttributeSet(final CyNetwork network, final Class<? extends CyTableEntry> objectType) {
 		if (network == null || objectType == null)
-			throw new NullPointerException(
-					"Both parameters should not be null.");
+			throw new NullPointerException("Both parameters should not be null.");
 
 		final Map<Class<? extends CyTableEntry>, AttributeSet> attrSetMap = this.attrSets.get(network);
 		if (attrSetMap == null)
-			throw new NullPointerException(
-					"No such network registered in this mamager: " + network);
+			throw new NullPointerException("No such network registered in this mamager: " + network);
 
 		return attrSetMap.get(objectType);
 	}
@@ -75,9 +60,9 @@ public class AttributeSetManager implements ColumnDeletedListener,
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
 		final CyNetwork network = e.getNetwork();
-		
+
 		logger.debug("@@@@@@ Attr Set manager got new network." + network.getSUID());
-		
+
 		final Map<Class<? extends CyTableEntry>, Set<CyTable>> object2tableMap = new HashMap<Class<? extends CyTableEntry>, Set<CyTable>>();
 		final Map<Class<? extends CyTableEntry>, AttributeSet> attrSetMap = new HashMap<Class<? extends CyTableEntry>, AttributeSet>();
 
@@ -104,10 +89,10 @@ public class AttributeSetManager implements ColumnDeletedListener,
 
 	@Override
 	public void handleEvent(ColumnCreatedEvent e) {
-		
+
 		final String newAttrName = e.getColumnName();
 		final CyTable table = e.getSource();
-		
+
 		for (CyNetwork network : tableSets.keySet()) {
 			Map<Class<? extends CyTableEntry>, Set<CyTable>> tMap = tableSets.get(network);
 			for (final Class<? extends CyTableEntry> objectType : GRAPH_OBJECTS) {
@@ -115,11 +100,8 @@ public class AttributeSetManager implements ColumnDeletedListener,
 				if (!targetTables.contains(table))
 					continue;
 
-				this.attrSets.get(network)
-					.get(objectType)
-					.getAttrMap()
-					.put(newAttrName,
-					     table.getColumn(newAttrName).getType());
+				this.attrSets.get(network).get(objectType).getAttrMap()
+						.put(newAttrName, table.getColumn(newAttrName).getType());
 				return;
 			}
 		}
@@ -136,8 +118,7 @@ public class AttributeSetManager implements ColumnDeletedListener,
 				if (!targetTables.contains(table))
 					continue;
 
-				this.attrSets.get(network).get(objectType).getAttrMap()
-						.remove(e.getColumnName());
+				this.attrSets.get(network).get(objectType).getAttrMap().remove(e.getColumnName());
 				return;
 			}
 		}
