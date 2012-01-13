@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -153,52 +154,15 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 					}
 				}
 
-				// Get information about the Groups and alignment from Tunables Annotations in order to create the proper GUI
-				final Map<String, Boolean> groupToVerticalMap = new HashMap<String, Boolean>();
-				final Map<String, Boolean> groupToDisplayedMap = new HashMap<String, Boolean>();
-
-				final String[] group = gh.getGroups();
-				final String[] alignments = gh.getParams().getProperty("alignments", "").split(",");
-				final String[] groupTitles = gh.getParams().getProperty("groupTitles", "").split(",");
-
-				if (group.length <= alignments.length) {
-					for (int i = 0; i < group.length; i++) {
-						final boolean vertical = groupTitles[i].equalsIgnoreCase("vertical");
-						groupToVerticalMap.put(group[i], vertical);
-					}
-				} else {
-					for (int i = 0; i < alignments.length; i++) {
-						final boolean vertical = groupTitles[i].equalsIgnoreCase("vertical");
-						groupToVerticalMap.put(group[i], vertical);
-					}
-
-					// Default alignment is "vertical."
-					for (int i = alignments.length; i < group.length; i++)
-						groupToVerticalMap.put(group[i], true);
-				}
-
-				if (group.length <= groupTitles.length) {
-					for (int i = 0; i < group.length; i++) {
-						final boolean displayed =
-							groupTitles[i].equalsIgnoreCase("displayed");
-						groupToDisplayedMap.put(group[i], displayed);
-					}
-				} else {
-					for (int i = 0; i < groupTitles.length; i++) {
-						final boolean displayed =
-							groupTitles[i].equalsIgnoreCase("displayed");
-						groupToDisplayedMap.put(group[i], displayed);
-					}
-
-					// Default group setting is "displayed."
-					for (int i = groupTitles.length; i < group.length; i++)
-						groupToDisplayedMap.put(group[i], true);
-				}
+				// Get information about the Groups and alignment from Tunables Annotations 
+				// in order to create the proper GUI
+				final Map<String, Boolean> groupToVerticalMap = processGroupParams(gh,"alignments","vertical"); 
+				final Map<String, Boolean> groupToDisplayedMap = processGroupParams(gh,"groupTitles","displayed"); 
 
 				// find the proper group to put the handler panel in given the Alignment/Group parameters
 				String lastGroup = MAIN;
-				String groupNames = null;
-				for (String g : group) {
+				String groupNames = "";
+				for (String g : gh.getGroups()) {
 					if (g.equals(""))
 						throw new IllegalArgumentException("A group's name must not be \"\"!");
 					groupNames = groupNames + g;
@@ -366,5 +330,32 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			}
 		}
 		return "Set Parameters";
+	}
+
+	// Get information about the Groups and parameters to create the proper GUI
+	private Map<String, Boolean> processGroupParams(GUITunableHandler gh, String paramName, String defaultValue) {
+		final Map<String, Boolean> groupMap = new HashMap<String, Boolean>();
+
+		final String[] groups = gh.getGroups();
+		// empty string splits to single element array containing string "" 
+		final String[] params = gh.getParams().getProperty(paramName, "").split(","); 
+
+		if (groups.length <= params.length) {
+			for (int i = 0; i < groups.length; i++) {
+				final boolean vertical = params[i].equalsIgnoreCase(defaultValue) || params[i].equals("");
+				groupMap.put(groups[i], vertical);
+			}
+		} else {
+			for (int i = 0; i < params.length; i++) {
+				final boolean vertical = params[i].equalsIgnoreCase(defaultValue) || params[i].equals(""); 
+				groupMap.put(groups[i], vertical);
+			}
+
+			// Default 
+			for (int i = params.length; i < groups.length; i++) 
+				groupMap.put(groups[i], true);
+		}
+
+		return groupMap;
 	}
 }
