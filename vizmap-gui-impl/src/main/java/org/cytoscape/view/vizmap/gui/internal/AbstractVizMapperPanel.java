@@ -220,7 +220,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 		});
 		
 		showAllVPButton.setUI(new BlueishButtonUI());
-		showAllVPButton.setText("Show All");
 		showAllVPButton.setToolTipText("Show all Visual Properties");
 		
 		for (Field f : fields) {

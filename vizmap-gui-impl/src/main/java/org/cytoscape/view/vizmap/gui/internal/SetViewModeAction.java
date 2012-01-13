@@ -9,6 +9,8 @@ import org.cytoscape.application.swing.AbstractCyAction;
 
 public class SetViewModeAction extends AbstractCyAction {
 	
+	private static final long serialVersionUID = -832910068413870738L;
+
 	// Local property changed event.
 	public static final String VIEW_MODE_CHANGED = "VIEW_MODE_CHANGED";
 

@@ -27,6 +27,7 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 	private static final Logger logger = LoggerFactory.getLogger(AttributeSetManager.class);
 
 	private static final Set<Class<? extends CyTableEntry>> GRAPH_OBJECTS;
+	
 	static {
 		GRAPH_OBJECTS = new HashSet<Class<? extends CyTableEntry>>();
 		GRAPH_OBJECTS.add(CyNode.class);

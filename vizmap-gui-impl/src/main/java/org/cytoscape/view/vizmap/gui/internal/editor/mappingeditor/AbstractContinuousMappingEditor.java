@@ -80,6 +80,8 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 				
 				editorDialog.setTitle("Continuous Mapping Editor: Mapping for " + mapping.getVisualProperty().getDisplayName());
 				editorDialog.setLocationRelativeTo(editor);
+				editorDialog.setAlwaysOnTop(true);
+				editorDialog.setModal(true);
 				editorDialog.setVisible(true);
 				isEditorDialogActive = true;
 			}

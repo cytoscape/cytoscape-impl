@@ -286,22 +286,16 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			if ((dataType == Double.class) || (dataType == Integer.class)) {
 				// Do nothing
 			} else {
-				JOptionPane
-						.showMessageDialog(
-								null,
-								"Continuous Mapper can be used with Numbers only.\nPlease select numerical attributes.",
-								"Incompatible Mapping Type!",
-								JOptionPane.INFORMATION_MESSAGE);
-
+				JOptionPane.showMessageDialog(null,
+						"Continuous Mapper can be used with Numbers only.\nPlease select numerical attributes.",
+						"Incompatible Mapping Type!", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 
 		} else if (mapping instanceof DiscreteMapping) {
-			newMapping = factory.createVisualMappingFunction(ctrAttrName,
-					dataType, attrForTest, vp);
+			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, attrForTest, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
-			logger.debug("Changed to new Map from "
-					+ mapping.getMappingColumnName() + " to "
+			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
 					+ newMapping.getMappingColumnName());
 		}
 
@@ -309,8 +303,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		propertySheetPanel.removeProperty(prop);
 
 		// Create new one.
-
-		logger.debug("Creating new prop sheet objects for "
+		logger.warn("Creating new prop sheet objects for "
 				+ newMapping.getMappingColumnName() + ", "
 				+ vp.getDisplayName());
 
@@ -319,7 +312,6 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 				.getPropertyBuilder().buildProperty(newMapping,
 						category.getDisplayName(), propertySheetPanel, factory);
 
-		logger.debug("!!!!!!! Removing Prop: " + prop);
 		vizMapPropertySheetBuilder.removeProperty(prop, currentStyle);
 
 		final List<Property> propList = vizMapPropertySheetBuilder.getPropertyList(currentStyle);

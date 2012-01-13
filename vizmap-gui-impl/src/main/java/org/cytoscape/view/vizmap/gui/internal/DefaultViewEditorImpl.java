@@ -186,15 +186,13 @@ public class DefaultViewEditorImpl extends JDialog implements
 	private void updateVisualPropertyLists() {
 		vpSets.clear();
 
-		vpSets.put(CyNode.class,
-				getLeafNodes(util.getVisualPropertySet(CyNode.class)));
-		vpSets.put(CyEdge.class,
-				getLeafNodes(util.getVisualPropertySet(CyEdge.class)));
+		vpSets.put(CyNode.class, getLeafNodes(util.getVisualPropertySet(CyNode.class)));
+		vpSets.put(CyEdge.class, getLeafNodes(util.getVisualPropertySet(CyEdge.class)));
 		vpSets.put(CyNetwork.class, getNetworkLeafNodes(util.getVisualPropertySet(CyNetwork.class)));
 	}
 
-	private Set<VisualProperty<?>> getLeafNodes(
-			final Collection<VisualProperty<?>> props) {
+
+	private Set<VisualProperty<?>> getLeafNodes(final Collection<VisualProperty<?>> props) {
 
 		final Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
 
@@ -206,14 +204,13 @@ public class DefaultViewEditorImpl extends JDialog implements
 				if (lexicon.getVisualLexiconNode(vp).getChildren().size() == 0)
 					propSet.add(vp);
 			}
-
 		}
 		return propSet;
 
 	}
 
-	private Set<VisualProperty<?>> getNetworkLeafNodes(
-			final Collection<VisualProperty<?>> props) {
+
+	private Set<VisualProperty<?>> getNetworkLeafNodes(final Collection<VisualProperty<?>> props) {
 		final Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
 
 		final Set<VisualProperty<?>> propSet = new TreeSet<VisualProperty<?>>(
@@ -553,6 +550,12 @@ public class DefaultViewEditorImpl extends JDialog implements
 				// Check supported or not.
 				if(VisualPropertyFilter.isCompatible(vp) == false)
 					continue;
+				
+				// Filter based on mode
+				if (PropertySheetUtil.isAdvancedMode() == false) {
+					if (PropertySheetUtil.isBasic(vp) == false)
+						continue;
+				}
 				
 				//Do not allow editing of the following two VP 
 				if (vp.getDisplayName().contains("Edge Target Arrow Selected Paint") ||

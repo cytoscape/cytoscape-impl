@@ -26,6 +26,8 @@ public final class PropertySheetUtil {
 		BASIC_PROPS.add(RichVisualLexicon.EDGE_WIDTH);
 		BASIC_PROPS.add(RichVisualLexicon.EDGE_LABEL);
 		BASIC_PROPS.add(RichVisualLexicon.EDGE_LINE_TYPE);
+		
+		BASIC_PROPS.add(RichVisualLexicon.NETWORK_BACKGROUND_PAINT);
 	}
 	
 	public static boolean isBasic(final VisualProperty<?> vp) {
