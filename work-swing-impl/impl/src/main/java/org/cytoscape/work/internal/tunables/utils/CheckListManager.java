@@ -57,12 +57,13 @@ public class CheckListManager<T> extends MouseAdapter implements ActionListener,
  
     
     public Map<Integer,T> getMap(){
-    	if(!map.containsKey(list.getSelectedIndex())){
-       		map.put(list.getSelectedIndex(),(T)list.getSelectedValue());
-    	} else if(map.containsKey(list.getSelectedIndex())&& test!=list.getSelectedIndex()){
-    		map.remove(list.getSelectedIndex());
+    	int selectedIndex = list.getSelectedIndex();
+		if(!map.containsKey(selectedIndex)){
+       		map.put(selectedIndex,(T)list.getSelectedValue());
+    	} else if(map.containsKey(selectedIndex)&& test!=selectedIndex){
+    		map.remove(selectedIndex);
     	}
-    	toggleSelection(list.getSelectedIndex());
+    	toggleSelection(selectedIndex);
     	test=list.getSelectedIndex();
     	return map;
     }

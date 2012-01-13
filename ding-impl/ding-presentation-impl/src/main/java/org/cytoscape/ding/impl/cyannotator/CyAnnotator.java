@@ -106,10 +106,11 @@ public class CyAnnotator {
 		for (String s: annotations) {
 			Map<String, String> argMap = createArgMap(s);
 			Annotation annotation = null;
-			if (!argMap.containsKey("type"))
+			String type = argMap.get("type");
+			if (type == null)
                 continue;
 
-			annotation = annotationFactoryManager.getAnnotation(argMap.get("type"),this,view,argMap);
+			annotation = annotationFactoryManager.getAnnotation(type,this,view,argMap);
 
 			if (annotation != null) {
 				idMap.put(annotation.getComponentNumber(), annotation);
@@ -123,9 +124,10 @@ public class CyAnnotator {
 			ArrowAnnotation arrow = new ArrowAnnotation(this,view,argMap);
 			// Find the source
 			Integer source = arrow.getSource();
-			if (idMap.containsKey(source)) {
-				idMap.get(source).addArrow(arrow);
-				arrow.setSource(idMap.get(source).getComponentNumber());
+			Annotation annotation = idMap.get(source);
+			if (annotation != null) {
+				annotation.addArrow(arrow);
+				arrow.setSource(annotation.getComponentNumber());
 			}
 		}
 		view.updateView();	

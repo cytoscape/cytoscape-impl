@@ -509,11 +509,12 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 	 *                     the child in tree-like parts
 	 */
 	private void DFSSetPos(int nodeID, double theAngle, double theRadius) {
-		if (node2BiComp.containsKey(Integer.valueOf(nodeID))
-		    && !drawnBiComps[node2BiComp.get(Integer.valueOf(nodeID)).intValue()]) {
+		Integer component = node2BiComp.get(Integer.valueOf(nodeID));
+		if (component != null && !drawnBiComps[component]) {
 			int comp = node2BiComp.get(Integer.valueOf(nodeID)).intValue();
-			double centerX = nodeViews.get(nodeID).getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION);
-			double centerY = nodeViews.get(nodeID).getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
+			View<CyNode> view = nodeViews.get(nodeID);
+			double centerX = view.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION);
+			double centerY = view.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
 			double radius = (48 * bc[comp].length) / (2 * Math.PI);
 			double deltaAngle = (2 * Math.PI) / bc[comp].length;
 			double currAngle = theAngle - Math.PI - deltaAngle;

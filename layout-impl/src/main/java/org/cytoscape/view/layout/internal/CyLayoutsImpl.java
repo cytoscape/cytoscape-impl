@@ -90,7 +90,7 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	 */
 	@Override
 	public CyLayoutAlgorithm getLayout(String name) {
-		if (name != null && layoutMap.containsKey(name))
+		if (name != null)
 			return layoutMap.get(name);
 		return null;
 	}

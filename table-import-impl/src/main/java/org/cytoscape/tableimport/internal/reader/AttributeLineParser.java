@@ -292,16 +292,18 @@ public class AttributeLineParser {
 				 * This is a special case: Since network IDs are only integers and
 				 * not always the same, we need to use title instead of ID.
 				 */
-				if (mapping.getnetworkTitleMap().containsKey(primaryKey)) {
-					targetNetworkID = mapping.getnetworkTitleMap().get(primaryKey);
+				String title = mapping.getnetworkTitleMap().get(primaryKey);
+				if (title != null) {
+					targetNetworkID = title;
 
 					break;
 				}
 
 				if (targetNetworkID == null) {
 					for (String alias : aliasSet) {
-						if (mapping.getnetworkTitleMap().containsKey(alias)) {
-							targetNetworkID = mapping.getnetworkTitleMap().get(alias);
+						title = mapping.getnetworkTitleMap().get(alias);
+						if (title != null) {
+							targetNetworkID = title;
 
 							break;
 						}

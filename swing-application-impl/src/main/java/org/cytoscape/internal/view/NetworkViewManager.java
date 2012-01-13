@@ -553,10 +553,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		// Set focus
-		if (presentationContainerMap.containsKey(targetViewModel)) {
+		final JInternalFrame curr = presentationContainerMap.get(targetViewModel);
+		if (curr != null) {
 			try {
 				logger.debug("Updating JInternalFrame selection");
-				final JInternalFrame curr = presentationContainerMap.get(targetViewModel);
 
 				curr.setIcon(false);
 				curr.show();

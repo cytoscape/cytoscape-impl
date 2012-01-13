@@ -37,8 +37,9 @@ public class EntityTypeFilter implements Filter {
         for (BasicRecordType record : recordList) {
             String type = record.getEntityType();
             if (type != null) {
-                if (bpMap.containsKey(type)) {
-                    type = (String) bpMap.get(type);
+            	String bioPaxType = (String) bpMap.get(type);
+                if (bioPaxType != null) {
+                    type = bioPaxType;
                 }
                 if (entityTypeSet.contains(type)) {
                     passedList.add(record);

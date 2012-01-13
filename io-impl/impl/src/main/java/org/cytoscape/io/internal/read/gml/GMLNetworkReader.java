@@ -287,10 +287,12 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				// idx, sources.size()));
 			}
 
-			if (gml_id2order.containsKey(sources.get(idx)) && gml_id2order.containsKey(targets.get(idx))) {
+			Integer sourceNode = gml_id2order.get(sources.get(idx));
+			Integer targetNode = gml_id2order.get(targets.get(idx));
+			if (sourceNode != null && targetNode != null) {
 				String label = edge_labels.get(idx);
-				String sourceName = node_labels.get(gml_id2order.get(sources.get(idx)));
-				String targetName = node_labels.get(gml_id2order.get(targets.get(idx)));
+				String sourceName = node_labels.get(sourceNode);
+				String targetName = node_labels.get(targetNode);
 				String edgeName = sourceName + " (" + label + ") " + targetName;
 				Boolean isDirected = directionality_flags.get(idx);
 

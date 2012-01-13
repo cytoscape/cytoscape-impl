@@ -608,9 +608,7 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 					}
 				}
 				for (final CyEdge edge : edges) {
-					if (!edgeDependency.containsKey(edge)) {
-						edgeDependency.put(edge, new Double(0.0));
-					}
+					edgeDependency.put(edge, 0.0);
 				}
 			}
 		}
@@ -638,8 +636,9 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 						double oldbetweenness = 0.0;
 						double newbetweenness = 0.0;
 						for (final CyEdge edge : edges) {
-							if (edgeBetweenness.containsKey(edge)) {
-								oldbetweenness = edgeBetweenness.get(edge).doubleValue();
+							Double betweenness = edgeBetweenness.get(edge);
+							if (betweenness != null) {
+								oldbetweenness = betweenness;
 								break;
 							}
 						}

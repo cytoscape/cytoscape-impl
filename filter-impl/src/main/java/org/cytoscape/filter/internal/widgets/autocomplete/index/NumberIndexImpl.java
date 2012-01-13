@@ -73,11 +73,9 @@ class NumberIndexImpl extends GenericIndexImpl implements NumberIndex {
 	 */
 	public void addToIndex(Object key, Object o) {
 		if (key instanceof Integer || key instanceof Double) {
-			List list;
+			List list = (List) treeMap.get(key);
 
-			if (treeMap.containsKey(key)) {
-				list = (List) treeMap.get(key);
-			} else {
+			if (list == null) {
 				list = new ArrayList();
 				treeMap.put(key, list);
 			}

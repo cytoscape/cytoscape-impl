@@ -162,9 +162,7 @@ class QuickFindImpl implements QuickFind {
 	 * @param network DOCUMENT ME!
 	 */
 	public synchronized void removeNetwork(CyNetwork network) {
-		if (networkMap.containsKey(network)){
-			networkMap.remove(networkMap);
-		}
+		networkMap.remove(networkMap);
 
 		// Notify all listeners of remove event
 		for (int i = 0; i < listenerList.size(); i++) {
@@ -181,10 +179,7 @@ class QuickFindImpl implements QuickFind {
 	 * @return  DOCUMENT ME!
 	 */
 	public synchronized GenericIndex getIndex(CyNetwork network) {
-		if (networkMap.containsKey(network)){
-			return (GenericIndex) networkMap.get(network);	
-		}
-		return null;
+		return (GenericIndex) networkMap.get(network);	
 	}
 
 	/**

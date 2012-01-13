@@ -50,9 +50,12 @@ public class CommandExecutorImpl {
 		if ( command == null && namespace == null ) 
 			return;
 
-		if ( !commandExecutorMap.containsKey(namespace) )
-			commandExecutorMap.put(namespace, new HashMap<String,Executor>());
-		commandExecutorMap.get(namespace).put(command,ex);
+		Map<String, Executor> map = commandExecutorMap.get(namespace);
+		if ( map == null ) {
+			map = new HashMap<String,Executor>();
+			commandExecutorMap.put(namespace, map);
+		}
+		map.put(command,ex);
 	}
 
 	private void removeTF(Map props) {

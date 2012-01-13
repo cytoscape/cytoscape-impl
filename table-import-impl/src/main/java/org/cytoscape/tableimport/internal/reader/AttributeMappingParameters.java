@@ -443,11 +443,8 @@ public class AttributeMappingParameters implements MappingParameter {
 
 
 	private void putAttrValue(String attributeValue, String objectID) {
-		List<String> objIdList = null;
-
-		if (attr2id.containsKey(attributeValue)) {
-			objIdList = attr2id.get(attributeValue);
-		} else {
+		List<String> objIdList = attr2id.get(attributeValue);
+		if (objIdList == null) {
 			objIdList = new ArrayList<String>();
 		}
 

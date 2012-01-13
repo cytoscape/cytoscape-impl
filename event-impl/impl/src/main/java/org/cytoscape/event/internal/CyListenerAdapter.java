@@ -144,14 +144,15 @@ public class CyListenerAdapter {
 	}
 
 	private Object[] getListeners(Class<?> listenerClass) {
-		if ( !serviceTrackers.containsKey( listenerClass ) ) {
+		ServiceTracker tracker = serviceTrackers.get(listenerClass);
+		if ( tracker == null ) {
 			//logger.debug("added new service tracker for " + listenerClass);
-			final ServiceTracker st = new ServiceTracker(bc, listenerClass.getName(), null);
-			st.open();
-			serviceTrackers.put( listenerClass, st );
+			tracker = new ServiceTracker(bc, listenerClass.getName(), null);
+			tracker.open();
+			serviceTrackers.put( listenerClass, tracker );
 		}
 
-		Object[] services = serviceTrackers.get(listenerClass).getServices();
+		Object[] services = tracker.getServices();
 
 		if ( services == null )
 			return null;

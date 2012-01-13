@@ -365,8 +365,9 @@ public class AttributeMappingImpl implements AttributeMapping {
             final CyNetwork net = entry.getKey();
             final List<String> attrs = entry.getValue();
             
-            if (mapNetAttributeName.containsKey(net)) {
-                attrs.add(index,mapNetAttributeName.get(net));
+            String name = mapNetAttributeName.get(net);
+            if (name != null) {
+                attrs.add(index,name);
             } else {
                 attrs.add(index,nullAttr);
             }

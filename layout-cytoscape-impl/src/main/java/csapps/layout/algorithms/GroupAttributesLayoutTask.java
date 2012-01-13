@@ -150,10 +150,12 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 				if (invalidNodes != null)
 					invalidNodes.add(node);
 			} else {
-				if (!map.containsKey(key))
-					map.put(key, new ArrayList<CyNode>());
-
-				map.get(key).add(node);
+				List<CyNode> list = map.get(key);
+				if (list == null) {
+					list = new ArrayList<CyNode>();
+					map.put(key, list);
+				}
+				list.add(node);
 			}
 		}
 	}

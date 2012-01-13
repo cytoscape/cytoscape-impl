@@ -668,15 +668,15 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (virtColumn != null)
 				virtColumn.setValue(key, null);
 			else {
-				if (!types.containsKey(columnName) || !attributes.containsKey(columnName))
+				final Map<Object, Object> keyToValueMap = attributes.get(columnName);
+				if (!types.containsKey(columnName) || keyToValueMap == null)
 					throw new IllegalArgumentException("attribute: '" + columnName
 									   + "' does not yet exist!");
 
-				final Map<Object, Object> keyToValueMap = attributes.get(columnName);
-				if (!keyToValueMap.containsKey(key))
+				final Object value = keyToValueMap.get(key);
+				if (value == null)
 					return;
 
-				final Object value = keyToValueMap.get(key);
 				if (!(value instanceof Equation))
 					removeFromReverseMap(columnName, key, value);
 				keyToValueMap.remove(key);
@@ -769,9 +769,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	synchronized private <T> List<T> getListX(final Object key, final String columnName,
 							   final Class<? extends T> listElementType, final List<T> defaultValue)
 	{
-		if (!types.containsKey(columnName))
+		CyColumn type = types.get(columnName);
+		if (type == null)
 			throw new IllegalArgumentException("'" + columnName + "' does not yet exist!");
-		final Class<?> expectedListElementType = types.get(columnName).getListElementType();
+		final Class<?> expectedListElementType = type.getListElementType();
 		if (expectedListElementType == null)
 			throw new IllegalArgumentException("'" + columnName + "' is not a List!");
 		if (expectedListElementType != listElementType)
@@ -807,10 +808,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (virtColumn != null)
 			return virtColumn.getRawValue(key) != null;
 		else {
-			if (!attributes.containsKey(columnName))
-				return false;
-
 			final Map<Object, Object> keyToValueMap = attributes.get(columnName);
+			if (keyToValueMap == null) {
+				return false;
+			}
 			return keyToValueMap.get(key) != null;
 		}
 	}

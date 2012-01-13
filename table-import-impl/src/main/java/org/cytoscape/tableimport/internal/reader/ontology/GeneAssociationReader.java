@@ -388,12 +388,8 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 			} else
 				targetID = id;
 
-			if (attr2id.containsKey(targetID)) {
-				List<String> nodeIDs = attr2id.get(targetID);
-
-				// for (String nodeID : nodeIDs)
-				// nodeAliases.add(nodeID, new ArrayList<String>(idSet));
-
+			List<String> nodeIDs = attr2id.get(targetID);
+			if (nodeIDs != null) {
 				return nodeIDs;
 			}
 		}

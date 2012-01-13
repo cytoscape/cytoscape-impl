@@ -49,8 +49,9 @@ public class BoundedAnnotation extends TextAnnotation {
 	public BoundedAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
 		this.edgeColor = getColor(argMap.get(EDGECOLOR));
-		if (argMap.containsKey(FILLCOLOR))
-			this.fillColor = getColor(argMap.get(FILLCOLOR));
+		String color = argMap.get(FILLCOLOR);
+		if (color != null)
+			this.fillColor = getColor(color);
 		setFillColor(fillColor);
 		this.edgeThickness = Float.parseFloat(argMap.get(EDGETHICKNESS));
 		this.shapeType = Integer.parseInt(argMap.get(SHAPETYPE));

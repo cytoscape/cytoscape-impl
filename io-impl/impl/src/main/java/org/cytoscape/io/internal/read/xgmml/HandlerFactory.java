@@ -197,11 +197,8 @@ public class HandlerFactory {
 				st.getHandler().setAttributeValueUtil(attributeValueUtil);
 			}
 			
-			internalMap = null;
-			
-			if (map.containsKey(st.getStartState())) {
-				internalMap = map.get(st.getStartState());
-			} else {
+			internalMap = map.get(st.getStartState());
+			if (internalMap == null) {
 				internalMap = new HashMap<String, SAXState>();
 			}
 			

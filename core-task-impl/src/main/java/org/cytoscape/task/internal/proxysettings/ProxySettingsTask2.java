@@ -126,8 +126,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 
 	void revertProxySettings() {
 		for (String key : KEYS) {
-			if (properties.getProperty(key) != null)
-				properties.remove(key);
+			properties.remove(key);
 			
 			if (oldSettings.containsKey(key))
 				properties.setProperty(key, oldSettings.get(key));

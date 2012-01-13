@@ -53,9 +53,7 @@ public class ShapeAnnotation extends Annotation {
 	public ShapeAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
 		this.edgeColor = getColor(argMap.get(EDGECOLOR));
-		this.fillColor = null;
-		if (argMap.containsKey(FILLCOLOR))
-			this.fillColor = getColor(argMap.get(FILLCOLOR));
+		this.fillColor = getColor(argMap.get(FILLCOLOR));
 		setFillColor(fillColor);
 		this.edgeThickness = Float.parseFloat(argMap.get(EDGETHICKNESS));
 		this.shapeType = Integer.parseInt(argMap.get(SHAPETYPE));

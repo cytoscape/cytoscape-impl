@@ -130,11 +130,10 @@ public class CytoscapeToolBar extends JToolBar {
 
 	private int getInsertLocation(float newGravity) {
 		for ( int i = 0; i < orderedList.size(); i++ ) {
-			Object item = orderedList.get(i); 
-			if ( componentGravity.containsKey(item) ) {
-				if ( newGravity < componentGravity.get(item) ) {
-					return i;
-				}
+			Object item = orderedList.get(i);
+			Float gravity = componentGravity.get(item);
+			if ( gravity != null && newGravity < gravity ) {
+				return i;
 			}
 		}
 		return orderedList.size();

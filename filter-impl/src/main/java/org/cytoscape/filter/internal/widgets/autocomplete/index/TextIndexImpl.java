@@ -248,9 +248,8 @@ class TextIndexImpl extends GenericIndexImpl implements TextIndex {
 	 * @return Array of Java Objects.
 	 */
 	private Object[] getObjectsByKey(String key) {
-		if (map.containsKey(key)) {
-			ArrayList list = (ArrayList) map.get(key);
-
+		List list = (List) map.get(key);
+		if (list != null) {
 			return list.toArray();
 		} else {
 			throw new IllegalArgumentException("No objects exist for key:  " + key);

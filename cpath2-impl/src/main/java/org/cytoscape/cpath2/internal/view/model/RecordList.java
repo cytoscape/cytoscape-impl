@@ -88,8 +88,9 @@ public class RecordList {
     private void catalogInteractionType(BasicRecordType record) {
         String type = record.getEntityType();
         BioPaxEntityTypeMap map = BioPaxEntityTypeMap.getInstance();
-        if (map.containsKey(type)) {
-            type = (String) map.get(type);
+        String bioPaxType = (String) map.get(type);
+        if (bioPaxType != null) {
+            type = bioPaxType;
             record.setEntityType(type);
         }
         Integer count = interactionTypeMap.get(type);

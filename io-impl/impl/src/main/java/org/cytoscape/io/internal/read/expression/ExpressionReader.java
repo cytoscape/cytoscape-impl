@@ -425,14 +425,13 @@ public class ExpressionReader extends AbstractTableReader {
 				String attributeValue = attrValue.toString();
 
 				if (attributeValue != null) {
-					if (!attributeToIdList.containsKey(attributeValue)) {
-						ArrayList<String> newGeneList = new ArrayList<String>();
-						newGeneList.add(nodeName);
-						attributeToIdList.put(attributeValue, newGeneList);
-					} else {
-						List<String> genesThisAttribute = attributeToIdList.get(attributeValue);
+					List<String> genesThisAttribute = attributeToIdList.get(attributeValue);
+					if (genesThisAttribute == null) {
+						genesThisAttribute = new ArrayList<String>();
 						genesThisAttribute.add(nodeName);
+						attributeToIdList.put(attributeValue, genesThisAttribute);
 					}
+					genesThisAttribute.add(nodeName);
 				}
 			}
 		}
@@ -551,8 +550,9 @@ public class ExpressionReader extends AbstractTableReader {
 		List<String> gNames = new ArrayList<String>();
 
 		if (mappingByAttribute) {
-			if (attributeToId.containsKey(firstToken)) {
-				gNames = attributeToId.get(firstToken);
+			List<String> names = attributeToId.get(firstToken);
+			if (names != null) {
+				gNames = names;
 			}
 		} else {
 			gNames = new ArrayList<String>();

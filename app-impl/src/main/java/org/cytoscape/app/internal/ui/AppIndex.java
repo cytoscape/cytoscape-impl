@@ -86,14 +86,13 @@ public class AppIndex {
 		String index_id = downloadLocText.trim() + Boolean.toString(versionCheck);
 		
 		// Check if the index for this case already existed
-		if (!indexTracker.containsKey(index_id)){
+		Directory index = (Directory) indexTracker.get(index_id);
+		if (index == null){
 			// The index does not exist, so we can not do search, just return null
 			return null;
 		}
 		
 		// The index does exist, do the search now
-		Directory index = (Directory) indexTracker.get(index_id);
-				
 		// Add  wildcard characters to queryStr at beginning and end 
 		querystr = querystr.trim();
 		if (!querystr.startsWith("*")){

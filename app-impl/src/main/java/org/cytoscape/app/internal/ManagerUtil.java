@@ -64,8 +64,9 @@ public class ManagerUtil {
 		Map<String, List<DownloadableInfo>> Categories = new java.util.HashMap<String, List<DownloadableInfo>>();
 
 		for (DownloadableInfo Current : Apps) {
-			if (Categories.containsKey(Current.getCategory())) {
-				Categories.get(Current.getCategory()).add(Current);
+			List<DownloadableInfo> categoryList = Categories.get(Current.getCategory());
+			if (categoryList != null) {
+				categoryList.add(Current);
 			} else {
 				List<DownloadableInfo> List = new java.util.ArrayList<DownloadableInfo>();
 				List.add(Current);
@@ -83,8 +84,9 @@ public class ManagerUtil {
 		Map<String, List<AppInfo>> Classes = new java.util.HashMap<String, List<AppInfo>>();
 
 		for (AppInfo Current : Apps) {
-			if (Classes.containsKey(Current.getAppClassName())) {
-				Classes.get(Current.getAppClassName()).add(Current);
+			List<AppInfo> classList = Classes.get(Current.getAppClassName());
+			if (classList != null) {
+				classList.add(Current);
 			} else {
 				List<AppInfo> List = new java.util.ArrayList<AppInfo>();
 				List.add(Current);
@@ -99,8 +101,9 @@ public class ManagerUtil {
 		Map<String, List<AppInfo>> Ids = new java.util.HashMap<String, List<AppInfo>>();
 
 		for (AppInfo Current : Apps) {
+			List<AppInfo> idList = Ids.get(Current.getID());
 			if (Ids.containsKey(Current.getID())) {
-				Ids.get(Current.getID()).add(Current);
+				idList.add(Current);
 			} else {
 				List<AppInfo> List = new java.util.ArrayList<AppInfo>();
 				List.add(Current);

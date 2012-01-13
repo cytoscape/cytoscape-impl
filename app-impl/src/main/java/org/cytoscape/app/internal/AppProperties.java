@@ -121,8 +121,9 @@ public class AppProperties extends Properties {
 		
 		
 		AppInfo pi;
-		if (containsKey(AppProperty.UNIQUE_ID.getPropertyKey())) {
-			pi = new AppInfo(getProperty(AppProperty.UNIQUE_ID.getPropertyKey()));
+		String uniqueId = getProperty(AppProperty.UNIQUE_ID.getPropertyKey());
+		if (uniqueId != null) {
+			pi = new AppInfo(uniqueId);
 			if (info != null) {
 				pi.setObjectUrl(info.getObjectUrl());
 				pi.setDownloadableURL(info.getDownloadableURL());
@@ -151,22 +152,25 @@ public class AppProperties extends Properties {
 		
 		
 		// optional parameters
-		if (containsKey(AppProperty.PROJECT_URL.getPropertyKey())) {
-			pi.setProjectUrl(getProperty(AppProperty.PROJECT_URL.getPropertyKey()));
+		String projectUrl = getProperty(AppProperty.PROJECT_URL.getPropertyKey());
+		if (projectUrl != null) {
+			pi.setProjectUrl(projectUrl);
 		}
 
-		if (containsKey(AppProperty.DOWNLOAD_URL.getPropertyKey())) {
-			pi.setDownloadableURL(getProperty(AppProperty.DOWNLOAD_URL.getPropertyKey()));
+		String downloadUrl = getProperty(AppProperty.DOWNLOAD_URL.getPropertyKey());
+		if (downloadUrl != null) {
+			pi.setDownloadableURL(downloadUrl);
 		}
 
-		if (containsKey(AppProperty.AUTHORS.getPropertyKey()) || containsKey("appAuthorsIntsitutions")) {
+		String AuthorProp = getProperty(AppProperty.AUTHORS.getPropertyKey());
+		String AuthorProp2 = getProperty("appAuthorsIntsitutions");
+		if (AuthorProp != null || AuthorProp2 != null) {
 			// split up the value and add each
-			String AuthorProp = getProperty(AppProperty.AUTHORS.getPropertyKey());
 
 			// bug fix, misspelled the property file key but need to be sure anyone who used the
 			// misspelling is taken care of for now
 			if (AuthorProp == null) 
-				AuthorProp = getProperty("appAuthorsIntsitutions");
+				AuthorProp = AuthorProp2;
 
 			String[] AuthInst = AuthorProp.split(";");
 
@@ -180,8 +184,9 @@ public class AppProperties extends Properties {
 			}
 		}
 
-		if (containsKey(AppProperty.RELEASE_DATE.getPropertyKey())) {
-			pi.setReleaseDate(getProperty(AppProperty.RELEASE_DATE.getPropertyKey()));
+		String releaseDate = getProperty(AppProperty.RELEASE_DATE.getPropertyKey());
+		if (releaseDate != null) {
+			pi.setReleaseDate(releaseDate);
 		}
 		
 		// on the off chance that someone did not install this via the PM this should be null if the version is not current
@@ -204,8 +209,9 @@ public class AppProperties extends Properties {
 
 	private boolean expectedPropertiesPresent() {
 		for (AppProperty pp : AppProperty.values()) {
-			if (pp.isRequired() && !containsKey(pp.getPropertyKey())) {
-				errorMsg = pp.getPropertyKey();
+			String key = pp.getPropertyKey();
+			if (pp.isRequired() && !containsKey(key)) {
+				errorMsg = key;
 				return false;
 			}
 		}

@@ -129,8 +129,9 @@ public class TableChooser extends JComboBox {
 			final CyTable table = (CyTable) value;
 			this.setFont(GLOBAL_FONT);
 			
-			if (tableToStringMap.containsKey(table))
-				setText(tableToStringMap.get(table));
+			String label = tableToStringMap.get(table); 
+			if (label != null)
+				setText(label);
 			else
 				setText(table == null ? "" : table.getTitle());
 

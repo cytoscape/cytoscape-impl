@@ -125,8 +125,9 @@ public class NetworkLineParser {
 		if (nodeIndex.equals(-1) == false && (nodeIndex <= (parts.length - 1)) && (parts[nodeIndex] != null)) {
 			//node = Cytoscape.getCyNode(parts[nodeIndex], true);
 
-			if (this.nodeMap.containsKey(parts[nodeIndex])){
-				return nodeMap.get(parts[nodeIndex]);
+			CyNode existingNode = nodeMap.get(parts[nodeIndex]);
+			if (existingNode != null) {
+				return existingNode;
 			}
 			node = network.addNode();
 			network.getRow(node).set("name", parts[nodeIndex]);

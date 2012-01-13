@@ -135,9 +135,11 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 		// initialize nodes
 		for (LayoutNode ln: part.getNodeList()) {
-			if ( !forceItems.containsKey(ln) )
-				forceItems.put(ln, new ForceItem());
 			ForceItem fitem = forceItems.get(ln); 
+			if ( fitem == null ) {
+				fitem = new ForceItem();
+				forceItems.put(ln, fitem);
+			}
 			fitem.mass = getMassValue(ln);
 			fitem.location[0] = 0f; 
 			fitem.location[1] = 0f; 

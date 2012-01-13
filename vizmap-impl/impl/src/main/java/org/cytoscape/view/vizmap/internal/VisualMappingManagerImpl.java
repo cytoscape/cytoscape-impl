@@ -125,12 +125,14 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 			return getDefaultVisualStyle();	
 		}
 
+		VisualStyle style = network2VisualStyleMap.get(nv);
 		// Not registered yet. Provide default style.
-		if (network2VisualStyleMap.containsKey(nv) == false) {
-			network2VisualStyleMap.put(nv, getDefaultVisualStyle());
+		if (style == null) {
+			style = getDefaultVisualStyle();
+			network2VisualStyleMap.put(nv, style);
 		}
 
-		return network2VisualStyleMap.get(nv);
+		return style;
 	}
 
 	/**

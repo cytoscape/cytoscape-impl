@@ -360,12 +360,14 @@ public class VizMapPropertySheetBuilder {
 	}
 	
 	public List<Property> getPropertyList(final VisualStyle style) {
-		if(propertyMap.containsKey(style) == false) {
-			final List<Property> newList = new ArrayList<Property>();
-			propertyMap.put(style, newList);
-			return newList;
-		} else
-			return propertyMap.get(style);
+		List<Property> list = propertyMap.get(style);
+		if (list != null) {
+			return list;
+		}
+		
+		final List<Property> newList = new ArrayList<Property>();
+		propertyMap.put(style, newList);
+		return newList;
 	}
 	
 	public void removePropertyList(final VisualStyle style) {
