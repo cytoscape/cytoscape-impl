@@ -209,9 +209,7 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNetworkViewTaskFactory createNetworkViewTaskFactory = new CreateNetworkViewTaskFactory(undoSupportServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,cyLayoutsServiceRef,cyEventHelperRef);
 		ExportNetworkImageTaskFactory exportNetworkImageTaskFactory = new ExportNetworkImageTaskFactory(viewWriterManagerServiceRef,cyApplicationManagerServiceRef);
 		ExportNetworkViewTaskFactory exportNetworkViewTaskFactory = new ExportNetworkViewTaskFactory(networkViewWriterManagerServiceRef);
-		ExportNodeTableTaskFactory exportNodeTableTaskFactory = new ExportNodeTableTaskFactory(cyTableWriterManagerRef);
-		ExportEdgeTableTaskFactory exportEdgeTableTaskFactory = new ExportEdgeTableTaskFactory(cyTableWriterManagerRef);
-		ExportCurrentTableTaskFactory exportCurrentTableTaskFactory = new ExportCurrentTableTaskFactory(cyTableWriterManagerRef);
+		ExportCurrentTableTaskFactory exportCurrentTableTaskFactory = new ExportCurrentTableTaskFactory(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef);
 		ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = new ApplyPreferredLayoutTaskFactory(undoSupportServiceRef,cyEventHelperRef,cyLayoutsServiceRef,cyPropertyServiceRef);
 		DeleteColumnTaskFactory deleteColumnTaskFactory = new DeleteColumnTaskFactory(undoSupportServiceRef);
 		RenameColumnTaskFactory renameColumnTaskFactory = new RenameColumnTaskFactory(undoSupportServiceRef);
@@ -599,20 +597,6 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkViewTaskFactoryProps.setProperty("inToolBar","true");
 		exportNetworkViewTaskFactoryProps.setProperty("tooltip","Export Network to File");
 		registerService(bc,exportNetworkViewTaskFactory,NetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
-
-		Properties exportNodeTableTaskFactoryProps = new Properties();
-		exportNodeTableTaskFactoryProps.setProperty("enableFor","networkAndView");
-		exportNodeTableTaskFactoryProps.setProperty("preferredMenu","File.Export.Node Attributes");
-		exportNodeTableTaskFactoryProps.setProperty("menuGravity","1.0");
-		exportNodeTableTaskFactoryProps.setProperty("title","File...");
-		registerService(bc,exportNodeTableTaskFactory,NetworkViewTaskFactory.class, exportNodeTableTaskFactoryProps);
-
-		Properties exportEdgeTableTaskFactoryProps = new Properties();
-		exportEdgeTableTaskFactoryProps.setProperty("enableFor","networkAndView");
-		exportEdgeTableTaskFactoryProps.setProperty("preferredMenu","File.Export.Edge Attributes");
-		exportEdgeTableTaskFactoryProps.setProperty("menuGravity","1.1");
-		exportEdgeTableTaskFactoryProps.setProperty("title","File...");
-		registerService(bc,exportEdgeTableTaskFactory,NetworkViewTaskFactory.class, exportEdgeTableTaskFactoryProps);
 
 		Properties exportCurrentTableTaskFactoryProps = new Properties();
 		exportCurrentTableTaskFactoryProps.setProperty("enableFor","table");
