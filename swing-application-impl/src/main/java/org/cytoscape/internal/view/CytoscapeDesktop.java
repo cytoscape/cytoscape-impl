@@ -91,7 +91,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	private final static long serialVersionUID = 1202339866271348L;
 	
-	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1150, 850);
+	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1200, 850);
 	private static final int DEF_DIVIDER_LOATION = 450;
 	
 	private static final String SMALL_ICON = "/images/c16.png";
@@ -174,7 +174,15 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 		// update look and feel
 		try {
-			final String laf = UIManager.getSystemLookAndFeelClassName();
+			String laf = null;
+			if (System.getProperty("os.name").startsWith("Mac OS X") ||
+			    System.getProperty("os.name").startsWith("Windows"))
+				laf = UIManager.getSystemLookAndFeelClassName();
+			else {
+				// Use Nimbus on Unix systems
+				laf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+			}
+
 			logger.debug("setting look and feel to: " + laf);
 			UIManager.setLookAndFeel(laf);
 			SwingUtilities.updateComponentTreeUI(this);
