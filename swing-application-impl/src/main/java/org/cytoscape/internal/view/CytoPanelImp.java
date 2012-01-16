@@ -31,6 +31,7 @@ package org.cytoscape.internal.view;
 
 
 import java.awt.BorderLayout;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -47,7 +48,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -55,6 +55,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -86,6 +87,19 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private final static long serialVersionUID = 1202339868245830L;
 	private final static Logger logger = LoggerFactory.getLogger(CytoPanelImp.class);
 
+	/**
+	 * These are the minimum sizes for our CytoPanels.  A CytoPanel can't exceed these
+	 * values.
+	 */
+	private static final int WEST_MIN_WIDTH = 100;
+	private static final int WEST_MAX_WIDTH = 400;
+	private static final int WEST_MIN_HEIGHT = 500;
+	private static final int SOUTH_MIN_WIDTH = 500;
+	private static final int SOUTH_MIN_HEIGHT = 50;
+	private static final int EAST_MIN_WIDTH = 100;
+	private static final int EAST_MAX_WIDTH = 500;
+	private static final int EAST_MIN_HEIGHT = 100;
+	
 	/**
 	 * The JTabbedPane we hide.
 	 */
@@ -188,11 +202,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private static final String DOCK_GIF = "pin.gif";
 
-	/**
-	 * The file separator character.
-	 */
-	private static final String FILE_SEPARATOR = "/";
-
 	private final CyEventHelper cyEventHelper;
 
 	/**
@@ -246,6 +255,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 
 	public void add(CytoPanelComponent comp) {
+		// Check our sizes, and override, if necessary
+		checkSizes(comp.getComponent());
 		tabbedPane.addTab(comp.getTitle(), comp.getIcon(), comp.getComponent());
 		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
 	}
@@ -259,6 +270,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * @param tip       Component Tool tip text.
 	 */
 	public void add(String title, Icon icon, Component component, String tip) {
+		// Check our sizes, and override, if necessary
+		checkSizes(component);
 		// add tab to JTabbedPane (string, icon, component, tip)
 		tabbedPane.addTab(title, icon, component, tip);
 
@@ -376,6 +389,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	public void setSelectedIndex(int index) {
 		// set selected index
 		tabbedPane.setSelectedIndex(index);
+		resizeSelectedComponent();
 
 		// do not have to sent out notification - the tabbedPane will let us know.
 	}
@@ -428,6 +442,9 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * to determine when new tab has been selected
 	 */
 	public void stateChanged(ChangeEvent e) {
+		// Handle the resize
+		resizeSelectedComponent();
+		
 		// let our listeners know
 		notifyListeners(NOTIFICATION_COMPONENT_SELECTED);
 	}
@@ -481,6 +498,63 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			biModalSplitPane.setMode(cytoPanelState, BiModalJSplitPane.MODE_HIDE_SPLIT);
 		}
 	}
+	
+	/**
+	 * Checks to make sure the CytoPanel is within the appropriate dimensions
+	 * by overriding the sizes, if necessary
+	 */
+	private void checkSizes(Component comp) {
+		if (compassDirection == CytoPanelName.WEST) {
+			comp.setMinimumSize(new Dimension(WEST_MIN_WIDTH, WEST_MIN_HEIGHT));
+		} else if (compassDirection == CytoPanelName.SOUTH) {
+			comp.setMinimumSize(new Dimension(SOUTH_MIN_WIDTH, SOUTH_MIN_HEIGHT));
+		} else if (compassDirection == CytoPanelName.EAST) {
+			comp.setMinimumSize(new Dimension(EAST_MIN_WIDTH, EAST_MIN_HEIGHT));
+		}
+	}
+	
+	/**
+	 * Size the divider to the currently selected panel's preferred Size
+	 */
+	private void resizeSelectedComponent() {
+		/* 
+		 * Set default resize behavior based on the currently
+		 * selected panel's preferredSize setting
+		 */
+		Component panel = tabbedPane.getSelectedComponent();
+		// Make sure we're not being notified that we've deleted
+		// the last panel
+		int width = 0;
+		if (panel != null && cytoPanelContainer instanceof JSplitPane) {
+			JSplitPane jsp = (JSplitPane)cytoPanelContainer;
+			// if the panel is 0x0, it's probably not created, yet
+			if (panel.getSize().width == 0 && panel.getSize().height == 0)
+				return;
+
+			if (panel.getPreferredSize() != null)
+				width = panel.getPreferredSize().width;
+
+			if (compassDirection == CytoPanelName.WEST) {
+				if (width > WEST_MAX_WIDTH)
+					width = WEST_MAX_WIDTH;
+				else if (width < WEST_MIN_WIDTH)
+					width = WEST_MIN_WIDTH;
+				jsp.setDividerLocation(width+jsp.getInsets().left+jsp.getInsets().right+5);
+			} else if (compassDirection == CytoPanelName.EAST) {
+				if (width > EAST_MAX_WIDTH)
+					width = EAST_MAX_WIDTH;
+				else if (width < EAST_MIN_WIDTH)
+					width = EAST_MIN_WIDTH;
+				jsp.setDividerLocation(jsp.getSize().width
+				                       -jsp.getInsets().right
+				                       -jsp.getInsets().left
+				                       -jsp.getDividerSize()
+				                       -width-5);
+			}
+		// TODO: What's the right thing to do with SOUTH?
+		}
+	}
+
 
 	/**
 	 * Constructs this CytoPanel.
