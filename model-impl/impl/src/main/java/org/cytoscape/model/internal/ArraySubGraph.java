@@ -531,28 +531,29 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
     /**
      * {@inheritDoc}
      */
-    public CyRow getRow(CyTableEntry entry, String tableName) {
-        if ( entry == null )
-            throw new NullPointerException("null entry");
+	public CyRow getRow(CyTableEntry entry, String tableName) {
+		if ( entry == null )
+			throw new NullPointerException("null entry");
 
-        if ( tableName == null )
-            throw new NullPointerException("null table name");
+		if ( tableName == null )
+			throw new NullPointerException("null table name");
 
-        CyTable table;
+		CyTable table;
 
-        synchronized (this) {
-            if ( entry instanceof CyNode && containsNode((CyNode)entry) )
-                table = nodeTables.get(tableName);
-            else if ( entry instanceof CyEdge && containsEdge((CyEdge)entry) )
-                table = edgeTables.get(tableName);
-            else if ( entry instanceof CyNetwork && entry.equals(this) )
-                table = netTables.get(tableName);
-            else
-                throw new IllegalArgumentException("unrecognized table entry!");
-        }
+		synchronized (this) {
+			if ( entry instanceof CyNode && containsNode((CyNode)entry) )
+				table = nodeTables.get(tableName);
+			else if ( entry instanceof CyEdge && containsEdge((CyEdge)entry) )
+				table = edgeTables.get(tableName);
+			else if ( entry instanceof CyNetwork && entry.equals(this) )
+				table = netTables.get(tableName);
+			else
+				throw new IllegalArgumentException("unrecognized (table entry): " + entry.toString() + 
+				                                   "  (table name): " + tableName);
+		}
 
-        return table.getRow(entry.getSUID());
-    }
+		return table.getRow(entry.getSUID());
+	}
 
 
 	public String toString() {
