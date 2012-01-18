@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.Component;
+import java.awt.Window;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -57,6 +59,11 @@ public class FileHandler extends AbstractGUITunableHandler {
 	private boolean input;
 	private List<FileChooserFilter> filters;
 
+	private Window possibleParent;
+
+	private String defaultString;
+
+
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>File</code> type
 	 *
@@ -91,8 +98,8 @@ public class FileHandler extends AbstractGUITunableHandler {
 		input = isInput();
 
 		final String fileCategory = getFileCategory();
-		filters = fileTypesManager.getSupportedFileTypes(DataCategory.valueOf(fileCategory.toUpperCase()),
-								 input);
+		filters = fileTypesManager.getSupportedFileTypes(DataCategory.valueOf(fileCategory.toUpperCase()), input);
+		defaultString = "Please select a " + fileCategory.toLowerCase() + " file...";
 
 		setGui();
 		setLayout();
@@ -133,7 +140,7 @@ public class FileHandler extends AbstractGUITunableHandler {
 
 		//set title and textfield text for the file type
 		final String fileCategory = getFileCategory();
-		fileTextField.setText("Please select a " + fileCategory.toLowerCase() + " file...");
+		fileTextField.setText(defaultString);
 		titleLabel.setText((input ? "Load " : "Save ") + initialCaps(fileCategory) + " File");
 	}
 
@@ -184,6 +191,20 @@ public class FileHandler extends AbstractGUITunableHandler {
 						  .addContainerGap()));
 	}
 
+	/**
+	 * This method allows us to bypass the normal tunable support when the only
+	 * tunable in a Task is a File.  This allows us to pop up a file dialog
+	 * without first presenting the tunable dialog.
+	 */
+	boolean setFileTunableDirectly(Window possibleParent) {
+		this.possibleParent = possibleParent;
+		setGui();
+		myFileActionListener action = new myFileActionListener();
+		action.actionPerformed(null);
+		handle();
+		return !fileTextField.getText().equals(defaultString);
+	}
+
 	// Click on the "open" or "save" button action listener
 	private final class myFileActionListener implements ActionListener{
 		public void actionPerformed(ActionEvent ae) {
@@ -203,10 +224,14 @@ public class FileHandler extends AbstractGUITunableHandler {
 					}
 				}
 			}
-				
-			final File file =
-				fileUtil.getFile(SwingUtilities.getWindowAncestor(panel),
-				                 titleLabel.getText(), load_or_save, filters);
+
+			// Use the panel's parent if we have it, otherwise use the possible
+			// parent specified in setFileTunableDirectly. 
+			Component parentComponent = SwingUtilities.getWindowAncestor(panel);
+			if ( parentComponent == null )
+				parentComponent = possibleParent;
+	
+			final File file = fileUtil.getFile(parentComponent, titleLabel.getText(), load_or_save, filters);
 			if (file != null) {
 				fileTextField.setFont(FILE_NAME_FONT);
 				fileTextField.setText(file.getAbsolutePath());

@@ -2,6 +2,7 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.Color;
+import java.awt.Window;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +60,9 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	/** Provides an initialised logger. */
 	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
 
+	/** Do not ever modify this panel! Used for special case handling of files. */
+	protected final JPanel FILE_HANDLER_CANCEL_PANEL = new JPanel();
+
 	/**
 	 * Constructor.
 	 */
@@ -93,6 +97,15 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 	/** {@inheritDoc} */
 	public JPanel buildConfiguration(final Object objectWithTunables) {
+		return buildConfiguration(objectWithTunables,null);
+	}
+
+	/** 
+	 * A special case of buildConfiguration that allows a parent window to be specified.
+	 * This special case is when a task only has a single tunable of type File, in
+	 * which case we don't want to show the normal tunable dialog, just the file dialog.
+	 */
+	JPanel buildConfiguration(final Object objectWithTunables, Window possibleParent) {
 
 		int factoryCount = 0; // # of descendents of TaskFactory...
 		int otherCount = 0;   // ...everything else.  (Presumeably descendents of Task.)
@@ -134,6 +147,18 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			}
 			return null; 
 		}
+
+		// This is special case handling for when the only tunable specified
+		// in a task is a file, in which case we don't want a full tunable dialog
+		// and all of the extra clicks, instead we just want a file dialog.
+		if ( handlers.size() == 1 && handlers.get(0) instanceof FileHandler ) {
+			FileHandler fh = (FileHandler) handlers.get(0);
+			boolean fileFound = fh.setFileTunableDirectly(possibleParent);
+			if ( fileFound )
+				return null; 
+			else
+				return FILE_HANDLER_CANCEL_PANEL;
+		} 
 
 		if (!panelMap.containsKey(handlers)) {
 			final String MAIN = " ";

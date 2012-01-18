@@ -57,11 +57,19 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 	
 	/** {@inheritDoc} */
 	public boolean validateAndWriteBack(Object objectWithTunables) {
-		final JPanel panel = buildConfiguration(objectWithTunables);
+		final JPanel panel = buildConfiguration(objectWithTunables, parent);
+
+		// no tunables found, everything OK for task to proceed
 		if (panel == null)
 			return true;
 
-		return displayGUI(panel, objectWithTunables);
+		// found the special case of the file handle cancel panel,
+		// which means we should quit now
+		else if ( panel == FILE_HANDLER_CANCEL_PANEL )
+			return false;
+
+		else
+			return displayGUI(panel, objectWithTunables);
 	}
 
 	/** 
