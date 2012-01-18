@@ -328,7 +328,7 @@ public class C2DMappingEditor<V> extends
 		/*
 		 * get min and max for the value object
 		 */
-		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer(slider);
+		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<Number, V>(
 				mapping, below, above, tracer,
 				appManager.getCurrentRenderingEngine());

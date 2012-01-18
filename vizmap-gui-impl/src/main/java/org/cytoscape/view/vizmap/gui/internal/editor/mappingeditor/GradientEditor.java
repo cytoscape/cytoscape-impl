@@ -29,6 +29,6 @@ public class GradientEditor extends AbstractContinuousMappingEditor<Double, Colo
 		@SuppressWarnings("unchecked")
 		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) mapping.getVisualProperty().getTargetDataType();
 		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-		this.editorPanel = new GradientEditorPanel(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager, editorManager.getValueEditor(Paint.class), vmm);		
+		this.editorPanel = new GradientEditorPanel(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager, editorManager.getValueEditor(Paint.class), vmm);
 	}
 }

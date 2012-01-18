@@ -38,6 +38,9 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.ImageIcon;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
@@ -84,6 +87,8 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 			addSlider(0d, FIRST_LOCATION);
 			addSlider(100d, SECOND_LOCATION);
 		}
+		
+		setPropertySpinner();
 	}
 
 
@@ -217,7 +222,7 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 		/*
 		 * get min and max for the value object
 		 */
-		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer(slider);
+		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 
 		ContinuousTrackRenderer<Double, V> cRend = new ContinuousTrackRenderer<Double, V>(
 				style, mapping, below, above, tracer, appManager);
@@ -250,6 +255,36 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 					.getTrackGraphicIcon(iconWidth, iconHeight);
 		} else {
 			return null;
+		}
+	}
+	
+	
+	private void setPropertySpinner() {
+		SpinnerNumberModel propertySpinnerModel = new SpinnerNumberModel(0.0d, Float.NEGATIVE_INFINITY,
+				Float.POSITIVE_INFINITY, 0.01d);
+		propertySpinnerModel.addChangeListener(new PropertySpinnerChangeListener(propertySpinnerModel));
+		propertySpinner.setModel(propertySpinnerModel);
+	}
+	
+	private final class PropertySpinnerChangeListener implements ChangeListener {
+		
+		private final SpinnerNumberModel spinnerModel;
+		
+		public PropertySpinnerChangeListener(final SpinnerNumberModel model) {
+			this.spinnerModel = model;
+		}
+
+		public void stateChanged(ChangeEvent e) {
+//			final Float newVal = new Float(spinnerModel.getNumber().doubleValue());
+//			final int selectedIndex = slider.getSelectedIndex();
+//			ContinuousTrackRenderer trackRenderer = (ContinuousTrackRenderer)slider.getTrackRenderer();
+//			trackRenderer.setSelectedIndex(selectedIndex);
+//
+//			trackRenderer.setSelectedValue(newVal);
+//
+//			slider.repaint();
+//			repaint();
+//			updateCytoscape();
 		}
 	}
 }

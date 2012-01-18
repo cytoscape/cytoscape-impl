@@ -177,12 +177,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param g
-	 *            DOCUMENT ME!
-	 */
+	
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
@@ -459,29 +454,9 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		g.translate(-THUMB_WIDTH / 2, -12);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public Double getSelectedThumbValue() {
-		final Double valueRange = tracer.getRange(vp);
-		final Double minValue = tracer.getMin(vp);
-		final float position = slider.getModel().getThumbAt(
-				slider.getSelectedIndex()).getPosition();
 
-		return (((position / 100) * valueRange) + minValue);
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param slider
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	@Override public JComponent getRendererComponent(JXMultiThumbSlider slider) {
+	@Override
+	public JComponent getRendererComponent(@SuppressWarnings("rawtypes") JXMultiThumbSlider slider) {
 		this.slider = slider;
 		
 
@@ -798,30 +773,12 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param iconWidth
-	 *            DOCUMENT ME!
-	 * @param iconHeight
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	public ImageIcon getTrackGraphicIcon(int iconWidth, int iconHeight) {
 		return drawIcon(iconWidth, iconHeight, false);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param iconWidth
-	 *            DOCUMENT ME!
-	 * @param iconHeight
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	public ImageIcon getLegend(int iconWidth, int iconHeight) {
 		return drawIcon(iconWidth, iconHeight, true);
 	}
