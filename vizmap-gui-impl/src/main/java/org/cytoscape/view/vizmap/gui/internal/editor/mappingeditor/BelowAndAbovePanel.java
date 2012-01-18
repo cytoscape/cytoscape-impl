@@ -30,14 +30,13 @@ final class BelowAndAbovePanel extends JPanel {
 	private Color boxColor;
 	
 	private final ContinuousMapping<?, ?> mapping;
-	private final GradientEditorPanel parentPanel;
+	private final ContinuousMappingEditorPanel parentPanel;
 
-	
 	BelowAndAbovePanel(final ContinuousMappingEditorPanel parentPanel, final Color color, final boolean below, final ContinuousMapping<?, ?> mapping) {
 		this.boxColor = color;
 		this.isBelow = below;
 		this.mapping = mapping;
-		this.parentPanel = (GradientEditorPanel) parentPanel;
+		this.parentPanel = parentPanel;
 		this.vp = mapping.getVisualProperty();
 
 		if (below)
@@ -98,7 +97,7 @@ final class BelowAndAbovePanel extends JPanel {
 				if (Paint.class.isAssignableFrom(vp.getRange().getType()) == false)
 					return;
 
-				newValue = parentPanel.colorEditor.showEditor(null, boxColor);
+				newValue = ((GradientEditorPanel)parentPanel).colorEditor.showEditor(null, boxColor);
 				if (newValue == null)
 					return;
 				
@@ -125,8 +124,8 @@ final class BelowAndAbovePanel extends JPanel {
 				else
 					parentPanel.above = (Color) newValue;
 
-				parentPanel.initSlider();
-				parentPanel.updateView();
+				((GradientEditorPanel)parentPanel).initSlider();
+				((GradientEditorPanel)parentPanel).updateView();
 				
 			}
 		}
