@@ -34,6 +34,7 @@
  */
 package org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 
@@ -60,7 +61,7 @@ import org.jdesktop.swingx.multislider.TrackRenderer;
  * 
  */
 public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorPanel<Double, V> {
-	
+
 	private final static long serialVersionUID = 1213748836613718L;
 
 	// Default value for below and above.
@@ -69,17 +70,16 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 
 	private final V FIRST_LOCATION = (V) new Double(10f);
 	private final V SECOND_LOCATION = (V) new Double(30f);
-
 	
-	public C2CMappingEditor(
-			final VisualStyle style,
-			final ContinuousMapping<Double, V> mapping, final CyTable attr,
+	private SpinnerNumberModel propertySpinnerModel;
+
+
+	public C2CMappingEditor(final VisualStyle style, final ContinuousMapping<Double, V> mapping, final CyTable attr,
 			final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		super(style, mapping, attr, appManager, vmm);
 		abovePanel.setVisible(false);
 		belowPanel.setVisible(false);
 
-		// FIXME
 		setSlider();
 
 		// Add two sliders by default.
@@ -87,10 +87,9 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 			addSlider(0d, FIRST_LOCATION);
 			addSlider(100d, SECOND_LOCATION);
 		}
-		
+
 		setPropertySpinner();
 	}
-
 
 	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
 
@@ -99,18 +98,15 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 		if (rend instanceof ContinuousTrackRenderer) {
 			rend.getRendererComponent(slider);
 
-			return ((ContinuousTrackRenderer<Double, V>) rend)
-					.getTrackGraphicIcon(iconWidth, iconHeight);
+			return ((ContinuousTrackRenderer<Double, V>) rend).getTrackGraphicIcon(iconWidth, iconHeight);
 		} else {
 			return null;
 		}
 	}
 
-
 	public ImageIcon getLegend(final int width, final int height) {
 
-		final ContinuousTrackRenderer<Double, V> rend = (ContinuousTrackRenderer<Double, V>) slider
-				.getTrackRenderer();
+		final ContinuousTrackRenderer<Double, V> rend = (ContinuousTrackRenderer<Double, V>) slider.getTrackRenderer();
 		rend.getRendererComponent(slider);
 
 		return rend.getLegend(width, height);
@@ -145,13 +141,11 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 		final Double newVal = maxValue;
 
 		// Pick Up first point.
-		final ContinuousMappingPoint<Double, V> previousPoint = mapping
-				.getPoint(mapping.getPointCount() - 1);
+		final ContinuousMappingPoint<Double, V> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
 
 		final BoundaryRangeValues<V> previousRange = previousPoint.getRange();
 
-		V lesserVal = slider.getModel().getSortedThumbs()
-				.get(slider.getModel().getThumbCount() - 1).getObject();
+		V lesserVal = slider.getModel().getSortedThumbs().get(slider.getModel().getThumbCount() - 1).getObject();
 		V equalVal = FIVE;
 		V greaterVal = previousRange.greaterValue;
 
@@ -181,8 +175,7 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 			mapping.removePoint(selectedIndex);
 
 			updateMap();
-			((ContinuousTrackRenderer) slider.getTrackRenderer())
-					.removeSquare(selectedIndex);
+			((ContinuousTrackRenderer) slider.getTrackRenderer()).removeSquare(selectedIndex);
 
 			style.apply(appManager.getCurrentNetworkView());
 			appManager.getCurrentNetworkView().updateView();
@@ -191,7 +184,7 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 	}
 
 	private void setSlider() {
-		
+
 		slider.updateUI();
 
 		final double minValue = tracer.getMin(type);
@@ -206,8 +199,7 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 		for (ContinuousMappingPoint<Double, V> point : allPoints) {
 			bound = point.getRange();
 
-			fraction = ((Number) ((point.getValue() - minValue) / actualRange))
-					.floatValue() * 100d;
+			fraction = ((Number) ((point.getValue() - minValue) / actualRange)).floatValue() * 100d;
 			slider.getModel().addThumb(fraction.floatValue(), bound.equalValue);
 		}
 
@@ -224,8 +216,8 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 		 */
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 
-		ContinuousTrackRenderer<Double, V> cRend = new ContinuousTrackRenderer<Double, V>(
-				style, mapping, below, above, tracer, appManager);
+		ContinuousTrackRenderer<Double, V> cRend = new ContinuousTrackRenderer<Double, V>(style, mapping, below, above,
+				tracer, appManager);
 		cRend.addPropertyChangeListener(this);
 
 		slider.setThumbRenderer(thumbRend);
@@ -233,13 +225,10 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 		slider.addMouseListener(new ThumbMouseListener());
 	}
 
-
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(
-				ContinuousMappingEditorPanel.BELOW_VALUE_CHANGED)) {
+		if (evt.getPropertyName().equals(ContinuousMappingEditorPanel.BELOW_VALUE_CHANGED)) {
 			below = (V) evt.getNewValue();
-		} else if (evt.getPropertyName().equals(
-				ContinuousMappingEditorPanel.ABOVE_VALUE_CHANGED)) {
+		} else if (evt.getPropertyName().equals(ContinuousMappingEditorPanel.ABOVE_VALUE_CHANGED)) {
 			above = (V) evt.getNewValue();
 		}
 	}
@@ -251,40 +240,39 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 		if (rend instanceof ContinuousTrackRenderer) {
 			rend.getRendererComponent(slider);
 
-			return ((ContinuousTrackRenderer<Double, V>) rend)
-					.getTrackGraphicIcon(iconWidth, iconHeight);
+			return ((ContinuousTrackRenderer<Double, V>) rend).getTrackGraphicIcon(iconWidth, iconHeight);
 		} else {
 			return null;
 		}
 	}
-	
+
 	
 	private void setPropertySpinner() {
 		SpinnerNumberModel propertySpinnerModel = new SpinnerNumberModel(0.0d, Float.NEGATIVE_INFINITY,
 				Float.POSITIVE_INFINITY, 0.01d);
-		propertySpinnerModel.addChangeListener(new PropertySpinnerChangeListener(propertySpinnerModel));
+		propertySpinnerModel.addChangeListener(new PropertyValueSpinnerChangeListener(propertySpinnerModel));
 		propertySpinner.setModel(propertySpinnerModel);
 	}
-	
-	private final class PropertySpinnerChangeListener implements ChangeListener {
-		
+
+	private final class PropertyValueSpinnerChangeListener implements ChangeListener {
+
 		private final SpinnerNumberModel spinnerModel;
 		
-		public PropertySpinnerChangeListener(final SpinnerNumberModel model) {
+		public PropertyValueSpinnerChangeListener(SpinnerNumberModel model) {
 			this.spinnerModel = model;
 		}
 
 		public void stateChanged(ChangeEvent e) {
-//			final Float newVal = new Float(spinnerModel.getNumber().doubleValue());
-//			final int selectedIndex = slider.getSelectedIndex();
-//			ContinuousTrackRenderer trackRenderer = (ContinuousTrackRenderer)slider.getTrackRenderer();
-//			trackRenderer.setSelectedIndex(selectedIndex);
-//
-//			trackRenderer.setSelectedValue(newVal);
-//
-//			slider.repaint();
-//			repaint();
-//			updateCytoscape();
+			
+			final Float newVal = spinnerModel.getNumber().floatValue();
+			final int selectedIndex = slider.getSelectedIndex();
+
+			slider.getModel().getThumbAt(selectedIndex).setObject((V) newVal);
+
+			updateMap();
+			style.apply(appManager.getCurrentNetworkView());
+			appManager.getCurrentNetworkView().updateView();
+			slider.repaint();
 		}
 	}
 }

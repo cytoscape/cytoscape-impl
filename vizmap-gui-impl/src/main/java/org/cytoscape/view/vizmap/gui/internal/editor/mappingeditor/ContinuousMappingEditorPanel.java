@@ -42,6 +42,8 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -87,8 +89,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected static final Color BACKGROUND = Color.WHITE;
 	private static final Dimension BUTTON_SIZE = new Dimension(120, 1);
-	private static final Dimension SPINNER_SIZE = new Dimension(120, 1);
+	private static final Dimension SPINNER_SIZE = new Dimension(100, 25);
 	private static final Dimension EDITOR_SIZE = new Dimension(850, 350);
+	
+	private static final Font SMALL_FONT = new Font("SansSerif", 1, 10);
 
 	protected static final String BELOW_VALUE_CHANGED = "BELOW_VALUE_CHANGED";
 	protected static final String ABOVE_VALUE_CHANGED = "ABOVE_VALUE_CHANGED";
@@ -174,12 +178,17 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	// <editor-fold defaultstate="collapsed" desc=" Generated Code ">
 	private void initComponents() {
 
+		// Add margin
+		this.setOpaque(true);
+		this.setBackground(BACKGROUND);
+		this.setBorder(BorderFactory.createLineBorder(BACKGROUND, 5));
+		
 		this.setSize(EDITOR_SIZE);
 		this.setMinimumSize(EDITOR_SIZE);
 		this.setPreferredSize(EDITOR_SIZE);
 
 		mainPanel.setBackground(BACKGROUND);
-		this.setBackground(BACKGROUND);
+		
 		
 		abovePanel = new BelowAndAbovePanel(this, Color.yellow, false, mapping);
 		abovePanel.setName("abovePanel");
@@ -189,7 +198,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		belowPanel.setPreferredSize(new Dimension(20, 1));
 
 		rangeSettingPanel = new javax.swing.JPanel();
-		pivotLabel = new javax.swing.JLabel();
+		handlePositionSpinnerLabel = new JLabel();
 		addButton = new javax.swing.JButton();
 		deleteButton = new javax.swing.JButton();
 
@@ -200,36 +209,20 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		okButton = new JButton();
 		cancelButton = new JButton();
 
-		rangeEditorPanel = new javax.swing.JPanel();
-
 		slider = new JXMultiThumbSlider<V>();
 		attrNameLabel = new javax.swing.JLabel();
 		iconPanel = new YValueLegendPanel(type);
-		visualPropertyLabel = new javax.swing.JLabel();
-		this.visualPropertyLabel.setText("Visual Property: " + type.getDisplayName());
-
+		iconPanel.setBackground(BACKGROUND);
+		
+		handlePositionSpinnerLabel.setFont(SMALL_FONT);
+		handlePositionSpinnerLabel.setText("Selected Handle Position:");
 		valueSpinner = new JSpinner();
 		valueSpinner.setPreferredSize(SPINNER_SIZE);
+		valueSpinner.setMaximumSize(SPINNER_SIZE);
 		valueSpinner.setEnabled(false);
 
-		rotaryEncoder = new JXMultiThumbSlider<V>();
-
 		iconPanel.setPreferredSize(new Dimension(25, 1));
-
-		mainPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null,
-				"Continuous Mapping for " + type.getDisplayName(),
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("SansSerif", Font.BOLD, 12),
-				new java.awt.Color(0, 0, 0)));
-
-		rangeSettingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Range Setting",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("SansSerif", 1, 10),
-				new java.awt.Color(0, 0, 0)));
-		pivotLabel.setFont(new java.awt.Font("SansSerif", 1, 12));
-		pivotLabel.setForeground(java.awt.Color.darkGray);
-		pivotLabel.setText("Pivot:");
-
+		
 		addButton.setText("Add");
 		addButton.setPreferredSize(BUTTON_SIZE);
 		addButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -278,13 +271,25 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			}
 		});
 
+		
+		// Property value editor components
+		final JPanel propValuePanel = new JPanel();
+		propValuePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		propValuePanel.setPreferredSize(new Dimension(400, 40));
+		propValuePanel.setLayout(new BoxLayout(propValuePanel, BoxLayout.X_AXIS));
+		propValuePanel.setBackground(BACKGROUND);
+		rangeSettingPanel.setBackground(BACKGROUND);
+		
 		final Class<V> vpValueType = type.getRange().getType();
+		propertyLabel = new JLabel();
+		propertyLabel.setFont(SMALL_FONT);
 		if (Number.class.isAssignableFrom(vpValueType)) {
 			propertySpinner = new JSpinner();
 			propertySpinner.setPreferredSize(SPINNER_SIZE);
+			propertySpinner.setMaximumSize(SPINNER_SIZE);
 			propertySpinner.setEnabled(false);
 			propertyComponent = propertySpinner;
-			propertyLabel = new JLabel(type.getDisplayName());
+			propertyLabel.setText(type.getDisplayName());
 			propertyLabel.setLabelFor(propertyComponent);
 		} else if (Paint.class.isAssignableFrom(vpValueType)) {
 			// We use the colorButton for both discrete and color
@@ -293,14 +298,26 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			colorButton.setMargin(new Insets(2, 2, 2, 2));
 			colorButton.setEnabled(false);
 			propertyComponent = colorButton;
-			propertyLabel = new JLabel(type.getDisplayName());
+			propertyLabel.setText(type.getDisplayName());
 			propertyLabel.setLabelFor(propertyComponent);
 		} else {
 			propertyComponent = new JLabel();
-			propertyLabel = new JLabel("Double-click on icon to change " + type.getDisplayName());
+			propertyLabel.setText("Double-click on icon to change " + type.getDisplayName());
 		}
-
+		
+		propValuePanel.add(propertyLabel);
+		propValuePanel.add(propertyComponent);
+		
+		final JPanel editorPanel = new JPanel();
+		editorPanel.setLayout(new BorderLayout());
+		editorPanel.setBorder(BorderFactory.createTitledBorder(null, "Edit Handle Positions and Values",
+				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+				javax.swing.border.TitledBorder.DEFAULT_POSITION, SMALL_FONT,
+				new java.awt.Color(0, 0, 0)));
+		editorPanel.setBackground(BACKGROUND);
+		
 		final JPanel buttonPanel = new JPanel();
+		buttonPanel.setBackground(BACKGROUND);
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
 		buttonPanel.setLayout(buttonPanelLayout);
 		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -319,12 +336,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 										buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
 												.addComponent(okButton).addComponent(cancelButton)).addContainerGap()));
 
-		rangeEditorPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Range Editor",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("SansSerif", 1, 10),
-				new java.awt.Color(0, 0, 0)));
 		slider.setMaximumValue(100.0F);
-		rotaryEncoder.setMaximumValue(100.0F);
 
 		GroupLayout sliderLayout = new GroupLayout(slider);
 		slider.setLayout(sliderLayout);
@@ -337,39 +349,33 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		attrNameLabel.setForeground(java.awt.Color.darkGray);
 		attrNameLabel.setText("Attribute Name");
 
-		GroupLayout jXMultiThumbSlider1Layout = new GroupLayout(rotaryEncoder);
-		rotaryEncoder.setLayout(jXMultiThumbSlider1Layout);
-		jXMultiThumbSlider1Layout.setHorizontalGroup(jXMultiThumbSlider1Layout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addGap(0, 84, Short.MAX_VALUE));
-		jXMultiThumbSlider1Layout.setVerticalGroup(jXMultiThumbSlider1Layout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addGap(0, 65, Short.MAX_VALUE));
-
-		visualPropertyLabel.setFont(new java.awt.Font("SansSerif", 1, 14));
-		visualPropertyLabel.setForeground(java.awt.Color.darkGray);
-
 		GroupLayout rangeSettingPanelLayout = new GroupLayout(rangeSettingPanel);
 		rangeSettingPanel.setLayout(rangeSettingPanelLayout);
 		rangeSettingPanelLayout.setHorizontalGroup(rangeSettingPanelLayout.createParallelGroup(
 				GroupLayout.Alignment.LEADING).addGroup(
-				rangeSettingPanelLayout.createSequentialGroup().addContainerGap().addComponent(valueSpinner)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(propertyLabel)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(propertyComponent)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 200, Short.MAX_VALUE)
+				rangeSettingPanelLayout.createSequentialGroup().addContainerGap()
+						.addComponent(handlePositionSpinnerLabel)
+						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(valueSpinner)
+						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
 						.addComponent(minMaxButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 						.addComponent(addButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 						.addComponent(deleteButton).addGap(10, 10, 10)));
 		rangeSettingPanelLayout.setVerticalGroup(rangeSettingPanelLayout.createParallelGroup(
 				GroupLayout.Alignment.LEADING).addGroup(
-				rangeSettingPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(valueSpinner)
-						.addComponent(propertyLabel).addComponent(propertyComponent).addComponent(minMaxButton)
+				rangeSettingPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						.addComponent(handlePositionSpinnerLabel).addComponent(valueSpinner)
+						.addComponent(minMaxButton)
 						.addComponent(deleteButton).addComponent(addButton)));
 
+		editorPanel.add(rangeSettingPanel, BorderLayout.CENTER);
+		editorPanel.add(propValuePanel, BorderLayout.SOUTH);
+		
 		GroupLayout layout = new GroupLayout(mainPanel);
 		mainPanel.setLayout(layout);
 
 		layout.setHorizontalGroup(layout
 				.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(rangeSettingPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(editorPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(
 						layout.createSequentialGroup()
 								.addComponent(iconPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
@@ -392,7 +398,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 										.addComponent(abovePanel, GroupLayout.Alignment.TRAILING,
 												GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(rangeSettingPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						.addComponent(editorPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 								GroupLayout.PREFERRED_SIZE)));
 
 		// add the main panel to the dialog.
@@ -453,6 +459,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	// Variables declaration - do not modify
 
 	private JLabel attrNameLabel;
+	private JLabel handlePositionSpinnerLabel;
 
 	protected JButton addButton;
 	protected JButton colorButton;
@@ -463,13 +470,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected JButton okButton;
 
 	protected javax.swing.JPanel iconPanel;
-	private javax.swing.JLabel pivotLabel;
-	private javax.swing.JPanel rangeEditorPanel;
 	private javax.swing.JPanel rangeSettingPanel;
 	protected JXMultiThumbSlider<V> slider;
 	protected JSpinner valueSpinner;
-	private JLabel visualPropertyLabel;
-	protected JXMultiThumbSlider<V> rotaryEncoder;
 
 	protected JSpinner propertySpinner;
 	private JLabel propertyLabel;
@@ -561,7 +564,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 		if (Number.class.isAssignableFrom(vpValueType)) {
 			propertySpinner.setEnabled(true);
-			final BoundaryRangeValues<V> rg = mapping.getPoint(selectedIndex - 1).getRange();
+			final BoundaryRangeValues<V> rg = mapping.getPoint(selectedIndex).getRange();
 			propertySpinner.setValue(rg.equalValue);
 		} else if (Paint.class.isAssignableFrom(vpValueType)) {
 			colorButton.setEnabled(true);
@@ -624,8 +627,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		}
 	}
 
-	class SpinnerChangeListener implements ChangeListener {
+	private final class SpinnerChangeListener implements ChangeListener {
+		
+		@Override
 		public void stateChanged(ChangeEvent e) {
+			
 			Number newVal = spinnerModel.getNumber();
 			int selectedIndex = slider.getSelectedIndex();
 
@@ -636,11 +642,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 					} else {
 						spinnerModel.setValue(0);
 					}
-
 					return;
 				}
 
-				Double newPosition = ((newVal.floatValue() - tracer.getMin(type)) / tracer.getRange(type));
+				final Double newPosition = ((newVal.floatValue() - tracer.getMin(type)) / tracer.getRange(type));
 
 				slider.getModel().getThumbAt(selectedIndex).setPosition(newPosition.floatValue() * 100);
 				slider.getSelectedThumb().setLocation((int) ((slider.getSize().width - 12) * newPosition), 0);
@@ -650,6 +655,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				slider.getParent().repaint();
 				slider.repaint();
 				lastSpinnerNumber = newVal.doubleValue();
+				
+				final CyNetworkView curView = appManager.getCurrentNetworkView();
+				curView.updateView();
 			}
 		}
 	}

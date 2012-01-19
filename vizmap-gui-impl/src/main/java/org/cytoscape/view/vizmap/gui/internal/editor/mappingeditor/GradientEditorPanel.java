@@ -43,7 +43,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import java.util.SortedSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -134,7 +133,6 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 	protected void addButtonActionPerformed(ActionEvent evt) {
 
 		final BoundaryRangeValues<Color> lowerRange;
-
 		double maxValue = tracer.getMax(type);
 
 		// Currently, there is no mapping.
@@ -165,7 +163,7 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 		}
 
 		// Add a new white thumb in the min.
-		slider.getModel().addThumb(100f, Color.white);
+		slider.getModel().addThumb(70f, Color.white);
 
 		// Pick Up first point.
 		final ContinuousMappingPoint<Double, Color> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);

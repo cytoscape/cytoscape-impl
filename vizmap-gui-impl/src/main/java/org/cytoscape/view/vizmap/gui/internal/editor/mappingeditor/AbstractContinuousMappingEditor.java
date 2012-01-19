@@ -1,7 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -24,8 +23,8 @@ import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 
 public abstract class AbstractContinuousMappingEditor<K extends Number, V> extends AbstractPropertyEditor {
 	
-	private static final Dimension DEF_SIZE = new Dimension(700, 300);
-	private static final Dimension MIN_SIZE = new Dimension(500, 250);
+	private static final Dimension DEF_SIZE = new Dimension(500, 400);
+	private static final Dimension MIN_SIZE = new Dimension(300, 350);
 	
 	protected ContinuousMapping<K, V> mapping;
 	protected ContinuousMappingEditorPanel<K, V> editorPanel;
@@ -78,26 +77,24 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 					}
 				});
 				
-				editorDialog.setTitle("Continuous Mapping Editor: Mapping for " + mapping.getVisualProperty().getDisplayName());
+				editorDialog.setTitle("Continuous Mapping Editor for " + mapping.getVisualProperty().getDisplayName());
 				editorDialog.setLocationRelativeTo(editor);
 				editorDialog.setAlwaysOnTop(true);
-				editorDialog.setModal(true);
 				editorDialog.setVisible(true);
 				isEditorDialogActive = true;
 			}
 			
 			private void initComponents(final JDialog dialog) {
 
-				editorPanel.setBackground(Color.red);
 				dialog.setLayout(new BorderLayout());
 				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 				dialog.getContentPane().add(editorPanel, BorderLayout.CENTER);
 
 				dialog.setPreferredSize(DEF_SIZE);
 				dialog.setMinimumSize(MIN_SIZE);
-								
-		        dialog.pack();
-		    }
+
+				dialog.pack();
+			}
 		});
 	}
 	
@@ -116,5 +113,4 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 	@Override public Object getValue() {
 		return mapping;
 	}
-	
 }

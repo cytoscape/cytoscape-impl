@@ -71,11 +71,7 @@ public class YValueLegendPanel extends JPanel {
 		this.setPreferredSize(new Dimension());
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param g DOCUMENT ME!
-	 */
+	@Override
 	public void paintComponent(Graphics g) {
 		clear(g);
 
