@@ -34,6 +34,7 @@ public class VizMapperProperty<K, V, T> extends DefaultProperty {
 		this.cellType = cellType;
 		this.key = key;
 		
+		// In fact, this should be a unique ID of this property.
 		super.setName(key.toString());
 		super.setType(valueType);
 	}

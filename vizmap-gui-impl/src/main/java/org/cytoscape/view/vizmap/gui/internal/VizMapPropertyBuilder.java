@@ -100,8 +100,6 @@ public class VizMapPropertyBuilder {
 			final VisualMappingFunction<K, V> visualMapping, final String categoryName,
 			final PropertySheetPanel propertySheetPanel, final VisualMappingFunctionFactory factory) {
 
-		logger.debug("\n\n\n************************* buildProp called: Root VP = " + categoryName);
-
 		// Mapping is empty
 		if (visualMapping == null)
 			throw new NullPointerException("Mapping is null.");
@@ -208,19 +206,21 @@ public class VizMapPropertyBuilder {
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, topProperty, propertySheetPanel);
 
 		} else if (visualMapping instanceof ContinuousMapping && (attrName != null)) {
-
-			logger.debug("==========>>>>>> Setting Continuous:" + vpEditor);
 			
 			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
-				new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(CellType.CONTINUOUS, AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW, visualMapping.getClass());
+					new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
+					CellType.CONTINUOUS, visualMapping.getVisualProperty().getDisplayName()+ "_" + AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW, visualMapping.getClass());
+
+			graphicalView.setShortDescription("Continuous Mapping from " + visualMapping.getMappingColumnName()
+					+ " to " + visualMapping.getVisualProperty().getDisplayName());
 			graphicalView.setValue(visualMapping);
-			graphicalView.setDisplayName(AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW);
+			graphicalView.setDisplayName("Current Mapping");
 			graphicalView.setParentProperty(topProperty);
 			topProperty.addSubProperty(graphicalView);
 
+			// Renderer for Continuous mapping icon cell
 			final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer();
 
-			//FIXME
 			final PropertySheetTable table = propertySheetPanel.getTable();
 			final PropertyRendererRegistry rendReg = (PropertyRendererRegistry) table.getRendererFactory();
 			rendReg.registerRenderer(graphicalView, continuousRenderer);
@@ -229,7 +229,9 @@ public class VizMapPropertyBuilder {
 			final PropertyEditor continuousCellEditor = editorManager.getVisualPropertyEditor(vp)
 					.getContinuousMappingEditor();
 
-			if (continuousCellEditor != null)
+			if (continuousCellEditor == null)
+				throw new NullPointerException("Continuous Mapping cell editor is null.");
+			else
 				cellEditorFactory.registerEditor(graphicalView, continuousCellEditor);
 
 		} else if (visualMapping instanceof PassthroughMapping && (attrName != null)) {

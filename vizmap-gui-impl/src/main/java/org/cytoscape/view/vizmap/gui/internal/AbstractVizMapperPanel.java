@@ -86,7 +86,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 	// Visual Properties which are not used in mapping now.
 	public static final String CATEGORY_UNUSED = "Unused Properties";
 
-	// TODO remove this
 	public static final String GRAPHICAL_MAP_VIEW = "Graphical View";
 
 	protected final SelectedVisualStyleManager manager;

@@ -34,7 +34,6 @@
  */
 package org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 

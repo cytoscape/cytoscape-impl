@@ -38,7 +38,7 @@ public class NumberContinuousCellRenderer extends DefaultCellRenderer {
 			return this;
 		}
 		
-		logger.debug("!!!!!!!!! Number cell renderer called: " + value.toString());
+		logger.debug("Number cell renderer called: " + value.toString());
 		
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
