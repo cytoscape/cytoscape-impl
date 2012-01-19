@@ -26,10 +26,12 @@ public final class TriangleThumbRenderer extends JComponent implements ThumbRend
 	private static final Color BACKGROUND_COLOR = Color.white;
 
 	private static final Stroke DEF_STROKE = new BasicStroke(1.0f);
-	private static final Stroke SELECTED_STROKE = new BasicStroke(2.0f);
 
+	// Keep the last selected thumb.
 	private boolean selected;
-	
+	private int selectedIndex;
+	private int currentIndex;
+
 	public TriangleThumbRenderer() {
 		super();
 		setBackground(BACKGROUND_COLOR);
@@ -40,42 +42,38 @@ public final class TriangleThumbRenderer extends JComponent implements ThumbRend
 		final Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		if (selected) {
-			final Polygon outline = new Polygon();
-			outline.addPoint(0, 0);
-			outline.addPoint(0, 4);
-			outline.addPoint(4, 9);
-			outline.addPoint(8, 4);
-			outline.addPoint(8, 0);
-			g.fillPolygon(outline);
-			g.setColor(SELECTED_COLOR);
-			g2d.setStroke(SELECTED_STROKE);
-			g.drawPolygon(outline);
-		} else {
-			final Polygon thumb = new Polygon();
-			thumb.addPoint(0, 0);
-			thumb.addPoint(10, 0);
-			thumb.addPoint(5, 10);
-			g.fillPolygon(thumb);
+		final Polygon thumb = new Polygon();
+		thumb.addPoint(0, 0);
+		thumb.addPoint(10, 0);
+		thumb.addPoint(5, 10);
+		g.fillPolygon(thumb);
 
-			final Polygon outline = new Polygon();
-			outline.addPoint(0, 0);
-			outline.addPoint(9, 0);
-			outline.addPoint(5, 9);
-			g.setColor(Color.DARK_GRAY);
-			g2d.setStroke(DEF_STROKE);
-			g.drawPolygon(outline);
-		}
+		final Polygon outline = new Polygon();
+		outline.addPoint(0, 0);
+		outline.addPoint(9, 0);
+		outline.addPoint(5, 9);
+
+		g2d.setStroke(DEF_STROKE);
+		if (selected || selectedIndex == currentIndex)
+			g2d.setColor(SELECTED_COLOR);
+		else
+			g2d.setColor(DEFAULT_COLOR);
+
+		g.drawPolygon(outline);
 	}
 
 	@Override
-	public JComponent getThumbRendererComponent(@SuppressWarnings("rawtypes") JXMultiThumbSlider slider, int index,
-			boolean selected) {
+	public JComponent getThumbRendererComponent(@SuppressWarnings("rawtypes") final JXMultiThumbSlider slider,
+			int index, boolean selected) {
+		// Update state
 		this.selected = selected;
+		this.selectedIndex = slider.getSelectedIndex();
+		this.currentIndex = index;
 
-		final Object obj = slider.getModel().getThumbAt(index).getObject();
-		if (obj.getClass() == Color.class)
-			this.setForeground((Color) obj);
+		final Object currentValue = slider.getModel().getThumbAt(index).getObject();
+
+		if (currentValue.getClass() == Color.class)
+			this.setForeground((Color) currentValue);
 		else {
 			if (selected)
 				this.setForeground(SELECTED_COLOR);
