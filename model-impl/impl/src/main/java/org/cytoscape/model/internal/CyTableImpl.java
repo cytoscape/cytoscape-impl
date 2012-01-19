@@ -770,16 +770,24 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							   final Class<? extends T> listElementType, final List<T> defaultValue)
 	{
 		CyColumn type = types.get(columnName);
-		if (type == null)
-			throw new IllegalArgumentException("'" + columnName + "' does not yet exist!");
+		if (type == null) {
+			logger.warn("'" + columnName + "' does not yet exist!");
+			return defaultValue;
+		}
+
 		final Class<?> expectedListElementType = type.getListElementType();
-		if (expectedListElementType == null)
-			throw new IllegalArgumentException("'" + columnName + "' is not a List!");
-		if (expectedListElementType != listElementType)
-			throw new IllegalArgumentException("invalid list element type for column '"
-							   + columnName + ", found: " + listElementType.getName()
-							   + ", expected: " + expectedListElementType.getName()
-							   + "!");
+		if (expectedListElementType == null) {
+			logger.warn("'" + columnName + "' is not a List!");
+			return defaultValue;
+		}
+
+		if (expectedListElementType != listElementType) {
+			logger.warn("invalid list element type for column '"
+			             + columnName + ", found: " + listElementType.getName()
+			             + ", expected: " + expectedListElementType.getName()
+			             + "!");
+			return defaultValue;
+		}
 
 		lastInternalError = null;
 
