@@ -29,6 +29,7 @@ package org.cytoscape.model.internal;
 
 
 import org.cytoscape.model.CyNode;
+import java.util.Arrays; 
 
 
 /**
@@ -60,6 +61,10 @@ final class NodePointer {
 	// The number of directed self-edges on this node.
 	int[] selfEdges = new int[INITIAL_ALLOCATION];
 
+	// Whether the node pointer is included in the subnetwork 
+	// specified by the index of the array.
+	boolean[] includes = new boolean[INITIAL_ALLOCATION];
+
 	NodePointer(final int nodeIndex, final CyNode cyn) {
 		index = nodeIndex;
 		cyNode = cyn;
@@ -71,6 +76,8 @@ final class NodePointer {
 
 		firstOutEdge[0] = null;
 		firstInEdge[0] = null;
+
+		Arrays.fill(includes,false);
 	}
 
 	void expandTo(final int z) {
@@ -87,6 +94,7 @@ final class NodePointer {
 		inDegree = expandIntArray(inDegree, x);
 		undDegree = expandIntArray(undDegree, x);
 		selfEdges = expandIntArray(selfEdges, x);
+		includes = expandBooleanArray(includes, x);
 	}
 
 	static NodePointer[] expandNodePointerArray(final NodePointer[] np, final int n) {
@@ -101,7 +109,15 @@ final class NodePointer {
 		return nnp;
 	}
 
+	static boolean[] expandBooleanArray(final boolean[] np, final int n) {
+		final boolean[] nnp = new boolean[n+1];
+		System.arraycopy(np,0,nnp,0,np.length);
+		return nnp;
+	}
+
 	NodePointer insert(final NodePointer next, final int inId) {
+		includes[inId] = true;
+
 		nextNode[inId] = next;
 		if (next != null)
 			next.prevNode[inId] = this;
@@ -111,6 +127,8 @@ final class NodePointer {
 	}
 
 	NodePointer remove(final NodePointer first, final int inId) {
+		includes[inId] = false;
+
 		NodePointer ret = first;
 		if (prevNode[inId] != null)
 			prevNode[inId].nextNode[inId] = nextNode[inId];
@@ -126,5 +144,11 @@ final class NodePointer {
 		firstInEdge[inId] = null;
 
 		return ret;
+	}
+
+	boolean isSet(final int inId) {
+		return ( inId >= 0 &&
+		         inId < includes.length && 
+		         includes[inId] );
 	}
 }

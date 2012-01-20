@@ -76,8 +76,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	private int internalNodeCount;
 	private int internalEdgeCount;
 	private NodePointer inFirstNode;
-	private Set<CyNode> nodeSet;
-	private Set<CyEdge> edgeSet;
 	private boolean fireAddedNodesAndEdgesEvents;
 
 	private final Map<String,CyTable> netTables;
@@ -103,9 +101,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 		this.edgeTables = edgeTables;
 		this.tableMgr = tableMgr;
 		
-		nodeSet = new HashSet<CyNode>(20000);
-		edgeSet = new HashSet<CyEdge>(20000);
-
 		internalNodeCount = 0;
 		internalEdgeCount = 0;
 		fireAddedNodesAndEdgesEvents = false;
@@ -181,7 +176,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			ret = parent.nodeAdd();
 			updateNode(ret);
 			internalNodeCount++;
-			nodeSet.add(ret);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
@@ -201,7 +195,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			ret = parent.edgeAdd(source, target, isDirected, this);
 			updateEdge(ret);
 			internalEdgeCount++;
-			edgeSet.add(ret);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
@@ -243,14 +236,24 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 	 * {@inheritDoc}
 	 */
 	public boolean containsNode(final CyNode node) {
-		return parent.containsNode(node) && nodeSet.contains(node);
+		if ( parent.containsNode(node) ) {
+			final NodePointer np = parent.getNodePointer(node);
+			return np.isSet(internalId);
+		} else {
+			return false;
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean containsEdge(final CyEdge edge) {
-		return parent.containsEdge(edge) && edgeSet.contains(edge);
+		if ( parent.containsEdge(edge) ) {
+			final EdgePointer np = parent.getEdgePointer(edge);
+			return np.isSet(internalId);
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -270,7 +273,8 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			return null;
 
 		// make sure the subnetwork still contains the node
-		if ( nodeSet.contains(n) )
+		final NodePointer np = parent.getNodePointer(n);
+		if ( np.isSet(internalId) )
 			return n;
 		else
 			return null;
@@ -286,7 +290,8 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			return null;
 
 		// make sure the subnetwork still contains the edge
-		if ( edgeSet.contains(e) )
+		final EdgePointer ep = parent.getEdgePointer(e);
+		if ( ep.isSet(internalId) )
 			return e;
 		else
 			return null;
@@ -337,7 +342,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 			// add node
 			internalNodeCount++;
-			nodeSet.add(node);
 			updateNode(node);
 			copyDefaultAttrs(parent.getRow(node), this.getRow(node));
 		}
@@ -375,7 +379,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 
 			// add edge
 			internalEdgeCount++;
-			edgeSet.add(edge);
 			updateEdge(edge);
 			copyDefaultAttrs(parent.getRow(edge), this.getRow(edge));
 			copyDefaultEdgeAttrs(parent.getRow(edge), this.getRow(edge));
@@ -410,7 +413,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 				inFirstNode = node.remove(inFirstNode,internalId);
 
 				internalNodeCount--;
-				nodeSet.remove(n);
 			}
 		}
 
@@ -452,7 +454,6 @@ final class ArraySubGraph implements CySubNetwork, NetworkAddedListener {
 			e.remove(internalId);
 
 			internalEdgeCount--;
-			edgeSet.remove(edge);
 		}
 		return true;
 	}

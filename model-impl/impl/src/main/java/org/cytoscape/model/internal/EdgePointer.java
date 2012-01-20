@@ -29,6 +29,7 @@ package org.cytoscape.model.internal;
 
 
 import org.cytoscape.model.CyEdge;
+import java.util.Arrays; 
 
 
 /**
@@ -48,6 +49,8 @@ final class EdgePointer {
 	EdgePointer[] nextInEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
 	EdgePointer[] prevInEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
 
+	boolean[] includes = new boolean[NodePointer.INITIAL_ALLOCATION];
+
 	EdgePointer(final NodePointer s, final NodePointer t, final boolean dir, final int ind, final CyEdge edge) {
 		index = ind;
 		source = s;
@@ -60,6 +63,8 @@ final class EdgePointer {
 
 		nextInEdge[0] = null;
 		prevInEdge[0] = null;
+
+		Arrays.fill(includes,false);
 	}
 
 	void expandTo(final int z) {
@@ -72,6 +77,7 @@ final class EdgePointer {
 		prevOutEdge = expandEdgePointerArray(prevOutEdge, x);
 		nextInEdge = expandEdgePointerArray(nextInEdge, x);
 		prevInEdge = expandEdgePointerArray(prevInEdge, x);
+		includes = NodePointer.expandBooleanArray(includes,x);
 	}
 
 	static EdgePointer[] expandEdgePointerArray(final EdgePointer[] np, final int n) {
@@ -81,6 +87,8 @@ final class EdgePointer {
 	}
 
 	void insert(final int inId) {
+		includes[inId] = true;
+
 		nextOutEdge[inId] = source.firstOutEdge[inId];
 
 		if (source.firstOutEdge[inId] != null)
@@ -114,6 +122,8 @@ final class EdgePointer {
 	}
 
 	void remove(final int inId) {
+		includes[inId] = false;
+
 		if (prevOutEdge[inId] != null)
 			prevOutEdge[inId].nextOutEdge[inId] = nextOutEdge[inId];
 		else
@@ -152,4 +162,10 @@ final class EdgePointer {
 		nextInEdge[inId] = null;
 		prevInEdge[inId] = null;
 	}
+
+    boolean isSet(final int inId) {
+		return ( inId >= 0 &&
+		         inId < includes.length && 
+		         includes[inId] );
+    }
 }
