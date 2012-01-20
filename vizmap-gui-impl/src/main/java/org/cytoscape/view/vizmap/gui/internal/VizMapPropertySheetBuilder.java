@@ -52,24 +52,19 @@ public class VizMapPropertySheetBuilder {
 
 	private static final Logger logger = LoggerFactory.getLogger(VizMapPropertySheetBuilder.class);
 
+	private static final int ROW_HEIGHT = 30;
+	private static final int ROW_HEIGHT_MAPPING_CELL = 90;
+	private static final Color CATEGORY_BACKGROUND_COLOR = new Color(10, 10, 50, 20);
 
 	private PropertySheetPanel propertySheetPanel;
 
 	private DefaultTableCellRenderer emptyBoxRenderer;
 	private DefaultTableCellRenderer filledBoxRenderer;
 
-	private VizMapPropertyBuilder vizMapPropertyBuilder;
-
-	private EditorManager editorManager;
-
-	private ColorManager colorMgr;
-
+	private final VizMapPropertyBuilder vizMapPropertyBuilder;
+	private final EditorManager editorManager;
 	private final VizMapperMenuManager menuMgr;
-
-	private CyNetworkManager cyNetworkManager;
-	
 	private final VizMapperUtil util;
-	
 	private final VisualMappingManager vmm;
 	
 	/*
@@ -84,7 +79,6 @@ public class VizMapPropertySheetBuilder {
 			DefaultViewPanel defViewPanel, CyTableManager tableMgr, final VizMapperUtil util, final VisualMappingManager vmm) {
 
 		this.menuMgr = menuMgr;
-		this.cyNetworkManager = cyNetworkManager;
 		this.propertySheetPanel = propertySheetPanel;
 		this.util = util;
 		this.vmm = vmm;
@@ -138,16 +132,13 @@ public class VizMapPropertySheetBuilder {
 
 		final PropertySheetTable table = propertySheetPanel.getTable();
 
-		table.setRowHeight(27);
+		table.setRowHeight(ROW_HEIGHT);
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		table.setCategoryBackground(new Color(10, 10, 50, 20));
+		table.setCategoryBackground(CATEGORY_BACKGROUND_COLOR);
 		table.setCategoryForeground(Color.black);
 		table.setSelectionBackground(Color.white);
 		table.setSelectionForeground(Color.blue);
 
-		/*
-		 * Set editors
-		 */
 		// FIXME
 		emptyBoxRenderer = new DefaultTableCellRenderer();
 		emptyBoxRenderer.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -259,9 +250,6 @@ public class VizMapPropertySheetBuilder {
 	private void setUnused(List<Property> propList, VisualStyle style) {
 		buildList(style);
 
-		// TODO: Sort the unused list.
-		// Collections.sort(getUnusedVisualPropType());
-
 		for (VisualProperty<?> type : getUnusedVisualPropType()) {
 			VizMapperProperty<VisualProperty<?>, String, ?> prop = new VizMapperProperty<VisualProperty<?>, String, Object>(CellType.UNUSED, type, String.class);
 			prop.setCategory(AbstractVizMapperPanel.CATEGORY_UNUSED);
@@ -316,23 +304,19 @@ public class VizMapPropertySheetBuilder {
 
 		// Number of rows shown now.
 		int rowCount = table.getRowCount();
-
 		for (int i = 0; i < rowCount; i++) {
-			
-			final VizMapperProperty<?, ?, ?> shownProp = (VizMapperProperty<?, ?, ?>) ((Item) table.getValueAt(i, 0)).getProperty();
-			if(shownProp == null)
-				continue;
-			if(shownProp.getCellType().equals(CellType.CONTINUOUS)) {				
-				table.setRowHeight(i, 80);
-			} else if ((shownProp.getCategory() != null)
-					&& shownProp.getCategory().equals(
-							AbstractVizMapperPanel.CATEGORY_UNUSED)) {
 
-				// FIXME
-				// empRenderer.setForeground(colorMgr.getColor("UNUSED_COLOR"));
-				((PropertyRendererRegistry) this.propertySheetPanel.getTable()
-						.getRendererFactory()).registerRenderer(shownProp,
-						empRenderer);
+			final VizMapperProperty<?, ?, ?> shownProp = (VizMapperProperty<?, ?, ?>) ((Item) table.getValueAt(i, 0))
+					.getProperty();
+			if (shownProp == null)
+				continue;
+			if (shownProp.getCellType().equals(CellType.CONTINUOUS)) {
+				table.setRowHeight(i, ROW_HEIGHT_MAPPING_CELL);
+			} else if ((shownProp.getCategory() != null)
+					&& shownProp.getCategory().equals(AbstractVizMapperPanel.CATEGORY_UNUSED)) {
+
+				((PropertyRendererRegistry) this.propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
+						shownProp, empRenderer);
 			}
 		}
 		propertySheetPanel.repaint();
@@ -375,10 +359,6 @@ public class VizMapPropertySheetBuilder {
 	}
 	
 	
-
-	/*
-	 * Remove an entry in the browser.
-	 */
 	public void removeProperty(final Property prop, final VisualStyle style) {
 
 		final List<Property> props = propertyMap.get(style);
@@ -403,7 +383,7 @@ public class VizMapPropertySheetBuilder {
 		return this.vizMapPropertyBuilder;
 	}
 
-	public List<VisualProperty<?>> getUnusedVisualPropType() {
+	List<VisualProperty<?>> getUnusedVisualPropType() {
 		return unusedVisualPropType;
 	}
 

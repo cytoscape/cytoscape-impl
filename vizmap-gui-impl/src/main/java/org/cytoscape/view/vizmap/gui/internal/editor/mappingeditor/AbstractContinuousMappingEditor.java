@@ -23,7 +23,7 @@ import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 
 public abstract class AbstractContinuousMappingEditor<K extends Number, V> extends AbstractPropertyEditor {
 	
-	private static final Dimension DEF_SIZE = new Dimension(500, 400);
+	private static final Dimension DEF_SIZE = new Dimension(550, 400);
 	private static final Dimension MIN_SIZE = new Dimension(300, 350);
 	
 	protected ContinuousMapping<K, V> mapping;
@@ -39,6 +39,7 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 	private final JLabel iconLabel;
 	
 	private boolean isEditorDialogActive;
+	private JDialog currentDialog;
 	
 	public AbstractContinuousMappingEditor(final CyNetworkTableManager manager, final CyApplicationManager appManager, 
 			final SelectedVisualStyleManager selectedManager, final EditorManager editorManager, final VisualMappingManager vmm) {
@@ -61,8 +62,12 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 			public void mouseClicked(MouseEvent ev) {
 				
 				// Open only one editor at a time.
-				if(isEditorDialogActive)
+				if(isEditorDialogActive) {
+					// Bring it to the front
+					if(currentDialog != null)
+						currentDialog.toFront();
 					return;
+				}
 				
 				final JDialog editorDialog = new JDialog();
 				initComponents(editorDialog);
@@ -82,6 +87,7 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 				editorDialog.setAlwaysOnTop(true);
 				editorDialog.setVisible(true);
 				isEditorDialogActive = true;
+				currentDialog = editorDialog;
 			}
 			
 			private void initComponents(final JDialog dialog) {

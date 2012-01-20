@@ -210,12 +210,11 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			switchMappingType(prop, type, (VisualMappingFunctionFactory) e.getNewValue(),
 					controllingAttrName.toString());
 		} else if (prop.getParentProperty() != null) {
-			// Discrete Cell editor.  Create new map entry and register it.
+			// Discrete Cell editor. Create new map entry and register it.
 			logger.debug("Cell edit event: name = " + prop.getName());
 			logger.debug("Cell edit event: old val = " + prop.getValue());
 			logger.debug("Cell edit event: new val = " + newVal);
-			logger.debug("Cell edit event: associated mapping = "
-					+ prop.getInternalValue());
+			logger.debug("Cell edit event: associated mapping = " + prop.getInternalValue());
 			
 			final VisualMappingFunction<?, ?> mapping = (VisualMappingFunction<?, ?>) prop.getInternalValue();
 			
@@ -329,17 +328,11 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 	}
 
-	private void switchMappingType(final VizMapperProperty<?, ?, ?> prop,
-			final VisualProperty<?> vp,
-			final VisualMappingFunctionFactory factory,
-			final String controllingAttrName) {
+	private void switchMappingType(final VizMapperProperty<?, ?, ?> prop, final VisualProperty<?> vp,
+			final VisualMappingFunctionFactory factory, final String controllingAttrName) {
 
 		// This is the currently selected Visual Style.
 		final VisualStyle style = manager.getCurrentVisualStyle();
-		
-		logger.debug("Mapping combo box clicked: " + style.getTitle());
-		logger.debug("Mapping Category: " + prop.getCategory());
-		
 		
 		final VisualProperty<Visualizable> startVP = util.getCategory((Class<? extends CyTableEntry>) vp.getTargetDataType());
 		final VisualMappingFunction<?, ?> currentMapping = style.getVisualMappingFunction(vp);
@@ -351,32 +344,28 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		logger.debug("!! Current Mapping type: " + currentMapping);
 		
 		if(currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType()) {
-			// Mapping does not exist.
+			// Mapping does not exist.  Need to create new one.
 			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(), (Class<? extends CyTableEntry>) vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, null,vp);
 	
 			style.addVisualMappingFunction(newMapping);
-		} else {
+		} else
 			newMapping = currentMapping;
-		}
 
 		logger.debug("New VisualMappingFunction Created: Mapping Type = "
 				+ style.getVisualMappingFunction(vp).toString());
 		logger.debug("New VisualMappingFunction Created: Controlling attr = "
 				+ style.getVisualMappingFunction(vp).getMappingColumnName());
 
-		
 		// First, remove current property
 		Property parent = prop.getParentProperty();
 		propertySheetPanel.removeProperty(parent);
 
 		final VizMapperProperty<?, ?, VisualMappingFunctionFactory> newRootProp;
-		
-		newRootProp = vizMapPropertySheetBuilder.getPropertyBuilder()
-				.buildProperty(newMapping, startVP.getDisplayName(),
-						propertySheetPanel, factory);
-		
+
+		newRootProp = vizMapPropertySheetBuilder.getPropertyBuilder().buildProperty(newMapping,
+				startVP.getDisplayName(), propertySheetPanel, factory);
 
 		vizMapPropertySheetBuilder.expandLastSelectedItem(vp.getDisplayName());
 		vizMapPropertySheetBuilder.removeProperty(parent, style);
@@ -385,9 +374,10 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		propList.add(newRootProp);
 
 		parent = null;
-		
 		final VisualStyle currentStyle = manager.getCurrentVisualStyle();
 		currentStyle.apply(applicationManager.getCurrentNetworkView());
 		applicationManager.getCurrentNetworkView().updateView();
+
+		vizMapPropertySheetBuilder.updateTableView();
 	}
 }

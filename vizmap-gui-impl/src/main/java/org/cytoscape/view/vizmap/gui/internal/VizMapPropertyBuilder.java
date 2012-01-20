@@ -55,6 +55,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.AbstractContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -205,8 +206,7 @@ public class VizMapPropertyBuilder {
 			// FIXME
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, topProperty, propertySheetPanel);
 
-		} else if (visualMapping instanceof ContinuousMapping && (attrName != null)) {
-			
+		} else if (visualMapping instanceof ContinuousMapping && (attrName != null)) {			
 			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
 					new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
 					CellType.CONTINUOUS, visualMapping.getVisualProperty().getDisplayName()+ "_" + AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW, visualMapping.getClass());
@@ -231,9 +231,13 @@ public class VizMapPropertyBuilder {
 
 			if (continuousCellEditor == null)
 				throw new NullPointerException("Continuous Mapping cell editor is null.");
-			else
+			else {
+				continuousCellEditor.setValue(visualMapping);
 				cellEditorFactory.registerEditor(graphicalView, continuousCellEditor);
-
+				table.repaint();
+			}
+			
+			
 		} else if (visualMapping instanceof PassthroughMapping && (attrName != null)) {
 			String id;
 			Object value;

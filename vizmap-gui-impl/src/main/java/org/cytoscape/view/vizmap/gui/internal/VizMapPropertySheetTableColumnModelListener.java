@@ -14,8 +14,8 @@ public final class VizMapPropertySheetTableColumnModelListener implements
 		this.vizMapPropertySheetBuilder = vizMapPropertySheetBuilder;
 	}
 
-	public void columnAdded(TableColumnModelEvent arg0) {
-		// TODO Auto-generated method stub
+	public void columnAdded(TableColumnModelEvent e) {
+		vizMapPropertySheetBuilder.updateTableView();
 	}
 
 	public void columnMarginChanged(ChangeEvent e) {
@@ -23,14 +23,11 @@ public final class VizMapPropertySheetTableColumnModelListener implements
 	}
 
 	public void columnMoved(TableColumnModelEvent e) {
-		// TODO Auto-generated method stub
 	}
 
 	public void columnRemoved(TableColumnModelEvent e) {
-		// TODO Auto-generated method stub
 	}
 
 	public void columnSelectionChanged(ListSelectionEvent e) {
-		// TODO Auto-generated method stub
 	}
 }

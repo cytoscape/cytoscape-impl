@@ -126,9 +126,7 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter
 		vizMapPropertySheetBuilder.updateTableView();
 		
 		if(SwingUtilities.isRightMouseButton(e)) {
-			
 			this.handleContextMenuEvent(e);
-			
 		} else if (SwingUtilities.isLeftMouseButton(e) && (0 <= selected)) {
 			final Item item = (Item) propertySheetPanel.getTable().getValueAt(selected, 0);
 			final VizMapperProperty<?, ?, ?> curProp = (VizMapperProperty<?, ?, ?>) item.getProperty();
@@ -201,27 +199,6 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter
 				logger.debug("==========Target Mapping = " + selectedMapping);
 				logger.debug("==========Target Key = " + curProp.getDisplayName());
 				logger.debug("==========Target Val = " + curProp.getValue());
-
-				// TODO: move this function editor manager.
-//				if (selectedMapping instanceof ContinuousMapping) {
-//					/*
-//					 * Need to check other windows.
-//					 */
-//					if (editorWindowManager.containsKey(type)) {
-//						// This means editor is already on display.
-//						editorWindowManager.get(type).requestFocus();
-//
-//						return;
-//					} else {
-//						try {
-//							((JDialog) editorFactory.showContinuousEditor(
-//									propertySheetPanel, type))
-//									.addPropertyChangeListener(propertySheetPanel);
-//						} catch (Exception e1) {
-//							e1.printStackTrace();
-//						}
-//					}
-//				}
 			}
 		}
 	}
@@ -235,33 +212,4 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter
 	public void handleEvent(SelectedVisualStyleSwitchedEvent e) {
 		this.selectedStyle = e.getNewVisualStyle();
 	}
-
-//	@Override
-//	public void mousePressed(MouseEvent e) {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	public void mouseReleased(MouseEvent e) {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	public void mouseEntered(MouseEvent e) {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	public void mouseExited(MouseEvent e) {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	public void propertyChange(PropertyChangeEvent evt) {
-//		logger.debug("Mouse Listener Got PC: " + evt.getSource());
-//	}
 }
