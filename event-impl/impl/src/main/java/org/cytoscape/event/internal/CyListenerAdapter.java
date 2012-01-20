@@ -110,9 +110,8 @@ public class CyListenerAdapter {
 			for (final Object listener : listeners) {
 				lastListener = listener;
 
-				if ( logger.isDebugEnabled() )
-					logger.debug("event: " + event.getClass().getName() + "  listener: " + listener.getClass().getName());
-
+				// This call is VERY memory intensive - only use it for debugging!!!!
+				// logger.debug("event: " + event.getClass().getName() + "  listener: " + listener.getClass().getName());
 				if ( printEventTrace ) {
 					printTrace(fireCount,"listener: " + listener.getClass().getName());
 					begin = System.currentTimeMillis();
