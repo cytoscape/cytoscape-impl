@@ -12,16 +12,21 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class PerfTest {
 
 	private final CyNetworkFactory netFactory;
+	private final CyRootNetworkManager rootMgr;
 
 	public static void main(String[] args) {
 		new PerfTest().runTestLoop();
@@ -30,70 +35,57 @@ public class PerfTest {
 	public PerfTest() {
 		NetworkTestSupport testSupport = new NetworkTestSupport();
 		netFactory = testSupport.getNetworkFactory();
+		rootMgr = testSupport.getRootNetworkFactory();
 	}
 
 	public void runTestLoop() {
-		final int EFFECTIVE_LOOP_COUNT = 5;
-		for (int i = 0; i <= EFFECTIVE_LOOP_COUNT; ++i) {
+		final int EFFECTIVE_LOOP_COUNT = 1;
+		for (int i = 0; i < EFFECTIVE_LOOP_COUNT; i++) {
 			final long startTime = System.currentTimeMillis();
 			testMiscNodeAndEdgeOps();
 			final long endTime = System.currentTimeMillis();
 
-			final long startTime2 = System.currentTimeMillis();
-			testMiscNodeAndEdgeOpsBuilder();
-			final long endTime2 = System.currentTimeMillis();
-		
-			long noBuilder = (endTime-startTime);
-			long withBuilder = (endTime2-startTime2);
+			long createNet = (endTime-startTime);
 
-			long diff = noBuilder - withBuilder; 
-			double per = ((double)diff)/((double)(endTime-startTime));
-			System.out.println("difference: " + diff + "   no builder:  " + noBuilder + "   builder: " + withBuilder);
+			System.out.println("createNetwork && subs: " + createNet);
 		}
 	}
 
 	private void testMiscNodeAndEdgeOps() {
-		final CyNetwork network = netFactory.getInstance(); 
+		final CyNetwork network = netFactory.createNetwork(); 
 
+		// create nodes
 		final int NODE_COUNT = 50000;
 		final List<CyNode> nodes = new ArrayList<CyNode>(NODE_COUNT);
-		for (int i = 0; i < NODE_COUNT; ++i) {
+		for (int i = 0; i < NODE_COUNT; i++) {
 			nodes.add(network.addNode());
 		}
 
 		boolean isDirected = true;
 		final Random rand = new Random(1234L);
 
+		// create edges
 		final int EDGE_COUNT = 100000;
 		final List<CyEdge> edges = new ArrayList<CyEdge>(EDGE_COUNT);
-		for (int i = 0; i < EDGE_COUNT; ++i) {
+		for (int i = 0; i < EDGE_COUNT; i++) {
 			final CyNode source = nodes.get(rand.nextInt(NODE_COUNT));
 			final CyNode target = nodes.get(rand.nextInt(NODE_COUNT));
 			edges.add(network.addEdge(source, target, isDirected));
 			isDirected = !isDirected;
 		}
-	}
 
-	private void testMiscNodeAndEdgeOpsBuilder() {
-		CyNetworkBuilder netBuilder = new CyNetworkBuilder();
-
-		final int NODE_COUNT = 50000;
-		final List<CyNodeBuilder> nodes = new ArrayList<CyNodeBuilder>(NODE_COUNT);
-		for (int i = 0; i < NODE_COUNT; ++i) {
-			nodes.add(netBuilder.addNode());
+		// create subnetworks
+		CyRootNetwork root = rootMgr.getRootNetwork(network);
+		int i = 0;
+		for ( CyNode n : network.getNodeList() ) {
+			if ( i++ > 1000 ) break;
+			List<CyNode> nl = network.getNeighborList(n,CyEdge.Type.ANY);
+			Set<CyEdge> es = new HashSet<CyEdge>();
+			for ( CyNode nn : nl ) {
+				List<CyEdge> ee = network.getConnectingEdgeList(n,nn,CyEdge.Type.ANY);
+				es.addAll(ee);
+			}
+			root.addSubNetwork(nl,es);
 		}
-
-		boolean isDirected = true;
-		final Random rand = new Random(1234L);
-
-		final int EDGE_COUNT = 100000;
-		final List<CyEdgeBuilder> edges = new ArrayList<CyEdgeBuilder>(EDGE_COUNT);
-		for (int i = 0; i < EDGE_COUNT; ++i) {
-			final CyNodeBuilder source = nodes.get(rand.nextInt(NODE_COUNT));
-			final CyNodeBuilder target = nodes.get(rand.nextInt(NODE_COUNT));
-			edges.add(netBuilder.addEdge(source, target, isDirected));
-			isDirected = !isDirected;
-		}
-		final CyNetwork network = netFactory.getInstance(); 
 	}
 }
