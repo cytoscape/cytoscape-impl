@@ -49,6 +49,7 @@ public class RemoveSelfLoopsAction extends NetAnalyzerAction {
 	public RemoveSelfLoopsAction(CyApplicationManager appMgr,CySwingApplication swingApp, CyNetworkManager netMgr) {
 		super(Messages.AC_REMSELFLOOPS,appMgr,swingApp);
 		setPreferredMenu("Edit");
+		setMenuGravity(4.2f);
 		this.netMgr = netMgr;
 	}
 

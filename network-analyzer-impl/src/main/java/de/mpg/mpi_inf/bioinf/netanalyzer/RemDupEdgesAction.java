@@ -47,6 +47,7 @@ public class RemDupEdgesAction extends NetAnalyzerAction {
 	public RemDupEdgesAction(CyApplicationManager appMgr,CySwingApplication swingApp,CyNetworkManager netMgr) {
 		super(Messages.AC_REMDUPEDGES,appMgr,swingApp);
 		setPreferredMenu("Edit");
+		setMenuGravity(4.1f);
 		this.netMgr = netMgr;
 	}
 
