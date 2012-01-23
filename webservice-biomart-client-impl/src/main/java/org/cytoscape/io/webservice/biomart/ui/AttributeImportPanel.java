@@ -462,24 +462,32 @@ public abstract class AttributeImportPanel extends JPanel implements
 		}
 	}
 
+	private boolean validTable(CyTable t) {
+		for( CyNetwork network: netManager.getNetworkSet() ) {
+			if ( t.equals( network.getDefaultNodeTable() ) )
+				return true;
+		}
+		return false;
+	}
+
 	@Override
-	public void handleEvent(ColumnCreatedEvent e) {
-		final String attrName = e.getColumnName();
+	public void handleEvent(final ColumnCreatedEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				addAttribute(attrName);
+				if ( validTable( e.getSource() ) )
+					addAttribute(e.getColumnName());
 			}
 		});
 	}
 
 	@Override
-	public void handleEvent(ColumnDeletedEvent e) {
-		final String attrName = e.getColumnName();
+	public void handleEvent(final ColumnDeletedEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				removeAttribute(attrName);
+				if ( validTable( e.getSource() ) )
+					removeAttribute(e.getColumnName());
 			}
 		});
 	}
