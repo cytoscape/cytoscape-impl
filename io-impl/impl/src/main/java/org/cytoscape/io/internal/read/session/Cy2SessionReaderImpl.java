@@ -27,14 +27,13 @@
  */
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_ROOT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_PROPS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
-import static org.cytoscape.model.CyNetwork.SELECTED;
 import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
+import static org.cytoscape.model.CyNetwork.SELECTED;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -102,6 +101,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			"|exportTextAsShape|Linkout\\.externalLinkName|maximizeViewOnCreate|moduleNetworkViewCreationThreshold" +
 			"|nestedNetwork\\.imageScaleFactor|nestedNetworkSnapshotSize|preferredLayoutAlgorithm" +
 			"|secondaryViewThreshold|showQuickStartAtStartup|viewThreshold";
+	public static final String PLUGINS_FOLDER = "plugins/";
 	
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
@@ -143,8 +143,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
 	@Override
 	protected void handleEntry(InputStream is, String entryName) throws Exception {
-		if (entryName.contains("/" + APPS_FOLDER + "/")) {
-			extractAppEntry(is, entryName);
+		if (entryName.contains("/" + PLUGINS_FOLDER)) {
+			extractPluginEntry(is, entryName);
 		} else if (entryName.endsWith(CYSESSION_FILE)) {
 			extractSessionState(is, entryName);
 		} else if (entryName.endsWith(VIZMAP_PROPS_FILE)) {
@@ -314,7 +314,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		return topNetwork;
 	}
 
-	private void extractAppEntry(InputStream is, String entryName) {
+	private void extractPluginEntry(InputStream is, String entryName) {
 		String[] items = entryName.split("/");
 
 		if (items.length < 3) {
