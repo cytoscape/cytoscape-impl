@@ -55,20 +55,19 @@ public class CompositeFilter implements CyFilter {
 	protected boolean negation;
 	//Relation relation;
 	protected String name;
-	protected BitSet node_bits, edge_bits;
+	protected BitSet nodeBits, edgeBits;
 	protected boolean childChanged = true;// so we calculate the first time through
 	protected CyFilter parent;
 	protected String description;
 	protected AdvancedSetting advancedSetting = null;
 	//private int indexType = -1; //QuickFind.INDEX_NODES //QuickFind.INDEX_EDGES 
 	protected CyNetwork network;
-	private Logger logger = null;
-
 	protected Hashtable<CompositeFilter, Boolean> compositeNotTab = new Hashtable<CompositeFilter, Boolean>();
 	protected CyApplicationManager applicationManager;
 	
+	private static Logger logger = LoggerFactory.getLogger(FilterApp.class);
+	
 	public CompositeFilter(CyApplicationManager applicationManager) {
-		logger = LoggerFactory.getLogger(FilterPlugin.class);
 		advancedSetting = new AdvancedSetting();
 		children = new LinkedList<CyFilter>();
 		this.applicationManager = applicationManager;
@@ -76,7 +75,6 @@ public class CompositeFilter implements CyFilter {
 
 	public CompositeFilter(String pName) {
 		name = pName;
-		logger = LoggerFactory.getLogger(FilterPlugin.class);
 		advancedSetting = new AdvancedSetting();
 		children = new LinkedList<CyFilter>();
 	}
@@ -85,15 +83,19 @@ public class CompositeFilter implements CyFilter {
 		if (network != null && network == pNetwork) {
 			return;
 		}
+		
 		network = pNetwork;
+		
 		// Set network for all the children
 		if (children == null || children.size() == 0){
 			return;
 		}
+		
 		for (int i=0; i< children.size(); i++) {
 			children.get(i).setNetwork(pNetwork);
 			children.get(i).childChanged();
 		}
+		
 		childChanged();
 	}
 	
@@ -111,7 +113,6 @@ public class CompositeFilter implements CyFilter {
 	}
 	
 	public boolean passesFilter(Object obj) {
-		
 		List<CyNode> nodes_list = null;
 		List<CyEdge> edges_list=null;
 
@@ -119,13 +120,13 @@ public class CompositeFilter implements CyFilter {
 		if (obj instanceof CyNode) {
 			nodes_list = network.getNodeList();
 			index = nodes_list.lastIndexOf(obj);	
-			return node_bits.get(index);			
+			return nodeBits.get(index);			
 		}
 		
 		if (obj instanceof CyEdge) {
 			edges_list = network.getEdgeList();
 			index = edges_list.lastIndexOf(obj);	
-			return edge_bits.get(index);			
+			return edgeBits.get(index);			
 		}
 		
 		return false;
@@ -134,113 +135,104 @@ public class CompositeFilter implements CyFilter {
 	public void setNegation(boolean pNegation) {
 		negation = pNegation;
 	}
+	
 	public boolean getNegation() {
 		return negation;
 	}
 	
 	private void calculateNodeBitSet() {
-		//System.out.println("Entering CompositeFilter.calculatNodeBits() ... ");	
-	
 		// set the initial bits to a clone of the first child
 		if (children.get(0).getNodeBits() == null) {
-			node_bits = new BitSet(network.getNodeCount());	
-		}
-		else {
-			node_bits = (BitSet) children.get(0).getNodeBits().clone();						
+			nodeBits = new BitSet(network.getNodeCount());	
+		} else {
+			nodeBits = (BitSet) children.get(0).getNodeBits().clone();						
 		}
 
 		// now perform the requested relation with each subsequent child
 		for ( int i = 1; i < children.size(); i++ ) {
 			CyFilter n = children.get(i);
+			
 			if ( advancedSetting.getRelation() == Relation.AND ) {	
 				if (n.getNodeBits() == null) {
-					node_bits = new BitSet();//all set to false
+					nodeBits = new BitSet();//all set to false
 					return;
 				}
+				
 				if ((n instanceof CompositeFilter)&&(compositeNotTab.get(n).booleanValue()==true)) {
 					BitSet tmpBitSet = (BitSet) n.getNodeBits().clone();					
 					tmpBitSet.flip(0, network.getNodeCount());
-					node_bits.and(tmpBitSet);											
+					nodeBits.and(tmpBitSet);											
+				} else {
+					nodeBits.and(n.getNodeBits());											
 				}
-				else {
-					node_bits.and(n.getNodeBits());											
-				}
-				
 			} else if ( advancedSetting.getRelation() == Relation.OR ) {
 				if (n.getNodeBits() != null) {
-					if ((n instanceof CompositeFilter)&&(compositeNotTab.get(n).booleanValue()==true)) {
+					if ((n instanceof CompositeFilter) && (compositeNotTab.get(n).booleanValue() == true)) {
 						BitSet tmpBitSet = (BitSet) n.getNodeBits().clone();
 						tmpBitSet.flip(0, network.getNodeCount());
-						node_bits.or(tmpBitSet);											
-					}
-					else {
-						node_bits.or(n.getNodeBits());						
+						nodeBits.or(tmpBitSet);											
+					} else {
+						nodeBits.or(n.getNodeBits());						
 					}
 				}
-			}
-			else { //advancedSetting.getRelation() == Relation.XOR|NOR 
+			} else { //advancedSetting.getRelation() == Relation.XOR|NOR 
 				logger.warn("CompositeFilter: Relation.XOR|NOR: not implemented yet");
 			} 
 		}
 
 		if (negation) {
-				node_bits.flip(0, network.getNodeCount());
+			nodeBits.flip(0, network.getNodeCount());
 		}
 	}
 	
-	
 	private void calculateEdgeBitSet() {
-		//System.out.println("Entering CompositeFilter.calculatEdgeBits() ... ");	
-				
 		// if there are no children, just return an empty bitset
 		if ( children.size() <= 0 ) {
-			edge_bits = new BitSet();
+			edgeBits = new BitSet();
 			return;
 		}
 
 		// set the initial bits to a clone of the first child
 		if (children.get(0).getEdgeBits() == null) {
-			edge_bits = new BitSet();
-		}
-		else {
-			edge_bits = (BitSet) children.get(0).getEdgeBits().clone();						
+			edgeBits = new BitSet();
+		} else {
+			edgeBits = (BitSet) children.get(0).getEdgeBits().clone();						
 		}
 
 		// now perform the requested relation with each subsequent child
 		for ( int i = 1; i < children.size(); i++ ) {
 			CyFilter n = children.get(i);
+			
 			if ( advancedSetting.getRelation() == Relation.AND ) {	
 				if (n.getEdgeBits() == null) {
-					edge_bits =  new BitSet(); 
+					edgeBits =  new BitSet(); 
 					return;//all set to false
 				}
+				
 				if ((n instanceof CompositeFilter)&&(compositeNotTab.get(n).booleanValue()==true)) {
 					BitSet tmpBitSet = (BitSet) n.getEdgeBits().clone();
 					tmpBitSet.flip(0, network.getEdgeCount());
-					edge_bits.and(tmpBitSet);											
-				}
-				else {
-					edge_bits.and(n.getEdgeBits());											
+					edgeBits.and(tmpBitSet);											
+				} else {
+					edgeBits.and(n.getEdgeBits());											
 				}				
 			} else if ( advancedSetting.getRelation() == Relation.OR ) {
 				if (n.getEdgeBits() != null) {
 					if ((n instanceof CompositeFilter)&&(compositeNotTab.get(n).booleanValue()==true)) {
 						BitSet tmpBitSet = (BitSet) n.getEdgeBits().clone();
 						tmpBitSet.flip(0, network.getEdgeCount());
-						edge_bits.or(tmpBitSet);											
-					}
-					else {
-						edge_bits.or(n.getEdgeBits());						
+						edgeBits.or(tmpBitSet);											
+					} else {
+						edgeBits.or(n.getEdgeBits());						
 					}
 				}
-			}
-			else { //advancedSetting.getRelation() == Relation.XOR|NOR 
+			} else { //advancedSetting.getRelation() == Relation.XOR|NOR 
 				logger.warn("CompositeFilter: Relation.XOR|NOR: not implemented yet");
 			} 
 		}
 
 		if (negation) {
-				edge_bits.flip(0, network.getEdgeCount());
+				edgeBits.flip(0, network.getEdgeCount());
 		}
 	}
 	
@@ -258,8 +250,8 @@ public class CompositeFilter implements CyFilter {
 				
 		// if there are no children, just create empty bitSet
 		if ( children.size() <= 0 ) {
-			node_bits = new BitSet(network.getNodeCount());
-			edge_bits = new BitSet(network.getEdgeCount());
+			nodeBits = new BitSet(network.getNodeCount());
+			edgeBits = new BitSet(network.getEdgeCount());
 			return;
 		}
 
@@ -275,7 +267,6 @@ public class CompositeFilter implements CyFilter {
 		// record that we've calculated the bits
 		childChanged = false;
 	}
-	
 	
 	private void updateSelectionType() {
 		boolean selectNode = false;
@@ -309,15 +300,14 @@ public class CompositeFilter implements CyFilter {
 
 	public BitSet getEdgeBits() {
 		apply();
-		return edge_bits;
+		return edgeBits;
 	}
 	
 	public BitSet getNodeBits() {
 		apply();
-		return node_bits;
+		return nodeBits;
 	}
 
-	
 	public void removeChild( CyFilter pChild ) {
 		if (pChild instanceof CompositeFilter) {
 			compositeNotTab.remove(pChild);
@@ -360,7 +350,6 @@ public class CompositeFilter implements CyFilter {
 		// notify parents
 		childChanged();
 	}
-
 	
 	// called by any children
 	public void childChanged() {
@@ -390,7 +379,6 @@ public class CompositeFilter implements CyFilter {
 		name = pName;
 	}
 
-	
 	public String getDescription() {
 		return description;
 	}
@@ -425,6 +413,7 @@ public class CompositeFilter implements CyFilter {
     public String getLabel() {
         AdvancedSetting as = getAdvancedSetting();
         String prefix = "";
+        
         if (as.isGlobalChecked()) {
             prefix = "global: ";
         }
@@ -435,13 +424,6 @@ public class CompositeFilter implements CyFilter {
         return prefix + getName();
     }
 
-	/**
-	 * @return the string represention of this Filter.
-	 */
-	public String toString() {
-		return getLabel();
-	}
-	
 	public String toSerializedForm() {
 		String retStr = "<Composite>\n";
 		
@@ -450,42 +432,50 @@ public class CompositeFilter implements CyFilter {
 		retStr = retStr + "Negation=" + negation + "\n";
 
 		for (int i=0; i< children.size(); i++) {
-
 			if (children.get(i) instanceof AtomicFilter) {
 				AtomicFilter atomicFilter = (AtomicFilter)children.get(i);
 				retStr = retStr + atomicFilter.toString()+"\n";
-			}
-			else  {// it is a CompositeFilter
+			} else  {// it is a CompositeFilter
 				CompositeFilter tmpFilter = (CompositeFilter)children.get(i);
 				retStr = retStr + "CompositeFilter=" + tmpFilter.getName()+ ":" + compositeNotTab.get(tmpFilter)+"\n";
 			}
 		}
+		
 		retStr += "</Composite>";
 
 		return retStr;
 	}
 
-	/**
-	 */
+	@Override
 	public boolean equals(Object other_object) {
 		if (!(other_object instanceof CompositeFilter)) {
 			return false;
 		}
+		
 		CompositeFilter theOtherFilter = (CompositeFilter) other_object;
 		
 		if (theOtherFilter.toSerializedForm().equalsIgnoreCase(this.toSerializedForm())) {
 			return true;
 		}
+		
 		return false;
 	}
 
 	/**
 	 * CompositeFilter may be cloned.
 	 */
+	@Override
 	public Object clone() {
 		logger.warn("CompositeFilter.clone() not implemented yet");
 		
 		return null;
-	}	
-
+	}
+	
+	/**
+	 * @return the string represention of this Filter.
+	 */
+    @Override
+	public String toString() {
+		return getLabel();
+	}
 }

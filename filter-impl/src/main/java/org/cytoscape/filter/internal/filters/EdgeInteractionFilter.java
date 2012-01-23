@@ -92,18 +92,18 @@ public class EdgeInteractionFilter extends InteractionFilter {
 		// EdgeInteractionFilter will select edge only
 		edges_list = network.getEdgeList();
 		int objectCount = edges_list.size();
-		edge_bits = new BitSet(objectCount); // all the bits are false at very beginning
+		edgeBits = new BitSet(objectCount); // all the bits are false at very beginning
 
 		if (nodeType != NODE_UNDEFINED) {
 			for (int i=0; i<objectCount; i++) {
 				if (isHit(edges_list.get(i), passFilter_nodeBits)) {
-					edge_bits.set(i);
+					edgeBits.set(i);
 				}
 			}			
 		}
 			
 		if (negation) {
-			edge_bits.flip(0, objectCount);
+			edgeBits.flip(0, objectCount);
 		}
 
 		childChanged = false;

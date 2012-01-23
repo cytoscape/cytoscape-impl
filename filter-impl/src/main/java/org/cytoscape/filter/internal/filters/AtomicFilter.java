@@ -74,7 +74,6 @@ public abstract class AtomicFilter implements CyFilter {
 		return network;
 	}
 
-	
 	public GenericIndex getIndex() {
 		return quickFind_index;
 	}

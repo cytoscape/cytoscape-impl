@@ -57,7 +57,6 @@ public class InteractionFilter extends CompositeFilter {
 		super(applicationManager);
 	}
 
-
 	public InteractionFilter(String pName, CyApplicationManager applicationManager) {
 		super(applicationManager);
 		name = pName;
@@ -80,19 +79,20 @@ public class InteractionFilter extends CompositeFilter {
 		if (nodeType == pNodeType) {
 			return;
 		}
+		
 		nodeType = pNodeType;
+		
 		if (nodeType == NODE_SOURCE) {
 			isSourceChecked = true;
 			isTargetChecked = false;
-		}
-		else if (nodeType == NODE_TARGET) {
+		} else if (nodeType == NODE_TARGET) {
 			isSourceChecked = false;
-			isTargetChecked = true;			
-		}
-		else if (nodeType == NODE_SOURCE_TARGET) {
+			isTargetChecked = true;
+		} else if (nodeType == NODE_SOURCE_TARGET) {
 			isSourceChecked = true;
-			isTargetChecked = true;					
+			isTargetChecked = true;
 		}
+		
 		childChanged = true;
 	}
 
@@ -114,23 +114,7 @@ public class InteractionFilter extends CompositeFilter {
 		updateNodeType();		
 	}
 	
-	private void updateNodeType() {
-		//update nodeType
-		if (isSourceChecked && isTargetChecked) {
-			nodeType = NODE_SOURCE_TARGET;
-		}
-		else if (isSourceChecked) {
-			nodeType = NODE_SOURCE;
-		}
-		else if (isTargetChecked) {
-			nodeType = NODE_TARGET;
-		}
-		else {
-			nodeType = NODE_UNDEFINED;
-		}
-	}
-	
-				
+	@Override
 	public void setNetwork(CyNetwork pNetwork) {
 		if (network != null && network == pNetwork) {
 			return;
@@ -143,8 +127,8 @@ public class InteractionFilter extends CompositeFilter {
 		childChanged();
 	}
 	
-	
-	public String toString() {
+	@Override
+	public String toSerializedForm() {
 		String retStr = "<InteractionFilter>\n";
 		
 		retStr = retStr + "name=" + name + "\n";
@@ -154,13 +138,25 @@ public class InteractionFilter extends CompositeFilter {
 
 		if (passFilter == null) {
 			retStr += "passFilter=null\n";			
-		}
-		else {
+		} else {
 			retStr += "passFilter=" + passFilter.getName()+"\n";						
 		}
 		
 		retStr += "</InteractionFilter>";
 
 		return retStr;
+	}
+	
+	private void updateNodeType() {
+		//update nodeType
+		if (isSourceChecked && isTargetChecked) {
+			nodeType = NODE_SOURCE_TARGET;
+		} else if (isSourceChecked) {
+			nodeType = NODE_SOURCE;
+		} else if (isTargetChecked) {
+			nodeType = NODE_TARGET;
+		} else {
+			nodeType = NODE_UNDEFINED;
+		}
 	}
 }

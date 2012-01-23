@@ -90,18 +90,18 @@ public class NodeInteractionFilter extends InteractionFilter {
 		// NodeInteractionFilter will select node only
 		nodes_list = network.getNodeList();
 		int objectCount = nodes_list.size();
-		node_bits = new BitSet(objectCount); // all the bits are false at very beginning
+		nodeBits = new BitSet(objectCount); // all the bits are false at very beginning
 			
 		if ((nodeType != NODE_UNDEFINED)&&(!passFilter.getName().equalsIgnoreCase("None"))) {
 			for (int i=0; i<objectCount; i++) {
 				if (isHit(nodes_list.get(i))) {
-					node_bits.set(i);
+					nodeBits.set(i);
 				}
 			}			
 		}
 			
 		if (negation) {
-			node_bits.flip(0, objectCount);
+			nodeBits.flip(0, objectCount);
 		}
 
 		childChanged = false;

@@ -93,17 +93,19 @@ public class TopologyFilter extends CompositeFilter {
 		return withinDistance;
 	}
 
+	@Override
 	public BitSet getNodeBits() {
 		apply();
-		return node_bits;
+		return nodeBits;
 	}
 	
+	@Override
 	public BitSet getEdgeBits(){
 		apply();
-		return edge_bits;		
+		return edgeBits;		
 	}
 	
-	
+	@Override
 	public void apply() {
 		if ( !childChanged ) 
 			return;
@@ -140,28 +142,70 @@ public class TopologyFilter extends CompositeFilter {
 			}
 			
 			//
-			node_bits = new BitSet(objectCount); // all the bits are false at very beginning
+			nodeBits = new BitSet(objectCount); // all the bits are false at very beginning
 			
 			for (int i=0; i<objectCount; i++) {
 				if (isHit(nodes_list.get(i), indexMap)) {
-					node_bits.set(i);
+					nodeBits.set(i);
 				}
 			}			
-		}
-		else {
+		} else {
 			LoggerFactory.getLogger(TopologyFilter.class).error("objectType is undefined.");
 			return;
 		}
 
 		if (negation) {
 			if (advancedSetting.isNodeChecked()) {
-				node_bits.flip(0, objectCount);
+				nodeBits.flip(0, objectCount);
 			}
 		}
 
 		childChanged = false;
 	}
 
+	public void setNodeBits(BitSet b) {
+		nodeBits = b;
+		//parent.childChanged();
+	}
+
+	public void setEdgeBits(BitSet b) {
+		edgeBits = b;
+		//parent.childChanged();
+	}
+
+	@Override
+	public void setNetwork(CyNetwork pNetwork) {
+		if (network != null && network == pNetwork) {
+			return;
+		}
+		network = pNetwork;
+		if (passFilter != null) {
+			passFilter.setNetwork(network);			
+		}
+
+		childChanged();
+	}
+	
+	@Override
+	public String toSerializedForm() {
+		String retStr = "<TopologyFilter>\n";
+		
+		retStr = retStr + "name=" + name + "\n";
+		retStr = retStr + advancedSetting.toString() + "\n";
+		retStr = retStr + "Negation=" + negation + "\n";
+		retStr = retStr + "minNeighbors=" + minNeighbors + "\n";
+		retStr = retStr + "withinDistance=" + withinDistance + "\n";
+
+		if (passFilter == null) {
+			retStr += "passFilter=null\n";			
+		} else {
+			retStr += "passFilter=" + passFilter.getName()+"\n";						
+		}
+		
+		retStr += "</TopologyFiler>";
+
+		return retStr;
+	}
 	
 	private boolean isHit(CyNode pObj, HashMap<Integer, Integer> pIndexMap) {
 		// Get all the neighbors for pNode that pass the given filter
@@ -216,70 +260,4 @@ public class TopologyFilter extends CompositeFilter {
 		}
 	}
 	
-	
-	public String toString() {
-		String retStr = "<TopologyFilter>\n";
-		
-		retStr = retStr + "name=" + name + "\n";
-		retStr = retStr + advancedSetting.toString() + "\n";
-		retStr = retStr + "Negation=" + negation + "\n";
-		retStr = retStr + "minNeighbors=" + minNeighbors + "\n";
-		retStr = retStr + "withinDistance=" + withinDistance + "\n";
-
-		if (passFilter == null) {
-			retStr += "passFilter=null\n";			
-		}
-		else {
-			retStr += "passFilter=" + passFilter.getName()+"\n";						
-		}
-		
-		retStr += "</TopologyFiler>";
-
-		return retStr;
-		
-	}
-	
-	public void setNodeBits(BitSet b) {
-		node_bits = b;
-		//parent.childChanged();
-	}
-
-	public void setEdgeBits(BitSet b) {
-		edge_bits = b;
-		//parent.childChanged();
-	}
-
-	public void setParent(CyFilter p) {
-		parent = p;
-	}
-	public CyFilter getParent() {
-		return parent;
-	}
-		
-	public void setNegation(boolean pNot) {
-		negation = pNot;
-		//getParent().childChanged();
-	}
-	public boolean getNegation() {
-		return negation;
-	}
-
-	public String getName(){
-		return name;
-	}
-	public void setName(String pName){
-		name = pName;
-	}
-
-	public void setNetwork(CyNetwork pNetwork) {
-		if (network != null && network == pNetwork) {
-			return;
-		}
-		network = pNetwork;
-		if (passFilter != null) {
-			passFilter.setNetwork(network);			
-		}
-
-		childChanged();
-	}
 }
