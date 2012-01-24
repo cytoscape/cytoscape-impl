@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal;
+package org.cytoscape.filter.internal.filters.util;
 
 import java.util.Properties;
 
@@ -7,7 +7,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.filter.internal.read.filter.FilterReader;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
@@ -17,10 +16,8 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.io.write.CyPropertyWriterFactory;
 
 public class ServicesUtil {
-
 	
 	public static CySwingApplication cySwingApplicationServiceRef;
 	
@@ -40,7 +37,4 @@ public class ServicesUtil {
 	public static CyLayoutAlgorithmManager cyLayoutsServiceRef;
 	public static CyVersion cytoscapeVersionService;
 	public static CyApplicationConfiguration cyApplicationConfigurationServiceRef;
-
-	public static FilterReader filterReader;
-	public static CyPropertyWriterFactory filterWriter;
 }

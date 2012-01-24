@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -33,12 +32,10 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
 package org.cytoscape.filter.internal.filters;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
@@ -54,16 +51,12 @@ import org.cytoscape.filter.internal.filters.view.FilterMainPanel;
 /**
  *
  */
+@SuppressWarnings("serial")
 public class FilterMenuItemAction extends AbstractCyAction {
+	
 	private final CytoPanel cytoPanelWest;
 	private final FilterMainPanel filterPanel;
 
-	/**
-	 * Creates a new FilterMenuItem object.
-	 *
-	 * @param icon  DOCUMENT ME!
-	 * @param csfilter  DOCUMENT ME!
-	 */
 	public FilterMenuItemAction(CySwingApplication application, FilterMainPanel filterPanel) {
 		super("Use Filters");
 		setPreferredMenu("Select");
@@ -79,14 +72,8 @@ public class FilterMenuItemAction extends AbstractCyAction {
 		this.filterPanel = filterPanel;
 	}
 
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
-
 		// If the state of the cytoPanelEast is HIDE, show it
 		if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
 			cytoPanelWest.setState(CytoPanelState.DOCK);
@@ -101,20 +88,10 @@ public class FilterMenuItemAction extends AbstractCyAction {
 		cytoPanelWest.setSelectedIndex(index);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public boolean isInToolBar() {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public boolean isInMenuBar() {
 		return true;
 	}

@@ -1,14 +1,11 @@
 package org.cytoscape.filter.internal.filters.util;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Vector;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.filter.internal.ServicesUtil;
-import org.cytoscape.filter.internal.filters.CompositeFilter;
-import org.cytoscape.filter.internal.filters.FilterPlugin;
+import org.cytoscape.filter.internal.filters.FilterApp;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
 import org.cytoscape.filter.internal.quickfind.util.TaskMonitorBase;
@@ -19,7 +16,11 @@ import org.cytoscape.model.CyNode;
 
 
 public class FilterUtil {
-		
+	
+	public static final String FILTER_APP_NAME = "FilterApp";
+	public static final String DEFAULT_FILE_NAME = "default_filters.props";
+	public static final String SESSION_FILE_NAME = "session_filters.props";
+	
 	// do selection on given network
 	public static void doSelection(CompositeFilter pFilter, CyApplicationManager applicationManager) {
 		//System.out.println("Entering FilterUtil.doSelection() ...");
@@ -89,18 +90,18 @@ public class FilterUtil {
 	}
 	
 	
-	public static boolean isFilterNameDuplicated(Vector<CompositeFilter> allFilterVect, String pFilterName) {
+	public static boolean isFilterNameDuplicated(Collection<CompositeFilter> allFilterVect, String pFilterName) {
 		// TODO
 		//Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties();
 		if (allFilterVect == null || allFilterVect.size() == 0)
 			return false;
 		
-		for (int i=0; i<allFilterVect.size(); i++) {
-			CompositeFilter theFilter = allFilterVect.elementAt(i);
+		for (CompositeFilter theFilter : allFilterVect) {
 			if (pFilterName.equalsIgnoreCase(theFilter.getName().trim())) {
 				return true;
 			}
 		}
+		
 		return false;
 	}
 	
@@ -150,7 +151,7 @@ public class FilterUtil {
 //		// TODO: What do we do about CyInit*?
 //		String dynamicFilterThreshold = CytoscapeInit.getProperties().getProperty(FilterPlugin.DYNAMIC_FILTER_THRESHOLD);
 //		if (dynamicFilterThreshold == null) { // threshold not defined, use the default value
-			dynamicFilterThresholdValue = FilterPlugin.DEFAULT_DYNAMIC_FILTER_THRESHOLD;
+			dynamicFilterThresholdValue = FilterApp.DEFAULT_DYNAMIC_FILTER_THRESHOLD;
 //		}
 //		else {
 //			dynamicFilterThresholdValue = (new Integer(dynamicFilterThreshold)).intValue();

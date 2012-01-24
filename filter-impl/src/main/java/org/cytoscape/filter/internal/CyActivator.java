@@ -1,46 +1,32 @@
 
 package org.cytoscape.filter.internal;
 
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.application.CyVersion;
+import java.util.Properties;
+
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
-
-import org.cytoscape.filter.internal.FilterPanelSelectedListener;
+import org.cytoscape.filter.internal.filters.FilterApp;
+import org.cytoscape.filter.internal.filters.FilterMenuItemAction;
+import org.cytoscape.filter.internal.filters.model.FilterModelLocator;
+import org.cytoscape.filter.internal.filters.util.ServicesUtil;
 import org.cytoscape.filter.internal.filters.view.FilterMainPanel;
-import org.cytoscape.filter.internal.filters.FilterPlugin;
 import org.cytoscape.filter.internal.gui.FilterCytoPanelComponent;
 import org.cytoscape.filter.internal.quickfind.app.QuickFindApp;
-import org.cytoscape.filter.internal.filters.FilterMenuItemAction;
-
-import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
-import org.cytoscape.application.swing.CyAction;
-
-import org.osgi.framework.BundleContext;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.session.events.SessionLoadedListener;
-
-import java.util.Properties;
 import org.cytoscape.filter.internal.read.filter.FilterReader;
-import org.cytoscape.filter.internal.ServicesUtil;
-import org.cytoscape.filter.internal.write.filter.FilterWriterFactoryImpl;
-import org.cytoscape.io.BasicCyFileFilter;
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.filter.internal.write.filter.FilterWriter;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskManager;
+import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
-
-
+	
 	public void start(BundleContext bc) {
 
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
@@ -52,9 +38,7 @@ public class CyActivator extends AbstractCyActivator {
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
-		StreamUtil streamUtil = getService(bc,StreamUtil.class);
 
-		//
 		ServicesUtil.cySwingApplicationServiceRef = cySwingApplicationServiceRef;
 		ServicesUtil.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
 		ServicesUtil.cyNetworkViewManagerServiceRef = cyNetworkViewManagerServiceRef;
@@ -65,40 +49,22 @@ public class CyActivator extends AbstractCyActivator {
 		ServicesUtil.cytoscapeVersionService = cytoscapeVersionService;
 		ServicesUtil.cyApplicationConfigurationServiceRef = cyApplicationConfigurationServiceRef;
 		
-		//
-		BasicCyFileFilter filterFilter = new BasicCyFileFilter(new String[]{"filters"}, new String[]{"text/plain"}, "Filters file",DataCategory.PROPERTIES, streamUtil);
-		FilterReader filterReader = new FilterReader("filters", "props.filters");
-		FilterWriterFactoryImpl filterWriter = new FilterWriterFactoryImpl(filterFilter);
+		final FilterReader filterReader = new FilterReader();
+		final FilterWriter filterWriter = new FilterWriter();
+		FilterModelLocator filtersModelLocator = new FilterModelLocator();
 		
-		ServicesUtil.filterReader = filterReader;
-		ServicesUtil.filterWriter = filterWriter;
-		
-		FilterPlugin filterPlugin = new FilterPlugin();
+		FilterApp filterApp = new FilterApp(filterReader, filterWriter, filtersModelLocator);
 		QuickFindApp quickFindApp = new QuickFindApp(cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
-		FilterMainPanel filterMainPanel = new FilterMainPanel(cyApplicationManagerServiceRef,filterPlugin,cyNetworkManagerServiceRef,cyServiceRegistrarServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
+		
+		FilterMainPanel filterMainPanel = new FilterMainPanel(filtersModelLocator,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
 		FilterCytoPanelComponent filterCytoPanelComponent = new FilterCytoPanelComponent(filterMainPanel);
-		FilterPanelSelectedListener filterPanelSelectedListener = new FilterPanelSelectedListener(filterMainPanel);
 		FilterMenuItemAction filterAction = new FilterMenuItemAction(cySwingApplicationServiceRef,filterMainPanel);
 				
-		registerService(bc,filterCytoPanelComponent,CytoPanelComponent.class, new Properties());
+		registerAllServices(bc,filterCytoPanelComponent, new Properties());
 		registerAllServices(bc,filterMainPanel, new Properties());
-		registerService(bc,filterPanelSelectedListener,CytoPanelComponentSelectedListener.class, new Properties());
 		registerService(bc,filterAction,CyAction.class, new Properties());
 		registerAllServices(bc,quickFindApp, new Properties());
-		registerAllServices(bc,filterPlugin, new Properties());
-
-		//
-//		Properties filterReaderProps = new Properties();
-//		filterReaderProps.setProperty("cyPropertyName","filters");
-//		filterReaderProps.setProperty("serviceType","property");
-//		registerAllServices(bc,filterReader, filterReaderProps);
-//
-//		
-//		Properties filterWriterProps = new Properties();
-////		filterWriterProps.setProperty("cyPropertyName","filters");
-////		filterWriterProps.setProperty("serviceType","property");
-//		registerAllServices(bc,filterWriter, filterWriterProps);
-
+		registerAllServices(bc,filterApp, new Properties());
 	}
 }
 

@@ -37,7 +37,7 @@ package org.cytoscape.filter.internal.filters.view;
 
 import java.util.Vector;
 
-import org.cytoscape.filter.internal.filters.CompositeFilter;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxModel;
 
 

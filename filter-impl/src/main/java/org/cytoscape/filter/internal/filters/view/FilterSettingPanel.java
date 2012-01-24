@@ -64,15 +64,15 @@ import javax.swing.text.JTextComponent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.filter.internal.filters.AtomicFilter;
-import org.cytoscape.filter.internal.filters.CompositeFilter;
-import org.cytoscape.filter.internal.filters.CyFilter;
-import org.cytoscape.filter.internal.filters.FilterPlugin;
-import org.cytoscape.filter.internal.filters.InteractionFilter;
-import org.cytoscape.filter.internal.filters.NumericFilter;
-import org.cytoscape.filter.internal.filters.Relation;
-import org.cytoscape.filter.internal.filters.StringFilter;
-import org.cytoscape.filter.internal.filters.TopologyFilter;
+import org.cytoscape.filter.internal.filters.model.AtomicFilter;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
+import org.cytoscape.filter.internal.filters.model.CyFilter;
+import org.cytoscape.filter.internal.filters.model.FilterModelLocator;
+import org.cytoscape.filter.internal.filters.model.InteractionFilter;
+import org.cytoscape.filter.internal.filters.model.NumericFilter;
+import org.cytoscape.filter.internal.filters.model.Relation;
+import org.cytoscape.filter.internal.filters.model.StringFilter;
+import org.cytoscape.filter.internal.filters.model.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.prefuse.data.query.NumberRangeModel;
 import org.cytoscape.filter.internal.prefuse.util.ui.JRangeSlider;
@@ -86,9 +86,7 @@ import org.cytoscape.filter.internal.widgets.autocomplete.index.TextIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.view.ComboBoxFactory;
 import org.cytoscape.filter.internal.widgets.autocomplete.view.TextIndexComboBox;
 import org.cytoscape.filter.internal.widgets.slider.JRangeSliderExtended;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.CyNetworkView;
@@ -96,6 +94,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@SuppressWarnings("serial")
 public class FilterSettingPanel extends JPanel {
 	
 	private static final ImageIcon plusIcon = new ImageIcon(
@@ -107,23 +106,26 @@ public class FilterSettingPanel extends JPanel {
 
 	private CompositeFilter theFilter;
 	private FilterMainPanel parentPanel;
-	private CyNetwork currentNetwork = null;
-	private TopoFilterPanel topoPanel = null;
-	private InteractionFilterPanel interactionPanel = null;
-	private final Logger logger;
+	private CyNetwork currentNetwork;
+	private TopoFilterPanel topoPanel;
+	private InteractionFilterPanel interactionPanel;
 	private final CyApplicationManager applicationManager;
 	private final CyEventHelper eventHelper;
 	
-	public FilterSettingPanel(FilterMainPanel pParent, Object pFilterObj, CyApplicationManager applicationManager, FilterPlugin filterPlugin, CyEventHelper eventHelper) {
+	private static final Logger logger = LoggerFactory.getLogger(FilterSettingPanel.class);
+	
+	public FilterSettingPanel(final FilterMainPanel pParent,
+							  final Object pFilterObj,
+							  final FilterModelLocator modelLocator,
+							  final CyApplicationManager applicationManager,
+							  final CyEventHelper eventHelper) {
 		this.applicationManager = applicationManager;
 		this.eventHelper = eventHelper;
-		
-		logger = LoggerFactory.getLogger(getClass());
+
 		theFilter = (CompositeFilter) pFilterObj;
         setName(theFilter.getName());
 		parentPanel = pParent;
 		initComponents();
-		
 		initAdvancedSetting();
 		
 		// Select "node/edge" will be determined automatically through the attribute selected
@@ -134,14 +136,13 @@ public class FilterSettingPanel extends JPanel {
 		initCustomSetting();	
 		
 		if (pFilterObj instanceof TopologyFilter) {
-
-			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
 	        gridBagConstraints.gridy = 2;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+	        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 	        gridBagConstraints.weightx = 1.0;
 
 			pnlCustomSettings.removeAll();
-			topoPanel = new TopoFilterPanel((TopologyFilter)theFilter, applicationManager, filterPlugin, eventHelper);
+			topoPanel = new TopoFilterPanel((TopologyFilter)theFilter, modelLocator, applicationManager, eventHelper);
 			pnlCustomSettings.add(topoPanel, gridBagConstraints);
 			//topoPanel.addParentPanelListener(); // Update passFilterCOM when shown
 			topoPanel.addParentPanelListener(this); // Update passFilterCOM when shown
@@ -159,14 +160,14 @@ public class FilterSettingPanel extends JPanel {
 		}
 		
 		if (pFilterObj instanceof InteractionFilter) {
-
-			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
 	        gridBagConstraints.gridy = 2;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+	        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 	        gridBagConstraints.weightx = 1.0;
 
 			pnlCustomSettings.removeAll();
-			interactionPanel = new InteractionFilterPanel((InteractionFilter)theFilter, applicationManager, filterPlugin, eventHelper);
+			interactionPanel = new InteractionFilterPanel((InteractionFilter) theFilter, modelLocator,
+					applicationManager, eventHelper);
 			pnlCustomSettings.add(interactionPanel, gridBagConstraints);
 			//interactionPanel.addParentPanelListener(); // Update passFilterCOM when shown
 			interactionPanel.addParentPanelListener(this); // Update passFilterCOM when shown
@@ -200,6 +201,7 @@ public class FilterSettingPanel extends JPanel {
 
 	private Class<?> getAttributeDataType(CyNetwork network, String pAttribute, int pType) {
 		Collection<? extends CyTableEntry> entries;
+		
 		if (pType == QuickFind.INDEX_NODES) {
 			entries = network.getNodeList();
 		} else if (pType == QuickFind.INDEX_EDGES) {
@@ -223,15 +225,13 @@ public class FilterSettingPanel extends JPanel {
 
 		try {		
 			// If index doesnot exist, check if there is such attribute or
-			
 			if (!FilterUtil.hasSuchAttribute(pFilter.getNetwork(), pFilter.getControllingAttribute(), pFilter.getIndexType())) {
 				// no such attribute
 				JComboBox tmpCombo;
 				if (pFilter.getSearchStr() != null) {
 					Object[] objList = {pFilter.getSearchStr()};
 					tmpCombo = new JComboBox(objList);
-				}
-				else {
+				} else {
 					tmpCombo = new JComboBox();
 				}
 				tmpCombo.setEnabled(false);
@@ -245,7 +245,6 @@ public class FilterSettingPanel extends JPanel {
 			//TextIndex index_by_thisAttr = (TextIndex) quickFind.getIndex(Cytoscape.getCurrentNetwork());
 
 			pFilter.setIndex(createTextIndex(pFilter));					
-			
 			comboBox = ComboBoxFactory.createTextIndexComboBox((TextIndex)pFilter.getIndex(), 2.0);				
 
 			//  Set Size of ComboBox Display, based on # of specific chars
@@ -265,9 +264,8 @@ public class FilterSettingPanel extends JPanel {
 			final JTextComponent editor = (JTextComponent) comboBox.getEditor().getEditorComponent();
 			ComboBoxFocusListener focuslistener = new ComboBoxFocusListener(comboBox);
 			editor.addFocusListener(focuslistener);
-			
 		} catch (Exception e) {
-			logger.error("Exception in FilterSettingpanel.getTextIndexComboBox()");
+			logger.error("Exception in FilterSettingpanel.getTextIndexComboBox()", e);
 		}
 
 		return comboBox;
@@ -275,26 +273,23 @@ public class FilterSettingPanel extends JPanel {
 	
 	
 	private JRangeSliderExtended getRangerSlider(NumericFilter pFilter) {
-		//System.out.println("Entering FilterSettingPanel.getRangerSlider()...");
-		
 		NumberIndex theIndex = createNumberIndex(pFilter);
 
 		if (theIndex != null) {
-			//System.out.println("theIndex != null");
 			pFilter.setIndex(theIndex);
-		}
-		else {
+		} else {
 			//System.out.println("theIndex == null");
 		}
 		
 		NumberRangeModel rangeModel = null;
+		
 		if (theIndex == null) {
 			rangeModel = new NumberRangeModel(0,0,0,0);			
-		}
-		else {
-			Class<?> dataType = getAttributeDataType(pFilter.getNetwork(), pFilter.getControllingAttribute(), pFilter.getIndexType());
+		} else {
+			Class<?> dataType = getAttributeDataType(pFilter.getNetwork(), pFilter.getControllingAttribute(),
+					pFilter.getIndexType());
+			
 			//Initialize the search values, lowBound and highBound	
-
 			if (pFilter.getLowBound() == null) {
 				pFilter.setLowBound(theIndex.getMinimumValue());
 			}
@@ -309,8 +304,7 @@ public class FilterSettingPanel extends JPanel {
 				Double max = (Double)theIndex.getMaximumValue();
 
 				rangeModel = new NumberRangeModel(lowB.doubleValue(),highB.doubleValue(),min.doubleValue(),max.doubleValue());				
-			}
-			else if (dataType == Integer.class) {
+			} else if (dataType == Integer.class) {
 				rangeModel = new NumberRangeModel(pFilter.getLowBound(),pFilter.getHighBound(),
 						theIndex.getMinimumValue(),theIndex.getMaximumValue());		
 			}
@@ -450,8 +444,7 @@ public class FilterSettingPanel extends JPanel {
 		            	adjustBoundValues(boundVect, "int");
 
 						model.setValueRange(new Integer(boundVect.elementAt(0)),new Integer(boundVect.elementAt(1)), (Integer) model.getMinValue(), (Integer) model.getMaxValue());						
-					}
-					else {
+					} else {
 		            	EditRangeDialog theDialog = new EditRangeDialog(new javax.swing.JFrame(), true, theSlider.getName(), boundVect, "double");												
 		            	theDialog.setLocation(theSlider.getLocationOnScreen());
 		            	theDialog.setVisible(true);
@@ -487,8 +480,7 @@ public class FilterSettingPanel extends JPanel {
 	    		highBound = max;
 	    		pBoundVect.setElementAt(new Integer(highBound).toString(),1);	    		
 	    	}
-		}
-		else if (pDataType.equalsIgnoreCase("double")) {
+		} else if (pDataType.equalsIgnoreCase("double")) {
 	    	double lowBound = new Double(pBoundVect.elementAt(0)).doubleValue();
 	    	double highBound = new Double(pBoundVect.elementAt(1)).doubleValue();
 	    	double min = new Double(pBoundVect.elementAt(2)).doubleValue();
@@ -520,13 +512,12 @@ public class FilterSettingPanel extends JPanel {
 			if (cyNetwork.getNodeCount() > 0) {
 				attributeType = cyNetwork.getDefaultNodeTable().getColumn(pCtrlAttribute).getType();
 			}
-		}
-		else if (pIndexType == QuickFind.INDEX_EDGES) {
+		} else if (pIndexType == QuickFind.INDEX_EDGES) {
 			if (cyNetwork.getEdgeCount() > 0) {
 				attributeType = cyNetwork.getDefaultEdgeTable().getColumn(pCtrlAttribute).getType();
 			}
 		}
-		//
+		
 		if ((attributeType == Integer.class)
 				||(attributeType == Double.class)) {
 				retFilter = new NumericFilter();
@@ -537,8 +528,7 @@ public class FilterSettingPanel extends JPanel {
 
 				retFilter.setIndex(quickFind.getIndex(cyNetwork));
 				
-		}
-		else if ((attributeType == String.class||(attributeType == List.class||(attributeType == Boolean.class)))) {
+		} else if ((attributeType == String.class||(attributeType == List.class||(attributeType == Boolean.class)))) {
 				retFilter = new StringFilter();	
 				retFilter.setControllingAttribute(pCtrlAttribute);
 				retFilter.setIndexType(pIndexType);
@@ -546,14 +536,14 @@ public class FilterSettingPanel extends JPanel {
 				//TextIndex index_by_thisAttr = (TextIndex) quickFind.getIndex(Cytoscape.getCurrentNetwork());
 
 				retFilter.setIndex(quickFind.getIndex(cyNetwork));
-		}
-		else {
+		} else {
 				logger.error("AttributeType is not numeric/string/list/boolean!");
 		}
 
 		if (retFilter != null) {
 			retFilter.setNetwork(cyNetwork);
 		}
+		
 		return retFilter;
 	}
 	
@@ -584,11 +574,11 @@ public class FilterSettingPanel extends JPanel {
 		int childIndex =widgetGridY/2;
 		
 		CyFilter childFilter = theFilter.getChildren().get(childIndex);
+		
 		if (childFilter instanceof CompositeFilter) {
 			CompositeFilter tmpFilter = (CompositeFilter)childFilter;
 			theFilter.setNotTable(tmpFilter, new Boolean(_chk.isSelected()));
-		}
-		else { // it is an AtomiCFilter
+		} else { // it is an AtomiCFilter
 			childFilter.setNegation(_chk.isSelected());				
 		}
 		//Update the selection on screen
@@ -622,8 +612,7 @@ public class FilterSettingPanel extends JPanel {
 		if (pFilter instanceof AtomicFilter) {
 			AtomicFilter atomicFilter = (AtomicFilter) pFilter;
 			theLabel_col0.setText(atomicFilter.getControllingAttribute());
-		}
-		else {
+		} else {
 			theLabel_col0.setText("Filter");
 		}
 
@@ -653,21 +642,21 @@ public class FilterSettingPanel extends JPanel {
 
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        
         //Col 2 ---> Widget if atomicFilter
 		if (pFilter instanceof StringFilter) {
 			JComboBox aBox = getTextIndexComboBox((StringFilter)pFilter);
 	        pnlCustomSettings.add(aBox, gridBagConstraints);		
-		}
-		else if (pFilter instanceof NumericFilter) {
+		} else if (pFilter instanceof NumericFilter) {
 			JRangeSliderExtended theSlider = getRangerSlider((NumericFilter) pFilter);
 			pnlCustomSettings.add(theSlider, gridBagConstraints);						
-		}
-		else {// CompositeFilter
+		} else {// CompositeFilter
 			gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
 	        //gridBagConstraints.weightx = 0.0;
 			//gridBagConstraints.anchor = java.awt.GridBagConstraints.
 	        pnlCustomSettings.add(new JLabel(pFilter.getName()), gridBagConstraints);		
 		}
+		
         gridBagConstraints.weightx = 0.0;
 		//Col 3 ---> label (a trash can) for delete of the row
         JLabel theDelLabel = new JLabel();
@@ -957,7 +946,7 @@ public class FilterSettingPanel extends JPanel {
 		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 		quickFind.reindexNetwork(cyNetwork, pFilter.getIndexType(),
-				pFilter.getControllingAttribute(), new TaskMonitorBase());					
+				pFilter.getControllingAttribute(), new TaskMonitorBase());
 		return (TextIndex) quickFind.getIndex(cyNetwork);
 	}
 	
@@ -966,6 +955,9 @@ public class FilterSettingPanel extends JPanel {
 		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();					
 		currentNetwork = applicationManager.getCurrentNetwork();
 
+		if (currentNetwork == null)
+			return null;
+		
 		int indexType = pNumericFilter.getIndexType();
 		quickFind.reindexNetwork(currentNetwork, indexType, 
 				pNumericFilter.getControllingAttribute(), new TaskMonitorBase());

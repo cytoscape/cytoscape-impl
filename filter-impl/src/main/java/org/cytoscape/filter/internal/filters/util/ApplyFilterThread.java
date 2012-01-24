@@ -40,10 +40,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.filter.internal.filters.AtomicFilter;
-import org.cytoscape.filter.internal.filters.CompositeFilter;
-import org.cytoscape.filter.internal.filters.NumericFilter;
-import org.cytoscape.filter.internal.filters.StringFilter;
+import org.cytoscape.filter.internal.filters.model.AtomicFilter;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
+import org.cytoscape.filter.internal.filters.model.NumericFilter;
+import org.cytoscape.filter.internal.filters.model.StringFilter;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;

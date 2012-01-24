@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.filters;
+package org.cytoscape.filter.internal.filters.model;
 
 public enum Relation {
 	AND,

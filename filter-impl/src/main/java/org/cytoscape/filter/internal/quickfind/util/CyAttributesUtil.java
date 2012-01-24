@@ -104,7 +104,11 @@ public class CyAttributesUtil {
 						}
 					}
 				} else {
-					terms = new String[] {row.get(attributeKey, type).toString()};
+					Object value = row.get(attributeKey, type);
+					
+					if (value != null) {
+						terms = new String[] { value.toString() };
+					}
 				}
 			} else {
 				return null;

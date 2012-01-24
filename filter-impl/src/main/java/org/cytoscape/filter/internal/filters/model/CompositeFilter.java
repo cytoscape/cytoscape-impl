@@ -32,8 +32,7 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
-package org.cytoscape.filter.internal.filters;
+package org.cytoscape.filter.internal.filters.model;
 
 import java.util.BitSet;
 import java.util.Hashtable;
@@ -41,6 +40,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.filter.internal.filters.FilterApp;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;

@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -33,8 +32,7 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
-package org.cytoscape.filter.internal.filters;
+package org.cytoscape.filter.internal.filters.model;
 
 import java.util.BitSet;
 import java.util.List;
@@ -44,7 +42,6 @@ import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-
 
 
 public abstract class AtomicFilter implements CyFilter {

@@ -51,35 +51,39 @@ import javax.swing.ListCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.filter.internal.ServicesUtil;
-import org.cytoscape.filter.internal.filters.CompositeFilter;
-import org.cytoscape.filter.internal.filters.EdgeInteractionFilter;
-import org.cytoscape.filter.internal.filters.FilterPlugin;
-import org.cytoscape.filter.internal.filters.InteractionFilter;
-import org.cytoscape.filter.internal.filters.NodeInteractionFilter;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
+import org.cytoscape.filter.internal.filters.model.EdgeInteractionFilter;
+import org.cytoscape.filter.internal.filters.model.FilterModelLocator;
+import org.cytoscape.filter.internal.filters.model.InteractionFilter;
+import org.cytoscape.filter.internal.filters.model.NodeInteractionFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
 
 
+@SuppressWarnings("serial")
 public class InteractionFilterPanel extends JPanel implements ItemListener{
 
 	private final InteractionFilter theFilter;
 	private final CyApplicationManager applicationManager;
-	private final FilterPlugin filterPlugin;
 	private final CyEventHelper eventHelper;
+	private final FilterModelLocator modelLocator;
 
     /** Creates new form InteractionFilterPanel */
-    public InteractionFilterPanel(InteractionFilter pFilter, CyApplicationManager applicationManager, FilterPlugin filterPlugin, CyEventHelper eventHelper) {
-    	this.applicationManager = applicationManager;
-    	this.filterPlugin = filterPlugin;
-    	this.eventHelper = eventHelper;
-    	theFilter = pFilter;
-        setName(theFilter.getName());
-    	
-        initComponents();
-        if (pFilter instanceof EdgeInteractionFilter) {
-        	changeLabelText();
-        }
+	public InteractionFilterPanel(final InteractionFilter pFilter,
+								  final FilterModelLocator modelLocator,
+								  final CyApplicationManager applicationManager,
+								  final CyEventHelper eventHelper) {
+		this.applicationManager = applicationManager;
+		this.eventHelper = eventHelper;
+		this.modelLocator = modelLocator;
+		theFilter = pFilter;
+		setName(theFilter.getName());
+
+		initComponents();
+		
+		if (pFilter instanceof EdgeInteractionFilter) {
+			changeLabelText();
+		}
         
         buildCMBmodel();
 
@@ -166,14 +170,11 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 	private void buildCMBmodel() {
         // Create an empty filter, add to the top of the filter list in the combobox
 		//CompositeFilter emptyFilter = new CompositeFilter("None");
-
-		Vector<CompositeFilter> tmpVect = new Vector<CompositeFilter>();
-		//tmpVect.add(emptyFilter);
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties();//filterPlugin.getAllFilterVect();
-		tmpVect.addAll(allFilterVect);
+		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
 		
-        PassFilterWidestStringComboBoxModel pfwscbm = new PassFilterWidestStringComboBoxModel(tmpVect);
+        PassFilterWidestStringComboBoxModel pfwscbm = new PassFilterWidestStringComboBoxModel(new Vector<CompositeFilter>(allFilters));
         cmbPassFilter.setModel(pfwscbm);
+        
         if (theFilter.getPassFilter() != null) {
         	cmbPassFilter.setSelectedIndex(0);
 			cmbPassFilter.setSelectedItem(theFilter.getPassFilter());
@@ -184,8 +185,8 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();		
 		//System.out.println("Entering InteractionFilterPanel.itemStateChanged() ...");
-		
 		Object soureObj= e.getSource();
+		
 		if (soureObj instanceof JCheckBox) {
 			JCheckBox theCheckBox = (JCheckBox) soureObj;
 			
@@ -200,6 +201,7 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 		if (source instanceof JComboBox) {
 			theFilter.setPassFilter((CompositeFilter) cmbPassFilter.getSelectedItem());
 		}
+		
 		theFilter.childChanged();
 		
 		// If network size is less than pre-defined threshold, apply theFilter automatically 
@@ -214,7 +216,6 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 		applicationManager.getCurrentNetworkView().updateView();
 	}
 
-	
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -305,6 +306,7 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
     // End of variables declaration                   
 	
 	class FilterRenderer extends JLabel implements ListCellRenderer {
+		
 		public FilterRenderer() {
 			setOpaque(true);
 		}
@@ -334,6 +336,7 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 
 			//Display related filters only
 			CompositeFilter tmpFilter = (CompositeFilter) value;
+			
 			if ((theFilter instanceof EdgeInteractionFilter && tmpFilter.getAdvancedSetting().isNodeChecked()) ||
 					(theFilter instanceof NodeInteractionFilter && tmpFilter.getAdvancedSetting().isEdgeChecked())) {
 				setText(tmpFilter.getName());											
@@ -344,5 +347,5 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 
 			return this;
 		}
-	}// FilterRenderer
+	}
 }

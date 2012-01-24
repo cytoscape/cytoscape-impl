@@ -34,7 +34,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-package org.cytoscape.filter.internal.filters;
+package org.cytoscape.filter.internal.filters.model;
 
 import java.util.BitSet;
 import java.util.List;

@@ -27,7 +27,6 @@
 */
 package org.cytoscape.filter.internal.filters.view;
 
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -43,9 +42,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
@@ -72,22 +69,20 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.filter.internal.ServicesUtil;
-import org.cytoscape.filter.internal.filters.CompositeFilter;
-import org.cytoscape.filter.internal.filters.EdgeInteractionFilter;
-import org.cytoscape.filter.internal.filters.FilterPlugin;
-import org.cytoscape.filter.internal.filters.InteractionFilter;
-import org.cytoscape.filter.internal.filters.NodeInteractionFilter;
-import org.cytoscape.filter.internal.filters.TopologyFilter;
+import org.cytoscape.filter.internal.filters.event.FiltersChangedEvent;
+import org.cytoscape.filter.internal.filters.event.FiltersChangedListener;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
+import org.cytoscape.filter.internal.filters.model.EdgeInteractionFilter;
+import org.cytoscape.filter.internal.filters.model.FilterModelLocator;
+import org.cytoscape.filter.internal.filters.model.InteractionFilter;
+import org.cytoscape.filter.internal.filters.model.NodeInteractionFilter;
+import org.cytoscape.filter.internal.filters.model.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.SelectUtil;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxModel;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
 import org.cytoscape.filter.internal.filters.util.WidestStringProvider;
 import org.cytoscape.filter.internal.quickfind.util.CyAttributesUtil;
-import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
-import org.cytoscape.filter.internal.quickfind.util.TaskMonitorBase;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -102,7 +97,6 @@ import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.DropDownMenuButton;
@@ -110,19 +104,17 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.filter.internal.*;
 
 
+@SuppressWarnings("serial")
 public class FilterMainPanel extends JPanel implements ActionListener,
 						       ItemListener, SetCurrentNetworkViewListener, NetworkAddedListener,
 						       NetworkAboutToBeDestroyedListener, SessionLoadedListener, RowsSetListener,
-						       RowsCreatedListener, NetworkViewAddedListener
-{
-	private static final long serialVersionUID = -6554492076361739485L;
+						       RowsCreatedListener, NetworkViewAddedListener, FiltersChangedListener {
+	
 	// String constants used for separator entries in the attribute combobox
-	private static final String filtersSeperator = "-- Filters --";
+	private static final String filtersSeparator = "-- Filters --";
 	private static final String attributesSeperator = "-- Attributes --";
 
 	private static JPopupMenu optionMenu;
@@ -140,7 +132,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	private DropDownMenuButton optionButton;
 	
-	private FilterSettingPanel currentFilterSettingPanel = null;
+	private FilterSettingPanel currentFilterSettingPanel;
 	private HashMap<CompositeFilter,FilterSettingPanel> filter2SettingPanelMap = new HashMap<CompositeFilter,FilterSettingPanel>();
 
 	/*
@@ -152,29 +144,25 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private final ImageIcon renameIcon = new ImageIcon(getClass().getResource("/images/rename.png"));
 	private final ImageIcon duplicateIcon = new ImageIcon(getClass().getResource("/images/duplicate.png"));
 
+	private final FilterModelLocator modelLocator;
 	private final CyApplicationManager applicationManager;
-	private final FilterPlugin filterPlugin;
 	private final CyNetworkManager networkManager;
-	private final CyServiceRegistrar serviceRegistrar;
 	private final CyEventHelper eventHelper;
 	private final TaskManager taskManager;
 	
-	public FilterMainPanel(final CyApplicationManager applicationManager,
-	                       final FilterPlugin filterPlugin, 
+	public FilterMainPanel(final FilterModelLocator modelLocator,
+						   final CyApplicationManager applicationManager,
 	                       final CyNetworkManager networkManager,
-	                       final CyServiceRegistrar serviceRegistrar,
 	                       final CyEventHelper eventHelper,
-	                       final TaskManager taskManager)
-	{
+	                       final TaskManager taskManager) {
+		this.modelLocator       = modelLocator;
 		this.applicationManager = applicationManager;
-		this.filterPlugin       = filterPlugin;
 		this.networkManager     = networkManager;
-		this.serviceRegistrar   = serviceRegistrar;
 		this.eventHelper        = eventHelper;
 		this.taskManager        = taskManager;
-
-		final Dictionary emptyProps = new Hashtable();
 		
+		modelLocator.addListener(this);
+
 		//Initialize the option menu with menuItems
 		setupOptionMenu();
 
@@ -217,6 +205,18 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 
 	@Override
+	public void handleEvent(FiltersChangedEvent event) {
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				updateCMBFilters();
+				refreshAttributeCMB();
+			}
+		});
+	}
+	
+	@Override
 	public void handleEvent(RowsSetEvent e) {
 		// Handle selection events
 		if (this.applicationManager.getCurrentNetworkView() == null){
@@ -234,30 +234,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			updateFeedbackTableModel();
 			return;
 		}
+		
 		handleAttributesChanged();	
-
 		updateFeedbackTableModel();
 	}
 	
 	@Override
 	public void handleEvent(RowsCreatedEvent e) {
 		handleAttributesChanged();
-	}
-	
-	void handleAttributesChanged() {
-		SwingUtilities.invokeLater(new Runnable() {
-				@Override
-					public void run() {
-					refreshAttributeCMB();
-					replaceFilterSettingPanel((CompositeFilter)cmbSelectFilter.getSelectedItem());
-				
-					FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(cmbSelectFilter.getSelectedItem());
-					if (theSettingPanel != null) {
-						theSettingPanel.refreshIndicesForWidgets();
-					}
-					updateFeedbackTableModel();
-				}
-			});
 	}
 	
 	@Override
@@ -273,17 +257,19 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				}
 				
 				// If FilterPanel is not selected, do nothing
-				if (cmbSelectFilter.getSelectedItem() == null) {
+				if (cmbFilters.getSelectedItem() == null) {
 					return;
 				}
 							
 				//Refresh indices for UI widgets after network switch			
-				CompositeFilter selectedFilter = (CompositeFilter) cmbSelectFilter.getSelectedItem();
+				CompositeFilter selectedFilter = (CompositeFilter) cmbFilters.getSelectedItem();
 				selectedFilter.setNetwork(view.getModel());
 				FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
-				theSettingPanel.refreshIndicesForWidgets();
 				
-				updateFeedbackTableModel();
+				if (theSettingPanel != null) {
+					theSettingPanel.refreshIndicesForWidgets();
+					updateFeedbackTableModel();
+				}
 			}
 		});
 	}
@@ -313,6 +299,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		enableForNetwork();
 		updateFeedbackTableModel();
+	}
+	
+	@Override
+	public void handleEvent(final NetworkViewAddedEvent e) {
+		if (!isShowing())
+			return;
+
+		updateIndex();
 	}
 
 	public void updateFeedbackTableModel(){		
@@ -353,22 +347,37 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 	}
 	
-	
-	// Target network to watch selection
-	private CyNetwork currentNetwork;
-	
+	public void handlePanelSelected() {
+		updateIndex();
+	}
 	
 	public void refreshFilterSelectCMB() {
 		ComboBoxModel cbm;
 
 		// Whatever change caused the refresh may have altered the longest display String
 		// so need to have the model recalculate it.
-		cbm = cmbSelectFilter.getModel();
+		cbm = cmbFilters.getModel();
 		if (cbm instanceof WidestStringProvider) {
 			((WidestStringProvider)cbm).resetWidest();
 		}
 
-		this.cmbSelectFilter.repaint();
+		this.cmbFilters.repaint();
+	}
+	
+	private void handleAttributesChanged() {
+		SwingUtilities.invokeLater(new Runnable() {
+				@Override
+					public void run() {
+					refreshAttributeCMB();
+					replaceFilterSettingPanel((CompositeFilter)cmbFilters.getSelectedItem());
+				
+					FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(cmbFilters.getSelectedItem());
+					if (theSettingPanel != null) {
+						theSettingPanel.refreshIndicesForWidgets();
+					}
+					updateFeedbackTableModel();
+				}
+			});
 	}
 	
 	private void refreshAttributeCMB() {
@@ -376,7 +385,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		cmbAttributes.repaint();
 	}
 		
-	/*
+	/**
 	 * Get the list of attribute names for either "node" or "edge". The attribute names will be
 	 * prefixed either with "node." or "edge.". Those attributes whose data type is neither
 	 * "String" nor "numeric" will be excluded
@@ -419,6 +428,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		for (int i=0; i<attributeList.size(); i++) {
 			retList.add(attributeList.elementAt(i));
 		}
+		
 		return retList;
 	}
 	
@@ -452,7 +462,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		currentFilterSettingPanel = next;
 		
 		if (currentFilterSettingPanel == null || currentFilterSettingPanel.hasNullIndexChildFilter()) {
-			currentFilterSettingPanel = new FilterSettingPanel(this, pNewFilter, applicationManager, filterPlugin, eventHelper);
+			currentFilterSettingPanel = new FilterSettingPanel(this, pNewFilter, modelLocator, applicationManager,
+					eventHelper);
 			//Update the HashMap
 			filter2SettingPanelMap.put(pNewFilter, currentFilterSettingPanel);			
 		}
@@ -472,15 +483,13 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			cmbAttributes.setVisible(false);	
 			pnlFilterDefinition.setBorder(BorderFactory
 						      .createTitledBorder("Topology Filter Definition"));
-		}
-		else if (pNewFilter instanceof InteractionFilter) {
+		} else if (pNewFilter instanceof InteractionFilter) {
 			lbAttribute.setVisible(false);
 			btnAddFilterWidget.setVisible(false);
 			cmbAttributes.setVisible(false);	
 			pnlFilterDefinition.setBorder(BorderFactory
 						      .createTitledBorder("Interaction Filter Definition"));				
-		}
-		else {
+		} else {
 			lbAttribute.setVisible(true);
 			btnAddFilterWidget.setVisible(true);
 			cmbAttributes.setVisible(true);								
@@ -488,8 +497,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 						      .createTitledBorder("Filter Definition"));
 
 		}
+		
 		pnlFilterDefinition.add(currentFilterSettingPanel, gridBagConstraints);
-
 		pnlFilterDefinition.setVisible(true);
 		currentFilterSettingPanel.setVisible(true);
 		lbPlaceHolder_pnlFilterDefinition.setVisible(false); 				
@@ -497,8 +506,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		this.repaint();
 	}
 	
-	
-
 	private void addEventListeners() {
 		btnApplyFilter.addActionListener(this);
 
@@ -513,53 +520,63 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		renameFilterMenuItem.addActionListener(this);
 		duplicateFilterMenuItem.addActionListener(this);
 
-		cmbSelectFilter.addItemListener(this);
+		cmbFilters.addItemListener(this);
 		cmbAttributes.addItemListener(this);
 		
 		btnSelectAll.addActionListener(this);
 		btnDeSelect.addActionListener(this);
 	}
 
-	public void initCMBSelectFilter(){
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties();//filterPlugin.getAllFilterVect();
-		ComboBoxModel theModel = new FilterSelectWidestStringComboBoxModel(allFilterVect);
-		cmbSelectFilter.setModel(theModel);
-		cmbSelectFilter.setRenderer(new FilterRenderer());
+	private void initCMBFilters(){
+		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
+		ComboBoxModel cbm = new FilterSelectWidestStringComboBoxModel(allFilters);
+		cmbFilters.setModel(cbm);
+		cmbFilters.setRenderer(new FilterRenderer());
 		
-		if (allFilterVect.size() == 0) {
+		if (allFilters.size() == 0) {
 			this.btnApplyFilter.setEnabled(false);
 			this.btnAddFilterWidget.setEnabled(false);
 		}
-		for (int i=0; i<allFilterVect.size(); i++) {
-			filter2SettingPanelMap.put(allFilterVect.elementAt(i), null);
+		
+		for (CompositeFilter cf : allFilters) {
+			filter2SettingPanelMap.put(cf, null);
 		}
 
 		// Force the first filter in the model to be selected, so that it's panel will be shown
-		if (theModel.getSize() > 0) {
-			cmbSelectFilter.setSelectedIndex(0);
+		if (cbm.getSize() > 0) {
+			cmbFilters.setSelectedIndex(0);
 		}
 
-		replaceFilterSettingPanel((CompositeFilter)cmbSelectFilter.getSelectedItem());
-	}
-
-	public void handlePanelSelected() {
-		updateIndex();
+		replaceFilterSettingPanel((CompositeFilter)cmbFilters.getSelectedItem());
 	}
 
 	private void updateIndex() {
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		
 		if (currentView == null)
 			return;
 
 		final CyNetwork network = currentView.getModel();
 		taskManager.execute(new FilterIndexingTaskFactory(network));
 
-		if (cmbSelectFilter.getModel().getSize() == 0) {
-			// CMBSelectFilter will not be initialize until the Filter Panel has been selected
-			initCMBSelectFilter();		
-		}
-
 		updateCMBAttributes();
+	}
+	
+	private void updateCMBFilters() {
+		Vector<CompositeFilter> filters = modelLocator.getFilters();
+		
+		DefaultComboBoxModel cbm = (DefaultComboBoxModel) cmbFilters.getModel();
+		cbm.removeAllElements();
+		
+		if (filters != null) {
+			for (CompositeFilter cf : filters) {
+				cbm.addElement(cf);
+			}
+		}
+		
+		if (filters == null || filters.size() == 0) {
+			replaceFilterSettingPanel(null);
+		}
 	}
 	
 	/*
@@ -573,7 +590,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		cbm.removeAllElements();
 
 		cbm.addElement(attributesSeperator);
-		CompositeFilter selectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();
+		CompositeFilter selectedFilter = (CompositeFilter)cmbFilters.getSelectedItem();
 
 		if (selectedFilter == null) {
 			return;
@@ -595,21 +612,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		for (int i = 0; i < av.size(); i++) {
 			cbm.addElement(av.get(i));
 		}
-
-		cbm.addElement(filtersSeperator);
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
-		if (allFilterVect != null) {
-			for (int i = 0; i < allFilterVect.size(); i++) {
-				Object fi;
-
-				fi = allFilterVect.elementAt(i);
-				if (fi != selectedFilter) {
-					cbm.addElement(fi);
-				}
-			}
-		}
 	}
-
 	
 	/**
 	 * Setup menu items.
@@ -661,11 +664,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 */
 	// <editor-fold defaultstate="collapsed" desc=" Generated Code ">
 	private void initComponents() {
-		java.awt.GridBagConstraints gridBagConstraints;
+		GridBagConstraints gridBagConstraints;
 
 		pnlCurrentFilter = new JPanel();
-		cmbSelectFilter = new JComboBox();
-		cmbSelectFilter.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
+		cmbFilters = new JComboBox();
+		cmbFilters.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
 		// optionButton = new javax.swing.JButton();
 		pnlFilterDefinition = new JPanel();
         
@@ -683,7 +686,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		pnlFeedBack = new JPanel();
 		tblFeedBack = new JTable();
 		
-		pnlSelectButtons = new JPanel();
 		btnSelectAll = new JButton();
 		btnDeSelect = new JButton();
 		pnlScroll = new JScrollPane();
@@ -692,16 +694,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		pnlCurrentFilter.setLayout(new GridBagLayout());
 
-		pnlCurrentFilter.setBorder(BorderFactory
-					   .createTitledBorder("Current Filter"));
-		// cmbSelectFilter.setModel(new javax.swing.DefaultComboBoxModel(new
-		// String[] { "My First filter", "My second Filter" }));
+		pnlCurrentFilter.setBorder(BorderFactory.createTitledBorder("Current Filter"));
+		// cmbFilters.setModel(new DefaultComboBoxModel(new String[] { "My First filter", "My second Filter" }));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		gridBagConstraints.weightx = 0.5;
 		gridBagConstraints.insets = new Insets(5, 10, 5, 10);
-		pnlCurrentFilter.add(cmbSelectFilter, gridBagConstraints);
+		pnlCurrentFilter.add(cmbFilters, gridBagConstraints);
 
 		optionButton.setText("Option");
 		gridBagConstraints = new GridBagConstraints();
@@ -719,8 +719,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		pnlFilterDefinition.setLayout(new GridBagLayout());
 
-		pnlFilterDefinition.setBorder(BorderFactory
-					      .createTitledBorder("Filter Definition"));
+		pnlFilterDefinition.setBorder(BorderFactory.createTitledBorder("Filter Definition"));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 0;
@@ -820,7 +819,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		add(pnlFeedBack, gridBagConstraints);
 		// Set customized renderer for attributes/filter combobox
 		cmbAttributes.setRenderer(new AttributeFilterRenderer());
-
+		
+		initCMBFilters();
 	}// </editor-fold>
 
 	// Variables declaration - do not modify
@@ -830,7 +830,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	private JComboBox cmbAttributes;
 
-	private JComboBox cmbSelectFilter;
+	private JComboBox cmbFilters;
 
 	private JLabel lbAttribute;
 
@@ -848,51 +848,42 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private JPanel pnlFeedBack;
 	private JTable tblFeedBack;
     
-	private JPanel pnlSelectButtons;
 	private JButton btnDeSelect;
 	private JButton btnSelectAll;
 	private JScrollPane pnlScroll;
 	// End of variables declaration
 	
-	
-	public JComboBox getCMBAttributes()
-	{
+	public JComboBox getCMBAttributes() {
 		return 	cmbAttributes;
 	}
 	
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
-
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
 		
-		//System.out.println("Entering FilterMainPanel.itemStateChnaged() ...");
-		
 		if (source instanceof JComboBox) {
 			JComboBox cmb = (JComboBox) source;
-			if (cmb == cmbSelectFilter) {
-				CompositeFilter selectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();
+			
+			if (cmb == cmbFilters) {
+				CompositeFilter selectedFilter = (CompositeFilter)cmbFilters.getSelectedItem();
 				if (selectedFilter == null) {
 					this.btnApplyFilter.setEnabled(false);
 					this.btnAddFilterWidget.setEnabled(false);
 					return;
-				}
-				else {
+				} else {
 					this.btnAddFilterWidget.setEnabled(true);
 					this.btnApplyFilter.setEnabled(true);					
 				}
+				
+				CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
+				selectedFilter.setNetwork(cyNetwork);
+				
 				replaceFilterSettingPanel(selectedFilter);
 
-				CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 				if (cyNetwork != null) {
 					SelectUtil.unselectAllNodes(cyNetwork);						
 				}
 
-				if (cmbSelectFilter.getSelectedItem() instanceof TopologyFilter || cmbSelectFilter.getSelectedItem() instanceof InteractionFilter) {
+				if (cmbFilters.getSelectedItem() instanceof TopologyFilter || cmbFilters.getSelectedItem() instanceof InteractionFilter) {
 					// do not apply TopologyFilter or InteractionFilter automatically
 					return;
 				}	
@@ -904,16 +895,16 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				
 				updateView();
 				refreshAttributeCMB();
-			}
-			else if (cmb == cmbAttributes) {
+			} else if (cmb == cmbAttributes) {
 				Object selectObject = cmbAttributes.getSelectedItem();
+				
 				if (selectObject != null) {
 					String selectItem = selectObject.toString();
+					
 					// Disable the Add button if "--Attribute--" or "-- Filter ---" is selected
-					if (selectItem.equalsIgnoreCase(filtersSeperator) ||selectItem.equalsIgnoreCase(attributesSeperator)) {
+					if (selectItem.equalsIgnoreCase(filtersSeparator) ||selectItem.equalsIgnoreCase(attributesSeperator)) {
 						btnAddFilterWidget.setEnabled(false);
-					}
-					else {
+					} else {
 						btnAddFilterWidget.setEnabled(true);
 					}
 				}
@@ -929,7 +920,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			JButton _btn = (JButton) _actionObject;
 
 			if (_btn == btnApplyFilter) {
-				CompositeFilter theFilterToApply = (CompositeFilter) cmbSelectFilter.getSelectedItem();
+				CompositeFilter theFilterToApply = (CompositeFilter) cmbFilters.getSelectedItem();
 				final CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
 				if (currentNetwork == null)
 					return;
@@ -938,12 +929,12 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			}
 			if (_btn == btnAddFilterWidget) {
 				//btnAddFilterWidget is clicked!
-				CompositeFilter selectedFilter = (CompositeFilter) cmbSelectFilter.getSelectedItem();
+				CompositeFilter selectedFilter = (CompositeFilter) cmbFilters.getSelectedItem();
 				FilterSettingPanel theSettingPanel = filter2SettingPanelMap.get(selectedFilter);
 
 				if (cmbAttributes.getSelectedItem() instanceof String) {
 					String selectItem = (String) cmbAttributes.getSelectedItem();
-					if (selectItem.equalsIgnoreCase(filtersSeperator) ||selectItem.equalsIgnoreCase(attributesSeperator)) {
+					if (selectItem.equalsIgnoreCase(filtersSeparator) ||selectItem.equalsIgnoreCase(attributesSeperator)) {
 						return;
 					}
 				}
@@ -974,11 +965,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		if (_actionObject instanceof JMenuItem) {
 			CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 			JMenuItem _menuItem = (JMenuItem) _actionObject;
+			
 			if (_menuItem == newFilterMenuItem || _menuItem == newTopologyFilterMenuItem 
 			    || _menuItem == newNodeInteractionFilterMenuItem || _menuItem == newEdgeInteractionFilterMenuItem) {
 				String filterType = "Composite";
-				//boolean isTopoFilter = false;
-				//boolean isInteractionFilter = false;
+				
 				if (_menuItem == newTopologyFilterMenuItem) {
 					filterType = "Topology";
 					if (cyNetwork != null) {
@@ -999,6 +990,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				}
 				
 				String newFilterName = "";
+				
 				while (true) {
 					newFilterName = JOptionPane.showInputDialog(
 										    this, "New filter name", "New Filter Name",
@@ -1007,6 +999,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					if (newFilterName == null) { // user clicked "cancel"
 						break;
 					}
+					
 					if (newFilterName.trim().equals("")) {
 						Object[] options = { "OK" };
 						JOptionPane.showOptionDialog(this,
@@ -1018,7 +1011,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					}
 					
 					if (org.cytoscape.filter.internal.filters.util.FilterUtil
-					    .isFilterNameDuplicated(ServicesUtil.filterReader.getProperties(),  newFilterName)) {
+					    .isFilterNameDuplicated(modelLocator.getFilters(),  newFilterName)) {
 						Object[] options = { "OK" };
 						JOptionPane.showOptionDialog(this,
 									     "Filter name already existed!", "Warning",
@@ -1034,7 +1027,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				    && (!newFilterName.trim().equals(""))) {
 					createNewFilter(newFilterName, filterType);
 					
-					//System.out.println("FilterMainPanel.firePropertyChange() -- NEW_FILTER_CREATED");
 					//pcs.firePropertyChange("NEW_FILTER_CREATED", "", "");
 					
 					//					// TODO: Port this
@@ -1044,7 +1036,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					//					}
 				}
 			} else if (_menuItem == deleteFilterMenuItem) {
-				CompositeFilter theSelectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();	
+				CompositeFilter theSelectedFilter = (CompositeFilter)cmbFilters.getSelectedItem();	
 				if (theSelectedFilter == null) {
 					return;
 				}
@@ -1065,7 +1057,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
 				//				}
 			} else if (_menuItem == renameFilterMenuItem) {
-				CompositeFilter theSelectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();				
+				CompositeFilter theSelectedFilter = (CompositeFilter)cmbFilters.getSelectedItem();				
 				if (theSelectedFilter == null) {
 					return;
 				}
@@ -1076,7 +1068,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				//					Cytoscape.getPropertyChangeSupport().firePropertyChange(evt);
 				//				}
 			} else if (_menuItem == duplicateFilterMenuItem) {
-				CompositeFilter theSelectedFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();				
+				CompositeFilter theSelectedFilter = (CompositeFilter)cmbFilters.getSelectedItem();				
 				if (theSelectedFilter == null) {
 					return;
 				}
@@ -1096,34 +1088,32 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private void updateView() {
 		eventHelper.flushPayloadEvents();
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		
 		if (currentView != null)
 			currentView.updateView();
 	}
 
 	private void updateInteractionMenuItemStatus() {
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
+		Vector<CompositeFilter> allFilters = modelLocator.getFilters(); //filterPlugin.getAllFilterVect();
+		
 		//Disable interactionMenuItem if there is no other filters to depend on
-		if (allFilterVect == null || allFilterVect.size() == 0) {
+		if (allFilters == null || allFilters.size() == 0) {
 			newNodeInteractionFilterMenuItem.setEnabled(false);
 			newEdgeInteractionFilterMenuItem.setEnabled(false);
 			return;
 		}
 		
-		// Set newEdgeInteractionFilterMenuItem on only if there are at least one 
-		// Node Filter
-		if (hasNodeFilter(allFilterVect)) {
+		// Set newEdgeInteractionFilterMenuItem on only if there are at least one Node Filter
+		if (hasNodeFilter(allFilters)) {
 			newEdgeInteractionFilterMenuItem.setEnabled(true);	
-		}
-		else {
+		} else {
 			newEdgeInteractionFilterMenuItem.setEnabled(false);
 		}
 
-		// Set newNodeInteractionFilterMenuItem on only if there are at least one 
-		// Edge Filter
-		if (hasEdgeFilter(allFilterVect)) {
+		// Set newNodeInteractionFilterMenuItem on only if there are at least one  Edge Filter
+		if (hasEdgeFilter(allFilters)) {
 			newNodeInteractionFilterMenuItem.setEnabled(true);
-		}	
-		else {
+		}	 else {
 			newNodeInteractionFilterMenuItem.setEnabled(false);
 		}
 	}
@@ -1132,12 +1122,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private boolean hasNodeFilter(Vector<CompositeFilter> pAllFilterVect) {
 		boolean selectNode = false;
 
-		for (int i=0; i< pAllFilterVect.size(); i++) {
-			CompositeFilter curFilter = pAllFilterVect.elementAt(i);
+		for (CompositeFilter curFilter : pAllFilterVect) {
 			if (curFilter.getAdvancedSetting().isNodeChecked()) {
 				selectNode = true;
 			}			
-		}//end of for loop
+		}
 
 		return selectNode;
 	}
@@ -1146,12 +1135,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private boolean hasEdgeFilter(Vector<CompositeFilter> pAllFilterVect) {
 		boolean selectEdge = false;
 
-		for (int i=0; i< pAllFilterVect.size(); i++) {
-			CompositeFilter curFilter = pAllFilterVect.elementAt(i);
+		for (CompositeFilter curFilter : pAllFilterVect) {
 			if (curFilter.getAdvancedSetting().isEdgeChecked()) {
 				selectEdge = true;
 			}			
-		}//end of for loop
+		}
 
 		return selectEdge;
 	}
@@ -1164,7 +1152,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 
 	private void duplicateFilter(){
-		CompositeFilter theFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();
+		CompositeFilter theFilter = (CompositeFilter)cmbFilters.getSelectedItem();
 	
 		String tmpName = "Copy of " + theFilter.getName();
 		String newFilterName = null;
@@ -1183,8 +1171,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				return;
 			}
 			
-			if (org.cytoscape.filter.internal.filters.util.FilterUtil
-			    .isFilterNameDuplicated(ServicesUtil.filterReader.getProperties(),newFilterName)) {
+			if (FilterUtil.isFilterNameDuplicated(modelLocator.getFilters(), newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
 							     "Filter name already existed!", "Warning",
@@ -1200,21 +1187,22 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		CompositeFilter newFilter = (CompositeFilter) theFilter.clone(); 
 		newFilter.setName(newFilterName);
 		
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
-		allFilterVect.add(newFilter);
-		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, applicationManager, filterPlugin, eventHelper);
+		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
+		allFilters.add(newFilter);
+		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, modelLocator,
+				applicationManager, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);
 		
 		// set the new filter in the combobox selected
-		cmbSelectFilter.setSelectedItem(newFilter);
+		cmbFilters.setSelectedItem(newFilter);
 	}	
 	
 	
 	private void renameFilter(){
-		CompositeFilter theFilter = (CompositeFilter)cmbSelectFilter.getSelectedItem();
-
+		CompositeFilter theFilter = (CompositeFilter)cmbFilters.getSelectedItem();
 		String oldFilterName = theFilter.getName();
 		String newFilterName = "";
+		
 		while (true) {
 			Vector<String> nameVect = new Vector<String>();
 			nameVect.add(oldFilterName);
@@ -1230,8 +1218,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				return;
 			}
 			
-			if (org.cytoscape.filter.internal.filters.util.FilterUtil
-			    .isFilterNameDuplicated(ServicesUtil.filterReader.getProperties(),newFilterName)) {
+			if (FilterUtil.isFilterNameDuplicated(modelLocator.getFilters(), newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
 							     "Filter name already existed!", "Warning",
@@ -1245,76 +1232,55 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}// while loop
 
 		theFilter.setName(newFilterName);
-
-		cmbSelectFilter.setSelectedItem(theFilter);
+		cmbFilters.setSelectedItem(theFilter);
 		refreshFilterSelectCMB();
 	}
 		
 	private void deleteFilter(CompositeFilter pFilter) {
-		 
 		filter2SettingPanelMap.remove(pFilter);
-		cmbSelectFilter.removeItem(pFilter);
+		cmbFilters.removeItem(pFilter);
+		modelLocator.removeFilter(pFilter);
 		
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
-		if (allFilterVect == null || allFilterVect.size() == 0) {
-			replaceFilterSettingPanel(null);
-		}
 		this.validate();
 		this.repaint();
 	}
 
 	private void createNewFilter(String pFilterName, String pFilterType) {
 		// Create an empty filter, add it to the current filter list
-		
 		CompositeFilter newFilter = null;
 		
 		if (pFilterType.equalsIgnoreCase("Topology")) {
 			newFilter =  new TopologyFilter(applicationManager);
 			newFilter.getAdvancedSetting().setEdge(false);
 			newFilter.setName(pFilterName);			
-		}
-		else if (pFilterType.equalsIgnoreCase("NodeInteraction")) {
+		} else if (pFilterType.equalsIgnoreCase("NodeInteraction")) {
 			newFilter =  new NodeInteractionFilter(applicationManager);
 			//newFilter.getAdvancedSetting().setEdge(false);
 			newFilter.setName(pFilterName);			
-		}		
-		else if (pFilterType.equalsIgnoreCase("EdgeInteraction")) {
+		} else if (pFilterType.equalsIgnoreCase("EdgeInteraction")) {
 			newFilter =  new EdgeInteractionFilter(applicationManager);
 			//newFilter.getAdvancedSetting().setEdge(false);
 			newFilter.setName(pFilterName);			
-		}		
-		else {
+		} else {
 			newFilter = new CompositeFilter(pFilterName);
 		}
 		
 		newFilter.setNetwork(applicationManager.getCurrentNetwork());
+		modelLocator.addFilter(newFilter);
 		
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties(); //filterPlugin.getAllFilterVect();
-		allFilterVect.add(newFilter);
-		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, applicationManager, filterPlugin, eventHelper);
+		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, modelLocator,
+				applicationManager, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);
 
 		// set the new filter in the combobox selected
-		cmbSelectFilter.setSelectedItem(newFilter);
-		refreshFilterSelectCMB();
+		cmbFilters.setSelectedItem(newFilter);
 
 		if (pFilterType.equalsIgnoreCase("Composite")) {
 			updateCMBAttributes();
 		}
 	}
 
-	@Override
-	public void handleEvent(final NetworkViewAddedEvent e) {
-		if (!isShowing())
-			return;
-
-		updateIndex();
-	}
-
 	class AttributeFilterRenderer extends JLabel implements ListCellRenderer {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = -9137647911856857211L;
 
 		public AttributeFilterRenderer() {
@@ -1359,8 +1325,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			if (value != null) {
 				CompositeFilter theFilter = (CompositeFilter) value;
 				setText(theFilter.getLabel());
-			}
-			else { // value == null
+			} else { // value == null
 				setText(""); 
 			}
 

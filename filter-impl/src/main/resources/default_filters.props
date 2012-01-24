@@ -2,8 +2,8 @@ FilterVersion=0.2
 <Composite>
 name=Default
 <AdvancedSetting>
-scope.global=false
-scope.session=true
+scope.global=true
+scope.session=false
 selection.node=false
 selection.edge=false
 edge.source=true

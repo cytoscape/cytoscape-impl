@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -33,8 +32,7 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
-package org.cytoscape.filter.internal.filters;
+package org.cytoscape.filter.internal.filters.model;
 
 import java.util.BitSet;
 import java.util.List;
@@ -47,12 +45,10 @@ import org.cytoscape.model.CyNode;
 import org.slf4j.LoggerFactory;
 
 
-
 /**
  * This is a Cytoscape specific filter that will pass nodes if
  * a selected attribute matches a specific value.
  */
-
 public class NumericFilter<T extends Number> extends AtomicFilter {
 
 	private T lowBound, highBound;
@@ -91,22 +87,20 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 	}
 	
 	public void apply() {
-				
 		List<CyNode> nodes_list = null;
 		List<CyEdge> edges_list=null;
 
 		int objectCount = -1;
+		
 		if (index_type == QuickFind.INDEX_NODES) {
 			nodes_list = network.getNodeList();
 			objectCount = nodes_list.size();
 			node_bits = new BitSet(objectCount); // all the bits are false initially
-		}
-		else if (index_type == QuickFind.INDEX_EDGES) {
+		} else if (index_type == QuickFind.INDEX_EDGES) {
 			edges_list = network.getEdgeList();
 			objectCount = edges_list.size();
 			edge_bits = new BitSet(objectCount); // all the bits are false initially
-		}
-		else {
+		} else {
 			LoggerFactory.getLogger(NumericFilter.class).error("StringFilter: Index_type is undefined.");
 			return;
 		}
@@ -161,5 +155,4 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 	//public NumericFilter clone() {
 	//	return new NumericFilter(attributeName, searchValues);
 	//}
-
 }

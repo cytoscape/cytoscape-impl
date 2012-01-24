@@ -55,10 +55,9 @@ import javax.swing.ListCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.filter.internal.ServicesUtil;
-import org.cytoscape.filter.internal.filters.CompositeFilter;
-import org.cytoscape.filter.internal.filters.FilterPlugin;
-import org.cytoscape.filter.internal.filters.TopologyFilter;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
+import org.cytoscape.filter.internal.filters.model.FilterModelLocator;
+import org.cytoscape.filter.internal.filters.model.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
 
@@ -66,21 +65,25 @@ import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuL
 
 /**
  * @author Peng
- *
  */
+@SuppressWarnings("serial")
 public class TopoFilterPanel extends JPanel implements ActionListener, ItemListener {
 
 	private final TopologyFilter theFilter;
 	private final CyApplicationManager applicationManager;
-	private final FilterPlugin filterPlugin;
 	private final CyEventHelper eventHelper;
+	private final FilterModelLocator modelLocator;
  
     /** Creates new form TopoFilterPanel 
      * @param eventHelper */
-    public TopoFilterPanel(TopologyFilter pFilter, CyApplicationManager applicationManager, FilterPlugin filterPlugin, CyEventHelper eventHelper) {
-    	this.applicationManager = applicationManager;
-    	this.filterPlugin = filterPlugin;
-    	this.eventHelper = eventHelper;
+	public TopoFilterPanel(final TopologyFilter pFilter,
+						   final FilterModelLocator modelLocator,
+						   final CyApplicationManager applicationManager,
+						   final CyEventHelper eventHelper) {
+		this.modelLocator = modelLocator;
+		
+		this.applicationManager = applicationManager;
+		this.eventHelper = eventHelper;
     	
     	theFilter = pFilter;
         setName(theFilter.getName());
@@ -154,21 +157,21 @@ public class TopoFilterPanel extends JPanel implements ActionListener, ItemListe
 
 		Vector<CompositeFilter> tmpVect = new Vector<CompositeFilter>();
 		tmpVect.add(emptyFilter);
-		Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties() ;//filterPlugin.getAllFilterVect();
-		tmpVect.addAll(allFilterVect);
+		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
+		tmpVect.addAll(allFilters);
 		
         PassFilterWidestStringComboBoxModel pfwscbm = new PassFilterWidestStringComboBoxModel(tmpVect);
         cmbPassFilter.setModel(pfwscbm);
+        
         if (theFilter.getPassFilter() != null) {
         	cmbPassFilter.setSelectedIndex(0);			
 			cmbPassFilter.setSelectedItem(theFilter.getPassFilter());
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object _actionObject = e.getSource();
-		
-		// System.out.println("Entering TopoFIlterPanel.actionPerformed() ...");
 		
 		// handle Button events
 		if (_actionObject instanceof JTextField) {
@@ -182,10 +185,9 @@ public class TopoFilterPanel extends JPanel implements ActionListener, ItemListe
 				theFilter.setDistance(_distance);				
 			}
 		}
-		// System.out.println(theFilter.getName());
-		
 	}
 	
+	@Override
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
 		
@@ -341,34 +343,34 @@ public class TopoFilterPanel extends JPanel implements ActionListener, ItemListe
         }
     }
 
-class MyKeyListener extends KeyAdapter {
-		
-		public void keyReleased(KeyEvent e)  {
+	class MyKeyListener extends KeyAdapter {
+
+		public void keyReleased(KeyEvent e) {
 			Object _actionObject = e.getSource();
 
-			if (tfMinNeighbors.getText().trim().equalsIgnoreCase("") || 
-					tfDistance.getText().trim().equalsIgnoreCase("")) {
+			if (tfMinNeighbors.getText().trim().equalsIgnoreCase("")
+					|| tfDistance.getText().trim().equalsIgnoreCase("")) {
 				return;
-			}	
+			}
 			if (_actionObject instanceof JTextField) {
 				JTextField _tfObj = (JTextField) _actionObject;
 				if (_tfObj == tfMinNeighbors) {
 
-					//Validate the data 
-					//try {
-			    	//	Integer.parseInt(tfMinNeighbors.getText());
-			    	//} 
-			    	//catch (NumberFormatException nfe) {			    		
-					//	JOptionPane.showMessageDialog((Component)e.getSource(), "Invalid values", "Warning", JOptionPane.ERROR_MESSAGE);
-			    	//	return;
-			    	//}
+					// Validate the data
+					// try {
+					// Integer.parseInt(tfMinNeighbors.getText());
+					// }
+					// catch (NumberFormatException nfe) {
+					// JOptionPane.showMessageDialog((Component)e.getSource(),
+					// "Invalid values", "Warning", JOptionPane.ERROR_MESSAGE);
+					// return;
+					// }
 
 					int _neighbors = (new Integer(tfMinNeighbors.getText())).intValue();
 					theFilter.setMinNeighbors(_neighbors);
-				}
-				else if (_tfObj == tfDistance) {
+				} else if (_tfObj == tfDistance) {
 					int _distance = (new Integer(tfDistance.getText())).intValue();
-					theFilter.setDistance(_distance);				
+					theFilter.setDistance(_distance);
 				}
 			}
 		}

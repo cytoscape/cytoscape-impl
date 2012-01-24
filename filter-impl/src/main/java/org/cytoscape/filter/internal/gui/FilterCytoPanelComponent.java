@@ -1,18 +1,16 @@
 package org.cytoscape.filter.internal.gui;
 
 import java.awt.Component;
-import java.util.Vector;
 
 import javax.swing.Icon;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.filter.internal.filters.CompositeFilter;
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.filter.internal.filters.view.FilterMainPanel;
 
-public class FilterCytoPanelComponent implements CytoPanelComponent {
+public class FilterCytoPanelComponent implements CytoPanelComponent, CytoPanelComponentSelectedListener {
 
 	FilterMainPanel panel;
 	
@@ -40,4 +38,10 @@ public class FilterCytoPanelComponent implements CytoPanelComponent {
 		return null;
 	}
 
+	@Override
+	public void handleEvent(CytoPanelComponentSelectedEvent e) {
+		if (e.getCytoPanel().getSelectedComponent() == panel) {
+			panel.handlePanelSelected();
+		}
+	}
 }
