@@ -30,6 +30,7 @@ package org.cytoscape.group.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.events.GroupAboutToBeRemovedEvent;
 import org.cytoscape.group.events.GroupAddedToNetworkEvent;
+import org.cytoscape.group.events.GroupChangedEvent;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 
 import org.cytoscape.model.CyEdge;
@@ -61,6 +63,8 @@ class CyGroupImpl implements CyGroup {
 	private CyRootNetwork rootNetwork = null;
 	private Set<CyNetwork> networkSet = null;
 	private Set<CyNetwork> collapseSet = null;
+	private boolean batchUpdate = false;
+	private boolean nodeProvided = false;  // We'll need this when we destroy ourselves
 
 	CyGroupImpl(final CyEventHelper eventHelper, 
 	            final CyGroupManager mgr, CyNetwork network, CyNode node,
@@ -71,8 +75,10 @@ class CyGroupImpl implements CyGroup {
 		this.rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		if (node == null)
 			this.groupNode = this.rootNetwork.addNode();
-		else
+		else {
+			nodeProvided = true;
 			this.groupNode = node;
+		}
 
 		this.externalEdges = new HashSet<CyEdge>();
 		this.metaEdges = new HashSet<CyEdge>();
@@ -174,42 +180,48 @@ class CyGroupImpl implements CyGroup {
 	 * @see org.cytoscape.group.CyGroup#addNode()
 	 */
 	@Override
-	public void addNode(CyNode node) {
+	public synchronized void addNode(CyNode node) {
 		if (!rootNetwork.containsNode(node))
-			throw new IllegalArgumentException("Can only add a node in the same network tree");
+			throwIllegalArgumentException("Can only add a node in the same network tree");
 		groupNet.addNode(node);
+		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, node, GroupChangedEvent.ChangeType.NODE_ADDED));
 	}
 
 	/**
 	 * @see org.cytoscape.group.CyGroup#addInternalEdge()
 	 */
 	@Override
-	public void addInternalEdge(CyEdge edge) {
+	public synchronized void addInternalEdge(CyEdge edge) {
 		if (!rootNetwork.containsEdge(edge))
-			throw new IllegalArgumentException("Can only add an edge in the same network tree");
+			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		groupNet.addEdge(edge);
+		if (!batchUpdate)
+			cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edge, GroupChangedEvent.ChangeType.INTERNAL_EDGE_ADDED));
 	}
 
 	/**
 	 * @see org.cytoscape.group.CyGroup#addExternalEdge()
 	 */
 	@Override
-	public void addExternalEdge(CyEdge edge) {
+	public synchronized void addExternalEdge(CyEdge edge) {
 		if (!rootNetwork.containsEdge(edge))
-			throw new IllegalArgumentException("Can only add an edge in the same network tree");
+			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		if (!externalEdges.contains(edge))
 			externalEdges.add(edge);
+		if (!batchUpdate)
+			cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edge, GroupChangedEvent.ChangeType.EXTERNAL_EDGE_ADDED));
 	}
 
 	/**
 	 * @see org.cytoscape.group.CyGroup#addNodes()
 	 */
 	@Override
-	public void addNodes(List<CyNode> nodes) {
+	public synchronized void addNodes(List<CyNode> nodes) {
 		Set<CyEdge> edgeSet = new HashSet<CyEdge>();
+		batchUpdate = true;
 		for (CyNode n: nodes) {
 			if (!rootNetwork.containsNode(n))
-				throw new IllegalArgumentException("Can only add a node in the same network tree");
+				throwIllegalArgumentException("Can only add a node in the same network tree");
 
 			addNode(n);
 			edgeSet.addAll(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
@@ -222,14 +234,67 @@ class CyGroupImpl implements CyGroup {
 				addExternalEdge(e);
 			}
 		}
+		batchUpdate = false;
+		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, nodes, GroupChangedEvent.ChangeType.NODES_ADDED));
+	}
+
+	/**
+	 * @see org.cytoscape.group.CyGroup#addEdges()
+	 */
+	@Override
+	public synchronized void addEdges(List<CyEdge> edges) {
+		for (CyEdge edge: edges) {
+			CyNode source = edge.getSource();
+			CyNode target = edge.getTarget();
+			if(groupNet.containsNode(source) && groupNet.containsNode(target))
+				groupNet.addEdge(edge);
+			else if (groupNet.containsNode(source) || groupNet.containsNode(target))
+				externalEdges.add(edge);
+			else
+				throwIllegalArgumentException("Attempted to add an edge that has no node in the group");
+		}
+		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edges, GroupChangedEvent.ChangeType.EDGES_ADDED));
 	}
 
 	/**
 	 * @see org.cytoscape.group.CyGroup#removeNodes()
 	 */
 	@Override
-	public void removeNodes(Collection<CyNode> nodes) {
+	public synchronized void removeNodes(List<CyNode> nodes) {
+		batchUpdate = true;
+		List<CyEdge> netEdges = new ArrayList<CyEdge>();
+		for (CyNode node: nodes) {
+			List<CyEdge> edges = rootNetwork.getAdjacentEdgeList(node, CyEdge.Type.ANY);
+			for (CyEdge edge: edges) {
+				if (externalEdges.contains(edge))
+					externalEdges.remove(edge);
+				else {
+					netEdges.add(edge);
+				}
+			}
+		}
+		if (netEdges.size() > 0)
+			groupNet.removeEdges(netEdges);
 		groupNet.removeNodes(nodes);
+		batchUpdate = false;
+		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, nodes, GroupChangedEvent.ChangeType.NODES_REMOVED));
+	}
+
+	/**
+	 * @see org.cytoscape.group.CyGroup#removeEdges()
+	 */
+	@Override
+	public synchronized void removeEdges(List<CyEdge> edges) {
+		List<CyEdge> netEdges = new ArrayList<CyEdge>();
+		for (CyEdge edge: edges) {
+			if (groupNet.containsEdge(edge))
+				netEdges.add(edge);
+			else if (externalEdges.contains(edge))
+				externalEdges.remove(edge);
+			else if (metaEdges.contains(edge))
+				metaEdges.remove(edge);
+		}
+		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edges, GroupChangedEvent.ChangeType.EDGES_REMOVED));
 	}
 
 	/**
@@ -264,7 +329,7 @@ class CyGroupImpl implements CyGroup {
 		// First, we need to make sure this network is in the same
 		// root network as the group node
 		if (!inSameRoot(network))
-			throw new IllegalArgumentException("Network not in same root network as group");
+			throwIllegalArgumentException("Network not in same root network as group");
 
 		if(!networkSet.contains(network))
 			networkSet.add(network);
@@ -335,9 +400,7 @@ class CyGroupImpl implements CyGroup {
 
 		// Expand it.
 		// Remove the group node from the target network
-		List<CyNode> nodesToRemove = new ArrayList<CyNode>();
-		nodesToRemove.add(groupNode);
-		subnet.removeNodes(nodesToRemove);
+		subnet.removeNodes(Collections.singletonList(groupNode));
 
 		// Add all of the member nodes and edges in
 		for (CyNode n: getNodeList())
@@ -371,9 +434,39 @@ class CyGroupImpl implements CyGroup {
 		return collapseSet.contains(net);
 	}
 
-	protected void addMetaEdge(CyEdge edge) {
+	/**
+ 	 * Destroy this group. This will destroy the subnetwork, all metaEdges, and 
+ 	 * the group node (if we created it).  This is meant to be called from the
+ 	 * CyGroupManager, only.
+ 	 */
+	public void destroyGroup() {
+		// Destroy the subNetwork
+		rootNetwork.removeSubNetwork(groupNet);
+		groupNet = null;
+
+		// Release all of our external edges
+		externalEdges = null;
+
+		// Remove all of our metaEdges from the root network
+		rootNetwork.removeEdges(metaEdges);
+
+		// If our group node was not provided, destroy it
+		if (!nodeProvided && rootNetwork.containsNode(groupNode)) {
+			rootNetwork.removeNodes(Collections.singletonList(groupNode));
+		}
+
+		networkSet = null;
+		collapseSet = null;
+	}
+
+	protected synchronized void addMetaEdge(CyEdge edge) {
 		if (!metaEdges.contains(edge))
 			metaEdges.add(edge);
+	}
+
+	protected synchronized void removeMetaEdge(CyEdge edge) {
+		if (!metaEdges.contains(edge))
+			metaEdges.remove(edge);
 	}
 
 	protected Set<CyEdge> getMetaEdgeList() {
@@ -390,5 +483,10 @@ class CyGroupImpl implements CyGroup {
 		if (!root.equals(rootNetwork))
 			return false;
 		return true;
+	}
+
+	private	void throwIllegalArgumentException(String message) {
+		batchUpdate = false;
+		throw new IllegalArgumentException(message);
 	}
 }

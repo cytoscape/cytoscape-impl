@@ -78,7 +78,7 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network) {
-		return new CyGroupImpl(help, mgr, network, null, null, null);
+		return createGroup(network, null, null, null);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
-		return new CyGroupImpl(help, mgr, network, null, nodes, edges);
+		return createGroup(network, null, nodes, edges);
 	}
 
 	/**
@@ -94,6 +94,8 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, CyNode node, List<CyNode> nodes, List<CyEdge> edges) {
-		return new CyGroupImpl(help, mgr, network, node, nodes, edges);
+		CyGroup group = new CyGroupImpl(help, mgr, network, node, nodes, edges);
+		mgr.addGroup(group);
+		return group;
 	}
 }

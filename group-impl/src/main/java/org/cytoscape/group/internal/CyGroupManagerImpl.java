@@ -117,10 +117,8 @@ public class CyGroupManagerImpl implements CyGroupManager {
 			return;
 
 		cyEventHelper.fireEvent(new GroupAboutToBeDestroyedEvent(CyGroupManagerImpl.this, group));
-
+		((CyGroupImpl)group).destroyGroup();
 		groupSet.remove(group);
-		for (CyNetwork network: group.getNetworkSet())
-			group.removeGroupFromNetwork(network);
 	}
 
 	@Override
