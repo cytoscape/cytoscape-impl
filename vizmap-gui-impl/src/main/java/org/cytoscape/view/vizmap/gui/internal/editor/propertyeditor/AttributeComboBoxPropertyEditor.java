@@ -26,14 +26,13 @@ import org.slf4j.LoggerFactory;
  * 
  * Export this as an OSGi service!
  */
-public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor
-		implements ListEditor, SetCurrentNetworkViewListener {
-	
-	private static final Logger logger = LoggerFactory
-			.getLogger(AttributeComboBoxPropertyEditor.class);
+public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor implements ListEditor,
+		SetCurrentNetworkViewListener {
+
+	private static final Logger logger = LoggerFactory.getLogger(AttributeComboBoxPropertyEditor.class);
 
 	private final Class<? extends CyTableEntry> type;
-	
+
 	private final AttributeSetManager attrManager;
 
 	public AttributeComboBoxPropertyEditor(final Class<? extends CyTableEntry> type,
@@ -41,16 +40,16 @@ public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor
 		super();
 		this.attrManager = attrManager;
 		this.type = type;
-		
+
 		final JComboBox comboBox = (JComboBox) editor;
-		comboBox.addActionListener(new ActionListener(){
+		comboBox.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				updateComboBox(appManager.getCurrentNetwork());
-			}});
+			}
+		});
 	}
-	
 
 	@Override
 	public Class<?> getTargetObjectType() {
@@ -61,24 +60,23 @@ public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor
 		final JComboBox box = (JComboBox) editor;
 		final Object selected = box.getSelectedItem();
 		box.removeAllItems();
-	
-		if ( currentNetwork != null ) {
+
+		if (currentNetwork != null) {
 			final AttributeSet targetSet = this.attrManager.getAttributeSet(currentNetwork, type);
-			if(targetSet == null)
+			if (targetSet == null)
 				throw new NullPointerException("AttributeSet is null.");
-			
+
 			final SortedSet<String> sortedName = new TreeSet<String>();
 			for (String attrName : targetSet.getAttrMap().keySet())
 				sortedName.add(attrName);
-		
+
 			for (final String attrName : sortedName)
 				box.addItem(attrName);
 
 			// Add new name if not in the list.
 			box.setSelectedItem(selected);
 
-			logger.debug(type + " attribute Combobox Updated: New Names = "
-					+ targetSet.getAttrMap().keySet());
+			logger.debug(type + " attribute Combobox Updated: New Names = " + targetSet.getAttrMap().keySet());
 		}
 	}
 
@@ -87,7 +85,7 @@ public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetworkView networkView = e.getNetworkView();
-				if ( networkView == null ) {
+				if (networkView == null) {
 					logger.debug("Current network view switched to null");
 					updateComboBox(null);
 				} else {

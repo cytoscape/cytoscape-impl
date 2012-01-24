@@ -207,6 +207,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 			logger.debug("New Type = " + type.getDisplayName());
 			logger.debug("New Attr Name = " + controllingAttrName);
+			
 			switchMappingType(prop, type, (VisualMappingFunctionFactory) e.getNewValue(),
 					controllingAttrName.toString());
 		} else if (prop.getParentProperty() != null) {
@@ -344,11 +345,22 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		logger.debug("!! Current Mapping type: " + currentMapping);
 		
 		if(currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType()) {
-			// Mapping does not exist.  Need to create new one.
-			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(), (Class<? extends CyTableEntry>) vp.getTargetDataType());
+			
+			// Mapping does not exist. Need to create new one.
+			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(),
+					(Class<? extends CyTableEntry>) vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
+
+			if (factory.getMappingFunctionType() == ContinuousMapping.class) {
+				if (Number.class.isAssignableFrom(attributeDataType) == false) {
+					JOptionPane.showMessageDialog(null,
+							"Selected column data type is not Number.\nPlease select numerical attributes.",
+							"Incompatible Column Type!", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+			}
+			
 			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, null,vp);
-	
 			style.addVisualMappingFunction(newMapping);
 		} else
 			newMapping = currentMapping;

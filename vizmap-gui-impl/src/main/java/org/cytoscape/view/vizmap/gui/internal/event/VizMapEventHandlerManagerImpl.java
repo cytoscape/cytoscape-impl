@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.gui.internal.event;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,12 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
-public class VizMapEventHandlerManagerImpl implements
-		VizMapEventHandlerManager, PropertyChangeListener {
+public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager, PropertyChangeListener {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(VizMapEventHandlerManagerImpl.class);
-	
+	private static final Logger logger = LoggerFactory.getLogger(VizMapEventHandlerManagerImpl.class);
+
 	// This event is used in PropertyEditor object.
 	private static final String VALUE = "VALUE";
 
@@ -36,21 +35,23 @@ public class VizMapEventHandlerManagerImpl implements
 	private final EditorManager editorManager;
 
 	private final SelectedVisualStyleManager manager;
-	
+
 	private VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
-	
+
 	private final CyNetworkTableManager tableMgr;
 	private final CyApplicationManager applicationManager;
-	
+
 	private final AttributeSetManager attrManager;
-	
+
 	private final VizMapperUtil util;
+	
+	private PropertyChangeSupport mappingTypePCS;
 
 	public VizMapEventHandlerManagerImpl(final SelectedVisualStyleManager manager, final EditorManager editorManager,
-					     final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
-					     final PropertySheetPanel propertySheetPanel, final VizMapperMainPanel gui,
-					     final CyNetworkTableManager tableMgr, final CyApplicationManager applicationManager, final AttributeSetManager attrManager,  final VizMapperUtil util)
-	{
+			final VizMapPropertySheetBuilder vizMapPropertySheetBuilder, final PropertySheetPanel propertySheetPanel,
+			final VizMapperMainPanel gui, final CyNetworkTableManager tableMgr,
+			final CyApplicationManager applicationManager, final AttributeSetManager attrManager,
+			final VizMapperUtil util) {
 		this.vizMapPropertySheetBuilder = vizMapPropertySheetBuilder;
 		this.editorManager = editorManager;
 		this.tableMgr = tableMgr;
@@ -58,26 +59,23 @@ public class VizMapEventHandlerManagerImpl implements
 		this.manager = manager;
 		this.attrManager = attrManager;
 		this.util = util;
-		
+
 		registerCellEditorListeners();
 
 		eventHandlers = new HashMap<String, VizMapEventHandler>();
 		createHandlers(propertySheetPanel);
-		
-		
 	}
 
 	private void createHandlers(PropertySheetPanel propertySheetPanel) {
 		AbstractVizMapEventHandler windowEventHandler = new EditorWindowEventHandler();
-		
+
 		// FIXME
 		eventHandlers.put(EditorManager.EDITOR_WINDOW_CLOSED, windowEventHandler);
 		eventHandlers.put(EditorManager.EDITOR_WINDOW_OPENED, windowEventHandler);
-		
-		// Create handler for local property editor event.
-		eventHandlers.put(VALUE, new CellEditorEventHandler(manager,
-				propertySheetPanel, tableMgr, applicationManager, vizMapPropertySheetBuilder, attrManager, util));
 
+		// Create handler for local property editor event.
+		eventHandlers.put(VALUE, new CellEditorEventHandler(manager, propertySheetPanel, tableMgr, applicationManager,
+				vizMapPropertySheetBuilder, attrManager, util));
 	}
 
 	/*
@@ -85,54 +83,44 @@ public class VizMapEventHandlerManagerImpl implements
 	 */
 	private void registerCellEditorListeners() {
 		// FIXME
-		for (PropertyEditor p : editorManager.getCellEditors()) {
+		for (PropertyEditor p : editorManager.getCellEditors())
 			p.addPropertyChangeListener(this);
-		}
-		
-		logger.debug("********** Editor registered: " + editorManager.getCellEditors().size());
 
-		for (PropertyEditor p : editorManager.getAttributeSelectors()) {
+		logger.debug("New Cell Editor registered: " + editorManager.getCellEditors().size());
+
+		for (final PropertyEditor p : editorManager.getAttributeSelectors())
 			p.addPropertyChangeListener(this);
-		}
-		
-		// Add Mapping type editor
+
+		// Add Mapping type editor: continuous, discrete, or passthrough.
 		final PropertyEditor mappingSelector = editorManager.getMappingFunctionSelector();
 		mappingSelector.addPropertyChangeListener(this);
-
 	}
-	
-	
+
 	// Called through OSGi service listener mechanism.
 	public void registerPCL(RenderingEngineFactory<?> factory, Map props) {
 		registerCellEditorListeners();
 	}
-	
+
 	public void unregisterPCL(RenderingEngineFactory<?> factory, Map props) {
 		// TODO implement this
 	}
-	
 
-	public VizMapEventHandler getHandler(String name) {
+	
+	@Override
+	public VizMapEventHandler getHandler(final String name) {
 		return eventHandlers.get(name);
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent e) {
-		
-		logger.debug("###################### VizMap local property change event called: "
-				+ e.getPropertyName());
-
+	public void propertyChange(final PropertyChangeEvent e) {
+		// Check caller
 		final String handlerKey = e.getPropertyName();
 
-		// Do nothing if null.
+		// Do nothing if key is null.
 		if (handlerKey == null)
 			return;
 
 		final VizMapEventHandler handler = getHandler(handlerKey.toUpperCase());
-
-		logger.debug("###################### Got handler: " + handler
-				+ ", Source = " + e.getSource());
-
 		if (handler != null)
 			handler.processEvent(e);
 	}

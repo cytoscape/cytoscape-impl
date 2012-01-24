@@ -22,6 +22,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,28 +39,27 @@ import javax.swing.event.PopupMenuListener;
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 
 /**
- * ComboBoxPropertyEditor. <br>
- * 
+ * Combo box to select discrete values.
+ *
  */
 public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 
-	private final static long serialVersionUID = 120233986911049L;
-
-	/*
-	 * Color & Font theme
-	 */
 	private static final Color BACKGROUND = Color.white;
 	private static final Color NOT_SELECTED = new Color(51, 51, 255, 150);
 	private static final Color SELECTED = Color.red;
 	private static final Font SELECTED_FONT = new Font("SansSerif", Font.BOLD, 12);
+	
 	private Object oldValue;
 	private Icon[] icons;
 
-	/**
-	 * Creates a new CyComboBoxPropertyEditor object.
-	 */
+	// For overriding parent class's PCS.
+	private final PropertyChangeSupport pcs;
+	
 	public CyComboBoxPropertyEditor() {
+		pcs = new PropertyChangeSupport(this);
+		
 		editor = new JComboBox() {
+			
 			private final static long serialVersionUID = 1213748837100875L;
 
 			public void setSelectedItem(Object anObject) {
@@ -68,28 +69,28 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 		};
 
 		final JComboBox combo = (JComboBox) editor;
-
 		combo.setRenderer(new Renderer());
-		
 		combo.addPopupMenuListener(new PopupMenuListener() {
-			public void popupMenuCanceled(PopupMenuEvent e) {
-			}
+			
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e) {}
 
+			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-
 				try {
 					if ((combo.getSelectedItem() == null) && (combo.getItemCount() != 0)) {
 						combo.setSelectedIndex(0);
-						CyComboBoxPropertyEditor.this.firePropertyChange(oldValue, combo.getItemAt(0));
+						firePropertyChangeEvent(oldValue, combo.getItemAt(0));
 					} else
-						CyComboBoxPropertyEditor.this.firePropertyChange(oldValue, combo.getSelectedItem());
+						firePropertyChangeEvent(oldValue, combo.getSelectedItem());
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
 
-			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-			}
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+		
 		});
 		
 		combo.addKeyListener(new KeyAdapter() {
@@ -100,28 +101,42 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 		});
 		combo.setSelectedIndex(-1);
 	}
+	
+	private void firePropertyChangeEvent(Object oldValue, Object newValue) {
+		this.firePropertyChange(oldValue, newValue);
+	}
+	
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener listener) {		
+		// Ignore duplicate method calls.
+		for(PropertyChangeListener l: pcs.getPropertyChangeListeners()) {
+			if(l == listener)
+				return;
+		}
+		pcs.addPropertyChangeListener(listener);
+	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
+	}
+
+	@Override
+	protected void firePropertyChange(Object oldValue, Object newValue) {
+		pcs.firePropertyChange("value", oldValue, newValue);
+	}
+
+	@Override
 	public Object getValue() {
 		Object selected = ((JComboBox) editor).getSelectedItem();
 
 		if (selected instanceof Value)
 			return ((Value) selected).value;
 		else
-
 			return selected;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param value
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setValue(Object value) {
 		JComboBox combo = (JComboBox) editor;
 		Object current = null;
@@ -130,10 +145,8 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 		for (int i = 0, c = combo.getModel().getSize(); i < c; i++) {
 			current = combo.getModel().getElementAt(i);
 
-			if ((value == current)
-					|| ((current != null) && current.equals(value))) {
+			if ((value == current) || ((current != null) && current.equals(value))) {
 				index = i;
-
 				break;
 			}
 		}
@@ -141,18 +154,12 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 		((JComboBox) editor).setSelectedIndex(index);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param values
-	 *            DOCUMENT ME!
-	 */
-	public void setAvailableValues(Object[] values) {
+
+	public void setAvailableValues(final Object[] values) {
 		((JComboBox) editor).setModel(new DefaultComboBoxModel(values));
 
-		if (((JComboBox) editor).getItemCount() != 0) {
+		if (((JComboBox) editor).getItemCount() != 0)
 			((JComboBox) editor).setSelectedIndex(0);
-		}
 	}
 	
 	public Set<Object> getAvailableValues() {
@@ -164,17 +171,12 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 		return items;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param icons
-	 *            DOCUMENT ME!
-	 */
+	
 	public void setAvailableIcons(Icon[] icons) {
 		this.icons = icons;
 	}
 
-	public class Renderer extends DefaultListCellRenderer {
+	private final class Renderer extends DefaultListCellRenderer {
 		private final static long serialVersionUID = 1213748837110925L;
 
 		public Component getListCellRendererComponent(JList list, Object value,
