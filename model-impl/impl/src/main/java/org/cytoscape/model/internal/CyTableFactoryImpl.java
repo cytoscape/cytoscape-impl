@@ -33,10 +33,13 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
+import java.lang.ref.WeakReference;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -51,6 +54,7 @@ public class CyTableFactoryImpl implements CyTableFactory {
 	private final CyEventHelper help;
 	private final Interpreter interpreter;
 	private final CyServiceRegistrar serviceRegistrar;
+	private final WeakEventDelegator eventDelegator; 
 
 	public CyTableFactoryImpl(final CyEventHelper help, final Interpreter interpreter,
 	                          final CyServiceRegistrar serviceRegistrar)
@@ -58,14 +62,32 @@ public class CyTableFactoryImpl implements CyTableFactory {
 		this.help             = help;
 		this.interpreter      = interpreter;
 		this.serviceRegistrar = serviceRegistrar;
+		this.eventDelegator = new WeakEventDelegator();
+		this.serviceRegistrar.registerService(eventDelegator, TableAddedListener.class, new Properties()); 
 	}
 
 	public CyTable createTable(final String name, final String primaryKey, final Class<?> primaryKeyType,
 				   final boolean pub, final boolean isMutable)
 	{
-		final CyTable table = new CyTableImpl(name, primaryKey, primaryKeyType, pub, isMutable,
+		final CyTableImpl table = new CyTableImpl(name, primaryKey, primaryKeyType, pub, isMutable,
 		                                      SavePolicy.SESSION_FILE, help, interpreter);
-		serviceRegistrar.registerAllServices(table, new Properties());
+		eventDelegator.addListener(table);
 		return table;
+	}
+
+	private class WeakEventDelegator implements TableAddedListener {
+		List<WeakReference<TableAddedListener>> tables = new ArrayList<WeakReference<TableAddedListener>>();  
+
+		public void addListener(TableAddedListener t) {
+			tables.add(new WeakReference<TableAddedListener>(t));
+		}
+		
+		public void handleEvent(TableAddedEvent e) {
+			for ( WeakReference<TableAddedListener> ref : tables ) {
+				TableAddedListener l = ref.get();
+				if ( l != null )
+					l.handleEvent(e);
+			}
+		}
 	}
 }

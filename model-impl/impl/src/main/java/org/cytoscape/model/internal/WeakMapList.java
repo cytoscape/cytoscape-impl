@@ -37,36 +37,38 @@ import org.cytoscape.model.events.ColumnCreatedListener;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.WeakHashMap;
+
+import java.lang.ref.WeakReference;
+
 /**
- * Any time that the source table adds a column, the
- * target table add it as a virtual column.
+ * A WeakHashMap where the keys point to lists of WeakReferences.
  */
-class VirtualColumnAdder implements ColumnCreatedListener {
+class WeakMapList<S,T> {
 
-	private final WeakMapList<CyTable,CyTable> tables;
+	WeakHashMap<S,List<WeakReference<T>>> data = new WeakHashMap<S,List<WeakReference<T>>>();
 
-	VirtualColumnAdder() {
-		tables = new WeakMapList<CyTable,CyTable>(); 
+	public List<T> get(S src) {
+		List<WeakReference<T>> list = data.get(src);
+		List<T> ret = new ArrayList<T>();
+		if ( list == null )
+			return ret; 
+		for (WeakReference<T> ref : list) {
+			T t = ref.get();
+			if ( t != null )
+				ret.add(t);
+		}
+		return ret;
 	}
 
-	public void handleEvent(ColumnCreatedEvent e) {
-		CyTable src = e.getSource();
-		List<CyTable> targets = tables.get( src );
-		String srcName = e.getColumnName();
-		CyColumn srcCol = src.getColumn(srcName);
 
-		for ( CyTable tgt : targets )
-			tgt.addVirtualColumn(srcName,srcName,src,CyTableEntry.SUID,srcCol.isImmutable());
-	}
-
-	public void addInterestedTables(CyTable src, CyTable tgt) {
-		if ( src == null )
-			throw new NullPointerException("source table is null");
-		if ( tgt == null )
-			throw new NullPointerException("target table is null");
-		if ( src == tgt )
-			throw new IllegalArgumentException("source and target tables cannot be the same!");
-		tables.put(src,tgt);
+	public void put(S src, T tgt) {
+		List<WeakReference<T>> refs = data.get(src);
+		if ( refs == null ) {
+			refs = new ArrayList<WeakReference<T>>();
+			data.put(src,refs);
+		}
+		refs.add( new WeakReference<T>( tgt ) );
 	}
 }
 

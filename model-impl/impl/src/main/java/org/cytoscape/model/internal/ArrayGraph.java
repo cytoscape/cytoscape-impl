@@ -48,6 +48,8 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -91,16 +93,19 @@ final public class ArrayGraph implements CyRootNetwork {
 	private final CyTableManagerImpl tableMgr;
 	private final CyNetworkTableManagerImpl networkTableMgr;
 	private final CyTableFactory tableFactory;
-	private final CyServiceRegistrar serviceRegistrar;
 	private final boolean publicTables;
+	private final VirtualColumnAdder columnAdder;
+	private final NameSetListener nameSetListener;
+	private final NetworkAddedListenerDelegator networkAddedListenerDelegator;
+
 
 	/**
 	 * Creates a new ArrayGraph object.
 	 * @param eh The CyEventHelper used for firing events.
 	 */
 	public ArrayGraph(final CyEventHelper eh, final CyTableManagerImpl tableMgr,
-					  final CyNetworkTableManagerImpl networkTableMgr,
-					  final CyTableFactory tableFactory,
+	                  final CyNetworkTableManagerImpl networkTableMgr,
+	                  final CyTableFactory tableFactory,
 	                  final CyServiceRegistrar serviceRegistrar, final boolean publicTables)
 	{
 		this.eventHelper = eh;
@@ -108,7 +113,6 @@ final public class ArrayGraph implements CyRootNetwork {
 		this.networkTableMgr = networkTableMgr;
 		this.tableFactory = tableFactory;
 		this.publicTables = publicTables;
-		this.serviceRegistrar = serviceRegistrar;
 		suid = SUIDFactory.getNextSUID();
 		numSubNetworks = 0;
 		nodeCount = 0;
@@ -117,14 +121,21 @@ final public class ArrayGraph implements CyRootNetwork {
 		nodePointers = new ArrayList<NodePointer>();
 		edgePointers = new ArrayList<EdgePointer>();
 
+		columnAdder = new VirtualColumnAdder();
+		serviceRegistrar.registerService(columnAdder, ColumnCreatedListener.class, new Properties());
+		nameSetListener = new NameSetListener();
+		serviceRegistrar.registerService(nameSetListener, RowsSetListener.class, new Properties());
+		networkAddedListenerDelegator = new NetworkAddedListenerDelegator();
+		serviceRegistrar.registerService(networkAddedListenerDelegator, NetworkAddedListener.class, new Properties());
+
 		netTables = createNetworkTables(suid); 
 		getCyRow().set(CyTableEntry.NAME, "");
 		nodeTables = createNodeTables(suid); 
 		edgeTables = createEdgeTables(suid); 
 
-        networkTableMgr.setTableMap(CyNetwork.class, this, netTables);
-        networkTableMgr.setTableMap(CyNode.class, this, nodeTables);
-        networkTableMgr.setTableMap(CyEdge.class, this, edgeTables);
+		networkTableMgr.setTableMap(CyNetwork.class, this, netTables);
+		networkTableMgr.setTableMap(CyNode.class, this, nodeTables);
+		networkTableMgr.setTableMap(CyEdge.class, this, edgeTables);
 
 		subNetworks = new ArrayList<CySubNetwork>();
 
@@ -200,12 +211,10 @@ final public class ArrayGraph implements CyRootNetwork {
 
 		// Now add a listener for column created events to add
 		// virtual columns to any subsequent source columns added.
-		serviceRegistrar.registerService(new VirtualColumnAdder(srcTable,tgtTable), 
-		                                 ColumnCreatedListener.class, new Properties());
+		columnAdder.addInterestedTables(srcTable,tgtTable);
 
 		// Another listener tracks changes to the NAME column in local tables
-		serviceRegistrar.registerService(new NameSetListener(srcTable,tgtTable),
-		                                 RowsSetListener.class, new Properties());
+		nameSetListener.addInterestedTables(srcTable,tgtTable);
 	}
 
 	/**
@@ -944,7 +953,7 @@ final public class ArrayGraph implements CyRootNetwork {
 		final Map<String,CyTable> newNodeTable = createNodeTables(newSUID);
 		final Map<String,CyTable> newEdgeTable = createEdgeTables(newSUID);
 		final ArraySubGraph sub = new ArraySubGraph(this,newSUID,newId,eventHelper,newNetTable,newNodeTable,newEdgeTable,tableMgr);
-		serviceRegistrar.registerAllServices(sub, new Properties());
+		networkAddedListenerDelegator.addListener(sub);	
 		subNetworks.add(sub);
 		networkTableMgr.setTableMap(CyNetwork.class, sub, newNetTable);
 		networkTableMgr.setTableMap(CyNode.class, sub, newNodeTable);
@@ -1072,4 +1081,17 @@ final public class ArrayGraph implements CyRootNetwork {
 	public CyRow getRow(CyTableEntry t) {
 		return getRow(t,CyNetwork.DEFAULT_ATTRS);
 	}
+
+    private class NetworkAddedListenerDelegator implements NetworkAddedListener {
+        List<NetworkAddedListener> listeners = new ArrayList<NetworkAddedListener>();
+        public void addListener(NetworkAddedListener l) {
+            listeners.add(l);
+        }
+        public void handleEvent(NetworkAddedEvent e) {
+            for (NetworkAddedListener l : listeners)
+                l.handleEvent(e);
+        }
+    }
+
 }
+

@@ -38,6 +38,9 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowSetRecord;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * Any time that the CyTableEntry.NAME column is set
  * in a local table, update the shared table with the
@@ -45,32 +48,37 @@ import org.cytoscape.model.events.RowSetRecord;
  */
 class NameSetListener implements RowsSetListener {
 
-	private final CyTable shared;
-	private final CyTable local;
+	private final WeakMapList<CyTable,CyTable> tables; 
 
-	NameSetListener(CyTable shared, CyTable local) {
+	NameSetListener() {
+		tables = new WeakMapList<CyTable,CyTable>();
+	}
+
+	public void handleEvent(RowsSetEvent e) {
+		CyTable local = e.getSource();	
+		List<CyTable> sharedList = tables.get(local);
+		for ( CyTable shared : sharedList ) {
+			for ( RowSetRecord record : e.getPayloadCollection() ) {
+				// assume payload collection is for same column
+				if ( !record.getColumn().equals(CyTableEntry.NAME) )
+					continue;
+				CyRow r = shared.getRow( record.getRow().get( CyTableEntry.SUID, Long.class ) );
+				if ( r != null ) 
+					r.set(CyRootNetwork.SHARED_NAME, record.getValue());
+			}
+		}
+	}
+
+    public void addInterestedTables(CyTable local, CyTable shared) {
 		if ( shared == null )
 			throw new NullPointerException("source table is null");
 		if ( local == null )
 			throw new NullPointerException("target table is null");
 		if ( shared == local )
 			throw new IllegalArgumentException("source and target tables cannot be the same!");
-		this.shared = shared;
-		this.local = local;
-	}
 
-	public void handleEvent(RowsSetEvent e) {
-		if ( e.getSource() != local )
-			return;
-		for ( RowSetRecord record : e.getPayloadCollection() ) {
-			// assume payload collection is for same column
-			if ( !record.getColumn().equals(CyTableEntry.NAME) )
-				return;
+		tables.put(local,shared);
+    }
 
-			CyRow r = shared.getRow( record.getRow().get( CyTableEntry.SUID, Long.class ) );
-			if ( r != null ) 
-				r.set(CyRootNetwork.SHARED_NAME, record.getValue());
-		}
-	}
 }
 
