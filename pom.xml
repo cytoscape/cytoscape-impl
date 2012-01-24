@@ -27,6 +27,7 @@
 		<module>event-impl</module>
 		<module>filter-impl</module>
 		<module>graphml-impl</module>
+		<module>group-impl</module>
 		<module>io-impl</module>
 		<module>layout-cytoscape-impl</module>
 		<module>layout-impl</module>
@@ -112,6 +113,11 @@
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>layout-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>group-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
 			<dependency>
@@ -209,6 +215,12 @@
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>io-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>group-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 				<type>test-jar</type>
 			</dependency>
