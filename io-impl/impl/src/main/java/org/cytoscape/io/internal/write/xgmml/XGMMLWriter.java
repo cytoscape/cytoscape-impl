@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -454,28 +455,21 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 						// Write a nested graph element
 						writeElement("<att>\n");
 						depth++;
-										
-						if (sameRoot && !networkMap.containsKey(netPointer)) {
-							// New sub-network...
-							writeSubGraph(netPointer);
-						} else {
-							// This sub-network has already been written or belongs to another XGMML file...
-							String href = "#" + netPointer.getSUID();
 							
-							if (!sameRoot) {
-								// This XGMML file will be saved as part of a CYS file,
-								// and the sub-network does NOT belong to the same root-network
-								CyNetwork baseNet = netPointerRoot.getBaseNetwork();
-								// ...So add the other base-network's file name to the XLink URI
-								String fileName = SessionUtil.getXGMMLFilename(baseNet);
-								href = fileName + href;
-							}
-							
-							writeElement("<graph");
-							writeAttributePair("xlink:href", href);
-							write("/>\n");
+						// This sub-network has already been written or belongs to another XGMML file...
+						String href = "#" + netPointer.getSUID();
+						
+						if (!sameRoot) {
+							// This XGMML file will be saved as part of a CYS file,
+							// and the sub-network does NOT belong to the same root-network
+							// ...So add the other root-network's file name to the XLink URI
+							String fileName = SessionUtil.getXGMMLFilename(netPointerRoot);
+							href = fileName + href;
 						}
 						
+						writeElement("<graph");
+						writeAttributePair("xlink:href", href);
+						write("/>\n");
 						depth--;
 						writeElement("</att>\n");
 					}
@@ -993,7 +987,9 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      */
     private Set<CySubNetwork> getRegisteredSubNetworks(CyRootNetwork rootNetwork) {
 		List<CySubNetwork> subNetList = rootNetwork.getSubNetworkList();
-		Set<CySubNetwork> registeredSubNetSet = new HashSet<CySubNetwork>();
+		Set<CySubNetwork> registeredSubNetSet = new LinkedHashSet<CySubNetwork>();
+		
+		registeredSubNetSet.add(rootNetwork.getBaseNetwork()); // The base network must be the first one!
 		
 		for (CySubNetwork sn : subNetList) {
 			if (networkManager.networkExists(sn.getSUID()))

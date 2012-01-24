@@ -470,12 +470,14 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (keyName.equals(targetKey.getName())) {
 			for (CyRow sourceRow : source.getAllRows()) {
 				Long key = sourceRow.get(keyName, Long.class);
+				Long mappedKey = null;
 
-				if (mappings != null) {
-					key = mappings.get(""+key);
-				}
+				if (mappings != null)
+					mappedKey = mappings.get(""+key);
+				if (mappedKey == null)
+					mappedKey = key;
 
-				CyRow targetRow = target.getRow(key);
+				CyRow targetRow = target.getRow(mappedKey);
 				mergeRow(keyName, sourceRow, targetRow);
 			}
 		}
