@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.filter.internal.filters.FilterApp;
 import org.cytoscape.filter.internal.filters.model.CompositeFilter;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
@@ -20,6 +19,8 @@ public class FilterUtil {
 	public static final String FILTER_APP_NAME = "FilterApp";
 	public static final String DEFAULT_FILE_NAME = "default_filters.props";
 	public static final String SESSION_FILE_NAME = "session_filters.props";
+	public static final String DYNAMIC_FILTER_THRESHOLD = "dynamicFilterThreshold";
+	public static final int DEFAULT_DYNAMIC_FILTER_THRESHOLD = 1000;
 	
 	// do selection on given network
 	public static void doSelection(CompositeFilter pFilter, CyApplicationManager applicationManager) {
@@ -149,9 +150,9 @@ public class FilterUtil {
 		int dynamicFilterThresholdValue = -1; 
 		
 //		// TODO: What do we do about CyInit*?
-//		String dynamicFilterThreshold = CytoscapeInit.getProperties().getProperty(FilterPlugin.DYNAMIC_FILTER_THRESHOLD);
+//		String dynamicFilterThreshold = CytoscapeInit.getProperties().getProperty(DYNAMIC_FILTER_THRESHOLD);
 //		if (dynamicFilterThreshold == null) { // threshold not defined, use the default value
-			dynamicFilterThresholdValue = FilterApp.DEFAULT_DYNAMIC_FILTER_THRESHOLD;
+			dynamicFilterThresholdValue = DEFAULT_DYNAMIC_FILTER_THRESHOLD;
 //		}
 //		else {
 //			dynamicFilterThresholdValue = (new Integer(dynamicFilterThreshold)).intValue();

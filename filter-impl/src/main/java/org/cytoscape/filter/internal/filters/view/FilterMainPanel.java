@@ -206,14 +206,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	@Override
 	public void handleEvent(FiltersChangedEvent event) {
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			@Override
-			public void run() {
-				updateCMBFilters();
-				refreshAttributeCMB();
-			}
-		});
+		updateCMBFilters();
+		refreshAttributeCMB();
 	}
 	
 	@Override
@@ -340,8 +334,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		if ( n == null ) {
 			this.btnSelectAll.setEnabled(false);
 			this.btnDeSelect.setEnabled(false);
-		}
-		else {
+		} else {
 			this.btnSelectAll.setEnabled(true);
 			this.btnDeSelect.setEnabled(true);	
 		}
@@ -392,12 +385,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 */
 	private List<Object> getCyAttributesList(CyNetwork network, String pType) {
 		Vector<String> attributeList = new Vector<String>();
+		Collection<? extends CyTableEntry> entries = null;
 		
-		Collection<? extends CyTableEntry> entries;
 		if (pType.equalsIgnoreCase("node")) {
 			entries = network.getNodeList();
-		}
-		else if (pType.equalsIgnoreCase("edge")){
+		} else if (pType.equalsIgnoreCase("edge")){
 			entries = network.getEdgeList();
 		} else {
 			return Collections.emptyList();
@@ -409,6 +401,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		
 		CyTableEntry tableEntry = entries.iterator().next();
 		final Collection<CyColumn> columns = network.getRow(tableEntry).getTable().getColumns();
+		
 		for (final CyColumn column : columns) {
 			//  Show all attributes, with type of String or Number
 			Class<?> type = column.getType();
@@ -432,7 +425,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		return retList;
 	}
 	
-	
 	/*
 	 * Hide the visible filterSettingPanel, if any, and show the new FilterSettingPanel for
 	 * the given filter.
@@ -449,7 +441,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		// When the next panel exists and is the same as the current one,
 		// we can exit now and avoid hiding and showing the same panel.
-		//
 		if ((next != null) && (next == currentFilterSettingPanel)) {
 			return;
 		}
@@ -1113,7 +1104,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		// Set newNodeInteractionFilterMenuItem on only if there are at least one  Edge Filter
 		if (hasEdgeFilter(allFilters)) {
 			newNodeInteractionFilterMenuItem.setEnabled(true);
-		}	 else {
+		} else {
 			newNodeInteractionFilterMenuItem.setEnabled(false);
 		}
 	}
@@ -1384,8 +1375,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			if (anObject != null) {
 				if (anObject instanceof CompositeFilter) {
 					rv = ((CompositeFilter)anObject).getLabel();
-				}
-				else {
+				} else {
 					rv = anObject.toString();
 				}
 			}

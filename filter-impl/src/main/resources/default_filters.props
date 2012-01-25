@@ -3,7 +3,7 @@ FilterVersion=0.2
 name=Default
 <AdvancedSetting>
 scope.global=true
-scope.session=false
+scope.session=true
 selection.node=false
 selection.edge=false
 edge.source=true

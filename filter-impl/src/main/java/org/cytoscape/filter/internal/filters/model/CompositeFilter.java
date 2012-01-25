@@ -40,7 +40,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.filter.internal.filters.FilterApp;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -65,7 +64,7 @@ public class CompositeFilter implements CyFilter {
 	protected Hashtable<CompositeFilter, Boolean> compositeNotTab = new Hashtable<CompositeFilter, Boolean>();
 	protected CyApplicationManager applicationManager;
 	
-	private static Logger logger = LoggerFactory.getLogger(FilterApp.class);
+	private static Logger logger = LoggerFactory.getLogger(CompositeFilter.class);
 	
 	public CompositeFilter(CyApplicationManager applicationManager) {
 		advancedSetting = new AdvancedSetting();
@@ -232,7 +231,7 @@ public class CompositeFilter implements CyFilter {
 		}
 
 		if (negation) {
-				edgeBits.flip(0, network.getEdgeCount());
+			edgeBits.flip(0, network.getEdgeCount());
 		}
 	}
 	
@@ -466,9 +465,8 @@ public class CompositeFilter implements CyFilter {
 	 */
 	@Override
 	public Object clone() {
-		logger.warn("CompositeFilter.clone() not implemented yet");
-		
-		return null;
+		// TODO
+		throw new RuntimeException("CompositeFilter.clone() not implemented yet");
 	}
 	
 	/**

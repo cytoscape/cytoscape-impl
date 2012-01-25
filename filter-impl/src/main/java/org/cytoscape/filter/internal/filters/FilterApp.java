@@ -75,9 +75,6 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	private final FilterWriter writer;
 	private final FilterModelLocator modelLocator;
 	
-	public static final String DYNAMIC_FILTER_THRESHOLD = "dynamicFilterThreshold";
-	public static final int DEFAULT_DYNAMIC_FILTER_THRESHOLD = 1000;
-	
 	private static final Logger logger = LoggerFactory.getLogger(FilterApp.class);
 
 	public FilterApp(final FilterReader reader, final FilterWriter writer, final FilterModelLocator modelLocator) {
