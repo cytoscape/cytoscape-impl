@@ -59,6 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
@@ -128,10 +129,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	 * 
 	 * */
 	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
-			final CyTable attr, final CyApplicationManager appManager, final VisualMappingManager vmm) {
+			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		if (mapping == null)
 			throw new NullPointerException("ContinuousMapping should not be null.");
-		if (attr == null)
+		if (table == null)
 			throw new NullPointerException("Data table should not be null.");
 		if (appManager == null)
 			throw new NullPointerException("Application Manager should not be null.");
@@ -146,14 +147,20 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.mainPanel = new JPanel();
 
 		final String controllingAttrName = mapping.getMappingColumnName();
-		final Class<?> attrType = attr.getColumn(controllingAttrName).getType();
+		
+		//TODO more error checking
+		final CyColumn col = table.getColumn(controllingAttrName);
+		if(col == null)
+			throw new NullPointerException("No such column exists in the given table.");
+		
+		final Class<?> attrType = col.getType();
 
 		logger.debug("Selected attr type is " + attrType);
 		if (!Number.class.isAssignableFrom(attrType))
 			throw new IllegalArgumentException("Cannot support attribute data type.  Numerical values only: "
 					+ attrType);
 
-		this.dataTable = attr;
+		this.dataTable = table;
 		this.dataType = (Class<K>) attrType;
 
 		initComponents();

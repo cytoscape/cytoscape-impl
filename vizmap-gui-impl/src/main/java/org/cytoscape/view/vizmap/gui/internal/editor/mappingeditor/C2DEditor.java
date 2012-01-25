@@ -12,28 +12,30 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 public class C2DEditor<V> extends AbstractContinuousMappingEditor<Number, V> {
 
-	public C2DEditor(final CyNetworkTableManager manager,
-			final CyApplicationManager appManager,
-			final SelectedVisualStyleManager selectedManager,
-			final EditorManager editorManager, final VisualMappingManager vmm) {
+	public C2DEditor(final CyNetworkTableManager manager, final CyApplicationManager appManager,
+			final SelectedVisualStyleManager selectedManager, final EditorManager editorManager,
+			final VisualMappingManager vmm) {
 		super(manager, appManager, selectedManager, editorManager, vmm);
 	}
 
 	@Override
 	public void setValue(Object value) {
 		if (value instanceof ContinuousMapping == false)
-			throw new IllegalArgumentException(
-					"Value should be ContinuousMapping: this is " + value);
-		
+			throw new IllegalArgumentException("Value should be ContinuousMapping: this is " + value);
+
+		final CyNetwork currentNetwork = appManager.getCurrentNetwork();
+		if (currentNetwork == null)
+			return;
+
 		ContinuousMapping<?, ?> mTest = (ContinuousMapping<?, ?>) value;
 
 		// TODO: error chekcing
 		mapping = (ContinuousMapping<Number, V>) value;
 		@SuppressWarnings("unchecked")
-		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) mapping.getVisualProperty().getTargetDataType();
+		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) mapping.getVisualProperty()
+				.getTargetDataType();
 		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-		this.editorPanel = new C2DMappingEditor(
-				selectedManager.getCurrentVisualStyle(), mapping, attr,
-				appManager, vmm, editorManager);
+		this.editorPanel = new C2DMappingEditor(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager,
+				vmm, editorManager);
 	}
 }

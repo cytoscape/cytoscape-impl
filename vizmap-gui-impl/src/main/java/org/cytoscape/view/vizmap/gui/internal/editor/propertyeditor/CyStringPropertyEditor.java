@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,7 +31,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
 package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 
@@ -47,12 +46,6 @@ import com.l2fprod.common.beans.editor.StringPropertyEditor;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 
-
-/**
- * DOCUMENT ME!
- *
- * @author $author$
-  */
 public class CyStringPropertyEditor extends StringPropertyEditor {
 	private Object currentValue;
 	private Object selected;
@@ -65,67 +58,66 @@ public class CyStringPropertyEditor extends StringPropertyEditor {
 		((JTextField) editor).setBorder(LookAndFeelTweaks.EMPTY_BORDER);
 
 		((JTextField) editor).addFocusListener(new FocusListener() {
-				public void focusGained(FocusEvent e) {
-					Method getM = null;
-					Object val = null;
+			public void focusGained(FocusEvent e) {
+				Method getM = null;
+				Object val = null;
 
-					try {
-						getM = e.getOppositeComponent().getClass().getMethod("getSelectedRow", new Class[] {});
-					} catch (SecurityException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (NoSuchMethodException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					try {
-						val = getM.invoke(e.getOppositeComponent(), new Object[] {});
-					} catch (IllegalArgumentException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IllegalAccessException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					try {
-						getM = e.getOppositeComponent().getClass()
-						        .getMethod("getValueAt", new Class[] { int.class, int.class });
-					} catch (SecurityException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (NoSuchMethodException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					Object val2 = null;
-
-					try {
-						val2 = getM.invoke(e.getOppositeComponent(),
-						                   new Object[] { (Integer) val, Integer.valueOf(0) });
-					} catch (IllegalArgumentException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IllegalAccessException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					selected = ((Item) val2).getProperty().getDisplayName();
-					currentValue = ((JTextField) editor).getText();
+				try {
+					getM = e.getOppositeComponent().getClass().getMethod("getSelectedRow", new Class[] {});
+				} catch (SecurityException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (NoSuchMethodException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 
-				public void focusLost(FocusEvent arg0) {
-					firePropertyChange(selected, ((JTextField) editor).getText());
+				try {
+					val = getM.invoke(e.getOppositeComponent(), new Object[] {});
+				} catch (IllegalArgumentException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IllegalAccessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (InvocationTargetException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
-			});
+
+				try {
+					getM = e.getOppositeComponent().getClass()
+							.getMethod("getValueAt", new Class[] { int.class, int.class });
+				} catch (SecurityException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (NoSuchMethodException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				Object val2 = null;
+
+				try {
+					val2 = getM.invoke(e.getOppositeComponent(), new Object[] { (Integer) val, Integer.valueOf(0) });
+				} catch (IllegalArgumentException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IllegalAccessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (InvocationTargetException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				selected = ((Item) val2).getProperty().getDisplayName();
+				currentValue = ((JTextField) editor).getText();
+			}
+
+			public void focusLost(FocusEvent arg0) {
+				firePropertyChange(selected, ((JTextField) editor).getText());
+			}
+		});
 	}
 }

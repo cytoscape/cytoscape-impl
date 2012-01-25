@@ -19,6 +19,10 @@ public class C2CEditor extends AbstractContinuousMappingEditor<Number, Number> {
 	@Override public void setValue(Object value) {
 		if(value instanceof ContinuousMapping == false)
 			throw new IllegalArgumentException("Value should be ContinuousMapping: this is " + value);
+		final CyNetwork currentNetwork = appManager.getCurrentNetwork();
+		if(currentNetwork == null)
+			return;
+		
 		ContinuousMapping<?, ?> mTest = (ContinuousMapping<?, ?>) value;
 		
 		// TODO: error chekcing

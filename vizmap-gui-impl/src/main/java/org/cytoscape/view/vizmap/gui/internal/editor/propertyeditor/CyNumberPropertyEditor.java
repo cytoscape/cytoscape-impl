@@ -51,50 +51,50 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
  */
 public class CyNumberPropertyEditor<T extends Number> extends NumberPropertyEditor {
 
-    private static final Logger logger = LoggerFactory.getLogger(CyNumberPropertyEditor.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyNumberPropertyEditor.class);
 
-    private final VizMapperMainPanel panel;
+	private final VizMapperMainPanel panel;
 
-    private Object currentValue;
-    private Object selected;
+	private Object currentValue;
+	private Object selected;
 
-    /**
-     * Creates a new CyStringPropertyEditor object.
-     */
-    public CyNumberPropertyEditor(Class<T> type, final VizMapperMainPanel vmp) {
-	super(type);
-	panel = vmp;
+	/**
+	 * Creates a new CyStringPropertyEditor object.
+	 */
+	public CyNumberPropertyEditor(Class<T> type, final VizMapperMainPanel vmp) {
+		super(type);
+		panel = vmp;
 
-	((JTextField) editor).addFocusListener(new FocusListener() {
-	    public void focusGained(FocusEvent e) {
+		((JTextField) editor).addFocusListener(new FocusListener() {
+			public void focusGained(FocusEvent e) {
 
-		logger.debug("Number Editor got val: " + currentValue);
+				logger.debug("Number Editor got val: " + currentValue);
 
-		final Item item = (Item) panel.getSelectedItem();
-		selected = item.getProperty().getDisplayName();
-		setCurrentValue();
-	    }
+				final Item item = (Item) panel.getSelectedItem();
+				selected = item.getProperty().getDisplayName();
+				setCurrentValue();
+			}
 
-	    public void focusLost(FocusEvent arg0) {
-		checkChange();
-	    }
-	});
-    }
-
-    private void setCurrentValue() {
-	this.currentValue = super.getValue();
-    }
-
-    private void checkChange() {
-	Number newValue = (Number) super.getValue();
-
-	if (newValue.doubleValue() <= 0) {
-	    newValue = 0;
-	    currentValue = 0;
-	    ((JTextField) editor).setText("0");
-	    editor.repaint();
+			public void focusLost(FocusEvent arg0) {
+				checkChange();
+			}
+		});
 	}
 
-	firePropertyChange(selected, newValue);
-    }
+	private void setCurrentValue() {
+		this.currentValue = super.getValue();
+	}
+
+	private void checkChange() {
+		Number newValue = (Number) super.getValue();
+
+		if (newValue.doubleValue() <= 0) {
+			newValue = 0;
+			currentValue = 0;
+			((JTextField) editor).setText("0");
+			editor.repaint();
+		}
+
+		firePropertyChange(selected, newValue);
+	}
 }
