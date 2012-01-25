@@ -229,6 +229,7 @@ class PopupMenuHelper {
 
 		String title = (String)(props.get("title"));
 		String pref = (String)(props.get("preferredMenu"));
+		String toolTip = (String) (props.get("tooltip"));
 
 		// check if the menus are created dynamically, and if so add the listener
 		final Object preferredTaskManager = props.get("preferredTaskManager");
@@ -278,11 +279,11 @@ class PopupMenuHelper {
 		// no title and no preferred menu
 		if ( title == null && pref == null ) {
 			title = "Unidentified Task: " + Integer.toString(tf.hashCode());
-			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem) );
+			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
 
 		// title, but no preferred menu
 		} else if ( title != null && pref == null ) {
-			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem) );
+			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
 
 		// no title, but preferred menu
 		} else if ( title == null && pref != null ) {
@@ -293,7 +294,7 @@ class PopupMenuHelper {
 				title = pref.substring(last + 1);
 				pref = pref.substring(0, last);
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				final JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem);
+				final JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem, toolTip);
 				if (useCheckBoxMenuItem) {
 					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem)item; 
 					checkBox.setSelected(isSelected);
@@ -302,17 +303,17 @@ class PopupMenuHelper {
 			// otherwise just use the preferred menu as the menuitem name
 			} else {
 				title = pref;
-				popup.add( createMenuItem(tf, title, useCheckBoxMenuItem) );
+				popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
 			}
 
 		// title and preferred menu
 		} else {
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem), ++largeValue);
+			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem, toolTip), ++largeValue);
 		}
 	}
 
-	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem) {
+	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem, String toolTipText) {
 		JMenuItem item;
 		PopupAction action = new PopupAction(tf,title);
 		if ( useCheckBoxMenuItem )
@@ -323,6 +324,7 @@ class PopupMenuHelper {
 		if ( tf instanceof TaskFactoryPredicate )
 			item.setEnabled( ((TaskFactoryPredicate)tf).isReady() );
 
+		item.setToolTipText(toolTipText);
 		return item;
 	}
 
