@@ -132,9 +132,9 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     private final CyNetworkManager networkManager;
     private final CyRootNetworkManager rootNetworkManager;
 
-    private HashMap<CyNode, CyNode> nodeMap = new HashMap<CyNode, CyNode>();
-    private HashMap<CyEdge, CyEdge> edgeMap = new HashMap<CyEdge, CyEdge>();
-    private HashMap<CyNetwork, CyNetwork> networkMap = new HashMap<CyNetwork, CyNetwork>();
+    private HashMap<CyNode, CyNode> writtenNodeMap = new HashMap<CyNode, CyNode>();
+    private HashMap<CyEdge, CyEdge> writtenEdgeMap = new HashMap<CyEdge, CyEdge>();
+    private HashMap<CyNetwork, CyNetwork> writtenNetMap = new HashMap<CyNetwork, CyNetwork>();
 
     private int depth = 0;
     private String indentString = "";
@@ -270,7 +270,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         
         write(">\n");
         
-        networkMap.put(network, network);
+        writtenNetMap.put(network, network);
     }
 
     /**
@@ -340,11 +340,13 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 		// Write sub-graphs first, but only if the XGMML is for a CYS file
 		if (sessionFormat) {
 			for (CySubNetwork subNet : subNetworks) {
-				writeElement("<att>\n");
-				depth++;
-				writeSubGraph(subNet);
-				depth--;
-				writeElement("</att>\n");
+				if (!writtenNetMap.containsKey(subNet)) {
+					writeElement("<att>\n");
+					depth++;
+					writeSubGraph(subNet);
+					depth--;
+					writeElement("</att>\n");
+				}
 			}
 		}
 
@@ -354,7 +356,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	}
 
 	private void writeSubGraph(CyNetwork net) throws IOException {
-		networkMap.put(net, net);
+		writtenNetMap.put(net, net);
 		
 		writeElement("<graph");
 		// Always write the network ID
@@ -387,7 +389,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 		} else {
 			for (CyNode node : network.getNodeList()) {
 				// Only if not already written inside a nested graph
-				if (!nodeMap.containsKey(node))
+				if (!writtenNodeMap.containsKey(node))
 					writeNode(network,node);
 			}
 		}
@@ -405,7 +407,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     	} else {
     		for (CyEdge edge : network.getEdgeList()) {
     			// Only if not already written inside a nested graph
-    			if (!edgeMap.containsKey(edge))
+    			if (!writtenEdgeMap.containsKey(edge))
     				writeEdge(network, edge);
 	        }
 		}
@@ -418,7 +420,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @throws IOException
      */
 	private void writeNode(CyNetwork network, CyNode node) throws IOException {
-		boolean written = nodeMap.containsKey(node);
+		boolean written = writtenNodeMap.containsKey(node);
 		
 		// Output the node
 		writeElement("<node");
@@ -429,7 +431,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			write("/>\n");
 		} else {
 			// Remember that we've wrote this node
-	     	nodeMap.put(node, node);
+	     	writtenNodeMap.put(node, node);
 			
 			// Write the actual node with its properties
 			writeAttributePair("id", node.getSUID());
@@ -455,21 +457,29 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 						// Write a nested graph element
 						writeElement("<att>\n");
 						depth++;
-							
-						// This sub-network has already been written or belongs to another XGMML file...
-						String href = "#" + netPointer.getSUID();
 						
-						if (!sameRoot) {
-							// This XGMML file will be saved as part of a CYS file,
-							// and the sub-network does NOT belong to the same root-network
-							// ...So add the other root-network's file name to the XLink URI
-							String fileName = SessionUtil.getXGMMLFilename(netPointerRoot);
-							href = fileName + href;
+						if (!sessionFormat && sameRoot && !writtenNetMap.containsKey(netPointer)) {
+							// If exporting to XGMML, let's try to avoid XLINks, in order to
+							// make it easier for other applications to parse it.
+							// This sub-network has not been written yet!
+							writeSubGraph(netPointer);
+						} else {
+							// This sub-network has already been written or belongs to another XGMML file...
+							String href = "#" + netPointer.getSUID();
+							
+							if (!sameRoot) {
+								// This XGMML file will be saved as part of a CYS file,
+								// and the sub-network does NOT belong to the same root-network
+								// ...So add the other root-network's file name to the XLink URI
+								String fileName = SessionUtil.getXGMMLFilename(netPointerRoot);
+								href = fileName + href;
+							}
+							
+							writeElement("<graph");
+							writeAttributePair("xlink:href", href);
+							write("/>\n");
 						}
 						
-						writeElement("<graph");
-						writeAttributePair("xlink:href", href);
-						write("/>\n");
 						depth--;
 						writeElement("</att>\n");
 					}
@@ -515,7 +525,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      */
 	private void writeEdge(CyNetwork network, CyEdge edge) throws IOException {
 		writeElement("<edge");
-		boolean written = edgeMap.containsKey(edge);
+		boolean written = writtenEdgeMap.containsKey(edge);
 		
 		if (written) {
 			// Write as an XLink only
@@ -523,7 +533,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			write("/>\n");
 		} else {
 			// Remember that we've wrote this edge
-			edgeMap.put(edge, edge);
+			writtenEdgeMap.put(edge, edge);
 			
 			writeAttributePair("id", edge.getSUID());
 			writeAttributePair("label", getLabel(network, edge));
