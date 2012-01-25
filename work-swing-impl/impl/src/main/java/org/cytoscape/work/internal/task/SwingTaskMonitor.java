@@ -76,6 +76,8 @@ class SwingTaskMonitor implements TaskMonitor {
 			dialog.dispose();
 			dialog = null;
 		}
+		future = null;
+		task = null;
 	}
 
 	public void cancel() {
