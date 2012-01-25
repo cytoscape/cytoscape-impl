@@ -115,6 +115,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 
 		tm.setProgress(0.15);
 		tm.setStatusMessage("Processing the interactions...");
+		int numInteractionsRead = 0;
 		while ((line = br.readLine()) != null) {
 			if (cancelled) {
 				// Cancel called. Clean up the garbage.
@@ -135,10 +136,13 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 				// Simply ignore invalid lines.
 				continue;
 			}
+
+			if ( (++numInteractionsRead % 1000) == 0 )
+				tm.setStatusMessage("Processed " + numInteractionsRead + " interactions so far.");
 		}
 
 		br.close();
-//		tm.setStatusMessage("Network data loaded from data source.\nCreating Cytoscape network...");
+		tm.setStatusMessage("Processed " + numInteractionsRead + " interactions in total.");
 
 		nMap.clear();
 		nMap = null;
