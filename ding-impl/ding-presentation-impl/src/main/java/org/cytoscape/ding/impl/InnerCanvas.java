@@ -1138,10 +1138,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		void singleLeftControlClick(MouseEvent e) {
 			//System.out.println("MousePressed ----> singleLeftControlClick");
 			
-			// clicking on empty space
+			/* clicking on empty space
 			if ((getChosenNode() < 0) && (getChosenEdge() < 0) && (getChosenAnchor() < 0)) {
 				popup.createEmptySpaceMenu(e.getX(), e.getY(),"NEW"); 
 			}
+			*/
 			
 			// Cascade
 			this.singleLeftClick(e);
@@ -1168,10 +1169,17 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_lastYMousePos = e.getY();
 		
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
-			popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),null);
-		
-			EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
-			popup.createEdgeViewMenu(m_view.m_drawPersp,edgeView,e.getX(),e.getY(),null);
+			if (nview != null) {
+				popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),null);
+			} else {
+				EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
+				if (edgeView != null) {
+					popup.createEdgeViewMenu(m_view.m_drawPersp,edgeView,e.getX(),e.getY(),null);
+				} else {
+					// Clicked on empty space...
+					popup.createEmptySpaceMenu(e.getX(), e.getY(),"NEW"); 
+				}
+			}
 		}
 	
 		@Override

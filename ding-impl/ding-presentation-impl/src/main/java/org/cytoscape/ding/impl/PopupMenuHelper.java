@@ -203,7 +203,7 @@ class PopupMenuHelper {
 	void createEmptySpaceMenu(int x, int y, String action) {
 		// build a menu of actions if more than factory exists
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
-		if ( usableTFs.size() > 1 ) {
+		if ( usableTFs.size() > 1 || (usableTFs.size() == 1 && action.equals("NEW"))) {
 			final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
 			final JMenuTracker tracker = new JMenuTracker(menu);
 			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
