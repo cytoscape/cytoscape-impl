@@ -31,7 +31,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 
 import java.awt.Color;
@@ -52,18 +52,17 @@ import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.PercentLayout;
 import com.l2fprod.common.util.ResourceManager;
 
-
 /**
  * ColorPropertyEditor. <br>
- *
+ * 
  */
 public class CyColorPropertyEditor extends AbstractPropertyEditor {
-	
+
 	private CyColorCellRenderer label;
-	
+
 	private JButton button;
 	private Color color;
-	
+
 	private CyColorChooser chooser;
 
 	/**
@@ -77,34 +76,26 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 		label.setOpaque(false);
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					selectColor();
-				}
-			});
+			public void actionPerformed(ActionEvent e) {
+				selectColor();
+			}
+		});
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText("X");
 		button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					selectNull();
-				}
-			});
+			public void actionPerformed(ActionEvent e) {
+				selectNull();
+			}
+		});
 		((JPanel) editor).setOpaque(false);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public Object getValue() {
 		return color;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param value DOCUMENT ME!
-	 */
+	@Override
 	public void setValue(Object value) {
 		color = (Color) value;
 		label.setValue(color);
@@ -114,8 +105,8 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 		ResourceManager rm = ResourceManager.all(FilePropertyEditor.class);
 		String title = rm.getString("ColorPropertyEditor.title");
 		Paint selectedColor = chooser.showEditor(editor, color);
-		
-		if(selectedColor instanceof Color == false)
+
+		if (selectedColor instanceof Color == false)
 			return;
 
 		if (selectedColor != null) {
