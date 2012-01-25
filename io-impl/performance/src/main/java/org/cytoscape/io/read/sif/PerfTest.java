@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
@@ -25,6 +27,8 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -43,6 +47,7 @@ public class PerfTest {
     protected CyNetworkViewFactory viewFactory;
     protected ReadUtils readUtil;
     protected CyLayoutAlgorithmManager layouts;
+    protected CyRootNetworkManager rootMgr;
 
 	private Properties properties;
 
@@ -57,6 +62,7 @@ public class PerfTest {
 
 		NetworkTestSupport nts = new NetworkTestSupport();
 		netFactory = nts.getNetworkFactory();
+		rootMgr = nts.getRootNetworkFactory();
 
 		properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty("Test", properties, DO_NOT_SAVE);	
@@ -160,6 +166,21 @@ public class PerfTest {
 		}
 		end = System.currentTimeMillis();
 		System.out.println("Getting all neighbor nodes: " + (end - start));
+
+        // create subnetworks
+        CyRootNetwork root = rootMgr.getRootNetwork(net);
+        int i = 0;
+        for ( CyNode n : net.getNodeList() ) {
+            if ( i++ > 1000 ) break;
+            List<CyNode> nl = net.getNeighborList(n,CyEdge.Type.ANY);
+            Set<CyEdge> es = new HashSet<CyEdge>();
+            for ( CyNode nn : nl ) {
+                List<CyEdge> ee = net.getConnectingEdgeList(n,nn,CyEdge.Type.ANY);
+                es.addAll(ee);
+            }
+            root.addSubNetwork(nl,es);
+        }
+
 	}
 
 }
