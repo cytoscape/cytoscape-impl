@@ -87,6 +87,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	private final CyEventHelper eventHelper;
 	private final Interpreter interpreter;
+	private final int defaultInitSize;
 
 	String lastInternalError = null;
 
@@ -101,7 +102,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	 */
 	public CyTableImpl(final String title, final String primaryKey, Class<?> primaryKeyType,
 			   final boolean pub, final boolean isMutable, SavePolicy savePolicy,
-	                   final CyEventHelper eventHelper, final Interpreter interpreter)
+	                   final CyEventHelper eventHelper, final Interpreter interpreter,
+					   final int defaultInitSize)
 	{
 		this.title = title;
 		this.primaryKey = primaryKey;
@@ -112,11 +114,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		this.interpreter = interpreter;
 		this.savePolicy = savePolicy;
 		this.fireEvents = !pub;
+		this.defaultInitSize = defaultInitSize;
 
 		currentlyActiveAttributes = new HashSet<String>();
 		attributes = new HashMap<String, Map<Object, Object>>();
 		reverse =  new HashMap<String, SetMultimap<Object,Object>>();
-		rows = new HashMap<Object, CyRow>(10000, 0.5f);
+		rows = new HashMap<Object, CyRow>(defaultInitSize, 0.5f);
 		types = new HashMap<String, CyColumn>();
 
 		VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, true);
@@ -370,7 +373,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       /* isPrimaryKey = */ false,
 							       isImmutable,
 								   defaultValue));
-			attributes.put(columnName, new HashMap<Object, Object>(10000));
+			attributes.put(columnName, new HashMap<Object, Object>(defaultInitSize));
 			reverse.put(columnName, HashMultimap.create());
 		}
 
@@ -410,7 +413,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       /* isPrimaryKey = */ false,
 							       isImmutable,
 								   defaultValue));
-			attributes.put(columnName, new HashMap<Object, Object>(10000));
+			attributes.put(columnName, new HashMap<Object, Object>(defaultInitSize));
 			reverse.put(columnName, HashMultimap.create());
 		}
 

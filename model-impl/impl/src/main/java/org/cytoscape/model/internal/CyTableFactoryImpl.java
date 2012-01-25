@@ -67,10 +67,15 @@ public class CyTableFactoryImpl implements CyTableFactory {
 	}
 
 	public CyTable createTable(final String name, final String primaryKey, final Class<?> primaryKeyType,
-				   final boolean pub, final boolean isMutable)
+				   final boolean pub, final boolean isMutable) {
+		return createTable(name,primaryKey,primaryKeyType,pub,isMutable,CyTableFactory.InitialTableSize.MEDIUM);
+	}
+
+	public CyTable createTable(final String name, final String primaryKey, final Class<?> primaryKeyType,
+				   final boolean pub, final boolean isMutable, final CyTableFactory.InitialTableSize size)
 	{
 		final CyTableImpl table = new CyTableImpl(name, primaryKey, primaryKeyType, pub, isMutable,
-		                                      SavePolicy.SESSION_FILE, help, interpreter);
+		                                      SavePolicy.SESSION_FILE, help, interpreter, size.getSize());
 		eventDelegator.addListener(table);
 		return table;
 	}

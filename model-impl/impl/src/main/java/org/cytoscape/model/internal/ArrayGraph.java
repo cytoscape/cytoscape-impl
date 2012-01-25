@@ -52,6 +52,7 @@ import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.model.CyTableFactory.InitialTableSize;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 
@@ -153,13 +154,13 @@ final public class ArrayGraph implements CyRootNetwork {
 
 	private Map<String,CyTable> createNetworkTables(long suidx) {
 		Map<String,CyTable> netAttrMgr = new HashMap<String, CyTable>();
-        netAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default network", CyTableEntry.SUID, Long.class, publicTables, false));
-        netAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden network", CyTableEntry.SUID, Long.class, false, false));
+        netAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default network", CyTableEntry.SUID, Long.class, publicTables, false,InitialTableSize.SMALL));
+        netAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden network", CyTableEntry.SUID, Long.class, false, false,InitialTableSize.SMALL));
 
         netAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
 
 		if ( suidx == suid ) { 
-        	netAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared network", CyTableEntry.SUID, Long.class, publicTables, false));
+        	netAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared network", CyTableEntry.SUID, Long.class, publicTables, false,InitialTableSize.SMALL));
         	netAttrMgr.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
 		} else	
 			linkDefaultTables( netTables.get(CyRootNetwork.SHARED_ATTRS), 
@@ -170,14 +171,14 @@ final public class ArrayGraph implements CyRootNetwork {
 
 	private Map<String,CyTable> createNodeTables(long suidx) {
         Map<String,CyTable> nodeAttrMgr = new HashMap<String, CyTable>();
-        nodeAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default node", CyTableEntry.SUID, Long.class, publicTables, false));
-        nodeAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden node", CyTableEntry.SUID, Long.class, false, false));
+        nodeAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default node", CyTableEntry.SUID, Long.class, publicTables, false,getTableSize()));
+        nodeAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden node", CyTableEntry.SUID, Long.class, false, false,getTableSize()));
 
         nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
         nodeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
 
 		if ( suidx == suid ) {
-        	nodeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared node", CyTableEntry.SUID, Long.class, publicTables, false));
+        	nodeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared node", CyTableEntry.SUID, Long.class, publicTables, false,getTableSize()));
         	nodeAttrMgr.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
 		} else
 			linkDefaultTables( nodeTables.get(CyRootNetwork.SHARED_ATTRS), 
@@ -188,15 +189,15 @@ final public class ArrayGraph implements CyRootNetwork {
 
 	private Map<String,CyTable> createEdgeTables(long suidx) {
         Map<String,CyTable> edgeAttrMgr = new HashMap<String, CyTable>();
-        edgeAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default edge", CyTableEntry.SUID, Long.class, publicTables, false));
-        edgeAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden edge", CyTableEntry.SUID, Long.class, false, false));
+        edgeAttrMgr.put(CyNetwork.DEFAULT_ATTRS, tableFactory.createTable(suidx + " default edge", CyTableEntry.SUID, Long.class, publicTables, false,getTableSize()));
+        edgeAttrMgr.put(CyNetwork.HIDDEN_ATTRS, tableFactory.createTable(suidx + " hidden edge", CyTableEntry.SUID, Long.class, false, false,getTableSize()));
 
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyTableEntry.NAME, String.class, true);
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
         edgeAttrMgr.get(CyNetwork.DEFAULT_ATTRS).createColumn(CyEdge.INTERACTION, String.class, true);
 
 		if ( suidx == suid ) { 
-        	edgeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared edge", CyTableEntry.SUID, Long.class, publicTables, false));
+        	edgeAttrMgr.put(CyRootNetwork.SHARED_ATTRS, tableFactory.createTable(suidx + " shared edge", CyTableEntry.SUID, Long.class, publicTables, false,getTableSize()));
         	edgeAttrMgr.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
 		} else	
 			linkDefaultTables( edgeTables.get(CyRootNetwork.SHARED_ATTRS), 
@@ -959,6 +960,15 @@ final public class ArrayGraph implements CyRootNetwork {
 		networkTableMgr.setTableMap(CyNode.class, sub, newNodeTable);
 		networkTableMgr.setTableMap(CyEdge.class, sub, newEdgeTable);
 		return sub;
+	}
+
+	private InitialTableSize getTableSize() {
+		if ( numSubNetworks < 5 )
+			return InitialTableSize.LARGE;
+		else if ( numSubNetworks < 15 )
+			return InitialTableSize.MEDIUM;
+		else 
+			return InitialTableSize.SMALL;
 	}
 
 

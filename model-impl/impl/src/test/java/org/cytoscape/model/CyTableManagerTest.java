@@ -91,9 +91,9 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		CyEventHelper eventHelper = new DummyCyEventHelper();
 		final Interpreter interpreter = new InterpreterImpl();
 		CyTable table = new CyTableImpl("homer", CyTableEntry.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-						eventHelper, interpreter);
+						eventHelper, interpreter,1000);
 		CyTable table2 = new CyTableImpl("marge", CyTableEntry.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-						 eventHelper, interpreter);
+						 eventHelper, interpreter,1000);
 
 		table.createColumn("x", Long.class, false);
 		CyColumn column = table.getColumn("x");
