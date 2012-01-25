@@ -86,6 +86,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>work-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
 			<scope>test</scope>
 			<type>test-jar</type>

@@ -71,6 +71,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +93,7 @@ public class CySessionManagerImpl implements CySessionManager {
 	private final CyNetworkViewManager nvMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	private final CyServiceRegistrar registrar;
+	private final UndoSupport undo;
 
 	private final Set<CyProperty<?>> sessionProperties;
 
@@ -104,7 +106,8 @@ public class CySessionManagerImpl implements CySessionManager {
 								final VisualMappingManager vmMgr,
 								final CyNetworkViewManager nvMgr,
 								final CyRootNetworkManager rootNetMgr,
-								final CyServiceRegistrar registrar) {
+								final CyServiceRegistrar registrar,
+								final UndoSupport undo) {
 		this.cyEventHelper = cyEventHelper;
 		this.netMgr = netMgr;
 		this.tblMgr = tblMgr;
@@ -114,6 +117,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		this.rootNetMgr = rootNetMgr;
 		this.registrar = registrar;
 		this.sessionProperties = new HashSet<CyProperty<?>>();
+		this.undo = undo;
 	}
 
 	@Override
@@ -436,5 +440,8 @@ public class CySessionManagerImpl implements CySessionManager {
 				registrar.unregisterAllServices(cyProps);
 			}
 		}
+		
+		// Clear undo stack
+		undo.reset();
 	}
 }

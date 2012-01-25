@@ -40,7 +40,6 @@ import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEditSupport;
 import javax.swing.undo.AbstractUndoableEdit;
 
-import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 
@@ -82,6 +81,11 @@ public class UndoSupportImpl implements SwingUndoSupport {
 	public void postEdit(AbstractCyEdit edit) {
 		if ( edit != null )
 			m_undoSupport.postEdit( new SwingEditWrapper(edit) );	
+	}
+	
+	@Override
+	public void reset() {
+		m_undoManager.discardAllEdits();
 	}
 
 	/**
