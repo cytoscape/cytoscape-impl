@@ -429,8 +429,6 @@ class CyGroupImpl implements CyGroup {
 	 */
 	@Override
 	public boolean isCollapsed(CyNetwork net) {
-		System.out.println("collapseSet = "+collapseSet);
-		System.out.println("collapseSet has "+collapseSet.size()+" elements");
 		return collapseSet.contains(net);
 	}
 
