@@ -7,6 +7,8 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.read.CyTableReaderManager;
@@ -51,6 +53,8 @@ import org.cytoscape.task.internal.export.table.ExportCurrentTableTaskFactory;
 import org.cytoscape.task.internal.export.table.ExportEdgeTableTaskFactory;
 import org.cytoscape.task.internal.export.table.ExportNodeTableTaskFactory;
 import org.cytoscape.task.internal.export.vizmap.ExportVizmapTaskFactory;
+import org.cytoscape.task.internal.group.GroupNodesTaskFactory;
+import org.cytoscape.task.internal.group.GroupNodeContextTaskFactory;
 import org.cytoscape.task.internal.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.internal.hide.HideSelectedNodesTaskFactory;
 import org.cytoscape.task.internal.hide.HideSelectedTaskFactory;
@@ -156,6 +160,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef);
 		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef);
+
+		CyGroupManager cyGroupManager = getService(bc, CyGroupManager.class);
+		CyGroupFactory cyGroupFactory = getService(bc, CyGroupFactory.class);
 		
 		LoadVizmapFileTaskFactoryImpl loadVizmapFileTaskFactory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderManagerServiceRef,visualMappingManagerServiceRef,synchronousTaskManagerServiceRef);
 
@@ -221,6 +228,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		BioGridPreprocessor bioGridPreprocessor = new BioGridPreprocessor(cyPropertyServiceRef,cyApplicationConfigurationServiceRef);
 		ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactory(undoSupportServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
+
+		GroupNodesTaskFactory groupNodesTaskFactory = new GroupNodesTaskFactory(cyGroupManager, cyGroupFactory);
+		GroupNodeContextTaskFactory collapseGroupTaskFactory = new GroupNodeContextTaskFactory(cyGroupManager, true);
+		GroupNodeContextTaskFactory expandGroupTaskFactory = new GroupNodeContextTaskFactory(cyGroupManager, false);
 		
 		
 		Properties loadNetworkFileTaskFactoryProps = new Properties();
@@ -689,6 +700,25 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,importTaskUtil,"addProcessor","removeProcessor",InteractionFilePreprocessor.class);
 		registerServiceListener(bc,subnetworkBuilderUtil,"addProcessor","removeProcessor",InteractionFilePreprocessor.class);
 		registerServiceListener(bc,subnetworkBuilderUtil,"addFactory","removeFactory",VisualMappingFunctionFactory.class);
+
+
+		Properties groupNodesTaskFactoryProps = new Properties();
+		groupNodesTaskFactoryProps.setProperty("title","Group Nodes");
+		groupNodesTaskFactoryProps.setProperty("tooltip","Group Selected Nodes Together");
+		groupNodesTaskFactoryProps.setProperty("preferredAction", "NEW");
+		registerService(bc,groupNodesTaskFactory,NetworkViewTaskFactory.class, groupNodesTaskFactoryProps);
+
+		Properties collapseGroupTaskFactoryProps = new Properties();
+		collapseGroupTaskFactoryProps.setProperty("title","Collapse Group");
+		collapseGroupTaskFactoryProps.setProperty("tooltip","Collapse Grouped Nodes");
+		collapseGroupTaskFactoryProps.setProperty("preferredAction", "NEW");
+		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
+
+		Properties expandGroupTaskFactoryProps = new Properties();
+		expandGroupTaskFactoryProps.setProperty("title","Expand Group");
+		expandGroupTaskFactoryProps.setProperty("tooltip","Expand Group");
+		expandGroupTaskFactoryProps.setProperty("preferredAction", "NEW");
+		registerService(bc,expandGroupTaskFactory,NodeViewTaskFactory.class, expandGroupTaskFactoryProps);
 
 		//ShowWelcomeScreenTask ws = new ShowWelcomeScreenTask();
 		//registerAllServices(bc, ws, new Properties());

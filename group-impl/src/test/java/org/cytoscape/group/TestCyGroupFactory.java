@@ -93,18 +93,18 @@ public class TestCyGroupFactory {
 		CyGroup group1 = factory.createGroup(network, groupNodes, null);
 		assertNotNull(group1);
 		assertTrue("group1 node count = 3", group1.getNodeList().size() == 3);
-		assertTrue("group1 internal edge count = 2", group1.getInteriorEdgeList().size() == 2);
-		assertTrue("group1 external edge count = 3", group1.getExteriorEdgeList().size() == 3);
+		assertTrue("group1 internal edge count = 2", group1.getInternalEdgeList().size() == 2);
+		assertTrue("group1 external edge count = 3", group1.getExternalEdgeList().size() == 3);
 		CyGroup group2 = factory.createGroup(network, groupNodes, new ArrayList<CyEdge>());
 		assertNotNull(group2);
 		assertTrue("group2 node count = 3", group2.getNodeList().size() == 3);
-		assertTrue("group2 internal edge count = 0", group2.getInteriorEdgeList().size() == 0);
-		assertTrue("group2 external edge count = 0", group2.getExteriorEdgeList().size() == 0);
+		assertTrue("group2 internal edge count = 0", group2.getInternalEdgeList().size() == 0);
+		assertTrue("group2 external edge count = 0", group2.getExternalEdgeList().size() == 0);
 		CyGroup group3 = factory.createGroup(network, groupNodes, groupEdges);
 		assertNotNull(group3);
 		assertTrue("group3 node count = 3", group3.getNodeList().size() == 3);
-		assertTrue("group3 internal edge count = 2", group3.getInteriorEdgeList().size() == 2);
-		assertTrue("group3 external edge count = 2", group3.getExteriorEdgeList().size() == 2);
+		assertTrue("group3 internal edge count = 2", group3.getInternalEdgeList().size() == 2);
+		assertTrue("group3 external edge count = 2", group3.getExternalEdgeList().size() == 2);
 	}
 
 }
