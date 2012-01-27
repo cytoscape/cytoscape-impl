@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
@@ -131,6 +132,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	private final Map<TaskFactory, JMenuItem> popupMap;
 	private final Map<TaskFactory, CyAction> popupActions;
 	private final Map<CyTable, CyNetwork> nameTables;
+	private final Map<CyTable, CyNetwork> nodeEdgeTables;
 
 	private final Map<Long, NetworkTreeNode> treeNodeMap;
 
@@ -157,9 +159,10 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 		// create and populate the popup window
 		popup = new JPopupMenu();
-		popupMap = new HashMap<TaskFactory, JMenuItem>();
-		popupActions = new HashMap<TaskFactory, CyAction>();
-		nameTables = new HashMap<CyTable, CyNetwork>();
+		popupMap = new WeakHashMap<TaskFactory, JMenuItem>();
+		popupActions = new WeakHashMap<TaskFactory, CyAction>();
+		nameTables = new WeakHashMap<CyTable, CyNetwork>();
+		nodeEdgeTables = new WeakHashMap<CyTable, CyNetwork>();
 
 		setNavigator(bird.getBirdsEyeView());
 
@@ -354,84 +357,114 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	
 	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent nde) {
-		final CyNetwork net = nde.getNetwork();
-		logger.debug("Network about to be destroyed " + net.getSUID());
-		removeNetwork(net.getSUID());
-		nameTables.remove(net.getDefaultNetworkTable());
+	public void handleEvent(final NetworkAboutToBeDestroyedEvent nde) {
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				final CyNetwork net = nde.getNetwork();
+				logger.debug("Network about to be destroyed " + net.getSUID());
+				removeNetwork(net.getSUID());
+				nameTables.remove(net.getDefaultNetworkTable());
+				nodeEdgeTables.remove(net.getDefaultNodeTable());
+				nodeEdgeTables.remove(net.getDefaultEdgeTable());
+			}
+		});
 	}
 
 	
 	@Override
-	public void handleEvent(NetworkAddedEvent e) {
-		final CyNetwork net = e.getNetwork();
-		logger.debug("Got NetworkAddedEvent.  Model ID = " + net.getSUID());
-
-		addNetwork(net.getSUID());
-		nameTables.put(net.getDefaultNetworkTable(), net);
-	}
-
-	@Override
-	public void handleEvent(RowsSetEvent e) {
-
-		// if Selection column has been updated, update the UI
-		Collection<RowSetRecord> rowSetRecords = e.getPayloadCollection();
-		Iterator<RowSetRecord> it = rowSetRecords.iterator();
-		while (it.hasNext()) {
-			RowSetRecord record = it.next();
-			if (record.getColumn().equalsIgnoreCase(CyNetwork.SELECTED)) {
-				// Selection column is updated, updated the UI
-				treeTable.getTree().updateUI();
-				break;
+	public void handleEvent(final NetworkAddedEvent e) {
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				final CyNetwork net = e.getNetwork();
+				logger.debug("Got NetworkAddedEvent.  Model ID = " + net.getSUID());
+		
+				addNetwork(net.getSUID());
+				nameTables.put(net.getDefaultNetworkTable(), net);
+				nodeEdgeTables.put(net.getDefaultNodeTable(),net);
+				nodeEdgeTables.put(net.getDefaultEdgeTable(),net);
 			}
-		}
-
-		CyNetwork n = nameTables.get(e.getSource());
-
-		if (n == null)
-			return;
-
-		final String title = n.getRow(n).get(CyTableEntry.NAME, String.class);
-		updateTitle(n, title); // this should updated the UI regardless...
+		});
 	}
 
 	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		final CyNetworkView view = e.getNetworkView();
+	public void handleEvent(final RowsSetEvent e) {
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				// if it's the network name, then update the title 
+				CyNetwork n = nameTables.get(e.getSource());
+				if (n != null) {
+					final String title = n.getRow(n).get(CyTableEntry.NAME, String.class);
+					updateTitle(n, title); 
+					return;
+				}
 
-		if (view == null) {
-			logger.warn("Current network view is set to null.");
-			return;
-		}
-		logger.debug("Got SetCurrentNetworkViewEvent.  View ID = " + e.getNetworkView().getSUID());
-		final long curr = e.getNetworkView().getModel().getSUID();
-		focusNetworkNode(curr);
+				// if it's one of the selected tables, then update the counts
+				n = nodeEdgeTables.get(e.getSource());
+				if ( n != null ) {
+					Collection<RowSetRecord> rowSetRecords = e.getPayloadCollection();
+					Iterator<RowSetRecord> it = rowSetRecords.iterator();
+					RowSetRecord record = it.next();
+					if ( record != null  && record.getColumn().equalsIgnoreCase(CyNetwork.SELECTED)) {
+						treeTable.getTree().updateUI();
+					}
+				}
+			}
+		});
 	}
 
 	@Override
-	public void handleEvent(SetCurrentNetworkEvent e) {
-		final CyNetwork cnet = e.getNetwork();
-		if (cnet == null) {
-			logger.warn("Got null for current network.");
-			return;
-		}
-		logger.debug("Set current network " + cnet.getSUID());
-		focusNetworkNode(cnet.getSUID());
+	public void handleEvent(final SetCurrentNetworkViewEvent e) {
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				final CyNetworkView view = e.getNetworkView();
+
+				if (view == null) {
+					logger.warn("Current network view is set to null.");
+					return;
+				}
+				logger.debug("Got SetCurrentNetworkViewEvent.  View ID = " + e.getNetworkView().getSUID());
+				final long curr = e.getNetworkView().getModel().getSUID();
+				focusNetworkNode(curr);
+			}
+		});
 	}
 
-	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nde) {
-		logger.debug("Network view about to be destroyed " + nde.getNetworkView().getModel().getSUID());
-		this.treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.red);
-		treeTable.getTree().updateUI();
+	@Override
+	public void handleEvent(final SetCurrentNetworkEvent e) {
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				final CyNetwork cnet = e.getNetwork();
+				if (cnet == null) {
+					logger.warn("Got null for current network.");
+					return;
+				}
+				logger.debug("Set current network " + cnet.getSUID());
+				focusNetworkNode(cnet.getSUID());
+			}
+		});
 	}
 
-	public void handleEvent(NetworkViewAddedEvent nde) {
-		logger.debug("Network view added to NetworkPanel: " + nde.getNetworkView().getModel().getSUID());
+	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent nde) {
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				logger.debug("Network view about to be destroyed " + nde.getNetworkView().getModel().getSUID());
+				treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.red);
+				treeTable.getTree().updateUI();
+			}
+		});
+	}
 
-		// Set current network view to the new one.
-		appManager.setCurrentNetworkView(nde.getNetworkView());
-		this.treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.black);
-		treeTable.getTree().updateUI();
+	public void handleEvent(final NetworkViewAddedEvent nde) {
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				logger.debug("Network view added to NetworkPanel: " + nde.getNetworkView().getModel().getSUID());
+
+				// Set current network view to the new one.
+				appManager.setCurrentNetworkView(nde.getNetworkView());
+				treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.black);
+				treeTable.getTree().updateUI();
+			}
+		});
 	}
 
 	private void addNetwork(final Long network_id) {
