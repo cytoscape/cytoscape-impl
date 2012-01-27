@@ -379,35 +379,29 @@ class CyGroupImpl implements CyGroup {
 		if (!networkSet.contains(net))
 			return; // We're not in that network
 
-		System.out.println("Collapsing -- firing");
 		cyEventHelper.fireEvent(new GroupAboutToCollapseEvent(CyGroupImpl.this, net, true));
 
 		CySubNetwork subnet = (CySubNetwork) net;
 
 		// Collapse it.
 		// Remove all of the nodes from the target network
-		System.out.println("Collapsing -- removing "+getNodeList().size()+" nodes from "+subnet);
 		subnet.removeNodes(getNodeList());
 
-		System.out.println("Collapsing -- adding group node");
 		subnet.addNode(groupNode);
 
 		// Add the group node and it's edges
 		List<CyEdge> groupNodeEdges = rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
-		System.out.println("Collapsing -- adding "+groupNodeEdges.size()+" edges");
 		for (CyEdge e: groupNodeEdges)
 			subnet.addEdge(e);
 
 		Set<CyNode> memberNodes = new HashSet<CyNode>(getNodeList());
 
-		System.out.println("Collapsing -- adding "+getMetaEdgeList().size()+" MetaEdges");
 		// Add the meta-edges
 		for (CyEdge e: getMetaEdgeList()) {
 			subnet.addEdge(e);
 		}
 
 		collapseSet.add(net);
-		System.out.println("Collapsed -- firing");
 		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, true));
 		// Update attributes?
 		// TODO: setGroupStateAttribute(net, true);
