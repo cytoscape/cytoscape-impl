@@ -1,16 +1,15 @@
 
 package org.cytoscape.property.internal;
 
-import org.cytoscape.property.internal.bookmark.BookmarksUtilImpl;
-import org.cytoscape.property.internal.PropsReader;
-import org.cytoscape.property.internal.bookmark.BookmarkReader;
+import java.util.Properties;
+
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
-import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.osgi.framework.BundleContext;
+import org.cytoscape.property.internal.bookmark.BookmarkReader;
+import org.cytoscape.property.internal.bookmark.BookmarksUtilImpl;
 import org.cytoscape.service.util.AbstractCyActivator;
-import java.util.Properties;
+import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -19,7 +18,6 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		
 		BookmarkReader bookmarksReader = new BookmarkReader("bookmarks","bookmarks.xml");
 		BookmarksUtilImpl bookmarksUtil = new BookmarksUtilImpl();
 		
@@ -27,7 +25,6 @@ public class CyActivator extends AbstractCyActivator {
 		bookmarksReaderProps.setProperty("cyPropertyName","bookmarks");
 		bookmarksReaderProps.setProperty("serviceType","property");
 		registerService(bc,bookmarksReader,CyProperty.class, bookmarksReaderProps);
-		registerService(bc,bookmarksReader,SessionLoadedListener.class, bookmarksReaderProps);
 
 		Properties bookmarksUtilProps = new Properties();
 		bookmarksUtilProps.setProperty("serviceType","property.util");

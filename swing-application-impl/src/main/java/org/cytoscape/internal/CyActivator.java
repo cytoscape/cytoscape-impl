@@ -103,6 +103,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
@@ -197,6 +198,9 @@ public class CyActivator extends AbstractCyActivator {
 		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyEventHelperServiceRef);
 		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(bookmarkServiceRef,
 		                                                                                bookmarksUtilServiceRef);
+		
+		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class, new Properties());
+		
 		CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar();
 		CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar();
 		CytoscapeMenus cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);

@@ -101,7 +101,7 @@ public class PreferenceAction extends AbstractCyAction {
 	}
 	
 	public void removeCyProperty(CyProperty<?> p, Dictionary d){
-		String propertyName = (String) d.get("cyPropertyName");
+		String propertyName = p.getName();
 		Object obj = p.getProperties();
 		
 		if (obj instanceof Properties){

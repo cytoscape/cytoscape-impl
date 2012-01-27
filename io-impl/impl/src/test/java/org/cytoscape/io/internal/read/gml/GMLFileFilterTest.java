@@ -28,7 +28,7 @@ public class GMLFileFilterTest {
 		String description = "GML";
 		
 		Properties properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty("test", properties, SavePolicy.DO_NOT_SAVE);		
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);		
 		filter = new GMLFileFilter(extensions, contentTypes, description , DataCategory.NETWORK, new StreamUtilImpl(cyProperties));
 	}
 	

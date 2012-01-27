@@ -368,6 +368,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private void extractProperties(InputStream is, String entryName) throws Exception {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
+		
 		final Properties props = (Properties) reader.getProperty();
 		final Properties newProps = new Properties();
 		
@@ -380,8 +381,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				}
 			}
 
-			CyProperty<Properties> cyProps = new SimpleCyProperty("session", newProps,
-					CyProperty.SavePolicy.SESSION_FILE);
+			final CyProperty<Properties> cyProps = new SimpleCyProperty<Properties>("session", newProps,
+					Properties.class, CyProperty.SavePolicy.SESSION_FILE);
 			properties.add(cyProps);
 		}
 	}
@@ -389,7 +390,11 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private void extractBookmarks(InputStream is, String entryName) throws Exception {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		bookmarks = (Bookmarks) reader.getProperty();
+		
+		final Bookmarks bookmarks = (Bookmarks) reader.getProperty();
+		final CyProperty<Bookmarks> cyProps = new SimpleCyProperty<Bookmarks>("bookmarks", bookmarks, Bookmarks.class,
+				CyProperty.SavePolicy.SESSION_FILE);
+		properties.add(cyProps);
 	}
 
 	private void extractSessionState(InputStream is, String entryName) throws Exception {

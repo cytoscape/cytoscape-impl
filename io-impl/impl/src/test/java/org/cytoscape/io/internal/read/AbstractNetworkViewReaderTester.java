@@ -60,7 +60,7 @@ public class AbstractNetworkViewReaderTester {
 		netFactory = nts.getNetworkFactory();
 
 		properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty("Test", properties, SavePolicy.DO_NOT_SAVE);		
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties,Properties.class,  SavePolicy.DO_NOT_SAVE);		
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		setViewThreshold(DEF_THRESHOLD);
 		

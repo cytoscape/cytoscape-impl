@@ -83,6 +83,7 @@ import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
@@ -183,31 +184,28 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
 		taskMonitor.setStatusMessage("Zip networks...");
 		zipVersion();
-		zipNetworks();
-		zipNetworkViews();
-		
 		taskMonitor.setProgress(0.1);
+		zipNetworks();
+		taskMonitor.setProgress(0.2);
+		zipNetworkViews();
+		taskMonitor.setProgress(0.3);
 		taskMonitor.setStatusMessage("Zip tables...");
 		zipTables();
-		taskMonitor.setProgress(0.2);
-		taskMonitor.setStatusMessage("Zip virtual columns...");
+		taskMonitor.setProgress(0.4);
 		zipVirtualColumns();
-		taskMonitor.setProgress(0.3);
+		taskMonitor.setProgress(0.5);
 		taskMonitor.setStatusMessage("Zip session info...");
 		zipCySession();
-		taskMonitor.setProgress(0.4);
+		taskMonitor.setProgress(0.6);
 		taskMonitor.setStatusMessage("Zip Vizmap...");
 		zipVizmap();
-		taskMonitor.setProgress(0.5);
+		taskMonitor.setProgress(0.7);
 		taskMonitor.setStatusMessage("Zip Cytoscape properties...");
 		zipProperties();
-		taskMonitor.setProgress(0.6);
-		taskMonitor.setStatusMessage("Zip bookmarks...");
-		zipBookmarks();
-		taskMonitor.setProgress(0.7);
-		taskMonitor.setStatusMessage("Zip File list...");
-		zipFileListMap();
 		taskMonitor.setProgress(0.8);
+		taskMonitor.setStatusMessage("Zip apps...");
+		zipFileListMap();
+		taskMonitor.setProgress(0.9);
 		zos.close();
 		taskMonitor.setStatusMessage("Done!");
 		taskMonitor.setProgress(1.0);
@@ -285,31 +283,32 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * Writes the cytoscape.props file to the session zip.
 	 */
 	private void zipProperties() throws Exception {
-		for (CyProperty<Properties> cyProps : session.getProperties()) {
-			String fileName = cyProps.getName() + PROPERTIES_EXT;
-			Properties props = cyProps.getProperties(); 
+		for (CyProperty<?> cyProps : session.getProperties()) {
+			String filename = null;
+			CyFileFilter filter = null;
+			Class<?> type = cyProps.getPropertyType();
 			
-			zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER + fileName) );
-	
-			CyWriter propertiesWriter = propertyWriterMgr.getWriter(props, propertiesFilter, zos);
+			if (Bookmarks.class.isAssignableFrom(type)) {
+				filename = BOOKMARKS_FILE;
+				filter = bookmarksFilter;
+			} else if (Properties.class.isAssignableFrom(type)) {
+				filename = cyProps.getName() + PROPERTIES_EXT;
+				filter = propertiesFilter;
+			} else {
+				//filename = cyProps.getName();
+				// TODO: how to get the file extension and the file filter for unknown CyProperty types?
+				logger.error("Cannot save CyProperty \"" + cyProps.getName() + "\": type \"" + type + "\" is not supported");
+				continue;
+			}
+			
+			zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER + filename));
+			
+			CyWriter propertiesWriter = propertyWriterMgr.getWriter(cyProps.getProperties(), filter, zos);
 			propertiesWriter.run(taskMonitor);
 	
 			zos.closeEntry();
 			propertiesWriter = null;
 		}
-	}
-
-	/**
-	 * Writes the bookmarks.xml file to the session zip.
-	 */
-	private void zipBookmarks() throws Exception {
-		zos.putNextEntry(new ZipEntry(sessionDir + PROPERTIES_FOLDER +BOOKMARKS_FILE) );
-
-		CyWriter bookmarksWriter = propertyWriterMgr.getWriter(session.getBookmarks(), bookmarksFilter, zos);
-		bookmarksWriter.run(taskMonitor);
-
-		zos.closeEntry();
-		bookmarksWriter = null;
 	}
 
 	/**
@@ -457,21 +456,21 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 			}
 
 			String tableTitle = SessionUtil.escape(table.getTitle());
-			String fileName;
+			String filename;
 			CyNetwork network = metadata.getNetwork();
 			
 			if (network == null) {
-				fileName = String.format("global/%d-%s.cytable", table.getSUID(), tableTitle);
+				filename = String.format("global/%d-%s.cytable", table.getSUID(), tableTitle);
 			} else {
 				if (!allNetworks.contains(network)) {
 					continue;
 				}
 				
-				fileName = SessionUtil.getNetworkTableFilename(network, metadata);
+				filename = SessionUtil.getNetworkTableFilename(network, metadata);
 			}
 			
-			tableFilenamesBySUID.put(table.getSUID(), fileName);
-			zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + fileName));
+			tableFilenamesBySUID.put(table.getSUID(), filename);
+			zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + filename));
 			
 			try {
 				CyWriter writer = tableWriterMgr.getWriter(table, tableFilter, zos);

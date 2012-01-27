@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -47,7 +46,6 @@ import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.session.Cysession;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
@@ -67,8 +65,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected DummyTaskMonitor taskMonitor;
 	
 	protected Cysession cysession;
-	protected Bookmarks bookmarks;
-	protected Set<CyProperty<Properties>> properties = new HashSet<CyProperty<Properties>>();
+	protected Set<CyProperty<?>> properties = new HashSet<CyProperty<?>>();
 	protected final Set<CyNetwork> networks = new LinkedHashSet<CyNetwork>();
 	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<CyNetworkView>();
 	protected final Set<VisualStyle> visualStyles = new HashSet<VisualStyle>();
@@ -110,7 +107,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	public CySession getSession() {
 		CySession ret = new CySession.Builder().networks(networks).networkViews(networkViews)
 				.viewVisualStyleMap(visualStyleMap).properties(properties).visualStyles(visualStyles)
-				.bookmarks(bookmarks).cysession(cysession).appFileListMap(appFileListMap).tables(tableMetadata)
+				.cysession(cysession).appFileListMap(appFileListMap).tables(tableMetadata)
 				.build();
 	
 		return ret;

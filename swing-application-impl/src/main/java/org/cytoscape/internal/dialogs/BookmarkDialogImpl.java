@@ -212,23 +212,13 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		listBookmark.setModel(theModel);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void itemStateChanged(ItemEvent e) {
 		bookmarkCategory = cmbCategory.getSelectedItem().toString();
 		loadBookmarks();
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object _actionObject = e.getSource();
 
@@ -280,6 +270,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 	 * 
 	 * @param pListSelectionEvent
 	 */
+	@Override
 	public void valueChanged(ListSelectionEvent pListSelectionEvent) {
 		if (listBookmark.getSelectedIndex() == -1) { // nothing is selected
 			btnEditBookmark.setEnabled(false);

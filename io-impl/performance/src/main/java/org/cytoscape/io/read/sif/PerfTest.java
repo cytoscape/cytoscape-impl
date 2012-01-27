@@ -65,7 +65,7 @@ public class PerfTest {
 		rootMgr = nts.getRootNetworkFactory();
 
 		properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty("Test", properties, DO_NOT_SAVE);	
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, DO_NOT_SAVE);	
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		setViewThreshold(DEF_THRESHOLD);
 	

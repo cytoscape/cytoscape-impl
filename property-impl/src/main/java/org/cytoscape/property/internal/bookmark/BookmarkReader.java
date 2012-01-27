@@ -9,14 +9,11 @@ import javax.xml.bind.Unmarshaller;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public final class BookmarkReader implements CyProperty<Bookmarks>, SessionLoadedListener {
+public final class BookmarkReader implements CyProperty<Bookmarks> {
 	private static final String BOOKMARK_PACKAGE = Bookmarks.class.getPackage().getName();
 	private static final Logger logger = LoggerFactory.getLogger(BookmarkReader.class);
 
@@ -73,22 +70,7 @@ public final class BookmarkReader implements CyProperty<Bookmarks>, SessionLoade
 	}
 
 	@Override
-	public void handleEvent(SessionLoadedEvent e) {
-		logger.debug("Updating bookmarks from loaded session...");
-		
-		Bookmarks newBookmarks = null;
-		CySession sess = e.getLoadedSession();
-		
-		if (sess != null)
-			newBookmarks = sess.getBookmarks();
-		else
-			logger.warn("Loaded session is null.");
-		
-		if (newBookmarks == null) {
-			logger.warn("Could not get new bookmarks from loaded session - using empty bookmarks.");
-			newBookmarks = new Bookmarks();
-		}
-		
-		this.bookmarks = newBookmarks;
+	public Class<? extends Bookmarks> getPropertyType() {
+		return Bookmarks.class;
 	}
 }

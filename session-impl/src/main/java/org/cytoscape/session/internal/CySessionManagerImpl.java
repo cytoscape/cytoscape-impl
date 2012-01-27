@@ -96,6 +96,7 @@ public class CySessionManagerImpl implements CySessionManager {
 	private final UndoSupport undo;
 
 	private final Set<CyProperty<?>> sessionProperties;
+	private CyProperty<Bookmarks> bookmarks;
 
 	private static final Logger logger = LoggerFactory.getLogger(CySessionManagerImpl.class);
 
@@ -150,14 +151,13 @@ public class CySessionManagerImpl implements CySessionManager {
 		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
 		Set<CyTable> tables = tblMgr.getAllTables(true);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-		Set<CyProperty<Properties>> props = getProperties();
-		Bookmarks bkmarks = getBookmarks();
 		Set<CyTableMetadata> metadata = buildMetadata(tables, networks);
+		Set<CyProperty<?>> props = getAllProperties();
 		
 		// Build the session
-		CySession sess = new CySession.Builder().properties(props).bookmarks(bkmarks).cysession(cysess)
-				.appFileListMap(appMap).tables(metadata).networks(networks).networkViews(netViews)
-				.visualStyles(styles).viewVisualStyleMap(stylesMap).build();
+		CySession sess = new CySession.Builder().properties(props).cysession(cysess).appFileListMap(appMap)
+				.tables(metadata).networks(networks).networkViews(netViews).visualStyles(styles)
+				.viewVisualStyleMap(stylesMap).build();
 
 		return sess;
 	}
@@ -248,15 +248,10 @@ public class CySessionManagerImpl implements CySessionManager {
 		if (emptySession) {
 			logger.debug("Creating empty session...");
 			Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-
-			// Cysession info
 			Cysession cysess = new CysessionFactory(netMgr, nvMgr, vmMgr).createDefaultCysession();
+			Set<CyProperty<?>> props = getAllProperties();
 
-			Set<CyProperty<Properties>> props = getProperties();
-			Bookmarks bkmarks = getBookmarks();
-
-			sess = new CySession.Builder().properties(props).bookmarks(bkmarks).cysession(cysess).visualStyles(styles)
-					.build();
+			sess = new CySession.Builder().properties(props).cysession(cysess).visualStyles(styles).build();
 		} else {
 			logger.debug("Restoring the session...");
 			restoreProperties(sess);
@@ -288,50 +283,40 @@ public class CySessionManagerImpl implements CySessionManager {
 		return currentFileName;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void addCyProperty(final CyProperty<?> newCyProperty, final Map<String, String> properties) {
 		CyProperty.SavePolicy sp = newCyProperty.getSavePolicy();
 
-		if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR)
-			sessionProperties.add(newCyProperty);
+		if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
+			if (Bookmarks.class.isAssignableFrom(newCyProperty.getPropertyType()))
+				bookmarks = (CyProperty<Bookmarks>) newCyProperty;
+			else
+				sessionProperties.add(newCyProperty);
+		}
 	}
 
 	public void removeCyProperty(final CyProperty<?> oldCyProperty, final Map<String, String> properties) {
 		CyProperty.SavePolicy sp = oldCyProperty.getSavePolicy();
 
-		if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR)
-			sessionProperties.remove(oldCyProperty);
+		if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
+			if (Bookmarks.class.isAssignableFrom(oldCyProperty.getPropertyType()))
+				bookmarks = null;
+			else
+				sessionProperties.remove(oldCyProperty);
+		}
 	}
 
-	private Bookmarks getBookmarks() {
-		Bookmarks bookmarks = null;
-
-		for (CyProperty<?> cyProps : sessionProperties) {
-			if (cyProps.getProperties() instanceof Bookmarks) {
-				bookmarks = (Bookmarks) cyProps.getProperties();
-				break;
-			}
-		}
-
-		return bookmarks;
-	}
-
-	@SuppressWarnings("unchecked")
-	private Set<CyProperty<Properties>> getProperties() {
-		Set<CyProperty<Properties>> set = new HashSet<CyProperty<Properties>>();
-
-		for (CyProperty<?> cyProps : sessionProperties) {
-			if (cyProps.getProperties() instanceof Properties) {
-				set.add((CyProperty<Properties>) cyProps);
-			}
-		}
+	private Set<CyProperty<?>> getAllProperties() {
+		Set<CyProperty<?>> set = new HashSet<CyProperty<?>>(sessionProperties);
+		
+		if (bookmarks != null)
+			set.add(bookmarks);
 
 		return set;
 	}
 
 	private void restoreProperties(CySession sess) {
-		final Set<CyProperty<Properties>> set = sess.getProperties();
-		
-		for (CyProperty<Properties> cyProps : set) {
+		for (CyProperty<?> cyProps : sess.getProperties()) {
 			final Properties serviceProps = new Properties();
 			serviceProps.setProperty("cyPropertyName", cyProps.getName());
 			serviceProps.setProperty("serviceType", "property");
@@ -411,8 +396,11 @@ public class CySessionManagerImpl implements CySessionManager {
 		// Destroy networks
 		final Set<CyNetwork> networks = netMgr.getNetworkSet();
 		
-		for (CyNetwork n : networks)
+		for (CyNetwork n : networks) {
 			netMgr.destroyNetwork(n);
+		}
+		
+		netMgr.reset();
 
 		// Destroy styles
 		if (removeVisualStyles) {
@@ -433,7 +421,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		tblMgr.reset();
 		
 		// Unregister session properties
-		final Set<CyProperty<?>> cyPropsClone = new HashSet<CyProperty<?>>(sessionProperties);
+		final Set<CyProperty<?>> cyPropsClone = getAllProperties();
 		
 		for (CyProperty<?> cyProps : cyPropsClone) {
 			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {

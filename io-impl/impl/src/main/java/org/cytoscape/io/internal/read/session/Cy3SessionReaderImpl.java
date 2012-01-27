@@ -154,7 +154,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				extractSessionState(is, entryName);
 			} else if (entryName.endsWith(VIZMAP_XML_FILE)) {
 				extractVizmap(is, entryName);
-			} else if (entryName.endsWith(PROPERTIES_EXT)) {
+			} else if (entryName.contains("/" + PROPERTIES_FOLDER)) {
 				extractProperties(is, entryName);
 			} else if (entryName.endsWith(XGMML_EXT)) {
 				// Ignore network view files for now...
@@ -163,8 +163,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				if (matcher.matches()) {
 					extractNetworks(is, entryName);
 				}
-			} else if (entryName.endsWith(BOOKMARKS_FILE)) {
-				extractBookmarks(is, entryName);
 			} else if (entryName.endsWith(TABLE_EXT)) {
 				extractTable(is, entryName);
 			} else if (entryName.endsWith(CYTABLE_METADATA_FILE)) {
@@ -372,29 +370,33 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractProperties(InputStream is, String entryName) throws Exception {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		Properties props = (Properties) reader.getProperty();
 		
-		if (props != null) {
+		CyProperty<?> cyProps = null;
+		Object obj = reader.getProperty();
+		
+		if (obj instanceof Properties) {
+			Properties props = (Properties) obj;
 			Matcher matcher = PROPERTIES_PATTERN.matcher(entryName);
 			
 			if (matcher.matches()) {
 				String propsName = matcher.group(2);
 				
 				if (propsName != null) {
-					CyProperty<Properties> cyProps = new SimpleCyProperty(propsName, props,
+					cyProps = new SimpleCyProperty<Properties>(propsName, props, Properties.class,
 							CyProperty.SavePolicy.SESSION_FILE);
-					properties.add(cyProps);
+					
 				}
 			}
+		} else if (obj instanceof Bookmarks) {
+			cyProps = new SimpleCyProperty<Bookmarks>("bookmarks", (Bookmarks)obj, Bookmarks.class,
+					CyProperty.SavePolicy.SESSION_FILE);
 		} else {
+			// TODO: get name and create the CyProperty for unknown types
 			logger.error("Cannot extract CyProperty name from: " + entryName);
 		}
-	}
-
-	private void extractBookmarks(InputStream is, String entryName) throws Exception {
-		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
-		reader.run(taskMonitor);
-		bookmarks = (Bookmarks) reader.getProperty();
+		
+		if (cyProps != null)
+			properties.add(cyProps);
 	}
 
 	private void extractSessionState(InputStream is, String entryName) throws Exception {

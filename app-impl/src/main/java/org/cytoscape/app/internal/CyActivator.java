@@ -8,6 +8,7 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.io.read.CyTableReaderManager;
@@ -68,7 +69,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManagerRef = getService(bc,CyNetworkViewManager.class);
 		CyNetworkReaderManager cyNetworkViewReaderManagerRef = getService(bc,CyNetworkReaderManager.class);
 		CyNetworkViewWriterManager cyNetworkViewWriterManagerRef = getService(bc,CyNetworkViewWriterManager.class);
-		CyProperty cyPropertyRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
+		CyProperty<Properties> cyPropertyRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		CyPropertyReaderManager cyPropertyReaderManagerRef = getService(bc,CyPropertyReaderManager.class);
 		CyPropertyWriterManager cyPropertyWriterManagerRef = getService(bc,CyPropertyWriterManager.class);
 		CyRootNetworkManager cyRootNetworkFactoryRef = getService(bc,CyRootNetworkManager.class);
@@ -90,7 +91,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingManager visualMappingManagerRef = getService(bc,VisualMappingManager.class);
 		VisualStyleFactory visualStyleFactoryRef = getService(bc,VisualStyleFactory.class);
 		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
-		CyProperty bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
+		CyProperty<Bookmarks> bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 
@@ -114,7 +115,7 @@ public class CyActivator extends AbstractCyActivator {
 		StartupMostlyFinished startupMostlyFinished = new StartupMostlyFinished(cyEventHelperRef);
 		
 		registerService(bc,appLoaderTaskFactory,TaskFactory.class, new Properties());
-		registerService(bc,appManagerAction,CyAction.class, new Properties());
+		registerAllServices(bc,appManagerAction, new Properties());
 	}
 }
 
