@@ -13,30 +13,25 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.CyProperty.SavePolicy;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.Task;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReader;
 
 public class PerfTest {
 
-	@Mock
 	CyLayoutAlgorithmManager layouts;
-	@Mock
 	CyLayoutAlgorithm layout;
-	@Mock
 	TaskMonitor taskMonitor;
-	@Mock
-	Task task;
 	
-	@Mock
 	CyProperty<Properties> props;
 
 	private CyNetworkFactory networkFactory;
@@ -50,11 +45,18 @@ public class PerfTest {
 	}
 
 	public PerfTest() {
-		MockitoAnnotations.initMocks(this);
+        layout = mock(CyLayoutAlgorithm.class);
+        when(layout.createTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
 
-		when(layouts.getDefaultLayout()).thenReturn(layout);
-		when(layout.createTaskIterator()).thenReturn(new TaskIterator(task));
-		
+        layouts = mock(CyLayoutAlgorithmManager.class);
+        when(layouts.getLayout(anyString())).thenReturn(layout);
+
+		taskMonitor = mock(TaskMonitor.class);
+
+		Properties properties = new Properties();
+		properties.setProperty("viewThreshold", "1000000");
+		props = new SimpleCyProperty("Test", properties, SavePolicy.DO_NOT_SAVE);
+
 		networkFactory = new NetworkTestSupport().getNetworkFactory();
 		networkViewFactory = new NetworkViewTestSupport().getNetworkViewFactory();
 	}
@@ -81,5 +83,10 @@ public class PerfTest {
 		reader.setTaskIterator(new TaskIterator(reader));
 		return reader;
 	}
+
+    static class SimpleTask extends AbstractTask {
+        public void run(final TaskMonitor tm) { }
+    }
+
 
 }
