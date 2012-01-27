@@ -453,7 +453,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 					CyRootNetwork netPointerRoot = rootNetworkManager.getRootNetwork(netPointer);
 					boolean sameRoot = netPointerRoot.equals(rootNetworkManager.getRootNetwork(network));
 					
-					if (sessionFormat || sameRoot) {
+					if (sessionFormat/* || sameRoot*/) { // TODO: keep ignoring network pointers when exporting to XGMML?
 						// Write a nested graph element
 						writeElement("<att>\n");
 						depth++;
@@ -462,7 +462,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 							// If exporting to XGMML, let's try to avoid XLINks, in order to
 							// make it easier for other applications to parse it.
 							// This sub-network has not been written yet!
-							writeSubGraph(netPointer);
+//							writeSubGraph(netPointer); // TODO: Should CyGroups be exported to XGMML?
 						} else {
 							// This sub-network has already been written or belongs to another XGMML file...
 							String href = "#" + netPointer.getSUID();
