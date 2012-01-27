@@ -401,9 +401,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				// if it's one of the selected tables, then update the counts
 				n = nodeEdgeTables.get(e.getSource());
 				if ( n != null ) {
-					Collection<RowSetRecord> rowSetRecords = e.getPayloadCollection();
-					Iterator<RowSetRecord> it = rowSetRecords.iterator();
-					RowSetRecord record = it.next();
+					final RowSetRecord record = e.getPayloadCollection().iterator().next();
 					if ( record != null  && record.getColumn().equalsIgnoreCase(CyNetwork.SELECTED)) {
 						treeTable.getTree().updateUI();
 					}
