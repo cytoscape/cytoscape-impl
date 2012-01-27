@@ -41,10 +41,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import org.cytoscape.view.vizmap.gui.internal.cellrenderer.ContinuousMappingCellRenderer;
-import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.AbstractContinuousMappingEditor;
-import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.GradientEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyColorPropertyEditor;
 
 /**
@@ -62,11 +60,11 @@ public class ColorVisualPropertyEditor extends
 			final CyNetworkTableManager manager,
 			final CyApplicationManager appManager,
 			final SelectedVisualStyleManager selectedManager, final EditorManager editorManager, final VisualMappingManager vmm) {
-		super(type, new CyColorPropertyEditor());
+		super(type, new CyColorPropertyEditor(), ContinuousEditorType.COLOR);
 
 		this.discreteTableCellRenderer = REG.getRenderer(Color.class);
 		
-		this.continuousEditor = new GradientEditor(manager, appManager, selectedManager, editorManager, vmm);
-		this.continuousTableCellRenderer = new ContinuousMappingCellRenderer((AbstractContinuousMappingEditor<?, ?>) continuousEditor);
+		//this.continuousEditor = new GradientEditor(manager, appManager, selectedManager, editorManager, vmm);
+		//this.continuousTableCellRenderer = new ContinuousMappingCellRenderer((AbstractContinuousMappingEditor<?, ?>) continuousEditor);
 	}
 }

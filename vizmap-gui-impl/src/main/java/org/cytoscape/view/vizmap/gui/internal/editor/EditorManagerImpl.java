@@ -51,6 +51,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
@@ -59,15 +60,21 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
+import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2CEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2DEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.GradientEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.AttributeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.DiscreteValueEditor;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,26 +209,6 @@ public class EditorManagerImpl implements EditorManager {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.cytoscape.application.swing.vizmap.gui.editors.EditorFactory#
-	 * showContinuousEditor(java .awt.Component,
-	 * org.cytoscape.application.swing.viewmodel.VisualProperty)
-	 */
-	public <V> void showContinuousEditor(Component parentComponent, VisualProperty<V> type) throws Exception {
-		final VisualPropertyEditor<?> editor = editors.get(type.getRange().getType());
-
-		// TODO: design dialog state mamagement
-		//
-		//
-		// Component mappingEditor = editor.getContinuousMappingEditor();
-		//
-		// JDialog editorDialog = new JDialog();
-		// editorDialog.setModal(true);
-		// editorDialog.setLocationRelativeTo(parentComponent);
-
-	}
 
 	@SuppressWarnings("unchecked")
 	public <V> VisualPropertyEditor<V> getVisualPropertyEditor(final VisualProperty<V> vp) {
@@ -317,5 +304,19 @@ public class EditorManagerImpl implements EditorManager {
 
 	public void removeRenderingEngineFactory(RenderingEngineFactory<?> factory, Map props) {
 		// TODO: clean up state when rendering engines are removed.
+	}
+
+	@Override
+	public PropertyEditor getContinuousEditor(final VisualProperty<?> vp) {
+		final ContinuousEditorType editorType = this.getVisualPropertyEditor(vp).getContinuousEditorType();
+		
+		if(editorType == ContinuousEditorType.COLOR)
+			return new GradientEditor(tableManager, appManager, selectedManager, this, vmm);
+		else if(editorType == ContinuousEditorType.CONTINUOUS)
+			return new C2CEditor(tableManager, appManager, selectedManager, this, vmm);
+		else if(editorType == ContinuousEditorType.DISCRETE)
+			return new C2DEditor(tableManager, appManager, selectedManager, this, vmm);
+		
+		return null;
 	}
 }

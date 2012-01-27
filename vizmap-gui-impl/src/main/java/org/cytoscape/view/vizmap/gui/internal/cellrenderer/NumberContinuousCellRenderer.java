@@ -5,7 +5,7 @@ import java.awt.Component;
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
 
-import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.AbstractContinuousMappingEditor;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +19,10 @@ public class NumberContinuousCellRenderer extends DefaultCellRenderer {
 	private static final Logger logger = LoggerFactory.getLogger(NumberContinuousCellRenderer.class);
 
 
-	private final AbstractContinuousMappingEditor<?, ?> editor;
+	private final ContinuousMappingEditor<?, ?> editor;
 
 
-	public NumberContinuousCellRenderer(final AbstractContinuousMappingEditor<?, ?> editor) {
+	public NumberContinuousCellRenderer(final ContinuousMappingEditor<?, ?> editor) {
 		if(editor == null)
 			throw new NullPointerException("Editor object is null.");
 		

@@ -2,7 +2,6 @@ package org.cytoscape.ding.icon;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Shape;
 
 import javax.swing.Icon;
 

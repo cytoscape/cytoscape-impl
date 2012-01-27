@@ -3,10 +3,11 @@ package org.cytoscape.view.vizmap.gui.internal.editor;
 import java.beans.PropertyEditor;
 
 import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 
 import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 
-public class BasicVisualPropertyEditor<T> extends
+public abstract class BasicVisualPropertyEditor<T> extends
 		AbstractVisualPropertyEditor<T> {
 
 	protected static final PropertyRendererRegistry REG = new PropertyRendererRegistry();
@@ -15,8 +16,7 @@ public class BasicVisualPropertyEditor<T> extends
 		REG.registerDefaults();
 	}
 
-	public BasicVisualPropertyEditor(Class<T> type, PropertyEditor propertyEditor) {
-		super(type, propertyEditor);
+	public BasicVisualPropertyEditor(Class<T> type, PropertyEditor propertyEditor, ContinuousEditorType editorType) {
+		super(type, propertyEditor, editorType);
 	}
-
 }

@@ -34,14 +34,18 @@
  */
 package org.cytoscape.view.vizmap.gui.internal.editor;
 
+import java.beans.PropertyEditor;
+
+import javax.swing.table.TableCellRenderer;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.cellrenderer.NumberContinuousCellRenderer;
-import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.AbstractContinuousMappingEditor;
-import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2CEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyNumberPropertyEditor;
 
 public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPropertyEditor<T> {
@@ -52,11 +56,17 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 	public NumberVisualPropertyEditor(Class<T> type, final CyNetworkTableManager manager,
 			final CyApplicationManager appManager, final SelectedVisualStyleManager selectedManager,
 			final EditorManager editorManager, final VisualMappingManager vmm) {
-		super(type, new CyNumberPropertyEditor<T>(type, null));
+		super(type, new CyNumberPropertyEditor<T>(type, null), ContinuousEditorType.CONTINUOUS);
 		discreteTableCellRenderer = REG.getRenderer(type);
 
-		continuousEditor = new C2CEditor(manager, appManager, selectedManager, editorManager, vmm);
-		continuousTableCellRenderer = new NumberContinuousCellRenderer((AbstractContinuousMappingEditor<?, ?>) continuousEditor);;
+//		continuousEditor = new C2CEditor(manager, appManager, selectedManager, editorManager, vmm);
+//		continuousTableCellRenderer = new NumberContinuousCellRenderer((AbstractContinuousMappingEditor<?, ?>) continuousEditor);;
+	}
+
+	@Override
+	public TableCellRenderer getContinuousTableCellRenderer(PropertyEditor continuousMappingEditor) {
+		// TODO Auto-generated method stub
+		return new NumberContinuousCellRenderer((ContinuousMappingEditor<?, ?>) continuousMappingEditor);
 	}
 
 }

@@ -218,20 +218,21 @@ public class VizMapPropertyBuilder {
 			graphicalView.setParentProperty(topProperty);
 			topProperty.addSubProperty(graphicalView);
 
-			// Renderer for Continuous mapping icon cell
-			final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer();
+			
 
 			final PropertySheetTable table = propertySheetPanel.getTable();
 			final PropertyRendererRegistry rendReg = (PropertyRendererRegistry) table.getRendererFactory();
-			rendReg.registerRenderer(graphicalView, continuousRenderer);
+			
 			
 			final PropertyEditorRegistry cellEditorFactory = (PropertyEditorRegistry) table.getEditorFactory();
-			final PropertyEditor continuousCellEditor = editorManager.getVisualPropertyEditor(vp)
-					.getContinuousMappingEditor();
+			final PropertyEditor continuousCellEditor = editorManager.getContinuousEditor(vp);
 
 			if (continuousCellEditor == null)
 				throw new NullPointerException("Continuous Mapping cell editor is null.");
 			else {
+				// Renderer for Continuous mapping icon cell
+				final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer(continuousCellEditor);
+				rendReg.registerRenderer(graphicalView, continuousRenderer);
 				continuousCellEditor.setValue(visualMapping);
 				cellEditorFactory.registerEditor(graphicalView, continuousCellEditor);
 				table.repaint();

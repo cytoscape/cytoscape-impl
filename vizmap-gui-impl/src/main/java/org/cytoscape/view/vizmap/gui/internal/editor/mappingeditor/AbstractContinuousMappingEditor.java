@@ -16,12 +16,13 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 
-public abstract class AbstractContinuousMappingEditor<K extends Number, V> extends AbstractPropertyEditor {
+public abstract class AbstractContinuousMappingEditor<K extends Number, V> extends AbstractPropertyEditor implements ContinuousMappingEditor<K, V> {
 	
 	private static final Dimension DEF_SIZE = new Dimension(550, 400);
 	private static final Dimension MIN_SIZE = new Dimension(300, 350);
@@ -105,6 +106,10 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.ContinuousMappingEditor#drawIcon(int, int, boolean)
+	 */
+	@Override
 	public ImageIcon drawIcon(int width, int height, boolean detail) {
 		if(editorPanel == null)
 			return null;

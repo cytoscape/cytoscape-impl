@@ -89,7 +89,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 	private V below;
 	private V above;
 	private VisualProperty<V> vp;
-	private final Set<V> values;
+	//private final Set<V> values;
 
 	private List<String> rangeTooltips;
 	private JXMultiThumbSlider<V> slider;
@@ -125,14 +125,19 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 		this.vp = mapping.getVisualProperty();
 		final Range<V> rangeObject = vp.getRange();
-		if (!rangeObject.isDiscrete())
-			throw new IllegalArgumentException("Range type should be discrete.");
+//		if (!rangeObject.isDiscrete())
+//			throw new IllegalArgumentException("Range type should be discrete.");
 
-		this.values = ((DiscreteRange<V>) rangeObject).values();
-		// create map of icons.  Key is V value.
 		this.iconMap = new HashMap<V, Icon>();
-		for (V value : values)
-			iconMap.put(value, engine.createIcon(vp, value, ICON_SIZE, ICON_SIZE));
+		if (rangeObject.isDiscrete()) {
+			final Set<V> values = ((DiscreteRange<V>) rangeObject).values();
+			// create map of icons. Key is V value.
+			
+			for (V value : values)
+				iconMap.put(value, engine.createIcon(vp, value, ICON_SIZE, ICON_SIZE));
+		} else {
+			// ?
+		}
 		
 		this.title = mapping.getMappingColumnName();
 
@@ -528,7 +533,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		
 		Icon icon = iconMap.get(key);
 		if(icon == null) {
-			// Need to render icon.
+			// Need to render icon dynamically.
 			icon = engine.createIcon(vp, key, ICON_SIZE, ICON_SIZE);
 		}
 		
