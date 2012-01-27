@@ -81,7 +81,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 */
 	@Override
 	public CyNetwork createNetwork() {
-		ArrayGraph net = new ArrayGraph(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, true);
+		CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, true);
 		logger.info("CyNetwork w/ public tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ public tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
 		return net.getBaseNetwork(); 
@@ -92,7 +92,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 */
 	@Override
 	public CyNetwork createNetworkWithPrivateTables() {
-		ArrayGraph net = new ArrayGraph(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, false);
+		CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, false);
 		logger.info("CyNetwork w/ private tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ private tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
 		return net.getBaseNetwork(); 

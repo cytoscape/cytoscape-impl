@@ -39,7 +39,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTable.SavePolicy;
-import org.cytoscape.model.internal.ArrayGraph;
+import org.cytoscape.model.internal.CyRootNetworkImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableImpl;
@@ -63,7 +63,7 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		final Interpreter interpreter = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		goodNetwork =
-			new ArrayGraph(eh, mgrImpl, networkTableMgr,
+			new CyRootNetworkImpl(eh, mgrImpl, networkTableMgr,
 			               new CyTableFactoryImpl(eh, interpreter, serviceRegistrar),
 			               serviceRegistrar, true).getBaseNetwork();
 	}

@@ -80,7 +80,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private boolean isImmutable;
 
 	// Unique ID.
-	private final long suid;
+	private final Long suid;
 
 	// name of the primary key column
 	private String primaryKey;
@@ -109,7 +109,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		this.primaryKey = primaryKey;
 		this.pub = pub;
 		this.isImmutable = !isMutable;
-		this.suid = SUIDFactory.getNextSUID();
+		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
 		this.eventHelper = eventHelper;
 		this.interpreter = interpreter;
 		this.savePolicy = savePolicy;
@@ -233,7 +233,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	 * @return DOCUMENT ME!
 	 */
 	@Override
-	public long getSUID() {
+	public Long getSUID() {
 		return suid;
 	}
 

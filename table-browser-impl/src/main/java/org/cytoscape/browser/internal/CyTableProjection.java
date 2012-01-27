@@ -88,7 +88,7 @@ public final class CyTableProjection implements CyTable {
 	 *  @return the SUID of the underlying table
 	 */
 	@Override
-	public long getSUID() {
+	public Long getSUID() {
 		return underlyingTable.getSUID();
 	}
 

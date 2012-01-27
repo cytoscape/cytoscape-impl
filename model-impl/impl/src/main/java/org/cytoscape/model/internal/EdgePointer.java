@@ -29,11 +29,10 @@ package org.cytoscape.model.internal;
 
 
 import org.cytoscape.model.CyEdge;
-import java.util.Arrays; 
 
 
 /**
- * Element of the edge linked list used in {@link ArrayGraph}.
+ * Element of the edge linked list used in {@link SimpleNetwork}.
  * You should only touch this if you know what you're doing.
  */
 final class EdgePointer {
@@ -43,129 +42,100 @@ final class EdgePointer {
 	final NodePointer source;
 	final NodePointer target;
 
-	// See comments in NodePointer for explanation of INITIAL_ALLOCATION
-	EdgePointer[] nextOutEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
-	EdgePointer[] prevOutEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
-	EdgePointer[] nextInEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
-	EdgePointer[] prevInEdge = new EdgePointer[NodePointer.INITIAL_ALLOCATION];
+	EdgePointer nextOutEdge; 
+	EdgePointer prevOutEdge;
+	EdgePointer nextInEdge;
+	EdgePointer prevInEdge;
 
-	boolean[] includes = new boolean[NodePointer.INITIAL_ALLOCATION];
-
-	EdgePointer(final NodePointer s, final NodePointer t, final boolean dir, final int ind, final CyEdge edge) {
-		index = ind;
+	EdgePointer(final NodePointer s, final NodePointer t, final boolean dir, final CyEdge edge) {
 		source = s;
 		target = t;
 		directed = dir;
 		cyEdge = edge;
+		index = edge.getIndex();
 
-		nextOutEdge[0] = null;
-		prevOutEdge[0] = null;
+		nextOutEdge = null;
+		prevOutEdge = null;
 
-		nextInEdge[0] = null;
-		prevInEdge[0] = null;
+		nextInEdge = null;
+		prevInEdge = null;
 
-		Arrays.fill(includes,false);
+		insertSelf();
 	}
 
-	void expandTo(final int z) {
-		final int x = z+1;
+	private void insertSelf() {
 
-		if (z < nextOutEdge.length)
-			return;
+		nextOutEdge = source.firstOutEdge;
 
-		nextOutEdge = expandEdgePointerArray(nextOutEdge, x);
-		prevOutEdge = expandEdgePointerArray(prevOutEdge, x);
-		nextInEdge = expandEdgePointerArray(nextInEdge, x);
-		prevInEdge = expandEdgePointerArray(prevInEdge, x);
-		includes = NodePointer.expandBooleanArray(includes,x);
-	}
+		if (source.firstOutEdge != null)
+			source.firstOutEdge.prevOutEdge = this;
 
-	static EdgePointer[] expandEdgePointerArray(final EdgePointer[] np, final int n) {
-		final EdgePointer[] nnp = new EdgePointer[n+1];
-		System.arraycopy(np,0,nnp,0,np.length);
-		return nnp;
-	}
+		source.firstOutEdge = this;
 
-	void insert(final int inId) {
-		includes[inId] = true;
+		nextInEdge = target.firstInEdge;
 
-		nextOutEdge[inId] = source.firstOutEdge[inId];
+		if (target.firstInEdge != null)
+			target.firstInEdge.prevInEdge = this;
 
-		if (source.firstOutEdge[inId] != null)
-			source.firstOutEdge[inId].prevOutEdge[inId] = this;
-
-		source.firstOutEdge[inId] = this;
-
-		nextInEdge[inId] = target.firstInEdge[inId];
-
-		if (target.firstInEdge[inId] != null)
-			target.firstInEdge[inId].prevInEdge[inId] = this;
-
-		target.firstInEdge[inId] = this;
+		target.firstInEdge = this;
 
 		if (directed) {
-			source.outDegree[inId]++;
-			target.inDegree[inId]++;
+			source.outDegree++;
+			target.inDegree++;
 		} else {
-			source.undDegree[inId]++;
-			target.undDegree[inId]++;
+			source.undDegree++;
+			target.undDegree++;
 		}
 
 		// Self-edge
 		if (source == target) {
 			if (directed) {
-				source.selfEdges[inId]++;
+				source.selfEdges++;
 			} else {
-				source.undDegree[inId]--;
+				source.undDegree--;
 			}
 		}
 	}
 
-	void remove(final int inId) {
-		includes[inId] = false;
+	void remove() {
 
-		if (prevOutEdge[inId] != null)
-			prevOutEdge[inId].nextOutEdge[inId] = nextOutEdge[inId];
+		if (prevOutEdge != null)
+			prevOutEdge.nextOutEdge = nextOutEdge;
 		else
-			source.firstOutEdge[inId] = nextOutEdge[inId];
+			source.firstOutEdge = nextOutEdge;
 
-		if (nextOutEdge[inId] != null)
-			nextOutEdge[inId].prevOutEdge[inId] = prevOutEdge[inId];
+		if (nextOutEdge != null)
+			nextOutEdge.prevOutEdge = prevOutEdge;
 
-		if (prevInEdge[inId] != null)
-			prevInEdge[inId].nextInEdge[inId] = nextInEdge[inId];
+		if (prevInEdge != null)
+			prevInEdge.nextInEdge = nextInEdge;
 		else
-			target.firstInEdge[inId] = nextInEdge[inId];
+			target.firstInEdge = nextInEdge;
 
-		if (nextInEdge[inId] != null)
-			nextInEdge[inId].prevInEdge[inId] = prevInEdge[inId];
+		if (nextInEdge != null)
+			nextInEdge.prevInEdge = prevInEdge;
 
 		if (directed) {
-			source.outDegree[inId]--;
-			target.inDegree[inId]--;
+			source.outDegree--;
+			target.inDegree--;
 		} else {
-			source.undDegree[inId]--;
-			target.undDegree[inId]--;
+			source.undDegree--;
+			target.undDegree--;
 		}
 
 		// Self-edge.
 		if (source == target) {
 			if (directed) {
-				source.selfEdges[inId]--;
+				source.selfEdges--;
 			} else {
-				source.undDegree[inId]--;
+				source.undDegree--;
 			}
 		}
 
-		nextOutEdge[inId] = null; // ?? wasn't here in DynamicGraph
-		prevOutEdge[inId] = null;
-		nextInEdge[inId] = null;
-		prevInEdge[inId] = null;
+		nextOutEdge = null; // ?? wasn't here in DynamicGraph
+		prevOutEdge = null;
+		nextInEdge = null;
+		prevInEdge = null;
 	}
 
-    boolean isSet(final int inId) {
-		return ( inId >= 0 &&
-		         inId < includes.length && 
-		         includes[inId] );
-    }
 }

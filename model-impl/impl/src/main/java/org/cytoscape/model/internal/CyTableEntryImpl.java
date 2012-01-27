@@ -38,10 +38,10 @@ import org.cytoscape.model.SUIDFactory;
 
 
 class CyTableEntryImpl implements CyTableEntry {
-	private final long suid;
+	private final Long suid;
 
 	CyTableEntryImpl(long suid) {
-		this.suid = suid;
+		this.suid = Long.valueOf(suid);
 	}
 
 	CyTableEntryImpl() {
@@ -52,7 +52,7 @@ class CyTableEntryImpl implements CyTableEntry {
 	 * @see org.cytoscape.model.CyTableEntry#getSUID()
 	 */
 	@Override
-	final public long getSUID() {
+	final public Long getSUID() {
 		return suid;
 	}
 

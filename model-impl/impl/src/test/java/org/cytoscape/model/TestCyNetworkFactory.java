@@ -36,7 +36,7 @@ import static org.mockito.Mockito.mock;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.internal.ArrayGraph;
+import org.cytoscape.model.internal.CyRootNetworkImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
@@ -62,8 +62,8 @@ public class TestCyNetworkFactory {
 		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
 		Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		ArrayGraph ar =
-			new ArrayGraph(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
+		CyRootNetworkImpl ar =
+			new CyRootNetworkImpl(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
 			               serviceRegistrar, true);
 		return ar; 
 	}
@@ -74,8 +74,8 @@ public class TestCyNetworkFactory {
 		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
 		Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		ArrayGraph ar =
-			new ArrayGraph(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
+		CyRootNetworkImpl ar =
+			new CyRootNetworkImpl(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
 			               serviceRegistrar, false);
 		return ar; 
 	}

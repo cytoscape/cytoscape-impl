@@ -11,7 +11,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	// Both of them are immutable.
 	protected final M model;
-	protected final long suid;
+	protected final Long suid;
 
 	protected final Map<VisualProperty<?>, Object> visualProperties;
 	protected final Map<VisualProperty<?>, Object> visualPropertyLocks;
@@ -25,7 +25,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		if (model == null)
 			throw new IllegalArgumentException("Data model cannot be null.");
 
-		this.suid = SUIDFactory.getNextSUID();
+		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
 		this.model = model;
 
 		this.visualProperties = new IdentityHashMap<VisualProperty<?>, Object>();
@@ -38,7 +38,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	}
 
 	@Override
-	public long getSUID() {
+	public Long getSUID() {
 		return suid;
 	}
 
