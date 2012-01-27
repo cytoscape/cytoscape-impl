@@ -94,12 +94,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyNetworkView view = cyNetworkViewManager.getNetworkView(network);
 
 		if (e.collapsing()) {
-			System.out.println("Collapsing");
 			// Calculate the center position of all of the
 			// member nodes
 			Dimension center = calculateCenter(view, group.getNodeList());
-
-			System.out.println("Center: "+center);
 
 			// Save it in the groupNode attribute
 			updateGroupLocation(rootNetwork, group.getGroupNode(), center);
@@ -112,7 +109,6 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				updateNodeOffset(rootNetwork, node, offset);
 			}
 		} else {
-			System.out.println("Expanding");
 			// Get the current position of the groupNode
 			View<CyNode>nView = view.getNodeView(group.getGroupNode());
 			double x = nView.getVisualProperty(xLoc);
@@ -130,14 +126,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		VisualStyle viewStyle = cyStyleManager.getVisualStyle(view);
 
 		if (e.collapsed()) {
-			System.out.println("Collapsed");
 			// Get the location to move the group node to
 			Dimension d = getLocation(rootNetwork, group.getGroupNode());
 			// Move it.
 			moveNode(view, group.getGroupNode(), d);
-			System.out.println("Done");
 		} else {
-			System.out.println("Expanded");
 			// Get the location of the group node before it went away
 			Dimension center = getLocation(rootNetwork, group.getGroupNode());
 			// Now, get the offsets for each of the member nodes and move them
@@ -145,9 +138,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				Dimension location = getOffsetLocation(rootNetwork, node, center);
 				moveNode(view, node, location);
 			}
-			System.out.println("Done");
 		}
-		// viewStyle.apply(view);
+		viewStyle.apply(view);
 	}
 
 	private Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {
@@ -189,9 +181,6 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		createColumnIfNeeded(nodeRow.getTable(), Y_OFFSET_ATTR, Double.class);
 		nodeRow.set(X_OFFSET_ATTR, new Double(offset.getWidth()));
 		nodeRow.set(Y_OFFSET_ATTR, new Double(offset.getHeight()));
-		System.out.println("Location for "+node+" is "+
-		                   nodeRow.get(X_OFFSET_ATTR, Double.class)+","+
-		                   nodeRow.get(Y_OFFSET_ATTR, Double.class));
 	}
 
 	private void updateGroupLocation(CyNetwork network, CyNode node, Dimension offset) {
@@ -200,18 +189,12 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		createColumnIfNeeded(nodeRow.getTable(), Y_LOCATION_ATTR, Double.class);
 		nodeRow.set(X_LOCATION_ATTR, new Double(offset.getWidth()));
 		nodeRow.set(Y_LOCATION_ATTR, new Double(offset.getHeight()));
-		System.out.println("Location for "+node+" is "+
-		                   nodeRow.get(X_LOCATION_ATTR, Double.class)+","+
-		                   nodeRow.get(Y_LOCATION_ATTR, Double.class));
 	}
 
 	private void moveNode(CyNetworkView view, CyNode node, Dimension location) {
 		View<CyNode>nView = view.getNodeView(node);
 		nView.setVisualProperty(xLoc, location.getWidth());
 		nView.setVisualProperty(yLoc, location.getHeight());
-		System.out.println("Moving node "+node+" to "+
-		                   location.getWidth()+","+
-		                   location.getHeight());
 	}
 
 	private void createColumnIfNeeded(CyTable table, String name, Class type) {
