@@ -84,9 +84,6 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 
 		super(style, mapping, attr, appManager, vmm);
 
-		if (colorEditor == null)
-			throw new NullPointerException("Color Value Editor is missing.");
-
 		this.colorEditor = colorEditor;
 		this.appManager = appManager;
 
@@ -113,21 +110,19 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 		}
 	}
 
-	// public ImageIcon getLegend(final int width, final int height) {
-	// final CyGradientTrackRenderer rend = (CyGradientTrackRenderer) slider
-	// .getTrackRenderer();
-	// rend.getRendererComponent(slider);
-	//
-	// return rend.getLegend(width, height);
-	// }
-	//
-	// public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
-	// final CyGradientTrackRenderer rend = (CyGradientTrackRenderer) slider
-	// .getTrackRenderer();
-	// rend.getRendererComponent(slider);
-	//
-	// return rend.getTrackGraphicIcon(iconWidth, iconHeight);
-	// }
+	public ImageIcon getLegend(final int width, final int height) {
+		final CyGradientTrackRenderer rend = (CyGradientTrackRenderer) slider.getTrackRenderer();
+		rend.getRendererComponent(slider);
+
+		return rend.getLegend(width, height);
+	}
+
+//	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
+//		final CyGradientTrackRenderer rend = (CyGradientTrackRenderer) slider.getTrackRenderer();
+//		rend.getRendererComponent(slider);
+//
+//		return rend.getTrackGraphicIcon(iconWidth, iconHeight);
+//	}
 
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {

@@ -328,9 +328,9 @@ public class CyGradientTrackRenderer extends JComponent implements
 //	}
 //
 //
-//	public ImageIcon getLegend(int iconWidth, int iconHeight) {
-//		return drawIcon(iconWidth, iconHeight, true);
-//	}
+	public ImageIcon getLegend(int iconWidth, int iconHeight) {
+		return drawIcon(iconWidth, iconHeight, true);
+	}
 
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
 		if (slider == null)

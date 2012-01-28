@@ -16,11 +16,17 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.legend.ContinuousMappingLegendPanel;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 
 /**
@@ -30,25 +36,27 @@ import org.cytoscape.view.vizmap.VisualStyle;
 //TODO: not working! Should create utility class to generate legend from given mapping.
 
 public class LegendDialog extends JDialog {
+	
 	private final static long serialVersionUID = 1202339876783665L;
 	
-	private VisualStyle visualStyle;
+	private final VisualStyle visualStyle;
+	private final CyApplicationManager appManager;
+	private final VisualMappingManager vmm;
+	
 	private JPanel jPanel1;
 	private JButton jButton1;
 	private JButton jButton2;
 	private JScrollPane jScrollPane1;
 
-	/**
-	 * Creates a new LegendDialog object.
-	 *
-	 * @param parent  DOCUMENT ME!
-	 * @param vs  DOCUMENT ME!
-	 */
-	public LegendDialog(final VisualStyle vs) {
+	
+	public LegendDialog(final VisualStyle vs, final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		super();
 		this.setModal(true);
 		
 		visualStyle = vs;
+		this.appManager = appManager;
+		this.vmm = vmm;
+		
 		initComponents();
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}
@@ -58,46 +66,40 @@ public class LegendDialog extends JDialog {
 		setVisible(true);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param visualStyle DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	
 	private JPanel generateLegendPanel(final VisualStyle visualStyle) {
+		// Setup Main Panel
 		final JPanel legend = new JPanel();
-
-		Collection<VisualMappingFunction<?, ?>> mappings = visualStyle.getAllVisualMappingFunctions();
-
-		/*
-		 * Set layout
-		 */
 		legend.setLayout(new BoxLayout(legend, BoxLayout.Y_AXIS));
 		legend.setBackground(Color.white);
 
-		legend.setBorder(new TitledBorder(new LineBorder(Color.DARK_GRAY, 2),
-		                                  "Visual Legend for " + visualStyle.getTitle(),
-		                                  TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.CENTER,
-		                                  new Font("SansSerif", Font.BOLD, 16), Color.DARK_GRAY));
+		final Collection<VisualMappingFunction<?, ?>> mappings = visualStyle.getAllVisualMappingFunctions();
 
-//		for (VisualMappingFunction<?, ?> map: mappings) {
-//
-//			
-//			JPanel mleg = map.getLegend();
-//
-//			// Add passthrough mappings to the top since they don't
-//			// display anything besides the title.
-//			if (om instanceof PassthroughMappingCalculator)
-//				legend.add(mleg, 0);
-//			else
-//				legend.add(mleg);
-//
-//			// Set padding
-//			mleg.setBorder(new EmptyBorder(15, 30, 15, 30));
-//		}
-//
-//
+		legend.setBorder(new TitledBorder(new LineBorder(Color.DARK_GRAY, 2), "Visual Legend for "
+				+ visualStyle.getTitle(), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.CENTER, new Font(
+				"SansSerif", Font.BOLD, 16), Color.DARK_GRAY));
+
+		for (VisualMappingFunction<?, ?> map: mappings) {
+			final JPanel mappingLenegd;
+			
+			if(map instanceof ContinuousMapping) {
+				mappingLenegd = new ContinuousMappingLegendPanel(visualStyle, (ContinuousMapping) map, appManager.getCurrentNetwork().getDefaultNodeTable(), appManager, vmm);
+			} else {
+				mappingLenegd = new JPanel();
+			}
+
+			// Add passthrough mappings to the top since they don't
+			// display anything besides the title.
+			if (map instanceof PassthroughMapping)
+				legend.add(mappingLenegd, 0);
+			else
+				legend.add(mappingLenegd);
+
+			// Set padding
+			mappingLenegd.setBorder(new EmptyBorder(15, 30, 15, 30));
+		}
+
+
 //		for (Calculator calc : edgeCalcs) {
 //			om = calc.getMapping(0);
 //
