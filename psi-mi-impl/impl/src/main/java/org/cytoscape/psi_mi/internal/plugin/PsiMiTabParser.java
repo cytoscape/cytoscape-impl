@@ -32,6 +32,7 @@ public class PsiMiTabParser {
 
 	// Separator for multiple entries.
 	private static final String SEPARATOR = "\\|";
+	private static final String SUBSEPARATOR = ":";
 	private static final String ATTR_PREFIX = "PSI-MI-25.";
 
 	private static final int COLUMN_COUNT = 15;
@@ -132,6 +133,8 @@ public class PsiMiTabParser {
 				continue;
 
 			try {
+
+				//aaa:bbb:ccc|aa:bb:cc|a:b:c<tab>
 				entry = line.split(TAB);
 
 				// Validate entry list.
@@ -140,8 +143,8 @@ public class PsiMiTabParser {
 
 				sourceID = entry[0].split(SEPARATOR);
 				targetID = entry[1].split(SEPARATOR);
-				final String sourceRawID = sourceID[0].split(":")[1];
-				final String targetRawID = targetID[0].split(":")[1];
+				final String sourceRawID = sourceID[0].split(SUBSEPARATOR)[1];
+				final String targetRawID = targetID[0].split(SUBSEPARATOR)[1];
 
 				CyNode source = nodeMap.get(sourceRawID);
 				if (source == null) {
@@ -158,9 +161,8 @@ public class PsiMiTabParser {
 				network.getRow(target).set(CyTableEntry.NAME, targetRawID);
 
 				// Set type if not protein
-				if (sourceID[0].contains(CHEBI)) {
+				if (sourceID[0].contains(CHEBI)) 
 					network.getRow(source).set(INTERACTOR_TYPE, COMPOUND);
-				}
 				if (targetID[0].contains(CHEBI))
 					network.getRow(target).set(INTERACTOR_TYPE, COMPOUND);
 
@@ -216,7 +218,7 @@ public class PsiMiTabParser {
 	}
 
 	private void setTaxID(CyRow row, String value) {
-		String[] buf = value.split(":", 2);
+		String[] buf = value.split(SUBSEPARATOR, 2);
 		String attrName;
 		String taxonName;
 		if (buf != null && buf.length == 2) {
@@ -243,7 +245,7 @@ public class PsiMiTabParser {
 		String[] temp;
 
 		for (String val : pubID) {
-			temp = val.split(":", 2);
+			temp = val.split(SUBSEPARATOR, 2);
 			if (temp == null || temp.length < 2)
 				continue;
 
@@ -263,7 +265,7 @@ public class PsiMiTabParser {
 		String value;
 
 		for (String val : entry) {
-			temp = val.split(":", 2);
+			temp = val.split(SUBSEPARATOR, 2);
 			if (temp == null || temp.length < 2)
 				continue;
 
@@ -294,7 +296,7 @@ public class PsiMiTabParser {
 		String scoreType;
 
 		for (String val : entry) {
-			final String[] parts = val.split(":");
+			final String[] parts = val.split(SUBSEPARATOR);
 			if (parts == null || parts.length != 2)
 				continue;
 
