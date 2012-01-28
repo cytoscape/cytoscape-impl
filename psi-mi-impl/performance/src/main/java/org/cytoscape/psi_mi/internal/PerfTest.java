@@ -63,7 +63,8 @@ public class PerfTest {
 
 	private void testPsiMiTabReader() throws Exception {
 		long start = System.currentTimeMillis();
-		final CyNetworkReader reader = createReader("BIOGRID-ORGANISM-Saccharomyces_cerevisiae-3.1.83.mitab");
+		//final CyNetworkReader reader = createReader("BIOGRID-ORGANISM-Saccharomyces_cerevisiae-3.1.83.mitab");
+		final CyNetworkReader reader = createReader("BIOGRID-ORGANISM-Schizosaccharomyces_pombe-3.1.83.mitab");
 		reader.run(taskMonitor);
 		CyNetwork[] networks = reader.getNetworks();
 		long end = System.currentTimeMillis();
