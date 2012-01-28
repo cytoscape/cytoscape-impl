@@ -55,7 +55,7 @@ public class PerfTest {
 
 		Properties properties = new Properties();
 		properties.setProperty("viewThreshold", "1000000");
-		props = new SimpleCyProperty("Test", properties, SavePolicy.DO_NOT_SAVE);
+		props = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
 
 		networkFactory = new NetworkTestSupport().getNetworkFactory();
 		networkViewFactory = new NetworkViewTestSupport().getNetworkViewFactory();
