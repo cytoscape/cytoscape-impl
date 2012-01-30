@@ -16,7 +16,7 @@ import org.cytoscape.model.CyNode;
 
 public class FilterUtil {
 	
-	public static final String FILTER_APP_NAME = "FilterApp";
+	public static final String FILTER_APP_NAME = "org.cytoscape.filter";
 	public static final String DEFAULT_FILE_NAME = "default_filters.props";
 	public static final String SESSION_FILE_NAME = "session_filters.props";
 	public static final String DYNAMIC_FILTER_THRESHOLD = "dynamicFilterThreshold";
@@ -24,8 +24,6 @@ public class FilterUtil {
 	
 	// do selection on given network
 	public static void doSelection(CompositeFilter pFilter, CyApplicationManager applicationManager) {
-		//System.out.println("Entering FilterUtil.doSelection() ...");
-		
 //		// TODO: What do we do about CyInit*?
 //		CyInitParams init = CytoscapeInit.getCyInitParams();
 //
