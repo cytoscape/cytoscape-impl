@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink"
+  elementFormDefault="qualified">
+  <!-- get access to the xlink: attribute groups for xlink:type (simple) -->
+  <xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="xlinks-2001.xsd"/>
+  <xs:element name="cysession">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sessionNote"/>
+        <xs:element ref="sessionState"/>
+        <xs:element ref="networkTree"/>
+      </xs:sequence>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+      <xs:attribute name="documentVersion" use="optional" default="3.0" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="sessionNote" type="xs:string"/>
+  <xs:element name="sessionState">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="plugins"/>
+        <xs:element minOccurs="0" ref="desktop"/>
+        <xs:element minOccurs="0" ref="server"/>
+        <xs:element ref="cytopanels"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="plugins">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="plugin"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="plugin">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+      <xs:attribute name="stateLocation" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="server">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="ontologyServer"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="ontologyServer">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ontology"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ontology">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute ref="xlink:href" use="required"/>
+      <xs:attribute name="ontologyType" use="optional" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="desktop">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="desktopSize"/>
+        <xs:element minOccurs="0" ref="networkFrames"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="desktopSize">
+    <xs:complexType>
+      <xs:attribute name="width" use="required" type="xs:integer"/>
+      <xs:attribute name="height" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="networkFrames">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="networkFrame"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="networkFrame">
+    <xs:complexType>
+      <xs:attribute name="frameID" use="required" type="xs:NCName"/>
+      <xs:attribute name="width" use="required" type="xs:integer"/>
+      <xs:attribute name="height" use="required" type="xs:integer"/>
+      <xs:attribute name="x" use="required" type="xs:integer"/>
+      <xs:attribute name="y" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="cytopanels">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="cytopanel"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="cytopanel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="panelState"/>
+        <xs:element ref="selectedPanel"/>
+        <xs:element ref="panels"/>
+      </xs:sequence>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="panelState" type="xs:NCName"/>
+  <xs:element name="selectedPanel" type="xs:NCName"/>
+  <xs:element name="panels">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="panel"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="panel">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="networkTree">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="network"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="network">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" ref="parent"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="child"/>
+        <xs:element minOccurs="0" ref="selectedNodes"/>
+        <xs:element minOccurs="0" ref="hiddenNodes"/>
+        <xs:element minOccurs="0" ref="selectedEdges"/>
+        <xs:element minOccurs="0" ref="hiddenEdges"/>
+        <xs:element minOccurs="0" ref="viewableNodes"/>
+      </xs:sequence>
+      <xs:attribute name="filename" use="required" type="xs:NCName"/>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+      <xs:attribute name="viewAvailable" use="optional" type="xs:boolean"/>
+      <xs:attribute name="visualStyle" use="optional" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="parent">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="child">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="selectedNodes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="node"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="hiddenNodes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="node"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="selectedEdges">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="edge"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="hiddenEdges">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="edge"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="viewableNodes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="node"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="node">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="edge">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+      <xs:attribute name="source" use="optional" type="xs:NCName"/>
+      <xs:attribute name="target" use="optional" type="xs:NCName"/>
+      <xs:attribute name="interaction" use="optional" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
