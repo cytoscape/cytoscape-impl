@@ -39,6 +39,29 @@
 					</instructions>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.7.4</version>
+				<executions>
+					<execution>
+						<id>sessionState</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+							<schemaIncludes>
+								<include>sessionState.xsd</include>
+							</schemaIncludes>
+							<generatePackage>org.cytoscape.internal.io</generatePackage>
+							<verbose>true</verbose>
+							<removeOldOutput>false</removeOldOutput>
+							<forceRegenerate>true</forceRegenerate>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

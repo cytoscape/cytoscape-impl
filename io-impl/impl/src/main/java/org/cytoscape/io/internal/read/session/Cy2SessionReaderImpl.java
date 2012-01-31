@@ -37,6 +37,7 @@ import static org.cytoscape.model.CyNetwork.SELECTED;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -59,6 +60,17 @@ import javax.xml.bind.JAXBException;
 
 import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReader;
 import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.session.model.Child;
+import org.cytoscape.io.internal.util.session.model.Cysession;
+import org.cytoscape.io.internal.util.session.model.Cytopanel;
+import org.cytoscape.io.internal.util.session.model.Cytopanels;
+import org.cytoscape.io.internal.util.session.model.Desktop;
+import org.cytoscape.io.internal.util.session.model.Edge;
+import org.cytoscape.io.internal.util.session.model.Network;
+import org.cytoscape.io.internal.util.session.model.NetworkFrame;
+import org.cytoscape.io.internal.util.session.model.NetworkFrames;
+import org.cytoscape.io.internal.util.session.model.Node;
+import org.cytoscape.io.internal.util.session.model.SessionState;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReader;
@@ -74,13 +86,6 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.session.Child;
-import org.cytoscape.property.session.Cysession;
-import org.cytoscape.property.session.Desktop;
-import org.cytoscape.property.session.Edge;
-import org.cytoscape.property.session.Network;
-import org.cytoscape.property.session.NetworkFrame;
-import org.cytoscape.property.session.Node;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
@@ -108,6 +113,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CyRootNetworkManager rootNetworkManager;
 
+	protected Cysession cysession;
 	private final Map<String, CyNetwork> networkLookup = new HashMap<String, CyNetwork>();
 	private final Map<String, CyNetworkView> networkViewLookup = new HashMap<String, CyNetworkView>();
 	private Map<String, String> xgmmlEntries;
@@ -367,6 +373,10 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 	private void extractProperties(InputStream is, String entryName) throws Exception {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
+		
+		if (reader == null)
+			return;
+		
 		reader.run(taskMonitor);
 		
 		final Properties props = (Properties) reader.getProperty();
@@ -401,6 +411,61 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		CyPropertyReader reader = propertyReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
 		cysession = (Cysession) reader.getProperty();
+		
+		if (cysession != null) {
+			// Convert the old cysession to core the required 3.0 core plugin files:
+			// Actually we just need to extract the "networkFrames" and "cytopanels" data from the Cysession object
+			// and write an XML file that will be parsed by swing-application.
+			StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
+			sb.append("<sessionState documentVersion=\"1.0\">\n");
+			sb.append("    <networkFrames>\n");
+			
+			if (cysession.getSessionState() != null && cysession.getSessionState().getDesktop() != null) {
+				NetworkFrames netFrames = cysession.getSessionState().getDesktop().getNetworkFrames();
+				
+				if (netFrames != null) {
+					for (NetworkFrame nf : netFrames.getNetworkFrame()) {
+						String id = nf.getFrameID();
+						// TODO: convert frame title to *old* view's SUID?
+						String x = nf.getX() != null ? nf.getX().toString() : "0";
+						String y = nf.getY() != null ? nf.getY().toString() : "0";
+						
+						sb.append("        <networkFrame frameID=\""+id+"\" x=\""+x+"\" y=\""+y+"\"/>\n");
+					}
+				}
+			}
+			
+			sb.append("    </networkFrames>\n");
+			sb.append("    <cytopanels>\n");
+			
+			SessionState sessionState = cysession.getSessionState();
+			
+			if (sessionState != null) {
+				Cytopanels cytopanels = sessionState.getCytopanels();
+				
+				if (cytopanels != null) {
+					List<Cytopanel> cytopanelsList = cytopanels.getCytopanel();
+					
+					for (Cytopanel cytopanel : cytopanelsList) {
+						String id = cytopanel.getId();
+						String state = cytopanel.getPanelState();
+						String selection = cytopanel.getSelectedPanel();
+						
+						sb.append("        <cytopanel id=\""+id+"\">\n");
+						sb.append("            <panelState>"+state+"</panelState>\n");
+						sb.append("            <selectedPanel>"+selection+"</selectedPanel>\n");
+						sb.append("        </cytopanel>\n");
+					}
+				}
+			}
+			
+			sb.append("    </cytopanels>\n");
+			sb.append("</sessionState>");
+			
+			// Extract it as an app file now:
+			ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+			extractPluginEntry(bais, cysession.getId() + "/" + PLUGINS_FOLDER + "org.cytoscape.swing-application/session_state.xml");
+		}
 	}
 
 	private void processNetworks() throws Exception {

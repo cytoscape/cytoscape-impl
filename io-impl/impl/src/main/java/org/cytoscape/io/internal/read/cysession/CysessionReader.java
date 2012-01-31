@@ -6,7 +6,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
 import org.cytoscape.io.internal.read.AbstractPropertyReader;
-import org.cytoscape.property.session.Cysession;
+import org.cytoscape.io.internal.util.session.model.Cysession;
 import org.cytoscape.work.TaskMonitor;
 
 public class CysessionReader extends AbstractPropertyReader {
@@ -18,7 +18,6 @@ public class CysessionReader extends AbstractPropertyReader {
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
-
 		tm.setProgress(0.0);
 		// No idea why, but ObjectFactory doesn't get picked up in the default
 		// Thread.currentThread().getContextClassLoader() classloader, whereas 

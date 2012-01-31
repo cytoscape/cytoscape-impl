@@ -66,6 +66,7 @@ import org.cytoscape.internal.actions.RecentSessionManager;
 import org.cytoscape.internal.actions.WelcomeScreenAction;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
+import org.cytoscape.internal.io.SessionStateIO;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
 import org.cytoscape.internal.layout.ui.SettingsAction;
 import org.cytoscape.internal.select.RowViewTracker;
@@ -222,8 +223,11 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
 		                                                         dialogTaskManagerServiceRef);
-		SessionShutdownHandler sessionShutdownHandler = new SessionShutdownHandler(cytoscapeDesktop,
-		                                                                           cyNetworkManagerServiceRef);
+		SessionStateIO sessStateIO = new SessionStateIO();
+		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
+														   cyNetworkManagerServiceRef,
+														   networkViewManager,
+														   sessStateIO);
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cytoscapePropertiesServiceRef);
 		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,
@@ -356,11 +360,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerAllServices(bc, rowsSetViewUpdater, new Properties());
 		
-		registerService(bc, sessionShutdownHandler, CyShutdownListener.class,
-		                new Properties());
+		registerAllServices(bc, sessionHandler, new Properties());
 		registerAllServices(bc, toolBarEnableUpdater, new Properties());
-		registerService(bc, configDirPropertyWriter, CyShutdownListener.class,
-		                new Properties());
+		registerService(bc, configDirPropertyWriter, CyShutdownListener.class, new Properties());
 		registerAllServices(bc, recentSessionManager, new Properties());
 
 		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);

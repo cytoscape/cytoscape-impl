@@ -208,7 +208,7 @@ public class CyActivator extends AbstractCyActivator {
 		CSVTableWriterFactory csvTableWriterFactory = new CSVTableWriterFactory(csvFilter,false,false);
 		CSVTableWriterFactory sessionTableWriterFactory = new CSVTableWriterFactory(sessionTableFilter,true,true);
 		VizmapWriterFactoryImpl vizmapWriterFactory = new VizmapWriterFactoryImpl(vizmapXMLFilter,visualStyleSerializer);
-		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter,xgmmlFilter,bookmarksFilter,cysessionFilter,propertiesFilter,sessionTableFilter,vizmapXMLFilter,networkViewWriterManager,cyRootNetworkFactoryServiceRef,propertyWriterManager,tableWriterManager,vizmapWriterManager);
+		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter,xgmmlFilter,bookmarksFilter,propertiesFilter,sessionTableFilter,vizmapXMLFilter,networkViewWriterManager,cyRootNetworkFactoryServiceRef,propertyWriterManager,tableWriterManager,vizmapWriterManager);
 		RecentlyOpenedTrackerImpl recentlyOpenedTracker = new RecentlyOpenedTrackerImpl("tracker.recent.sessions",cyApplicationConfigurationServiceRef);
 		
 		registerService(bc,cyNetworkReaderManager,CyNetworkReaderManager.class, new Properties());

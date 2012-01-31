@@ -58,6 +58,31 @@ public class FilterWriter {
 
 	private static final Logger logger = LoggerFactory.getLogger(FilterWriter.class);
 
+	public void write(Collection<CompositeFilter> filters, File file) {
+		// Because one filter may depend on the other, CompositeFilters must
+		// be sorted in the order of depthLevel before save
+		CompositeFilter[] sortedFilters = getSortedCompositeFilter(filters);
+
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+
+			try {
+				writer.write("FilterVersion=0.2\n");
+
+				for (CompositeFilter cf : sortedFilters) {
+					writer.write(cf.toSerializedForm());
+					writer.newLine();
+				}
+			} finally {
+				if (writer != null) {
+					writer.close();
+				}
+			}
+		} catch (Exception ex) {
+			logger.error("Error writing filters file", ex);
+		}
+	}
+	
 	public void saveGlobalPropFile(final Set<CompositeFilter> filters, final File file) {
 		// Because one filter may depend on the other, CompositeFilters must
 		// be sorted in the order of depthLevel before save
@@ -190,31 +215,6 @@ public class FilterWriter {
 			Arrays.sort(depths);
 
 			return depths[depths.length - 1];
-		}
-	}
-
-	public void write(Collection<CompositeFilter> filters, File file) {
-		// Because one filter may depend on the other, CompositeFilters must
-		// be sorted in the order of depthLevel before save
-		CompositeFilter[] sortedFilters = getSortedCompositeFilter(filters);
-
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-
-			try {
-				writer.write("FilterVersion=0.2\n");
-
-				for (CompositeFilter cf : sortedFilters) {
-					writer.write(cf.toSerializedForm());
-					writer.newLine();
-				}
-			} finally {
-				if (writer != null) {
-					writer.close();
-				}
-			}
-		} catch (Exception ex) {
-			logger.error("Error writing filters file", ex);
 		}
 	}
 }

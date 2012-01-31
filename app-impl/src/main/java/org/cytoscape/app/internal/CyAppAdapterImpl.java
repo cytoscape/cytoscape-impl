@@ -37,7 +37,6 @@ import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.property.session.Cysession;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -130,7 +129,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private AbstractVisualLexicon abstractVisualLexicon;
 	private SimpleCyProperty basicCyProperty;
 	private BookmarksUtil bookmarksUtil;
-	private Cysession cysession;
 	private NetworkTaskFactory networkTaskFactory;
 	private NewEmptyNetworkViewFactory newEmptyNetworkViewFactory;
 	private Task task;

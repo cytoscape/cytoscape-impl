@@ -35,18 +35,15 @@
 
 package org.cytoscape.io.internal.write.cysession;
 
-import org.cytoscape.property.session.Cysession;
-
-//import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-
 import java.io.OutputStream;
+
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.cytoscape.io.internal.util.session.model.Cysession;
 import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 public class CysessionWriterImpl extends AbstractTask implements CyWriter {
 

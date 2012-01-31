@@ -36,8 +36,6 @@ package org.cytoscape.io.internal.write.session;
 
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_VERSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
@@ -84,7 +82,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.session.Cysession;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -130,7 +127,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private final CyRootNetworkManager rootNetworkManager;
 	private final CyFileFilter xgmmlFilter;
 	private final CyFileFilter bookmarksFilter;
-	private final CyFileFilter cysessionFilter;
 	private final CyFileFilter propertiesFilter;
 	private final CyFileFilter tableFilter;
 	private final CyFileFilter vizmapFilter;
@@ -145,7 +141,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	                         final VizmapWriterManager vizmapWriterMgr,
 	                         final CyFileFilter xgmmlFilter, 
 	                         final CyFileFilter bookmarksFilter,
-	                         final CyFileFilter cysessionFilter,
 	                         final CyFileFilter propertiesFilter,
 	                         final CyFileFilter tableFilter,
 	                         final CyFileFilter vizmapFilter) {
@@ -158,7 +153,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		this.vizmapWriterMgr = vizmapWriterMgr;
 		this.xgmmlFilter = xgmmlFilter;
 		this.bookmarksFilter = bookmarksFilter;
-		this.cysessionFilter = cysessionFilter;
 		this.propertiesFilter = propertiesFilter;
 		this.tableFilter = tableFilter;
 		this.vizmapFilter = vizmapFilter;
@@ -186,16 +180,13 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		zipVersion();
 		taskMonitor.setProgress(0.1);
 		zipNetworks();
-		taskMonitor.setProgress(0.2);
-		zipNetworkViews();
 		taskMonitor.setProgress(0.3);
+		zipNetworkViews();
+		taskMonitor.setProgress(0.4);
 		taskMonitor.setStatusMessage("Zip tables...");
 		zipTables();
-		taskMonitor.setProgress(0.4);
-		zipVirtualColumns();
 		taskMonitor.setProgress(0.5);
-		taskMonitor.setStatusMessage("Zip session info...");
-		zipCySession();
+		zipVirtualColumns();
 		taskMonitor.setProgress(0.6);
 		taskMonitor.setStatusMessage("Zip Vizmap...");
 		zipVizmap();
@@ -372,25 +363,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 			zos.closeEntry();
 			writer = null;
 		}
-	}
-
-	/**
-	 * Create cysession.xml file.
-	 *
-	 * @throws Exception
-	 */
-	private void zipCySession() throws Exception {
-		Cysession cysess = session.getCysession();
-		cysess.setId(cysessionDocId);
-		cysess.setDocumentVersion(CYSESSION_VERSION);
-		
-		zos.putNextEntry(new ZipEntry(sessionDir + CYSESSION_FILE) );
-
-		CyWriter cysessionWriter = propertyWriterMgr.getWriter(cysess, cysessionFilter, zos);
-		cysessionWriter.run(taskMonitor);
-
-		zos.closeEntry();
-		cysessionWriter = null;
 	}
 
 	/**

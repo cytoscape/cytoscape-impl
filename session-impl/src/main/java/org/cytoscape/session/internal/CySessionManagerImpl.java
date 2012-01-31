@@ -58,10 +58,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.session.Cysession;
-import org.cytoscape.property.session.Desktop;
-import org.cytoscape.property.session.NetworkFrame;
-import org.cytoscape.property.session.SessionState;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
@@ -128,7 +124,6 @@ public class CySessionManagerImpl implements CySessionManager {
 		SessionAboutToBeSavedEvent savingEvent = new SessionAboutToBeSavedEvent(this);
 		cyEventHelper.fireEvent(savingEvent);
 
-		CysessionFactory cysessFactory = new CysessionFactory(netMgr, nvMgr, vmMgr);
 		Set<CyNetwork> networks = netMgr.getNetworkSet();
 		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
@@ -145,9 +140,6 @@ public class CySessionManagerImpl implements CySessionManager {
 			}
 		}
 
-		// Cysession
-		Cysession cysess = cysessFactory.createCysession(savingEvent.getDesktop(), savingEvent.getCytopanels(), null);
-
 		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
 		Set<CyTable> tables = tblMgr.getAllTables(true);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
@@ -155,7 +147,7 @@ public class CySessionManagerImpl implements CySessionManager {
 		Set<CyProperty<?>> props = getAllProperties();
 		
 		// Build the session
-		CySession sess = new CySession.Builder().properties(props).cysession(cysess).appFileListMap(appMap)
+		CySession sess = new CySession.Builder().properties(props).appFileListMap(appMap)
 				.tables(metadata).networks(networks).networkViews(netViews).visualStyles(styles)
 				.viewVisualStyleMap(stylesMap).build();
 
@@ -248,10 +240,9 @@ public class CySessionManagerImpl implements CySessionManager {
 		if (emptySession) {
 			logger.debug("Creating empty session...");
 			Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-			Cysession cysess = new CysessionFactory(netMgr, nvMgr, vmMgr).createDefaultCysession();
 			Set<CyProperty<?>> props = getAllProperties();
 
-			sess = new CySession.Builder().properties(props).cysession(cysess).visualStyles(styles).build();
+			sess = new CySession.Builder().properties(props).visualStyles(styles).build();
 		} else {
 			logger.debug("Restoring the session...");
 			restoreProperties(sess);
@@ -348,6 +339,7 @@ public class CySessionManagerImpl implements CySessionManager {
 
 	private void restoreVisualStyles(final CySession sess) {
 		logger.debug("Restoring visual styles...");
+		// Register visual styles 
 		final Set<VisualStyle> styles = sess.getVisualStyles();
 		final Map<String, VisualStyle> stylesMap = new HashMap<String, VisualStyle>();
 
@@ -357,34 +349,20 @@ public class CySessionManagerImpl implements CySessionManager {
 				stylesMap.put(vs.getTitle(), vs);
 			}
 		}
+		
+		// Set visual styles to network views
+		final Map<CyNetworkView, String> viewStyleMap = sess.getViewVisualStyleMap();
+		
+		if (viewStyleMap != null) {
+			for (Entry<CyNetworkView, String> entry : viewStyleMap.entrySet()) {
+				final CyNetworkView netView = entry.getKey();
+				final String stName = entry.getValue();
+				final VisualStyle vs = stylesMap.get(stName);
 
-		final Cysession cysess = sess.getCysession();
-		final SessionState sessionState = cysess.getSessionState();
-
-		// Get network frames info
-		if (sessionState != null) {
-			final Desktop desktop = sessionState.getDesktop();
-			
-			if (desktop != null && desktop.getNetworkFrames() != null) {
-				final List<NetworkFrame> frames = desktop.getNetworkFrames().getNetworkFrame();
-				final Map<String, NetworkFrame> framesLookup = new HashMap<String, NetworkFrame>();
-	
-				for (NetworkFrame nf : frames)
-					framesLookup.put(nf.getFrameID(), nf);
-	
-				// Set visual styles to network views
-				final Map<CyNetworkView, String> netStyleMap = sess.getViewVisualStyleMap();
-	
-				for (Entry<CyNetworkView, String> entry : netStyleMap.entrySet()) {
-					final CyNetworkView netView = entry.getKey();
-					final String stName = entry.getValue();
-					final VisualStyle vs = stylesMap.get(stName);
-	
-					if (vs != null) {
-						vmMgr.setVisualStyle(vs, netView);
-						vs.apply(netView);
-						netView.updateView();
-					}
+				if (vs != null) {
+					vmMgr.setVisualStyle(vs, netView);
+					vs.apply(netView);
+					netView.updateView();
 				}
 			}
 		}
@@ -392,6 +370,15 @@ public class CySessionManagerImpl implements CySessionManager {
 
 	private void disposeCurrentSession(boolean removeVisualStyles) {
 		logger.debug("Disposing current session...");
+		
+		// Destroy network views
+		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
+
+		for (CyNetworkView nv : netViews) {
+			nvMgr.destroyNetworkView(nv);
+		}
+		
+		nvMgr.reset();
 		
 		// Destroy networks
 		final Set<CyNetwork> networks = netMgr.getNetworkSet();

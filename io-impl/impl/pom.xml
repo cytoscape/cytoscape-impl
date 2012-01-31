@@ -66,6 +66,22 @@
 							<forceRegenerate>false</forceRegenerate>
 						</configuration>
 					</execution>
+					<execution>
+						<id>session</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+							<schemaIncludes>
+								<include>cysession.xsd</include>
+							</schemaIncludes>
+							<generatePackage>org.cytoscape.io.internal.util.session.model</generatePackage>
+							<verbose>true</verbose>
+							<removeOldOutput>false</removeOldOutput>
+							<forceRegenerate>true</forceRegenerate>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>

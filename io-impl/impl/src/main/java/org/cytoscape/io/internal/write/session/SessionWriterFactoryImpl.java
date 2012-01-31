@@ -17,7 +17,6 @@ public class SessionWriterFactoryImpl implements CySessionWriterFactory {
 	private final CyFileFilter thisFilter;
 	private final CyFileFilter xgmmlFilter;
 	private final CyFileFilter bookmarksFilter;
-	private final CyFileFilter cysessionFilter;
 	private final CyFileFilter propertiesFilter;
 	private final CyFileFilter tableFilter;
 	private final CyFileFilter vizmapFilter;
@@ -35,7 +34,6 @@ public class SessionWriterFactoryImpl implements CySessionWriterFactory {
 	public SessionWriterFactoryImpl(final CyFileFilter thisFilter, 
 	                                final CyFileFilter xgmmlFilter, 
 	                                final CyFileFilter bookmarksFilter, 
-	                                final CyFileFilter cysessionFilter, 
 	                                final CyFileFilter propertiesFilter,
 	                                final CyFileFilter tableFilter,
 	                                final CyFileFilter vizmapFilter,
@@ -47,7 +45,6 @@ public class SessionWriterFactoryImpl implements CySessionWriterFactory {
 		this.thisFilter = thisFilter;
 		this.xgmmlFilter = xgmmlFilter;
 		this.bookmarksFilter = bookmarksFilter;
-		this.cysessionFilter = cysessionFilter;
 		this.propertiesFilter = propertiesFilter;
 		this.tableFilter = tableFilter;
 		this.vizmapFilter = vizmapFilter;
@@ -62,8 +59,7 @@ public class SessionWriterFactoryImpl implements CySessionWriterFactory {
 	public CyWriter getWriterTask() {
 		return new SessionWriterImpl(outputStream, session, networkViewWriterMgr, rootNetworkManager,
 		                             propertyWriterMgr, tableWriterMgr, vizmapWriterMgr, xgmmlFilter,
-		                             bookmarksFilter, cysessionFilter, propertiesFilter,
-		                             tableFilter, vizmapFilter);
+		                             bookmarksFilter, propertiesFilter, tableFilter, vizmapFilter);
 	}
 
 	@Override
