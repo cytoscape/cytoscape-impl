@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:element name="sessionState">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="networkFrames"/>
+        <xs:element ref="cytopanels"/>
+      </xs:sequence>
+      <xs:attribute name="documentVersion" use="optional" default="1.0" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="networkFrames">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="networkFrame"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="networkFrame">
+    <xs:complexType>
+      <xs:attribute name="frameID" use="required" type="xs:NCName"/>
+      <xs:attribute name="x" use="required" type="xs:integer"/>
+      <xs:attribute name="y" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="cytopanels">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="cytopanel"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="cytopanel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="panelState"/>
+        <xs:element ref="selectedPanel"/>
+      </xs:sequence>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="panelState" type="xs:NCName"/>
+  <xs:element name="selectedPanel" type="xs:NCName"/>
+  
+</xs:schema>
