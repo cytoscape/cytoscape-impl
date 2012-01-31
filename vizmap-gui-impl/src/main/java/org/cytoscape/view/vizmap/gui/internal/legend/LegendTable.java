@@ -16,26 +16,33 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellRenderer;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 
 public class LegendTable extends JPanel {
-	private VisualProperty<?> vp;
+
+	private final CyApplicationManager appManager;
+	private VisualProperty<Object> vp;
 	private JTable legendTable;
 
-	
-	public LegendTable(Object[][] data, VisualProperty vp) {
+	public LegendTable(final CyApplicationManager appManager, final Object[][] data, final VisualProperty<Object> vp) {
 		super();
+		this.appManager = appManager;
+		this.vp = vp;
+		
 		legendTable = new JTable(data.length, 2);
 		legendTable.setRowHeight(50);
 		legendTable.setDefaultRenderer(Object.class, (TableCellRenderer) new LegendCellRenderer());
 		this.vp = vp;
-		
+
 		setLayout(new BorderLayout());
 
 		Object value = null;
 
 		for (int i = 0; i < data.length; i++) {
-			value = getValue(data[i][0]);
+			value = getIcon(data[i][0]);
 
 			if (value != null) {
 				legendTable.getModel().setValueAt(value, i, 0);
@@ -47,28 +54,16 @@ public class LegendTable extends JPanel {
 		add(legendTable, SwingConstants.CENTER);
 	}
 
-	private Object getValue(final Object value) {
-//		final VisualPropertyIcon icon;
-//
-//		if (value == null) {
-//			return null;
-//		}
-//
-//		icon = (VisualPropertyIcon) vp.get.getIcon(value);
-//		icon.setLeftPadding(5);
-//
-//		return icon;
-		return null;
+	private Object getIcon(final Object value) {
+		if (value == null)
+			return null;
+		
+		RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
+		Icon icon = engine.createIcon(vp, value, 32, 32);
+		return icon;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param attrName DOCUMENT ME!
-	 * @param type DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+
 	public static JPanel getHeader(String attrName, VisualProperty<?> vp) {
 		final JPanel titles = new JPanel();
 		final JLabel[] labels = new JLabel[2];
@@ -96,15 +91,14 @@ public class LegendTable extends JPanel {
 	}
 
 	public class LegendCellRenderer implements TableCellRenderer {
-		public Component getTableCellRendererComponent(JTable table, Object value,
-		                                               boolean isSelected, boolean hasFocus,
-		                                               int row, int column) {
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+				boolean hasFocus, int row, int column) {
 			final JLabel cell = new JLabel();
 
 			if (value instanceof Icon) {
-//				VisualPropertyIcon icon = (VisualPropertyIcon) value;
-//				icon.setBottomPadding(0);
-//				cell.setIcon(icon);
+				Icon icon = (Icon) value;
+				// icon.setBottomPadding(0);
+				cell.setIcon(icon);
 
 				cell.setVerticalAlignment(SwingConstants.CENTER);
 				cell.setHorizontalAlignment(SwingConstants.CENTER);

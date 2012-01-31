@@ -30,6 +30,6 @@ public class C2CEditor extends AbstractContinuousMappingEditor<Number, Number> {
 		@SuppressWarnings("unchecked")
 		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) mapping.getVisualProperty().getTargetDataType();
 		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-		this.editorPanel = new C2CMappingEditor(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager, vmm);		
+		this.editorPanel = new C2CMappingEditorPanel(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager, vmm);		
 	}
 }

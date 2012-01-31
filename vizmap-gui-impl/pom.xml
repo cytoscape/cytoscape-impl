@@ -58,7 +58,9 @@
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
-						<Import-Package>*, org.cytoscape.view.vizmap.gui, org.cytoscape.view.vizmap.gui.*, org.cytoscape.view.vizmap.gui.editor</Import-Package>
+						<Import-Package>*, org.cytoscape.view.vizmap.gui,
+							org.cytoscape.view.vizmap.gui.*,
+							org.cytoscape.view.vizmap.gui.editor</Import-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.internal.CyActivator</Bundle-Activator>
 					</instructions>
@@ -121,5 +123,36 @@
 			<version>1.6.1</version>
 		</dependency>
 
+		<!-- freehep fopr exporting Visual Legend -->
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>freehep-graphicsio</artifactId>
+			<version>2.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>freehep-graphicsio-svg</artifactId>
+			<version>2.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>freehep-graphics2d</artifactId>
+			<version>2.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>freehep-graphicsio-ps</artifactId>
+			<version>2.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>freehep-export</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>freehep-util</artifactId>
+			<version>2.0.2</version>
+		</dependency>
 	</dependencies>
 </project>

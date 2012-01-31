@@ -59,7 +59,7 @@ import org.jdesktop.swingx.multislider.TrackRenderer;
  * </p>
  * 
  */
-public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorPanel<Double, V> {
+public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEditorPanel<Double, V> {
 
 	private final static long serialVersionUID = 1213748836613718L;
 
@@ -73,7 +73,7 @@ public class C2CMappingEditor<V extends Number> extends ContinuousMappingEditorP
 	private SpinnerNumberModel propertySpinnerModel;
 
 
-	public C2CMappingEditor(final VisualStyle style, final ContinuousMapping<Double, V> mapping, final CyTable attr,
+	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<Double, V> mapping, final CyTable attr,
 			final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		super(style, mapping, attr, appManager, vmm);
 		abovePanel.setVisible(false);

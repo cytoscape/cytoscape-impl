@@ -28,43 +28,43 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2CMappingEditorPanel;
+import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2DMappingEditorPanel;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.GradientEditorPanel;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 
 public class ContinuousMappingLegendPanel extends JPanel {
-	
+
 	private static final Font TITLE_FONT2 = new Font("SansSerif", Font.BOLD, 18);
 	private static final Color TITLE_COLOR = new Color(10, 200, 255);
 	private static final Border BORDER = new MatteBorder(0, 6, 3, 0, Color.DARK_GRAY);
-	
+
 	private List points;
 	private VisualProperty<?> vp;
-	
+
 	private JLabel legend = null;
-	
+
 	final VisualStyle style;
 	final ContinuousMapping<?, ?> mapping;
 	final CyTable table;
 	final CyApplicationManager appManager;
 	final VisualMappingManager vmm;
-	
-	
+
 	public ContinuousMappingLegendPanel(final VisualStyle style, final ContinuousMapping<?, ?> mapping,
-			final CyTable table, final CyApplicationManager appManager,
-			final VisualMappingManager vmm) {
+			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		super();
-		
+
 		this.style = style;
 		this.mapping = mapping;
 		this.table = table;
 		this.appManager = appManager;
 		this.vmm = vmm;
 		this.vp = mapping.getVisualProperty();
-		
-//		this.points = points;
-//		this.type = vpt;
-		
+
+		// this.points = points;
+		// this.type = vpt;
+
 		// Resize it when window size changed.
 		this.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
@@ -98,22 +98,28 @@ public class ContinuousMappingLegendPanel extends JPanel {
 		if (getParent() == null) {
 			trackW = 600;
 		} else {
-			trackW = ((Number)(this.getParent().getParent().getParent().getWidth()*0.82)).intValue();
-			if(trackW < 200) {
+			trackW = ((Number) (this.getParent().getParent().getParent().getWidth() * 0.82)).intValue();
+			if (trackW < 200) {
 				trackW = 200;
 			}
 		}
 
 		if (Paint.class.isAssignableFrom(vp.getRange().getType())) {
-			System.out.println("T============== his is Paint");
-			final GradientEditorPanel gPanel = new GradientEditorPanel(style, (ContinuousMapping<Double, Color>) mapping, table, appManager, null, vmm);
+			final GradientEditorPanel gPanel = new GradientEditorPanel(style,
+					(ContinuousMapping<Double, Color>) mapping, table, appManager, null, vmm);
 			legend = new JLabel(gPanel.getLegend(trackW, 100));
-		} else if (vp.getRange().getType() == Number.class) {
-//			legend = new JLabel(C2CMappingEditor.getLegend(trackW, 150, type));
-			legend = new JLabel();
+		} else if (Number.class.isAssignableFrom(vp.getRange().getType())) {
+			final C2CMappingEditorPanel numberPanel = new C2CMappingEditorPanel(style,
+					mapping, table, appManager, vmm);
+			legend = new JLabel(numberPanel.getLegend(trackW, 150));
 		} else {
-//			legend = new JLabel(C2DMappingEditor.getLegend(trackW, 150, type));
-			legend = new JLabel();
+			try {
+				C2DMappingEditorPanel discretePanel = new C2DMappingEditorPanel(style, mapping, table, appManager, vmm,
+						null);
+				legend = new JLabel(discretePanel.getLegend(trackW, 150));
+			} catch (Exception ex) {
+				legend = new JLabel("Legend Generator not available");
+			}
 		}
 
 		System.out.println(vp.getDisplayName() + " Got Legend: " + legend.toString());
@@ -193,10 +199,8 @@ public class ContinuousMappingLegendPanel extends JPanel {
 			}
 
 			if (next != null) {
-				GradientPaint gp = new GradientPaint(0, ((i + 1) * height),
-				                                     (Color) curr.getRange().equalValue, 0,
-				                                     ((i + 2) * height),
-				                                     (Color) next.getRange().equalValue);
+				GradientPaint gp = new GradientPaint(0, ((i + 1) * height), (Color) curr.getRange().equalValue, 0,
+						((i + 2) * height), (Color) next.getRange().equalValue);
 				g2.setPaint(gp);
 				rect.setBounds(0, ((i + 1) * height), width, height);
 				g2.fill(rect);
@@ -210,30 +214,30 @@ public class ContinuousMappingLegendPanel extends JPanel {
 		return new ImageIcon(bi);
 	}
 
-	private JPanel getObjectPanel(VisualProperty<?> vp) {
-		Object[][] data = new Object[points.size() + 2][2];
-
-		ContinuousMappingPoint curr = null;
-
-		for (int i = 0; i < points.size(); i++) {
-			curr = (ContinuousMappingPoint) points.get(i);
-
-			if (i == 0) {
-				data[i][0] = curr.getRange().lesserValue;
-				data[i][1] = "< " + curr.getValue().toString();
-			}
-
-			data[i + 1][0] = curr.getRange().equalValue;
-			data[i + 1][1] = "= " + curr.getValue().toString();
-
-			if (i == (points.size() - 1)) {
-				data[i + 2][0] = curr.getRange().greaterValue;
-				data[i + 2][1] = "> " + curr.getValue().toString();
-			}
-		}
-
-		final LegendTable lt = new LegendTable(data, vp);
-
-		return lt;
-	}
+	// private JPanel getObjectPanel(VisualProperty<?> vp) {
+	// Object[][] data = new Object[points.size() + 2][2];
+	//
+	// ContinuousMappingPoint curr = null;
+	//
+	// for (int i = 0; i < points.size(); i++) {
+	// curr = (ContinuousMappingPoint) points.get(i);
+	//
+	// if (i == 0) {
+	// data[i][0] = curr.getRange().lesserValue;
+	// data[i][1] = "< " + curr.getValue().toString();
+	// }
+	//
+	// data[i + 1][0] = curr.getRange().equalValue;
+	// data[i + 1][1] = "= " + curr.getValue().toString();
+	//
+	// if (i == (points.size() - 1)) {
+	// data[i + 2][0] = curr.getRange().greaterValue;
+	// data[i + 2][1] = "> " + curr.getValue().toString();
+	// }
+	// }
+	//
+	// final LegendTable lt = new LegendTable(data, vp);
+	//
+	// return lt;
+	// }
 }

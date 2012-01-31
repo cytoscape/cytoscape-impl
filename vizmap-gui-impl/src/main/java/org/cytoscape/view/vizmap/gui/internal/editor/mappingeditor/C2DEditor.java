@@ -35,7 +35,7 @@ public class C2DEditor<V> extends AbstractContinuousMappingEditor<Number, V> {
 		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) mapping.getVisualProperty()
 				.getTargetDataType();
 		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-		this.editorPanel = new C2DMappingEditor(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager,
+		this.editorPanel = new C2DMappingEditorPanel(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager,
 				vmm, editorManager);
 	}
 }
