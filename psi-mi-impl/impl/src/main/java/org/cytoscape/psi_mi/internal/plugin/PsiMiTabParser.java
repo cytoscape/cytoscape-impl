@@ -41,24 +41,29 @@ public class PsiMiTabParser {
 	private final static Pattern miNamePttr = Pattern.compile("\\(.+\\)");
 
 	private static final String TAB = "\t";
-	private static final String INTERACTION = "interaction";
 
-	// Attr Names
-	private static final String DETECTION_METHOD = ATTR_PREFIX + "interaction detection method";
+	// Node Attr Names
+	private static final String INTERACTOR_TYPE = ATTR_PREFIX + "interactor type";
+	private static final String ALIASES = ATTR_PREFIX + "aliases"; 
+	private static final String TAXONIDS = ATTR_PREFIX + "taxon ID"; 
+	private static final String TAXONDBS = ATTR_PREFIX + "taxon DB"; 
+
+	// Edge Attr Names
+	private static final String INTERACTION = CyEdge.INTERACTION; // should already exist
+	private static final String DETECTION_METHOD_ID = ATTR_PREFIX + "detection method ID";
+	private static final String DETECTION_METHOD = ATTR_PREFIX + "detection method";
 	private static final String INTERACTION_TYPE = ATTR_PREFIX + "interaction type";
-	private static final String SOURCE_DB = ATTR_PREFIX + "source database";
-	private static final String INTERACTION_ID = ATTR_PREFIX + "Interaction ID";
-	private static final String EDGE_SCORE = ATTR_PREFIX + "confidence score";
+	private static final String INTERACTION_TYPE_ID = ATTR_PREFIX + "interaction type ID";
+	private static final String SOURCE_DB = ATTR_PREFIX + "source DB";
+	private static final String EDGE_SCORE = ATTR_PREFIX + "edge score";
+	private static final String AUTHORS = ATTR_PREFIX + "authors"; 
+	private static final String PUBLICATION_ID = ATTR_PREFIX + "publication ID"; 
+	private static final String PUBLICATION_DB = ATTR_PREFIX + "publication DB"; 
 
 	// Stable IDs which maybe used for mapping later
-	private static final String UNIPROT = "uniprotkb";
-	private static final String ENTREZ_GENE = "entrezgene/locuslink";
-	private static final String ENTREZ_GENE_SYN = "entrez gene/locuslink";
-
 	private static final String CHEBI = "chebi";
-
-	private static final String INTERACTOR_TYPE = ATTR_PREFIX + "interactor type";
 	private static final String COMPOUND = "compound";
+
 
 	private Matcher matcher;
 
@@ -75,8 +80,10 @@ public class PsiMiTabParser {
 	}
 
 	public CyNetwork parse(final TaskMonitor taskMonitor) throws IOException {
-		
+
 		long start = System.currentTimeMillis();
+
+		taskMonitor.setProgress(-1.0);
 		
 		this.nodeMap = new HashMap<String, CyNode>();
 
@@ -94,30 +101,12 @@ public class PsiMiTabParser {
 
 		final CyNetwork network = cyNetworkFactory.createNetwork();
 
-		final CyTable nodeTable = network.getDefaultNodeTable();
-		if (nodeTable.getColumn(INTERACTOR_TYPE) == null)
-			nodeTable.createColumn(INTERACTOR_TYPE, String.class, false);
-		if (nodeTable.getColumn(INTERACTOR_TYPE + ".name") == null)
-			nodeTable.createColumn(INTERACTOR_TYPE + ".name", String.class, false);
-
-		final CyTable edgeTable = network.getDefaultEdgeTable();
-		if (edgeTable.getColumn(INTERACTION_ID) == null)
-			edgeTable.createColumn(INTERACTION_ID, String.class, false);
-		if (edgeTable.getColumn(INTERACTION_TYPE) == null) {
-			edgeTable.createListColumn(INTERACTION_TYPE, String.class, false);
-			edgeTable.createListColumn(INTERACTION_TYPE + ".name", String.class, false);
-		}
-		if (edgeTable.getColumn(DETECTION_METHOD) == null) {
-			edgeTable.createListColumn(DETECTION_METHOD, String.class, false);
-			edgeTable.createListColumn(DETECTION_METHOD + ".name", String.class, false);
-		}
-		if (edgeTable.getColumn(SOURCE_DB) == null)
-			edgeTable.createListColumn(SOURCE_DB, String.class, false);
-		if (edgeTable.getColumn(EDGE_SCORE) == null)
-			edgeTable.createListColumn(EDGE_SCORE, Double.class, false);
+		initColumns(network);
 
 		String line;
 		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream), BUFFER_SIZE);
+
+		MITABLine mline = new MITABLine();
 
 		long interactionCount = 0;
 		while ((line = br.readLine()) != null) {
@@ -132,19 +121,13 @@ public class PsiMiTabParser {
 				continue;
 
 			try {
+				
+				mline.readLine(line);
 
-				//aaa:bbb:ccc|aa:bb:cc|a:b:c<tab>
-				entry = line.split(TAB);
+				final String sourceRawID = mline.sourceRawID; 
+				final String targetRawID = mline.targetRawID; 
 
-				// Validate entry list.
-				if (entry == null || entry.length < COLUMN_COUNT)
-					continue;
-
-				sourceID = entry[0].split(SEPARATOR);
-				targetID = entry[1].split(SEPARATOR);
-				final String sourceRawID = sourceID[0].split(SUBSEPARATOR)[1];
-				final String targetRawID = targetID[0].split(SUBSEPARATOR)[1];
-
+				// create nodes
 				CyNode source = nodeMap.get(sourceRawID);
 				if (source == null) {
 					source = network.addNode();
@@ -156,55 +139,48 @@ public class PsiMiTabParser {
 					nodeMap.put(targetRawID, target);
 				}
 
-				network.getRow(source).set(CyTableEntry.NAME, sourceRawID);
-				network.getRow(target).set(CyTableEntry.NAME, targetRawID);
+				CyRow sourceRow = network.getRow(source);
+				CyRow targetRow = network.getRow(target);
 
-				// Set type if not protein
-				if (sourceID[0].contains(CHEBI)) 
-					network.getRow(source).set(INTERACTOR_TYPE, COMPOUND);
-				if (targetID[0].contains(CHEBI))
-					network.getRow(target).set(INTERACTOR_TYPE, COMPOUND);
+				// set various node attrs
+				sourceRow.set(CyTableEntry.NAME, sourceRawID);
+				targetRow.set(CyTableEntry.NAME, targetRawID);
 
-				// Aliases
-				setAliases(network.getRow(source), entry[0].split(SEPARATOR));
-				setAliases(network.getRow(target), entry[1].split(SEPARATOR));
-				setAliases(network.getRow(source), entry[2].split(SEPARATOR));
-				setAliases(network.getRow(target), entry[3].split(SEPARATOR));
-				setAliases(network.getRow(source), entry[4].split(SEPARATOR));
-				setAliases(network.getRow(target), entry[5].split(SEPARATOR));
+				setInteractorType(sourceRow,mline.srcAliases);
+				setInteractorType(targetRow,mline.tgtAliases);
 
-				// Tax ID (pick first one only)
-				setTaxID(network.getRow(source), entry[9].split(SEPARATOR)[0]);
-				setTaxID(network.getRow(target), entry[10].split(SEPARATOR)[0]);
+				setAliases(sourceRow, mline.srcAliases, mline.srcDBs);
+				setAliases(targetRow, mline.tgtAliases, mline.tgtDBs);
 
-				sourceDB = entry[12].split(SEPARATOR);
-				interactionID = entry[13].split(SEPARATOR);
+				setTaxID(sourceRow, mline.srcTaxonIDs, mline.srcTaxonDBs);
+				setTaxID(targetRow, mline.tgtTaxonIDs, mline.tgtTaxonDBs);
 
-				edgeScore = entry[14].split(SEPARATOR);
-
-				detectionMethods = entry[6].split(SEPARATOR);
-				interactionType = entry[11].split(SEPARATOR);
-
+				// create edge
 				final CyEdge e = network.addEdge(source, target, true);
-				network.getRow(e).set(INTERACTION, interactionID[0]);
+				CyRow edgeRow = network.getRow(e);
+			
+				// set various edge attrs
+				String interactionId = "unknown";
+				if ( mline.interactionIDs.size() > 0 ) 
+					interactionId = mline.interactionIDs.get(0);
 
-				setEdgeListAttribute(network.getRow(e), interactionType, INTERACTION_TYPE);
-				setEdgeListAttribute(network.getRow(e), detectionMethods, DETECTION_METHOD);
-				setEdgeListAttribute(network.getRow(e), sourceDB, SOURCE_DB);
+				edgeRow.set(INTERACTION, interactionId);
+				edgeRow.set(CyTableEntry.NAME, sourceRawID + " (" + interactionId + ") " + targetRawID);
 
-				// Map scores
-				setEdgeScoreListAttribute(network.getRow(e), edgeScore, EDGE_SCORE);
+				setTypedEdgeListAttribute(edgeRow, mline.interactionTypes, INTERACTION_TYPE_ID, INTERACTION_TYPE);
+				setTypedEdgeListAttribute(edgeRow, mline.detectionMethods, DETECTION_METHOD_ID, DETECTION_METHOD);
+				setEdgeListAttribute(edgeRow, mline.sourceDBs, SOURCE_DB);
+				setEdgeListAttribute(edgeRow, mline.edgeScoreStrings, EDGE_SCORE);
 
-				network.getRow(e).set(INTERACTION_ID, interactionID[0]);
-
-				setPublication(network.getRow(e), entry[8].split(SEPARATOR), entry[7].split(SEPARATOR));
+				setPublication(edgeRow, mline.publicationValues, mline.publicationDBs);
+				setAuthors(edgeRow, mline.authors);
 				
-//				interactionCount++;
-//				taskMonitor.setStatusMessage(interactionCount + " interactions loaded.");
 			} catch (Exception ex) {
 				logger.warn("Could not parse this line: " + line, ex);
 				continue;
 			}
+			if ( ++interactionCount % 100 == 0 )
+				taskMonitor.setStatusMessage("parsed " + interactionCount + " interactions");
 		}
 
 		br.close();
@@ -216,113 +192,72 @@ public class PsiMiTabParser {
 		return network;
 	}
 
-	private void setTaxID(CyRow row, String value) {
-		String[] buf = value.split(SUBSEPARATOR, 2);
-		String attrName;
-		String taxonName;
-		if (buf != null && buf.length == 2) {
-			attrName = ATTR_PREFIX + buf[0];
+	private void setTaxID(CyRow row, List<String> taxonIDs, List<String> taxonDBs) {
+		row.set(TAXONIDS,taxonIDs);
+		row.set(TAXONDBS,taxonDBs);
+	}
 
-			if (row.getTable().getColumn(attrName) == null) {
-				row.getTable().createColumn(attrName, String.class, false);
-				row.getTable().createColumn(attrName + ".name", String.class, false);
-			}
-
-			matcher = miNamePttr.matcher(buf[1]);
-			if (matcher.find()) {
-				taxonName = matcher.group();
-				row.set(attrName, buf[1].split("\\(")[0]);
-				row.set(attrName + ".name", taxonName.substring(1, taxonName.length() - 1));
-			} else {
-				row.set(attrName, buf[1]);
-			}
+	private void setPublication(CyRow row, List<String> pubID, List<String> pubDB) {
+		for ( int i = 0; i < pubID.size(); i++ ) {
+			listAttrMapper(row, PUBLICATION_ID, pubID.get(i));
+			listAttrMapper(row, PUBLICATION_DB, pubDB.get(i));
 		}
 	}
 
-	private void setPublication(CyRow row, String[] pubID, String[] authors) {
-		String key = null;
-		String[] temp;
-
-		for (String val : pubID) {
-			temp = val.split(SUBSEPARATOR, 2);
-			if (temp == null || temp.length < 2)
-				continue;
-
-			key = ATTR_PREFIX + temp[0];
-			listAttrMapper(row, key, temp[1]);
-		}
-
+	private void setAuthors(CyRow row, List<String> authors) {
 		for (String val : authors) {
-			key = ATTR_PREFIX + "author";
+			listAttrMapper(row, AUTHORS, val);
+		}
+	}
+
+	private void setAliases(CyRow row, List<String> aliases, List<String> aliasDBs) {
+		for ( String s : aliases ) {
+			int ind = s.indexOf('(');
+			if ( ind > 0 )
+				s = s.substring(0,ind);
+			listAttrMapper(row, ALIASES, s);
+		}
+	}
+
+	private void setEdgeListAttribute(CyRow row, List<String> entry, String key) {
+		for (String val : entry) {
 			listAttrMapper(row, key, val);
 		}
 	}
-
-	private void setAliases(CyRow row, String[] entry) {
-		String key = null;
-		String[] temp;
-		String value;
-
+	private void setTypedEdgeListAttribute(CyRow row, List<String> entry, String idKey, String descKey) {
 		for (String val : entry) {
-			temp = val.split(SUBSEPARATOR, 2);
-			if (temp == null || temp.length < 2)
-				continue;
+			String id = "";
+			String desc = "";
 
-			key = ATTR_PREFIX + temp[0];
-			value = temp[1].replaceAll("\\(.+\\)", "");
-			listAttrMapper(row, key, value);
-		}
-	}
+			// Extract description between parens.
+			int openParen = val.indexOf('(');
+			if ( openParen >= 0 ) {
+				int closeParen = val.indexOf(')');
+				if ( closeParen > openParen) 
+					desc = val.substring(openParen+1,closeParen);
+			}
 
-	private void setEdgeListAttribute(CyRow row, String[] entry, String key) {
+			// Extract ID between quotes.
+			int firstQuote = val.indexOf('"');
+			if ( firstQuote >= 0 ) {
+				int secondQuote = val.indexOf('"',firstQuote+1);
+				if ( secondQuote > firstQuote ) {
+					id = val.substring(firstQuote+1,secondQuote); 
+				}
+			} 
 
-		String value;
-		String name;
-
-		for (String val : entry) {
-			value = trimPSITerm(val);
-			name = trimPSIName(val);
-
-			listAttrMapper(row, key, value);
-			listAttrMapper(row, key + ".name", name);
-		}
-	}
-
-	// Special case for edge scores
-	private void setEdgeScoreListAttribute(CyRow row, String[] entry, String key) {
-
-		String scoreString;
-		String scoreType;
-
-		for (String val : entry) {
-			final String[] parts = val.split(SUBSEPARATOR);
-			if (parts == null || parts.length != 2)
-				continue;
-
-			scoreString = parts[1];
-			scoreType = parts[0];
-			final String colName = key + "." + scoreType;
-
-			if (row.getTable().getColumn(colName) == null)
-				row.getTable().createListColumn(colName, Double.class, false);
-
-			try {
-				final Double score = Double.parseDouble(scoreString);
-				row.set(key + "." + scoreType, score);
-			} catch (Exception e) {
-				// if (scoreString != null
-				// && scoreString.trim().equals("") == false)
-				// row.set(key + "." + scoreType, scoreString);
-
-				continue;
+			// If we can't parse properly, just shove the whole
+			// thing in description.
+			if ( desc.equals("") || id.equals("") ) {
+				listAttrMapper(row, descKey, val);
+			} else {
+				listAttrMapper(row, idKey, id);
+				listAttrMapper(row, descKey, desc);
 			}
 		}
 	}
 
 	private void listAttrMapper(CyRow row, String attrName, String value) {
-		if (row.getTable().getColumn(attrName) == null)
-			row.getTable().createListColumn(attrName, String.class, false);
-
 		List<String> currentAttr = row.getList(attrName, String.class);
 
 		if (currentAttr == null) {
@@ -335,35 +270,6 @@ public class PsiMiTabParser {
 		}
 	}
 
-	private String trimPSITerm(String original) {
-		String miID = null;
-
-		matcher = miPttr.matcher(original);
-
-		if (matcher.find()) {
-			miID = matcher.group();
-		} else {
-			miID = "-";
-		}
-
-		return miID;
-	}
-
-	private String trimPSIName(String original) {
-		String miName = null;
-
-		matcher = miNamePttr.matcher(original);
-
-		if (matcher.find()) {
-			miName = matcher.group();
-			miName = miName.substring(1, miName.length() - 1);
-		} else {
-			miName = "-";
-		}
-
-		return miName;
-	}
-	
 	public void cancel() {
 		cancelFlag = true;
 	}
@@ -372,6 +278,36 @@ public class PsiMiTabParser {
 		br.close();
 		nodeMap.clear();
 		nodeMap = null;
+	}
+
+	private void setInteractorType(CyRow row, List<String> aliases) {
+		// Set type if not protein
+		if (aliases.contains(CHEBI)) 
+			row.set(INTERACTOR_TYPE, COMPOUND);
+	}
+
+	private void initColumns(CyNetwork network) {
+		final CyTable nodeTable = network.getDefaultNodeTable();
+		createListColumn(nodeTable,INTERACTOR_TYPE,String.class);
+		createListColumn(nodeTable,ALIASES,String.class);
+		createListColumn(nodeTable,TAXONIDS,String.class);
+		createListColumn(nodeTable,TAXONDBS,String.class);
+
+		final CyTable edgeTable = network.getDefaultEdgeTable();
+		createListColumn(edgeTable,INTERACTION_TYPE,String.class);
+		createListColumn(edgeTable,INTERACTION_TYPE_ID,String.class);
+		createListColumn(edgeTable,DETECTION_METHOD,String.class);
+		createListColumn(edgeTable,DETECTION_METHOD_ID,String.class);
+		createListColumn(edgeTable,SOURCE_DB,String.class);
+		createListColumn(edgeTable,EDGE_SCORE,String.class);
+		createListColumn(edgeTable,AUTHORS,String.class);
+		createListColumn(edgeTable,PUBLICATION_ID,String.class);
+		createListColumn(edgeTable,PUBLICATION_DB,String.class);
+	}
+
+	private void createListColumn(CyTable table, String colName, Class<?> type) {
+		if ( table.getColumn(colName) == null )
+			table.createListColumn(colName,String.class,false);
 	}
 
 }

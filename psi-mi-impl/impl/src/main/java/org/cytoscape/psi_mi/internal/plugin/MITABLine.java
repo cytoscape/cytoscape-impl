@@ -22,7 +22,16 @@ import java.util.ArrayList;
 // 12  sourceDB|sourceDB  
 // 13  interactionID|XXXX
 // 14  edgeScoreType:edgeScoreString|edgeScoreType:edgeScoreString
+// subsequent optional columns are ignored!
+// 
+// For a better description see: http://wiki.reactome.org/index.php/PSI-MITAB_interactions
+//
 
+
+/**
+ * This class quickly reads a single line of PSI-MI Tab delimited format into a data
+ * structure for easy processing. 
+ */
 public class MITABLine {
 
 	final char COLON = ':';
@@ -101,7 +110,7 @@ public class MITABLine {
 	}
 
 
-	void readLine(String line) {
+	public void readLine(String line) {
 		init();
 
 		// column 0
