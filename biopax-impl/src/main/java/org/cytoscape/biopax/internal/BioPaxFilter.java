@@ -36,12 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
 
@@ -50,29 +46,23 @@ import org.cytoscape.io.util.StreamUtil;
  * BioPax Filer class.  Extends CyFileFilter for integration into the Cytoscape ImportHandler
  * framework.
  *
- * @author Ethan Cerami.
+ * @author Ethan Cerami; (refactored by) Jason Montojo and Igor Rodchenkov
  */
-public class BioPaxFilter implements CyFileFilter {
+public class BioPaxFilter extends BasicCyFileFilter {
 	private static final String BIOPAX_XML_NAMESPACE = "www.biopax.org";
 
 	private static final int DEFAULT_LINES_TO_CHECK = 20;
 
 	/**
-	 * Filter Description.
-	 */
-	private static String description = "BioPAX files";
-
-	private final StreamUtil streamUtil;
-	private final Set<String> extensions;
-	private final Set<String> contentTypes;
-
-	/**
 	 * Constructor.
 	 */
 	public BioPaxFilter(StreamUtil streamUtil) {
-		this.streamUtil = streamUtil;
-		extensions = new HashSet<String>(Arrays.asList(new String[] { "xml", "owl", "rdf" }));
-		contentTypes = new HashSet<String>(Arrays.asList(new String[] { "text/xml", "application/rdf+xml" }));
+		super(
+				new String[] { "xml", "owl", "rdf" }, 
+				new String[] { "text/xml", "application/rdf+xml", "application/xml" }, 
+				"BioPAX data", 
+				DataCategory.NETWORK, 
+				streamUtil);
 	}
 
 	/**
@@ -89,78 +79,35 @@ public class BioPaxFilter implements CyFileFilter {
 	 */
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-		if (category != DataCategory.NETWORK) {
+		if (category != this.category) 
 			return false;
-		}
 		
-		//  Second test:  file header must contain the biopax declaration
+		// file/stream header must contain the biopax declaration
 		try {
-			return checkHeader(stream);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+			int linesToCheck = DEFAULT_LINES_TO_CHECK;
+			while (linesToCheck > 0) {
+				String line = reader.readLine();
+				if (line != null && line.contains(BIOPAX_XML_NAMESPACE)) {
+					return true;
+				}
+				linesToCheck--;
+			}
+			return false;
 		} catch (IOException e) {
 		}
 
 		return false;
 	}
-	
-	private boolean checkHeader(InputStream stream) throws IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-		int linesToCheck = DEFAULT_LINES_TO_CHECK;
-		while (linesToCheck > 0) {
-			String line = reader.readLine();
-			if (line != null && line.contains(BIOPAX_XML_NAMESPACE)) {
-				return true;
-			}
-			linesToCheck--;
-		}
-		return false;
-	}
-
 
 
 	@Override
-	public boolean accepts(URI uri, DataCategory category) {
-		if (category != DataCategory.NETWORK) {
-			return false;
-		}
-		
-		String path = uri.getPath();
-		boolean firstPass = false;
-
-		//  First test:  file must end with one of the registered file extensions.
-		for (String extension : extensions) {
-			if (path.endsWith(extension)) {
-				firstPass = true;
-			}
-		}
-		
-		if (!firstPass) {
-			return false;
-		}
-		
+	public boolean accepts(URI uri, DataCategory category) {		
 		try {
-			return accepts(streamUtil.getInputStream(uri.toURL()), category);
+			return super.accepts(uri, category) && accepts(streamUtil.getInputStream(uri.toURL()), category);
 		} catch (IOException e) {
 			return false;
 		}
 	}
-	
-	@Override
-	public Set<String> getContentTypes() {
-		return Collections.unmodifiableSet(contentTypes);
-	}
-	
-	@Override
-	public DataCategory getDataCategory() {
-		return DataCategory.NETWORK;
-	}
-	
-	@Override
-	public String getDescription() {
-		return description;
-	}
-	
-	@Override
-	public Set<String> getExtensions() {
-		return Collections.unmodifiableSet(extensions);
-	}
+
 }
