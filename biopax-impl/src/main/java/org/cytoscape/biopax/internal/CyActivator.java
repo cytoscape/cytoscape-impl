@@ -7,7 +7,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -70,8 +69,8 @@ public class CyActivator extends AbstractCyActivator {
 		BioPaxContainer bioPaxContainer = new BioPaxContainer(launchExternalBrowser,cyApplicationManagerRef,cyNetworkViewManagerRef,bioPaxDetailsPanel,cySwingApplicationRef);
 		BioPaxVisualStyleUtil bioPaxVisualStyleUtil = new BioPaxVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFunctionFactoryRef,passthroughMappingFunctionFactoryRef);
 		
-		BioPaxViewTracker bioPaxViewTracker = new BioPaxViewTracker(bioPaxDetailsPanel,bioPaxContainer, cyApplicationManagerRef);
-		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef,bioPaxViewTracker,visualMappingManagerRef,bioPaxVisualStyleUtil);
+		BioPaxViewTracker bioPaxViewTracker = new BioPaxViewTracker(bioPaxDetailsPanel,bioPaxContainer, cyApplicationManagerRef, visualMappingManagerRef, bioPaxVisualStyleUtil);
+		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef,visualMappingManagerRef,bioPaxVisualStyleUtil);
 		CytoPanelComponent cytoPanelComponent = new BioPaxCytoPanelComponent(bioPaxContainer);
 		ExportAsBioPAXAction exportAsBioPAXAction = new ExportAsBioPAXAction(fileUtilRef, cyApplicationManagerRef, bioPaxFilter, taskManagerRef);
 		

@@ -36,16 +36,18 @@ import java.awt.Paint;
 
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.level3.Control;
+import org.biopax.paxtools.model.level3.ControlType;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 
 import static org.cytoscape.biopax.internal.BioPaxMapper.*;
 
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -155,13 +157,13 @@ public class BioPaxVisualStyleUtil {
 	
 				// style.getDependency().set(VisualPropertyDependency.Definition.NODE_SIZE_LOCKED,false);
 	
-				createNodeShape(style);
 				createNodeSize(style);
 				createNodeLabel(style);
 				createNodeColor(style);
 				createNodeBorderColor(style);
 				createTargetArrows(style);
-	
+				createNodeShape(style);
+				
 				mappingManager.addVisualStyle(style);
 			}
 		}
@@ -171,10 +173,10 @@ public class BioPaxVisualStyleUtil {
 	
 	private void createNodeShape(VisualStyle style) {
 		style.setDefaultValue(RichVisualLexicon.NODE_SHAPE,
-				NodeShapeVisualProperty.RECTANGLE);
+				NodeShapeVisualProperty.ELLIPSE);
 
 		// create a discrete mapper, for mapping a biopax type to a shape
-		DiscreteMapping<String, NodeShape> function = (DiscreteMapping<String, NodeShape>) discreteFactory
+		DiscreteMapping<String, NodeShape> shape = (DiscreteMapping<String, NodeShape>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_ENTITY_TYPE, String.class, null,
 						RichVisualLexicon.NODE_SHAPE);
@@ -183,11 +185,11 @@ public class BioPaxVisualStyleUtil {
 		for (Class<? extends BioPAXElement> claz : BioPaxUtil.getSubclassNames(PhysicalEntity.class)) 
 		{
 			String name = claz.getSimpleName();
-			function.putMapValue(name, NodeShapeVisualProperty.ELLIPSE);
+			shape.putMapValue(name, NodeShapeVisualProperty.ELLIPSE);
 		}
 
 		// hack for phosphorylated proteins
-		function.putMapValue(BioPaxUtil.PROTEIN_PHOSPHORYLATED,
+		shape.putMapValue(BioPaxUtil.PROTEIN_PHOSPHORYLATED,
 				NodeShapeVisualProperty.ELLIPSE);
 
 		// map all interactions
@@ -196,14 +198,15 @@ public class BioPaxVisualStyleUtil {
 		for (Class<?> c : BioPaxUtil.getSubclassNames(Interaction.class)) {
 			String entityName = c.getSimpleName();
 			if (Control.class.isAssignableFrom(c)) {
-				function.putMapValue(entityName,
+				shape.putMapValue(entityName,
 						NodeShapeVisualProperty.TRIANGLE);
 			} else {
-				function.putMapValue(entityName,
+				shape.putMapValue(entityName,
 						NodeShapeVisualProperty.RECTANGLE);
 			}
 		}
-		style.addVisualMappingFunction(function);
+		
+		style.addVisualMappingFunction(shape);
 	}
 
 	
@@ -231,15 +234,13 @@ public class BioPaxVisualStyleUtil {
 		}
 
 		// map all complex to required size
-//		for (Class c : BioPaxUtil.getSubclassNames(Complex.class)) {
-			String entityName = "Complex";//c.getSimpleName();
-			width.putMapValue(entityName,
-					new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH
-							* BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE));
-			height.putMapValue(entityName,
-					new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT
-							* BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE));
-//		}
+		String entityName = "Complex";//c.getSimpleName();
+		width.putMapValue(entityName,
+			new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH
+				* BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE));
+		height.putMapValue(entityName,
+			new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT
+				* BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE));
 
 		/*
 		 * // hack for phosphorylated proteins - make them large so label fits
@@ -277,14 +278,14 @@ public class BioPaxVisualStyleUtil {
 
 		// create a discrete mapper, for mapping biopax node type
 		// to a particular node color
-		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
+		DiscreteMapping<String, Paint> color = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_ENTITY_TYPE, String.class, null, 
 						MinimalVisualLexicon.NODE_FILL_COLOR);
 
 		// map all complex to black
-		function.putMapValue("Complex", COMPLEX_NODE_COLOR);
-		style.addVisualMappingFunction(function);
+		color.putMapValue("Complex", COMPLEX_NODE_COLOR);
+		style.addVisualMappingFunction(color);
 	}
 
 	
@@ -304,67 +305,43 @@ public class BioPaxVisualStyleUtil {
 		style.addVisualMappingFunction(function);
 	}
 
-	@Deprecated
+	
 	private void createTargetArrows(VisualStyle style) {
-		// DiscreteMapping discreteMapping = new
-		// DiscreteMapping(ArrowShape.NONE,
-		// BioPaxMapper.BIOPAX_EDGE_TYPE,
-		// ObjectMapping.EDGE_MAPPING);
-		//
-		// discreteMapping.putMapValue(BioPaxMapper.RIGHT,
-		// ArrowShape.DELTA);
-		// discreteMapping.putMapValue(BioPaxMapper.CONTROLLED,
-		// ArrowShape.DELTA);
-		// discreteMapping.putMapValue(BioPaxMapper.COFACTOR,
-		// ArrowShape.DELTA);
-		// discreteMapping.putMapValue(BioPaxMapper.CONTAINS,
-		// ArrowShape.CIRCLE);
-		//
-		// // Inhibition Edges
-		// for (ControlType controlType : ControlType.values()) {
-		// if(controlType.toString().startsWith("I")) {
-		// discreteMapping.putMapValue(controlType.toString(), ArrowShape.T);
-		// }
-		// }
-		//
-		// // Activation Edges
-		// for (ControlType controlType : ControlType.values()) {
-		// if(controlType.toString().startsWith("A")) {
-		// discreteMapping.putMapValue(controlType.toString(),
-		// ArrowShape.DELTA);
-		// }
-		// }
-		//
-		// Calculator edgeTargetArrowCalculator = new
-		// BasicCalculator("BioPAX Target Arrows"
-		// + VERSION_POST_FIX,
-		// discreteMapping,
-		// VisualPropertyType.EDGE_TGTARROW_SHAPE);
-		// eac.setCalculator(edgeTargetArrowCalculator);
+		
+		DiscreteMapping<String, ArrowShape> tgtArrowShape = 
+			(DiscreteMapping<String, ArrowShape>) discreteFactory
+				.createVisualMappingFunction(
+						BIOPAX_EDGE_TYPE, String.class, null,
+						RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
+
+		tgtArrowShape.putMapValue("right", ArrowShapeVisualProperty.DELTA);
+		tgtArrowShape.putMapValue("controlled", ArrowShapeVisualProperty.DELTA);
+		tgtArrowShape.putMapValue("cofactor", ArrowShapeVisualProperty.DELTA);
+		tgtArrowShape.putMapValue("contains", ArrowShapeVisualProperty.CIRCLE);
+
+		// Inhibition Edges
+		for (ControlType controlType : ControlType.values()) {
+			if (controlType.toString().startsWith("I")) {
+				tgtArrowShape.putMapValue(controlType.toString(),
+						ArrowShapeVisualProperty.T);
+			}
+		}
+
+		// Activation Edges
+		for (ControlType controlType : ControlType.values()) {
+			if (controlType.toString().startsWith("A")) {
+				tgtArrowShape.putMapValue(controlType.toString(),
+						ArrowShapeVisualProperty.DELTA);
+			}
+		}
+
+// old piece of code...
+//		Calculator edgeTargetArrowCalculator = new BasicCalculator(
+//				"BioPAX Target Arrows" + VERSION_POST_FIX, tgtArrowShape,
+//				VisualPropertyType.EDGE_TGTARROW_SHAPE);
+//		eac.setCalculator(edgeTargetArrowCalculator);
+		
+		style.addVisualMappingFunction(tgtArrowShape);
 	}
 
-	@Deprecated
-	public void setNodeToolTips(CyNetworkView networkView) {
-		// // grab node attributes
-		// CyAttributes nodeAttributes = Cytoscape.getNodeAttributes();
-		//
-		// // iterate through the nodes
-		// Iterator<NodeView> nodesIt = networkView.getNodeViewsIterator();
-		// while (nodesIt.hasNext()) {
-		// NodeView nodeView = nodesIt.next();
-		// String id = nodeView.getNode().getIdentifier();
-		// String tip =
-		// nodeAttributes.getStringAttribute(id,
-		// BioPaxMapper.BIOPAX_ENTITY_TYPE)
-		// + "\n" +
-		// nodeAttributes.getListAttribute(id,
-		// BioPaxMapper.BIOPAX_CELLULAR_LOCATIONS);
-		//
-		// nodeView.setToolTip(tip);
-		//
-		// if(log.isDebugging())
-		// log.debug("tooltip set "+ tip + " for node " + id);
-		// }
-		// networkView.updateView();
-	}
 }

@@ -3,14 +3,7 @@ package org.cytoscape.biopax.internal;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.biopax.paxtools.controller.AbstractTraverser;
@@ -20,26 +13,8 @@ import org.biopax.paxtools.controller.SimpleEditorMap;
 import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.Model;
-import org.biopax.paxtools.model.level3.Catalysis;
-import org.biopax.paxtools.model.level3.CellularLocationVocabulary;
-import org.biopax.paxtools.model.level3.Complex;
-import org.biopax.paxtools.model.level3.Control;
-import org.biopax.paxtools.model.level3.ControlType;
-import org.biopax.paxtools.model.level3.Controller;
-import org.biopax.paxtools.model.level3.Conversion;
-import org.biopax.paxtools.model.level3.Entity;
-import org.biopax.paxtools.model.level3.Interaction;
-import org.biopax.paxtools.model.level3.Pathway;
-import org.biopax.paxtools.model.level3.PhysicalEntity;
+import org.biopax.paxtools.model.level3.*;
 import org.biopax.paxtools.model.level3.Process;
-import org.biopax.paxtools.model.level3.PublicationXref;
-import org.biopax.paxtools.model.level3.RelationshipTypeVocabulary;
-import org.biopax.paxtools.model.level3.RelationshipXref;
-import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
-import org.biopax.paxtools.model.level3.Stoichiometry;
-import org.biopax.paxtools.model.level3.UnificationXref;
-import org.biopax.paxtools.model.level3.XReferrable;
-import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
@@ -53,7 +28,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -204,6 +178,11 @@ public class BioPaxMapper {
 		createInteractionEdges(network);
 		createComplexEdges(network);
 		
+		// TODO create pathwayComponent edges (requires pathway nodes)?
+		
+		// create PE->memberPE edges (Arghhh!)?
+		createMemberEdges(network);
+		
 		// Finally, set network attributes:
 		
 		// name
@@ -229,6 +208,21 @@ public class BioPaxMapper {
 	}
 
 	
+	private void createMemberEdges(CyNetwork network) {
+		// for each PE,
+		for (PhysicalEntity par : model.getObjects(PhysicalEntity.class)) {
+			CyNode cyParentNode = uriToCyNodeMap.get(par);
+			// for each its member PE, add the directed edge
+			for (PhysicalEntity member : par.getMemberPhysicalEntity()) 
+			{
+				CyNode cyMemberNode = uriToCyNodeMap.get(member);
+				CyEdge edge = network.addEdge(cyParentNode, cyMemberNode, true);
+				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "member", String.class);
+			}
+		}
+	}
+
+
 	private void createEntityNodes(CyNetwork network) {
 		taskMonitor.setStatusMessage("Creating nodes (first pass)...");
 		taskMonitor.setProgress(0);
@@ -236,9 +230,12 @@ public class BioPaxMapper {
 		int i = 0; //progress counter
 		Set<Entity> entities = model.getObjects(Entity.class);
 		for(Entity bpe: entities) {	
-			// skip for pathways
-			if(bpe instanceof Pathway)
-				continue;
+			// do not make nodes for top/main pathways
+			if(bpe instanceof Pathway) {
+				if(bpe.getParticipantOf().isEmpty()
+					&& ((Process)bpe).getPathwayComponentOf().isEmpty())
+					continue;
+			}
 			
 			//  Create node symbolizing the interaction
 			CyNode node = network.addNode();
@@ -343,7 +340,19 @@ public class BioPaxMapper {
 	{	
 		// Note: getCyNode also assigns cellular location attribute...
 		CyNode nodeA = uriToCyNodeMap.get(bpeA);
+		if(nodeA == null) {
+			log.debug("linkNodes: no node was created for " 
+				+ bpeA.getModelInterface() + " " + bpeA.getRDFId());
+			return; //e.g., we do not create any pathway nodes currently...
+		}
+		
 		CyNode nodeB = uriToCyNodeMap.get(bpeB);
+		if(nodeB == null) {
+			log.debug("linkNodes: no node was created for " 
+					+ bpeB.getModelInterface() + " " + bpeB.getRDFId());
+			return; //e.g., we do not create any pathway nodes currently...
+		}
+		
 		CyEdge edge = null;
 		if (type.equals("right") || type.equals("cofactor")
 				|| type.equals("participant")) {
@@ -533,6 +542,9 @@ public class BioPaxMapper {
 		// add xref ids per database and per xref class
 		List<Xref> xList = BioPaxUtil.getXRefs(resource, Xref.class);
 		for (Xref link : xList) {
+			if(link.getDb() == null)
+				continue; // too bad (data issue...); skip it
+			
 			// per db -
 			String key = BIOPAX_XREF_PREFIX + link.getDb().toUpperCase();
 			// Set individual XRefs; Max of 1 per database.
@@ -541,7 +553,6 @@ public class BioPaxMapper {
 				AttributeUtil.set(network, node, key, link.getId(), String.class);
 			}
 			
-
 			StringBuffer temp = new StringBuffer();
 			
 			if(!"CPATH".equalsIgnoreCase(link.getDb()))
@@ -589,8 +600,7 @@ public class BioPaxMapper {
 	{
 		Filter<PropertyEditor> filter = new Filter<PropertyEditor>() {
 			@Override
-			// skips for entity-range properties 
-			// (which map to edges rather than attributes!),
+			// skips for entity-range properties (which map to edges rather than attributes!),
 			// and several utility classes range ones 
 			// (for which we do not want generate attributes or do another way)
 			public boolean filter(PropertyEditor editor) {
@@ -903,93 +913,5 @@ public class BioPaxMapper {
 		return null;
 	}
 
-	
-	public static void customNodes(CyNetworkView networkView) {
-		// grab node attributes
-		CyNetwork cyNetwork = networkView.getModel();
-
-		// iterate through the nodes
-		Iterator<CyNode> nodesIt = cyNetwork.getNodeList().iterator();
-		if (nodesIt.hasNext()) {
-			// grab the node
-			CyNode node = nodesIt.next();
-
-			// get chemical modifications
-			int count = 0;
-			boolean isPhosphorylated = false;
-			// TODO: MultiHashMap
-//			MultiHashMapDefinition mhmdef = nodeAttributes.getMultiHashMapDefinition();
-//
-//			if (mhmdef.getAttributeValueType(BIOPAX_CHEMICAL_MODIFICATIONS_MAP) != -1) {
-//				MultiHashMap mhmap = nodeAttributes.getMultiHashMap();
-//				CountedIterator modsIt = mhmap.getAttributeKeyspan(node.getIdentifier(),
-//                               BIOPAX_CHEMICAL_MODIFICATIONS_MAP, null);
-//
-//				// do we have phosphorylation ?
-//				while (modsIt.hasNext()) {
-//					String modification = (String) modsIt.next();
-//
-//					if (modification.equals(BioPaxUtil.PHOSPHORYLATION_SITE)) {
-//						isPhosphorylated = true;
-//
-//						Object[] key = { BioPaxUtil.PHOSPHORYLATION_SITE };
-//						String countStr = (String) mhmap.getAttributeValue(node.getIdentifier(),
-//                            BIOPAX_CHEMICAL_MODIFICATIONS_MAP, key);
-//						count = ((Integer) Integer.valueOf(countStr)).intValue();
-//
-//						break;
-//					}
-//				}
-//			}
-
-			// if phosphorylated, add custom node
-			if (isPhosphorylated) {
-				addCustomShapes(networkView, node, "PHOSPHORYLATION_GRAPHICS", count);
-			}
-		}
-	}
-
-
-	/**
-	 * Based on given arguments, adds proper custom node shape to node.
-	 */
-	private static void addCustomShapes(CyNetworkView networkView, CyNode node, String shapeType,
-	                                    int modificationCount) {
-		// TODO: Custom graphics
-//		// create refs to help views
-//		CyNetwork cyNetwork = networkView.getModel();
-//		View<CyNode> nodeView = networkView.getNodeView(node);
-//		DNodeView dingNodeView = (DNodeView) nodeView;
-//
-//		// remove existing custom nodes
-//		Iterator<CustomGraphic> it = dingNodeView.customGraphicIterator();
-//		while ( it.hasNext() ) {
-//			dingNodeView.removeCustomGraphic( it.next() );
-//		}
-//
-//		for (int lc = 0; lc < modificationCount; lc++) {
-//			// set image
-//			BufferedImage image = null;
-//
-//			if (shapeType.equals(PHOSPHORYLATION_GRAPHICS)) {
-//				image = (cyNetwork.isSelected(node)) ? customPhosGraphics[lc] : phosNode;
-//			}
-//
-//			// set rect
-//			Rectangle2D rect = getCustomShapeRect(image, lc);
-//
-//			// create our texture paint
-//			Paint paint = null;
-//
-//			try {
-//				paint = new java.awt.TexturePaint(image, rect);
-//			} catch (Exception exc) {
-//				paint = java.awt.Color.black;
-//			}
-//
-//			// add the graphic
-//			dingNodeView.addCustomGraphic(rect, paint, NodeDetails.ANCHOR_CENTER);
-//		}
-	}
 	
 }

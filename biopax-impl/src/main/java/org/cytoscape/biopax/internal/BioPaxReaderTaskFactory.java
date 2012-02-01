@@ -2,7 +2,6 @@ package org.cytoscape.biopax.internal;
 
 import java.io.InputStream;
 
-import org.cytoscape.biopax.internal.action.BioPaxViewTracker;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -18,7 +17,6 @@ public class BioPaxReaderTaskFactory implements InputStreamTaskFactory {
 	private final CyNetworkFactory networkFactory;
 	private final CyNetworkViewFactory viewFactory;
 	private final CyNetworkNaming naming;
-	private final BioPaxViewTracker networkTracker;
 
 	private InputStream inputStream;
 	private String inputName;
@@ -26,13 +24,12 @@ public class BioPaxReaderTaskFactory implements InputStreamTaskFactory {
 	private BioPaxVisualStyleUtil bioPaxVisualStyleUtil;
 
 	public BioPaxReaderTaskFactory(CyFileFilter filter, CyNetworkFactory networkFactory, 
-			CyNetworkViewFactory viewFactory, CyNetworkNaming naming, BioPaxViewTracker networkTracker, 
+			CyNetworkViewFactory viewFactory, CyNetworkNaming naming,
 			VisualMappingManager mappingManager, BioPaxVisualStyleUtil bioPaxVisualStyleUtil) {
 		this.filter = filter;
 		this.networkFactory = networkFactory;
 		this.viewFactory = viewFactory;
 		this.naming = naming;
-		this.networkTracker = networkTracker;
 		this.mappingManager = mappingManager;
 		this.bioPaxVisualStyleUtil = bioPaxVisualStyleUtil;
 		this.inputName = "BioPAX_Network"; //default name fallback
@@ -42,7 +39,7 @@ public class BioPaxReaderTaskFactory implements InputStreamTaskFactory {
 	public TaskIterator createTaskIterator() {
 		BioPaxReaderTask task = new BioPaxReaderTask(
 				inputStream, inputName, networkFactory, viewFactory, naming, 
-				networkTracker, mappingManager, bioPaxVisualStyleUtil);
+				mappingManager, bioPaxVisualStyleUtil);
 		return new TaskIterator(task);
 	}
 
