@@ -87,12 +87,6 @@ public class DNodeShape implements NodeShape {
 		return serializableString;
 	}
 
-	@Override
-	public VisualPropertyValue parseSerializableString(String serializableString) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public Byte getNativeShape() {
 		return this.rendererShapeID;
 	}

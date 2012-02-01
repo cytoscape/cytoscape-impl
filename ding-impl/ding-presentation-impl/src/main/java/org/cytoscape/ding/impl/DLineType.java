@@ -88,11 +88,6 @@ public class DLineType implements LineType {
 		return serializableString;
 	}
 
-	@Override
-	public VisualPropertyValue parseSerializableString(String serializableString) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
 	/**
 	 * Creates a new stroke of this LineStyle with the specified width.
