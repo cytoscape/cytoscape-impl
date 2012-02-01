@@ -77,21 +77,20 @@ public class ArrowIcon extends VisualPropertyIcon<Shape> {
 		 */
 		if (value == null) {
 			if ((width < 20) || (height < 20)) {
-				g2d.translate(-leftPad, -bottomPad);
+				
 				g2d.setStroke(EDGE_STROKE_SMALL);
 				g2d.drawLine(3, c.getHeight() / 2, width / 2 + 10, c.getHeight() / 2);
-				return;
+				
 			} else {
-//				g2d.setStroke(EDGE_STROKE);
-//				g2d.drawLine(DEF_L_PAD, (height + 20) / 2,
-//			             (int) (c.getWidth()*0.3), (height + 20) / 2);
+				g2d.setStroke(EDGE_STROKE);
+				g2d.drawLine(DEF_L_PAD, (height + 20) / 2,
+			             (int) (c.getWidth()*0.3), (height + 20) / 2);
 			}
 			g2d.translate(-leftPad, -bottomPad);
 			return;
 		}
 
 		final AffineTransform af = new AffineTransform();
-
 		g2d.setStroke(new BasicStroke(2.0f));
 
 		final Rectangle2D bound = value.getBounds2D();
@@ -128,29 +127,9 @@ public class ArrowIcon extends VisualPropertyIcon<Shape> {
 		newShape = af.createTransformedShape(newShape);
 
 		g2d.fill(newShape);
-
-		/*
-		 * Finally, draw an edge (line) to the arrow head.
-		 */
-		if ((width < 20) || (height < 20)) {
-//			g2d.setStroke(EDGE_STROKE_SMALL);
-//			
-//			
-//			
-//			g2d.drawLine(3, c.getHeight()/2,
-//		             width/2, c.getHeight()/2);
-		} else {
-			g2d.setStroke(EDGE_STROKE);
-			g2d.drawLine(DEF_L_PAD, (height + 20) / 2,
-		             (int) (newShape.getBounds2D().getCenterX()) - 2, (height + 20) / 2);
-		}
-		
+		g2d.setStroke(EDGE_STROKE);
+		g2d.drawLine(DEF_L_PAD, (height + 20) / 2, (int) (newShape.getBounds2D().getCenterX()) - 2, (height + 20) / 2);
 		g2d.translate(-leftPad, -bottomPad);
-		
-		if ((width < 20) || (height < 20)) {
-			g2d.setStroke(EDGE_STROKE_SMALL);
-			g2d.drawLine(3, c.getHeight()/2,
-		             width/2 +10, c.getHeight()/2);
-		}
+
 	}
 }

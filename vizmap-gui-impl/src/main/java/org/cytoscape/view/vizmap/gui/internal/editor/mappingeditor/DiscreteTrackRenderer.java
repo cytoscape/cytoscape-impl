@@ -61,7 +61,6 @@ import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
-import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.jdesktop.swingx.JXMultiThumbSlider;
 import org.jdesktop.swingx.multislider.Thumb;
 
@@ -73,14 +72,14 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 12);
 	private static final Font TRACK_FONT = new Font("SansSerif", Font.PLAIN, 10);
-	private static final Color BACKGROUND_COLOR = new Color(0x00, 0x68, 0x8B, 70);
+	private static final Color BACKGROUND_COLOR = Color.WHITE;
 	
 	private static final Dimension MIN_SIZE = new Dimension(200, 100);
 	private static final int ICON_SIZE = 32;
 	private static final int THUMB_WIDTH = 12;
 	private static final int V_PADDING = 20;
 
-	private int smallIconSize = 20;
+	//private int smallIconSize = 20;
 	private int trackHeight = 70;
 	private int arrowBarYPosition = trackHeight + 50;
 	
@@ -89,9 +88,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 	private V below;
 	private V above;
 	private VisualProperty<V> vp;
-	//private final Set<V> values;
 
-	private List<String> rangeTooltips;
 	private JXMultiThumbSlider<V> slider;
 
 	private final EditorValueRangeTracer tracer;
@@ -125,8 +122,6 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 		this.vp = mapping.getVisualProperty();
 		final Range<V> rangeObject = vp.getRange();
-//		if (!rangeObject.isDiscrete())
-//			throw new IllegalArgumentException("Range type should be discrete.");
 
 		this.iconMap = new HashMap<V, Icon>();
 		if (rangeObject.isDiscrete()) {
@@ -316,14 +311,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		g.translate(-THUMB_WIDTH / 2, -12);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param slider
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	@SuppressWarnings("unchecked")
 	public JComponent getRendererComponent(JXMultiThumbSlider slider) {
 		this.slider = slider;
@@ -335,16 +323,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		return range;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param x
-	 *            DOCUMENT ME!
-	 * @param y
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	public String getToolTipForCurrentLocation(int x, int y) {
 		int oldX = 0;
 		int newX;
@@ -406,121 +385,6 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		return -1;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param iconWidth
-	 *            DOCUMENT ME!
-	 * @param iconHeight
-	 *            DOCUMENT ME!
-	 * @param mapping
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public ImageIcon getTrackGraphicIcon(int iconWidth, int iconHeight,
-			ContinuousMapping<K, V> mapping) {
-		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight,
-				BufferedImage.TYPE_INT_RGB);
-		final Graphics2D g2 = bi.createGraphics();
-
-		// Turn Anti-alias on
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-
-		final int leftSpace = 2;
-		int trackHeight = iconHeight - 15;
-		int trackWidth = iconWidth - leftSpace - 5;
-
-		g2.setBackground(Color.white);
-		g2.setColor(Color.white);
-		g2.fillRect(0, 0, iconWidth, iconHeight);
-		g2.setStroke(new BasicStroke(1.0f));
-		g2.setColor(Color.black);
-
-		/*
-		 * Compute fractions from mapping
-		 */
-		List<ContinuousMappingPoint<K, V>> points = mapping.getAllPoints();
-		final int pointCount = points.size();
-
-		/*
-		 * If no points, just return empty rectangle.
-		 */
-		if (pointCount == 0) {
-			g2.drawRect(leftSpace, 0, trackWidth, trackHeight);
-
-			return new ImageIcon(bi);
-		}
-
-		float[] fractions = new float[pointCount + 2];
-		double[] values = new double[pointCount];
-
-		Object[] objValues = new Object[pointCount + 2];
-
-		objValues[0] = points.get(0).getRange().lesserValue;
-
-		if (pointCount == 1) {
-			objValues[1] = points.get(0).getRange().equalValue;
-			objValues[2] = points.get(0).getRange().greaterValue;
-		} else {
-			// "Above" value
-			objValues[objValues.length - 1] = points.get(points.size() - 1)
-					.getRange().greaterValue;
-
-			for (int i = 0; i < pointCount; i++)
-				objValues[i + 1] = points.get(i).getRange().equalValue;
-		}
-
-		// List<ImageIcon> iconList = buildIconArray(objValues);
-		final Point2D start = new Point2D.Float(10, 0);
-		final Point2D end = new Point2D.Float(trackWidth, trackHeight);
-
-		// int i=1;
-		//
-		// g2.setFont(new Font("SansSerif", Font.BOLD, 9));
-		// int strWidth;
-		// for(ContinuousMappingPoint point: points) {
-		// String p = Double.toString(point.getValue());
-		// g2.setColor(Color.black);
-		// strWidth = SwingUtilities.computeStringWidth(g2.getFontMetrics(), p);
-		// g2.drawString(p, fractions[i]*iconWidth - strWidth/2, iconHeight -7);
-		// i++;
-		// }
-		return new ImageIcon(bi);
-	}
-
-//	private List<Icon> buildIconArray(final int size) {
-//		final List<Icon> icons = new ArrayList<Icon>();
-//		final Map<V, Icon> iconMap = new HashMap<V, Icon>();
-//
-//		for (V value : values)
-//			iconMap.put(value, engine.createIcon(vp, value, size, size));
-//
-//		final Object[] keys = iconMap.keySet().toArray();
-//
-//		for (int i = 0; i < size; i++)
-//			icons.add((ImageIcon) iconMap.get(keys[i]));
-//
-//		return icons;
-//	}
-
-	// private Shape getIcon(Object key) {
-	// final BufferedImage image = new BufferedImage(40, 40,
-	// BufferedImage.TYPE_INT_RGB);
-	//
-	// final Graphics2D gfx = image.createGraphics();
-	// Map icons = type.getVisualProperty().getIconSet();
-	// JLabel label = new JLabel();
-	// label.setIcon((Icon) icons.get(key));
-	// label.setText("test1");
-	// gfx.setBackground(Color.white);
-	// gfx.setColor(Color.red);
-	// gfx.drawString("Test1", 0, 0);
-	//
-	// // label.paint(gfx);
-	// return ((VisualPropertyIcon) icons.get(key)).getShape();
-	// }
 
 	/*
 	 * Draw icon object based on the given data type.
@@ -529,108 +393,18 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		if(key == null)
 			return;
 		
-		g.translate(x, y);
+		final int xDisp = x-20;
+		g.translate(xDisp, y);
 		
 		Icon icon = iconMap.get(key);
-		if(icon == null) {
-			// Need to render icon dynamically.
+		if(icon == null)
 			icon = engine.createIcon(vp, key, ICON_SIZE, ICON_SIZE);
-		}
 		
-		icon.paintIcon(this, g, x, y);
-		
-		g.translate(-x, -y);
-		
-		// // TODO: Move this to somewhere more appropreate!
-		// if(type.equals(NODE_SHAPE)) {
-		//
-		//
-//		 final VisualPropertyIcon icon = (VisualPropertyIcon)
-//		 type.getIconSet().get(key);
-//		 icon.setIconHeight(size);
-//		 icon.setIconWidth(size);
-//		 g.fill(icon.getShape());
-		//
-		// } else if(type.equals(EDGE_SRCARROW_SHAPE) ||
-		// type.equals(EDGE_TGTARROW_SHAPE)) {
-		//
-		// final VisualPropertyIcon arrowIcon = ((VisualPropertyIcon)
-		// type.getIconSet().get(key));
-		// if(arrowIcon == null) {
-		// return;
-		// }
-		// final int newSize = size;
-		// arrowIcon.setIconHeight(newSize);
-		// arrowIcon.setIconWidth(((Number)(newSize*2.5)).intValue());
-		//
-		// g.translate(-newSize, 0);
-		// arrowIcon.paintIcon(this, g, x, y);
-		// g.translate(newSize, 0);
-		//
-		// } else if(type.equals(NODE_FONT_FACE) || type.equals(EDGE_FONT_FACE))
-		// {
-		//
-		// final Font font = (Font) key;
-		// final String fontName = font.getFontName();
-		// g.setFont(new Font(fontName, font.getStyle(), size));
-		// g.drawString("A", 0, size);
-		//
-		// final int smallFontSize = ((Number) (size * 0.25)).intValue();
-		// g.setFont(new Font(fontName, font.getStyle(), smallFontSize));
-		//
-		// int stringWidth =
-		// SwingUtilities.computeStringWidth(g.getFontMetrics(),
-		// fontName);
-		// g.drawString(fontName, (size / 2) - (stringWidth / 2), size +
-		// smallFontSize + 2);
-		//
-		// } else if(type.equals(NODE_LINE_STYLE) ||
-		// type.equals(EDGE_LINE_STYLE)) {
-		//
-		// final Stroke stroke = ((LineStyle) key).getStroke(2.0f);
-		// final int newSize2 = (int) (size * 1.5);
-		// g.translate(0, -size * 0.25);
-		// g.setColor(Color.DARK_GRAY);
-		// g.drawRect(0, 0, size, newSize2);
-		// g.setStroke(stroke);
-		// g.setColor(ICON_COLOR);
-		// g.drawLine(size - 1, 1, 1, newSize2 - 1);
-		// g.translate(0, size * 0.25);
-		//
-		//
-		//
-		// // TODO
-		// // case NODE_LABEL_POSITION:
-		// //
-		// // final LabelPlacerGraphic lp = new
-		// LabelPlacerGraphic((LabelPosition)
-		// key,
-		// // (int) (size * 1.5), false);
-		// // lp.paint(g);
-		// //
-		// // break;
-		// } else if ( type.equals(NODE_LABEL) ||
-		// type.equals(NODE_TOOLTIP) ||
-		// type.equals(EDGE_LABEL) ||
-		// type.equals(EDGE_TOOLTIP) ) {
-		// if(key != null) {
-		// g.drawString(key.toString(), 0, g.getFont().getSize()*2);
-		// }
-		// }
-
-		
+		icon.paintIcon(this, g, x, y);	
+		g.translate(-xDisp, -y);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param iconWidth
-	 *            DOCUMENT ME!
-	 * @param iconHeight
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	public ImageIcon getTrackGraphicIcon(int iconWidth, int iconHeight) {
 		return createIcon(iconWidth, iconHeight, false);
 	}
@@ -664,7 +438,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		int trackHeight = iconHeight - 8;
 		if (detail) {
 			trackHeight = iconHeight - 30;
-			smallIconSize = (int) (trackHeight * 0.5);
+			//smallIconSize = (int) (trackHeight * 0.5);
 		} else {
 			trackHeight = iconHeight - 8;
 		}
@@ -700,8 +474,6 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 			return new ImageIcon(bi);
 		}
 
-//		rangeObjects = buildIconArray(stops.size() + 1);
-
 		int newX = 0;
 
 		Point2D p1 = new Point2D.Float(0, 5);
@@ -718,9 +490,10 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 			p2.setLocation(newX, 0);
 			iconLocX = newX
-					- (((newX - (int) p1.getX()) / 2) + (smallIconSize / 2));
-			iconLocY = ((trackHeight) / 2) - (smallIconSize / 2);
+					- (((newX - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
+			iconLocY = ((trackHeight) / 2) - (ICON_SIZE / 2);
 
+			
 			if (i == 0) {
 				drawIcon(below, g, iconLocX, iconLocY);
 			} else {
@@ -740,8 +513,8 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		p2.setLocation(track_width, 0);
 
 		iconLocX = track_width
-				- (((track_width - (int) p1.getX()) / 2) + (smallIconSize / 2));
-		iconLocY = ((trackHeight) / 2) - (smallIconSize / 2);
+				- (((track_width - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
+		iconLocY = ((trackHeight) / 2) - (ICON_SIZE / 2);
 		drawIcon(above, g, iconLocX, iconLocY);
 
 		/*

@@ -40,6 +40,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 
 
@@ -50,15 +51,15 @@ import java.awt.geom.AffineTransform;
 public class NodeIcon extends VisualPropertyIcon<Shape> {
 	
 	private final static long serialVersionUID = 1202339876280466L;
+	
+	private static final Stroke BASIC_STROKE = new BasicStroke(2.0f);
 
 	private Shape newShape;
 	private Graphics2D g2d;
 
-
 	
 	public NodeIcon(Shape shape, int width, int height, String name) {
 		super(shape, width, height, name);
-
 		adjustShape();
 	}
 
@@ -71,41 +72,28 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 		final double yRatio = height / shapeHeight;
 
 		final AffineTransform af = new AffineTransform();
-
 		af.setToScale(xRatio, yRatio);
 		newShape = af.createTransformedShape(value);
 	}
 
-	/**
-	 * Draw icon using Java2D.
-	 *
-	 * @param c DOCUMENT ME!
-	 * @param g DOCUMENT ME!
-	 * @param x DOCUMENT ME!
-	 * @param y DOCUMENT ME!
-	 */
-	@Override public void paintIcon(Component c, Graphics g, int x, int y) {		
+
+	@Override
+	public void paintIcon(Component c, Graphics g, int x, int y) {		
 		g2d = (Graphics2D) g;
 
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		g2d.translate(leftPad, (c.getHeight() - newShape.getBounds2D().getHeight()) / 2);
+		g2d.translate(leftPad, 0);
 		g2d.setColor(color);
-		g2d.setStroke(new BasicStroke(2.0f));
+		g2d.setStroke(BASIC_STROKE);
 		g2d.draw(newShape);
-		g2d.translate(-leftPad, -((c.getHeight() - newShape.getBounds2D().getHeight()) / 2));
-
+		g2d.translate(-leftPad, 0);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public NodeIcon clone() {
 		final NodeIcon cloned = new NodeIcon(value, width, height, name);
-
 		return cloned;
 	}
 }

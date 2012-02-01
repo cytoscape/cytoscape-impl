@@ -611,6 +611,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 				if (presentation != null) {
 					final Object defValue = selectedStyle.getDefaultValue(vp);
 					icon = presentation.createIcon(vp, selectedStyle.getDefaultValue(vp), ICON_WIDTH, ICON_HEIGHT);
+					
 					if(defValue != null)
 						setToolTipText(defValue.toString());
 				}
@@ -638,8 +639,6 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 			return this;
 		}
-		
-		
 	}
 
 	

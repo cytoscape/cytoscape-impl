@@ -30,7 +30,7 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		// Transform to fit to the component
-		g2d.translate((x+leftPad), y);
+		g2d.translate((leftPad), 0);
 		Float arc = width * ARC_RATIO;
 		g2d.setColor(BACK);
 		g2d.fillRoundRect(0, 0, width, height, arc.intValue(), arc.intValue());
@@ -40,6 +40,6 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		lp.paint(g2d);
 		
 		// Transform to fit to the component
-		g2d.translate(-(x+leftPad), -y);
+		g2d.translate(-leftPad, 0);
 	}
 }

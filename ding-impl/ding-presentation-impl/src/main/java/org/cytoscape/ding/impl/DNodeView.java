@@ -1198,7 +1198,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			DLineType dLineType = DLineType.getDLineType((LineType) value);
 			setBorder(dLineType.getStroke(this.getBorderWidth()));
 		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
-			setTransparency(((Integer) value));
+			setTransparency(((Number) value).intValue());
 		} else if (vp == MinimalVisualLexicon.NODE_WIDTH) {
 			setWidth(((Number) value).doubleValue());
 		} else if (vp == MinimalVisualLexicon.NODE_HEIGHT) {

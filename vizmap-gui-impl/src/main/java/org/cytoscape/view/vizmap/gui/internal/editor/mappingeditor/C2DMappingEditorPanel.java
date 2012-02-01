@@ -45,7 +45,7 @@ import javax.swing.ImageIcon;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Number, V> {
+	
 	private final static long serialVersionUID = 1213748837197780L;
 
 	private static final Logger logger = LoggerFactory.getLogger(C2DMappingEditorPanel.class);
@@ -72,107 +73,79 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			final CyApplicationManager appManager, final VisualMappingManager vmm, final EditorManager editorManager) {
 		super(style, mapping, attr, appManager, vmm);
 
-
 		this.editorManager = editorManager;
 
 		this.iconPanel.setVisible(false);
 		this.belowPanel.setVisible(false);
 		this.abovePanel.setVisible(false);
-
-		setSlider();
+		
+		initSlider();
 	}
 
 	
-//	public ImageIcon getIcon(final int iconWidth, final int iconHeight, VisualProperty<V> type) {
-//
-//		if (slider.getTrackRenderer() instanceof DiscreteTrackRenderer == false) {
-//			return null;
-//		}
-//
-//		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) slider.getTrackRenderer();
-//		rend.getRendererComponent(slider);
-//
-//		return new ImageIcon();
-//		// FIXME
-//		// return rend.getTrackGraphicIcon(iconWidth, iconHeight);
-//	}
-
-	/**
-	 * 
-	 * @param width
-	 * @param height
-	 * @param type
-	 * @return
-	 */
-	public ImageIcon getLegend(final int width, final int height) {
-
-		if (slider.getTrackRenderer() instanceof DiscreteTrackRenderer == false) {
-			return null;
-		}
-
-		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) slider.getTrackRenderer();
-		rend.getRendererComponent(slider);
-
-		return rend.getLegend(width, height);
+	private void updateView() {
+		final CyNetworkView curView = appManager.getCurrentNetworkView();
+		style.apply(curView);
+		curView.updateView();
 	}
+
 
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
 		BoundaryRangeValues<V> newRange;
-		V defValue = type.getDefault();
-
-		Double maxValue = tracer.getMax(type);
+		
+		final V defValue = type.getDefault();
+		final Double maxValue = tracer.getMax(type);
+		final Float ratio;
 
 		if (mapping.getPointCount() == 0) {
-			slider.getModel().addThumb(50f, defValue);
-
+			ratio = 50f;
+			// Add new slider at center
+			slider.getModel().addThumb(ratio, defValue);
 			newRange = new BoundaryRangeValues<V>(below, defValue, above);
-			mapping.addPoint(maxValue / 2, newRange);
-			slider.repaint();
-			repaint();
+			
+		} else {
+			ratio = 70f;
+			// Add a new thumb with default value
+			slider.getModel().addThumb(ratio, defValue);
 
-			return;
+			// Pick Up first point.
+			final ContinuousMappingPoint<Number, V> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
+			final BoundaryRangeValues<V> previousRange = previousPoint.getRange();
+
+			V lesserVal = slider.getModel().getSortedThumbs().get(slider.getModel().getThumbCount() - 1).getObject();
+			V equalVal = defValue;
+			V greaterVal = previousRange.greaterValue;
+
+			newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
 		}
 
-		// Add a new thumb with default value
-		slider.getModel().addThumb(100f, defValue);
-
-		// Pick Up first point.
-		final ContinuousMappingPoint<Number, V> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
-
-		final BoundaryRangeValues<V> previousRange = previousPoint.getRange();
-
-		V lesserVal = slider.getModel().getSortedThumbs().get(slider.getModel().getThumbCount() - 1).getObject();
-		V equalVal = defValue;
-		V greaterVal = previousRange.greaterValue;
-
-		newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
-
-		mapping.addPoint(maxValue, newRange);
-
+		mapping.addPoint(maxValue*(ratio/100), newRange);
 		updateMap();
 
 		slider.repaint();
 		repaint();
+		
+		updateView();
 	}
 
+	
+	@Override
 	protected void updateMap() {
 		// FIXME
-		List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
+		final List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
 
 		final double minValue = tracer.getMin(type);
 		final double valRange = tracer.getRange(type);
 
-		// List<ContinuousMappingPoint> points = mapping.getAllPoints();
 		Thumb<V> t;
-		Double newVal;
+		Double newPosition;
 
 		if (thumbs.size() == 1) {
 			// Special case: only one handle.
 			mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(below, below, above));
-			newVal = ((thumbs.get(0).getPosition() / 100) * valRange) + minValue;
-			mapping.getPoint(0).setValue(newVal);
-
+			newPosition = ((thumbs.get(0).getPosition() / 100) * valRange) + minValue;
+			mapping.getPoint(0).setValue(newPosition);
 			return;
 		}
 
@@ -201,8 +174,8 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			}
 			mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
 
-			newVal = ((t.getPosition() / 100) * valRange) + minValue;
-			mapping.getPoint(i).setValue(newVal);
+			newPosition = ((t.getPosition() / 100) * valRange) + minValue;
+			mapping.getPoint(i).setValue(newPosition);
 		}
 	}
 
@@ -214,14 +187,13 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			slider.getModel().removeThumb(selectedIndex);
 			mapping.removePoint(selectedIndex);
 			updateMap();
-			// mapping.fireStateChanged();
-
-			// Cytoscape.redrawGraph(vmm.getNetworkView());
 			repaint();
+			
+			updateView();
 		}
 	}
 
-	private void setSlider() {
+	private void initSlider() {
 		Dimension dim = new Dimension(600, 100);
 		setPreferredSize(dim);
 		setSize(dim);
@@ -316,10 +288,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
+	public void propertyChange(PropertyChangeEvent pce) {}
 
 	@Override
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
@@ -327,5 +296,16 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		rend.getRendererComponent(slider);
 
 		return rend.getTrackGraphicIcon(iconWidth, iconHeight);
+	}
+	
+	public ImageIcon getLegend(final int width, final int height) {
+
+		if (slider.getTrackRenderer() instanceof DiscreteTrackRenderer == false)
+			return null;
+
+		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) slider.getTrackRenderer();
+		rend.getRendererComponent(slider);
+
+		return rend.getLegend(width, height);
 	}
 }
