@@ -125,7 +125,7 @@ public class MergeNetworkEdit extends AbstractCyEdit {
             // iterate through nodes and restore each one (also set proper position)
             for (CyNode cyNode : cyNodes.keySet()) {
             	CyNode node = cyNetwork.addNode();
-            	AttributeUtil.copyAttributes(cyNode, node);
+            	AttributeUtil.copyAttributes(cyNetwork, cyNode, node);
             	
                 Point2D.Double point = cyNodes.get(cyNode);
                 View<CyNode> nv = view.getNodeView(node);

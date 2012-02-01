@@ -31,11 +31,6 @@ public class AttributeUtil {
 		}
 	}
 	
-	public static void copyAttributes(CyTableEntry source, CyTableEntry target) {
-		// TODO Auto-generated method stub
-		
-	}
-	
 	
 	public static void set(CyNetwork network, CyTableEntry entry, String tableName, String name, Object value, Class<?> type) {
 		CyRow row = (tableName==null) ? network.getRow(entry) : network.getRow(entry,tableName);

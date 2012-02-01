@@ -353,7 +353,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		Map<String, CyNode> nodes = new HashMap<String, CyNode>();
 		for (CyNode node : cyNetwork.getNodeList()) {
 			CyNode newNode = mergedNetwork.addNode();
-			AttributeUtil.copyAttributes(node, newNode);
+			AttributeUtil.copyAttributes(mergedNetwork, node, newNode);
 			String name = cyNetwork.getRow(node).get(CyNode.NAME, String.class);
 			nodes.put(name, newNode);
 		}
@@ -364,7 +364,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			CyNode source = nodes.get(sourceName);
 			CyNode target = nodes.get(targetName);
 			CyEdge newEdge = mergedNetwork.addEdge(source, target, true);
-			AttributeUtil.copyAttributes(edge, newEdge);
+			AttributeUtil.copyAttributes(mergedNetwork, edge, newEdge);
 			edges.add(newEdge);
 		}
 

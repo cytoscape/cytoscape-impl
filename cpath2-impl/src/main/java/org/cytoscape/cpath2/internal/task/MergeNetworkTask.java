@@ -120,7 +120,7 @@ public class MergeNetworkTask implements Task {
         // tbd: worry about networks that exceed # node/edge threshold
         for (CyNode node : network.getNodeList()) {
             CyNode mergedNode = mergedNetwork.addNode();
-            AttributeUtil.copyAttributes(node, mergedNode);
+            AttributeUtil.copyAttributes(mergedNetwork, node, mergedNode);
             String name = network.getRow(mergedNode).get(CyNode.NAME, String.class);
             newNodes.put(name, mergedNode);
         }
@@ -130,7 +130,7 @@ public class MergeNetworkTask implements Task {
         	CyNode source = newNodes.get(sourceName);
         	CyNode target = newNodes.get(targetName);
             CyEdge mergedEdge = mergedNetwork.addEdge(source, target, true);
-            AttributeUtil.copyAttributes(edge, mergedEdge);
+            AttributeUtil.copyAttributes(mergedNetwork, edge, mergedEdge);
             newEdges.add(mergedEdge);
         }
 
