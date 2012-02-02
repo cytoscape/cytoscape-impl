@@ -55,7 +55,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -409,36 +408,50 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	@Override
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
-		SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				final CyNetworkView view = e.getNetworkView();
-
-				if (view == null) {
-					logger.warn("Current network view is set to null.");
-					return;
+		final CyNetworkView view = e.getNetworkView();
+		
+		if (view == null) {
+			logger.debug("Current network view is set to null.");
+			return;
+		}
+		
+		final NetworkTreeNode node = (NetworkTreeNode) treeTable.getTree().getLastSelectedPathComponent();
+		final CyNetwork selectedNet = node != null ? node.getNetwork() : null;
+		
+		if (!view.getModel().equals(selectedNet)) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() {
+					logger.debug("Got SetCurrentNetworkViewEvent.  View ID = " + e.getNetworkView().getSUID());
+					final long curr = e.getNetworkView().getModel().getSUID();
+					focusNetworkNode(curr);
 				}
-				logger.debug("Got SetCurrentNetworkViewEvent.  View ID = " + e.getNetworkView().getSUID());
-				final long curr = e.getNetworkView().getModel().getSUID();
-				focusNetworkNode(curr);
-			}
-		});
+			});
+		}
 	}
 
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				final CyNetwork cnet = e.getNetwork();
-				if (cnet == null) {
-					logger.warn("Got null for current network.");
-					return;
+		final CyNetwork cnet = e.getNetwork();
+		
+		if (cnet == null) {
+			logger.debug("Got null for current network.");
+			return;
+		}
+		
+		final NetworkTreeNode node = (NetworkTreeNode) treeTable.getTree().getLastSelectedPathComponent();
+		final CyNetwork selectedNet = node != null ? node.getNetwork() : null;
+		
+		if (!cnet.equals(selectedNet)) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() {
+					logger.debug("Set current network " + cnet.getSUID());
+					focusNetworkNode(cnet.getSUID());
 				}
-				logger.debug("Set current network " + cnet.getSUID());
-				focusNetworkNode(cnet.getSUID());
-			}
-		});
+			});
+		}
 	}
 
+	@Override
 	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent nde) {
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -449,6 +462,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		});
 	}
 
+	@Override
 	public void handleEvent(final NetworkViewAddedEvent nde) {
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -515,12 +529,17 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	}
 
 	public void focusNetworkNode(final Long networkID) {
-		final DefaultMutableTreeNode node = getNetworkNode(networkID);
-
+		final NetworkTreeNode node = getNetworkNode(networkID);
+		
 		if (node != null) {
-			// fires valueChanged if the network isn't already selected
-			treeTable.getTree().getSelectionModel().setSelectionPath(new TreePath(node.getPath()));
-			treeTable.getTree().scrollPathToVisible(new TreePath(node.getPath()));
+			final CyNetwork net = node.getNetwork();
+			final NetworkTreeNode selectedNode = (NetworkTreeNode) treeTable.getTree().getLastSelectedPathComponent();
+			
+			if (selectedNode == null || !net.equals(selectedNode.getNetwork())) {
+				// fires valueChanged only if the network isn't already selected
+				treeTable.getTree().getSelectionModel().setSelectionPath(new TreePath(node.getPath()));
+				treeTable.getTree().scrollPathToVisible(new TreePath(node.getPath()));
+			}
 		}
 	}
 
@@ -543,9 +562,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	/**
 	 * This method highlights a network in the NetworkPanel.
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
 	 */
 	@Override
 	public void valueChanged(TreeSelectionEvent e) {
@@ -560,11 +576,17 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			return;
 		}
 
+		final CyNetwork net = node.getNetwork();
+		
 		// This is a "network set" node.
-		if (node.getNetwork() == null)
+		if (net == null)
 			return;
 
-		appManager.setCurrentNetwork(node.getNetwork());
+		// No need to set the same network again. It should prevent infinite loops.
+		// Also check if the network still exists (it could have been removed by another thread).
+		if (netmgr.networkExists(net.getSUID()) && !net.equals(appManager.getCurrentNetwork())) {
+			appManager.setCurrentNetwork(net);
+		}
 
 		// creates a list of all selected networks
 		List<CyNetwork> networkList = new LinkedList<CyNetwork>();

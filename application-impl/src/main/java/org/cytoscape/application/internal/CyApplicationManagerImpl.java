@@ -178,11 +178,15 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	public void setCurrentNetwork(final CyNetwork network) {
 		final long networkId = network.getSUID();
+		boolean changed = false;
+		
 		synchronized (this) {
 			if (!networkManager.networkExists(networkId))
 				throw new IllegalArgumentException("Network is not registered in this ApplicationManager: ID = "
 				                                   + networkId);
 
+			changed = !network.equals(currentNetwork);
+			
 			logger.info("Set current network called.  Current network ID = " + networkId);
 			currentNetwork = network; 
 			currentNetworkView = networkViewManager.getNetworkView(network);
@@ -194,7 +198,10 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 		logger.debug("Current network is set.  Firing SetCurrentNetworkEvent: Network ID = "
 		             + networkId);
-		cyEventHelper.fireEvent(new SetCurrentNetworkEvent(this, currentNetwork));
+		
+		if (changed) {
+			cyEventHelper.fireEvent(new SetCurrentNetworkEvent(this, currentNetwork));
+		}
 	}
 
 	public synchronized CyNetworkView getCurrentNetworkView() {
@@ -207,12 +214,17 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			return;
 		}
 
+		boolean changed = false;
+		
 		synchronized (this) {
 			if (!networkManager.networkExists(view.getModel().getSUID()))
 				throw new IllegalArgumentException("network is not recognized by this ApplicationManager");
 
 			logger.debug("Set current network view called: View ID = " + view.getSUID());
 
+			changed = !view.equals(currentNetworkView);
+			
+			currentNetworkView = view;
 			setCurrentNetwork(view.getModel());
 
 			// reset selected network views
@@ -222,7 +234,10 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 		logger.debug("Current network view is set.  Firing SetCurrentNetworkViewEvent: View ID = "
 		             + view.getSUID());
-		cyEventHelper.fireEvent(new SetCurrentNetworkViewEvent(this, currentNetworkView));
+		
+		if (changed) {
+			cyEventHelper.fireEvent(new SetCurrentNetworkViewEvent(this, currentNetworkView));
+		}
 	}
 
 	public synchronized List<CyNetworkView> getSelectedNetworkViews() {

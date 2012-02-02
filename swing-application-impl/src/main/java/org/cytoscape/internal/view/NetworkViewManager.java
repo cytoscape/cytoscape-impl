@@ -245,6 +245,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			logger.info("Attempting to set current network : null network ");
 			return;
 		}
+		
+		CyNetworkView view = networkViewManager.getNetworkView(e.getNetwork());
+
+		if (view != null) {
+			setFocus(view);
+		}
 	}
 
 	@Override
@@ -461,7 +467,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	private void setFocus(CyNetworkView targetViewModel) {
 		if (targetViewModel == null) {
-			logger.warn("Set Focus method got a null vew.");
+			logger.warn("Set Focus method got a null view.");
 			return;
 		}
 
