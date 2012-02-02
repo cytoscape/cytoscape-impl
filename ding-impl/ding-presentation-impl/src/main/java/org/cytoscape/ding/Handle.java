@@ -33,4 +33,10 @@ public interface Handle {
 	 * @param y Absolute value for Y-location.
 	 */
 	void defineHandle(final DEdgeView edgeView, final double x, final double y);
+	
+	/**
+	 * Create string representation of this object for parsing.
+	 * @return
+	 */
+	String getSerializableString();
 }

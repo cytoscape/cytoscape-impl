@@ -45,4 +45,10 @@ public interface Bend {
 	 * @return Index of the given Handle
 	 */
 	int getIndex(final Handle handle);
+	
+	/**
+	 * Create string representation of this object for parsing.
+	 * @return
+	 */
+	String getSerializableString();
 }

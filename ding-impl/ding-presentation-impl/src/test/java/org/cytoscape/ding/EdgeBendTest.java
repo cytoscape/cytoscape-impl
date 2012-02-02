@@ -2,6 +2,8 @@ package org.cytoscape.ding;
 
 import static org.junit.Assert.*;
 
+import org.cytoscape.ding.impl.BendImpl;
+import org.cytoscape.ding.impl.HandleImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +20,9 @@ public class EdgeBendTest {
 
 	@Test
 	public void testEdgeBend() {
+		Bend bend1 = new BendImpl();
+		
+		bend1.insertHandleAt(0, new HandleImpl(10, 20));
 	}
 
 }

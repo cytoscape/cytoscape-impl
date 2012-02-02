@@ -13,9 +13,11 @@ import org.cytoscape.view.model.View;
  */
 public class HandleImpl implements Handle {
 	
-	double cosTheta;
-	double sinTheta;
-	double ratio;
+	private static final String DELIMITER =",";
+	
+	private Double cosTheta;
+	private Double sinTheta;
+	private Double ratio;
 	
 	// Original handle location
 	private double x = 0;
@@ -141,5 +143,56 @@ public class HandleImpl implements Handle {
 //		System.out.println("** sin = " + sinTheta);
 //		System.out.println("** theta rad = " + theta);
 //		System.out.println("** theta degree = " + (theta* 180 / Math.PI));
+	}
+
+
+	/**
+	 * Serialized string is "cos,sin,ratio".
+	 */
+	@Override
+	public String getSerializableString() {
+		if(cosTheta == null || sinTheta  == null || ratio == null)
+			return null;
+		return cosTheta.toString() + DELIMITER + sinTheta.toString() + DELIMITER + ratio;
+	}
+	
+	private void setCos(final Double cos) {
+		this.cosTheta = cos;
+	}
+	
+	private void setSin(final Double sin) {
+		this.sinTheta = sin;
+	}
+	
+	private void setRatio(final Double ratio) {
+		this.ratio = ratio;
+	}
+	
+	/**
+	 * @param strRepresentation
+	 * @return returns null for invalid inputs.
+	 */
+	public static Handle parseSerializableString(final String strRepresentation) {
+		// Validate
+		if(strRepresentation == null)
+			return null;
+		
+		final String[] parts = strRepresentation.split(DELIMITER);
+		if(parts.length != 3)
+			return null;
+		
+		try {
+			final Double cos = Double.parseDouble(parts[0]);
+			final Double sin = Double.parseDouble(parts[1]);
+			final Double ratio = Double.parseDouble(parts[2]);
+			
+			HandleImpl handle = new HandleImpl(0, 0);
+			handle.setSin(sin);
+			handle.setCos(cos);
+			handle.setRatio(ratio);
+			return handle;
+		} catch (Exception ex) {
+			return null;
+		}		
 	}
 }

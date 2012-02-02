@@ -12,6 +12,8 @@ import org.cytoscape.ding.Handle;
  */
 public class BendImpl implements Bend {
 	
+	private static final String DELIMITER ="|";
+	
 	// List of Bends included in this Bend
 	private final List<Handle> handles;
 	
@@ -52,5 +54,43 @@ public class BendImpl implements Bend {
 	@Override
 	public String toString() {
 		return "Handles[ " + handles.size() + " ]" ;
+	}
+
+	@Override
+	public String getSerializableString() {
+		final StringBuilder builder = new StringBuilder();
+		for(Handle handle:handles)
+			builder.append(handle.getSerializableString() + DELIMITER);
+		final String serialized = builder.toString();
+		
+		//System.out.println("Serialized String: " + serialized);
+		
+		if(serialized.length() == 0)
+			return "";
+		else
+			return serialized.substring(0, serialized.length()-1);
+	}
+	
+	public static Bend parseSerializableString(String strRepresentation) {
+		
+		//System.out.println("Parsing String: " + strRepresentation);
+		
+		final Bend bend = new BendImpl();
+		// Validate
+		if (strRepresentation == null)
+			return bend;
+
+		final String[] parts = strRepresentation.split("\\|");
+		
+		for(int i=0; i<parts.length; i++) {
+			final String str = parts[i];
+			final Handle handle = HandleImpl.parseSerializableString(str);
+			//System.out.println("Got handle: " + handle);
+			if(handle != null)
+				bend.insertHandleAt(i, handle);
+		}
+
+		//System.out.println("Got Bend: " + bend.toString());
+		return bend;
 	}
 }
