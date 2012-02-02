@@ -135,7 +135,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				taskMonitor.setStatusMessage("Retrieving " + networkTitle + ".");
 			}
 
-			// Store BioPAX to Temp File
+			// Get and Store BioPAX or SIF data to a temp file
 			String tmpDir = System.getProperty("java.io.tmpdir");
 			// Branch based on download mode setting.
 			File tmpFile;
@@ -145,15 +145,15 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				tmpFile = File.createTempFile("temp", ".sif", new File(tmpDir));
 			}
 			tmpFile.deleteOnExit();
-
 			// Get Data, and write to temp file.
 			String data = webApi.getRecordsByIds(ids, format, taskMonitor);
 			FileWriter writer = new FileWriter(tmpFile);
 			writer.write(data);
 			writer.close();
 
-			CyNetworkReader reader = cPathFactory.getCyNetworkViewReaderManager().getReader(tmpFile.toURI(),
-					tmpFile.getName());
+			// read the network from the temp file (the reader is auto-detected by the file extension or content)
+			CyNetworkReader reader = cPathFactory.getCyNetworkViewReaderManager()
+					.getReader(tmpFile.toURI(), tmpFile.getName());
 			if (taskMonitor != null) {
 				taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 				taskMonitor.setProgress(0);
@@ -248,10 +248,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	 *            Cytoscape Network Object.
 	 */
 	private void postProcessingBinarySif(final CyNetworkView view, TaskMonitor taskMonitor) {
-		// Init the node attribute meta data, e.g. description, visibility, etc.
-		// TODO: What happened to attribute descriptions?
-		// BioPaxMapper.initAttributes(nodeAttributes);
-
 		final CyNetwork cyNetwork = view.getModel();
 
 		// Set the Quick Find Default Index
@@ -444,10 +440,10 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 					if(e instanceof EntityReference 
 							|| e instanceof Complex 
 								|| e.getModelInterface().equals(PhysicalEntity.class)) {
-						String id = e.getRDFId().replaceFirst(model.getXmlBase(), "");
-						if (id != null) {
-							id = id.replaceAll("CPATH-", "");
-							CyNode node = nodes.get(id);
+						String cpathId = e.getRDFId().replaceFirst(model.getXmlBase(), "");
+						if (cpathId != null) {
+							cpathId = cpathId.replaceAll("CPATH-", "");
+							CyNode node = nodes.get(cpathId);
 							if(node != null)
 								BioPaxUtil.createAttributesFromProperties(e, node, cyNetwork);
 							// - this will also update the 'name' attribute (to a biol. label)

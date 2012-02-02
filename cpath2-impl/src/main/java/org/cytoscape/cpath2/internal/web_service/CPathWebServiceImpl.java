@@ -119,7 +119,6 @@ public class CPathWebServiceImpl implements CPathWebService {
         protocol = new CPathProtocol();
         protocol.setCommand(CPathProtocol.COMMAND_GET_PARENTS);
         protocol.setFormat(CPathResponseFormat.GENERIC_XML);
-
         protocol.setQuery(Long.toString(primaryId));
 
         SummaryResponseType summaryResponse;

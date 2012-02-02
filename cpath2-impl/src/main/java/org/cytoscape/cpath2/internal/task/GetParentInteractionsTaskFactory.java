@@ -6,7 +6,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-// TODO: Wire this in OSGi
+// TODO: Wire this in OSGi; this class is never called... (remove?)
 public class GetParentInteractionsTaskFactory extends AbstractNodeViewTaskFactory {
 	private final CPath2Factory factory;
 

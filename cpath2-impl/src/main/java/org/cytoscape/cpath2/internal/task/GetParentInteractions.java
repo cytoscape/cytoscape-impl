@@ -17,6 +17,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 
+// TODO seems, in practice, this class is never called!
 public class GetParentInteractions implements Task {
     private long cpathId;
     private CPathWebService webApi = CPathWebServiceImpl.getInstance();
@@ -26,8 +27,10 @@ public class GetParentInteractions implements Task {
 	private final CPath2Factory factory;
 
     public GetParentInteractions (CyNetwork network, CyNode node, CPath2Factory factory) {
-    	// TODO: Investigate what alternatives we can use for getIdentifier()
-        this.cpathId = node.getSUID();
+    	// TODO: Debug, investigate this cPath1 (Pathway Commons, BioPAX Level2 webservice specific code...)
+        String cpathId = network.getRow(node).get(CyNode.NAME, String.class); // TODO actually, - must be from "shared name" virtual attr. column
+//        this.cpathId = node.getSUID();
+        this.cpathId = Integer.parseInt(cpathId); //well, well
         this.node = node;
         this.network = network;
         this.factory = factory;
