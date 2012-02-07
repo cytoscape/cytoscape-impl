@@ -35,8 +35,13 @@ public class HandleViewEdgeGraphics extends AbstractHandler {
 
 	@Override
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-        final String edgeId = manager.getCurrentElementId();
+        final Object edgeId = manager.getCurrentElementId();
 		
+        if (edgeId == null) {
+        	logger.error("Cannot parse edge view: edge id is null");
+        	return current;
+        }
+        
 		if (tag.equals("graphics")) {
         	manager.addViewGraphicsAttributes(edgeId, atts, false);
         } else if (tag.equals("att")) {

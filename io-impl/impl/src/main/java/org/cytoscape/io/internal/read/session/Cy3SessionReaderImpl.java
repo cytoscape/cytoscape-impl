@@ -97,7 +97,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/"+PROPERTIES_FOLDER+"?(([^/]+)[.](props|properties))");
 	
 	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new HashMap<Long, CyNetwork>();
-	private final Map<String/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<String, Set<CyTableMetadataBuilder>>();
+	private final Map<Long/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<Long, Set<CyTableMetadataBuilder>>();
 
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
@@ -225,7 +225,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		
 		if (matcher.matches()) {
 			String networkName = SessionUtil.unescape(matcher.group(2));
-			String oldNetId = getOldNetworkId(networkName);
+			Long oldNetId = getOldNetworkId(networkName);
+			
+			if (oldNetId == null) {
+				throw new NullPointerException("Cannot extract table. Network SUID is null for entry: " + entryName);
+			}
+			
 			String namespace = SessionUtil.unescape(matcher.group(3));
 			Class<?> type = Class.forName(SessionUtil.unescape(matcher.group(4)));
 			String title = SessionUtil.unescape(matcher.group(5));
@@ -276,19 +281,23 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractNetworkView(InputStream is, String entryName) throws Exception {
 		// Get the token which identifies the network
 		Matcher matcher = NETWORK_VIEW_PATTERN.matcher(entryName);
-		String oldNetId = null;
+		Long oldNetId = null;
 		
 		if (matcher.matches()) {
 			String netViewToken = matcher.group(2);
 			matcher = NETWORK_VIEW_NAME_PATTERN.matcher(netViewToken);
 			
-			if (matcher.matches())
-				oldNetId = matcher.group(1);
+			if (matcher.matches()) {
+				try {
+					oldNetId = Long.valueOf(matcher.group(1));
+				} catch (NumberFormatException nfe) {
+					logger.error("Cannot extract network view SUID from: " + netViewToken);
+				}
+			}
 		}
 		
-		if (oldNetId != null && !oldNetId.isEmpty()) {
-			final Long netId = cache.getNewId(oldNetId);
-			final CyNetwork network = networkLookup.get(netId);
+		if (oldNetId != null) {
+			final CyNetwork network = cache.getNetwork(oldNetId);
 			
 			if (network != null) {
 				// Create the view
@@ -307,7 +316,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				}
 			}
 		} else {
-			logger.error("The network view entry is invalid: " + entryName);
+			logger.error("The network view will cannot be recreated. The network view entry is invalid: " + entryName);
 		}
 	}
 
@@ -419,7 +428,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void mergeNetworkTables() throws UnsupportedEncodingException {
 		for (Entry<Long, CyNetwork> entry : networkLookup.entrySet()) {
 			CyNetwork network = entry.getValue();
-			String oldId = cache.getOldId(network.getSUID());
+			Object oldId = cache.getOldId(network.getSUID());
 			Set<CyTableMetadataBuilder> builders = networkTableMap.get(oldId);
 
 			if (builders == null)
@@ -450,12 +459,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		Map<String, CyTable> tableMap = networkTableManager.getTables(network, type);
 		CyTable targetTable = tableMap.get(namespace);
 		CyTable sourceTable = builder.getTable();
-		Map<String, Long> mappings = cache.getIdMap();
-		mergeTables(sourceTable, targetTable, mappings);
+		mergeTables(sourceTable, targetTable, type);
 		builder.setCyTable(targetTable);
 	}
 	
-	private void mergeTables(CyTable source, CyTable target, Map<String, Long> mappings) {
+	private void mergeTables(CyTable source, CyTable target, Class<? extends CyTableEntry> type) {
 		CyColumn sourceKey = source.getPrimaryKey();
 		CyColumn targetKey = target.getPrimaryKey();
 		String keyName = sourceKey.getName();
@@ -464,10 +472,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (keyName.equals(targetKey.getName())) {
 			for (CyRow sourceRow : source.getAllRows()) {
 				Long key = sourceRow.get(keyName, Long.class);
-				Long mappedKey = null;
-
-				if (mappings != null)
-					mappedKey = mappings.get(""+key);
+				CyTableEntry entry = cache.getObjectById(key, type);
+				Long mappedKey = entry != null ? entry.getSUID() : null;
+				
 				if (mappedKey == null)
 					mappedKey = key;
 
@@ -512,12 +519,18 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	 * @param networkToken
 	 * @return
 	 */
-	private static String getOldNetworkId(final String networkToken) {
-		String id = null;
+	private Long getOldNetworkId(final String networkToken) {
+		Long id = null;
 		Matcher matcher = NETWORK_NAME_PATTERN.matcher(networkToken);
 		
 		if (matcher.matches()) {
-			id = matcher.group(1);
+			String s = matcher.group(1);
+			
+			try {
+				id = Long.valueOf(s);
+			} catch (NumberFormatException nfe) {
+				logger.error("Cannot extract network SUID from: " + networkToken);
+			}
 		}
 		
 		return id;

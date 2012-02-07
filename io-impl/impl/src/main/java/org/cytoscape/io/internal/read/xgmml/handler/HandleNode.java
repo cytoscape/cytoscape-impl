@@ -44,7 +44,7 @@ public class HandleNode extends AbstractHandler {
 		
 		if (href == null) {
 			// Create the node
-			final String id = atts.getValue("id");
+			final Object id = getId(atts);
 			label = atts.getValue("label");
 			
 			if (label == null)
@@ -53,7 +53,7 @@ public class HandleNode extends AbstractHandler {
 			node = manager.createNode(id, label);
 		} else {
 			// Try to get the node from the internal cache
-			String id = AttributeValueUtil.getIdFromXLink(href);
+			final Long id = AttributeValueUtil.getIdFromXLink(href);
 			node = manager.getCache().getNode(id);
 			
 			if (node != null) {
@@ -74,8 +74,9 @@ public class HandleNode extends AbstractHandler {
 		if ( label != null && (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) ) {
 			manager.getCurrentNetwork().getRow(node).set(CyNode.NAME, label);
 			
-			if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork())
+			if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork()) {
 				manager.getRootNetwork().getRow(node).set(CyNode.NAME, label);
+			}
 		}
 		
 		return current;

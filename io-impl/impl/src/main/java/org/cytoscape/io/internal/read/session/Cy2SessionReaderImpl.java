@@ -581,25 +581,11 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		if (it == null)
 			return;
 
-		// create an id map
-		Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
-
-		for (CyNode n : net.getNodeList()) {
-			CyRow row = net.getRow(n);
-			String name = row.get(CyNetwork.NAME, String.class);
-			
-			if (name == null) // try another column...
-				name = row.get(CyRootNetwork.SHARED_NAME, String.class);
-			
-			if (name != null)
-				nodeMap.put(name, n);
-		}
-
 		// set attr values based on ids
 		while (it.hasNext()) {
 			final Node nodeObject = (Node) it.next();
 			String name = nodeObject.getId();
-			CyNode n = nodeMap.get(name);
+			CyNode n = cache.getNodeByName(name); // The XGMML node "id" is only used internally, by the XGMML parser.
 
 			if (n != null)
 				net.getRow(n, tableName).set(attrName, true);
@@ -613,25 +599,11 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		if (it == null)
 			return;
 
-		// create an id map
-		Map<String, CyEdge> edgeMap = new HashMap<String, CyEdge>();
-		
-		for (CyEdge e : net.getEdgeList()) {
-			CyRow row = net.getRow(e);
-			String name = row.get(CyNetwork.NAME, String.class);
-			
-			if (name == null) // try another column...
-				name = row.get(CyRootNetwork.SHARED_NAME, String.class);
-			
-			if (name != null)
-				edgeMap.put(name, e);
-		}
-
 		// set attr values based on ids
 		while (it.hasNext()) {
 			final Edge edgeObject = (Edge) it.next();
 			String name = edgeObject.getId();
-			CyEdge e = edgeMap.get(name);
+			CyEdge e = cache.getEdge(name); // In 2.x, XGMML edge elements have no "id" attribute--the label is the id.
 
 			if (e != null)
 				net.getRow(e, tableName).set(attrName, true);

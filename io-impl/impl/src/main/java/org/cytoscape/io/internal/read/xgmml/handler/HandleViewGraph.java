@@ -36,7 +36,7 @@ public class HandleViewGraph extends AbstractHandler {
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
 		manager.graphCount++;
-		String netId = atts.getValue("cy:networkId");
+		Long netId = Long.valueOf(atts.getValue("cy:networkId"));
 		
 		// There should be only no nested graph tags!
 		if (manager.graphCount > 1) {
@@ -49,7 +49,7 @@ public class HandleViewGraph extends AbstractHandler {
 		if (docVersion != null)
 			manager.setDocumentVersion(docVersion); // version 3.0+
 
-		manager.setNetworkViewId(atts.getValue("id"));
+		manager.setNetworkViewId(Long.valueOf(atts.getValue("id")));
 		manager.setNetworkId(netId);
 		manager.setCurrentElementId(netId);
 		manager.setVisualStyleName(atts.getValue("cy:visualStyle"));

@@ -42,10 +42,10 @@ public class HandleEdge extends AbstractHandler {
 		
 		if (href == null) {
 			// Create the edge:
-			String id = atts.getValue("id");
-			String label = atts.getValue("label");
-			String sourceId = atts.getValue("source");
-			String targetId = atts.getValue("target");
+			Object id = getId(atts);
+			String label = getLabel(atts);
+			Object sourceId = asLongOrString(atts.getValue("source"));
+			Object targetId = asLongOrString(atts.getValue("target"));
 			String isDirected = atts.getValue("cy:directed");
 			String sourceAlias = null;
 			String targetAlias = null;
@@ -92,10 +92,8 @@ public class HandleEdge extends AbstractHandler {
 			if (targetNode == null && targetAlias != null)
 				targetNode = manager.getCache().getNode(targetAlias);
 			
-			if (id == null || id.isEmpty())
-				id = label;
-			if (id == null || id.isEmpty())
-				id = String.format("%s (%s) %s", sourceId, (directed ? "directed" : "undirected"), targetId);
+			if (label == null || label.isEmpty())
+				label = String.format("%s (%s) %s", sourceId, (directed ? "directed" : "undirected"), targetId);
 			
 			if (sourceNode != null && targetNode != null) {
 				manager.createEdge(sourceNode, targetNode, id, label, interaction, directed);
@@ -110,5 +108,17 @@ public class HandleEdge extends AbstractHandler {
 		}
 
 		return current;
+	}
+	
+	private Object asLongOrString(String value) {
+		if (value != null) {
+			value = value.trim();
+			
+			try {
+				return Long.valueOf(value);
+			} catch (NumberFormatException nfe) { }
+		}
+		
+		return value;
 	}
 }

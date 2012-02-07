@@ -35,7 +35,7 @@ public class HandleViewLockedVisualPropAttribute extends AbstractHandler {
 
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-		final String modelId = manager.getCurrentElementId();
+		final Object modelId = manager.getCurrentElementId();
 		String name = atts.getValue("name");
 		String value = atts.getValue("value");
 

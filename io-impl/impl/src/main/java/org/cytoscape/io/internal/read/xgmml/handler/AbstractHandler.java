@@ -60,4 +60,35 @@ public abstract class AbstractHandler implements Handler {
 	public void setAttributeValueUtil(AttributeValueUtil attributeValueUtil) {
 		this.attributeValueUtil = attributeValueUtil;
 	}
+	
+	protected String getLabel(Attributes atts) {
+		String label = atts.getValue("label");
+		
+		if (label == null || label.isEmpty())
+			label = atts.getValue("id");
+
+		return label;
+	}
+	
+	protected Object getId(Attributes atts) {
+		Object id = atts.getValue("id");
+
+		if (id != null) {
+			final String str = id.toString().trim();
+
+			if (!str.isEmpty()) {
+				try {
+					id = Long.valueOf(str);
+				} catch (NumberFormatException nfe) {
+					logger.debug("Graph id is not a number: " + id);
+					id = str;
+				}
+			}
+		}
+		
+		if (id == null || id.toString().isEmpty())
+			id = atts.getValue("label");
+		
+		return id;
+	}
 }

@@ -35,8 +35,15 @@ public class HandleViewEdge extends AbstractHandler {
 
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-		String id = atts.getValue("cy:edgeId");
-		manager.setCurrentElementId(id);
+		String sId = atts.getValue("cy:edgeId");
+		
+		try {
+			Long id = Long.valueOf(sId);
+			manager.setCurrentElementId(id);
+		} catch (NumberFormatException nfe) {
+			logger.error("cy:edgeId is not a number: " + sId);
+			manager.setCurrentElementId(null);
+		}
 		
 		return current;
 	}

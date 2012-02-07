@@ -62,7 +62,6 @@ public class HandleGraph extends AbstractHandler {
 	}
 	
 	private ParseState handleCy2ModelAndView(String tag, Attributes atts, ParseState current) throws SAXException {
-		final String label = getLabel(atts); // This is the network ID in 2.x
 		final CyRootNetwork parent = manager.getParentNetwork();
 		final CyNetwork currentNet;
 		
@@ -82,13 +81,13 @@ public class HandleGraph extends AbstractHandler {
 			currentNet = rootNet.addSubNetwork();
 		}
 		
-		addCurrentNetwork(label, currentNet, atts);
+		final String id = getLabel(atts); // This is the network ID in 2.x
+		addCurrentNetwork(id, currentNet, atts);
 		
 		return current;
 	}
 	
 	private ParseState handleCy3Model(String tag, Attributes atts, ParseState current) throws SAXException {
-		final String id = getId(atts);
 		final CyNetwork currentNet;
 		
 		if (manager.graphCount == 1) {
@@ -104,6 +103,7 @@ public class HandleGraph extends AbstractHandler {
 			currentNet = rootNet.addSubNetwork();
 		}
 		
+		final Object id = getId(atts);
 		addCurrentNetwork(id, currentNet, atts);
 		
 		return current;
@@ -111,7 +111,6 @@ public class HandleGraph extends AbstractHandler {
 	
 	private ParseState handleGenericXGMMLGraph(String tag, Attributes atts, ParseState current) throws SAXException {
 		final CyNetwork currentNet;
-		String id = getId(atts);
 
 		if (manager.graphCount == 1) {
 			// Root (graph) element...
@@ -123,6 +122,7 @@ public class HandleGraph extends AbstractHandler {
 			currentNet = rootNet.addSubNetwork();
 		}
 
+		final Object id = getId(atts);
 		addCurrentNetwork(id, currentNet, atts);
 
 		return current;
@@ -134,16 +134,16 @@ public class HandleGraph extends AbstractHandler {
 	 * @param atts The attributes of the graph tag
 	 * @return The string identifier of the network
 	 */
-	protected String addCurrentNetwork(String oldId, CyNetwork net, Attributes atts) {
+	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts) {
 		if (oldId == null)
 			oldId = String.format("_graph%s_%s", manager.graphCount, net.getSUID());
 		
 		manager.setCurrentNetwork(net);
-		manager.getNetworkStack().push(oldId);
+		manager.getNetworkIDStack().push(oldId);
 		
 		if (net != null) {
 			manager.setCurrentRow(net.getRow(net));
-			manager.getCache().cache(net, oldId);
+			manager.getCache().cache(oldId, net);
 			
 			if (!(net instanceof CyRootNetwork))
 				manager.addNetwork(net);
@@ -189,23 +189,5 @@ public class HandleGraph extends AbstractHandler {
 			CyRow netRow = net.getRow(net);
 			netRow.set(CyNetwork.NAME, name);
 		}
-	}
-	
-	protected String getLabel(Attributes atts) {
-		String label = atts.getValue("label");
-		
-		if (label == null || label.isEmpty())
-			label = atts.getValue("id");
-
-		return label;
-	}
-	
-	protected String getId(Attributes atts) {
-		String id = atts.getValue("id");
-		
-		if (id == null || id.isEmpty())
-			id = atts.getValue("label");
-		
-		return id;
 	}
 }

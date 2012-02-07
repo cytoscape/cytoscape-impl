@@ -74,7 +74,7 @@ public class ReadDataManager {
 	private Set<CyNetwork> networks;
 	
 	/* Stack of original network IDs */
-	private Stack<String> networkStack;
+	private Stack<Object> networkStack;
 	/* Stack of nodes that have a nested graph*/
 	private Stack<CyNode> compoundNodeStack;
 	
@@ -112,13 +112,13 @@ public class ReadDataManager {
 	private CyRow currentRow;
 	
 	// Network view format properties
-	private String networkViewId;
-	private String networkId;
+	private Object networkViewId;
+	private Object networkId;
 	private String visualStyleName;
 	private String rendererName;
-	private String currentElementId; // node/edge/network old id
-	private Map<String/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewGraphics;
-	private Map<String/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewLockedGraphics;
+	private Object currentElementId; // node/edge/network old id
+	private Map<Object/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewGraphics;
+	private Map<Object/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewLockedGraphics;
 	
 	private final ReadCache cache;
 	private final EquationCompiler equationCompiler;
@@ -172,7 +172,7 @@ public class ReadDataManager {
 		edgeBendX = null;
 		edgeBendY = null;
 		
-		networkStack = new Stack<String>();
+		networkStack = new Stack<Object>();
 		compoundNodeStack = new Stack<CyNode>();
 		
 		networks = new LinkedHashSet<CyNetwork>();
@@ -186,8 +186,8 @@ public class ReadDataManager {
 		networkId = null;
 		visualStyleName = null;
 		rendererName = null;
-		viewGraphics = new LinkedHashMap<String, Map<String,String>>();
-		viewLockedGraphics = new LinkedHashMap<String, Map<String,String>>();
+		viewGraphics = new LinkedHashMap<Object, Map<String,String>>();
+		viewLockedGraphics = new LinkedHashMap<Object, Map<String,String>>();
 	}
 	
 	public void dispose() {
@@ -265,8 +265,8 @@ public class ReadDataManager {
 	 * @param attValue
 	 * @param locked
 	 */
-	protected void addViewGraphicsAttribute(String oldModelId, String attName, String attValue, boolean locked) {
-		Map<String, Map<String, String>> graphics = locked ? viewLockedGraphics : viewGraphics;
+	protected void addViewGraphicsAttribute(Object oldModelId, String attName, String attValue, boolean locked) {
+		Map<Object, Map<String, String>> graphics = locked ? viewLockedGraphics : viewGraphics;
 		Map<String, String> attributes = graphics.get(oldModelId);
 
 		if (attributes == null) {
@@ -292,7 +292,7 @@ public class ReadDataManager {
 		}
 	}
 	
-	protected void addViewGraphicsAttributes(String oldModelId, Attributes atts, boolean locked) {
+	protected void addViewGraphicsAttributes(Object oldModelId, Attributes atts, boolean locked) {
 		if (oldModelId != null) {
 			final int attrLength = atts.getLength();
 			
@@ -309,7 +309,7 @@ public class ReadDataManager {
 		return null;
 	}
 	
-	public <T extends CyTableEntry> Map<String, String> getViewGraphicsAttributes(String oldId, boolean locked) {
+	public <T extends CyTableEntry> Map<String, String> getViewGraphicsAttributes(Object oldId, boolean locked) {
 		return locked ? viewLockedGraphics.get(oldId) : viewGraphics.get(oldId);
 	}
 
@@ -376,7 +376,10 @@ public class ReadDataManager {
 		return this.currentNetwork;
 	}
 	
-	protected Stack<String> getNetworkStack() {
+	/**
+	 * @return Stack of network IDs (XGMML IDs).
+	 */
+	protected Stack<Object> getNetworkIDStack() {
 		return networkStack;
 	}
 
@@ -392,22 +395,21 @@ public class ReadDataManager {
 	}
 	
 	protected CyRootNetwork getRootNetwork() {
-		if (currentNetwork != null)
-			return (currentNetwork instanceof CyRootNetwork) ? (CyRootNetwork) currentNetwork : 
-				                                               rootNetworkManager.getRootNetwork(currentNetwork);
-		return null;
+		return (currentNetwork != null) ? rootNetworkManager.getRootNetwork(currentNetwork) : null;
 	}
 	
-    protected CyNode createNode(String id, String label) {
-        if (id == null) id = label;
+    protected CyNode createNode(Object oldId, String label) {
+        if (oldId == null)
+        	throw new NullPointerException("'oldId' is null.");
+        
         CyNode node = null;
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network!
-	        Integer index = cache.getIndex(id);
+	        Integer index = cache.getIndex(oldId);
 	        
 	        if (index != null) {
-	        	node = this.getParentNetwork().getNode(index);
+	        	node = this.getRootNetwork().getNode(index);
 	        	((CySubNetwork) this.getCurrentNetwork()).addNode(node);
 	        	node = this.getCurrentNetwork().getNode(index); // in order to return the correct instance!
 	        }
@@ -421,23 +423,25 @@ public class ReadDataManager {
         this.currentNode = node;
         this.currentRow = this.getCurrentNetwork().getRow(node);
         
-        // Add to internal cache
-        cache.cache(node, id);
+        // Add to internal cache:
+        cache.cache(oldId, node);
+        cache.cacheNodeByName(label, node);
         
         return node;
     }
 
-	protected CyEdge createEdge(CyNode source, CyNode target, String id, String label, String interaction,
+	protected CyEdge createEdge(CyNode source, CyNode target, Object id, String label, String interaction,
 			boolean directed) {
-		if (id == null) id = label;
 		CyEdge edge = null;
+		
+		if (id == null) id = label;
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network and the edge already exists!
 	        Integer index = cache.getIndex(id);
 	        
 	        if (index != null) {
-	        	edge = this.getParentNetwork().getEdge(index);
+	        	edge = this.getRootNetwork().getEdge(index);
 	        	((CySubNetwork) this.getCurrentNetwork()).addEdge(edge);
 	        	edge = this.getCurrentNetwork().getEdge(index); // in order to return the correct instance!
 	        }
@@ -483,8 +487,8 @@ public class ReadDataManager {
         	}
         }
         
-        // Add to internal cache
-        cache.cache(edge, id);
+        // Add to internal cache:
+        cache.cache(id, edge);
 
 		return edge;
 	}
@@ -495,8 +499,8 @@ public class ReadDataManager {
 	}
 	
 	protected void addElementLink(String href, Class<? extends CyTableEntry> clazz) {
-		Map<CyNetwork, Set<String>> map = null;
-		String id = AttributeValueUtil.getIdFromXLink(href);
+		Map<CyNetwork, Set<Long>> map = null;
+		Long id = AttributeValueUtil.getIdFromXLink(href);
 		
 		if (clazz == CyNode.class)      map = cache.getNodeLinks();
 		else if (clazz == CyEdge.class) map = cache.getEdgeLinks();
@@ -504,10 +508,10 @@ public class ReadDataManager {
 		CyNetwork net = getCurrentNetwork();
 		
 		if (map != null && net != null) {
-			Set<String> idSet = map.get(net);
+			Set<Long> idSet = map.get(net);
 			
 			if (idSet == null) {
-				idSet = new HashSet<String>();
+				idSet = new HashSet<Long>();
 				map.put(net, idSet);
 			}
 			
@@ -515,19 +519,19 @@ public class ReadDataManager {
 		}
 	}
 	
-	protected String getNetworkViewId() {
+	protected Object getNetworkViewId() {
 		return networkViewId;
 	}
 
-	protected void setNetworkViewId(String networkViewId) {
+	protected void setNetworkViewId(Object networkViewId) {
 		this.networkViewId = networkViewId;
 	}
 
-	public String getNetworkId() {
+	public Object getNetworkId() {
 		return networkId;
 	}
 
-	protected void setNetworkId(String networkId) {
+	protected void setNetworkId(Object networkId) {
 		this.networkId = networkId;
 	}
 
@@ -547,11 +551,11 @@ public class ReadDataManager {
 		this.rendererName = rendererName;
 	}
 	
-	protected String getCurrentElementId() {
+	protected Object getCurrentElementId() {
 		return currentElementId;
 	}
 
-	protected void setCurrentElementId(String currentElementId) {
+	protected void setCurrentElementId(Object currentElementId) {
 		this.currentElementId = currentElementId;
 	}
 

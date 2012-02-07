@@ -53,17 +53,17 @@ public class HandleGraphDone extends AbstractHandler {
 			return current;
 		
 		// Resolve any unresolved node and edge references
-		Map<CyNetwork, Set<String>> nodeMap = manager.getCache().getNodeLinks();
+		Map<CyNetwork, Set<Long>> nodeMap = manager.getCache().getNodeLinks();
 		
-		for (Map.Entry<CyNetwork, Set<String>> entry : nodeMap.entrySet()) {
+		for (Map.Entry<CyNetwork, Set<Long>> entry : nodeMap.entrySet()) {
 			CyNetwork net = entry.getKey();
-			Set<String> ids = entry.getValue();
+			Set<Long> ids = entry.getValue();
 			
 			if (net != null && ids != null && !ids.isEmpty()) {
 				if (net instanceof CySubNetwork) {
 					CySubNetwork sn = (CySubNetwork) net;
 					
-					for (String id : ids) {
+					for (Long id : ids) {
 						CyNode n = manager.getCache().getNode(id);
 						
 						if (n != null)
@@ -79,17 +79,17 @@ public class HandleGraphDone extends AbstractHandler {
 		}
 		
 		// TODO: refactor
-		Map<CyNetwork, Set<String>> edgeMap = manager.getCache().getEdgeLinks();
+		Map<CyNetwork, Set<Long>> edgeMap = manager.getCache().getEdgeLinks();
 		
-		for (Map.Entry<CyNetwork, Set<String>> entry : edgeMap.entrySet()) {
+		for (Map.Entry<CyNetwork, Set<Long>> entry : edgeMap.entrySet()) {
 			CyNetwork net = entry.getKey();
-			Set<String> ids = entry.getValue();
+			Set<Long> ids = entry.getValue();
 			
 			if (net != null && ids != null && !ids.isEmpty()) {
 				if (net instanceof CySubNetwork) {
 					CySubNetwork sn = (CySubNetwork) net;
 					
-					for (String id : ids) {
+					for (Long id : ids) {
 						CyEdge e = manager.getCache().getEdge(id);
 						
 						if (e != null)
@@ -122,14 +122,14 @@ public class HandleGraphDone extends AbstractHandler {
 		++manager.graphDoneCount;
 		
 		// In order to handle sub-graphs correctly
-		if (!manager.getNetworkStack().isEmpty())
-			manager.getNetworkStack().pop();
+		if (!manager.getNetworkIDStack().isEmpty())
+			manager.getNetworkIDStack().pop();
 		
 		CyNetwork currentNet = null;
-		final String oldNetId = manager.getNetworkStack().isEmpty() ? null : manager.getNetworkStack().peek();
+		final Object netId = manager.getNetworkIDStack().isEmpty() ? null : manager.getNetworkIDStack().peek();
 		
-		if (oldNetId != null)
-			currentNet = manager.getCache().getNetwork(oldNetId);
+		if (netId != null)
+			currentNet = manager.getCache().getNetwork(netId);
 		
 		manager.setCurrentNetwork(currentNet);
 		manager.setCurrentRow(currentNet != null ? currentNet.getRow(currentNet) : null);

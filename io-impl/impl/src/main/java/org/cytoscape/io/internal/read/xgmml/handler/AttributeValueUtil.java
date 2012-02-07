@@ -251,8 +251,8 @@ public class AttributeValueUtil {
     	return version;
 	}
     
-	public static String getIdFromXLink(String href) {
+	public static Long getIdFromXLink(String href) {
 		Matcher matcher = XLINK_PATTERN.matcher(href);
-		return matcher.matches() ? matcher.group(1) : null;
+		return matcher.matches() ? Long.valueOf(matcher.group(1)) : null;
 	}
 }

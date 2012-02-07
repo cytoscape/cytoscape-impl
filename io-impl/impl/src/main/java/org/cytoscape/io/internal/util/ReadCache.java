@@ -40,135 +40,155 @@ import org.slf4j.LoggerFactory;
 
 public class ReadCache {
 	
-	/* Map of old to new element IDs */
-	private Map<String, Long> idMap;
 	/* Map of new to old element IDs */
-	private Map<Long, String> oldIdMap;
+	private Map<Long, Object> oldIdMap;
 	/* Map of old ID to node/edge indexes */
-	private Map<String, Integer> indexMap;
+	private Map<Object, Integer> indexMap;
 	
-	private Map<Long/*node id*/, String/*old network id*/> networkPointerMap;
+	private Map<CyNode, Object/*network's id*/> networkPointerMap;
 	
-	/* Map of XML ID's to nodes */
-	private Map<String, CyNode> nodeIdMap;
-	/* Map of XML ID's to edges */
-	private Map<String, CyEdge> edgeIdMap;
-	/* Map of XML ID's to networks */
-	private Map<String, CyNetwork> networkIdMap;
+	/* Maps of XML ID's to elements (the keys should be a Long if reading a Cy3 session file) */
+	private Map<Object, CyNetwork> networkById;
+	private Map<Object, CyNode> nodeById;
+	private Map<Object, CyEdge> edgeById;
 	
-	private Map<CyNetwork, Set<String>> nodeLinkMap;
-	private Map<CyNetwork, Set<String>> edgeLinkMap;
+	/* Maps of node labels to nodes (necessary because of 2.x sessions, which uses the node label as its session ID) */
+	private Map<String, CyNode> nodeByName;
+	
+	private Map<CyNetwork, Set<Long>> nodeLinkMap;
+	private Map<CyNetwork, Set<Long>> edgeLinkMap;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReadCache.class);
 	
 	public void init() {
-		idMap = new HashMap<String, Long>();
-		oldIdMap = new HashMap<Long, String>();
-		indexMap = new HashMap<String, Integer>();
-		networkPointerMap = new HashMap<Long, String>();
+		oldIdMap = new HashMap<Long, Object>();
+		indexMap = new HashMap<Object, Integer>();
 		
-		nodeIdMap = new HashMap<String, CyNode>();
-		edgeIdMap = new HashMap<String, CyEdge>();
-		networkIdMap = new HashMap<String, CyNetwork>();
+		nodeById = new HashMap<Object, CyNode>();
+		edgeById = new HashMap<Object, CyEdge>();
+		networkById = new HashMap<Object, CyNetwork>();
 		
-		nodeLinkMap = new HashMap<CyNetwork, Set<String>>();
-		edgeLinkMap = new HashMap<CyNetwork, Set<String>>();
+		nodeByName = new HashMap<String, CyNode>();
+		
+		nodeLinkMap = new HashMap<CyNetwork, Set<Long>>();
+		edgeLinkMap = new HashMap<CyNetwork, Set<Long>>();
+		networkPointerMap = new HashMap<CyNode, Object>();
 	}
 	
 	public void dispose() {
-		nodeIdMap = null;
-		edgeIdMap = null;
-		networkIdMap = null;
+		nodeById = null;
+		edgeById = null;
+		networkById = null;
+		
+		nodeByName = null;
 		
 		nodeLinkMap = null;
 		edgeLinkMap = null;
+		networkPointerMap = null;
 	}
 	
-	public <T extends CyTableEntry> void cache(T element, String strId) {
+	/**
+	 * Cache the element for future reference.
+	 * @param xgmmlId The XGMML id of the element.
+	 * @param element A CyNetwork, CyNetworkView, CyNode or CyEdge.
+	 */
+	public void cache(Object xgmmlId, CyTableEntry element) {
     	int index = -1;
     	
     	if (element instanceof CyNode) {
-    		nodeIdMap.put(strId, (CyNode) element);
+    		if (xgmmlId != null)
+    			nodeById.put(xgmmlId, (CyNode) element);
+    		
     		index = ((CyNode) element).getIndex();
     	} else if (element instanceof CyEdge) {
-    		edgeIdMap.put(strId, (CyEdge) element);
+    		if (xgmmlId != null)
+    			edgeById.put(xgmmlId, (CyEdge) element);
+    		
     		index = ((CyEdge) element).getIndex();
     	} else if (element instanceof CyNetwork) {
-	    	networkIdMap.put(strId, (CyNetwork) element);
+    		if (xgmmlId != null)
+    			networkById.put(xgmmlId, (CyNetwork) element);
 	    }
-    	
-        this.cache(strId, element.getSUID(), index);
+	    
+    	if (xgmmlId != null) {
+	    	oldIdMap.put(element.getSUID(), xgmmlId);
+			indexMap.put(xgmmlId, index);
+    	}
     }
-    
-	public void cache(String oldId, long newId, int index) {
-		if (oldId != null && !oldId.isEmpty()) {
-			idMap.put(oldId, newId);
-			oldIdMap.put(newId, oldId);
-			indexMap.put(oldId, index);
-		}
+	
+	/**
+	 * Probably only necessary when parsing 2.x session files.
+	 * @param name
+	 * @param node
+	 */
+	public void cacheNodeByName(String name, CyNode node) {
+		if (name != null && !name.isEmpty() && node != null)
+			nodeByName.put(name,  node);
 	}
 	
-	public void cache(String oldId, long newId) {
-		cache(oldId, newId, 0);
+	public void addNetworkPointer(CyNode node, Object networkId) {
+		if (node == null)
+			throw new NullPointerException("Cannot parse network pointer: node is null.");
+		if (networkId == null)
+			throw new NullPointerException("Cannot parse network pointer: network id is null.");
+		
+		networkPointerMap.put(node, networkId);
 	}
 	
-	public void addNetworkPointer(Long nodeId, String oldNetworkId) {
-		networkPointerMap.put(nodeId, oldNetworkId);
-	}
-	
-	public String getOldId(Long suid) {
+	public Object getOldId(Long suid) {
 		return oldIdMap.get(suid);
 	}
-
-	public Long getNewId(String oldId) {
-		return idMap.get(oldId);
+	
+	@SuppressWarnings("unchecked")
+	public <T extends CyTableEntry> T getObjectById(Object oldId, Class<T> type) {
+		if (type == CyNetwork.class)
+			return (T) networkById.get(oldId);
+		if (type == CyNode.class)
+			return (T) nodeById.get(oldId);
+		if (type == CyEdge.class)
+			return (T) edgeById.get(oldId);
+		
+		return null;
 	}
 	
-	public Integer getIndex(String oldId) {
+	public Integer getIndex(Object oldId) {
 		return indexMap.get(oldId);
 	}
 	
-	public CyNetwork getNetwork(String oldId) {
-		return networkIdMap.get(oldId);
+	public CyNetwork getNetwork(Object oldId) {
+		return networkById.get(oldId);
 	}
 	
-	public CyNode getNode(String oldId) {
-		return nodeIdMap.get(oldId);
+	public CyNode getNode(Object oldId) {
+		return nodeById.get(oldId);
 	}
 	
-	public CyEdge getEdge(String oldId) {
-		return edgeIdMap.get(oldId);
+	public CyEdge getEdge(Object oldId) {
+		return edgeById.get(oldId);
 	}
 	
-	public Map<CyNetwork, Set<String>> getNodeLinks() {
+	public CyNode getNodeByName(String nodeName) {
+		return nodeByName.get(nodeName);
+	}
+	
+	public Map<CyNetwork, Set<Long>> getNodeLinks() {
 		return nodeLinkMap;
 	}
 
-	public Map<CyNetwork, Set<String>> getEdgeLinks() {
+	public Map<CyNetwork, Set<Long>> getEdgeLinks() {
 		return edgeLinkMap;
-	}
-	
-	public Map<String, Long> getIdMap() {
-		return idMap;
 	}
 	
 	public void createNetworkPointers() {
 		if (networkPointerMap != null) {
 			// Iterate the rows and recreate the network pointers
-			for (Map.Entry<Long, String> entry : networkPointerMap.entrySet()) {
-				final Long nodeId = entry.getKey();
-				final String oldNetId = entry.getValue();
+			for (Map.Entry<CyNode, Object> entry : networkPointerMap.entrySet()) {
+				final CyNode node = entry.getKey();
+				final Object oldNetId = entry.getValue();
 				CyNetwork network = getNetwork(oldNetId);
 				
 				if (network != null) {
-					String oldNodeId = getOldId(nodeId);
-					CyNode node = getNode(oldNodeId);
-					
-					if (node != null)
-						node.setNetworkPointer(network);
-					else
-						logger.error("Cannot recreate network pointer for network " + oldNetId + ": Cannot find node "
-								+ oldNodeId);
+					node.setNetworkPointer(network);
 				} else {
 					logger.error("Cannot recreate network pointer: Cannot find network " + oldNetId);
 				}

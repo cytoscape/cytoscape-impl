@@ -89,7 +89,7 @@ public class XGMMLNetworkViewReader extends AbstractXGMMLReader {
 		
 		// When parsing view-format XGMML, the manager does not have the network model
 		// to create a map by CyNode objects, so the graphics mapping is indexed by the old element id.
-		String oldId = readDataMgr.getCache().getOldId(node.getSUID());
+		Object oldId = readDataMgr.getCache().getOldId(node.getSUID());
 		
 		// Direct visual properties
 		Map<String, String> atts = readDataMgr.getViewGraphicsAttributes(oldId, false);
@@ -108,7 +108,7 @@ public class XGMMLNetworkViewReader extends AbstractXGMMLReader {
 		
 		// When parsing view-format XGMML, the manager does not have the network model
 		// to create a map by CyEdge objects, so the graphics mapping is indexed by the old element id.
-		String oldId = readDataMgr.getCache().getOldId(edge.getSUID());
+		Object oldId = readDataMgr.getCache().getOldId(edge.getSUID());
 		
 		// Direct visual properties
 		Map<String, String> atts = readDataMgr.getViewGraphicsAttributes(oldId, false);

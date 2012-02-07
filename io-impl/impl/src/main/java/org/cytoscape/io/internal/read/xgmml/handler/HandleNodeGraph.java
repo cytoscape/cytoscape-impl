@@ -47,7 +47,7 @@ public class HandleNodeGraph extends HandleGraph {
 		manager.getCompoundNodeStack().push(node);
 		
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
-		String netId = null;
+		Object netId = null;
 		CyNetwork network = null;
 		
 		if (href != null) {
@@ -69,7 +69,7 @@ public class HandleNodeGraph extends HandleGraph {
 		}
 		
 		if (netId != null)
-			manager.getCache().addNetworkPointer(node.getSUID(), netId);
+			manager.getCache().addNetworkPointer(node, netId);
 
 		return current;
     }

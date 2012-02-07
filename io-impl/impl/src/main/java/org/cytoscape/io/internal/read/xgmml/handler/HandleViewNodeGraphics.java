@@ -37,7 +37,12 @@ public class HandleViewNodeGraphics extends AbstractHandler {
 
 	@Override
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-        final String nodeId = manager.getCurrentElementId();
+        final Object nodeId = manager.getCurrentElementId();
+        
+        if (nodeId == null) {
+        	logger.error("Cannot parse node view: node id is null");
+        	return current;
+        }
 		
 		if (tag.equals("graphics")) {
         	manager.addViewGraphicsAttributes(nodeId, atts, false);
