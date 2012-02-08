@@ -193,6 +193,14 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		super.complete(tm);
 	}
 	
+	@Override
+	protected void createObjectMap() {
+		objectMap.put(CyNetwork.class, cache.getNetworkByIdMap());
+		objectMap.put(CyNetworkView.class, cache.getNetworkViewByIdMap());
+		objectMap.put(CyNode.class, cache.getNodeByNameMap()); // In 2.x, the node name is the ID (not the XGMML id)
+		objectMap.put(CyEdge.class, cache.getEdgeByIdMap());
+	}
+	
 	private void extractNetworks(TaskMonitor tm) throws JAXBException, IOException {
 		// Extract the XGMML files
 		Map<String, Network> netMap = new HashMap<String, Network>();
@@ -312,6 +320,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 						CyNetworkView view = reader.buildCyNetworkView(net);
 						networkViewLookup.put(netName, view);
 						networkViews.add(view);
+						cache.cache(netName, view);
 					}
 //				}
 			}
@@ -426,10 +435,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				if (netFrames != null) {
 					for (NetworkFrame nf : netFrames.getNetworkFrame()) {
 						String id = nf.getFrameID();
-						// TODO: convert frame title to *old* view's SUID?
 						String x = nf.getX() != null ? nf.getX().toString() : "0";
 						String y = nf.getY() != null ? nf.getY().toString() : "0";
-						
 						sb.append("        <networkFrame frameID=\""+id+"\" x=\""+x+"\" y=\""+y+"\"/>\n");
 					}
 				}

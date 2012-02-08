@@ -35,6 +35,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +49,13 @@ public class ReadCache {
 	private Map<CyNode, Object/*network's id*/> networkPointerMap;
 	
 	/* Maps of XML ID's to elements (the keys should be a Long if reading a Cy3 session file) */
-	private Map<Object, CyNetwork> networkById;
-	private Map<Object, CyNode> nodeById;
-	private Map<Object, CyEdge> edgeById;
+	private Map<Object, CyNetwork> networkByIdMap;
+	private Map<Object, CyNetworkView> networkViewByIdMap;
+	private Map<Object, CyNode> nodeByIdMap;
+	private Map<Object, CyEdge> edgeByIdMap;
 	
 	/* Maps of node labels to nodes (necessary because of 2.x sessions, which uses the node label as its session ID) */
-	private Map<String, CyNode> nodeByName;
+	private Map<Object, CyNode> nodeByNameMap;
 	
 	private Map<CyNetwork, Set<Long>> nodeLinkMap;
 	private Map<CyNetwork, Set<Long>> edgeLinkMap;
@@ -64,11 +66,12 @@ public class ReadCache {
 		oldIdMap = new HashMap<Long, Object>();
 		indexMap = new HashMap<Object, Integer>();
 		
-		nodeById = new HashMap<Object, CyNode>();
-		edgeById = new HashMap<Object, CyEdge>();
-		networkById = new HashMap<Object, CyNetwork>();
+		nodeByIdMap = new HashMap<Object, CyNode>();
+		edgeByIdMap = new HashMap<Object, CyEdge>();
+		networkByIdMap = new HashMap<Object, CyNetwork>();
+		networkViewByIdMap = new HashMap<Object, CyNetworkView>();
 		
-		nodeByName = new HashMap<String, CyNode>();
+		nodeByNameMap = new HashMap<Object, CyNode>();
 		
 		nodeLinkMap = new HashMap<CyNetwork, Set<Long>>();
 		edgeLinkMap = new HashMap<CyNetwork, Set<Long>>();
@@ -76,11 +79,12 @@ public class ReadCache {
 	}
 	
 	public void dispose() {
-		nodeById = null;
-		edgeById = null;
-		networkById = null;
+		nodeByIdMap = null;
+		edgeByIdMap = null;
+		networkByIdMap = null;
+		networkViewByIdMap = null;
 		
-		nodeByName = null;
+		nodeByNameMap = null;
 		
 		nodeLinkMap = null;
 		edgeLinkMap = null;
@@ -95,25 +99,22 @@ public class ReadCache {
 	public void cache(Object xgmmlId, CyTableEntry element) {
     	int index = -1;
     	
-    	if (element instanceof CyNode) {
-    		if (xgmmlId != null)
-    			nodeById.put(xgmmlId, (CyNode) element);
-    		
-    		index = ((CyNode) element).getIndex();
-    	} else if (element instanceof CyEdge) {
-    		if (xgmmlId != null)
-    			edgeById.put(xgmmlId, (CyEdge) element);
-    		
-    		index = ((CyEdge) element).getIndex();
-    	} else if (element instanceof CyNetwork) {
-    		if (xgmmlId != null)
-    			networkById.put(xgmmlId, (CyNetwork) element);
-	    }
-	    
-    	if (xgmmlId != null) {
-	    	oldIdMap.put(element.getSUID(), xgmmlId);
+		if (xgmmlId != null) {
+			if (element instanceof CyNode) {
+				nodeByIdMap.put(xgmmlId, (CyNode) element);
+				index = ((CyNode) element).getIndex();
+			} else if (element instanceof CyEdge) {
+				edgeByIdMap.put(xgmmlId, (CyEdge) element);
+				index = ((CyEdge) element).getIndex();
+			} else if (element instanceof CyNetwork) {
+				networkByIdMap.put(xgmmlId, (CyNetwork) element);
+			} else if (element instanceof CyNetworkView) {
+				networkViewByIdMap.put(xgmmlId, (CyNetworkView) element);
+			}
+
+			oldIdMap.put(element.getSUID(), xgmmlId);
 			indexMap.put(xgmmlId, index);
-    	}
+		}
     }
 	
 	/**
@@ -123,7 +124,7 @@ public class ReadCache {
 	 */
 	public void cacheNodeByName(String name, CyNode node) {
 		if (name != null && !name.isEmpty() && node != null)
-			nodeByName.put(name,  node);
+			nodeByNameMap.put(name,  node);
 	}
 	
 	public void addNetworkPointer(CyNode node, Object networkId) {
@@ -142,11 +143,13 @@ public class ReadCache {
 	@SuppressWarnings("unchecked")
 	public <T extends CyTableEntry> T getObjectById(Object oldId, Class<T> type) {
 		if (type == CyNetwork.class)
-			return (T) networkById.get(oldId);
+			return (T) networkByIdMap.get(oldId);
+		if (type == CyNetworkView.class)
+			return (T) networkViewByIdMap.get(oldId);
 		if (type == CyNode.class)
-			return (T) nodeById.get(oldId);
+			return (T) nodeByIdMap.get(oldId);
 		if (type == CyEdge.class)
-			return (T) edgeById.get(oldId);
+			return (T) edgeByIdMap.get(oldId);
 		
 		return null;
 	}
@@ -156,19 +159,23 @@ public class ReadCache {
 	}
 	
 	public CyNetwork getNetwork(Object oldId) {
-		return networkById.get(oldId);
+		return networkByIdMap.get(oldId);
+	}
+	
+	public CyNetworkView getNetworkView(Object oldId) {
+		return networkViewByIdMap.get(oldId);
 	}
 	
 	public CyNode getNode(Object oldId) {
-		return nodeById.get(oldId);
+		return nodeByIdMap.get(oldId);
 	}
 	
 	public CyEdge getEdge(Object oldId) {
-		return edgeById.get(oldId);
+		return edgeByIdMap.get(oldId);
 	}
 	
 	public CyNode getNodeByName(String nodeName) {
-		return nodeByName.get(nodeName);
+		return nodeByNameMap.get(nodeName);
 	}
 	
 	public Map<CyNetwork, Set<Long>> getNodeLinks() {
@@ -179,6 +186,26 @@ public class ReadCache {
 		return edgeLinkMap;
 	}
 	
+	public Map<Object, CyNetwork> getNetworkByIdMap() {
+		return networkByIdMap;
+	}
+	
+	public Map<Object, CyNetworkView> getNetworkViewByIdMap() {
+		return networkViewByIdMap;
+	}
+
+	public Map<Object, CyNode> getNodeByIdMap() {
+		return nodeByIdMap;
+	}
+
+	public Map<Object, CyEdge> getEdgeByIdMap() {
+		return edgeByIdMap;
+	}
+
+	public Map<Object, CyNode> getNodeByNameMap() {
+		return nodeByNameMap;
+	}
+
 	public void createNetworkPointers() {
 		if (networkPointerMap != null) {
 			// Iterate the rows and recreate the network pointers

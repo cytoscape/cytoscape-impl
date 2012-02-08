@@ -71,8 +71,10 @@ import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
@@ -199,6 +201,14 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		super.complete(tm);
 	}
 
+	@Override
+	protected void createObjectMap() {
+		objectMap.put(CyNetwork.class, cache.getNetworkByIdMap());
+		objectMap.put(CyNetworkView.class, cache.getNetworkViewByIdMap());
+		objectMap.put(CyNode.class, cache.getNodeByIdMap());
+		objectMap.put(CyEdge.class, cache.getEdgeByIdMap());
+	}
+	
 	private void extractCyTableMetadata(InputStream tmpIs, String entryName) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(tmpIs, "UTF-8"));
 		virtualColumns = new ArrayList<VirtualColumnSerializer>();
@@ -306,6 +316,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				
 				final CyNetworkView view = reader.buildCyNetworkView(network);
 				networkViews.add(view);
+				cache.cache(view.getSUID(), view);
 				
 				// Get its visual style name
 				if (reader instanceof XGMMLNetworkViewReader) {

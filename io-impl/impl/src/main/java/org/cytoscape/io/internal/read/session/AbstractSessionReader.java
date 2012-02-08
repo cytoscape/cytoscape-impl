@@ -44,6 +44,7 @@ import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
@@ -70,6 +71,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Map<CyNetworkView, String> visualStyleMap = new HashMap<CyNetworkView, String>();
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<CyTableMetadata>();
 	protected final Map<String, List<File>> appFileListMap = new HashMap<String, List<File>>();
+	protected final Map<Class<? extends CyTableEntry>, Map<Object, ? extends CyTableEntry>> objectMap = new HashMap<Class<? extends CyTableEntry>, Map<Object, ? extends CyTableEntry>>();
 	
 	private boolean inputStreamRead;
 	
@@ -105,7 +107,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	public CySession getSession() {
 		CySession ret = new CySession.Builder().networks(networks).networkViews(networkViews)
 				.viewVisualStyleMap(visualStyleMap).properties(properties).visualStyles(visualStyles)
-				.appFileListMap(appFileListMap).tables(tableMetadata)
+				.appFileListMap(appFileListMap).tables(tableMetadata).objectMap(objectMap)
 				.build();
 	
 		return ret;
@@ -135,6 +137,11 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		tm.setTitle("Process network pointers");
 		tm.setStatusMessage("Processing network pointers...");
 		processNetworkPointers();
+		
+		tm.setProgress(0.98);
+		tm.setTitle("Finalize");
+		tm.setStatusMessage("Finalizing...");
+		createObjectMap();
 		
 		tm.setProgress(1.0);
 	}
@@ -250,6 +257,8 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		
 		return is;
 	}
+	
+	abstract void createObjectMap();
 
 	/**
 	 *  We need this class to avoid the progress-bar showing back-forth  when extract zipEntries.
