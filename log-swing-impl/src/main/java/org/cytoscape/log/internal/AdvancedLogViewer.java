@@ -258,7 +258,7 @@ class AdvancedLogViewer {
 		if (log != null && !(event[1].startsWith(log)))
 			return false;
 
-		if (currentPattern != null && !currentPattern.matcher(event[target]).matches())
+		if (currentPattern != null && !currentPattern.matcher(event[target].toLowerCase()).find()) 
 			return false;
 		
 		return true;
@@ -325,7 +325,7 @@ class AdvancedLogViewer {
 		void update() {
 			currentPattern = null;
 
-			String regex = filterTextField.getText();
+			String regex = filterTextField.getText().toLowerCase(); 
 
 			if (regex.length() != 0) {
 				try {
