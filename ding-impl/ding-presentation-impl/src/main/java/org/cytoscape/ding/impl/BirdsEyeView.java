@@ -341,6 +341,12 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	}
 
 	@Override
+	public void setProperties(String key, String value) {
+		dgv.setProperties(key, value);
+		
+	}
+	
+	@Override
 	public Printable createPrintable() {
 		return dgv.createPrintable();
 	}
@@ -355,4 +361,7 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	public void printCanvas(Graphics printCanvas) {
 		throw new UnsupportedOperationException("Printing is not supported for Bird's eye view.");
 	}
+
+
+	
 }

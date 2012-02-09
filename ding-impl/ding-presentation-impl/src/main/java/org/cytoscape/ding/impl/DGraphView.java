@@ -2636,6 +2636,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return this.props;
 	}
 	
+	@Override
+	public void setProperties(String key, String value) {
+		this.props.setProperty(key, value);
+		if (key.equals("exportTextAsShape"))
+			setPrintingTextAsShape(Boolean.parseBoolean(value));
+		
+	}
+	
 	/**
 	 * Common API for all rendering engines.
 	 */
@@ -2996,4 +3004,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public CyAnnotator getCyAnnotator() {
 		return cyAnnotator;
 	}
+
+
 }
