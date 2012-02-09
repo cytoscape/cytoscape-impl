@@ -194,13 +194,19 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 * @throws IllegalArgumentException
 	 */
 	public JInternalFrame getInternalFrame(CyNetworkView view) throws IllegalArgumentException {
-		// check args
 		if (view == null) {
 			throw new IllegalArgumentException("NetworkViewManager.getInternalFrame(), argument is null");
 		}
 
-		// outta here
 		return presentationContainerMap.get(view);
+	}
+	
+	public CyNetworkView getNetworkView(JInternalFrame frame) throws IllegalArgumentException {
+		if (frame == null) {
+			throw new IllegalArgumentException("NetworkViewManager.getNetworkView(), argument is null");
+		}
+		
+		return iFrameMap.get(frame);
 	}
 
 	/**

@@ -69,7 +69,7 @@ public class XGMMLNetworkViewReader extends AbstractXGMMLReader {
 		super.init(tm);
 		readDataMgr.setViewFormat(true);
 	}
-
+	
 	@Override
 	protected void setNetworkViewProperties(CyNetworkView netView) {
 		// Direct visual properties
@@ -81,6 +81,9 @@ public class XGMMLNetworkViewReader extends AbstractXGMMLReader {
 		atts = readDataMgr.getViewGraphicsAttributes(readDataMgr.getNetworkId(), true);
 		this.settingLockedVisualProperties = true;
 		setVisualProperties(netView, netView, atts);
+		
+		// Cache the view with its former SUID
+		readDataMgr.getCache().cache(readDataMgr.getNetworkViewId(), netView);
 	}
 
 	@Override

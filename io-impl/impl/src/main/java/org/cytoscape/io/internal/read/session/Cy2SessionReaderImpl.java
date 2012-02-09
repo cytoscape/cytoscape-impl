@@ -437,7 +437,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 						String id = nf.getFrameID();
 						String x = nf.getX() != null ? nf.getX().toString() : "0";
 						String y = nf.getY() != null ? nf.getY().toString() : "0";
-						sb.append("        <networkFrame frameID=\""+id+"\" x=\""+x+"\" y=\""+y+"\"/>\n");
+						sb.append("        <networkFrame networkViewID=\""+id+"\" x=\""+x+"\" y=\""+y+"\"/>\n");
 					}
 				}
 			}

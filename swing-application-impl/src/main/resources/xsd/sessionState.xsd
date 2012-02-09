@@ -20,7 +20,7 @@
   </xs:element>
   <xs:element name="networkFrame">
     <xs:complexType>
-      <xs:attribute name="frameID" use="required" type="xs:NCName"/>
+      <xs:attribute name="networkViewID" use="required" type="xs:NCName"/>
       <xs:attribute name="x" use="required" type="xs:integer"/>
       <xs:attribute name="y" use="required" type="xs:integer"/>
     </xs:complexType>

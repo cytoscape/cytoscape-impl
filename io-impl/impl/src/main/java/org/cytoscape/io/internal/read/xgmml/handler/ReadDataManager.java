@@ -519,7 +519,7 @@ public class ReadDataManager {
 		}
 	}
 	
-	protected Object getNetworkViewId() {
+	public Object getNetworkViewId() {
 		return networkViewId;
 	}
 

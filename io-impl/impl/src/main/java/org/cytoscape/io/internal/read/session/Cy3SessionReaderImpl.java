@@ -316,7 +316,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				
 				final CyNetworkView view = reader.buildCyNetworkView(network);
 				networkViews.add(view);
-				cache.cache(view.getSUID(), view);
 				
 				// Get its visual style name
 				if (reader instanceof XGMMLNetworkViewReader) {
