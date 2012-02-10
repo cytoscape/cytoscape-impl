@@ -49,7 +49,6 @@ import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -116,10 +115,10 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	protected Cysession cysession;
 	private final Map<String, CyNetwork> networkLookup = new HashMap<String, CyNetwork>();
 	private final Map<String, CyNetworkView> networkViewLookup = new HashMap<String, CyNetworkView>();
+	private final Map<String, List<Node>> nodeSelectionLookup = new HashMap<String, List<Node>>();
+	private final Map<String, List<Edge>> edgeSelectionLookup = new HashMap<String, List<Edge>>();
 	private Map<String, String> xgmmlEntries;
 
-	/**
-	 */
 	public Cy2SessionReaderImpl(final InputStream sourceInputStream,
 								final ReadCache cache,
 								final CyNetworkReaderManager networkReaderMgr,
@@ -294,6 +293,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			topNetwork = netArray[0];
 
 			for (int i = 0; i < netArray.length; i++) {
+				// Process each CyNetwork
 				CyNetwork net = netArray[i];
 				String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				networkLookup.put(netName, net);
@@ -308,6 +308,15 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
 				}
 
+				// Restore node/edge selection
+				List<Node> selNodes = nodeSelectionLookup.get(netName);
+				List<Edge> selEdges = edgeSelectionLookup.get(netName);
+				
+				if (selNodes != null)
+					setBooleanNodeAttr(net, selNodes, SELECTED, DEFAULT_ATTRS);
+				if (selEdges != null)
+					setBooleanEdgeAttr(net, selEdges, SELECTED, DEFAULT_ATTRS);
+				
 				// TODO: handle 2.x groups
 //				if (i == 0) {
 //					// Sub-networks (other than the base-network) generated from the same 2.x XGMML file
@@ -422,6 +431,30 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		cysession = (Cysession) reader.getProperty();
 		
 		if (cysession != null) {
+			// Create map of selected elements:
+			// Network attributes and visual styles
+			if (cysession.getNetworkTree() != null) {
+				for (final Network net : cysession.getNetworkTree().getNetwork()) {
+					// We no longer have the concept of one top-level network root,
+					// so let's ignore a network with that name.
+					if (net.getId().equals(NETWORK_ROOT))
+						continue;
+					
+					final String netName = net.getId();
+					List<Node> selNodes = null;
+					List<Edge> selEdges = null;
+					
+					if (net.getSelectedNodes() != null)
+						selNodes = net.getSelectedNodes().getNode();
+					if (net.getSelectedEdges() != null)
+						selEdges = net.getSelectedEdges().getEdge();
+					
+					nodeSelectionLookup.put(netName, selNodes);
+					edgeSelectionLookup.put(netName, selEdges);
+				}
+			}
+			
+			
 			// Convert the old cysession to core the required 3.0 core plugin files:
 			// Actually we just need to extract the "networkFrames" and "cytopanels" data from the Cysession object
 			// and write an XML file that will be parsed by swing-application.
@@ -493,17 +526,11 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				final CyNetwork cyNet = getNetwork(netName);
 				
 				if (cyNet != null) {
-					// From Cytoscape 3.0, the selection and hidden attributes are stored inside CyTables.
-					if (net.getSelectedNodes() != null)
-						setBooleanNodeAttr(cyNet, net.getSelectedNodes().getNode().iterator(), SELECTED, DEFAULT_ATTRS);
-					if (net.getSelectedEdges() != null)
-						setBooleanEdgeAttr(cyNet, net.getSelectedEdges().getEdge().iterator(), SELECTED, DEFAULT_ATTRS);
-					
 					// TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
 //					if (net.getHiddenNodes() != null)
-//						setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode().iterator(), "hidden", "VIEW");
+//						setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode(), "hidden", "VIEW");
 //					if (net.getHiddenEdges() != null)
-//						setBooleanEdgeAttr(cyNet, net.getHiddenEdges().getEdge().iterator(), "hidden", "VIEW");
+//						setBooleanEdgeAttr(cyNet, net.getHiddenEdges().getEdge(), "hidden", "VIEW");
 				}
 				
 				// Populate the visual style map
@@ -584,38 +611,37 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		return null;
 	}
 
-	private void setBooleanNodeAttr(final CyNetwork net, Iterator<?> it, final String attrName, final String tableName) {
-		if (it == null)
-			return;
+	private void setBooleanNodeAttr(final CyNetwork net, final List<Node> nodes, final String attrName,
+			final String tableName) {
+		if (net != null && nodes != null) {
+			// set attr values based on ids
+			for (final Node nodeObject : nodes) {
+				String name = nodeObject.getId();
+				// The XGMML node "id" is only used internally, by the XGMML parser--the name is the real ID.
+				CyNode n = cache.getNodeByName(name);
 
-		// set attr values based on ids
-		while (it.hasNext()) {
-			final Node nodeObject = (Node) it.next();
-			String name = nodeObject.getId();
-			CyNode n = cache.getNodeByName(name); // The XGMML node "id" is only used internally, by the XGMML parser.
-
-			if (n != null)
-				net.getRow(n, tableName).set(attrName, true);
-			else
-				logger.error("Cannot restore boolean node attr \"" + name + "\": node not found.");
+				if (n != null)
+					net.getRow(n, tableName).set(attrName, true);
+				else
+					logger.error("Cannot restore boolean node attr \"" + name + "\": node not found.");
+			}
 		}
 	}
 
-	private void setBooleanEdgeAttr(final CyNetwork net, final Iterator<?> it, final String attrName,
+	private void setBooleanEdgeAttr(final CyNetwork net, final List<Edge> edges, final String attrName,
 			final String tableName) {
-		if (it == null)
-			return;
+		if (net != null && edges != null) {
+			// set attr values based on ids
+			for (final Edge edgeObject : edges) {
+				String name = edgeObject.getId();
+				// In 2.x, XGMML edge elements have no "id" attribute--the label is the id.
+				CyEdge e = cache.getEdge(name); 
 
-		// set attr values based on ids
-		while (it.hasNext()) {
-			final Edge edgeObject = (Edge) it.next();
-			String name = edgeObject.getId();
-			CyEdge e = cache.getEdge(name); // In 2.x, XGMML edge elements have no "id" attribute--the label is the id.
-
-			if (e != null)
-				net.getRow(e, tableName).set(attrName, true);
-			else
-				logger.error("Cannot restore boolean edge attr \"" + name + "\": node not found.");
+				if (e != null)
+					net.getRow(e, tableName).set(attrName, true);
+				else
+					logger.error("Cannot restore boolean edge attr \"" + name + "\": node not found.");
+			}
 		}
 	}
 	
