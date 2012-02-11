@@ -197,9 +197,16 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	void updateColumnName(final String oldColumnName, final String newColumnName) {
-		if (oldColumnName.equals(newColumnName))
+		
+		if (oldColumnName.equalsIgnoreCase(newColumnName))
 			return;
 
+		for(String curColumnName : types.keySet())
+			if (curColumnName.equalsIgnoreCase(newColumnName))
+				throw new IllegalArgumentException("attribute already exists for name: '"
+					   + curColumnName + "' with type: "
+					   + types.get(curColumnName).getType());
+		
 		synchronized(this) {
 			if (currentlyActiveAttributes.contains(oldColumnName)) {
 				currentlyActiveAttributes.remove(oldColumnName);
@@ -350,14 +357,15 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		synchronized(this) {
 			if (columnName == null)
 				throw new NullPointerException("attribute name is null");
-
+			
+			for(String curColumnName : types.keySet())
+				if (curColumnName.equalsIgnoreCase(columnName))
+					throw new IllegalArgumentException("attribute already exists for name: '"
+						   + curColumnName + "' with type: "
+						   + types.get(curColumnName).getType());
+			
 			if (type == null)
 				throw new NullPointerException("type is null");
-
-			if (types.get(columnName) != null)
-				throw new IllegalArgumentException("attribute already exists for name: '"
-								   + columnName + "' with type: "
-								   + types.get(columnName).getType());
 
 			if (type == List.class)
 				throw new IllegalArgumentException(
@@ -375,10 +383,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 								   defaultValue));
 			attributes.put(columnName, new HashMap<Object, Object>(defaultInitSize));
 			reverse.put(columnName, HashMultimap.create());
+		
 		}
-
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
 	}
+	
 
 	@Override
 	public <T> void createListColumn(final String columnName, final Class<T> listElementType,
@@ -396,6 +405,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (columnName == null)
 				throw new NullPointerException("attribute name is null");
 
+			for(String curColumnName : types.keySet())
+				if (curColumnName.equalsIgnoreCase(columnName))
+					throw new IllegalArgumentException("attribute already exists for name: '"
+						   + curColumnName + "' with type: "
+						   + types.get(curColumnName).getType());
+			
 			if (listElementType == null)
 				throw new NullPointerException("listElementType is null");
 
