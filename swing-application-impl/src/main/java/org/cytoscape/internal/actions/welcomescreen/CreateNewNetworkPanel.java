@@ -127,6 +127,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			}
 		}
 
+		theModel.addElement("Select a network ...");
+		
 		for (final String label : labelSet)
 			theModel.addElement(label);
 
@@ -197,6 +199,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		if (file == null)
 			return;
 
+		if (!dataSourceMap.containsKey(file))
+			return;
 		final URL url = new URL(dataSourceMap.get(file));
 
 		parent.dispose();
