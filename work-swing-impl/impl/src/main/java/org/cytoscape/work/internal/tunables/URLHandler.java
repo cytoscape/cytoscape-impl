@@ -66,8 +66,11 @@ public class URLHandler extends AbstractGUITunableHandler {
 
 		// creation of the GUI and layout
 		initGUI();
-
-		final Collection<DataSource> dataSources = dsManager.getDataSources(DataCategory.NETWORK);
+		
+		//Get the DataSources of the appropriate DataCategory from the tunable parameters.
+		final Collection<DataSource> dataSources = dsManager.getDataSources(
+				DataCategory.valueOf(((String)getParams().get("fileCategory")).toUpperCase()));
+		
 		final SortedSet<String> labelSet = new TreeSet<String>();
 		if (dataSources != null) {
 			for (DataSource ds : dataSources) {
