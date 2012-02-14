@@ -59,7 +59,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 	public BioPaxFilter(StreamUtil streamUtil) {
 		super(
 				new String[] { "xml", "owl", "rdf" }, 
-				new String[] { "text/xml", "application/rdf+xml", "application/xml" }, 
+				new String[] { "text/xml", "application/rdf+xml", "application/xml", "text/plain" }, 
 				"BioPAX data", 
 				DataCategory.NETWORK, 
 				streamUtil);
