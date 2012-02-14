@@ -340,9 +340,11 @@
 		<dataSource name="Yeast Protein-Protein: Ideker, T. et al. (362 Interactions, galFiltered.sif)"
 			xlink:href="http://www.cytoscape.org/datasets/galFiltered.sif"
 			format="sif" />
+			<!--
 		<dataSource name="Human Protein-Protein: HPRD (62226 Interactions w/annotations, Rev. 4/12/2010)"
 			xlink:href="http://www.cytoscape.org/datasets/HPRD_SINGLE_PSIMI_041210.xml"
 			format="psimi25" />
+			-->
 		<dataSource name="Human Protein-Protein: Rual et al. Toward a proteome-scale map of the human protein-protein interaction network. Nature 2005."
 			xlink:href="http://cytoscape.org/datasets/rual.sif"
 			format="sif" />
