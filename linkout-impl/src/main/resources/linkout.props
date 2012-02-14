@@ -33,8 +33,8 @@ nodelinkouturl.Model\ Organism\ DB.FlyBase\ (fly)=http://flybase.bio.indiana.edu
 nodelinkouturl.Model\ Organism\ DB.HGNC\ (human)=http://www.genenames.org/data/hgnc_data.php?hgnc_id=%ID%
 
 #Ontology
-nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO by ID)=http://www.ebi.ac.uk/ego/DisplayGoTerm?id=%ID%
-nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO by name)=http://www.ebi.ac.uk/ego/GSearch?query=%ID%&mode=name&ontology=all_ont
+nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO\ by\ ID)=http://www.ebi.ac.uk/ego/DisplayGoTerm?id=%ID%
+nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO\ by\ name)=http://www.ebi.ac.uk/ego/GSearch?query=%ID%&mode=name&ontology=all_ont
 
 #Ensembl
 nodelinkouturl.Ensembl\ Gene\ View.yeast=http://www.ensembl.org/Saccharomyces_cerevisiae/geneview?gene=%ID%
