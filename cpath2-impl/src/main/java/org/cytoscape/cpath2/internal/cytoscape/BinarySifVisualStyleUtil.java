@@ -5,9 +5,11 @@ import java.awt.Paint;
 
 import org.cytoscape.cpath2.internal.util.BioPaxUtil;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -33,6 +35,7 @@ public class BinarySifVisualStyleUtil {
 	public final static String CO_CONTROL_INDEPENDENT_ANTI = "CO_CONTROL_INDEPENDENT_ANTI";
 	public final static String CO_CONTROL_DEPENDENT_SIMILAR = "CO_CONTROL_DEPENDENT_SIMILAR";
 	public final static String CO_CONTROL_DEPENDENT_ANTI = "CO_CONTROL_DEPENDENT_ANTI";
+	private final static String INTERACTION = "interaction";
 
 	VisualStyle binarySifStyle;
 
@@ -149,27 +152,19 @@ public class BinarySifVisualStyleUtil {
 		function.putMapValue(COMPONENT_OF, Color.decode("#ffc000"));
 	}
 
-	private static void createDirectedEdges(VisualStyle style) {
-		// TODO: Arrow shape isn't part of the RichVisualLexicon yet...
-//		DiscreteMapping discreteMapping = new DiscreteMapping(ArrowShape.NONE,
-//				Semantics.INTERACTION, ObjectMapping.EDGE_MAPPING);
-//
-//		discreteMapping.putMapValue(COMPONENT_OF, ArrowShape.ARROW);
-//		discreteMapping.putMapValue(CONTROLS_STATE_CHANGE, ArrowShape.ARROW);
-//		discreteMapping
-//				.putMapValue(CONTROLS_METABOLIC_CHANGE, ArrowShape.ARROW);
-//		discreteMapping.putMapValue(SEQUENTIAL_CATALYSIS, ArrowShape.ARROW);
-//
-//		// create and set edge label calculator in edge appearance calculator
-//		Calculator edgeColorCalculator = new BasicCalculator(
-//				"Edge Source Arrow Shape", discreteMapping,
-//				VisualPropertyType.EDGE_TGTARROW_SHAPE);
-//		eac.setCalculator(edgeColorCalculator);
-//
-//		// set default color
-//		eac.getDefaultAppearance().set(
-//				cytoscape.visual.VisualPropertyType.EDGE_TGTARROW_SHAPE,
-//				ArrowShape.NONE);
+	private void createDirectedEdges(VisualStyle style) {
+		DiscreteMapping<String, ArrowShape> discreteMapping = 
+				(DiscreteMapping<String, ArrowShape>) discreteFactory
+					.createVisualMappingFunction(
+							INTERACTION, String.class, null,
+							RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
+
+			discreteMapping.putMapValue(COMPONENT_OF, ArrowShapeVisualProperty.ARROW);
+			discreteMapping.putMapValue(CONTROLS_STATE_CHANGE, ArrowShapeVisualProperty.ARROW);
+			discreteMapping.putMapValue(CONTROLS_METABOLIC_CHANGE, ArrowShapeVisualProperty.ARROW);
+			discreteMapping.putMapValue(SEQUENTIAL_CATALYSIS, ArrowShapeVisualProperty.ARROW);
+			
+			style.addVisualMappingFunction(discreteMapping);
 	}
 
 	private void createNodeLabel(VisualStyle style) {
