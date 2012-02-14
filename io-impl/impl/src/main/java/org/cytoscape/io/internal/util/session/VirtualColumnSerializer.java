@@ -100,4 +100,10 @@ public class VirtualColumnSerializer {
 					  String.valueOf(isImmutable));
 		
 	}
+
+	@Override
+	public String toString() {
+		return "VirtualColumnSerializer [name=" + name + ", sourceTable=" + sourceTable + ", targetTable="
+				+ targetTable + ", sourceColumn=" + sourceColumn + "]";
+	}
 }

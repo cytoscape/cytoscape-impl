@@ -8,6 +8,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 
 import org.cytoscape.editor.internal.DropNetworkViewTaskFactoryImpl;
 import org.cytoscape.editor.internal.DropNodeViewTaskFactoryImpl;
@@ -47,11 +48,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
+		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc,CyRootNetworkManager.class);
 		NewEmptyNetworkViewFactory newEmptyNetworkViewFactoryServiceRef = getService(bc,NewEmptyNetworkViewFactory.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
-		
 		VisualMappingManager vmm = getService(bc,VisualMappingManager.class);
-
 
 		ImageIcon nodeIcon = new ImageIcon(getClass().getResource("/images/node.png"));
 		ImageIcon edgeIcon = new ImageIcon(getClass().getResource("/images/edge.png"));
@@ -87,7 +87,7 @@ public class CyActivator extends AbstractCyActivator {
 		ShapePalette shapePalette = new ShapePalette(cySwingApplicationServiceRef);
 
 		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
-		DropNetworkViewTaskFactoryImpl dropNetworkViewTaskFactory = new DropNetworkViewTaskFactoryImpl(cyEventHelperServiceRef, vmm);
+		DropNetworkViewTaskFactoryImpl dropNetworkViewTaskFactory = new DropNetworkViewTaskFactoryImpl(cyEventHelperServiceRef, vmm, cyRootNetworkManagerServiceRef);
 		DropNodeViewTaskFactoryImpl dropNodeViewTaskFactory = new DropNodeViewTaskFactoryImpl(cyNetworkManagerServiceRef);
 		EditorCytoPanelComponent editorCytoPanelComponent = new EditorCytoPanelComponent(shapePalette);
 		CurrentNetworkViewListener currentNetworkViewListener = new CurrentNetworkViewListener(cySwingApplicationServiceRef,editorCytoPanelComponent);

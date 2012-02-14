@@ -87,5 +87,11 @@ public class CyTableMetadataImpl implements CyTableMetadata {
 		public Class<?> getType() {
 			return type;
 		}
+
+		@Override
+		public String toString() {
+			return "CyTableMetadataBuilder [type=" + type + ", namespace=" + namespace + ", table=" + table
+					+ ", network=" + network + "]";
+		}
 	}
 }

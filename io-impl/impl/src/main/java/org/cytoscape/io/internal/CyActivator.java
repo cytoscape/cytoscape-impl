@@ -132,7 +132,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory continuousMappingFactoryServiceRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=continuous)");
 		VisualMappingFunctionFactory passthroughMappingFactoryServiceRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		EquationCompiler equationCompilerServiceRef = getService(bc,EquationCompiler.class);
-		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
+		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc,CyRootNetworkManager.class);
 		
 		StreamUtilImpl streamUtil = new StreamUtilImpl(cyPropertyServiceRef);
 		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix (.pvals) File", DataCategory.TABLE, streamUtil);
@@ -175,20 +175,20 @@ public class CyActivator extends AbstractCyActivator {
 		CalculatorConverterFactory calculatorConverterFactory = new CalculatorConverterFactory();
 		ReadUtils readUtil = new ReadUtils(streamUtil);
 		ExpressionReaderFactory expressionReaderFactory = new ExpressionReaderFactory(expressionFilter,cyTableFactoryServiceRef,cyTableManagerServiceRef);
-		CyAttributesReaderFactory attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter,cyTableFactoryServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyRootNetworkFactoryServiceRef);
+		CyAttributesReaderFactory attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter,cyTableFactoryServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyRootNetworkManagerServiceRef);
 		SIFNetworkReaderFactory sifNetworkViewReaderFactory = new SIFNetworkReaderFactory(sifFilter,cyLayoutsServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyEventHelperRef);
 		UnrecognizedVisualPropertyManager unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(cyTableFactoryServiceRef,cyTableManagerServiceRef);
 		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);
 		ReadCache readCache = new ReadCache();
-		ReadDataManager readDataManager = new ReadDataManager(readCache,equationCompilerServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkFactoryServiceRef);
+		ReadDataManager readDataManager = new ReadDataManager(readCache,equationCompilerServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkManagerServiceRef);
 		
 		HandlerFactory handlerFactory = new HandlerFactory(readDataManager);
 		XGMMLParser xgmmlParser = new XGMMLParser(handlerFactory,readDataManager);
-		XGMMLNetworkReaderFactory xgmmlNetworkReaderFactory = new XGMMLNetworkReaderFactory(xgmmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
+		XGMMLNetworkReaderFactory xgmmlNetworkReaderFactory = new XGMMLNetworkReaderFactory(xgmmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkManagerServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
 		XGMMLNetworkViewReaderFactory xgmmlNetworkViewReaderFactory = new XGMMLNetworkViewReaderFactory(xgmmlViewFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
 		CSVCyReaderFactory sessionTableReaderFactory = new CSVCyReaderFactory(sessionTableFilter,true,true,cyTableFactoryServiceRef,compilerServiceRef,cyTableManagerServiceRef);
-		Cy3SessionReaderFactoryImpl cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,sessionTableReaderFactory,cyNetworkTableManagerServiceRef);
-		Cy2SessionReaderFactoryImpl cy2SessionReaderFactory = new Cy2SessionReaderFactoryImpl(cys2Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,cyRootNetworkFactoryServiceRef);
+		Cy3SessionReaderFactoryImpl cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,sessionTableReaderFactory,cyNetworkTableManagerServiceRef,cyRootNetworkManagerServiceRef);
+		Cy2SessionReaderFactoryImpl cy2SessionReaderFactory = new Cy2SessionReaderFactoryImpl(cys2Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,cyRootNetworkManagerServiceRef);
 		CysessionReaderFactory cysessionReaderFactory = new CysessionReaderFactory(cysessionFilter);
 		BookmarkReaderFactory bookmarkReaderFactory = new BookmarkReaderFactory(bookmarksFilter);
 		PropertiesReaderFactory propertiesReaderFactory = new PropertiesReaderFactory(propertiesFilter);
@@ -201,14 +201,14 @@ public class CyActivator extends AbstractCyActivator {
 		PSWriterFactory psWriterFactory = new PSWriterFactory(psFilter);
 		SVGWriterFactory svgWriterFactory = new SVGWriterFactory(svgFilter);
 		SifNetworkWriterFactory sifNetworkViewWriterFactory = new SifNetworkWriterFactory(sifFilter);
-		XGMMLNetworkViewWriterFactory xgmmlNetworkViewWriterFactory = new XGMMLNetworkViewWriterFactory(xgmmlFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager,cyNetworkManagerServiceRef,cyRootNetworkFactoryServiceRef);
+		XGMMLNetworkViewWriterFactory xgmmlNetworkViewWriterFactory = new XGMMLNetworkViewWriterFactory(xgmmlFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager,cyNetworkManagerServiceRef,cyRootNetworkManagerServiceRef);
 		CysessionWriterFactoryImpl cysessionWriterFactory = new CysessionWriterFactoryImpl(cysessionFilter);
 		BookmarksWriterFactoryImpl bookmarksWriterFactory = new BookmarksWriterFactoryImpl(bookmarksFilter);
 		PropertiesWriterFactoryImpl propertiesWriterFactory = new PropertiesWriterFactoryImpl(propertiesFilter);
 		CSVTableWriterFactory csvTableWriterFactory = new CSVTableWriterFactory(csvFilter,false,false);
 		CSVTableWriterFactory sessionTableWriterFactory = new CSVTableWriterFactory(sessionTableFilter,true,true);
 		VizmapWriterFactoryImpl vizmapWriterFactory = new VizmapWriterFactoryImpl(vizmapXMLFilter,visualStyleSerializer);
-		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter,xgmmlFilter,bookmarksFilter,propertiesFilter,sessionTableFilter,vizmapXMLFilter,networkViewWriterManager,cyRootNetworkFactoryServiceRef,propertyWriterManager,tableWriterManager,vizmapWriterManager);
+		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter,xgmmlFilter,bookmarksFilter,propertiesFilter,sessionTableFilter,vizmapXMLFilter,networkViewWriterManager,cyRootNetworkManagerServiceRef,propertyWriterManager,tableWriterManager,vizmapWriterManager);
 		RecentlyOpenedTrackerImpl recentlyOpenedTracker = new RecentlyOpenedTrackerImpl("tracker.recent.sessions",cyApplicationConfigurationServiceRef);
 		
 		registerService(bc,cyNetworkReaderManager,CyNetworkReaderManager.class, new Properties());

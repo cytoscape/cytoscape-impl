@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -96,7 +97,19 @@ public class HandleEdge extends AbstractHandler {
 				label = String.format("%s (%s) %s", sourceId, (directed ? "directed" : "undirected"), targetId);
 			
 			if (sourceNode != null && targetNode != null) {
-				manager.createEdge(sourceNode, targetNode, id, label, interaction, directed);
+				final CyEdge edge = manager.createEdge(sourceNode, targetNode, id, label, directed);
+				
+				if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) {
+					CyRow row = manager.getCurrentNetwork().getRow(edge);
+					row.set(CyEdge.NAME, label);
+					row.set(CyEdge.INTERACTION, interaction);
+					
+					if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork()) {
+						row = manager.getRootNetwork().getRow(edge);
+						row.set(CyEdge.NAME, label);
+						row.set(CyEdge.INTERACTION, interaction);
+					}
+				}
 			} else {
 				throw new SAXException("Cannot create edge from XGMML (id=" + id + " label=" + label + " source=" +
 									   sourceId + " target=" + targetId + "): source or target node not found");

@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -51,6 +52,14 @@ public class HandleNode extends AbstractHandler {
 				label = atts.getValue("name"); // For backwards compatibility
 			
 			node = manager.createNode(id, label);
+			
+			if ( label != null && (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) ) {
+				manager.getCurrentNetwork().getRow(node).set(CyNode.NAME, label);
+				
+				if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork()) {
+					manager.getRootNetwork().getRow(node).set(CyNode.NAME, label);
+				}
+			}
 		} else {
 			// Try to get the node from the internal cache
 			final Long id = AttributeValueUtil.getIdFromXLink(href);
@@ -58,7 +67,6 @@ public class HandleNode extends AbstractHandler {
 			
 			if (node != null) {
 				CyNetwork net = manager.getCurrentNetwork();
-				label = manager.getRootNetwork().getRow(node).get(CyNode.NAME, String.class);
 				
 				if (net instanceof CySubNetwork)
 					((CySubNetwork) net).addNode(node);
@@ -68,14 +76,6 @@ public class HandleNode extends AbstractHandler {
 				// The node might not have been created yet!
 				// So just save the reference so it can be added to the network after the whole graph is parsed.
 				manager.addElementLink(href, CyNode.class);
-			}
-		}
-		
-		if ( label != null && (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) ) {
-			manager.getCurrentNetwork().getRow(node).set(CyNode.NAME, label);
-			
-			if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork()) {
-				manager.getRootNetwork().getRow(node).set(CyNode.NAME, label);
 			}
 		}
 		

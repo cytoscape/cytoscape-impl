@@ -430,8 +430,7 @@ public class ReadDataManager {
         return node;
     }
 
-	protected CyEdge createEdge(CyNode source, CyNode target, Object id, String label, String interaction,
-			boolean directed) {
+	protected CyEdge createEdge(final CyNode source, final CyNode target, Object id, String label, boolean directed) {
 		CyEdge edge = null;
 		
 		if (id == null) id = label;
@@ -477,14 +476,6 @@ public class ReadDataManager {
         	edge = net.addEdge(actualSrc, actualTgt, directed);
         	this.currentEdge = edge;
         	this.currentRow = net.getRow(edge);
-        	
-        	if (getDocumentVersion() < 3.0 || !isSessionFormat()) {
-        		CyRow row = net.getRow(edge);
-				row.set(CyEdge.NAME, label);
-				
-				if (interaction != null)
-					row.set(CyEdge.INTERACTION, interaction);
-        	}
         }
         
         // Add to internal cache:

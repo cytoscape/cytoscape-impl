@@ -49,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,6 +80,8 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -98,14 +101,15 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	public static final Pattern GLOBAL_TABLE_PATTERN = Pattern.compile(".*/(global/(\\d+)-([^/]+)[.]cytable)");
 	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/"+PROPERTIES_FOLDER+"?(([^/]+)[.](props|properties))");
 	
-	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new HashMap<Long, CyNetwork>();
+	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new LinkedHashMap<Long, CyNetwork>();
 	private final Map<Long/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<Long, Set<CyTableMetadataBuilder>>();
 
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
-	private final CyNetworkTableManager networkTableManager;
+	private final CyNetworkTableManager networkTableMgr;
+	private final CyRootNetworkManager rootNetworkMgr;
 
 	private Map<String, CyTable> filenameTableMap;
 	private Map<CyTableMetadataBuilder, String> builderFilenameMap;
@@ -120,7 +124,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final CyPropertyReaderManager propertyReaderMgr,
 							    final VizmapReaderManager vizmapReaderMgr,
 							    final CSVCyReaderFactory csvCyReaderFactory,
-							    final CyNetworkTableManager networkTableManager) {
+							    final CyNetworkTableManager networkTableMgr,
+							    final CyRootNetworkManager rootNetworkMgr) {
 		super(sourceInputStream, cache);
 
 		if (networkReaderMgr == null) throw new NullPointerException("network reader manager is null!");
@@ -135,8 +140,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (csvCyReaderFactory == null) throw new NullPointerException("table reader manager is null!");
 		this.csvCyReaderFactory = csvCyReaderFactory;
 
-		if (networkTableManager == null) throw new NullPointerException("network table manager is null!");
-		this.networkTableManager = networkTableManager;
+		if (networkTableMgr == null) throw new NullPointerException("network table manager is null!");
+		this.networkTableMgr = networkTableMgr;
+		
+		if (rootNetworkMgr == null) throw new NullPointerException("root network manager is null!");
+		this.rootNetworkMgr = rootNetworkMgr;
 
 		filenameTableMap = new HashMap<String, CyTable>();
 		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
@@ -283,8 +291,14 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		CyNetwork[] netArray = reader.getNetworks();
 		
 		for (CyNetwork net : netArray) {
+			// Add its root-network to the lookup map first
+			CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(net);
+			
+			if (!networkLookup.containsKey(rootNet.getSUID()));
+				networkLookup.put(rootNet.getSUID(), rootNet);
+			
 			networkLookup.put(net.getSUID(), net);
-			networks.add(net);
+			networks.add(net); // Note: do NOT add the root-network to this set!
 		}
 	}
 	
@@ -466,7 +480,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			return; // TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
 		}
 
-		Map<String, CyTable> tableMap = networkTableManager.getTables(network, type);
+		Map<String, CyTable> tableMap = networkTableMgr.getTables(network, type);
 		CyTable targetTable = tableMap.get(namespace);
 		CyTable sourceTable = builder.getTable();
 		mergeTables(sourceTable, targetTable, type);
