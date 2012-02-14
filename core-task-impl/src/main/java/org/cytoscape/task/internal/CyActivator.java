@@ -50,11 +50,9 @@ import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.internal.export.table.ExportCurrentTableTaskFactory;
-import org.cytoscape.task.internal.export.table.ExportEdgeTableTaskFactory;
-import org.cytoscape.task.internal.export.table.ExportNodeTableTaskFactory;
 import org.cytoscape.task.internal.export.vizmap.ExportVizmapTaskFactory;
-import org.cytoscape.task.internal.group.GroupNodesTaskFactory;
 import org.cytoscape.task.internal.group.GroupNodeContextTaskFactory;
+import org.cytoscape.task.internal.group.GroupNodesTaskFactory;
 import org.cytoscape.task.internal.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.internal.hide.HideSelectedNodesTaskFactory;
 import org.cytoscape.task.internal.hide.HideSelectedTaskFactory;
@@ -115,7 +113,6 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 
-
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();
@@ -141,7 +138,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
 		StreamUtil streamUtilRef = getService(bc,StreamUtil.class);
-		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
+		TaskManager<?,?> taskManagerServiceRef = getService(bc,TaskManager.class);
 		PresentationWriterManager viewWriterManagerServiceRef = getService(bc,PresentationWriterManager.class);
 		CyNetworkViewWriterManager networkViewWriterManagerServiceRef = getService(bc,CyNetworkViewWriterManager.class);
 		VizmapWriterManager vizmapWriterManagerServiceRef = getService(bc,VizmapWriterManager.class);
@@ -156,7 +153,7 @@ public class CyActivator extends AbstractCyActivator {
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc,RenderingEngineManager.class);
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc,CyLayoutAlgorithmManager.class);
 		CyTableWriterManager cyTableWriterManagerRef = getService(bc,CyTableWriterManager.class);
-		SynchronousTaskManager synchronousTaskManagerServiceRef = getService(bc,SynchronousTaskManager.class);
+		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc,SynchronousTaskManager.class);
 		
 		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef);
 		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef);
@@ -654,6 +651,7 @@ public class CyActivator extends AbstractCyActivator {
 		saveSessionTaskFactoryProps.setProperty("inToolBar","true");
 		saveSessionTaskFactoryProps.setProperty("menuGravity","3.0");
 		saveSessionTaskFactoryProps.setProperty("tooltip","Save Session");
+		saveSessionTaskFactoryProps.setProperty("task.id","saveSession"); // TODO: Find a better way of making anonymous TaskFactories available to other bundles
 		registerService(bc,saveSessionTaskFactory,TaskFactory.class, saveSessionTaskFactoryProps);
 
 		Properties saveSessionAsTaskFactoryProps = new Properties();

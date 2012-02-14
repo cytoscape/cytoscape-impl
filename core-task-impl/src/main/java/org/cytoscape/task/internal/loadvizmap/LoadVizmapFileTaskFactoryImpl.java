@@ -18,11 +18,11 @@ public class LoadVizmapFileTaskFactoryImpl implements TaskFactory, LoadVisualSty
 
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmMgr;
-	private final SynchronousTaskManager syncTaskManager;
+	private final SynchronousTaskManager<?> syncTaskManager;
 
 	private LoadVizmapFileTask task; 
 	
-	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr, SynchronousTaskManager syncTaskManager) {
+	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr, SynchronousTaskManager<?> syncTaskManager) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmMgr = vmMgr;
 		this.syncTaskManager = syncTaskManager;

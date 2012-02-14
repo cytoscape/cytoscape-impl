@@ -64,6 +64,8 @@ import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +77,8 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private final CytoscapeDesktop desktop;
 	private final CyNetworkManager netMgr;
 	private final NetworkViewManager netViewMgr;
+	private final SynchronousTaskManager<?> syncTaskMgr;
+	private final TaskFactory saveTaskFactory;
 	private final SessionStateIO sessionStateIO;
 	
 	private final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<String, CytoPanelName>();
@@ -84,10 +88,14 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	public SessionHandler(final CytoscapeDesktop desktop,
 						  final CyNetworkManager netMgr,
 						  final NetworkViewManager netViewMgr,
+						  final SynchronousTaskManager<?> syncTaskMgr,
+						  final TaskFactory saveTaskFactory,
 						  final SessionStateIO sessionStateIO) {
 		this.desktop = desktop;
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
+		this.syncTaskMgr = syncTaskMgr;
+		this.saveTaskFactory = saveTaskFactory;
 		this.sessionStateIO = sessionStateIO;
 		
 		CYTOPANEL_NAMES.put("CytoPanel1", CytoPanelName.WEST);
@@ -113,8 +121,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		if (n == JOptionPane.NO_OPTION) {
 			return;
 		} else if (n == JOptionPane.YES_OPTION) {
-			// TODO 
-			System.out.println("SESSION SAVING NOT IMPLEMENTED !!!!");
+			syncTaskMgr.execute(saveTaskFactory);
 			return;
 		} else {
 			e.abortShutdown("User canceled the shutdown request.");
