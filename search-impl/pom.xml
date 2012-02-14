@@ -95,7 +95,7 @@
 			<artifactId>session-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.cytoscape.wrappers</groupId>
+			<groupId>cytoscape-temp</groupId>
 			<artifactId>org.apache.lucene</artifactId>
 			<version>3.0.2</version>
 		</dependency>

@@ -129,7 +129,7 @@
 		</dependency>
     
     		<dependency>
-    			<groupId>org.cytoscape.wrappers</groupId>
+    			<groupId>cytoscape-temp</groupId>
 			<artifactId>org.swinglabs.swing-layout</artifactId>
 			<version>1.0.3</version>
     		</dependency>

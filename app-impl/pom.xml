@@ -122,7 +122,7 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.cytoscape.wrappers</groupId>
+			<groupId>cytoscape-temp</groupId>
 			<artifactId>org.apache.lucene</artifactId>
 			<version>3.0.2</version>
 		</dependency>
@@ -134,7 +134,7 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.cytoscape.wrappers</groupId>
+			<groupId>cytoscape-temp</groupId>
 			<artifactId>org.swinglabs.swing-layout</artifactId>
 			<version>1.0.3</version>
 		</dependency>

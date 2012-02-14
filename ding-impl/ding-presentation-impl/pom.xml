@@ -110,11 +110,8 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
 		</dependency>
-
-
-		<!-- Wrapped libraries -->
 		<dependency>
-			<groupId>org.cytoscape.wrappers</groupId>
+			<groupId>cytoscape-temp</groupId>
 			<artifactId>org.swinglabs.swingx</artifactId>
 			<version>1.6.1</version>
 		</dependency>

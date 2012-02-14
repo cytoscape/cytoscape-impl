@@ -100,7 +100,6 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
 		</dependency>
-		<!-- Wrapped 3rd party libraries -->
 		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>l2fprod-common-sheet</artifactId>
@@ -118,7 +117,7 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.cytoscape.wrappers</groupId>
+			<groupId>cytoscape-temp</groupId>
 			<artifactId>org.swinglabs.swingx</artifactId>
 			<version>1.6.1</version>
 		</dependency>
