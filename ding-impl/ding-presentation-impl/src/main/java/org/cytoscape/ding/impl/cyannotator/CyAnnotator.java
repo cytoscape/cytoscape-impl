@@ -103,21 +103,25 @@ public class CyAnnotator {
 		List<String> annotations = view.getModel().getRow(view.getModel()).getList(ANNOTATION_ATTRIBUTE,String.class);
 		Map<Integer, Annotation> idMap = new HashMap<Integer, Annotation>(); // Keep a map of the original annotation ID's
 		List<Map<String,String>> arrowList = new ArrayList<Map<String, String>>(); // Keep a list of arrows
-		for (String s: annotations) {
-			Map<String, String> argMap = createArgMap(s);
-			Annotation annotation = null;
-			String type = argMap.get("type");
-			if (type == null)
-                continue;
 
-			annotation = annotationFactoryManager.getAnnotation(type,this,view,argMap);
-
-			if (annotation != null) {
-				idMap.put(annotation.getComponentNumber(), annotation);
-				foreGroundCanvas.add(annotation);
-				annotation.setComponentNumber(foreGroundCanvas.getComponentCount()-1);
+		if (annotations != null) {
+			for (String s: annotations) {
+				Map<String, String> argMap = createArgMap(s);
+				Annotation annotation = null;
+				String type = argMap.get("type");
+				if (type == null)
+	                continue;
+	
+				annotation = annotationFactoryManager.getAnnotation(type,this,view,argMap);
+	
+				if (annotation != null) {
+					idMap.put(annotation.getComponentNumber(), annotation);
+					foreGroundCanvas.add(annotation);
+					annotation.setComponentNumber(foreGroundCanvas.getComponentCount()-1);
+				}
 			}
 		}
+		
 		// OK, now we add the arrows, if we have any
 		for (Map<String, String>argMap: arrowList) {
 			// Create the arrow annotation
@@ -130,8 +134,8 @@ public class CyAnnotator {
 				arrow.setSource(annotation.getComponentNumber());
 			}
 		}
-		view.updateView();	
 		
+		view.updateView();	
 	}
 
 	public Component getComponentAt(int x, int y) {
