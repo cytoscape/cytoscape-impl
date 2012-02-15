@@ -30,6 +30,7 @@
 package org.cytoscape.task.internal.creation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.event.CyEventHelper;
@@ -143,9 +144,13 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private void cloneColumns(final CyTable from, final CyTable to) {
 		for (final CyColumn fromColumn : from.getColumns()) {
 			final CyColumn toColumn = to.getColumn(fromColumn.getName());
-			if (toColumn == null)
-				to.createColumn(fromColumn.getName(), fromColumn.getType(), false);
-			else if (toColumn.getType() == fromColumn.getType()) {
+			
+			if (toColumn == null) {
+				if (List.class.isAssignableFrom(fromColumn.getType()))
+					to.createListColumn(fromColumn.getName(), fromColumn.getListElementType(), false);
+				else
+					to.createColumn(fromColumn.getName(), fromColumn.getType(), false);
+			} else if (toColumn.getType() == fromColumn.getType()) {
 				continue;
 			} else {
 				throw new IllegalArgumentException("column of same name: " + fromColumn.getName()
