@@ -198,6 +198,11 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 	@Override
 	public boolean removeNodes(final Collection<CyNode> nodes) {
+		if ( nodes == null || nodes.isEmpty() )
+			return false;
+
+		eventHelper.fireEvent(new AboutToRemoveNodesEvent(this, nodes));
+
 		boolean ret = super.removeNodes(nodes);
 
 		if ( ret )
