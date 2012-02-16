@@ -57,7 +57,10 @@ public class TestCyNetworkFactory {
 	}
 
 	public static CyRootNetwork getPublicRootInstance() {	
-		DummyCyEventHelper deh = new DummyCyEventHelper();
+		return getPublicRootInstance(new DummyCyEventHelper());
+	}
+
+	public static CyRootNetwork getPublicRootInstance(DummyCyEventHelper deh) {	
 		CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
 		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
 		Interpreter interp = new InterpreterImpl();

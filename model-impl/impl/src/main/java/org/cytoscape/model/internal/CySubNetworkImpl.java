@@ -134,7 +134,9 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			// add node
 			copyDefaultAttrs(parent.getRow(node), this.getRow(node));
 		}
-		eventHelper.addEventPayload((CyNetwork)this, node, AddedNodesEvent.class);
+
+		if (fireAddedNodesAndEdgesEvents)
+			eventHelper.addEventPayload((CyNetwork)this, node, AddedNodesEvent.class);
 
 		return true;
 	}
@@ -182,7 +184,9 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			copyDefaultAttrs(parent.getRow(edge), this.getRow(edge));
 			copyDefaultEdgeAttrs(parent.getRow(edge), this.getRow(edge));
 		}
-		eventHelper.addEventPayload((CyNetwork)this, edge, AddedEdgesEvent.class);
+
+		if (fireAddedNodesAndEdgesEvents)
+			eventHelper.addEventPayload((CyNetwork)this, edge, AddedEdgesEvent.class);
 
 		return true;
 	}
