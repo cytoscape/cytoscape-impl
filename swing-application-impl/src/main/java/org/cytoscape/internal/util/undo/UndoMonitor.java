@@ -38,9 +38,17 @@ package org.cytoscape.internal.util.undo;
 
 import java.util.Properties;
 
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.model.events.NetworkDestroyedEvent;
+import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 
 /**
@@ -48,7 +56,7 @@ import org.cytoscape.property.CyProperty;
  * discard policy we might have. Currently, we discard all edits if
  * the network view focus changes.
  */
-public class UndoMonitor implements SetCurrentNetworkViewListener {
+public class UndoMonitor implements SetCurrentNetworkViewListener, NetworkDestroyedListener, NetworkViewDestroyedListener {
 
 	private SwingUndoSupport undo;
 	private Properties props;
@@ -86,5 +94,37 @@ public class UndoMonitor implements SetCurrentNetworkViewListener {
 		if ( e.getNetworkView() != null )
 			undo.getUndoManager().discardAllEdits();
     }
+
+    /**
+ 	 * This method listens for a network destroy event. If the network being destroyed 
+ 	 * is the only available network, it discards all of its edits. Hence, when more
+ 	 * than one network is available, destruction of an inactive network (which does not
+ 	 * have the current network view) will not discard the useful edits of the active 
+ 	 * network.
+ 	 * Moreover, if the edits are related to the destroyed network, the
+ 	 * SetCurrentNetwrkViewEvent will handle the discard of edits.
+	 *
+	 * @param e The change event.
+	 */
+	@Override
+	public void handleEvent(NetworkDestroyedEvent e) {
+		if (e.getSource().getNetworkSet().isEmpty())
+			undo.getUndoManager().discardAllEdits();
+	}
+
+	
+	/**
+ 	 * This method listens for a network view destroy event. If the network view being destroyed 
+ 	 * is the only visible view, it discards all of its edits. In case more
+ 	 * than one network view is available, the SetCurrentNetworkView handles
+ 	 * the discard of the edits. 
+	 * @param e The change event.
+	 */
+	@Override
+	public void handleEvent(NetworkViewDestroyedEvent e) {
+
+		if (e.getSource().getNetworkViewSet().isEmpty())
+			undo.reset();
+	}
 }
 
