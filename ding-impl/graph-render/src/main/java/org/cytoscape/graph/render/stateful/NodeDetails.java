@@ -29,6 +29,7 @@ package org.cytoscape.graph.render.stateful;
 
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.model.CyNode;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -144,7 +145,7 @@ public class NodeDetails {
 	 * rendering mode translucent colors are not supported whereas in full
 	 * detail rendering mode they are.
 	 */
-	public Color colorLowDetail(final int node) {
+	public Color colorLowDetail(final CyNode node) {
 		return Color.red;
 	}
 
@@ -156,7 +157,7 @@ public class NodeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull() that pertain to rounded rectangles.
 	 */
-	public byte shape(final int node) {
+	public byte shape(final CyNode node) {
 		return GraphGraphics.SHAPE_RECTANGLE;
 	}
 
@@ -164,7 +165,7 @@ public class NodeDetails {
 	 * Returns the paint of the interior of the node shape.  By default this
 	 * method returns Color.red.  It is an error to return null in this method.
 	 */
-	public Paint fillPaint(final int node) {
+	public Paint fillPaint(final CyNode node) {
 		return Color.red;
 	}
 
@@ -173,7 +174,7 @@ public class NodeDetails {
 	 * returns zero.  Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	public float borderWidth(final int node) {
+	public float borderWidth(final CyNode node) {
 		return 0.0f;
 	}
 
@@ -183,7 +184,7 @@ public class NodeDetails {
 	 * returns zero; it is an error to return null if borderWidth(node) returns
 	 * a value greater than zero.
 	 */
-	public Paint borderPaint(final int node) {
+	public Paint borderPaint(final CyNode node) {
 		return Color.DARK_GRAY;
 	}
 
@@ -191,7 +192,7 @@ public class NodeDetails {
 	 * Returns the number of labels that this node has.  By default this method
 	 * returns zero.
 	 */
-	public int labelCount(final int node) {
+	public int labelCount(final CyNode node) {
 		return 0;
 	}
 
@@ -205,7 +206,7 @@ public class NodeDetails {
 	 * @param labelInx a value in the range [0, labelCount(node)-1] indicating
 	 *   which node label in question.
 	 */
-	public String labelText(final int node, final int labelInx) {
+	public String labelText(final CyNode node, final int labelInx) {
 		return null;
 	}
 
@@ -218,7 +219,7 @@ public class NodeDetails {
 	 * @param labelInx a value in the range [0, labelCount(node)-1] indicating
 	 *  which node label in question.
 	 */
-	public Font labelFont(final int node, final int labelInx) {
+	public Font labelFont(final CyNode node, final int labelInx) {
 		return null;
 	}
 
@@ -233,7 +234,7 @@ public class NodeDetails {
 	 * @param labelInx a value in the range [0, labelCount(node)-1] indicating
 	 *   which node label in question.
 	 */
-	public double labelScaleFactor(final int node, final int labelInx) {
+	public double labelScaleFactor(final CyNode node, final int labelInx) {
 		return 1.0d;
 	}
 
@@ -245,7 +246,7 @@ public class NodeDetails {
 	 * @param labelInx a value in the range [0, labelCount(node)-1] indicating
 	 *   which node label in question.
 	 */
-	public Paint labelPaint(final int node, final int labelInx) {
+	public Paint labelPaint(final CyNode node, final int labelInx) {
 		return Color.DARK_GRAY;
 	}
 
@@ -268,7 +269,7 @@ public class NodeDetails {
 	 * @see #labelOffsetVectorX(int, int)
 	 * @see #labelOffsetVectorY(int, int)
 	 */
-	public byte labelTextAnchor(final int node, final int labelInx) {
+	public byte labelTextAnchor(final CyNode node, final int labelInx) {
 		return ANCHOR_CENTER;
 	}
 
@@ -290,7 +291,7 @@ public class NodeDetails {
 	 * @see #labelOffsetVectorX(int, int)
 	 * @see #labelOffsetVectorY(int, int)
 	 */
-	public byte labelNodeAnchor(final int node, final int labelInx) {
+	public byte labelNodeAnchor(final CyNode node, final int labelInx) {
 		return ANCHOR_CENTER;
 	}
 
@@ -311,7 +312,7 @@ public class NodeDetails {
 	 * @see #labelTextAnchor(int, int)
 	 * @see #labelNodeAnchor(int, int)
 	 */
-	public float labelOffsetVectorX(final int node, final int labelInx) {
+	public float labelOffsetVectorX(final CyNode node, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -332,7 +333,7 @@ public class NodeDetails {
 	 * @see #labelTextAnchor(int, int)
 	 * @see #labelNodeAnchor(int, int)
 	 */
-	public float labelOffsetVectorY(final int node, final int labelInx) {
+	public float labelOffsetVectorY(final CyNode node, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -347,7 +348,7 @@ public class NodeDetails {
 	 * string that does not span multiple lines.
 	 * @see #LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	public byte labelJustify(final int node, final int labelInx) {
+	public byte labelJustify(final CyNode node, final int labelInx) {
 		return LABEL_WRAP_JUSTIFY_CENTER;
 	}
 
@@ -362,7 +363,7 @@ public class NodeDetails {
 	 * @see #graphicOffsetVectorY(int, int)
 	 * @see #graphicNodeAnchor(int, int)
 	 */
-	public float graphicOffsetVectorX(final int node, final int graphicInx) {
+	public float graphicOffsetVectorX(final CyNode node, final int graphicInx) {
 		return 0.0f;
 	}
 
@@ -377,7 +378,7 @@ public class NodeDetails {
 	 * @see #graphicOffsetVectorX(int, int)
 	 * @see #graphicNodeAnchor(int, int)
 	 */
-	public float graphicOffsetVectorY(final int node, final int graphicInx) {
+	public float graphicOffsetVectorY(final CyNode node, final int graphicInx) {
 		return 0.0f;
 	}
 
@@ -391,7 +392,7 @@ public class NodeDetails {
 	 * @see #customGraphics(int)
 	 * @since Cytoscape 2.6
 	 */
-	public int customGraphicCount(final int node) {
+	public int customGraphicCount(final CyNode node) {
 		return 0;
 	}
 
@@ -409,7 +410,7 @@ public class NodeDetails {
 	 */
 	// Should probably be getCustomGraphics(), but all the methods
 	// seem to have this form.
-	public Iterator<CustomGraphic> customGraphics (final int node) {
+	public Iterator<CustomGraphic> customGraphics (final CyNode node) {
 		return new Iterator<CustomGraphic>() {
 			private Iterator<CustomGraphic> _iterator =  new ArrayList<CustomGraphic>(0).iterator();
 			public boolean hasNext() {return _iterator.hasNext();}
@@ -440,7 +441,7 @@ public class NodeDetails {
 	 *       method in a subclass.
 	 * @since Cytoscape 2.6
 	 */
-	public Object customGraphicsLock(final int node) {
+	public Object customGraphicsLock(final CyNode node) {
 		return this;
 	}
 
@@ -476,7 +477,7 @@ public class NodeDetails {
 	 * returns 100.  Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	public double labelWidth(final int node) {
+	public double labelWidth(final CyNode node) {
 		return 100.0;
 	}
 	
@@ -486,7 +487,7 @@ public class NodeDetails {
 	 * @param node
 	 * @return
 	 */
-	public TexturePaint getNestedNetworkTexturePaint(final int node) {
+	public TexturePaint getNestedNetworkTexturePaint(final CyNode node) {
 		return null;
 	}
 }

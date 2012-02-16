@@ -48,7 +48,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.IntObjHash;
 import org.cytoscape.util.intr.MinIntHeap;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
@@ -58,33 +57,33 @@ class DEdgeDetails extends EdgeDetails {
 	final DGraphView m_view;
 	final Object m_deletedEntry = new Object();
 
-	IntObjHash m_colorsLowDetail = new IntObjHash();
-	IntObjHash m_selectedColorsLowDetail = new IntObjHash();
+	Map<CyEdge,Object> m_colorsLowDetail = new HashMap<CyEdge,Object>();
+	Map<CyEdge,Object> m_selectedColorsLowDetail = new HashMap<CyEdge,Object>();
 
-	Map<Integer, Float> m_segmentThicknesses = new HashMap<Integer, Float>();
-	Map<Integer, Stroke> m_segmentStrokes = new HashMap<Integer, Stroke>();
+	Map<CyEdge, Float> m_segmentThicknesses = new HashMap<CyEdge, Float>();
+	Map<CyEdge, Stroke> m_segmentStrokes = new HashMap<CyEdge, Stroke>();
 
-	Map<Integer, Byte> m_sourceArrows = new HashMap<Integer, Byte>();
-	Map<Integer, Paint> m_sourceArrowPaints = new HashMap<Integer, Paint>();
-	Map<Integer, Byte> m_targetArrows = new HashMap<Integer, Byte>();
-	Map<Integer, Paint> m_targetArrowPaints = new HashMap<Integer, Paint>();
+	Map<CyEdge, Byte> m_sourceArrows = new HashMap<CyEdge, Byte>();
+	Map<CyEdge, Paint> m_sourceArrowPaints = new HashMap<CyEdge, Paint>();
+	Map<CyEdge, Byte> m_targetArrows = new HashMap<CyEdge, Byte>();
+	Map<CyEdge, Paint> m_targetArrowPaints = new HashMap<CyEdge, Paint>();
 
-	Map<Integer, Paint> m_targetArrowSelectedPaints = new HashMap<Integer, Paint>();
+	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new HashMap<CyEdge, Paint>();
 
-	Map<Integer, Integer> m_labelCounts = new HashMap<Integer, Integer>();
-	Map<Long, String> m_labelTexts = new HashMap<Long, String>();
-	Map<Long, Font> m_labelFonts = new HashMap<Long, Font>();
-	Map<Long, Paint> m_labelPaints = new HashMap<Long, Paint>();
-	Map<Integer, Double> m_labelWidths = new HashMap<Integer, Double>();
+	Map<CyEdge, Integer> m_labelCounts = new HashMap<CyEdge, Integer>();
+	Map<CyEdge, String> m_labelTexts = new HashMap<CyEdge, String>();
+	Map<CyEdge, Font> m_labelFonts = new HashMap<CyEdge, Font>();
+	Map<CyEdge, Paint> m_labelPaints = new HashMap<CyEdge, Paint>();
+	Map<CyEdge, Double> m_labelWidths = new HashMap<CyEdge, Double>();
 
-	Map<Integer, Paint> m_unselectedPaints = new HashMap<Integer, Paint>();
-	Map<Integer, Paint> m_selectedPaints = new HashMap<Integer, Paint>();
+	Map<CyEdge, Paint> m_unselectedPaints = new HashMap<CyEdge, Paint>();
+	Map<CyEdge, Paint> m_selectedPaints = new HashMap<CyEdge, Paint>();
 	
 	// Curved or not
-	Map<Integer, Integer> m_lineType = new HashMap<Integer, Integer>();
+	Map<CyEdge, Integer> m_lineType = new HashMap<CyEdge, Integer>();
 	
 	// Edge Bends
-	Map<Integer, Bend> m_edgeBends = new HashMap<Integer, Bend>();
+	Map<CyEdge, Bend> m_edgeBends = new HashMap<CyEdge, Bend>();
 
 	private Byte m_sourceArrowDefault;
 	private Paint m_sourceArrowPaintDefault;
@@ -112,7 +111,7 @@ class DEdgeDetails extends EdgeDetails {
 
 	private boolean isCleared = false;
 
-	private Set<Integer> selected = new HashSet<Integer>();
+	private Set<CyEdge> selected = new HashSet<CyEdge>();
 
 	DEdgeDetails(final DGraphView view) {
 		m_view = view;
@@ -122,36 +121,36 @@ class DEdgeDetails extends EdgeDetails {
 		if (isCleared)
 			return;
 
-		m_segmentThicknesses = new HashMap<Integer, Float>();
-		m_segmentStrokes = new HashMap<Integer, Stroke>();
+		m_segmentThicknesses = new HashMap<CyEdge, Float>();
+		m_segmentStrokes = new HashMap<CyEdge, Stroke>();
 
-		m_sourceArrows = new HashMap<Integer, Byte>();
-		m_sourceArrowPaints = new HashMap<Integer, Paint>();
-		m_targetArrows = new HashMap<Integer, Byte>();
-		m_targetArrowPaints = new HashMap<Integer, Paint>();
-		m_targetArrowSelectedPaints = new HashMap<Integer, Paint>();
-		m_labelCounts = new HashMap<Integer, Integer>();
-		m_labelTexts = new HashMap<Long, String>();
-		m_labelFonts = new HashMap<Long, Font>();
-		m_labelPaints = new HashMap<Long, Paint>();
-		m_labelWidths = new HashMap<Integer, Double>();
+		m_sourceArrows = new HashMap<CyEdge, Byte>();
+		m_sourceArrowPaints = new HashMap<CyEdge, Paint>();
+		m_targetArrows = new HashMap<CyEdge, Byte>();
+		m_targetArrowPaints = new HashMap<CyEdge, Paint>();
+		m_targetArrowSelectedPaints = new HashMap<CyEdge, Paint>();
+		m_labelCounts = new HashMap<CyEdge, Integer>();
+		m_labelTexts = new HashMap<CyEdge, String>();
+		m_labelFonts = new HashMap<CyEdge, Font>();
+		m_labelPaints = new HashMap<CyEdge, Paint>();
+		m_labelWidths = new HashMap<CyEdge, Double>();
 
-		m_unselectedPaints = new HashMap<Integer, Paint>();
-		m_selectedPaints = new HashMap<Integer, Paint>();
+		m_unselectedPaints = new HashMap<CyEdge, Paint>();
+		m_selectedPaints = new HashMap<CyEdge, Paint>();
 
-		m_colorsLowDetail = new IntObjHash();
-		m_selectedColorsLowDetail = new IntObjHash();
+		m_colorsLowDetail = new HashMap<CyEdge,Object>();
+		m_selectedColorsLowDetail = new HashMap<CyEdge,Object>();
 
-		selected = new HashSet<Integer>();
+		selected = new HashSet<CyEdge>();
 		
-		m_lineType = new HashMap<Integer, Integer>();
+		m_lineType = new HashMap<CyEdge, Integer>();
 		
-		m_edgeBends = new HashMap<Integer, Bend>();
+		m_edgeBends = new HashMap<CyEdge, Bend>();
 
 		isCleared = true;
 	}
 
-	void unregisterEdge(final int edgeIdx) {
+	void unregisterEdge(final CyEdge edgeIdx) {
 		final Object colorDetail = m_colorsLowDetail.get(edgeIdx);
 		if ((colorDetail != null) && (colorDetail != m_deletedEntry))
 			m_colorsLowDetail.put(edgeIdx, m_deletedEntry);
@@ -184,7 +183,7 @@ class DEdgeDetails extends EdgeDetails {
 	}
 
 	@Override
-	public Color colorLowDetail(final int edge) {
+	public Color colorLowDetail(final CyEdge edge) {
 		boolean isSelected = selected.contains(edge);
 
 		if (isSelected)
@@ -193,7 +192,7 @@ class DEdgeDetails extends EdgeDetails {
 			return unselectedColorLowDetail(edge);
 	}
 
-	public Color unselectedColorLowDetail(final int edge) {
+	public Color unselectedColorLowDetail(final CyEdge edge) {
 		final Object o = m_colorsLowDetail.get(edge);
 
 		if ((o == null) || (o == m_deletedEntry))
@@ -205,7 +204,7 @@ class DEdgeDetails extends EdgeDetails {
 		return (Color) o;
 	}
 
-	public Color selectedColorLowDetail(final int edge) {
+	public Color selectedColorLowDetail(final CyEdge edge) {
 		final Object o = m_selectedColorsLowDetail.get(edge);
 
 		if ((o == null) || (o == m_deletedEntry))
@@ -226,7 +225,7 @@ class DEdgeDetails extends EdgeDetails {
 	}
 
 	@Override
-	public byte sourceArrow(final int edge) {
+	public byte sourceArrow(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE)) {
@@ -253,7 +252,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * A non-negative arrowType has the special meaning to remove overridden
 	 * arrow.
 	 */
-	void overrideSourceArrow(final int edge, final byte arrowType) {
+	void overrideSourceArrow(final CyEdge edge, final byte arrowType) {
 		if ((arrowType >= 0) || (arrowType == super.sourceArrow(edge)))
 			m_sourceArrows.remove(edge);
 		else {
@@ -266,7 +265,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Paint sourceArrowPaint(final int edge) {
+	public Paint sourceArrowPaint(final CyEdge edge) {
 
 		boolean isSelected = selected.contains(edge);
 
@@ -276,7 +275,7 @@ class DEdgeDetails extends EdgeDetails {
 			return sourceArrowUnselectedPaint(edge);
 	}
 
-	private Paint sourceArrowUnselectedPaint(final int edge) {
+	private Paint sourceArrowUnselectedPaint(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT))
@@ -300,7 +299,7 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideSourceArrowPaint(final int edge, final Paint paint) {
+	void overrideSourceArrowPaint(final CyEdge edge, final Paint paint) {
 		if ((paint == null) || paint.equals(super.sourceArrowPaint(edge)))
 			m_sourceArrowPaints.remove(edge);
 		else {
@@ -313,7 +312,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public byte targetArrow(final int edge) {
+	public byte targetArrow(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE)) {
@@ -341,7 +340,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * A non-negative arrowType has the special meaning to remove overridden
 	 * arrow.
 	 */
-	void overrideTargetArrow(final int edge, final byte arrowType) {
+	void overrideTargetArrow(final CyEdge edge, final byte arrowType) {
 		if ((arrowType >= 0) || (arrowType == super.targetArrow(edge)))
 			m_targetArrows.remove(edge);
 		else {
@@ -354,7 +353,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Paint targetArrowPaint(final int edge) {
+	public Paint targetArrowPaint(final CyEdge edge) {
 		final boolean isSelected = selected.contains(edge);
 
 		if (isSelected)
@@ -363,7 +362,7 @@ class DEdgeDetails extends EdgeDetails {
 			return targetArrowUnselectedPaint(edge);
 	}
 
-	private Paint targetArrowUnselectedPaint(final int edge) {		
+	private Paint targetArrowUnselectedPaint(final CyEdge edge) {		
 		// Check bypass
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT))
@@ -387,7 +386,7 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideTargetArrowPaint(final int edge, final Paint paint) {
+	void overrideTargetArrowPaint(final CyEdge edge, final Paint paint) {
 		if ((paint == null) || paint.equals(super.targetArrowPaint(edge)))
 			m_targetArrowPaints.remove(edge);
 		else {
@@ -399,7 +398,7 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideTargetArrowSelectedPaint(final int edge, final Paint paint) {
+	void overrideTargetArrowSelectedPaint(final CyEdge edge, final Paint paint) {
 		if ((paint == null) || paint.equals(super.targetArrowPaint(edge)))
 			this.m_targetArrowSelectedPaints.remove(edge);
 		else {
@@ -412,7 +411,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public float segmentThickness(final int edge) {
+	public float segmentThickness(final CyEdge edge) {
 		//  Bypass check
 		final DEdgeView edv = m_view.getDEdgeView(edge);
 		if (edv.isValueLocked(DVisualLexicon.EDGE_WIDTH))
@@ -436,7 +435,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * A negative thickness value has the special meaning to remove overridden
 	 * thickness.
 	 */
-	void overrideSegmentThickness(final int edge, final float thickness) {
+	void overrideSegmentThickness(final CyEdge edge, final float thickness) {
 		if ((thickness < 0.0f) || (thickness == super.segmentThickness(edge)))
 			m_segmentThicknesses.remove(edge);
 		else {
@@ -449,7 +448,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Stroke segmentStroke(final int edge) {
+	public Stroke segmentStroke(final CyEdge edge) {
 		// Bypass check
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE)) {
@@ -476,7 +475,7 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideSegmentStroke(int edge, Stroke stroke) {
+	void overrideSegmentStroke(CyEdge edge, Stroke stroke) {
 		if ((stroke == null) || stroke.equals(super.segmentStroke(edge)))
 			m_segmentStrokes.remove(edge);
 		else {
@@ -489,7 +488,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Paint segmentPaint(final int edge) {
+	public Paint segmentPaint(final CyEdge edge) {
 		final boolean isSelected = selected.contains(edge);
 
 		if (isSelected)
@@ -502,7 +501,7 @@ class DEdgeDetails extends EdgeDetails {
 		m_unselectedPaintDefault = p;
 	}
 
-	public Paint unselectedPaint(final int edge) {
+	public Paint unselectedPaint(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT))
@@ -521,7 +520,7 @@ class DEdgeDetails extends EdgeDetails {
 		return paint;
 	}
 
-	public Paint selectedPaint(final int edge) {
+	public Paint selectedPaint(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT))
@@ -543,22 +542,22 @@ class DEdgeDetails extends EdgeDetails {
 		m_selectedPaintDefault = p;
 	}
 
-	void select(final int edge) {
+	void select(final CyEdge edge) {
 		selected.add(edge);
 	}
 
-	void unselect(final int edge) {
+	void unselect(final CyEdge edge) {
 		selected.remove(edge);
 	}
 
-	void setUnselectedPaint(final int edge, final Paint paint) {
+	void setUnselectedPaint(final CyEdge edge, final Paint paint) {
 		m_unselectedPaints.put(edge, paint);
 		if (paint instanceof Color)
 			m_colorsLowDetail.put(edge, paint);
 		isCleared = false;
 	}
 
-	void setSelectedPaint(final int edge, final Paint paint) {
+	void setSelectedPaint(final CyEdge edge, final Paint paint) {
 		m_selectedPaints.put(edge, paint);
 		if (paint instanceof Color)
 			m_selectedColorsLowDetail.put(edge, paint);
@@ -570,7 +569,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int labelCount(final int edge) {
+	public int labelCount(final CyEdge edge) {
 		final Integer i = m_labelCounts.get(edge);
 		if (i == null)
 			if (m_labelCountDefault == null)
@@ -588,22 +587,24 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A negative labelCount has the special meaning to remove overridden count.
 	 */
-	void overrideLabelCount(final int edge, final int labelCount) {
+	void overrideLabelCount(final CyEdge edge, final int labelCount) {
+	/*
 		if ((labelCount < 0) || (labelCount == super.labelCount(edge)))
 			m_labelCounts.remove(edge);
 		else {
 			m_labelCounts.put(edge, labelCount);
 			isCleared = false;
 		}
+		*/
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public String labelText(final int edge, final int labelInx) {
-		final long key = (((long) edge) << 32) | ((long) labelInx);
-		final String text = m_labelTexts.get(key);
+	public String labelText(final CyEdge edge, final int labelInx) {
+//		final long key = (((long) edge) << 32) | ((long) labelInx);
+		final String text = m_labelTexts.get(edge);
 		if (text == null)
 			if (m_labelTextDefault == null)
 				return super.labelText(edge, labelInx);
@@ -620,13 +621,13 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A null text has the special meaning to remove overridden text.
 	 */
-	void overrideLabelText(final int edge, final int labelInx, final String text) {
-		final long key = (((long) edge) << 32) | ((long) labelInx);
+	void overrideLabelText(final CyEdge edge, final int labelInx, final String text) {
+//		final long key = (((long) edge) << 32) | ((long) labelInx);
 
 		if ((text == null) || text.equals(super.labelText(edge, labelInx)))
-			m_labelTexts.remove(key);
+			m_labelTexts.remove(edge);
 		else {
-			m_labelTexts.put(key, text);
+			m_labelTexts.put(edge, text);
 			isCleared = false;
 		}
 	}
@@ -635,9 +636,9 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Font labelFont(final int edge, final int labelInx) {
-		final long key = (((long) edge) << 32) | ((long) labelInx);
-		final Font font = m_labelFonts.get(key);
+	public Font labelFont(final CyEdge edge, final int labelInx) {
+//		final long key = (((long) edge) << 32) | ((long) labelInx);
+		final Font font = m_labelFonts.get(edge);
 
 		if (font == null)
 			if (m_labelFontDefault == null)
@@ -655,13 +656,13 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A null font has the special meaning to remove overridden font.
 	 */
-	void overrideLabelFont(final int edge, final int labelInx, final Font font) {
-		final long key = (((long) edge) << 32) | ((long) labelInx);
+	void overrideLabelFont(final CyEdge edge, final int labelInx, final Font font) {
+//		final long key = (((long) edge) << 32) | ((long) labelInx);
 
 		if ((font == null) || font.equals(super.labelFont(edge, labelInx)))
-			m_labelFonts.remove(key);
+			m_labelFonts.remove(edge);
 		else {
-			m_labelFonts.put(key, font);
+			m_labelFonts.put(edge, font);
 			isCleared = false;
 		}
 	}
@@ -670,14 +671,14 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Paint labelPaint(final int edge, final int labelInx) {
+	public Paint labelPaint(final CyEdge edge, final int labelInx) {
 		// Check bypass
 		final DEdgeView dev = m_view.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_COLOR))
 			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_COLOR);
 
-		final long key = (((long) edge) << 32) | ((long) labelInx);
-		final Paint paint = m_labelPaints.get(key);
+//		final long key = (((long) edge) << 32) | ((long) labelInx);
+		final Paint paint = m_labelPaints.get(edge);
 
 		if (paint == null)
 			if (m_labelPaintDefault == null)
@@ -695,13 +696,13 @@ class DEdgeDetails extends EdgeDetails {
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideLabelPaint(final int edge, final int labelInx, final Paint paint) {
-		final long key = (((long) edge) << 32) | ((long) labelInx);
+	void overrideLabelPaint(final CyEdge edge, final int labelInx, final Paint paint) {
+//		final long key = (((long) edge) << 32) | ((long) labelInx);
 
 		if ((paint == null) || paint.equals(super.labelPaint(edge, labelInx)))
-			m_labelPaints.remove(key);
+			m_labelPaints.remove(edge);
 		else {
-			m_labelPaints.put(key, paint);
+			m_labelPaints.put(edge, paint);
 			isCleared = false;
 		}
 	}
@@ -710,7 +711,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public double labelWidth(final int edge) {
+	public double labelWidth(final CyEdge edge) {
 		final Double width = m_labelWidths.get(edge);
 		if (width == null)
 			if (m_labelWidthDefault == null)
@@ -729,7 +730,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * A negative width value has the special meaning to remove overridden
 	 * width.
 	 */
-	void overrideLabelWidth(final int edge, final double width) {
+	void overrideLabelWidth(final CyEdge edge, final double width) {
 		if ((width < 0.0) || (width == super.labelWidth(edge)))
 			m_labelWidths.remove(edge);
 		else {
@@ -740,7 +741,7 @@ class DEdgeDetails extends EdgeDetails {
 
 
 	@Override
-	public float sourceArrowSize(int edge) {
+	public float sourceArrowSize(CyEdge edge) {
 		// For the half arrows, we need to scale multiplicatively
 		// so that the arrow matches the line.
 		final int arrowType = sourceArrow(edge);
@@ -755,7 +756,7 @@ class DEdgeDetails extends EdgeDetails {
 
 
 	@Override
-	public float targetArrowSize(int edge) {
+	public float targetArrowSize(CyEdge edge) {
 		// For the half arrows, we need to scale multiplicatively
 		// so that the arrow matches the line.
 		final int arrowType = targetArrow(edge);
@@ -768,7 +769,7 @@ class DEdgeDetails extends EdgeDetails {
 	}
 	
 	
-	public Integer lineType(final int edge) {
+	public Integer lineType(final CyEdge edge) {
 		final Integer lineType = m_lineType.get(edge);
 		if (lineType == null)
 			if (m_lineTypeDefault == null)
@@ -789,7 +790,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * @param edge
 	 * @return edge Bend
 	 */
-	public Bend bend(final int edge) {		
+	public Bend bend(final CyEdge edge) {		
 		Bend bend = m_edgeBends.get(edge);
 		
 		if(bend == null) {
@@ -814,7 +815,7 @@ class DEdgeDetails extends EdgeDetails {
 	private final float[] m_extentsBuff = new float[4];
 	
 	@Override
-	public EdgeAnchors anchors(final int edge) {
+	public EdgeAnchors anchors(final CyEdge edge) {
 		final DEdgeView edgeView = (DEdgeView) m_view.getDEdgeView(edge);
 		final EdgeAnchors returnThis = edgeView;
 
@@ -845,7 +846,7 @@ class DEdgeDetails extends EdgeDetails {
 //				final int e2 = selfEdges.nextInt();
 				final int e2 = selfEdge.getIndex();
 
-				if (e2 == edge)
+				if (e2 == edge.getIndex())
 					break;
 
 				if (((EdgeAnchors) m_view.getDEdgeView(e2)).numAnchors() == 0)
@@ -902,7 +903,7 @@ class DEdgeDetails extends EdgeDetails {
 
 			// If the first other edge is the same as this edge, 
 			// (i.e. we're at the end of the list?).
-			if (otherEdge == edge)
+			if (otherEdge == edge.getIndex())
 				break;
 
 			// So we don't count the other edge twice?
@@ -910,7 +911,7 @@ class DEdgeDetails extends EdgeDetails {
 
 			// Count the number of other edges.
 			while (true) {
-				if (edge == (otherEdge = otherEdges.nextInt()))
+				if (edge.getIndex() == (otherEdge = otherEdges.nextInt()))
 					break;
 
 				if (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0)
@@ -990,7 +991,7 @@ class DEdgeDetails extends EdgeDetails {
 	 * Size of handle graphics (square)
 	 */
 	@Override
-	public float anchorSize(final int edge, final int anchorInx) {
+	public float anchorSize(final CyEdge edge, final int anchorInx) {
 		final DEdgeView eView = (DEdgeView) m_view.getDEdgeView(edge);
 		
 		if (eView.isSelected() && (eView.numAnchors() > 0))
@@ -1004,12 +1005,12 @@ class DEdgeDetails extends EdgeDetails {
 	 * Color of handles.
 	 */
 	@Override
-	public Paint anchorPaint(final int edge, int anchorInx) {
+	public Paint anchorPaint(final CyEdge edge, int anchorInx) {
 
 		if (lineType(edge) == DEdgeView.STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;
 
-		if (m_view.m_selectedAnchors.count((edge << 6) | anchorInx) > 0)
+		if (m_view.m_selectedAnchors.count((edge.getIndex() << 6) | anchorInx) > 0)
 			return m_view.getAnchorSelectedPaint();
 		else
 			return m_view.getAnchorUnselectedPaint();

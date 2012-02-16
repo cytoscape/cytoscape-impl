@@ -39,6 +39,7 @@ import java.util.Iterator;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
@@ -327,9 +328,8 @@ public final class GraphRenderer {
 
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
-					for ( CyEdge e : touchingEdges ) {
-						final int edge = e.getIndex();
-						final int otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex();
+					for ( CyEdge edge : touchingEdges ) {
+						final int otherNode = node ^ edge.getSource().getIndex() ^ edge.getTarget().getIndex();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 							nodePositions.exists(otherNode, floatBuff2, 0);
@@ -347,19 +347,20 @@ public final class GraphRenderer {
 			} else { // High detail.
 				while (nodeHits.numRemaining() > 0) {
 					final int node = nodeHits.nextExtents(floatBuff1, 0);
-					final byte nodeShape = nodeDetails.shape(node);
-					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
-					for ( CyEdge e : touchingEdges ) {
-						final int edge = e.getIndex(); 
-						final int otherNode = node ^ e.getSource().getIndex()
-							^ e.getTarget().getIndex();
+					final CyNode cyNode = graph.getNode(node);
+					final byte nodeShape = nodeDetails.shape(cyNode);
+					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
+					for ( CyEdge edge : touchingEdges ) {
+						final int otherNode = node ^ edge.getSource().getIndex()
+							^ edge.getTarget().getIndex();
+						final CyNode otherCyNode = graph.getNode(otherNode);
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 
 							if (!nodePositions.exists(otherNode, floatBuff2, 0))
 								throw new IllegalStateException("nodePositions not recognizing node that exists in graph");
 
-							final byte otherNodeShape = nodeDetails.shape(otherNode);
+							final byte otherNodeShape = nodeDetails.shape(otherCyNode);
 
 							// Compute node shapes, center positions, and extents.
 							final byte srcShape;
@@ -368,7 +369,7 @@ public final class GraphRenderer {
 							final byte trgShape;
 							final float[] srcExtents;
 							final float[] trgExtents;
-							if (node == graph.getEdge(edge).getSource().getIndex()) {
+							if (node == edge.getSource().getIndex()) {
 								srcShape = nodeShape;
 								trgShape = otherNodeShape;
 								srcExtents = floatBuff1;
@@ -638,7 +639,7 @@ public final class GraphRenderer {
 				final int nodeHitCount = nodeHits.numRemaining();
 
 				for (int i = 0; i < nodeHitCount; i++) {
-					final int node = nodeHits.nextExtents(floatBuff1, 0);
+					final CyNode node = graph.getNode( nodeHits.nextExtents(floatBuff1, 0) );
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
@@ -647,35 +648,36 @@ public final class GraphRenderer {
 			} else { // High detail.
 				while (nodeHits.numRemaining() > 0) {
 					final int node = nodeHits.nextExtents(floatBuff1, 0);
+					final CyNode cyNode = graph.getNode(node);
 					
-					renderNodeHigh(graph, grafx, node, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, lodBits);
+					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, lodBits);
 				
 
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
 
-						final int labelCount = nodeDetails.labelCount(node);
+						final int labelCount = nodeDetails.labelCount(cyNode);
 
 						for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-							final String text = nodeDetails.labelText(node, labelInx);
-							final Font font = nodeDetails.labelFont(node, labelInx);
-							final double fontScaleFactor = nodeDetails.labelScaleFactor(node,
+							final String text = nodeDetails.labelText(cyNode, labelInx);
+							final Font font = nodeDetails.labelFont(cyNode, labelInx);
+							final double fontScaleFactor = nodeDetails.labelScaleFactor(cyNode,
 							                                                            labelInx);
-							final Paint paint = nodeDetails.labelPaint(node, labelInx);
-							final byte textAnchor = nodeDetails.labelTextAnchor(node, labelInx);
-							final byte nodeAnchor = nodeDetails.labelNodeAnchor(node, labelInx);
-							final float offsetVectorX = nodeDetails.labelOffsetVectorX(node,
+							final Paint paint = nodeDetails.labelPaint(cyNode, labelInx);
+							final byte textAnchor = nodeDetails.labelTextAnchor(cyNode, labelInx);
+							final byte nodeAnchor = nodeDetails.labelNodeAnchor(cyNode, labelInx);
+							final float offsetVectorX = nodeDetails.labelOffsetVectorX(cyNode,
 							                                                           labelInx);
-							final float offsetVectorY = nodeDetails.labelOffsetVectorY(node,
+							final float offsetVectorY = nodeDetails.labelOffsetVectorY(cyNode,
 							                                                           labelInx);
 							final byte justify;
 
 							if (text.indexOf('\n') >= 0)
-								justify = nodeDetails.labelJustify(node, labelInx);
+								justify = nodeDetails.labelJustify(cyNode, labelInx);
 							else
 								justify = NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
 
-							final double nodeLabelWidth = nodeDetails.labelWidth(node);
+							final double nodeLabelWidth = nodeDetails.labelWidth(cyNode);
 
 							doubleBuff1[0] = floatBuff1[0];
 							doubleBuff1[1] = floatBuff1[1];
@@ -1043,13 +1045,13 @@ public final class GraphRenderer {
 	 * @param lodBits
 	 */
 	private static final void renderNodeHigh(final CyNetwork graph, final GraphGraphics grafx, 
-			final int node, final float[] floatBuff1, final double[] doubleBuff1, final double[] doubleBuff2, 
-			final NodeDetails nodeDetails, final int lodBits) {
+			final int node, final CyNode cyNode, final float[] floatBuff1, final double[] doubleBuff1, 
+			final double[] doubleBuff2, final NodeDetails nodeDetails, final int lodBits) {
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
 						
 			// Compute visual attributes that do not depend on LOD.
-			final byte shape = nodeDetails.shape(node);
-			final Paint fillPaint = nodeDetails.fillPaint(node);
+			final byte shape = nodeDetails.shape(cyNode);
+			final Paint fillPaint = nodeDetails.fillPaint(cyNode);
 
 			// Compute node border information.
 			final float borderWidth;
@@ -1059,12 +1061,12 @@ public final class GraphRenderer {
 				borderWidth = 0.0f;
 				borderPaint = null;
 			} else { // Rendering node borders.
-				borderWidth = nodeDetails.borderWidth(node);
+				borderWidth = nodeDetails.borderWidth(cyNode);
 
 				if (borderWidth == 0.0f)
 					borderPaint = null;
 				else
-					borderPaint = nodeDetails.borderPaint(node);
+					borderPaint = nodeDetails.borderPaint(cyNode);
 			}
 
 			// Draw the node.
@@ -1075,7 +1077,7 @@ public final class GraphRenderer {
 		if ((lodBits & LOD_CUSTOM_GRAPHICS) != 0) {
 
 			// draw any nested networks first
-			final TexturePaint nestedNetworkPaint = nodeDetails.getNestedNetworkTexturePaint(node);
+			final TexturePaint nestedNetworkPaint = nodeDetails.getNestedNetworkTexturePaint(cyNode);
 			if (nestedNetworkPaint != null) {
 				doubleBuff1[0] = floatBuff1[0];
 				doubleBuff1[1] = floatBuff1[1];
@@ -1087,17 +1089,17 @@ public final class GraphRenderer {
 
 			// draw custom graphics on top of nested networks 
 			// don't allow our custom graphics to mutate while we iterate over them:
-			synchronized (nodeDetails.customGraphicsLock(node)) {
+			synchronized (nodeDetails.customGraphicsLock(cyNode)) {
 				// This iterator will return CustomGraphics in rendering order:
-				Iterator<CustomGraphic> dNodeIt = nodeDetails.customGraphics(node);
+				Iterator<CustomGraphic> dNodeIt = nodeDetails.customGraphics(cyNode);
 				CustomGraphic cg = null;
 				// The graphic index used to retrieve non custom graphic info corresponds to the zero-based
 				// index of the CustomGraphic returned by the iterator:
 				int graphicInx = 0;
 				while (dNodeIt.hasNext()) {
 					cg = dNodeIt.next();
-					final float offsetVectorX = nodeDetails.graphicOffsetVectorX(node, graphicInx);
-					final float offsetVectorY = nodeDetails.graphicOffsetVectorY(node, graphicInx);
+					final float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode, graphicInx);
+					final float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode, graphicInx);
 					doubleBuff1[0] = floatBuff1[0];
 					doubleBuff1[1] = floatBuff1[1];
 					doubleBuff1[2] = floatBuff1[2];

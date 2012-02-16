@@ -720,24 +720,25 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if (!m_view.m_spacial.exists(node, m_view.m_extentsBuff, 0))
 					continue; /* Will happen if e.g. node was removed. */
 
-				final byte nodeShape = m_view.m_nodeDetails.shape(node);
+				final byte nodeShape = m_view.m_nodeDetails.shape(nodeObj);
 				final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(nodeObj, CyEdge.Type.ANY);
  
-				for ( CyEdge e : touchingEdges ) {      
-					final int edge = e.getIndex(); // Positive.
+				for ( CyEdge edge : touchingEdges ) {      
+//					final int edge = e.getIndex(); // Positive.
 					final double segThicknessDiv2 = m_view.m_edgeDetails.segmentThickness(edge) / 2.0d;
-					final int otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex();
+					final int otherNode = node ^ edge.getSource().getIndex() ^ edge.getTarget().getIndex();
+					final CyNode otherNodeObj = graph.getNode(otherNode);
 
 					if (m_hash.get(otherNode) < 0) {
 						m_view.m_spacial.exists(otherNode, m_extentsBuff2, 0);
 
-						final byte otherNodeShape = m_view.m_nodeDetails.shape(otherNode);
+						final byte otherNodeShape = m_view.m_nodeDetails.shape(otherNodeObj);
 						final byte srcShape;
 						final byte trgShape;
 						final float[] srcExtents;
 						final float[] trgExtents;
 
-						if (node == e.getSource().getIndex()) {
+						if (node == edge.getSource().getIndex()) {
 							srcShape = nodeShape;
 							trgShape = otherNodeShape;
 							srcExtents = m_view.m_extentsBuff;
@@ -787,7 +788,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						if (m_path2.intersects(xMin - segThicknessDiv2, yMin - segThicknessDiv2,
 						                       (xMax - xMin) + (segThicknessDiv2 * 2),
 						                       (yMax - yMin) + (segThicknessDiv2 * 2)))
-							stack.push(edge);
+							stack.push(edge.getIndex());
 					}
 				}
 

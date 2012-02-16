@@ -676,8 +676,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	public int[] getSelectedEdgeIndices() {
 		synchronized (m_lock) {
-			final IntEnumerator elms = m_selectedEdges.searchRange(
-					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			final IntEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 			final int[] returnThis = new int[elms.numRemaining()];
 
 			for (int i = 0; i < returnThis.length; i++)
@@ -694,13 +693,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	public List<CyEdge> getSelectedEdges() {
 		synchronized (m_lock) {
-			final IntEnumerator elms = m_selectedEdges.searchRange(
-					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			final IntEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 			final ArrayList<CyEdge> returnThis = new ArrayList<CyEdge>();
 
 			while (elms.numRemaining() > 0)
-				returnThis.add(m_edgeViewMap.get(
-						Integer.valueOf(elms.nextInt())).getEdge());
+				returnThis.add(m_edgeViewMap.get(Integer.valueOf(elms.nextInt())).getEdge());
 
 			return returnThis;
 		}
@@ -943,7 +940,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			// If this node was hidden, it won't be in m_drawPersp.
 			m_drawPersp.removeNodes(Collections.singletonList(nnode));
 			// m_structPersp.removeNode(nodeInx);
-			m_nodeDetails.unregisterNode(nodeInx);
+			m_nodeDetails.unregisterNode(nnode);
 
 			// If this node was hidden, it won't be in m_spacial.
 			m_spacial.delete(nodeInx);
@@ -1038,7 +1035,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// If this edge view was hidden, it won't be in m_drawPersp.
 		m_drawPersp.removeEdges(Collections.singletonList(eedge)); 
 		// m_structPersp.hideEdge(edgeInx);
-		m_edgeDetails.unregisterEdge(edgeInx);
+		m_edgeDetails.unregisterEdge(eedge);
 
 		// m_selectedEdges.delete(edgeInx);
 		//returnThis.m_view = null;
@@ -1207,8 +1204,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public List<EdgeView> getEdgeViewsList() {
 		synchronized (m_lock) {
-			final ArrayList<EdgeView> returnThis = new ArrayList<EdgeView>(
-					m_edgeViewMap.size());
+			final ArrayList<EdgeView> returnThis = new ArrayList<EdgeView>( m_edgeViewMap.size());
 			final Iterator<EdgeView> values = m_edgeViewMap.values().iterator();
 
 			while (values.hasNext())
@@ -1356,8 +1352,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 				if (edges != null) {
 					for (CyEdge ee : edges)
-						hideGraphObjectInternal(m_edgeViewMap.get(ee.getIndex()),
-									false);
+						hideGraphObjectInternal(m_edgeViewMap.get(ee.getIndex()), false);
 				}
 
 				nView.unselectInternal();
@@ -1973,8 +1968,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	private IntEnumerator getSelectedEdgeNodes() {
 		synchronized (m_lock) {
-			final IntEnumerator selectedEdges = m_selectedEdges.searchRange(
-					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			final IntEnumerator selectedEdges = m_selectedEdges.searchRange(Integer.MIN_VALUE,Integer.MAX_VALUE,false);
 
 			final IntHash nodeIds = new IntHash();
 
@@ -2096,6 +2090,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 				for (int i = 0; i < totalHits; i++) {
 					final int node = under.nextExtents(m_extentsBuff, 0);
+					final CyNode cyNode = model.getNode(node); 
 
 					// The only way that the node can miss the intersection
 					// query is
@@ -2105,7 +2100,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					    || ((m_extentsBuff[0] < xMin) && (m_extentsBuff[3] > yMax))
 					    || ((m_extentsBuff[2] > xMax) && (m_extentsBuff[3] > yMax))
 					    || ((m_extentsBuff[2] > xMax) && (m_extentsBuff[1] < yMin))) {
-						m_networkCanvas.m_grafx.getNodeShape(m_nodeDetails.shape(node),
+						m_networkCanvas.m_grafx.getNodeShape(m_nodeDetails.shape(cyNode),
 						                                     m_extentsBuff[0], m_extentsBuff[1],
 						                                     m_extentsBuff[2], m_extentsBuff[3],
 						                                     m_path);
