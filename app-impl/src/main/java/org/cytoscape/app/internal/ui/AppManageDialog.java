@@ -94,13 +94,13 @@ public class AppManageDialog extends javax.swing.JDialog implements
 	
 	private static final Logger logger = LoggerFactory.getLogger(AppManageDialog.class);
 
-	public static String CURRENTLY_INSTALLED = "Currently Installed";
-	public static String AVAILABLE_FOR_INSTALL = "Available for Install";
+	public static String CURRENTLY_INSTALLED = "Currently installed";
+	public static String AVAILABLE_FOR_INSTALL = "Available for install";
 	
 	private String defaultAppSiteURL = AppManagerAction.DefaultAppUrl;
 	private String currentAppSiteURL = defaultAppSiteURL;
 	
-	private String HOWTOSEARCH = "You can use wildcard * or ? in your search words";
+	private String HOWTOSEARCH = "You can use wildcard * or ? in your search string";
 	private JFrame desktop;
 	
 	private String bookmarkCategory = "apps";
@@ -139,12 +139,12 @@ public class AppManageDialog extends javax.swing.JDialog implements
 		}
 	}
 
-	private String baseSiteLabel = "Apps available for download from: ";
+	private String baseSiteLabel = "Apps available to download from: ";
 
 
 	// This constructor is for test only
 	private AppManageDialog() {
-		this.setTitle("Manage Apps");
+		this.setTitle("App Manager");
 		initComponents();
 		initTree();
 		this.setSize(600, 500);
@@ -162,7 +162,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 	public AppManageDialog(JFrame owner, Bookmarks bookmarks, BookmarksUtil bookmarksUtil,
 			DialogTaskManager guiTaskManagerServiceRef, TaskFactory appLoaderTaskFactory) {
 
-		super(owner, "Manage Apps");
+		super(owner, "App Manager");
 		this.desktop = owner;
 		
 		this.theBookmarks = bookmarks;
@@ -296,7 +296,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 				if (NewApps.size() <= 0) {
 					dialog.setError("No apps compatible with "
 							+ AppManagerAction.cyVersion.getVersion()
-							+ " available from this site.");
+							+ " is available from this site.");
 				} else {
 					dialog.setMessage("");
 				}
@@ -528,7 +528,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 			return;
 		}
 		DownloadableInfo NodeInfo = Node.getObject();
-		String ChangeMsg = "Changes will not take effect until you have restarted Cytoscape.";
+		String ChangeMsg = "Changes will take effect after restarting Cytoscape.";
 		String VerifyMsg = "";
 		if (NodeInfo.getCategory().equalsIgnoreCase("core")) {
 			VerifyMsg = "This is a 'core' app and other apps may depend on it, "
@@ -881,7 +881,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
         gridBagConstraints.gridy = 2;
         pnlSearch.add(downloadLocText, gridBagConstraints);
 
-        lbSearchTitle.setText("Enter key words to search");
+        lbSearchTitle.setText("Enter keywords to search:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
@@ -891,7 +891,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 
         pnlSettings.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setText("Download sites");
+        jLabel3.setText("Download sites:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 0);
@@ -966,7 +966,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 
         pnlImportLocalApp.setLayout(new java.awt.GridBagLayout());
 
-        lbSelectLocalFile.setText("Please selct a app file to load:");
+        lbSelectLocalFile.setText("Select an app file to load:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -991,13 +991,13 @@ public class AppManageDialog extends javax.swing.JDialog implements
         gridBagConstraints.weightx = 1.0;
         pnlImportLocalApp.add(jLabel1, gridBagConstraints);
 
-        jTabbedPane1.addTab("Import Local App", pnlImportLocalApp);
+        jTabbedPane1.addTab("Import local apps", pnlImportLocalApp);
 
         jSplitPane2.setLeftComponent(jTabbedPane1);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        availableAppsLabel.setText("Apps available for download from:");
+        availableAppsLabel.setText("Apps available to download from:");
         availableAppsLabel.setEnabled(false);
         availableAppsLabel.setFocusable(false);
         availableAppsLabel.setInheritsPopupMenu(false);
@@ -1006,7 +1006,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 0);
         jPanel3.add(availableAppsLabel, gridBagConstraints);
 
-        versionCheck.setText("Show only apps verified to work in this release");
+        versionCheck.setText("Show only the apps verified to work in this release");
         versionCheck.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         versionCheck.setMargin(new java.awt.Insets(0, 0, 0, 0));
         versionCheck.addItemListener(new java.awt.event.ItemListener() {
