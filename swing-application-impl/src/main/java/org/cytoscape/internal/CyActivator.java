@@ -122,7 +122,6 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SubmenuTaskManager;
@@ -232,6 +231,7 @@ public class CyActivator extends AbstractCyActivator {
 		SessionStateIO sessStateIO = new SessionStateIO();
 		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
 														   cyNetworkManagerServiceRef,
+														   cyApplicationManagerServiceRef,
 														   networkViewManager,
 														   synchronousTaskManagerServiceRef,
 														   saveTaskFactoryServiceRef,

@@ -455,8 +455,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent nde) {
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
-				logger.debug("Network view about to be destroyed " + nde.getNetworkView().getModel().getSUID());
-				treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.red);
+				final CyNetworkView netView = nde.getNetworkView();
+				logger.debug("Network view about to be destroyed " + netView.getModel().getSUID());
+				treeNodeMap.get(netView.getModel().getSUID()).setNodeColor(Color.red);
 				treeTable.getTree().updateUI();
 			}
 		});
@@ -466,21 +467,18 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void handleEvent(final NetworkViewAddedEvent nde) {
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
-				logger.debug("Network view added to NetworkPanel: " + nde.getNetworkView().getModel().getSUID());
-
-				// Set current network view to the new one.
-				appManager.setCurrentNetworkView(nde.getNetworkView());
-				treeNodeMap.get(nde.getNetworkView().getModel().getSUID()).setNodeColor(Color.black);
+				final CyNetworkView netView = nde.getNetworkView();
+				logger.debug("Network view added to NetworkPanel: " + netView.getModel().getSUID());
+				treeNodeMap.get(netView.getModel().getSUID()).setNodeColor(Color.black);
 				treeTable.getTree().updateUI();
 			}
 		});
 	}
 
-	private void addNetwork(final Long network_id) {
-		// first see if it exists
-		if (getNetworkNode(network_id) == null) {
-
-			final CyNetwork network = netmgr.getNetwork(network_id);
+	private void addNetwork(final Long networkID) {
+		// first see if it is not in the tree already
+		if (getNetworkNode(networkID) == null) {
+			final CyNetwork network = netmgr.getNetwork(networkID);
 
 			NetworkTreeNode parentTreeNode = null;
 			CyRootNetwork parentNetwork = null;
@@ -495,8 +493,14 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				parentTreeNode = new NetworkTreeNode("", null);
 
 			// Actual tree node for this network
-			NetworkTreeNode dmtn = new NetworkTreeNode(network.getRow(network).get(CyTableEntry.NAME, String.class),
-					network);
+			String netName = network.getRow(network).get(CyTableEntry.NAME, String.class);
+			
+			if (netName == null) {
+				logger.error("Network name is null--SUID=" + network.getSUID());
+				netName = "? (SUID: " + network.getSUID() + ")";
+			}
+			
+			NetworkTreeNode dmtn = new NetworkTreeNode(netName, network);
 
 			parentTreeNode.add(dmtn);
 
@@ -507,7 +511,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			if (parentNetwork != null)
 				this.treeNodeMap.put(parentNetwork.getSUID(), parentTreeNode);
 
-			if(networkViewManager.viewExists(network))
+			if (networkViewManager.viewExists(network))
 				dmtn.setNodeColor(Color.black);
 			
 			this.treeNodeMap.put(network.getSUID(), dmtn);
@@ -520,11 +524,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			treeTable.getTree().expandPath(path);
 			treeTable.getTree().scrollPathToVisible(path);
 			treeTable.doLayout();
-
-			// this is necessary because valueChanged is not fired above
-			focusNetworkNode(network_id);
-		} else {
-			// already in the table.
 		}
 	}
 

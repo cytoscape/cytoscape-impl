@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -36,7 +37,8 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener, NetworkAddedListener, NetworkAboutToBeDestroyedListener {
+public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
+		NetworkAddedListener, NetworkAboutToBeDestroyedListener {
 
 	private static final long serialVersionUID = 627394119637512735L;
 
@@ -45,7 +47,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private final JComboBox networkChooser;
 	private final Class<? extends CyTableEntry> objType;
 
-	private boolean rowSelectionMode = false;
+	private boolean rowSelectionMode;
+	private boolean ignoreSetCurrentNetwork;
 	
 
 	public DefaultTableBrowser(String tabTitle, Class<? extends CyTableEntry> objType, CyTableManager tableManager,
@@ -91,56 +94,87 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		rowSelectionMode = selectionModeButton.isSelected();
 		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
 		getCurrentBrowserTableModel().updateShowAll();
-
 	}
 	
 	@Override
 	public void actionPerformed(final ActionEvent e) {
+		if (ignoreSetCurrentNetwork)
+			return;
+			
 		final CyNetwork currentNetwork = this.applicationManager.getCurrentNetwork();
 		final CyNetwork network = (CyNetwork) networkChooser.getSelectedItem();
-		if (network == null || currentNetwork == network)
-			return;
 		
-		applicationManager.setCurrentNetwork(network);
+		if (network != null && !network.equals(currentNetwork) && networkManager.networkExists(network.getSUID())) {
+			applicationManager.setCurrentNetwork(network);
+		}
 	}
 
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
 		final CyNetwork currentNetwork = e.getNetwork();
-		final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
 		
-		
-		if (objType == CyNode.class) {
-			currentTable = currentNetwork.getDefaultNodeTable();
-		} else if (objType == CyEdge.class) {
-			currentTable = currentNetwork.getDefaultEdgeTable();
-		} else {
-			currentTable = currentNetwork.getDefaultNetworkTable();
+		if (currentNetwork != null) {
+			if (objType == CyNode.class) {
+				currentTable = currentNetwork.getDefaultNodeTable();
+			} else if (objType == CyEdge.class) {
+				currentTable = currentNetwork.getDefaultEdgeTable();
+			} else {
+				currentTable = currentNetwork.getDefaultNetworkTable();
+			}
 		}
 		
-		networkChooser.setSelectedItem(currentNetwork);
-
 		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
 		showSelectedTable();
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
+
+				if ((currentNetwork == null && selectedNetwork != null) || !currentNetwork.equals(selectedNetwork)) {
+					networkChooser.setSelectedItem(currentNetwork);
+				}
+			}
+		});
 	}
 
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
 		final CyNetwork network = e.getNetwork();
-		this.networkChooser.addItem(network);
-		this.networkChooser.setSelectedItem(network);
 		
-		if(networkChooser.isEnabled() == false)
-			networkChooser.setEnabled(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				ignoreSetCurrentNetwork = true;
+				
+				try {
+					networkChooser.addItem(network);
+					
+					if (networkChooser.isEnabled() == false)
+						networkChooser.setEnabled(true);
+				} finally {
+					ignoreSetCurrentNetwork = false;
+				}
+			}
+		});
 	}
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
 		final CyNetwork network = e.getNetwork();
-		this.networkChooser.removeItem(network);
 		
-		if(networkChooser.getItemCount() == 0)
-			networkChooser.setEnabled(false);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				ignoreSetCurrentNetwork = true;
+				
+				try {
+					networkChooser.removeItem(network);
+					
+					if (networkChooser.getItemCount() == 0)
+						networkChooser.setEnabled(false);
+				} finally {
+					ignoreSetCurrentNetwork = false;
+				}
+			}
+		});
 	}
 	
 	private static final class NetworkChooserCustomRenderer extends JLabel implements ListCellRenderer {
@@ -166,7 +200,5 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			this.setText(network.getRow(network).get(CyTableEntry.NAME, String.class));
 			return this;
 		}
-
 	}
-
 }

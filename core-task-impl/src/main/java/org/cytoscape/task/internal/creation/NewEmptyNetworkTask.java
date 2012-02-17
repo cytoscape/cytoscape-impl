@@ -30,6 +30,7 @@
 package org.cytoscape.task.internal.creation;
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -53,17 +54,20 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	private final CyNetworkNaming namingUtil; 
 	private final CyNetworkManager networkManager;
 	private final CyNetworkViewManager networkViewManager;
+	private final CyApplicationManager appManager; 
 	private boolean cancel = false;
 
-	private CyNetworkView view; 
+	private CyNetworkView view;
 
 	public NewEmptyNetworkTask(CyNetworkFactory cnf, CyNetworkViewFactory cnvf, CyNetworkManager netmgr,
-				   final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil) {
+				   final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil,
+				   final CyApplicationManager appManager) {
 		this.networkManager = netmgr;
 		this.networkViewManager = networkViewManager;
 		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.namingUtil = namingUtil;
+		this.appManager = appManager;
 	}
 
 	public void run(TaskMonitor tm) {
@@ -77,6 +81,8 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.8);
 		networkViewManager.addNetworkView(view);
+		tm.setProgress(0.9);
+		appManager.setCurrentNetworkView(view);
 		tm.setProgress(1.0);
 	}
 

@@ -67,6 +67,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
 
+	@Override
 	public void actionPerformed(final ActionEvent e) {
 
 		final CyTable table = (CyTable) tableChooser.getSelectedItem();

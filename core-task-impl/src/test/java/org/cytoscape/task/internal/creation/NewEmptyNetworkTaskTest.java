@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -34,6 +35,8 @@ public class NewEmptyNetworkTaskTest {
 	private CyNetworkViewManager networkViewManager;
 	@Mock
 	private CyNetworkNaming namingUtil;
+	@Mock
+	private CyApplicationManager appManager;
 
 	@Before
 	public void initMocks() {
@@ -43,7 +46,7 @@ public class NewEmptyNetworkTaskTest {
 	@Test
 	public void testNewEmptyNetworkTask() throws Exception {
 
-		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(cnf, cnvf, netmgr, networkViewManager, namingUtil);
+		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(cnf, cnvf, netmgr, networkViewManager, namingUtil, appManager);
 		final TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		task.run(taskMonitor);
 

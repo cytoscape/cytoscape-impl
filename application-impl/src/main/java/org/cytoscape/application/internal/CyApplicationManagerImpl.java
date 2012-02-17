@@ -93,6 +93,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		this.currentRenderer = null;
 	}
 
+	@Override
 	public void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
 		final CyNetwork toBeDestroyed = event.getNetwork();
 		boolean changed = false;
@@ -133,6 +134,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		}
 	}
 
+	@Override
 	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent event) {
 		final CyNetworkView toBeDestroyed = event.getNetworkView();
 		boolean changed = false;
@@ -172,10 +174,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		}
 	}
 
+	@Override
 	public synchronized CyNetwork getCurrentNetwork() {
 		return currentNetwork;
 	}
 
+	@Override
 	public void setCurrentNetwork(final CyNetwork network) {
 		final long networkId = network.getSUID();
 		boolean changed = false;
@@ -204,10 +208,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		}
 	}
 
+	@Override
 	public synchronized CyNetworkView getCurrentNetworkView() {
 		return currentNetworkView;
 	}
 
+	@Override
 	public void setCurrentNetworkView(final CyNetworkView view) {
 		if (view == null) {
 			logger.warn("View was null - not setting current network view.");
@@ -240,10 +246,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		}
 	}
 
+	@Override
 	public synchronized List<CyNetworkView> getSelectedNetworkViews() {
 		return new ArrayList<CyNetworkView>(selectedNetworkViews);
 	}
 
+	@Override
 	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
 		if (networkViews == null)
 			return;
@@ -263,10 +271,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		                                                         new ArrayList<CyNetworkView>(selectedNetworkViews)));
 	}
 
+	@Override
 	public synchronized List<CyNetwork> getSelectedNetworks() {
 		return new ArrayList<CyNetwork>(selectedNetworks);
 	}
 
+	@Override
 	public void setSelectedNetworks(final List<CyNetwork> networks) {
 		if (networks == null)
 			return;
@@ -285,10 +295,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		                                                     new ArrayList<CyNetwork>(selectedNetworks)));
 	}
 
+	@Override
 	public RenderingEngine<CyNetwork> getCurrentRenderingEngine() {
 		return currentRenderer;
 	}
 
+	@Override
 	public void setCurrentRenderingEngine(RenderingEngine<CyNetwork> engine) {
 		this.currentRenderer = engine;
 

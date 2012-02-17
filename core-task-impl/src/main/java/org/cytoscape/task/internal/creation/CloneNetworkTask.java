@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -65,19 +65,19 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private final CyNetworkFactory netFactory;
 	private final CyNetworkViewFactory netViewFactory;
 	private final CyNetworkNaming naming;
-	private final CyEventHelper eventHelper;
+	private final CyApplicationManager appMgr;
 
 	public CloneNetworkTask(final CyNetwork net, final CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, final VisualMappingManager vmm,
 			final CyNetworkFactory netFactory, final CyNetworkViewFactory netViewFactory, final CyNetworkNaming naming,
-			final CyEventHelper eventHelper) {
+			final CyApplicationManager appMgr) {
 		super(net, netmgr, networkViewManager);
 
 		this.vmm = vmm;
 		this.netFactory = netFactory;
 		this.netViewFactory = netViewFactory;
 		this.naming = naming;
-		this.eventHelper = eventHelper;
+		this.appMgr = appMgr;
 	}
 
 	public void run(TaskMonitor tm) {
@@ -92,12 +92,20 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
 
+		CyNetworkView newView = null;
+		
 		if (origView != null)
-			copyView(newNet, origView);
+			newView = copyView(newNet, origView);
+		
 		tm.setProgress(0.9);
 
 		orig2NewNodeMap.clear();
 		orig2NewNodeMap = null;
+		
+		if (newView != null)
+			appMgr.setCurrentNetworkView(newView);
+		else
+			appMgr.setCurrentNetwork(newNet);
 		
 		logger.debug("Cloning finished in " + (System.currentTimeMillis() - start) + " msec.");
 		tm.setProgress(1.0);
@@ -169,7 +177,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	 * Copy Visual Properties to the new network view.
 	 * 
 	 */
-	private void copyView(final CyNetwork newNet, final CyNetworkView origView) {
+	private CyNetworkView copyView(final CyNetwork newNet, final CyNetworkView origView) {
 		final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
 
 		// Copy node locations since this is controlled outside of visual style.
@@ -189,5 +197,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		vmm.getVisualStyle(origView).apply(newView);
 		networkViewManager.addNetworkView(newView);
 		newView.fitContent();
+		
+		return newView;
 	}
 }

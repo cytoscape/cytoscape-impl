@@ -29,6 +29,7 @@
  */
 package org.cytoscape.task.internal.creation;  
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -43,25 +44,29 @@ import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
 public class NewEmptyNetworkTaskFactory implements TaskFactory, NewEmptyNetworkViewFactory {
 	private final CyNetworkFactory cnf;
 	private final CyNetworkViewFactory cnvf;
-	private final CyNetworkManager netmgr;
-	private final CyNetworkViewManager networkViewManager;
+	private final CyNetworkManager netMgr;
+	private final CyNetworkViewManager networkViewMgr;
 	private final CyNetworkNaming namingUtil;
-	private final SynchronousTaskManager syncTaskMgr;
+	private final SynchronousTaskManager<?> syncTaskMgr;
+	private final CyApplicationManager appMgr;
 
-	private NewEmptyNetworkTask task; 
+	private NewEmptyNetworkTask task;
 
-	public NewEmptyNetworkTaskFactory(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, final CyNetworkManager netmgr, final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil, final SynchronousTaskManager syncTaskMgr)
-	{
+	public NewEmptyNetworkTaskFactory(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, 
+			final CyNetworkManager netMgr, final CyNetworkViewManager networkViewManager, 
+			final CyNetworkNaming namingUtil, final SynchronousTaskManager<?> syncTaskMgr,
+			final CyApplicationManager appMgr) {
 		this.cnf = cnf;
 		this.cnvf = cnvf;
-		this.netmgr = netmgr;
-		this.networkViewManager = networkViewManager;
+		this.netMgr = netMgr;
+		this.networkViewMgr = networkViewManager;
 		this.namingUtil = namingUtil;
 		this.syncTaskMgr = syncTaskMgr;
+		this.appMgr = appMgr;
 	}
 
 	public TaskIterator createTaskIterator() {
-		task = new NewEmptyNetworkTask(cnf, cnvf, netmgr, networkViewManager,namingUtil);
+		task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, appMgr);
 		return new TaskIterator(task);
 	} 
 
