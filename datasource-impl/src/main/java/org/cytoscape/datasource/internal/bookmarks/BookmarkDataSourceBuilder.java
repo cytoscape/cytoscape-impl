@@ -63,7 +63,7 @@ public class BookmarkDataSourceBuilder {
 					final String location = ds.getHref();
 					final String name = ds.getName();
 					final String description = "From Bookmarks";
-					final String provider = "default bookmarks";
+					final String provider = "Legacy";
 					URL url = null;
 					try {
 						url = new URL(location);
