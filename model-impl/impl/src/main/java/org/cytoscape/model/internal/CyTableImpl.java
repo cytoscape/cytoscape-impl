@@ -558,6 +558,20 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		return matchingRows;
 	}
 
+	@Override
+	synchronized public int countMatchingRows(final String columnName, final Object value) {
+		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+		if (virtColumn != null)
+			return virtColumn.countMatchingRows(value);
+
+		final SetMultimap<Object,Object> valueToKeysMap = reverse.get(columnName);
+
+		if ( valueToKeysMap == null )
+			return 0;
+		else
+			return valueToKeysMap.get(value).size();
+	}
+
 	private void setX(final Object key, final String columnName, final Object value) {
 		if (columnName == null)
 			throw new NullPointerException("columnName must not be null!");

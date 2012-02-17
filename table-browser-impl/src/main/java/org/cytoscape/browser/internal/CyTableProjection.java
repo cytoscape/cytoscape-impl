@@ -300,6 +300,11 @@ public final class CyTableProjection implements CyTable {
 		return matchingRows;
 	}
 
+	@Override
+	public int countMatchingRows(final String columnName, final Object value) {
+		return underlyingTable.countMatchingRows(columnName, value);
+	}
+
 	/** Returns the number of rows in this table.
 	 *  @return The number if rows in the table.
 	 */

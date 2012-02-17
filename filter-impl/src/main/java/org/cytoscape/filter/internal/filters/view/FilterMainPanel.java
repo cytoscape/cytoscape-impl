@@ -87,7 +87,6 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -317,10 +316,10 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				//String title = VisualPropertyUtil.get(lexicon, view, "NETWORK_TITLE", MinimalVisualLexicon.NETWORK, String.class);
 				tblFeedBack.getModel().setValueAt(cyNetwork.getRow(cyNetwork).get("name", String.class), 0, 0);
 
-				String nodeStr = "" + cyNetwork.getNodeCount() + "(" + CyTableUtil.getNodesInState(cyNetwork,"selected",true).size() + ")";
+				String nodeStr = "" + cyNetwork.getNodeCount() + "(" + cyNetwork.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED,true) + ")";
 				tblFeedBack.getModel().setValueAt(nodeStr, 0, 1);
 
-				String edgeStr = "" + cyNetwork.getEdgeCount() + "(" + CyTableUtil.getEdgesInState(cyNetwork,"selected",true).size() + ")";
+				String edgeStr = "" + cyNetwork.getEdgeCount() + "(" + cyNetwork.getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED,true) + ")";
 				tblFeedBack.getModel().setValueAt(edgeStr, 0, 2);				
 		}});
 	}

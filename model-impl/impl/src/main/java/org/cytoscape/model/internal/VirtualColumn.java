@@ -113,20 +113,20 @@ final class VirtualColumn {
 	}
 
 	Collection<CyRow> getMatchingRows(final Object value) {
-		final Collection<CyRow> sourceRows =
-			sourceTable.getMatchingRows(sourceColumn.getName(), value);
+		final Collection<CyRow> sourceRows = sourceTable.getMatchingRows(sourceColumn.getName(), value);
 		final Set<CyRow> targetRows = new HashSet<CyRow>();
 		for (final CyRow sourceRow : sourceRows) {
-			final Object targetValue = sourceRow.get(sourceJoinColumn.getName(),
-								 sourceJoinColumn.getType());
+			final Object targetValue = sourceRow.get(sourceJoinColumn.getName(), sourceJoinColumn.getType());
 			if (targetValue != null) {
-				final Collection<CyRow> rows =
-					targetTable.getMatchingRows(targetJoinColumn.getName(),
-								    targetValue);
+				final Collection<CyRow> rows = targetTable.getMatchingRows(targetJoinColumn.getName(), targetValue);
 				targetRows.addAll(rows);
 			}
 		}
 		return targetRows;
+	}
+
+	int countMatchingRows(final Object value) {
+		return sourceTable.countMatchingRows(sourceColumn.getName(), value);
 	}
 
 	List getColumnValues() {
