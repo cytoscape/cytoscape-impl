@@ -252,7 +252,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty("menuGravity","2.0");
 		loadNetworkURLTaskFactoryProps.setProperty("toolBarGravity","3.1");
 		loadNetworkURLTaskFactoryProps.setProperty("title","URL...");
-		loadNetworkURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_db_import.png").toString());
+		loadNetworkURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/net_url_import.png").toString());
 		loadNetworkURLTaskFactoryProps.setProperty("inToolBar","true");
 		loadNetworkURLTaskFactoryProps.setProperty("tooltip","Import Network From URL");
 		registerAllServices(bc,loadNetworkURLTaskFactory, loadNetworkURLTaskFactoryProps);
@@ -279,9 +279,9 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsURLTaskFactoryProps.setProperty("menuGravity","1.2");
 		loadAttrsURLTaskFactoryProps.setProperty("toolBarGravity","3.3");
 		loadAttrsURLTaskFactoryProps.setProperty("title","URL...");
-		loadAttrsURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_db_import.png").toString());
+		loadAttrsURLTaskFactoryProps.setProperty("largeIconURL",getClass().getResource("/images/icons/table_url_import.png").toString());
 		loadAttrsURLTaskFactoryProps.setProperty("inToolBar","true");
-		loadAttrsURLTaskFactoryProps.setProperty("tooltip","Import Table From Public Database");
+		loadAttrsURLTaskFactoryProps.setProperty("tooltip","Import Table From URL");
 		registerService(bc,loadAttrsURLTaskFactory,TaskFactory.class, loadAttrsURLTaskFactoryProps);
 
 		Properties proxySettingsTaskFactoryProps = new Properties();
