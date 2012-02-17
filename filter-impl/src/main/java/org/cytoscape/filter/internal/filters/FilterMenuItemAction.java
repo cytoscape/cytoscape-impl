@@ -61,6 +61,7 @@ public class FilterMenuItemAction extends AbstractCyAction {
 		super("Use Filters");
 		setPreferredMenu("Select");
 		setToolbarGravity(9.9f);
+		putValue(SHORT_DESCRIPTION, "Use Filters"); //tooltip
 
 		ImageIcon icon = new ImageIcon(getClass().getResource("/images/filter.png"));
 		ImageIcon smallIcon = new ImageIcon(getClass().getResource("/images/filter-small.png"));
