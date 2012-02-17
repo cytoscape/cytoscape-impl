@@ -40,7 +40,6 @@ import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.GraphViewChangeEvent;
 import org.cytoscape.ding.GraphViewChangeListener;
 import org.cytoscape.ding.NodeView;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -61,7 +60,6 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 	private static final Logger logger = LoggerFactory.getLogger(FlagAndSelectionHandler.class);
 
 	private final GraphView view;
-	private final CyEventHelper eventHelper;
 	private final CyNetwork network;
 
 	/**
@@ -70,9 +68,8 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 	 * and view by turning on flags or selections that are currently on in one
 	 * of the two objects.
 	 */
-	public FlagAndSelectionHandler(final GraphView view, final CyEventHelper eventHelper) {
+	public FlagAndSelectionHandler(final GraphView view) {
 		this.view = view;
-		this.eventHelper = eventHelper;
 		this.network = view.getNetwork();
 
 		syncFilterAndView();
@@ -141,11 +138,9 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 		select(selectedEdges, true);
 	}
 
-	private void select(final Collection<? extends CyTableEntry> nodesOrEdges,
-			final boolean selected) {
+	private void select(final Collection<? extends CyTableEntry> nodesOrEdges, final boolean selected) {
 		if (nodesOrEdges.isEmpty())
 			return;
-
 		
 		for (final CyTableEntry nodeOrEdge : nodesOrEdges)
 			network.getRow(nodeOrEdge).set(CyNetwork.SELECTED, selected);		

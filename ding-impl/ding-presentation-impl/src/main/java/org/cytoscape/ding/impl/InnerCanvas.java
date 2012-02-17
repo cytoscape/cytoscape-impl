@@ -687,16 +687,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final CyNode nodeObj = graph.getNode(node);
 
 				if (!m_view.m_spacial.exists(node, m_view.m_extentsBuff, 0))
-					continue; /* Will happen if e.g. node was removed. */
+					continue; // Will happen if e.g. node was removed. 
 
 				final float nodeX = (m_view.m_extentsBuff[0] + m_view.m_extentsBuff[2]) / 2;
 				final float nodeY = (m_view.m_extentsBuff[1] + m_view.m_extentsBuff[3]) / 2;
 				final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(nodeObj, CyEdge.Type.ANY);
 
 				for ( CyEdge e : touchingEdges ) {      
-					final int edge = e.getIndex(); // Positive.
-					final int otherNode =  // Positive.
-						node ^ e.getSource().getIndex() ^ e.getTarget().getIndex(); 
+					final int edge = e.getIndex(); 
+					final int otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex(); 
 
 					if (m_hash.get(otherNode) < 0) {
 						m_view.m_spacial.exists(otherNode, m_view.m_extentsBuff, 0);
@@ -1212,11 +1211,18 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							if (m_view.m_nodeSelection)
 								selectedNodes = setSelectedNodes();	
 							if (m_view.m_edgeSelection)
-								selectedEdges = setSelectedEdges ();
+								selectedEdges = setSelectedEdges();
 						}
 					}
 					
 					m_selectionRect = null;
+
+					// Update visual property value (x/y)
+					for (int node : selectedNodes) {
+						final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
+						dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
+						dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
+					}
 	
 					final GraphViewChangeListener listener = m_view.m_lis[0];
 	
@@ -1239,17 +1245,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 			if (m_undoable_edit != null)
 				m_undoable_edit.post();
-
-			final List<CyNode> selected = m_view.getSelectedNodes();			
-			// Update view model if necessary (node location)
-			if(selected.size() != 0) {
-				for (CyNode node : selected) {
-					final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
-					// Update visual property value (x/y)
-					dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
-					dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());					
-				}
-			}
 		}
 	
 		@Override

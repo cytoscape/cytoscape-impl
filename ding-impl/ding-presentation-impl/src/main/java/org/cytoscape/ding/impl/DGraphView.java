@@ -508,7 +508,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			addEdgeView(ee);
 
 		logger.debug("Phase 3: All views created: time = " + (System.currentTimeMillis() - start));
-		new FlagAndSelectionHandler(this, cyEventHelper);
+
+		// Used to synchronize ding's internal selection state with the rest of Cytoscape.
+		new FlagAndSelectionHandler(this); 
+
 		cyAnnotator = new CyAnnotator(this,annMgr);
 		logger.debug("Phase 4: Everything created: time = " + (System.currentTimeMillis() - start));
 	}
