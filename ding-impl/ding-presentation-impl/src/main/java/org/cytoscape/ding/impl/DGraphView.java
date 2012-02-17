@@ -931,7 +931,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			for (final CyEdge ee : hiddenEdgeInx)
 				removeEdgeViewInternal(ee);
 
-			returnThis = (DNodeView) m_nodeViewMap.remove(Integer.valueOf(nodeInx));
+			returnThis = (DNodeView) m_nodeViewMap.remove(nnode);
 			returnThis.unselectInternal();
 
 			// If this node was hidden, it won't be in m_drawPersp.
