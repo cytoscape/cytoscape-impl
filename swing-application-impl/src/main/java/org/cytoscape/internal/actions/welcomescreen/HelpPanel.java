@@ -50,7 +50,7 @@ public class HelpPanel extends JPanel {
 	private void initComponents() {
 		this.setLayout(new GridLayout(4, 1));
 		about = new JLabel("     About Cytoscape >>");
-		manual = new JLabel("     User Manual >>");
+		manual = new JLabel("     User Documentation >>");
 		tutorial = new JLabel("     Tutorials >>");
 		bugReport = new JLabel("     Report a bug >>");
 		
@@ -67,7 +67,7 @@ public class HelpPanel extends JPanel {
 		labelSet.add(bugReport);
 		urlMap.put(about, "http://www.cytoscape.org/what_is_cytoscape.html");
 		urlMap.put(manual, "http://www.cytoscape.org/documentation_users.html");
-		urlMap.put(tutorial, "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape");
+		urlMap.put(tutorial, "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape3");
 		urlMap.put(bugReport, "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php?cyversion="+cyversion+"&os="+os_str);
 		
 		for(final JLabel label: labelSet) {
