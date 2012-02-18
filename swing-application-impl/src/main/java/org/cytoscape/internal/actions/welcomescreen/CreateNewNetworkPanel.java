@@ -204,6 +204,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		final URL url = new URL(dataSourceMap.get(file));
 
 		parent.dispose();
+
+		// TODO REFACTOR!!!!!!!!!!!!!!!!!!!
 		guiTaskManager.execute(new TaskFactory() {
 
 			@Override
@@ -248,7 +250,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			taskMonitor.setProgress(0.01d);
 
 			final Set<CyNetwork> networks = this.loadNetworkFileTF.loadCyNetworks(url);
-			taskMonitor.setProgress(0.4d);
+			taskMonitor.setProgress(1.0d);
+		/*
 			if (networks.size() != 0) {
 				taskMonitor.setTitle("Creating View for the new network");
 				CyNetwork network = networks.iterator().next();
@@ -260,6 +263,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 					insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator());
 				}
 			}
+		*/
 		}
 
 	}
