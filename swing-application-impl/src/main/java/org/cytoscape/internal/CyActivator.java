@@ -63,7 +63,6 @@ import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
-import org.cytoscape.internal.actions.WelcomeScreenAction;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
 import org.cytoscape.internal.io.SessionStateIO;
@@ -142,18 +141,9 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) throws Exception {
 		
-		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class, "(id=loadNetworkURLTaskFactory)");
-		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
-		NetworkTaskFactory createNetworkViewTaskFactory = getService(bc, NetworkTaskFactory.class, "(id=createNetworkViewTaskFactory)");
-		TaskFactory openSessionTaskFactory = getService(bc, TaskFactory.class, "(id=openSessionTaskFactory)");
-		
-		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
-		
-		
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 		                                                                             CyApplicationConfiguration.class);
-		StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
 		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc,
 		                                                                   RecentlyOpenedTracker.class);
 		CyProperty cytoscapePropertiesServiceRef = getService(bc, CyProperty.class,
@@ -168,26 +158,20 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,
 		                                                                 CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
-		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc, CyNetworkNaming.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 		SubmenuTaskManager submenuTaskManagerServiceRef = getService(bc, SubmenuTaskManager.class);
-		RenderingEngineFactory dingRenderingEngineFactoryServiceRef = getService(bc,
-		                                                                         RenderingEngineFactory.class,
-		                                                                         "(id=ding)");
+
 		RenderingEngineFactory dingNavigationPresentationFactoryServiceRef = getService(bc,
 		                                                                                RenderingEngineFactory.class,
 		                                                                                "(id=dingNavigation)");
 		CyProperty bookmarkServiceRef = getService(bc, CyProperty.class,
 		                                           "(cyPropertyName=bookmarks)");
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc, BookmarksUtil.class);
-		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
-		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc,
-		                                                                 CyNetworkViewFactory.class);
+		
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
 		SwingUndoSupport undoSupportServiceRef = getService(bc, SwingUndoSupport.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
-		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		
@@ -286,10 +270,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cySessionManagerServiceRef,
 		                                                                     sessionReaderManagerServiceRef,
 		                                                                     cyApplicationManagerServiceRef);
-		
-		// Show Welcome Screen
-		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(bc,cytoscapeDesktop, openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory, submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory, cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
-		registerAllServices(bc, welcomeScreenAction, new Properties());
+
 
 		registerService(bc, undoAction, CyAction.class, new Properties());
 		registerService(bc, redoAction, CyAction.class, new Properties());
