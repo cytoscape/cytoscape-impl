@@ -51,6 +51,9 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	
 	private Collection<CyRow> selectedRows = null;
 
+	private Object[] rowIndexToPrimaryKey;
+	private int maxRowIndex;
+
 
 	public BrowserTableModel(final BrowserTable table, final CyTable dataTable, final EquationCompiler compiler) {
 		this.table = table;
@@ -58,8 +61,16 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		this.compiler = compiler;
 		this.regularViewMode = false; 
 		initAttrNamesAndVisibilities();
+
+		// add each row to an array to allow fast lookup from an index
+		final Collection<CyRow> rows = dataTable.getAllRows();
+		this.rowIndexToPrimaryKey = new Object[rows.size()]; 
+		this.maxRowIndex = 0;
+		final String primaryKey = dataTable.getPrimaryKey().getName();
+		for ( CyRow row : rows ) 
+			rowIndexToPrimaryKey[maxRowIndex++] = row.getRaw(primaryKey);
 	}
-	
+
 	CyTable getDataTable() {
 		return dataTable;
 	}
@@ -183,9 +194,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 
 			return cyRow;
 		} else {
-			final CyColumn primaryKey = dataTable.getPrimaryKey();
-			final List primaryKeyValues = primaryKey.getValues(primaryKey.getType());
-			return dataTable.getRow(primaryKeyValues.get(rowIndex));
+			return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 		}
 	}
 
@@ -267,8 +276,16 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	}
 
 	@Override
-	public void handleEvent(RowsCreatedEvent e) {
+	public synchronized void handleEvent(RowsCreatedEvent e) {
 		selectedRows = null;
+	
+		// add new rows to rowIndexToPrimaryKey array
+		Object[] newRowIndex = new Object[rowIndexToPrimaryKey.length + e.getPayloadCollection().size()];
+		System.arraycopy(rowIndexToPrimaryKey,0,newRowIndex,0,rowIndexToPrimaryKey.length);
+		rowIndexToPrimaryKey = newRowIndex;
+		for ( Object pk : e.getPayloadCollection() )
+			rowIndexToPrimaryKey[maxRowIndex++] = pk;
+
 		fireTableDataChanged();
 	}
 
