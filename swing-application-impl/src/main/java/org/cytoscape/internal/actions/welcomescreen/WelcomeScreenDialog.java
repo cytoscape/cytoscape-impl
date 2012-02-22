@@ -22,8 +22,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.internal.actions.WelcomeScreenAction;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
@@ -68,11 +68,13 @@ public class WelcomeScreenDialog extends JDialog {
 	
 	private final TaskFactory importNetworkFileTF;
 	private final BundleContext bc;
+	
+	final JCheckBox checkBox = new JCheckBox();
 
 	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory,
 			TaskManager guiTaskManager, final CyApplicationConfiguration config,
 			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworkTF, final NetworkTaskFactory networkTaskFactory,
-			final DataSourceManager dsManager, final CyProperty<Properties> cyProps) {
+			final DataSourceManager dsManager, final CyProperty<Properties> cyProps, final boolean hide) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.fileTracker = fileTracker;
 		this.config = config;
@@ -98,6 +100,12 @@ public class WelcomeScreenDialog extends JDialog {
 		this.setModal(true);
 		this.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
 		this.setAlwaysOnTop(true);
+		
+		checkBox.setSelected(hide);
+	}
+	
+	public boolean getHideStatus() {
+		return checkBox.isSelected();
 	}
 
 	private void initComponents() {
@@ -123,12 +131,12 @@ public class WelcomeScreenDialog extends JDialog {
 		bottomPanel.setLayout(new BorderLayout());
 		bottomPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		bottomPanel.setBackground(PANEL_COLOR);
-		final JCheckBox checkBox = new JCheckBox();
+		
 		checkBox.setText("Don't show again");
 		checkBox.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				// TODO: Update config property here.
+			public void actionPerformed(ActionEvent ae) {
+				cyProps.getProperties().setProperty(WelcomeScreenAction.DO_NOT_DISPLAY_PROP_NAME, ((Boolean)checkBox.isSelected()).toString());
 			}
 		});
 		

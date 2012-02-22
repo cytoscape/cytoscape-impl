@@ -25,6 +25,8 @@ import org.osgi.framework.BundleContext;
 public class WelcomeScreenAction extends AbstractCyAction implements CyStartListener {
 
 	private static final long serialVersionUID = 2584201062371825221L;
+	
+	public static final String DO_NOT_DISPLAY_PROP_NAME = "hideWelcomScreen";
 
 	private static final String MENU_NAME = "Welcome Screen...";
 	private static final String PARENT_NAME = "Help";
@@ -44,6 +46,8 @@ public class WelcomeScreenAction extends AbstractCyAction implements CyStartList
 	private final CyProperty<Properties> cyProps;
 	
 	private final BundleContext bc;
+	
+	private boolean hide = false;
 
 	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, 
 			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory, TaskManager guiTaskManager,
@@ -69,16 +73,30 @@ public class WelcomeScreenAction extends AbstractCyAction implements CyStartList
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final JDialog welcomeScreen = new WelcomeScreenDialog(bc,openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config,
-				importNetworkFileTF, importNetworksTaskFactory, networkTaskFactory, dsManager, cyProps);
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(bc,openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config,
+				importNetworkFileTF, importNetworksTaskFactory, networkTaskFactory, dsManager, cyProps, hide);
 		welcomeScreen.setLocationRelativeTo(app.getJFrame());
 		welcomeScreen.setVisible(true);
+		this.hide = welcomeScreen.getHideStatus();
+		this.cyProps.getProperties().setProperty(DO_NOT_DISPLAY_PROP_NAME, ((Boolean)hide).toString());
 	}
 	
 	@Override
 	public void handleEvent(CyStartEvent e) {
 		// Simply displays the dialog after startup.
-		actionPerformed(null);
+		final String hideString = this.cyProps.getProperties().getProperty(DO_NOT_DISPLAY_PROP_NAME);
+		
+		if (hideString == null)
+			hide = false;
+		else {
+			try {
+				hide = Boolean.parseBoolean(hideString);
+			} catch (Exception ex) {
+				hide = false;
+			}
+		}
+		
+		if(hide == false)
+			actionPerformed(null);
 	}
-
 }
