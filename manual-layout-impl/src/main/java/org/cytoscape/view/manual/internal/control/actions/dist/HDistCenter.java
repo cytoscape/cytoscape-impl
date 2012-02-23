@@ -41,12 +41,11 @@ import java.util.List;
 
 import javax.swing.Icon;
 
-import org.cytoscape.view.manual.internal.control.actions.AbstractControlAction;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.manual.internal.control.actions.AbstractControlAction;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  *
@@ -67,7 +66,7 @@ public class HDistCenter extends AbstractControlAction {
 		d = d / (nodes.size() - 1);
 
 		for (int i = 0; i < nodes.size(); i++) {
-			nodes.get(i).setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,X_min + (i * d));
+			nodes.get(i).setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,X_min + (i * d));
 		}
 	}
 }

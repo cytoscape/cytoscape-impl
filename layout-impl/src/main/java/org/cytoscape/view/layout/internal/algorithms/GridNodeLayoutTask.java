@@ -34,13 +34,11 @@ import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
-
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -78,8 +76,8 @@ public class GridNodeLayoutTask extends AbstractBasicLayoutTask {
 		int columns;
 		final CyNetwork network = networkView.getModel();
 
-		final VisualProperty<Double> xLoc = MinimalVisualLexicon.NODE_X_LOCATION;
-		final VisualProperty<Double> yLoc = MinimalVisualLexicon.NODE_Y_LOCATION;
+		final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
+		final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
 
 		// Selected only?
 		if (selectedOnly) {

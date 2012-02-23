@@ -46,7 +46,7 @@ import org.cytoscape.view.manual.internal.control.actions.AbstractControlAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
 /**
@@ -70,15 +70,15 @@ public class VStackLeft extends AbstractControlAction {
 
 		//Note: X, Y are at node centers
 		for (int i = 1; i < nodes.size(); i++) {
-			nodes.get(i).setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION,
-					nodes.get(i-1).getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION) + 
-					nodes.get(i-1).getVisualProperty(MinimalVisualLexicon.NODE_HEIGHT) *0.5 +
-					nodes.get(i).getVisualProperty(MinimalVisualLexicon.NODE_HEIGHT) * 0.5
+			nodes.get(i).setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,
+					nodes.get(i-1).getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION) + 
+					nodes.get(i-1).getVisualProperty(BasicVisualLexicon.NODE_HEIGHT) *0.5 +
+					nodes.get(i).getVisualProperty(BasicVisualLexicon.NODE_HEIGHT) * 0.5
 					);
-			nodes.get(i).setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,
-					nodes.get(i-1).getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION) -
-					nodes.get(i-1).getVisualProperty(MinimalVisualLexicon.NODE_WIDTH) * 0.5 +
-					nodes.get(i).getVisualProperty(MinimalVisualLexicon.NODE_WIDTH) * 0.5
+			nodes.get(i).setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,
+					nodes.get(i-1).getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION) -
+					nodes.get(i-1).getVisualProperty(BasicVisualLexicon.NODE_WIDTH) * 0.5 +
+					nodes.get(i).getVisualProperty(BasicVisualLexicon.NODE_WIDTH) * 0.5
 					);
 			
 		}

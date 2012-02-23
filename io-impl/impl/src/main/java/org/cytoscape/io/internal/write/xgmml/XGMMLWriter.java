@@ -63,8 +63,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -569,7 +568,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	private void writeEdgeView(CyNetwork network, View<CyEdge> view) throws IOException {
 		// It is not necessary to write edges that have no locked visual properties
 		boolean hasLockedVisualProps = false;
-		Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(MinimalVisualLexicon.EDGE);
+		Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		
 		for (VisualProperty<?> vp : visualProperties) {
 			if (view.isValueLocked(vp)) {
@@ -603,18 +602,18 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         final VisualProperty<?> root;
         
         if (element instanceof CyNode)
-        	root = MinimalVisualLexicon.NODE;
+        	root = BasicVisualLexicon.NODE;
         else if (element instanceof CyEdge)
-        	root = MinimalVisualLexicon.EDGE;
+        	root = BasicVisualLexicon.EDGE;
         else
-        	root = MinimalVisualLexicon.NETWORK;
+        	root = BasicVisualLexicon.NETWORK;
         
         Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(root);
         List<VisualProperty<?>> cyProperties = new ArrayList<VisualProperty<?>>();
         List<VisualProperty<?>> lockedProperties = new ArrayList<VisualProperty<?>>();
 
         for (VisualProperty vp : visualProperties) {
-        	if (root == MinimalVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class) {
+        	if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class) {
         		// If network, ignore node and edge visual properties (they are also returned as NETWORK's descendants).
         		continue;
         	}
@@ -737,31 +736,31 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     	boolean b = (sessionFormat && (element instanceof CyNode) && !attName.matches("x|y|z"));
 		b = b || (sessionFormat && (element instanceof CyEdge));
 		b = b || (sessionFormat && (element instanceof CyNetwork) && 
-				  attName.matches(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT.getIdString()));
+				  attName.matches(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT.getIdString()));
 		
 		return b;
 	}
     
     private String getGraphicsKey(VisualProperty<?> vp) {
         //Nodes
-        if (vp.equals(MinimalVisualLexicon.NODE_X_LOCATION)) return "x";
-        if (vp.equals(MinimalVisualLexicon.NODE_Y_LOCATION)) return "y";
-        if (vp.equals(RichVisualLexicon.NODE_Z_LOCATION)) return "z";
-        if (vp.equals(MinimalVisualLexicon.NODE_WIDTH)) return "w";
-        if (vp.equals(MinimalVisualLexicon.NODE_HEIGHT)) return "h";
-        if (vp.equals(MinimalVisualLexicon.NODE_FILL_COLOR)) return "fill";
-        if (vp.equals(RichVisualLexicon.NODE_SHAPE)) return "type";
-        if (vp.equals(RichVisualLexicon.NODE_BORDER_WIDTH)) return "width";
-        if (vp.equals(RichVisualLexicon.NODE_BORDER_PAINT)) return "outline";
-        if (vp.equals(RichVisualLexicon.NODE_TRANSPARENCY)) return "cy:nodeTransparency";
-        if (vp.equals(RichVisualLexicon.NODE_BORDER_LINE_TYPE)) return "cy:borderLineType";
-        if (vp.equals(RichVisualLexicon.NODE_LABEL)) return "cy:nodeLabelFont";
+        if (vp.equals(BasicVisualLexicon.NODE_X_LOCATION)) return "x";
+        if (vp.equals(BasicVisualLexicon.NODE_Y_LOCATION)) return "y";
+        if (vp.equals(BasicVisualLexicon.NODE_Z_LOCATION)) return "z";
+        if (vp.equals(BasicVisualLexicon.NODE_WIDTH)) return "w";
+        if (vp.equals(BasicVisualLexicon.NODE_HEIGHT)) return "h";
+        if (vp.equals(BasicVisualLexicon.NODE_FILL_COLOR)) return "fill";
+        if (vp.equals(BasicVisualLexicon.NODE_SHAPE)) return "type";
+        if (vp.equals(BasicVisualLexicon.NODE_BORDER_WIDTH)) return "width";
+        if (vp.equals(BasicVisualLexicon.NODE_BORDER_PAINT)) return "outline";
+        if (vp.equals(BasicVisualLexicon.NODE_TRANSPARENCY)) return "cy:nodeTransparency";
+        if (vp.equals(BasicVisualLexicon.NODE_BORDER_LINE_TYPE)) return "cy:borderLineType";
+        if (vp.equals(BasicVisualLexicon.NODE_LABEL)) return "cy:nodeLabelFont";
 
         // Edges
-        if (vp.equals(MinimalVisualLexicon.EDGE_WIDTH)) return "width";
-        if (vp.equals(RichVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)) return "fill";
-        if (vp.equals(MinimalVisualLexicon.EDGE_LABEL)) return "cy:edgeLabelFont";
-        if (vp.equals(RichVisualLexicon.EDGE_LINE_TYPE)) return "cy:edgeLineType";
+        if (vp.equals(BasicVisualLexicon.EDGE_WIDTH)) return "width";
+        if (vp.equals(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)) return "fill";
+        if (vp.equals(BasicVisualLexicon.EDGE_LABEL)) return "cy:edgeLabelFont";
+        if (vp.equals(BasicVisualLexicon.EDGE_LINE_TYPE)) return "cy:edgeLineType";
 
         return null;
     }
@@ -927,7 +926,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     }
     
     private String getLabel(CyNetworkView view) {
-    	String label = view.getVisualProperty(MinimalVisualLexicon.NETWORK_TITLE);
+    	String label = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
         
     	if (label == null || label.isEmpty())
         	label = Long.toString(view.getSUID());

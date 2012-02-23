@@ -34,7 +34,7 @@
  */
 package org.cytoscape.internal.select;
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_SELECTED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
 
 import org.cytoscape.application.swing.AbstractViewUpdater;
 import org.cytoscape.model.CyNetwork;

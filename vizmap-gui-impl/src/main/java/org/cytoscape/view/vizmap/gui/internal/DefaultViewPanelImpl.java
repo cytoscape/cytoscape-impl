@@ -34,8 +34,8 @@
  */
 package org.cytoscape.view.vizmap.gui.internal;
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -56,7 +56,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
@@ -143,7 +143,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		final VisualStyle currentStyle = selectedManager.getCurrentVisualStyle();
 		currentStyle.apply(dummyview);
 
-		this.innerPanel.setBackground((Color) currentStyle.getDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT));
+		this.innerPanel.setBackground((Color) currentStyle.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
 		// Render it in this panel
 		renderingEngine = presentationFactory
 				.createRenderingEngine(innerPanel, dummyview);
@@ -163,7 +163,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	void updateView(final VisualStyle vs) {
 		final CyNetworkView viewModel = (CyNetworkView) renderingEngine.getViewModel();
 		vs.apply(viewModel);
-		this.innerPanel.setBackground((Color) vs.getDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT));
+		this.innerPanel.setBackground((Color) vs.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
 		// This is necessary to adjust the size of default image.
 		viewModel.fitContent();
 	}

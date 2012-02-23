@@ -45,7 +45,7 @@ import org.cytoscape.view.manual.internal.control.actions.AbstractControlAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  *
@@ -59,6 +59,6 @@ public class HAlignCenter extends AbstractControlAction {
 	protected void control(List<View<CyNode>> nodes) {
 		final double mid = (X_min + ((X_max - X_min) / 2));
 		for ( View<CyNode> nv : nodes )
-			nv.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, mid);
+			nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, mid);
 	}
 }

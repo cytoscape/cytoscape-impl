@@ -1,10 +1,9 @@
 package org.cytoscape.io.internal.write.graphics;
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_HEIGHT;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.Set;
@@ -12,17 +11,14 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import org.cytoscape.io.internal.ui.ExportBitmapOptionsPanel;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesGUI;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.BoundedDouble;
-import org.cytoscape.work.util.BoundedInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.io.internal.ui.ExportBitmapOptionsPanel;
 
 /**
  */

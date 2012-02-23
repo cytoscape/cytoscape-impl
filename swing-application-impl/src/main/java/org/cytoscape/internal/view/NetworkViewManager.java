@@ -71,7 +71,7 @@ import org.cytoscape.view.model.events.NetworkViewChangedListener;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -412,8 +412,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				logger.warn("Could not maximize frame.", pve);
 			}
 		} else {
-			int w = view.getVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH).intValue();
-			int h = view.getVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT).intValue();
+			int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
+			int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
 			updateNetworkSize(view, w, h);
 		}
 
@@ -430,15 +430,15 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			if ( iframe == null )
 				return;
 			
-			if (record.getVisualProperty().equals(MinimalVisualLexicon.NETWORK_WIDTH)) {
+			if (record.getVisualProperty().equals(BasicVisualLexicon.NETWORK_WIDTH)) {
 				int w = ((Double) record.getValue()).intValue();
 				int h = iframe.getSize().height;
 				updateNetworkSize(view, w, h);
-			} else if (record.getVisualProperty().equals(MinimalVisualLexicon.NETWORK_HEIGHT)) {
+			} else if (record.getVisualProperty().equals(BasicVisualLexicon.NETWORK_HEIGHT)) {
 				int w = iframe.getSize().width;
 				int h = ((Double) record.getValue()).intValue();
 				updateNetworkSize(view, w, h);
-			} else if (record.getVisualProperty().equals(MinimalVisualLexicon.NETWORK_TITLE)) {
+			} else if (record.getVisualProperty().equals(BasicVisualLexicon.NETWORK_TITLE)) {
 				updateNetworkTitle(view);
 			}
 		}
@@ -455,7 +455,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 
 	private String getTitle(CyNetworkView view) {
-		String title = view.getVisualProperty(MinimalVisualLexicon.NETWORK_TITLE);
+		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 		
 		if (title == null || title.isEmpty())
 			title = view.getModel().getRow(view.getModel()).get(CyTableEntry.NAME, String.class);

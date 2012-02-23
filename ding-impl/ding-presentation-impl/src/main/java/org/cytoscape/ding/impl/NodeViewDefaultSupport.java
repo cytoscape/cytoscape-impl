@@ -35,9 +35,9 @@ import java.awt.Paint;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 class NodeViewDefaultSupport {
@@ -77,7 +77,7 @@ class NodeViewDefaultSupport {
 			setShape(((NodeShape) value));
 		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
 			setSelectedPaint((Paint) value);
-		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
+		} else if (vp == BasicVisualLexicon.NODE_FILL_COLOR) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			setBorderPaint((Paint) value);
@@ -90,7 +90,7 @@ class NodeViewDefaultSupport {
 			setBorderWidth(((Number) value).floatValue());
 		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
 			setTransparency(((Number) value).intValue());
-		} else if (vp == MinimalVisualLexicon.NODE_LABEL) {
+		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
 			final Font newFont = ((Font) value).deriveFont(fontSize);
@@ -100,9 +100,9 @@ class NodeViewDefaultSupport {
 			setFont(font,newSize);
 		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
 			setToolTip((String) value);
-		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
+		} else if (vp == BasicVisualLexicon.NODE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
-		} else if (vp == RichVisualLexicon.NODE_LABEL_TRANSPARENCY) {
+		} else if (vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY) {
 			if (labelColor != null && labelTransparency.equals(value) == false) {
 				labelTransparency = ((Number) value).intValue();
 				setTextPaint(labelColor);

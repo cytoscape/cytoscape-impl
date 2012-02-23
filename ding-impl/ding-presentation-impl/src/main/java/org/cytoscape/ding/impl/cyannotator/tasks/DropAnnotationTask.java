@@ -1,32 +1,20 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
 
-import java.awt.geom.Point2D;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.geom.Point2D;
 
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.TaskMonitor;
-
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-
-import org.cytoscape.dnd.DropUtil;
-import org.cytoscape.event.CyEventHelper;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import javax.swing.JOptionPane;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
+import org.cytoscape.dnd.DropUtil;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DropAnnotationTask extends AbstractNetworkViewTask {
 

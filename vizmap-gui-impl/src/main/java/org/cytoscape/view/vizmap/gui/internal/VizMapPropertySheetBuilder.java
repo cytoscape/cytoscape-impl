@@ -22,7 +22,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -177,8 +177,8 @@ public class VizMapPropertySheetBuilder {
 		}
 		
 		
-		final List<Property> nodeProps = getProps(style, MinimalVisualLexicon.NODE.getDisplayName(), nodeVPSelected);
-		final List<Property> edgeProps = getProps(style, MinimalVisualLexicon.EDGE.getDisplayName(), edgeVPSelected);
+		final List<Property> nodeProps = getProps(style, BasicVisualLexicon.NODE.getDisplayName(), nodeVPSelected);
+		final List<Property> edgeProps = getProps(style, BasicVisualLexicon.EDGE.getDisplayName(), edgeVPSelected);
 		//final List<Property> networkProps = setProps(style, TwoDVisualLexicon.NETWORK);
 		
 		final List<Property> result = new ArrayList<Property>();

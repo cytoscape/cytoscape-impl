@@ -1,8 +1,8 @@
 package org.cytoscape.task.internal.hide;
 
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.EDGE_VISIBLE;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
 
 
 import java.util.Collection;

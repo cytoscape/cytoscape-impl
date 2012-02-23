@@ -4,9 +4,9 @@ import java.awt.Color;
 import java.awt.Paint;
 
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -65,26 +65,26 @@ public class VisualStyleBuilder {
     public VisualStyle buildStyle(final String vsName) {
 	final VisualStyle newStyle = vsFactory.createVisualStyle(vsName);
 
-	newStyle.setDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT, BACKGROUND_COLOR);
-	newStyle.setDefaultValue(MinimalVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
-	newStyle.setDefaultValue(MinimalVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
-	newStyle.setDefaultValue(MinimalVisualLexicon.NODE_WIDTH, NODE_WIDTH);
-	newStyle.setDefaultValue(MinimalVisualLexicon.NODE_HEIGHT, NODE_HEIGHT);
+	newStyle.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, BACKGROUND_COLOR);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, NODE_WIDTH);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, NODE_HEIGHT);
 
-	newStyle.setDefaultValue(RichVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 
-	newStyle.setDefaultValue(RichVisualLexicon.NODE_LABEL_FONT_SIZE, NODE_LABEL_SIZE_REGULAR);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, NODE_LABEL_SIZE_REGULAR);
 
-	newStyle.setDefaultValue(RichVisualLexicon.NODE_BORDER_WIDTH, NODE_BORDER_WIDTH);
-	newStyle.setDefaultValue(RichVisualLexicon.NODE_BORDER_PAINT, NODE_BORDER_COLOR);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, NODE_BORDER_WIDTH);
+	newStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, NODE_BORDER_COLOR);
 
-	newStyle.setDefaultValue(MinimalVisualLexicon.EDGE_WIDTH, EDGE_WIDTH);
-	newStyle.setDefaultValue(RichVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
-	newStyle.setDefaultValue(MinimalVisualLexicon.EDGE_LABEL_COLOR, EDGE_LABEL_COLOR);
+	newStyle.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, EDGE_WIDTH);
+	newStyle.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
+	newStyle.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR, EDGE_LABEL_COLOR);
 
 	// Node Color mapping
 	VisualMappingFunction<String, Paint> nodeColorMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, null, MinimalVisualLexicon.NODE_FILL_COLOR);
+		QUERY_GENE_ATTR_NAME, String.class, null, BasicVisualLexicon.NODE_FILL_COLOR);
 
 	if (nodeColorMapping instanceof DiscreteMapping) {
 	    ((DiscreteMapping<String, Paint>) nodeColorMapping).putMapValue("disease", NODE_COLOR_DISEASE);
@@ -95,7 +95,7 @@ public class VisualStyleBuilder {
 
 	// Border color mapping
 	VisualMappingFunction<String, Paint> nodeBorderColorMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_BORDER_PAINT);
+		QUERY_GENE_ATTR_NAME, String.class, null, BasicVisualLexicon.NODE_BORDER_PAINT);
 
 	((DiscreteMapping<String, Paint>) nodeBorderColorMapping).putMapValue("disease", NODE_BORDER_COLOR_DISEASE);
 	((DiscreteMapping<String, Paint>) nodeBorderColorMapping).putMapValue("query and disease", NODE_BORDER_COLOR_BOTH);
@@ -105,7 +105,7 @@ public class VisualStyleBuilder {
 
 	// Node Label Size mapping
 	VisualMappingFunction<String, Integer> nodeLabelSizeMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_LABEL_FONT_SIZE);
+		QUERY_GENE_ATTR_NAME, String.class, null, BasicVisualLexicon.NODE_LABEL_FONT_SIZE);
 
 	((DiscreteMapping<String, Integer>) nodeLabelSizeMapping).putMapValue("disease", NODE_LABEL_SIZE_LARGE);
 	((DiscreteMapping<String, Integer>) nodeLabelSizeMapping).putMapValue("query and disease",
@@ -116,9 +116,9 @@ public class VisualStyleBuilder {
 
 	// Node Width & Height mapping
 	final VisualMappingFunction<String, Double> nodeWidthMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_WIDTH);
+		QUERY_GENE_ATTR_NAME, String.class, null, BasicVisualLexicon.NODE_WIDTH);
 	final VisualMappingFunction<String, Double> nodeHeightMapping = discFactory.createVisualMappingFunction(
-		QUERY_GENE_ATTR_NAME, String.class, null, RichVisualLexicon.NODE_HEIGHT);
+		QUERY_GENE_ATTR_NAME, String.class, null, BasicVisualLexicon.NODE_HEIGHT);
 
 	((DiscreteMapping<String, Double>) nodeWidthMapping).putMapValue("disease", NODE_WIDTH_TARGET);
 	((DiscreteMapping<String, Double>) nodeWidthMapping).putMapValue("query and disease", NODE_WIDTH_BOTH);
@@ -132,7 +132,7 @@ public class VisualStyleBuilder {
 
 	// Label Mapping.
 	final VisualMappingFunction<String, String> nodeLabelMapping = ptFactory.createVisualMappingFunction(
-		CyTableEntry.NAME, String.class, null, MinimalVisualLexicon.NODE_LABEL);
+		CyTableEntry.NAME, String.class, null, BasicVisualLexicon.NODE_LABEL);
 	newStyle.addVisualMappingFunction(nodeLabelMapping);
 
 	return newStyle;

@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public final class PropertySheetUtil {
 	
@@ -14,20 +14,20 @@ public final class PropertySheetUtil {
 	
 	// Preset Basic Properties
 	static {
-		BASIC_PROPS.add(RichVisualLexicon.NODE_FILL_COLOR);
-		BASIC_PROPS.add(RichVisualLexicon.NODE_SHAPE);
-		BASIC_PROPS.add(RichVisualLexicon.NODE_WIDTH);
-		BASIC_PROPS.add(RichVisualLexicon.NODE_HEIGHT);
-		BASIC_PROPS.add(RichVisualLexicon.NODE_LABEL);
-		BASIC_PROPS.add(RichVisualLexicon.NODE_BORDER_PAINT);
-		BASIC_PROPS.add(RichVisualLexicon.NODE_BORDER_WIDTH);
+		BASIC_PROPS.add(BasicVisualLexicon.NODE_FILL_COLOR);
+		BASIC_PROPS.add(BasicVisualLexicon.NODE_SHAPE);
+		BASIC_PROPS.add(BasicVisualLexicon.NODE_WIDTH);
+		BASIC_PROPS.add(BasicVisualLexicon.NODE_HEIGHT);
+		BASIC_PROPS.add(BasicVisualLexicon.NODE_LABEL);
+		BASIC_PROPS.add(BasicVisualLexicon.NODE_BORDER_PAINT);
+		BASIC_PROPS.add(BasicVisualLexicon.NODE_BORDER_WIDTH);
 		
-		BASIC_PROPS.add(RichVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-		BASIC_PROPS.add(RichVisualLexicon.EDGE_WIDTH);
-		BASIC_PROPS.add(RichVisualLexicon.EDGE_LABEL);
-		BASIC_PROPS.add(RichVisualLexicon.EDGE_LINE_TYPE);
+		BASIC_PROPS.add(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		BASIC_PROPS.add(BasicVisualLexicon.EDGE_WIDTH);
+		BASIC_PROPS.add(BasicVisualLexicon.EDGE_LABEL);
+		BASIC_PROPS.add(BasicVisualLexicon.EDGE_LINE_TYPE);
 		
-		BASIC_PROPS.add(RichVisualLexicon.NETWORK_BACKGROUND_PAINT);
+		BASIC_PROPS.add(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 	}
 	
 	public static boolean isBasic(final VisualProperty<?> vp) {

@@ -66,7 +66,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
@@ -220,7 +220,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 			for (VisualProperty<?> vp : props) {
 				if (lexicon.getVisualLexiconNode(vp).getChildren().size() == 0
 						&& lexicon.getVisualLexiconNode(vp).getParent()
-								.getVisualProperty() == MinimalVisualLexicon.NETWORK)
+								.getVisualProperty() == BasicVisualLexicon.NETWORK)
 					propSet.add(vp);
 			}
 		}

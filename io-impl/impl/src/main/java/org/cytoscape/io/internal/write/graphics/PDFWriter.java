@@ -1,16 +1,15 @@
 package org.cytoscape.io.internal.write.graphics;
 
 import java.awt.Graphics2D;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,16 +19,7 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
-import org.cytoscape.work.Tunable;
 
-//import com.itextpdf.text.Document;
-//import com.itextpdf.text.DocumentException;
-//import com.itextpdf.text.PageSize;
-//import com.itextpdf.text.Rectangle;
-//import com.itextpdf.text.pdf.DefaultFontMapper;
-//import com.itextpdf.text.pdf.PdfContentByte;
-//import com.itextpdf.text.pdf.PdfGraphics2D;
-//import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * PDF exporter by the iText library.
@@ -61,8 +51,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		this.engine = engine;
 		this.stream = stream;
 
-		width = engine.getViewModel().getVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH);
-		height = engine.getViewModel().getVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT);
+		width = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
+		height = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT);
 
 		logger.debug("PDFWriter created.");
 	}

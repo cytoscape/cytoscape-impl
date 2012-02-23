@@ -59,7 +59,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -127,9 +127,9 @@ public class VisualStyleSerializer {
 				vsModel.setNode(new Node());
 				vsModel.setEdge(new Edge());
 
-				createVizmapProperties(vs, MinimalVisualLexicon.NETWORK, vsModel.getNetwork().getVisualProperty());
-				createVizmapProperties(vs, MinimalVisualLexicon.NODE, vsModel.getNode().getVisualProperty());
-				createVizmapProperties(vs, MinimalVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
+				createVizmapProperties(vs, BasicVisualLexicon.NETWORK, vsModel.getNetwork().getVisualProperty());
+				createVizmapProperties(vs, BasicVisualLexicon.NODE, vsModel.getNode().getVisualProperty());
+				createVizmapProperties(vs, BasicVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
 			}
 		}
 
@@ -258,7 +258,7 @@ public class VisualStyleSerializer {
 			VisualProperty<V> vp = (VisualProperty<V>) iter.next();
 
 			// NETWORK root includes NODES and EDGES, but we want to separate the CyNetwork properties!
-			if (root == MinimalVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class) continue;
+			if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class) continue;
 
 			V defValue = vs.getDefaultValue(vp);
 			VisualMappingFunction<?, V> mapping = vs.getVisualMappingFunction(vp);
@@ -471,8 +471,8 @@ public class VisualStyleSerializer {
 		// FIXME: should not be global, but per Visual Style
 		if (key.contains("nodeSizeLocked")) {
 			boolean b = Boolean.parseBoolean(value);
-			lexicon.getVisualLexiconNode(MinimalVisualLexicon.NODE_WIDTH).setDependency(b);
-			lexicon.getVisualLexiconNode(MinimalVisualLexicon.NODE_HEIGHT).setDependency(b);
+			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH).setDependency(b);
+			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_HEIGHT).setDependency(b);
 		}
 	}
 

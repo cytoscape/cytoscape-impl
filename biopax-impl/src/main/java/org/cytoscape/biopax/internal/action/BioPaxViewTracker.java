@@ -7,9 +7,9 @@ import java.util.Iterator;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.biopax.internal.view.BioPaxContainer;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
+import org.cytoscape.biopax.internal.view.BioPaxContainer;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -22,7 +22,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
@@ -144,7 +144,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 			String tip = row.get(BIOPAX_ENTITY_TYPE, String.class) + "\n"
 					+ row.get("/cellularLocation", String.class);
 			View<CyNode> nodeView = networkView.getNodeView(node);
-			nodeView.setLockedValue(RichVisualLexicon.NODE_TOOLTIP, tip);
+			nodeView.setLockedValue(BasicVisualLexicon.NODE_TOOLTIP, tip);
 		}
 	}
 	

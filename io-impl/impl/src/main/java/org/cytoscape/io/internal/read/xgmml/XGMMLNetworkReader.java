@@ -42,7 +42,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
 /**
@@ -95,7 +95,7 @@ public class XGMMLNetworkReader extends AbstractXGMMLReader {
 			String name = network.getRow(network).get(CyNetwork.NAME, String.class);
 			
 			if (name != null)
-				netView.setVisualProperty(MinimalVisualLexicon.NETWORK_TITLE, name);
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, name);
 		}
 		
 		// Network visual properties

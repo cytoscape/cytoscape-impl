@@ -45,7 +45,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.undo.AbstractCyEdit;
 
 /**
@@ -95,8 +95,8 @@ public class MergeNetworkEdit extends AbstractCyEdit {
         if (view != null) {
             for (CyNode cyNode : cyNodes) {
                 View<CyNode> nv = view.getNodeView(cyNode);
-                double x = nv.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION).doubleValue();
-                double y = nv.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION).doubleValue();
+                double x = nv.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION).doubleValue();
+                double y = nv.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION).doubleValue();
                 Point2D.Double point = new Point2D.Double(x, y);
                 this.cyNodes.put(cyNode, point);
             }
@@ -129,8 +129,8 @@ public class MergeNetworkEdit extends AbstractCyEdit {
             	
                 Point2D.Double point = cyNodes.get(cyNode);
                 View<CyNode> nv = view.getNodeView(node);
-                nv.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, point.getX());
-                nv.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, point.getY());
+                nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, point.getX());
+                nv.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, point.getY());
             }
 
             // interate through edges and restore each one...

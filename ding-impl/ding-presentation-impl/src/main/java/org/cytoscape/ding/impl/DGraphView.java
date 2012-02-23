@@ -130,7 +130,7 @@ import org.cytoscape.view.model.events.FitContentEventListener;
 import org.cytoscape.view.model.events.FitSelectedEvent;
 import org.cytoscape.view.model.events.FitSelectedEventListener;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -1117,9 +1117,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			m_viewportChanged = true;
 			
 			// Update view model.  Zoom Level should be modified.
-			setVisualProperty(MinimalVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-			setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
-			setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
+			setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
 		}
 		
 		if (updateView)
@@ -1886,8 +1886,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			m_viewportChanged = true;
 			
 			// Update view model
-			setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
-			setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
 		}
 	}
 
@@ -1952,9 +1952,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			m_viewportChanged = true;
 			
 			// Update view model.  Zoom Level should be modified.
-			setVisualProperty(MinimalVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-			setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
-			setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
+			setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
 		}
 		updateView();
 	}
@@ -2869,17 +2869,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				enableEdgeSelection();
 			else
 				disableEdgeSelection();
-		} else if (vp == MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT) {
+		} else if (vp == BasicVisualLexicon.NETWORK_BACKGROUND_PAINT) {
 			setBackgroundPaint((Paint) value);
-		} else if (vp == MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION) {
+		} else if (vp == BasicVisualLexicon.NETWORK_CENTER_X_LOCATION) {
 			final double x = (Double) value;
 			if(x != m_networkCanvas.m_xCenter)
 				setCenter(x, m_networkCanvas.m_yCenter);
-		} else if (vp == MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION) {
+		} else if (vp == BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION) {
 			final double y = (Double) value;
 			if(y != m_networkCanvas.m_yCenter)
 				setCenter(m_networkCanvas.m_xCenter, y);
-		} else if (vp == MinimalVisualLexicon.NETWORK_SCALE_FACTOR) {
+		} else if (vp == BasicVisualLexicon.NETWORK_SCALE_FACTOR) {
 			setZoom(((Double) value).doubleValue());
 		}
 		
@@ -2895,13 +2895,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			value = nodeSelectionEnabled();
 		} else if (vp == DVisualLexicon.NETWORK_EDGE_SELECTION) {
 			value = edgeSelectionEnabled();
-		} else if (vp == MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT) {
+		} else if (vp == BasicVisualLexicon.NETWORK_BACKGROUND_PAINT) {
 			value = getBackgroundPaint();
-		} else if (vp == MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION) {
+		} else if (vp == BasicVisualLexicon.NETWORK_CENTER_X_LOCATION) {
 			value = getCenter().getX();
-		} else if (vp == MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION) {
+		} else if (vp == BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION) {
 			value = getCenter().getY();
-		} else if (vp == MinimalVisualLexicon.NETWORK_SCALE_FACTOR) {
+		} else if (vp == BasicVisualLexicon.NETWORK_SCALE_FACTOR) {
 			value = getZoom();
 		} else {
 			value = visualProperties.get(vp);
@@ -2949,8 +2949,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final Class<?> targetType = vp.getTargetDataType();
 		
 		// Filter some special cases here: In DING, there is no default W, H, and D.
-		if (vp == MinimalVisualLexicon.NODE_SIZE || vp == MinimalVisualLexicon.NODE_WIDTH
-				|| vp == MinimalVisualLexicon.NODE_HEIGHT) {
+		if (vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH
+				|| vp == BasicVisualLexicon.NODE_HEIGHT) {
 			applyToAll(vp, defaultValue);
 			return;
 		}

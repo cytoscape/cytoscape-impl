@@ -48,13 +48,13 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
@@ -150,10 +150,10 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		// copy node location only.
 		for (View<CyNode> newNodeView : newView.getNodeViews()) {
 			View<CyNode> origNodeView = sourceView.getNodeView(parentNetwork.getNode(newNodeView.getModel().getIndex()));
-			newNodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,
-					origNodeView.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION));
-			newNodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION,
-					origNodeView.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION));
+			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,
+					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
+			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,
+					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
 
 			// FIXME
 			// // Set lock (if necessary)

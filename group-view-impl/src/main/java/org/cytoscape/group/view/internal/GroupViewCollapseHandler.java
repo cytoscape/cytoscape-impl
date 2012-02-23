@@ -49,7 +49,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
@@ -67,8 +67,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	private final CyNetworkViewManager cyNetworkViewManager;
 	private final VisualMappingManager cyStyleManager;
 	private static final Logger logger = LoggerFactory.getLogger(GroupViewCollapseHandler.class);
-	private static final VisualProperty<Double> xLoc = MinimalVisualLexicon.NODE_X_LOCATION;
-	private static final VisualProperty<Double> yLoc = MinimalVisualLexicon.NODE_Y_LOCATION;
+	private static final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
+	private static final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
 
 	private static final String X_OFFSET_ATTR = "__xOffset";
 	private static final String Y_OFFSET_ATTR = "__yOffset";

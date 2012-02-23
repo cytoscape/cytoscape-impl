@@ -1,14 +1,14 @@
 package org.cytoscape.view.vizmap.gui.internal.util;
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.EDGE_LABEL;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.EDGE_LABEL_COLOR;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.EDGE_PAINT;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_LABEL;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_LABEL_COLOR;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 
 import java.awt.Color;
 import java.util.HashMap;

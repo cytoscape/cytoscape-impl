@@ -1,8 +1,8 @@
 package org.cytoscape.task.internal.networkobjects;
 
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 import java.util.List;
 import java.util.Set;

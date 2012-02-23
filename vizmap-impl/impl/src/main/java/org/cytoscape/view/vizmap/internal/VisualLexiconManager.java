@@ -8,7 +8,7 @@ import java.util.Set;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class VisualLexiconManager {
 
@@ -51,11 +51,11 @@ public class VisualLexiconManager {
 		
 		// Node-related Visual Properties are linked as a children of NODE
 		// VP.
-		nodeVPs.addAll(lexicon.getAllDescendants(MinimalVisualLexicon.NODE));
+		nodeVPs.addAll(lexicon.getAllDescendants(BasicVisualLexicon.NODE));
 
 		// Node-related Visual Properties are linked as a children of NODE
 		// VP.
-		edgeVPs.addAll(lexicon.getAllDescendants(MinimalVisualLexicon.EDGE));
+		edgeVPs.addAll(lexicon.getAllDescendants(BasicVisualLexicon.EDGE));
 
 		for (VisualProperty<?> vp : lexicon.getAllVisualProperties()) {
 			if (!nodeVPs.contains(vp) && !edgeVPs.contains(vp))

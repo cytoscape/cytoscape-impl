@@ -62,18 +62,17 @@ import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.NullDataType;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.BooleanVisualProperty;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.presentation.property.DoubleVisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.PaintVisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
-public class DVisualLexicon extends RichVisualLexicon {
+public class DVisualLexicon extends BasicVisualLexicon {
 	// Set of custom graphics positions.
 	private static final Set<VisualProperty<?>> CG_POSITIONS = new HashSet<VisualProperty<?>>();
 	private static final Set<VisualProperty<?>> CG_SIZE = new HashSet<VisualProperty<?>>();
@@ -223,19 +222,19 @@ public class DVisualLexicon extends RichVisualLexicon {
 
 	// Edge VPs
 	public static final VisualProperty<Paint> EDGE_SOURCE_ARROW_SELECTED_PAINT = new PaintVisualProperty(
-			Color.YELLOW, MinimalVisualLexicon.PAINT_RANGE,
+			Color.YELLOW, BasicVisualLexicon.PAINT_RANGE,
 			"EDGE_SOURCE_ARROW_SELECTED_PAINT",
 			"Edge Source Arrow Selected Paint", CyEdge.class);
 	public static final VisualProperty<Paint> EDGE_TARGET_ARROW_SELECTED_PAINT = new PaintVisualProperty(
-			Color.YELLOW, MinimalVisualLexicon.PAINT_RANGE,
+			Color.YELLOW, BasicVisualLexicon.PAINT_RANGE,
 			"EDGE_TARGET_ARROW_SELECTED_PAINT",
 			"Edge Target Arrow Selected Paint", CyEdge.class);
 	public static final VisualProperty<Paint> EDGE_SOURCE_ARROW_UNSELECTED_PAINT = new PaintVisualProperty(
-			Color.BLACK, MinimalVisualLexicon.PAINT_RANGE,
+			Color.BLACK, BasicVisualLexicon.PAINT_RANGE,
 			"EDGE_SOURCE_ARROW_UNSELECTED_PAINT",
 			"Edge Source Arrow Unselected Paint", CyEdge.class);
 	public static final VisualProperty<Paint> EDGE_TARGET_ARROW_UNSELECTED_PAINT = new PaintVisualProperty(
-			Color.BLACK, MinimalVisualLexicon.PAINT_RANGE,
+			Color.BLACK, BasicVisualLexicon.PAINT_RANGE,
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
 	

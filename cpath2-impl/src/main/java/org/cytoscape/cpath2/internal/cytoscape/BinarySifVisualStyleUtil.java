@@ -6,9 +6,9 @@ import java.awt.Paint;
 import org.cytoscape.cpath2.internal.util.BioPaxUtil;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -68,7 +68,7 @@ public class BinarySifVisualStyleUtil {
 
 				// set node opacity
 				binarySifStyle.setDefaultValue(
-						RichVisualLexicon.NODE_TRANSPARENCY, 125);
+						BasicVisualLexicon.NODE_TRANSPARENCY, 125);
 				// unlock node size
 				// binarySifStyle.getDependency().set(VisualPropertyDependency.Definition.NODE_SIZE_LOCKED,false);
 
@@ -76,13 +76,13 @@ public class BinarySifVisualStyleUtil {
 				createNodeColors(binarySifStyle);
 				createNodeLabel(binarySifStyle);
 
-				binarySifStyle.setDefaultValue(MinimalVisualLexicon.EDGE_WIDTH, 4.0);
+				binarySifStyle.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 4.0);
 				createEdgeColor(binarySifStyle);
 				createDirectedEdges(binarySifStyle);
 
 				binarySifStyle
 						.setDefaultValue(
-								MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT,
+								BasicVisualLexicon.NETWORK_BACKGROUND_PAINT,
 								Color.WHITE);
 
 				// The visual style must be added to the Global Catalog
@@ -96,28 +96,28 @@ public class BinarySifVisualStyleUtil {
 
 	private void createNodeShapes(VisualStyle style) {
 		// Default shape is an ellipse.
-		style.setDefaultValue(RichVisualLexicon.NODE_SHAPE,
+		style.setDefaultValue(BasicVisualLexicon.NODE_SHAPE,
 				NodeShapeVisualProperty.ELLIPSE);
 
 		// Complexes are Hexagons.
 		DiscreteMapping<String, NodeShape> function = (DiscreteMapping<String, NodeShape>) discreteFactory
 				.createVisualMappingFunction(
 						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class, null,
-						RichVisualLexicon.NODE_SHAPE);
+						BasicVisualLexicon.NODE_SHAPE);
 		function.putMapValue("Complex", NodeShapeVisualProperty.HEXAGON);
 		style.addVisualMappingFunction(function);
 	}
 
 	private void createNodeColors(VisualStyle style) {
 		Color color = new Color(255, 153, 153);
-		style.setDefaultValue(MinimalVisualLexicon.NODE_FILL_COLOR, color);
+		style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, color);
 
 		// Complexes are a Different Color.
 		Color lightBlue = new Color(153, 153, 255);
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
 						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class, null,
-						RichVisualLexicon.NODE_FILL_COLOR);
+						BasicVisualLexicon.NODE_FILL_COLOR);
 		function.putMapValue("Complex", lightBlue);
 		style.addVisualMappingFunction(function);
 	}
@@ -125,10 +125,10 @@ public class BinarySifVisualStyleUtil {
 	private void createEdgeColor(VisualStyle style) {
 		// create a discrete mapper, for mapping biopax node type
 		// to a particular node color
-		style.setDefaultValue(MinimalVisualLexicon.EDGE_PAINT, Color.BLACK);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_PAINT, Color.BLACK);
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction("interaction", String.class, null,
-						RichVisualLexicon.EDGE_PAINT);
+						BasicVisualLexicon.EDGE_PAINT);
 		
 		function.putMapValue(PARTICIPATES_CONVERSION,
 				Color.decode("#ccc1da"));
@@ -157,7 +157,7 @@ public class BinarySifVisualStyleUtil {
 				(DiscreteMapping<String, ArrowShape>) discreteFactory
 					.createVisualMappingFunction(
 							INTERACTION, String.class, null,
-							RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
+							BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
 
 			discreteMapping.putMapValue(COMPONENT_OF, ArrowShapeVisualProperty.ARROW);
 			discreteMapping.putMapValue(CONTROLS_STATE_CHANGE, ArrowShapeVisualProperty.ARROW);
@@ -171,6 +171,6 @@ public class BinarySifVisualStyleUtil {
 		// create pass through mapper for node labels
 		style.addVisualMappingFunction(passthroughFactory
 				.createVisualMappingFunction(CyNode.NAME, String.class, null,
-						MinimalVisualLexicon.NODE_LABEL));
+						BasicVisualLexicon.NODE_LABEL));
 	}
 }

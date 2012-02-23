@@ -39,7 +39,7 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
 /**
@@ -76,10 +76,10 @@ public final class GraphConverter2 {
 		double maxY = Double.MIN_VALUE;
 
 		for ( View<CyNode> currentNodeView : graphView.getNodeViews() ) {
-			minX = Math.min(minX, currentNodeView.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION));
-			maxX = Math.max(maxX, currentNodeView.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION));
-			minY = Math.min(minY, currentNodeView.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION));
-			maxY = Math.max(maxY, currentNodeView.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION));
+			minX = Math.min(minX, currentNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
+			maxX = Math.max(maxX, currentNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
+			minY = Math.min(minY, currentNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
+			maxY = Math.max(maxY, currentNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
 		}
 
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(graphView.getModel(),CyNetwork.SELECTED,true);
@@ -139,9 +139,9 @@ public final class GraphConverter2 {
 					View<CyNode> nodeView = graphView.getNodeView(node);
 
 					if (xPosition)
-						return (nodeView.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION) - xOff);
+						return (nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION) - xOff);
 
-					return (nodeView.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION) - yOff);
+					return (nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION) - yOff);
 				}
 
 				// MutableGraphLayout methods.
@@ -159,8 +159,8 @@ public final class GraphConverter2 {
 					if (!isMovableNode(node))
 						throw new UnsupportedOperationException("node " + node + " is not movable");
 
-					nodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, xPos + xOff);
-					nodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, yPos + yOff);
+					nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xPos + xOff);
+					nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPos + yOff);
 				}
 
 				private void checkPosition(double xPos, double yPos) {

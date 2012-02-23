@@ -1,7 +1,7 @@
 package org.cytoscape.ding.impl.editor;
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -31,7 +31,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
@@ -98,26 +98,26 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		final View<CyNode> targetView = dummyview.getNodeView(target);
 		edgeView = (DEdgeView) dummyview.getEdgeView(edge);
 		
-		sourceView.setVisualProperty(RichVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
-		targetView.setVisualProperty(RichVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
-		sourceView.setVisualProperty(RichVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
-		targetView.setVisualProperty(RichVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
-		sourceView.setVisualProperty(RichVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
-		targetView.setVisualProperty(RichVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
-		sourceView.setVisualProperty(RichVisualLexicon.NODE_LABEL, "S");
-		targetView.setVisualProperty(RichVisualLexicon.NODE_LABEL, "T");
+		sourceView.setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
+		targetView.setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
+		sourceView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
+		targetView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
+		sourceView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
+		targetView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
+		sourceView.setVisualProperty(BasicVisualLexicon.NODE_LABEL, "S");
+		targetView.setVisualProperty(BasicVisualLexicon.NODE_LABEL, "T");
 		
-		sourceView.setVisualProperty(RichVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
-		targetView.setVisualProperty(RichVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+		sourceView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+		targetView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 		
-		sourceView.setVisualProperty(RichVisualLexicon.NODE_WIDTH, 40d);
-		sourceView.setVisualProperty(RichVisualLexicon.NODE_HEIGHT, 40d);
-		targetView.setVisualProperty(RichVisualLexicon.NODE_WIDTH, 40d);
-		targetView.setVisualProperty(RichVisualLexicon.NODE_HEIGHT, 40d);
+		sourceView.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, 40d);
+		sourceView.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, 40d);
+		targetView.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, 40d);
+		targetView.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, 40d);
 		
-		edgeView.setVisualProperty(RichVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
-		edgeView.setVisualProperty(RichVisualLexicon.EDGE_WIDTH, 4d);
-		edgeView.setVisualProperty(RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
+		edgeView.setVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
+		edgeView.setVisualProperty(BasicVisualLexicon.EDGE_WIDTH, 4d);
+		edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_COLOR);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_CURVED, true);
 		

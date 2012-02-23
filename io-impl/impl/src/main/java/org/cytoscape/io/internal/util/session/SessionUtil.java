@@ -35,7 +35,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +117,7 @@ public class SessionUtil {
 	}
 	
 	public static String getNetworkViewFileName(CyNetworkView view) throws UnsupportedEncodingException {
-		String name = escape(view.getVisualProperty(MinimalVisualLexicon.NETWORK_TITLE));
+		String name = escape(view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE));
 		
 		if (name == null || name.isEmpty())
 			name = getNetworkFileName(view.getModel());

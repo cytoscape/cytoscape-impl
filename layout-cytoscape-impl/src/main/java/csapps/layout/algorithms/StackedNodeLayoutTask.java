@@ -4,13 +4,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
 public class StackedNodeLayoutTask extends AbstractBasicLayoutTask {
@@ -60,10 +59,10 @@ public class StackedNodeLayoutTask extends AbstractBasicLayoutTask {
 			CyNode node = (CyNode) it.next();
 			View<CyNode> nodeView = networkView.getNodeView(node);
 			
-			nodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, x_position);
-			nodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, yPosition);
+			nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x_position);
+			nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPosition);
 			
-			int y = new Float((nodeView.getVisualProperty(MinimalVisualLexicon.NODE_HEIGHT).toString())).intValue();
+			int y = new Float((nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT).toString())).intValue();
 			
 			yPosition += y * 2;
 		}

@@ -48,7 +48,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -156,12 +156,12 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter
 				newProp.setValue("Please select a value!");
 
 				if (vp.getTargetDataType().equals(CyNode.class)) {
-					newProp.setCategory(MinimalVisualLexicon.NODE.getDisplayName());
+					newProp.setCategory(BasicVisualLexicon.NODE.getDisplayName());
 					((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(newProp, nodeAttributeEditor);
 					
 					logger.debug("This is node prop: " + vp.getDisplayName());
 				} else if (vp.getTargetDataType().equals(CyEdge.class)){
-					newProp.setCategory(MinimalVisualLexicon.EDGE.getDisplayName());
+					newProp.setCategory(BasicVisualLexicon.EDGE.getDisplayName());
 					((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(newProp, edgeAttributeEditor);
 					logger.debug("This is edge prop: " + vp.getDisplayName());
 				} else {

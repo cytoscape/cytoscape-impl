@@ -15,7 +15,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
@@ -69,8 +69,8 @@ public class DropNetworkViewTask extends AbstractNetworkViewTask {
 		
 		eh.flushPayloadEvents();
 		View<CyNode> nv = view.getNodeView(n);
-		nv.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,xformPt.getX());
-		nv.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION,xformPt.getY());
+		nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,xformPt.getX());
+		nv.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,xformPt.getY());
 		view.updateView();
 		
 		// Apply visual style

@@ -44,7 +44,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -102,14 +102,14 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	private VisualStyle buildGlobalDefaultStyle(final VisualStyleFactory factory) {
 		final VisualStyle defStyle = factory.createVisualStyle(DEFAULT_STYLE_NAME);
 		
-		defStyle.setDefaultValue(MinimalVisualLexicon.NETWORK_BACKGROUND_PAINT, NETWORK_COLOR);
-		defStyle.setDefaultValue(MinimalVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
-		defStyle.setDefaultValue(MinimalVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
-		defStyle.setDefaultValue(MinimalVisualLexicon.NODE_WIDTH, NODE_WIDTH);
-		defStyle.setDefaultValue(MinimalVisualLexicon.NODE_HEIGHT, NODE_HEIGHT);
-		defStyle.setDefaultValue(MinimalVisualLexicon.EDGE_WIDTH, EDGE_WIDTH);
-		defStyle.setDefaultValue(MinimalVisualLexicon.EDGE_PAINT, EDGE_COLOR);
-		defStyle.setDefaultValue(MinimalVisualLexicon.EDGE_LABEL_COLOR, EDGE_LABEL_COLOR);
+		defStyle.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, NETWORK_COLOR);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, NODE_WIDTH);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, NODE_HEIGHT);
+		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, EDGE_WIDTH);
+		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_PAINT, EDGE_COLOR);
+		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR, EDGE_LABEL_COLOR);
 		
 		return defStyle;
 	}

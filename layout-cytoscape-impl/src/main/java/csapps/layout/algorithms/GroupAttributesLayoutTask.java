@@ -14,7 +14,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,8 +196,8 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 
 		if (partition.size() == 1) {
 			CyNode node = partition.get(0);
-			networkView.getNodeView(node).setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, offsetx);
-			networkView.getNodeView(node).setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, offsety);
+			networkView.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, offsetx);
+			networkView.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, offsety);
 
 			return 0.0;
 		}
@@ -213,8 +213,8 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 		for (CyNode node : partition) {
 			double x = offsetx + radius + (radius * Math.cos(phi));
 			double y = offsety + radius + (radius * Math.sin(phi));
-			networkView.getNodeView(node).setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, x);
-			networkView.getNodeView(node).setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, y);
+			networkView.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
+			networkView.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
 			phi += phidelta;
 		}
 

@@ -1,13 +1,13 @@
 package org.cytoscape.task.internal.layout;
 
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NODE_Y_LOCATION;
-import static org.cytoscape.view.presentation.property.RichVisualLexicon.NODE_Z_LOCATION;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION;
-import static org.cytoscape.view.presentation.property.RichVisualLexicon.NETWORK_CENTER_Z_LOCATION;
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_SCALE_FACTOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Z_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
 
 import java.util.ArrayList;
 import java.util.Collection;

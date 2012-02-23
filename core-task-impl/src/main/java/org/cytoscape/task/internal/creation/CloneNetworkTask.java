@@ -48,8 +48,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -185,12 +184,12 @@ public class CloneNetworkTask extends AbstractCreationTask {
 			final CyNode node = origNodeView.getModel();
 			final View<CyNode> newNodeView = newView.getNodeView(orig2NewNodeMap.get(node));
 
-			newNodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION,
-					origNodeView.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION));
-			newNodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION,
-					origNodeView.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION));
-			newNodeView.setVisualProperty(RichVisualLexicon.NODE_Z_LOCATION,
-					origNodeView.getVisualProperty(RichVisualLexicon.NODE_Z_LOCATION));
+			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,
+					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
+			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,
+					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
+			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION,
+					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION));
 		}
 
 		vmm.setVisualStyle(vmm.getVisualStyle(origView), newView);

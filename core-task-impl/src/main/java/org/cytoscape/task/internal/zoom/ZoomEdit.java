@@ -1,7 +1,7 @@
 package org.cytoscape.task.internal.zoom;
 
 
-import static org.cytoscape.view.presentation.property.MinimalVisualLexicon.NETWORK_SCALE_FACTOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.undo.AbstractCyEdit;

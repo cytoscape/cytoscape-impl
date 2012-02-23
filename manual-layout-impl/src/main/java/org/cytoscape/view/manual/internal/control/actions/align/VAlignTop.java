@@ -45,7 +45,7 @@ import org.cytoscape.view.manual.internal.control.actions.AbstractControlAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 /**
  *
  */
@@ -57,14 +57,14 @@ public class VAlignTop extends AbstractControlAction {
 
 	protected void control(List<View<CyNode>> nodes) {
 		for ( View<CyNode> n : nodes ) { 
-			double h = n.getVisualProperty(MinimalVisualLexicon.NODE_HEIGHT) / 2;
-			n.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, Y_min + h);
+			double h = n.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT) / 2;
+			n.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, Y_min + h);
 		}
 	}
 
 	protected double getY(View<CyNode> n) {
-		double y = n.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
-		double h = n.getVisualProperty(MinimalVisualLexicon.NODE_HEIGHT) / 2;
+		double y = n.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+		double h = n.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT) / 2;
 
 		return y - h;
 	}

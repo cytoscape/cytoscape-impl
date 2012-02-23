@@ -28,22 +28,21 @@
 package org.cytoscape.view.manual.internal.control.actions;
 
 
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 
-import java.awt.event.ActionEvent;
-
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
 public abstract class AbstractControlAction extends AbstractAction {
@@ -99,7 +98,7 @@ public abstract class AbstractControlAction extends AbstractAction {
 	 * with special cases.
 	 */
 	protected double getX(View<CyNode> n) {
-		return n.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION);
+		return n.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 	}
 
 	/**
@@ -107,7 +106,7 @@ public abstract class AbstractControlAction extends AbstractAction {
 	 * with special cases.
 	 */
 	protected double getY(View<CyNode> n) {
-		return n.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION);
+		return n.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 	}
 
 	private void computeDimensions() {

@@ -28,7 +28,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 		super.setUp();
 		renderingEngineMgr = mock(RenderingEngineManager.class);
 		when(renderingEngineMgr.getDefaultVisualLexicon())
-				.thenReturn(new MinimalVisualLexicon(new NullVisualProperty("MINIMAL_ROOT",
+				.thenReturn(new BasicVisualLexicon(new NullVisualProperty("MINIMAL_ROOT",
 																			"Minimal Root Visual Property")));
 
 		TableTestSupport tblTestSupport = new TableTestSupport();
@@ -139,9 +139,9 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 		assertTrue(reader.isLockedVisualProperty(node, "nodeTransparency"));
 		assertTrue(reader.isLockedVisualProperty(node, "nodeLabelFont"));
 		assertTrue(reader.isLockedVisualProperty(node, "borderLineType"));
-		assertTrue(reader.isLockedVisualProperty(node, MinimalVisualLexicon.NODE_X_LOCATION.getIdString()));
-		assertTrue(reader.isLockedVisualProperty(node, MinimalVisualLexicon.NODE_Y_LOCATION.getIdString()));
-		assertTrue(reader.isLockedVisualProperty(node, MinimalVisualLexicon.NODE_FILL_COLOR.getIdString()));
+		assertTrue(reader.isLockedVisualProperty(node, BasicVisualLexicon.NODE_X_LOCATION.getIdString()));
+		assertTrue(reader.isLockedVisualProperty(node, BasicVisualLexicon.NODE_Y_LOCATION.getIdString()));
+		assertTrue(reader.isLockedVisualProperty(node, BasicVisualLexicon.NODE_FILL_COLOR.getIdString()));
 
 		CyEdge edge = mock(CyEdge.class);
 		assertTrue(reader.isLockedVisualProperty(edge, "width"));
@@ -153,7 +153,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
 		assertTrue(reader.isLockedVisualProperty(edge, "edgeLabelFont"));
 		assertTrue(reader.isLockedVisualProperty(edge, "edgeLineType"));
 		assertTrue(reader.isLockedVisualProperty(edge, "curved"));
-		assertTrue(reader.isLockedVisualProperty(edge, MinimalVisualLexicon.EDGE_WIDTH.getIdString()));
+		assertTrue(reader.isLockedVisualProperty(edge, BasicVisualLexicon.EDGE_WIDTH.getIdString()));
 	}
 
 	private CyNetworkView[] getViews(String file) throws Exception {

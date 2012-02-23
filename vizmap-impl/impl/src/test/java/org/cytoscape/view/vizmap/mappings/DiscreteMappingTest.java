@@ -7,7 +7,7 @@ import java.awt.Color;
 import java.awt.Paint;
 
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.junit.After;
@@ -41,7 +41,7 @@ public class DiscreteMappingTest {
 
 		assertEquals(attrName, mapping.getMappingColumnName());
 		assertEquals(String.class, mapping.getMappingColumnType());
-		assertEquals(MinimalVisualLexicon.NODE_FILL_COLOR, mapping.getVisualProperty());
+		assertEquals(BasicVisualLexicon.NODE_FILL_COLOR, mapping.getVisualProperty());
 
 		mapping.putMapValue("r", Color.RED);
 		mapping.putMapValue("g", Color.GREEN);
@@ -63,7 +63,7 @@ public class DiscreteMappingTest {
 		final Class<String> type = String.class;
 
 		final DiscreteMapping<String, Paint> mapping = new DiscreteMappingImpl<String, Paint>(attrName, type,
-				table, MinimalVisualLexicon.NODE_FILL_COLOR);
+				table, BasicVisualLexicon.NODE_FILL_COLOR);
 		
 		return mapping;
 	}

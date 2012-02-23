@@ -13,7 +13,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
@@ -47,11 +47,11 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		
 		// Create root node.
 		final NullVisualProperty minimalRoot = new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property");
-		final MinimalVisualLexicon minimalLex = new MinimalVisualLexicon(minimalRoot);
+		final BasicVisualLexicon minimalLex = new BasicVisualLexicon(minimalRoot);
 		final Set<VisualLexicon> lexSet = new HashSet<VisualLexicon>();
 		lexSet.add(minimalLex);
-		final Collection<VisualProperty<?>> nodeVP = minimalLex.getAllDescendants(MinimalVisualLexicon.NODE);
-		final Collection<VisualProperty<?>> edgeVP = minimalLex.getAllDescendants(MinimalVisualLexicon.EDGE);
+		final Collection<VisualProperty<?>> nodeVP = minimalLex.getAllDescendants(BasicVisualLexicon.NODE);
+		final Collection<VisualProperty<?>> edgeVP = minimalLex.getAllDescendants(BasicVisualLexicon.EDGE);
 		when(lexManager.getNodeVisualProperties()).thenReturn(nodeVP);
 		when(lexManager.getEdgeVisualProperties()).thenReturn(edgeVP);
 		

@@ -1,7 +1,5 @@
 package org.cytoscape.biopax.internal;
 
-import static org.cytoscape.biopax.internal.BioPaxMapper.BIOPAX_ENTITY_TYPE;
-
 import java.io.InputStream;
 
 import org.biopax.paxtools.controller.ModelUtils;
@@ -11,15 +9,10 @@ import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;

@@ -79,7 +79,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.util.intr.IntHash;
 import org.cytoscape.util.intr.IntStack;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.undo.UndoSupport;
 
 /**
@@ -877,7 +877,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_view.m_viewportChanged = true;
 		
 		// Update view model.
-		m_view.setVisualProperty(MinimalVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
+		m_view.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
 		repaint();
 	}
 
@@ -1220,8 +1220,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					// Update visual property value (x/y)
 					for (int node : selectedNodes) {
 						final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
-						dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
-						dNodeView.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
+						dNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
+						dNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
 					}
 	
 					final GraphViewChangeListener listener = m_view.m_lis[0];
@@ -1396,8 +1396,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 	
 			m_view.m_viewportChanged = true;
-			m_view.setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_X_LOCATION, m_xCenter);
-			m_view.setVisualProperty(MinimalVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_yCenter);
+			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_xCenter);
+			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_yCenter);
 			
 			repaint();
 		}

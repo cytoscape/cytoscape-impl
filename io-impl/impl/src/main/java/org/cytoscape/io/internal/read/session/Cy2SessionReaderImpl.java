@@ -86,7 +86,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
 /**
@@ -561,9 +561,9 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 						BigInteger h = nf.getHeight();
 
 						if (w != null)
-							view.setVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH, w.doubleValue());
+							view.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, w.doubleValue());
 						if (h != null)
-							view.setVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT, h.doubleValue());
+							view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, h.doubleValue());
 					}
 				}
 			}

@@ -75,7 +75,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
 
@@ -235,13 +235,13 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 							RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
 							VisualLexicon lexicon = engine.getVisualLexicon();
 							
-							Double networkWidth = VisualPropertyUtil.get(lexicon, networkView, "NETWORK_WIDTH", MinimalVisualLexicon.NETWORK, Double.class);
-							Double networkHeight = VisualPropertyUtil.get(lexicon, networkView, "NETWORK_HEIGHT", MinimalVisualLexicon.NETWORK, Double.class);
+							Double networkWidth = VisualPropertyUtil.get(lexicon, networkView, "NETWORK_WIDTH", BasicVisualLexicon.NETWORK, Double.class);
+							Double networkHeight = VisualPropertyUtil.get(lexicon, networkView, "NETWORK_HEIGHT", BasicVisualLexicon.NETWORK, Double.class);
 							
 							View<CyNode> nodeView = networkView.getNodeView(node);
 
-							Double nodeWidth = VisualPropertyUtil.get(lexicon, nodeView, "NODE_WIDTH", MinimalVisualLexicon.NODE, Double.class);
-							Double nodeHeight = VisualPropertyUtil.get(lexicon, nodeView, "NODE_HEIGHT", MinimalVisualLexicon.NODE, Double.class);
+							Double nodeWidth = VisualPropertyUtil.get(lexicon, nodeView, "NODE_WIDTH", BasicVisualLexicon.NODE, Double.class);
+							Double nodeHeight = VisualPropertyUtil.get(lexicon, nodeView, "NODE_HEIGHT", BasicVisualLexicon.NODE, Double.class);
 							double width = nodeWidth * NODE_SIZE_MULTIPLER;
 							double height = nodeHeight * NODE_SIZE_MULTIPLER;
 							double scaleFactor = Math.min(networkWidth / width,

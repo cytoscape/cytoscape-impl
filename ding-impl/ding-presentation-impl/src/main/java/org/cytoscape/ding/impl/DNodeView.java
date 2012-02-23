@@ -71,9 +71,9 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -1171,14 +1171,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setShape(((NodeShape) value));
 		} else if (vp == DVisualLexicon.NODE_SELECTED_PAINT) {
 			setSelectedPaint((Paint) value);
-		} else if (vp == MinimalVisualLexicon.NODE_SELECTED) {
+		} else if (vp == BasicVisualLexicon.NODE_SELECTED) {
 			setSelected((Boolean) value);
-		} else if (vp == MinimalVisualLexicon.NODE_VISIBLE) {
+		} else if (vp == BasicVisualLexicon.NODE_VISIBLE) {
 			if (((Boolean) value).booleanValue())
 				graphView.showGraphObject(this);
 			else
 				graphView.hideGraphObject(this);
-		} else if (vp == MinimalVisualLexicon.NODE_FILL_COLOR) {
+		} else if (vp == BasicVisualLexicon.NODE_FILL_COLOR) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			final Color borderColor = (Color) value;
@@ -1199,27 +1199,27 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setBorder(dLineType.getStroke(this.getBorderWidth()));
 		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
 			setTransparency(((Number) value).intValue());
-		} else if (vp == MinimalVisualLexicon.NODE_WIDTH) {
+		} else if (vp == BasicVisualLexicon.NODE_WIDTH) {
 			setWidth(((Number) value).doubleValue());
-		} else if (vp == MinimalVisualLexicon.NODE_HEIGHT) {
+		} else if (vp == BasicVisualLexicon.NODE_HEIGHT) {
 			setHeight(((Number) value).doubleValue());
-		} else if (vp == MinimalVisualLexicon.NODE_SIZE) {
+		} else if (vp == BasicVisualLexicon.NODE_SIZE) {
 			setWidth(((Number) value).doubleValue());
 			setHeight(((Number) value).doubleValue());
-		} else if (vp == MinimalVisualLexicon.NODE_LABEL) {
+		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
-		} else if (vp == MinimalVisualLexicon.NODE_X_LOCATION) {
+		} else if (vp == BasicVisualLexicon.NODE_X_LOCATION) {
 			setXPosition(((Number) value).doubleValue());
-		} else if (vp == MinimalVisualLexicon.NODE_Y_LOCATION) {
+		} else if (vp == BasicVisualLexicon.NODE_Y_LOCATION) {
 			setYPosition(((Number) value).doubleValue());
 		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
 			setToolTip((String) value);
-		} else if (vp == MinimalVisualLexicon.NODE_LABEL_COLOR) {
+		} else if (vp == BasicVisualLexicon.NODE_LABEL_COLOR) {
 			final Color labelColor = (Color) value;
 			final int opacity = ((Color)getTextPaint()).getAlpha();
 			final Color newColor = new Color(labelColor.getRed(), labelColor.getGreen(), labelColor.getBlue(), opacity);
 			setTextPaint(newColor);
-		} else if (vp == RichVisualLexicon.NODE_LABEL_TRANSPARENCY) {
+		} else if (vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY) {
 			final Color labelColor = (Color) getTextPaint();
 			final Integer opacity = ((Number) value).intValue();
 			if(labelColor.getAlpha() != opacity.intValue()) {
@@ -1281,7 +1281,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			CustomGraphic finalCG = newCG;
 			if (sync) {
 				// Size is locked to node size.
-				finalCG = syncSize(customGraphics, newCG, lexicon.getVisualLexiconNode(MinimalVisualLexicon.NODE_WIDTH)
+				finalCG = syncSize(customGraphics, newCG, lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH)
 						.isDepend());
 			}
 			finalCG = moveCustomGraphicsToNewPosition(finalCG, positionValue);

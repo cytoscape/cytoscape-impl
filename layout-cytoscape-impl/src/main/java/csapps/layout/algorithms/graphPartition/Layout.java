@@ -36,13 +36,14 @@
 
 package csapps.layout.algorithms.graphPartition;
 
-import cern.colt.map.OpenIntDoubleHashMap;
-import cern.colt.map.PrimeFinder;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
+import cern.colt.map.OpenIntDoubleHashMap;
+import cern.colt.map.PrimeFinder;
 
 /**
  * Class that represents the Layout of a given graph.
@@ -75,8 +76,8 @@ public class Layout {
 		// initialize current values
 		if (load_current_values) {
 			for (View<CyNode>nv: view.getNodeViews()){
-				setX(nv, nv.getVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION));
-				setY(nv, nv.getVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION));
+				setX(nv, nv.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
+				setY(nv, nv.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
 			}
 		}
 	}
@@ -86,8 +87,8 @@ public class Layout {
 	 */
 	public void applyLayout(CyNetworkView view) {
 		for (View<CyNode>nv: view.getNodeViews()){
-			nv.setVisualProperty(MinimalVisualLexicon.NODE_X_LOCATION, getX(nv));
-			nv.setVisualProperty(MinimalVisualLexicon.NODE_Y_LOCATION, getY(nv));
+			nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, getX(nv));
+			nv.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, getY(nv));
 		}
 	}
 

@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public final class VisualPropertyFilter {
 
@@ -12,8 +12,8 @@ public final class VisualPropertyFilter {
 
 	// Visual Properties which are not compatible with current rendering engine.
 	static {
-		INCOMPATIBLE_VP_SET.add(RichVisualLexicon.NODE_DEPTH);
-		INCOMPATIBLE_VP_SET.add(RichVisualLexicon.NODE_Z_LOCATION);
+		INCOMPATIBLE_VP_SET.add(BasicVisualLexicon.NODE_DEPTH);
+		INCOMPATIBLE_VP_SET.add(BasicVisualLexicon.NODE_Z_LOCATION);
 	}
 
 	

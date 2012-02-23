@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -41,8 +41,8 @@ public class PSWriter extends AbstractTask implements CyWriter {
 		this.engine = engine;
 		this.stream = stream;
 
-		width = engine.getViewModel().getVisualProperty(MinimalVisualLexicon.NETWORK_WIDTH);
-		height = engine.getViewModel().getVisualProperty(MinimalVisualLexicon.NETWORK_HEIGHT);
+		width = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
+		height = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT);
 
 		logger.debug("Post Script Writer created.");
 	}

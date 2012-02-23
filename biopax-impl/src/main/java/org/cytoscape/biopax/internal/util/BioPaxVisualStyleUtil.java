@@ -31,6 +31,9 @@
  **/
 package org.cytoscape.biopax.internal.util;
 
+import static org.cytoscape.biopax.internal.BioPaxMapper.BIOPAX_EDGE_TYPE;
+import static org.cytoscape.biopax.internal.BioPaxMapper.BIOPAX_ENTITY_TYPE;
+
 import java.awt.Color;
 import java.awt.Paint;
 
@@ -39,14 +42,10 @@ import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.ControlType;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
-
-import static org.cytoscape.biopax.internal.BioPaxMapper.*;
-
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
-import org.cytoscape.view.presentation.property.MinimalVisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.RichVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -172,14 +171,14 @@ public class BioPaxVisualStyleUtil {
 
 	
 	private void createNodeShape(VisualStyle style) {
-		style.setDefaultValue(RichVisualLexicon.NODE_SHAPE,
+		style.setDefaultValue(BasicVisualLexicon.NODE_SHAPE,
 				NodeShapeVisualProperty.ELLIPSE);
 
 		// create a discrete mapper, for mapping a biopax type to a shape
 		DiscreteMapping<String, NodeShape> shape = (DiscreteMapping<String, NodeShape>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_ENTITY_TYPE, String.class, null,
-						RichVisualLexicon.NODE_SHAPE);
+						BasicVisualLexicon.NODE_SHAPE);
 
 		// map all physical entities to circles
 		for (Class<? extends BioPAXElement> claz : BioPaxUtil.getSubclassNames(PhysicalEntity.class)) 
@@ -216,11 +215,11 @@ public class BioPaxVisualStyleUtil {
 		DiscreteMapping<String, Double> width = (DiscreteMapping<String, Double>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_ENTITY_TYPE, String.class, null,
-						MinimalVisualLexicon.NODE_WIDTH);
+						BasicVisualLexicon.NODE_WIDTH);
 		DiscreteMapping<String, Double> height = (DiscreteMapping<String, Double>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_ENTITY_TYPE, String.class, null, 
-						MinimalVisualLexicon.NODE_HEIGHT);
+						BasicVisualLexicon.NODE_HEIGHT);
 
 		// map all interactions to required size
 		for (Class c : BioPaxUtil.getSubclassNames(Interaction.class)) {
@@ -254,9 +253,9 @@ public class BioPaxVisualStyleUtil {
 		 */
 
 		// create and set node height calculator in node appearance calculator
-		style.setDefaultValue(MinimalVisualLexicon.NODE_WIDTH,
+		style.setDefaultValue(BasicVisualLexicon.NODE_WIDTH,
 				BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH);
-		style.setDefaultValue(MinimalVisualLexicon.NODE_HEIGHT,
+		style.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT,
 				BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT);
 
 		style.addVisualMappingFunction(width);
@@ -268,12 +267,12 @@ public class BioPaxVisualStyleUtil {
 		// create pass through mapper for node labels
 		style.addVisualMappingFunction(passthroughFactory
 				.createVisualMappingFunction(CyNode.NAME, String.class, null,
-						MinimalVisualLexicon.NODE_LABEL));
+						BasicVisualLexicon.NODE_LABEL));
 	}
 
 	
 	private void createNodeColor(VisualStyle style) {
-		style.setDefaultValue(MinimalVisualLexicon.NODE_FILL_COLOR,
+		style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR,
 				DEFAULT_NODE_COLOR);
 
 		// create a discrete mapper, for mapping biopax node type
@@ -281,7 +280,7 @@ public class BioPaxVisualStyleUtil {
 		DiscreteMapping<String, Paint> color = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_ENTITY_TYPE, String.class, null, 
-						MinimalVisualLexicon.NODE_FILL_COLOR);
+						BasicVisualLexicon.NODE_FILL_COLOR);
 
 		// map all complex to black
 		color.putMapValue("Complex", COMPLEX_NODE_COLOR);
@@ -290,7 +289,7 @@ public class BioPaxVisualStyleUtil {
 
 	
 	private void createNodeBorderColor(VisualStyle style) {
-		style.setDefaultValue(RichVisualLexicon.NODE_BORDER_PAINT,
+		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT,
 				DEFAULT_NODE_BORDER_COLOR);
 
 		// create a discrete mapper, for mapping biopax node type
@@ -298,7 +297,7 @@ public class BioPaxVisualStyleUtil {
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_ENTITY_TYPE, String.class, null,
-						RichVisualLexicon.NODE_BORDER_PAINT);
+						BasicVisualLexicon.NODE_BORDER_PAINT);
 
 		// map all complex to black
 		function.putMapValue("Complex", COMPLEX_NODE_BORDER_COLOR);
@@ -312,7 +311,7 @@ public class BioPaxVisualStyleUtil {
 			(DiscreteMapping<String, ArrowShape>) discreteFactory
 				.createVisualMappingFunction(
 						BIOPAX_EDGE_TYPE, String.class, null,
-						RichVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
+						BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
 
 		tgtArrowShape.putMapValue("right", ArrowShapeVisualProperty.DELTA);
 		tgtArrowShape.putMapValue("controlled", ArrowShapeVisualProperty.DELTA);
