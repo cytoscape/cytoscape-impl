@@ -8,6 +8,7 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
+import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
@@ -112,6 +113,7 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private final UndoSupport undoSupport;
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
+	private final DataSourceManager dataSourceManager;
 
 
 	//
@@ -193,7 +195,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	                     final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory,
 	                     final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory,
 	                     final VisualMappingManager visualMappingManager,
-	                     final VisualStyleFactory visualStyleFactory
+	                     final VisualStyleFactory visualStyleFactory,
+	                     final DataSourceManager dataSourceManager
 					    )
 	{
 		this.cyApplicationManager = cyApplicationManager;
@@ -231,6 +234,7 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 		this.visualMappingFunctionPassthroughFactory = visualMappingFunctionPassthroughFactory;
 		this.visualMappingManager = visualMappingManager;
 		this.visualStyleFactory = visualStyleFactory;
+		this.dataSourceManager = dataSourceManager;
 	}
 
 	//
@@ -271,4 +275,5 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	@Override public VisualMappingFunctionFactory getVisualMappingFunctionPassthroughFactory() { return visualMappingFunctionPassthroughFactory; }
 	public VisualMappingManager getVisualMappingManager() { return visualMappingManager; }
 	public VisualStyleFactory getVisualStyleFactory() { return visualStyleFactory; }
+	@Override public DataSourceManager getDataSourceManager() { return dataSourceManager; }
 }
