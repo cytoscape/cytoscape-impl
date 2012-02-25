@@ -27,27 +27,28 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
-package org.cytoscape.task.internal.session; 
+package org.cytoscape.task.internal.session;
 
-
-import org.cytoscape.session.CySessionManager; 
-import org.cytoscape.io.write.CySessionWriterManager; 
-
+import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.io.write.CySessionWriterManager;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-
 public class SaveSessionTaskFactory implements TaskFactory {
 
-	private CySessionManager sessionMgr;
-	private CySessionWriterManager writerMgr;
+	private final CySessionManager sessionMgr;
+	private final CySessionWriterManager writerMgr;
+	private final RecentlyOpenedTracker tracker;
 
-	public SaveSessionTaskFactory(CySessionWriterManager writerMgr, CySessionManager sessionMgr) {
+	public SaveSessionTaskFactory(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
+			final RecentlyOpenedTracker tracker) {
 		this.sessionMgr = sessionMgr;
 		this.writerMgr = writerMgr;
+		this.tracker = tracker;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2,new SaveSessionTask(writerMgr, sessionMgr));
+		return new TaskIterator(2, new SaveSessionTask(writerMgr, sessionMgr, tracker));
 	}
 }

@@ -1,5 +1,6 @@
 package org.cytoscape.task.internal.session;
 
+import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
@@ -15,6 +16,7 @@ public class SaveSessionTaskTest {
 	@Mock private TaskMonitor tm;
 	@Mock private CySessionManager mgr;
 	@Mock private CySessionWriterManager writerMgr;
+	@Mock private RecentlyOpenedTracker tracker;
 	
 	
 	@Before
@@ -25,7 +27,7 @@ public class SaveSessionTaskTest {
 
 	@Test(expected=NullPointerException.class)
 	public void testSaveSessionTask() throws Exception {
-		final SaveSessionTask t = new SaveSessionTask(writerMgr, mgr);
+		final SaveSessionTask t = new SaveSessionTask(writerMgr, mgr,tracker);
 		t.setTaskIterator(new TaskIterator(t));
 		
 		t.run(tm);

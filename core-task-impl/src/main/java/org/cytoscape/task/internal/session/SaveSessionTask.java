@@ -29,9 +29,9 @@
  */
 package org.cytoscape.task.internal.session;
 
-
 import java.io.File;
 
+import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriter;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySession;
@@ -39,44 +39,46 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-
 public class SaveSessionTask extends AbstractTask {
 
 	private final CySessionWriterManager writerMgr;
 	private final CySessionManager sessionMgr;
-	
+	private final RecentlyOpenedTracker tracker;
 
 	/**
 	 * setAcceleratorCombo(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
 	 */
-	public SaveSessionTask(final CySessionWriterManager writerMgr, final CySessionManager sessionMgr) {
+	public SaveSessionTask(final CySessionWriterManager writerMgr, final CySessionManager sessionMgr,
+			final RecentlyOpenedTracker tracker) {
 		super();
-		
-		if(writerMgr == null)
+
+		if (writerMgr == null)
 			throw new NullPointerException("CySessionWriterManager is null.");
-		if(sessionMgr == null)
+		if (sessionMgr == null)
 			throw new NullPointerException("CySessionManager is null.");
-		
+
 		this.writerMgr = writerMgr;
 		this.sessionMgr = sessionMgr;
+		this.tracker = tracker;
 	}
 
-	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
 		final CySession session = sessionMgr.getCurrentSession();
-		if(session == null)
+		if (session == null)
 			throw new NullPointerException("Could not find current session.");
-		
+
 		final String sessionFileName = sessionMgr.getCurrentSessionFileName();
 		taskMonitor.setProgress(0.3);
-		if(sessionFileName == null) {
-			// Could not find session file.  Save as new file.
-			insertTasksAfterCurrentTask(new SaveSessionAsTask(writerMgr, sessionMgr));
+		if (sessionFileName == null) {
+			// Could not find session file. Save as new file.
+			insertTasksAfterCurrentTask(new SaveSessionAsTask(writerMgr, sessionMgr, tracker));
 		} else {
 			final File file = new File(sessionFileName);
 			insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));
+			// Add this session file URL as the most recent file.
+			tracker.add(file.toURI().toURL());
 		}
 		taskMonitor.setProgress(1.0);
 	}

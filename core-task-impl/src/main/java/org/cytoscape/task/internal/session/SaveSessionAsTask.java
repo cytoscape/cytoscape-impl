@@ -27,9 +27,9 @@
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
-package org.cytoscape.task.internal.session; 
+package org.cytoscape.task.internal.session;
 
-
+import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CySessionWriter;
 import org.cytoscape.session.CySessionManager;
@@ -40,31 +40,36 @@ import org.cytoscape.work.Tunable;
 
 import java.io.File;
 
-
 public class SaveSessionAsTask extends AbstractTask {
 	@ProvidesTitle
 	public String getTitle() {
 		return "Save Session";
 	}
-	
-	@Tunable(description="Save Session As:", params="fileCategory=session;input=false")
+
+	@Tunable(description = "Save Session As:", params = "fileCategory=session;input=false")
 	public File file;
 
 	private final CySessionWriterManager writerMgr;
 	private final CySessionManager sessionMgr;
+	private final RecentlyOpenedTracker tracker;
 
 	/**
 	 * setAcceleratorCombo(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
 	 */
-	public SaveSessionAsTask(CySessionWriterManager writerMgr, CySessionManager sessionMgr) {
+	public SaveSessionAsTask(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
+			final RecentlyOpenedTracker tracker) {
 		super();
 		this.writerMgr = writerMgr;
 		this.sessionMgr = sessionMgr;
+		this.tracker = tracker;
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.05);
-	 	insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, sessionMgr.getCurrentSession(), file));
+		insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, sessionMgr.getCurrentSession(), file));
 		taskMonitor.setProgress(1.0);
+
+		// Add this session file URL as the most recent file.
+		tracker.add(file.toURI().toURL());
 	}
 }
