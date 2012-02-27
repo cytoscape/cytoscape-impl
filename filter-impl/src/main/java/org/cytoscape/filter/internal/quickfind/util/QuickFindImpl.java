@@ -199,7 +199,10 @@ class QuickFindImpl implements QuickFind {
 		// If all the values for the controllingAttribute are NULL, return null
 		CyTable table;
 		if (indexType == QuickFind.INDEX_NODES) {
-			CyNode node = cyNetwork.getNodeList().iterator().next();
+			CyNode node = null;
+			if (!(cyNetwork.getNodeList() == null || cyNetwork.getNodeList().size() == 0)){
+				node = cyNetwork.getNodeList().iterator().next();
+			}
 			if (node == null) {
 				return null;
 			}
