@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
@@ -19,8 +20,9 @@ public class SaveSessionAsTaskFactoryTest {
 		CySessionManager mgr = mock(CySessionManager.class);
 		CySessionWriterManager wmgr = mock(CySessionWriterManager.class);
 		RecentlyOpenedTracker tracker = mock(RecentlyOpenedTracker.class);
+		CyEventHelper cyEventHelper = mock(CyEventHelper.class);
 
-		SaveSessionAsTaskFactory factory = new SaveSessionAsTaskFactory(wmgr,mgr,tracker);
+		SaveSessionAsTaskFactory factory = new SaveSessionAsTaskFactory(wmgr,mgr,tracker, cyEventHelper);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

@@ -31,6 +31,7 @@ package org.cytoscape.task.internal.session;
 
 import java.io.File;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriter;
 import org.cytoscape.io.write.CySessionWriterManager;
@@ -44,12 +45,13 @@ public class SaveSessionTask extends AbstractTask {
 	private final CySessionWriterManager writerMgr;
 	private final CySessionManager sessionMgr;
 	private final RecentlyOpenedTracker tracker;
+	private final CyEventHelper cyEventHelper;
 
 	/**
 	 * setAcceleratorCombo(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
 	 */
 	public SaveSessionTask(final CySessionWriterManager writerMgr, final CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker) {
+			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
 		super();
 
 		if (writerMgr == null)
@@ -60,11 +62,13 @@ public class SaveSessionTask extends AbstractTask {
 		this.writerMgr = writerMgr;
 		this.sessionMgr = sessionMgr;
 		this.tracker = tracker;
+		this.cyEventHelper = cyEventHelper;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
+		
 		final CySession session = sessionMgr.getCurrentSession();
 		if (session == null)
 			throw new NullPointerException("Could not find current session.");
@@ -73,7 +77,7 @@ public class SaveSessionTask extends AbstractTask {
 		taskMonitor.setProgress(0.3);
 		if (sessionFileName == null) {
 			// Could not find session file. Save as new file.
-			insertTasksAfterCurrentTask(new SaveSessionAsTask(writerMgr, sessionMgr, tracker));
+			insertTasksAfterCurrentTask(new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 		} else {
 			final File file = new File(sessionFileName);
 			insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));

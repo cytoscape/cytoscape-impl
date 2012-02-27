@@ -29,6 +29,7 @@
  */
 package org.cytoscape.task.internal.session;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
@@ -40,15 +41,17 @@ public class SaveSessionTaskFactory implements TaskFactory {
 	private final CySessionManager sessionMgr;
 	private final CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
+	private final CyEventHelper cyEventHelper;
 
 	public SaveSessionTaskFactory(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker) {
+			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
 		this.sessionMgr = sessionMgr;
 		this.writerMgr = writerMgr;
 		this.tracker = tracker;
+		this.cyEventHelper = cyEventHelper;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new SaveSessionTask(writerMgr, sessionMgr, tracker));
+		return new TaskIterator(2, new SaveSessionTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 	}
 }

@@ -232,6 +232,7 @@ public class CySessionManagerImpl implements CySessionManager {
 
 	@Override
 	public void setCurrentSession(CySession sess, String fileName) {
+		
 		boolean emptySession = sess == null;
 
 		// Always remove the current session first

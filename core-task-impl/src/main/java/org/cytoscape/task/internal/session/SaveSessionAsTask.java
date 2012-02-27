@@ -29,16 +29,19 @@
  */
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CySessionWriter;
+import org.cytoscape.io.write.CySessionWriterManager;
+import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-
-import java.io.File;
 
 public class SaveSessionAsTask extends AbstractTask {
 	@ProvidesTitle
@@ -52,23 +55,29 @@ public class SaveSessionAsTask extends AbstractTask {
 	private final CySessionWriterManager writerMgr;
 	private final CySessionManager sessionMgr;
 	private final RecentlyOpenedTracker tracker;
-
+	private final CyEventHelper cyEventHelper;
+	
 	/**
 	 * setAcceleratorCombo(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
 	 */
 	public SaveSessionAsTask(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker) {
+			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
 		super();
 		this.writerMgr = writerMgr;
 		this.sessionMgr = sessionMgr;
 		this.tracker = tracker;
+		this.cyEventHelper = cyEventHelper;
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.05);
-		insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, sessionMgr.getCurrentSession(), file));
+		final CySession session = sessionMgr.getCurrentSession();
+		insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));
 		taskMonitor.setProgress(1.0);
-
+		
+		// Fire event to tell others session had been saved to a file.
+		cyEventHelper.fireEvent(new SessionSavedEvent(this, session, file.getAbsolutePath()));
+		
 		// Add this session file URL as the most recent file.
 		tracker.add(file.toURI().toURL());
 	}

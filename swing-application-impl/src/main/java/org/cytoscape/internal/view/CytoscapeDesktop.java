@@ -63,6 +63,11 @@ import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.session.events.SessionSavedEvent;
+import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,9 +76,11 @@ import org.slf4j.LoggerFactory;
 /**
  * The CytoscapeDesktop is the central Window for working with Cytoscape
  */
-public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener {
+public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener {
 
 	private final static long serialVersionUID = 1202339866271348L;
+	
+	private static final String TITLE_PREFIX_STRING ="Session: ";
 	
 	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1200, 850);
 	private static final int DEF_DIVIDER_LOATION = 450;
@@ -100,7 +107,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 * Tabbed/InternalFrame/ExternalFrame
 	 */
 	protected NetworkViewManager networkViewManager;
-
+	
 
 	//
 	// CytoPanel Variables
@@ -120,9 +127,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	/**
 	 * Creates a new CytoscapeDesktop object.
 	 */
-	public CytoscapeDesktop(CytoscapeMenus cyMenus, NetworkViewManager networkViewManager, NetworkPanel networkPanel, 
+	public CytoscapeDesktop(CytoscapeMenus cyMenus, NetworkViewManager networkViewManager, NetworkPanel networkPanel,
 			CyShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager) {
-		super("Cytoscape Desktop (New Session)");
+		super(TITLE_PREFIX_STRING + "New Session");
 
 		this.cyMenus = cyMenus;
 		this.networkViewManager = networkViewManager;
@@ -411,5 +418,19 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	public void handleEvent(CyStartEvent e) {
 		this.setVisible(true);
 		this.toFront();
+	}
+
+	@Override
+	public void handleEvent(SessionLoadedEvent e) {
+		// Update window title
+		final String sessionName = e.getLoadedFileName();		
+		this.setTitle(TITLE_PREFIX_STRING + sessionName);
+	}
+
+	@Override
+	public void handleEvent(SessionSavedEvent e) {
+		// Update window title
+		final String sessionName = e.getSavedFileName();
+		this.setTitle(TITLE_PREFIX_STRING + sessionName);
 	}
 }
