@@ -79,7 +79,6 @@ public class XorPanel extends JPanel {
 		public void notifyDependents() { }
 		public void addDependent(GUITunableHandler gh) { }
 		public String getDependency() { return null; }
-		public void handleDependents(){}
 		public void resetValue(){}
 
 		public void checkDependency(String name, String state) {
@@ -99,6 +98,12 @@ public class XorPanel extends JPanel {
 		public String getName() { return null; }
 		public JPanel getJPanel() { return null; }
 		public void handle() {}
+		public void update() {}
+		public void notifyChangeListeners() {}
+		public void addChangeListener(GUITunableHandler gh) {}
+		public String[] getChangeSources() { return null; }
+		public String[] listenForChange() { return null; }
+		public void changeOccurred(final String name, final String state){}
 		public String getState() {return null;}
 		public void returnPanel() {}
 	}

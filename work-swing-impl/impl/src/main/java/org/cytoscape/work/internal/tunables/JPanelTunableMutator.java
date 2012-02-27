@@ -90,7 +90,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		List<GUITunableHandler> handlers = findHandlers(objectWithTunables); 
 
 		for (final GUITunableHandler h : handlers)
-			h.handleDependents();
+			h.handle();
 
 		return validateTunableInput(objectWithTunables); 
 	}
@@ -175,6 +175,18 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 						if (gh2.getName().equals(dep)) {
 							gh2.addDependent(gh);
 							break;
+						}
+					}
+				}
+
+				// hook up change listeners
+				for ( String cs : gh.getChangeSources() ) {
+					if (cs != null && !cs.equals("")) {
+						for (GUITunableHandler gh2 : handlers) {
+							if (gh2.getName().equals(cs)) {
+								gh2.addChangeListener(gh);
+								break;
+							}
 						}
 					}
 				}

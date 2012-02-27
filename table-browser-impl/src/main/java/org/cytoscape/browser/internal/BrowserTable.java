@@ -242,12 +242,14 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		for(CyRow row: allRows) {
 			final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
 			if(targetRows.contains(row)) {
-//				System.out.println("=======> selected: " + row.get(CyTableEntry.NAME, String.class));
+				System.out.println("=======> selected: " + row.get(CyTableEntry.NAME, String.class));
 				row.set(CyNetwork.SELECTED, true);
 				continue;
 			}
-			if(val)
+			if(val) {
+				System.out.println("=======> UNSELECTED: " + row.get(CyTableEntry.NAME, String.class));
 				row.set(CyNetwork.SELECTED, false);
+			}
 		}
 		
 		final CyNetworkView curView = applicationManager.getCurrentNetworkView();

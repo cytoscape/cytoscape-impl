@@ -20,7 +20,6 @@ import java.awt.*;
  */
 public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 	private JComboBox combobox;
-	private ListSingleSelection<T> listSingleSelection;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type
@@ -43,14 +42,17 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 		init();
 	}
 
-	private void init() {
+	private ListSingleSelection<T> getSingleSelection() {
 		try {
-			listSingleSelection = (ListSingleSelection<T>)getValue();
+			return (ListSingleSelection<T>)getValue();
 		} catch(final Exception e) {
-			e.printStackTrace();
+			throw new NullPointerException("bad ListSingleSelection object");	
 		}
+	}
 
-		if ( listSingleSelection.getPossibleValues().isEmpty() ) {
+	private void init() {
+
+		if ( getSingleSelection().getPossibleValues().isEmpty() ) {
 			panel = new JPanel();
 			combobox = null;
 			return;
@@ -66,12 +68,18 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 		textArea.setEditable(false);
 
 		//add list's items to the combobox
-		combobox = new JComboBox(listSingleSelection.getPossibleValues().toArray());
+		combobox = new JComboBox(getSingleSelection().getPossibleValues().toArray());
 		combobox.setFont(new Font("sansserif", Font.PLAIN, 11));
 		combobox.addActionListener(this);
 		panel.add(combobox, BorderLayout.EAST);
 		
-		combobox.getModel().setSelectedItem(listSingleSelection.getSelectedValue());
+		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
+	}
+
+	public void update() {
+		combobox.removeAllItems();
+		for ( T value : getSingleSelection().getPossibleValues() ) 
+			combobox.addItem(value);
 	}
 
 	/**
@@ -84,7 +92,10 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 		
 		final T selectedItem = (T)combobox.getSelectedItem();
 		if (selectedItem != null) {
-			listSingleSelection.setSelectedValue(selectedItem);
+			getSingleSelection().setSelectedValue(selectedItem);
+			try {
+			setValue(null);
+			} catch (Exception e) { e.printStackTrace(); }
 		}
 	}
 
@@ -96,6 +107,10 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 			return "";
 
 		final T selectedItem = (T)combobox.getSelectedItem();
-		return selectedItem == null ? "" : selectedItem.toString();
+		if ( selectedItem == null )
+			return "";
+
+		getSingleSelection().setSelectedValue(selectedItem);
+		return selectedItem.toString();
 	}
 }
