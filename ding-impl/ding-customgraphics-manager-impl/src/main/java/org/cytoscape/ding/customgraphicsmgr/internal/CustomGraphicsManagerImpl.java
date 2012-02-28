@@ -250,23 +250,12 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 */
 	@Override
 	public void handleEvent(final SessionAboutToBeSavedEvent e) {
-		// Create Task
-		final PersistImageTaskFactory factory = new PersistImageTaskFactory(imageHomeDirectory, this);
+		final SaveGraphicsToSessionTaskFactory factory = new SaveGraphicsToSessionTaskFactory(imageHomeDirectory, this, e);
+
 		try {
 			taskManager.execute(factory);
 		} catch (Exception ex) {
 			logger.error("Could not save images to .", ex);
-		}
-		// Add it to the apps list
-		final List<File> fileList = new ArrayList<File>();
-		final String[] fileArray = imageHomeDirectory.list();
-		for(final String file: fileArray)
-			fileList.add(new File(imageHomeDirectory, file));
-
-		try {
-			e.addAppFiles(APP_NAME, fileList);
-		} catch (Exception ex) {
-			logger.error("Error adding " + SESSION_IMAGE_DIR_NAME + " file to be saved in the session.", ex);
 		}
 	}
 
