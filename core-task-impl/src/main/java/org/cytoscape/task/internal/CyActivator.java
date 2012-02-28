@@ -297,6 +297,8 @@ public class CyActivator extends AbstractCyActivator {
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty("command","delete selected nodes and edges");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty("commandNamespace","network");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty("menuGravity","5.0");
+		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty("accelerator","DELETE");
+		
 		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,TaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
 
 		Properties selectAllTaskFactoryProps = new Properties();
