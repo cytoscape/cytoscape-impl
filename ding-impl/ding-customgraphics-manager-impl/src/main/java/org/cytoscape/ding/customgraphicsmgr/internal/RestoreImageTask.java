@@ -28,45 +28,45 @@ import org.cytoscape.ding.customgraphics.Taggable;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
-import org.cytoscape.property.CyProperty;
+import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RestoreImageTask implements Task {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(RestoreImageTask.class);
 
 	private final CustomGraphicsManagerImpl manager;
-	
+
 	private final ExecutorService imageLoaderService;
-	
+
 	private static final int TIMEOUT = 1000;
 	private static final int NUM_THREADS = 8;
-	
+
 	private static final String METADATA_FILE = "image_metadata.props";
 
 	private File imageHomeDirectory;
 	
+	private final CyEventHelper eventHelper;
 
 	// For image I/O, PNG is used as bitmap image format.
 	private static final String IMAGE_EXT = "png";
-	
+
 	// Default vectors
-	private static final Class<?>[] DEF_VECTORS = {
-			GradientRoundRectangleLayer.class, GradientOvalLayer.class };
-	
-	
-	RestoreImageTask(final File imageLocaiton, final CustomGraphicsManagerImpl manager) {
+	private static final Class<?>[] DEF_VECTORS = { GradientRoundRectangleLayer.class, GradientOvalLayer.class };
+
+	RestoreImageTask(final File imageLocaiton, final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
 		this.manager = manager;
-		
+		this.eventHelper = eventHelper;
+
 		// For loading images in parallel.
 		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
-		
 		this.imageHomeDirectory = imageLocaiton;
 	}
-	
+
 	private void restoreDefaultVectorImageObjects() {
 
 		for (Class<?> cls : DEF_VECTORS) {
@@ -74,8 +74,11 @@ public class RestoreImageTask implements Task {
 			try {
 				Object obj = cls.newInstance();
 				if (obj instanceof CyCustomGraphics) {
-					manager.graphicsMap.put( ((CyCustomGraphics) obj).getIdentifier(), (CyCustomGraphics) obj);
-					manager.isUsedCustomGraphics.put((CyCustomGraphics) obj, false);
+					final CyCustomGraphics<?> cg = (CyCustomGraphics) obj;
+					if (manager.graphicsMap.containsKey(cg.getIdentifier()) == false) {
+						manager.graphicsMap.put(cg.getIdentifier(), cg);
+						manager.isUsedCustomGraphics.put(cg, false);
+					}
 				}
 			} catch (InstantiationException e) {
 				throw new RuntimeException(e);
@@ -99,13 +102,12 @@ public class RestoreImageTask implements Task {
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
 		logger.info("Image saving process finished in " + sec + " sec.");
-
+		
+		eventHelper.fireEvent(new CustomGraphicsLibraryUpdatedEvent(manager));
 	}
-	
-	
+
 	private void restoreImages() {
-		final CompletionService<BufferedImage> cs = new ExecutorCompletionService<BufferedImage>(
-				imageLoaderService);
+		final CompletionService<BufferedImage> cs = new ExecutorCompletionService<BufferedImage>(imageLoaderService);
 
 		imageHomeDirectory.mkdir();
 
@@ -143,16 +145,14 @@ public class RestoreImageTask implements Task {
 					if (name.contains("___"))
 						name = name.replace("___", ",");
 
-					Future<BufferedImage> f = cs.submit(new LoadImageTask(file
-							.toURI().toURL()));
+					Future<BufferedImage> f = cs.submit(new LoadImageTask(file.toURI().toURL()));
 					fMap.put(f, name);
 
 					String tagStr = null;
 					if (imageProps.length > 3) {
 						tagStr = imageProps[3];
 						final Set<String> tags = new TreeSet<String>();
-						String[] tagParts = tagStr.split("\\"
-								+ AbstractDCustomGraphics.LIST_DELIMITER);
+						String[] tagParts = tagStr.split("\\" + AbstractDCustomGraphics.LIST_DELIMITER);
 						for (String tag : tagParts)
 							tags.add(tag.trim());
 
@@ -166,9 +166,9 @@ public class RestoreImageTask implements Task {
 					final BufferedImage image = f.get();
 					if (image == null)
 						continue;
+
+					final CyCustomGraphics<?> cg = new URLImageCustomGraphics(fMap.get(f), image);
 					
-					final CyCustomGraphics cg = new URLImageCustomGraphics(
-							fMap.get(f), image);
 					if (cg instanceof Taggable && metatagMap.get(f) != null)
 						((Taggable) cg).getTags().addAll(metatagMap.get(f));
 
@@ -183,7 +183,6 @@ public class RestoreImageTask implements Task {
 						continue;
 					}
 				}
-
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			} catch (InterruptedException e) {
@@ -203,17 +202,15 @@ public class RestoreImageTask implements Task {
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
 		logger.info("Image loading process finished in " + sec + " sec.");
-		logger.info("Currently,  " + (manager.graphicsMap.size() - 1)
-				+ " images are available.");
+		logger.info("Currently,  " + (manager.graphicsMap.size() - 1) + " images are available.");
 	}
-
 
 	@Override
 	public void cancel() {
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	private final class LoadImageTask implements Callable<BufferedImage> {
 
 		private final URL imageURL;
@@ -221,7 +218,6 @@ public class RestoreImageTask implements Task {
 		public LoadImageTask(final URL imageURL) {
 			this.imageURL = imageURL;
 		}
-
 
 		public BufferedImage call() throws Exception {
 			if (imageURL == null)
@@ -231,6 +227,5 @@ public class RestoreImageTask implements Task {
 		}
 
 	}
-
 
 }

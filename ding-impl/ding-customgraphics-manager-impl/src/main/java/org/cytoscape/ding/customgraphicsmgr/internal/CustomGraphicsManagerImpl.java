@@ -1,6 +1,8 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,21 +14,27 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.imageio.ImageIO;
+
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, CyShutdownListener,
-		SessionAboutToBeSavedListener {
+		SessionAboutToBeSavedListener, SessionLoadedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CustomGraphicsManagerImpl.class);
 
@@ -45,15 +53,18 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private final File imageHomeDirectory;
 	protected final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
 	private final DialogTaskManager taskManager;
+	
+	private final CyEventHelper eventHelper;
 
 	/**
 	 * Creates an image pool object and restore existing images from user
 	 * resource directory.
 	 */
 	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final DialogTaskManager taskManager,
-			final CyApplicationConfiguration config) {
+			final CyApplicationConfiguration config, final CyEventHelper eventHelper) {
 
 		this.taskManager = taskManager;
+		this.eventHelper = eventHelper;
 		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
 
 		if (properties == null)
@@ -71,7 +82,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		graphicsMap.put(NULL.getIdentifier(), NULL);
 		this.isUsedCustomGraphics.put(NULL, false);
 
-		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(imageHomeDirectory, this);
+		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(imageHomeDirectory, this, eventHelper);
 		taskManager.execute(taskFactory);
 	}
 
@@ -256,6 +267,28 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			e.addAppFiles(APP_NAME, fileList);
 		} catch (Exception ex) {
 			logger.error("Error adding " + SESSION_IMAGE_DIR_NAME + " file to be saved in the session.", ex);
+		}
+	}
+
+	@Override
+	public void handleEvent(SessionLoadedEvent e) {
+		// Add new images
+		final CySession sess = e.getLoadedSession();
+
+		if (sess != null) {
+			final Map<String, List<File>> filesMap = sess.getAppFileListMap();
+
+			if (filesMap != null) {
+				final List<File> files = filesMap.get(APP_NAME);
+				// TODO: 2.x compatibility
+				
+				if (files != null && files.size() != 0) {
+					// get parent directory
+					final File parent = files.get(0).getParentFile();
+					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(parent, this, eventHelper);
+					taskManager.execute(taskFactory);
+				}
+			}
 		}
 	}
 }

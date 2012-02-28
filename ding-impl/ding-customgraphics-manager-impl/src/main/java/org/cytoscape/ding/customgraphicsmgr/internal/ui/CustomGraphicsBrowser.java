@@ -6,10 +6,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -20,45 +17,40 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
+import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedListener;
 import org.jdesktop.swingx.JXList;
 
 /**
  * Display list of images available as custom graphics
  * 
- * @author kono
  */
-public class CustomGraphicsBrowser extends JXList implements PropertyChangeListener {
+public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibraryUpdatedListener {
 
 	private static final long serialVersionUID = -8342056297304400824L;
 
 	private DefaultListModel model;
 	private final CustomGraphicsManager pool;
-	
+
 	// For drag and drop
 	private static DataFlavor urlFlavor;
-	
+
 	static {
 		try {
-			urlFlavor = new DataFlavor(
-					"application/x-java-url; class=java.net.URL");
+			urlFlavor = new DataFlavor("application/x-java-url; class=java.net.URL");
 		} catch (ClassNotFoundException cnfe) {
 			cnfe.printStackTrace();
 		}
 	}
-	
 
 	/**
 	 * Creates new form CustomGraphicsBrowserPanel
-	 * 
-	 * @throws IOException
 	 */
-	public CustomGraphicsBrowser(final CustomGraphicsManager manager) throws IOException {
+	public CustomGraphicsBrowser(final CustomGraphicsManager manager) {
 		pool = manager;
 
 		initComponents();
 		addAllImages();
-
-		//Cytoscape.getPropertyChangeSupport().addPropertyChangeListener(Cytoscape.SESSION_LOADED, this);
 	}
 
 	/**
@@ -77,8 +69,7 @@ public class CustomGraphicsBrowser extends JXList implements PropertyChangeListe
 		this.setDropTarget(new URLDropTarget());
 
 	}// </editor-fold>
-	
-	
+
 	public void removeCustomGraphics(final CyCustomGraphics cg) {
 		model.removeElement(cg);
 	}
@@ -107,7 +98,6 @@ public class CustomGraphicsBrowser extends JXList implements PropertyChangeListe
 			e.printStackTrace();
 		}
 	}
-	
 
 	/**
 	 * D & D
@@ -123,14 +113,13 @@ public class CustomGraphicsBrowser extends JXList implements PropertyChangeListe
 
 			dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 			final Transferable trans = dtde.getTransferable();
-			//dumpDataFlavors(trans);
+			// dumpDataFlavors(trans);
 			boolean gotData = false;
 			try {
-				
+
 				if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-					
-					final List<File> fileList = (List<File>) trans
-							.getTransferData(DataFlavor.javaFileListFlavor);
+
+					final List<File> fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
 
 					for (File file : fileList) {
 						addCustomGraphics(file.toURI().toURL().toString());
@@ -142,9 +131,8 @@ public class CustomGraphicsBrowser extends JXList implements PropertyChangeListe
 					addCustomGraphics(url.toString());
 					gotData = true;
 				} else if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-					String s = (String) trans
-							.getTransferData(DataFlavor.stringFlavor);
-					
+					String s = (String) trans.getTransferData(DataFlavor.stringFlavor);
+
 					URL url = new URL(s);
 					addCustomGraphics(url.toString());
 					gotData = true;
@@ -167,12 +155,15 @@ public class CustomGraphicsBrowser extends JXList implements PropertyChangeListe
 
 	}
 
-	public void propertyChange(PropertyChangeEvent e) {
+	
+	@Override
+	public void handleEvent(CustomGraphicsLibraryUpdatedEvent e) {
 		// Clear the model, and build new List from current pool of graphics
 		model.removeAllElements();
 		model.clear();
-		
+
 		addAllImages();
+
 	}
 
 }

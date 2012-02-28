@@ -35,7 +35,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 	
 	
 	// List of graphics available
-	private CustomGraphicsBrowser browser;
+	private final CustomGraphicsBrowser browser;
 	
 	// Panel for displaying actual size image
 	private final CustomGraphicsDetailPanel detail;
@@ -49,17 +49,24 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 	 * @param parent
 	 * @param modal
 	 */
-	public CustomGraphicsManagerDialog(final CustomGraphicsManager manager, final CyApplicationManager appManager) {
+	public CustomGraphicsManagerDialog(final CustomGraphicsManager manager, final CyApplicationManager appManager,
+			final CustomGraphicsBrowser browser) {
 		super();
+		if (browser == null)
+			throw new NullPointerException("CustomGraphicsBrowser is null.");
+
 		this.setModal(false);
 		this.manager = manager;
 		initComponents();
-		try {
-			browser = new CustomGraphicsBrowser(this.manager);
-		} catch (IOException e) {
-			logger.error("Could not get an instance of CustomGraphicsBrowser.", e);
-		}
-		
+
+		this.browser = browser;
+		// try {
+		// browser = new CustomGraphicsBrowser(this.manager);
+		// } catch (IOException e) {
+		// logger.error("Could not get an instance of CustomGraphicsBrowser.",
+		// e);
+		// }
+
 		detail = new CustomGraphicsDetailPanel(appManager);
 
 		this.leftScrollPane.setViewportView(browser);

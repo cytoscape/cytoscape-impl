@@ -38,9 +38,12 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,6 +95,8 @@ import org.cytoscape.work.TaskMonitor;
  * Session reader implementation that handles the Cytoscape 3 session format.
  */
 public class Cy3SessionReaderImpl extends AbstractSessionReader {
+	
+	private static final String TEMP_DIR = "java.io.tmpdir";
 
 	public static final Pattern NETWORK_PATTERN = Pattern.compile(".*/"+NETWORKS_FOLDER+"(([^/]+)[.]xgmml)");
 	public static final Pattern NETWORK_NAME_PATTERN = Pattern.compile("(\\d+)(_[^_]+)?");
@@ -355,27 +360,23 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		String appName = items[2];
 		String fileName = items[items.length - 1];
 
-		String tmpDir = System.getProperty("java.io.tmpdir");
-		File theFile = new File(tmpDir, fileName);
+		final String tmpDir = System.getProperty(TEMP_DIR);
+		final File theFile = new File(tmpDir, fileName);
 
 		try {
-			// Write input stream into tmp file
-			BufferedWriter out = null;
-			BufferedReader in = null;
+			// Write input stream into temp file (Use binary streams to support images/movies/etc.)
+			final BufferedInputStream bin = new BufferedInputStream(is);
+			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(theFile));
+			final byte buf[] = new byte[256];
+			
+			int len;
+			while ((len = bin.read(buf)) != -1)
+				output.write(buf, 0, len);
+			
+			output.flush();
+			output.close();
+			bin.close();
 
-			in = new BufferedReader(new InputStreamReader(is));
-			out = new BufferedWriter(new FileWriter(theFile));
-
-			// Write to tmp file
-			String inputLine;
-
-			while ((inputLine = in.readLine()) != null) {
-				out.write(inputLine);
-				out.newLine();
-			}
-
-			in.close();
-			out.close();
 		} catch (IOException e) {
 			logger.error("Error: read from zip: " + entryName, e);
 			return;
