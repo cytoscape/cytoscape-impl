@@ -29,10 +29,7 @@
 package org.cytoscape.task.internal.loadnetwork;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -79,7 +76,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 		}
 		verify(netmgr).addNetwork(net);
 		// verify(networkViewManager).addNetworkView(view);
-		verify(tm).setProgress(1.0);
+		verify(tm,atLeast(1)).setProgress(1.0);
 	}
 
 	@Test(expected = Exception.class)
