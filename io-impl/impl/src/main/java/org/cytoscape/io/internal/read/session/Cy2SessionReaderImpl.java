@@ -91,6 +91,9 @@ import org.cytoscape.work.TaskMonitor;
 
 /**
  * Session reader implementation that handles the Cytoscape 2.x session format.
+ * 
+ * @see org.cytoscape.io.internal.read.session.Cy3SessionReaderImpl
+ * @see org.cytoscape.io.internal.write.session.SessionWriterImpl
  */
 public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	

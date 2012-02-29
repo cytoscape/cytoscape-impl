@@ -30,7 +30,6 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

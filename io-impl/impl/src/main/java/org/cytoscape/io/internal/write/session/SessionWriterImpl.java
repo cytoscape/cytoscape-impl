@@ -91,20 +91,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Write session states into files.<br>
- * Basic functions of this class are:<br>
- * <ul>
- * <li> 1. Create network files</li>
- * <li> 2. Create session state file</li>
- * <li> 3. Get properties file locations</li>
- * <li> 4. Zip them into one session file "*.cys" </li>
- * </ul>
+ * Write session states into files and zip them into one session file "*.cys".
  *
- * @version 1.0
- * @since 2.3
- * @see cytoscape.data.readers.XGMMLReader
- * @author kono
- *
+ * @see org.cytoscape.io.internal.read.session.Cy2SessionReaderImpl
+ * @see org.cytoscape.io.internal.read.session.Cy3SessionReaderImpl
  */
 public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
