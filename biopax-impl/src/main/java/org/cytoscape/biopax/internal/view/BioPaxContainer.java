@@ -138,6 +138,9 @@ public class BioPaxContainer extends JPanel {
     public void showLegend() {
         CardLayout cl = (CardLayout)(cards.getLayout());
         CyNetwork network = applicationManager.getCurrentNetwork();
+        if(network == null)
+        	return;
+        	
         CyRow row = network.getRow(network);
         Boolean isBioPaxNetwork = row.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
         if (isBioPaxNetwork != null) {
