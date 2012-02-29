@@ -39,6 +39,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
@@ -54,12 +55,25 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 	private final CyNetworkViewFactory viewFactory;
 	private final CyLayoutAlgorithmManager layouts;
 	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmm;
+	private final CyNetworkView sourceView;
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport, final CyNetwork networkModel,
 	                             final CyNetworkViewFactory viewFactory,
 	                             final CyNetworkViewManager networkViewManager,
 	                             final CyLayoutAlgorithmManager layouts,
 	                             final CyEventHelper eventHelper)
+	{
+		this(undoSupport,networkModel,viewFactory,networkViewManager,layouts,eventHelper,null,null);
+	}
+
+	public CreateNetworkViewTask(final UndoSupport undoSupport, final CyNetwork networkModel,
+	                             final CyNetworkViewFactory viewFactory,
+	                             final CyNetworkViewManager networkViewManager,
+	                             final CyLayoutAlgorithmManager layouts,
+	                             final CyEventHelper eventHelper,
+								 final VisualMappingManager vmm,
+								 final CyNetworkView sourceView)
 	{
 		super(networkModel);
 
@@ -68,6 +82,8 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 		this.networkViewManager = networkViewManager;
 		this.layouts            = layouts;
 		this.eventHelper        = eventHelper;
+		this.vmm                = vmm;
+		this.sourceView         = sourceView;
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -85,9 +101,14 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 			
 			networkViewManager.addNetworkView(view);
 			taskMonitor.setProgress(0.9d);
-			
-			// Apply layout only when it is necessary.
-			if (layouts != null)
+		
+			// If a source view has been provided, use that to set the X/Y positions of the 
+			// nodes along with the visual style.
+			if ( sourceView != null )	
+				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, view, sourceView, null));
+
+			// Otherwise check if layouts have been provided.
+			else if (layouts != null)
 				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(view, layouts));
 
 		} catch (Exception e) {

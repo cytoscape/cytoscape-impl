@@ -43,11 +43,15 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.model.events.NetworkViewAddedEvent;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 import org.slf4j.Logger;
@@ -64,7 +68,9 @@ import java.util.Set;
  */
 public class CyApplicationManagerImpl implements CyApplicationManager,
                                                  NetworkAboutToBeDestroyedListener,
-                                                 NetworkViewAboutToBeDestroyedListener {
+                                                 NetworkViewAboutToBeDestroyedListener,
+												 NetworkAddedListener,
+												 NetworkViewAddedListener {
 	private static final Logger logger = LoggerFactory.getLogger(CyApplicationManagerImpl.class);
 	private final CyEventHelper cyEventHelper;
 	private final CyNetworkManager networkManager;
@@ -91,6 +97,18 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		currentNetwork = null;
 		currentNetworkView = null;
 		this.currentRenderer = null;
+	}
+
+	@Override
+	public void handleEvent(final NetworkViewAddedEvent event) {
+		if ( !event.getNetworkView().equals( currentNetworkView ) )
+			setCurrentNetworkView( event.getNetworkView() );
+	}
+
+	@Override
+	public void handleEvent(final NetworkAddedEvent event) {
+		if ( !event.getNetwork().equals( currentNetwork ) )
+			setCurrentNetwork( event.getNetwork() );
 	}
 
 	@Override

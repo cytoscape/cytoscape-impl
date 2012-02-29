@@ -81,8 +81,6 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.8);
 		networkViewManager.addNetworkView(view);
-		tm.setProgress(0.9);
-		appManager.setCurrentNetworkView(view);
 		tm.setProgress(1.0);
 	}
 

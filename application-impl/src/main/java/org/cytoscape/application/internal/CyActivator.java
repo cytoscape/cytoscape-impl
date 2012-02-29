@@ -15,7 +15,9 @@ import org.cytoscape.application.internal.CyVersionImpl;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.property.CyProperty;
 
 
@@ -50,6 +52,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,cyApplicationManager,CyApplicationManager.class, new Properties());
 		registerService(bc,cyApplicationManager,NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,cyApplicationManager,NetworkViewAboutToBeDestroyedListener.class, new Properties());
+		registerService(bc,cyApplicationManager,NetworkAddedListener.class, new Properties());
+		registerService(bc,cyApplicationManager,NetworkViewAddedListener.class, new Properties());
 		registerAllServices(bc,cytoscapeShutdown, new Properties());
 		registerAllServices(bc,cytoscapeVersion, new Properties());
 		registerAllServices(bc,cyApplicationConfiguration, new Properties());

@@ -124,69 +124,12 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
 
-		// Set the new network as current network
-		appManager.setCurrentNetwork(newNet);
-		
-		// No view is available for parent network.
-		if (sourceView == null) {
-			// inserted first, happens second
-			final Task setCurrentNetworkView = new SetCurrentNetworkViewTask(newNet); 
-			insertTasksAfterCurrentTask(setCurrentNetworkView);
-			
-			// inserted second, happens first
-			final Task createViewTask = new CreateNetworkViewTask(undoSupport, newNet, viewFactory,
-			                                                      networkViewManager, null, eventHelper);
-			insertTasksAfterCurrentTask(createViewTask);
-			return;
-		}
-		tm.setProgress(0.7);
+		// create the view in a separate task
+		final Task createViewTask = new CreateNetworkViewTask(undoSupport, newNet, viewFactory,
+		                                                      networkViewManager, null, eventHelper, 
+		                                                      vmm, sourceView);
+		insertTasksAfterCurrentTask(createViewTask);
 
-		// create new view
-		final CyNetworkView newView = viewFactory.createNetworkView(newNet);
-
-//		networkViewManager.addNetworkView(newView);
-		tm.setProgress(0.8);
-
-		// copy node location only.
-		for (View<CyNode> newNodeView : newView.getNodeViews()) {
-			View<CyNode> origNodeView = sourceView.getNodeView(parentNetwork.getNode(newNodeView.getModel().getIndex()));
-			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,
-					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
-			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,
-					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
-
-			// FIXME
-			// // Set lock (if necessary)
-			// for ( VisualProperty<?> vp : vpSet ) {
-			// if (origNodeView.isValueLocked(vp) )
-			// newNodeView.setLockedValue(vp,
-			// origNodeView.getVisualProperty(vp));
-			// }
-		}
-		tm.setProgress(0.9);
-
-		final VisualStyle style = vmm.getVisualStyle(sourceView);
-		vmm.setVisualStyle(style, newView);
-		style.apply(newView);
-		newView.fitContent();
-		
-		networkViewManager.addNetworkView(newView);
-		appManager.setCurrentNetworkView(newView);
 		tm.setProgress(1.0);
-	}
-
-	private class SetCurrentNetworkViewTask extends AbstractTask {
-		CyNetwork net;
-		SetCurrentNetworkViewTask(CyNetwork net) {
-			this.net = net;
-		}
-		public void run(TaskMonitor tm) {
-			tm.setProgress(0.0);
-			final CyNetworkView view = networkViewManager.getNetworkView(net);			
-			tm.setProgress(0.5);
-			if ( view != null )
-				appManager.setCurrentNetworkView( view );
-			tm.setProgress(1.0);
-		}
 	}
 }

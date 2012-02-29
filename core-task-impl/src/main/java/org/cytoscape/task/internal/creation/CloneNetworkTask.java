@@ -59,6 +59,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private static final Logger logger = LoggerFactory.getLogger(CloneNetworkTask.class);
 
 	private Map<CyNode, CyNode> orig2NewNodeMap;
+	private Map<CyNode, CyNode> new2OrigNodeMap;
 
 	private final VisualMappingManager vmm;
 	private final CyNetworkFactory netFactory;
@@ -91,22 +92,12 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
 
-		CyNetworkView newView = null;
-		
-		if (origView != null)
-			newView = copyView(newNet, origView);
-		
-		tm.setProgress(0.9);
+		if (origView != null) {
+	        final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
+			networkViewManager.addNetworkView(newView);
+			insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, newView, origView, new2OrigNodeMap));
+		}
 
-		orig2NewNodeMap.clear();
-		orig2NewNodeMap = null;
-		
-		if (newView != null)
-			appMgr.setCurrentNetworkView(newView);
-		else
-			appMgr.setCurrentNetwork(newNet);
-		
-		logger.debug("Cloning finished in " + (System.currentTimeMillis() - start) + " msec.");
 		tm.setProgress(1.0);
 	}
 
@@ -131,9 +122,11 @@ public class CloneNetworkTask extends AbstractCreationTask {
 
 	private void cloneNodes(CyNetwork origNet, CyNetwork newNet) {
 		orig2NewNodeMap = new HashMap<CyNode, CyNode>();
+		new2OrigNodeMap = new HashMap<CyNode, CyNode>();
 		for (final CyNode origNode : origNet.getNodeList()) {
 			final CyNode newNode = newNet.addNode();
 			orig2NewNodeMap.put(origNode, newNode);
+			new2OrigNodeMap.put(newNode, origNode);
 			cloneRow(origNet.getRow(origNode), newNet.getRow(newNode));
 		}
 	}
@@ -172,31 +165,4 @@ public class CloneNetworkTask extends AbstractCreationTask {
 			to.set(column.getName(), from.getRaw(column.getName()));
 	}
 
-	/**
-	 * Copy Visual Properties to the new network view.
-	 * 
-	 */
-	private CyNetworkView copyView(final CyNetwork newNet, final CyNetworkView origView) {
-		final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
-
-		// Copy node locations since this is controlled outside of visual style.
-		for (final View<CyNode> origNodeView : origView.getNodeViews()) {
-			final CyNode node = origNodeView.getModel();
-			final View<CyNode> newNodeView = newView.getNodeView(orig2NewNodeMap.get(node));
-
-			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,
-					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
-			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,
-					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
-			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION,
-					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION));
-		}
-
-		vmm.setVisualStyle(vmm.getVisualStyle(origView), newView);
-		vmm.getVisualStyle(origView).apply(newView);
-		networkViewManager.addNetworkView(newView);
-		newView.fitContent();
-		
-		return newView;
-	}
 }
