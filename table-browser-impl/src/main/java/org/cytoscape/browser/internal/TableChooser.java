@@ -5,7 +5,6 @@ import static org.cytoscape.browser.internal.AbstractTableBrowser.SELECTED_ITEM_
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,7 +63,6 @@ public class TableChooser extends JComboBox {
 			return tables.size();
 		}
 
-		
 		@Override
 		public Object getElementAt(int index) {
 			return tables.get(index);
@@ -86,19 +84,16 @@ public class TableChooser extends JComboBox {
 			});
 		}
 
-
 		public void removeItem(CyTable deletedTable) {
-
 			if (tables.contains(deletedTable)) {
 				tables.remove(deletedTable);
-				if (tables.size() != 0)
+				
+				if (tables.size() > 0) {
 					Collections.sort(tables, tableComparator);
-			}
-
-			if (tables.size() == 0) {
-				setSelectedItem(null);
-			} else {
-				setSelectedItem(tables.get(0));
+					setSelectedItem(tables.get(0));
+				} else {
+					setSelectedItem(null);
+				}
 			}
 		}
 	}

@@ -69,26 +69,27 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 
 	@Override
 	public void actionPerformed(final ActionEvent e) {
-
 		final CyTable table = (CyTable) tableChooser.getSelectedItem();
+		
 		if (table == currentTable || table == null)
 			return;
 
 		currentTable = table;
-
 		showSelectedTable();
 	}
 
 	@Override
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
-		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
-		comboBoxModel.removeItem(cyTable);
 		
-		if(comboBoxModel.getSize() == 0)
-			tableChooser.setEnabled(false);
+		if (cyTable.isPublic()) {
+			final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+			comboBoxModel.removeItem(cyTable);
+	
+			if (comboBoxModel.getSize() == 0)
+				tableChooser.setEnabled(false);
+		}
 	}
-
 	
 	/**
 	 * Switch to new table when it is registered to the table manager.
@@ -97,33 +98,34 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 	 */
 	@Override
 	public void handleEvent(TableAddedEvent e) {
-		
-		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel)tableChooser.getModel();
 		final CyTable newTable = e.getTable();
-		
-		if(isGlobalTable(newTable))
-			comboBoxModel.addAndSetSelectedItem(newTable);
-		
-		if(tableChooser.getItemCount() != 0)
-			tableChooser.setEnabled(true);
+
+		if (newTable.isPublic()) {
+			if (isGlobalTable(newTable)) {
+				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+				comboBoxModel.addAndSetSelectedItem(newTable);
+			}
+	
+			if (tableChooser.getItemCount() != 0)
+				tableChooser.setEnabled(true);
+		}
 	}
-	
-	
+
 	private boolean isGlobalTable(final CyTable table) {
-		
 		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
 		final Set<CyNetwork> networks = this.networkTableManager.getNetworkSet();
-		for(CyNetwork network: networks) {
-			for(Class<?> type:OBJECT_TYPES) {
-				final Map<String, CyTable> objTables = this.networkTableManager.getTables(network, (Class<? extends CyTableEntry>) type);
+
+		for (CyNetwork network : networks) {
+			for (Class<?> type : OBJECT_TYPES) {
+				final Map<String, CyTable> objTables = this.networkTableManager.getTables(network,
+						(Class<? extends CyTableEntry>) type);
 				nonGlobalTables.addAll(objTables.values());
 			}
 		}
-		
-		if(nonGlobalTables.contains(table))
+
+		if (nonGlobalTables.contains(table))
 			return false;
 		else
 			return true;
-		
 	}
 }
