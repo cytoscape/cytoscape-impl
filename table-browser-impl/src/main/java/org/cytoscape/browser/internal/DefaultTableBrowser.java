@@ -48,7 +48,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private final Class<? extends CyTableEntry> objType;
 
 	private boolean rowSelectionMode;
-	private boolean ignoreSetCurrentNetwork;
+	private boolean ignoreSetCurrentNetwork = true;
 	
 
 	public DefaultTableBrowser(String tabTitle, Class<? extends CyTableEntry> objType, CyTableManager tableManager,
@@ -131,7 +131,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
 
 				if ((currentNetwork == null && selectedNetwork != null) || !currentNetwork.equals(selectedNetwork)) {
+					ignoreSetCurrentNetwork = true;
 					networkChooser.setSelectedItem(currentNetwork);
+					ignoreSetCurrentNetwork = false;
 				}
 			}
 		});

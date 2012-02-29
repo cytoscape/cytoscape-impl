@@ -122,11 +122,14 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	public Icon getIcon() { return null; }
 	
 	synchronized void showSelectedTable() {
-		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel(); 
+		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel();
 		final JScrollPane newScrollPane = getScrollPane(currentBrowserTableModel);
-		if ( currentScrollPane != null )
-			remove( currentScrollPane );
-		add( newScrollPane, BorderLayout.CENTER );
+
+		if (currentScrollPane != null)
+			remove(currentScrollPane);
+
+		add(newScrollPane, BorderLayout.CENTER);
+
 		currentScrollPane = newScrollPane;
 		applicationManager.setCurrentTable(currentTable);
 		attributeBrowserToolBar.setBrowserTableModel(currentBrowserTableModel);
@@ -137,17 +140,20 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 	private JScrollPane getScrollPane(final BrowserTableModel browserTableModel) {
 		JScrollPane scrollPane = scrollPanes.get(browserTableModel);
-		if ( scrollPane == null ) {
+		
+		if (scrollPane == null) {
 			final BrowserTable browserTable = browserTableModel.getBrowserTable(); 
 			serviceRegistrar.registerAllServices(browserTableModel, new Properties());
 			browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
 			browserTable.setUpdateComparators(false);
 			browserTable.setModel(browserTableModel);
-			final TableRowSorter rowSorter = new TableRowSorter(browserTableModel);
+			
+			final TableRowSorter<BrowserTableModel> rowSorter = new TableRowSorter<BrowserTableModel>(browserTableModel);
 			browserTable.setRowSorter(rowSorter);
-			updateColumnComparators(rowSorter,browserTableModel);
+			updateColumnComparators(rowSorter, browserTableModel);
 			browserTable.setUpdateComparators(true);
+			
 			scrollPane = new JScrollPane(browserTable);
 			scrollPanes.put(browserTableModel,scrollPane);
 		}
@@ -157,21 +163,29 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 	protected BrowserTableModel getCurrentBrowserTableModel() {
 		BrowserTableModel btm = browserTableModels.get(currentTable);
-		if ( btm == null ) {
+		
+		if (btm == null) {
 			final BrowserTable browserTable = new BrowserTable(openBrowser, compiler, 
 			                                                   popupMenuHelper, applicationManager, 
 			                                                   eventHelper);
 			btm = new BrowserTableModel(browserTable, currentTable, compiler);
-			browserTableModels.put(currentTable,btm);
+			browserTableModels.put(currentTable, btm);
 		}
+		
 		return btm;
 	}
 
-	void updateColumnComparators(final TableRowSorter rowSorter, final BrowserTableModel browserTableModel) {
+	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
+			final BrowserTableModel browserTableModel) {
 		for (int column = 0; column < browserTableModel.getColumnCount(); ++column)
 			rowSorter.setComparator(
 				column,
 				new ValidatedObjectAndEditStringComparator(
 					browserTableModel.getColumn(column).getType()));
+	}
+
+	@Override
+	public String toString() {
+		return "AbstractTableBrowser [tabTitle=" + tabTitle + ", currentTable=" + currentTable + "]";
 	}
 }
