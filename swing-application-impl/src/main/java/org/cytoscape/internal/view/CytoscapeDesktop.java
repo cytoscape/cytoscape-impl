@@ -63,7 +63,6 @@ import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.session.events.SessionSavedEvent;
@@ -81,6 +80,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private final static long serialVersionUID = 1202339866271348L;
 	
 	private static final String TITLE_PREFIX_STRING ="Session: ";
+	private static final String NEW_SESSION_NAME ="New Session";
 	
 	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1200, 850);
 	private static final int DEF_DIVIDER_LOATION = 450;
@@ -129,7 +129,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 */
 	public CytoscapeDesktop(CytoscapeMenus cyMenus, NetworkViewManager networkViewManager, NetworkPanel networkPanel,
 			CyShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager) {
-		super(TITLE_PREFIX_STRING + "New Session");
+		super(TITLE_PREFIX_STRING + NEW_SESSION_NAME);
 
 		this.cyMenus = cyMenus;
 		this.networkViewManager = networkViewManager;
@@ -337,7 +337,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		return networkViewManager;
 	}
 
-	public void addAction(CyAction action, Dictionary props) {
+	public void addAction(CyAction action, Dictionary<?, ?> props) {
 		cyMenus.addAction(action);
 	}
 
@@ -345,7 +345,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		cyMenus.addAction(action);
 	}
 
-	public void removeAction(CyAction action, Dictionary props) {
+	public void removeAction(CyAction action, Dictionary<?, ?> props) {
 		cyMenus.removeAction(action);
 	}
 
@@ -391,25 +391,26 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		                                   + ".  Must be one of:  {SOUTH,EAST,WEST,SOUTH_WEST}.");
 	}
 
-	public void addCytoPanelComponent(CytoPanelComponent cp, Dictionary props) {
+	public void addCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
 		CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
 		impl.add(cp);
 	}
 
-	public void removeCytoPanelComponent(CytoPanelComponent cp, Dictionary props) {
+	public void removeCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
 		CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
 		impl.remove(cp);
 	}
 
+	@Override
 	public JToolBar getStatusToolBar() {
 		return statusToolBar;
 	}
 
-	public void addToolBarComponent(ToolBarComponent tp, Dictionary props) {
+	public void addToolBarComponent(ToolBarComponent tp, Dictionary<?, ?> props) {
 		((CytoscapeToolBar)cyMenus.getJToolBar()).addToolBarComponent(tp);
 	}
 
-	public void removeToolBarComponent(ToolBarComponent tp, Dictionary props) {
+	public void removeToolBarComponent(ToolBarComponent tp, Dictionary<?, ?> props) {
 		((CytoscapeToolBar)cyMenus.getJToolBar()).removeToolBarComponent(tp);		
 	}
 	
@@ -423,7 +424,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Update window title
-		final String sessionName = e.getLoadedFileName();		
+		String sessionName = e.getLoadedFileName();
+		
+		if (sessionName == null)
+			sessionName = NEW_SESSION_NAME;
+		
 		this.setTitle(TITLE_PREFIX_STRING + sessionName);
 	}
 
