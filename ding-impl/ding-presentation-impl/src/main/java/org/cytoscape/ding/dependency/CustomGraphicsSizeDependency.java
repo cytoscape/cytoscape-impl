@@ -1,6 +1,6 @@
 package org.cytoscape.ding.dependency;
 
-import org.cytoscape.ding.impl.DVisualLexicon;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.view.vizmap.gui.AbstractVisualPropertyDependency;
 
 public class CustomGraphicsSizeDependency extends

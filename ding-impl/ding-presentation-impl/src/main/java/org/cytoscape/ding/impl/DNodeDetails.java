@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.DNodeShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.NodeView;

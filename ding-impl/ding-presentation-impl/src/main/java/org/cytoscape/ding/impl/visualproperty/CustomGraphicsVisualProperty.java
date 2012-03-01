@@ -1,9 +1,9 @@
 package org.cytoscape.ding.impl.visualproperty;
 
-import java.util.List;
-
+import org.cytoscape.ding.DummyCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.view.model.AbstractVisualProperty;
 
@@ -16,15 +16,17 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 
 	@Override
 	public String toSerializableString(final CyCustomGraphics value) {
-		List layers = value.getLayers();
-		// TODO Auto-generated method stub
-		return null;
+		return value.toString();
 	}
 
 	@Override
 	public CyCustomGraphics<CustomGraphic> parseSerializableString(String value) {
-		// TODO Auto-generated method stub
-		return null;
+		// Return dummy if something is assigned.  This should be replaced after loading session.
+		if(NullCustomGraphics.getNullObject().toString().equals(value)) {
+			return NullCustomGraphics.getNullObject();
+		} else {
+			final String[] parts = value.split(",");
+			return new DummyCustomGraphics(Long.parseLong(parts[1]), parts[2]);
+		}
 	}
-
 }

@@ -67,7 +67,7 @@ public class DLineType implements LineType {
 	
 	private final WidthStroke stroke;
 	
-	DLineType(final String displayName, final String serializableString,
+	public DLineType(final String displayName, final String serializableString,
 			final WidthStroke stroke) {
 		this.displayName = displayName;
 		this.serializableString = serializableString;

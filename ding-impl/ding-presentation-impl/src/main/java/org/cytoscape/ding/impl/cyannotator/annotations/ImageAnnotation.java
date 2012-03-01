@@ -57,7 +57,8 @@ public class ImageAnnotation extends Annotation {
 		imageHeight=image.getHeight();
 		this.url = url;
 		resizedImage=resize(image, (int)imageWidth, (int)imageHeight);
-		this.cg = new URLImageCustomGraphics(url.toString(), image);
+		final Long id = customGraphicsManager.getNextAvailableID();
+		this.cg = new URLImageCustomGraphics(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}

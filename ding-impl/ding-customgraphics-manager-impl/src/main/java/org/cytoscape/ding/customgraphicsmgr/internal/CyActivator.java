@@ -1,6 +1,7 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -31,9 +32,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 				CyApplicationConfiguration.class);
 		CyEventHelper eventHelperServiceRef = getService(bc, CyEventHelper.class);
+		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 
 		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,
-				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef);
+				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef, vmmServiceRef, cyApplicationManagerServiceRef);
 		CustomGraphicsBrowser browser = new CustomGraphicsBrowser(customGraphicsManager);
 		registerAllServices(bc, browser, new Properties());
 

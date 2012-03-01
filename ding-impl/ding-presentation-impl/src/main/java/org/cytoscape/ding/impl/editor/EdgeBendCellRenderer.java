@@ -8,8 +8,8 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.ding.Bend;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
-import org.cytoscape.ding.impl.DVisualLexicon;
 
 import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 

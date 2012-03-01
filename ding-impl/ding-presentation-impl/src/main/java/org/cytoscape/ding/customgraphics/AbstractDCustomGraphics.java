@@ -37,9 +37,9 @@ public abstract class AbstractDCustomGraphics implements
 	protected final SortedSet<String> tags;
 
 
-	public AbstractDCustomGraphics(final String displayName) {
-		this(IDGenerator.getIDGenerator().getNextId(), displayName);
-	}
+//	public AbstractDCustomGraphics(final String displayName) {
+//		this(IDGenerator.getIDGenerator().getNextId(), displayName);
+//	}
 	
 	
 	/**

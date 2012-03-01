@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;

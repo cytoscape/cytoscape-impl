@@ -4,7 +4,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
-import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.paint.GradientPaintFactory;
 import org.cytoscape.ding.impl.customgraphics.DLayer;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
@@ -13,15 +12,10 @@ public class GradientOvalLayer extends GradientLayerCustomGraphics {
 	
 	// Name of this custom graphics.
 	private static final String NAME = "Glossy Oval Layer";
-
-	
-	public GradientOvalLayer() {
-		this(IDGenerator.getIDGenerator().getNextId(), NAME);
-	}
 	
 	
-	public GradientOvalLayer(Long id, String name) {
-		super(id, name);
+	public GradientOvalLayer(final Long id) {
+		super(id, NAME);
 	}
 	
 	protected void renderImage(Graphics graphics) {

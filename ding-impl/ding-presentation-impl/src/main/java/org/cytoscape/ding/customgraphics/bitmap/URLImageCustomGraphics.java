@@ -40,12 +40,12 @@ public class URLImageCustomGraphics extends AbstractDCustomGraphics {
 	private URL sourceUrl;
 
 	
-	public URLImageCustomGraphics(String url) throws IOException {
-		super(url);
-		this.tags.add(DEF_TAG);
-		createImage(url);
-		buildCustomGraphics(originalImage);
-	}
+//	public URLImageCustomGraphics(String url) throws IOException {
+//		super(url);
+//		this.tags.add(DEF_TAG);
+//		createImage(url);
+//		buildCustomGraphics(originalImage);
+//	}
 	
 	
 	public URLImageCustomGraphics(Long id, String url) throws IOException {
@@ -55,14 +55,30 @@ public class URLImageCustomGraphics extends AbstractDCustomGraphics {
 		buildCustomGraphics(originalImage);
 	}
 
+//	/**
+//	 * 
+//	 * @param name
+//	 *            - display name of this object. NOT UNIQUE!
+//	 * @param img
+//	 */
+//	public URLImageCustomGraphics(String name, BufferedImage img) {
+//		super(name);
+//		if (img == null)
+//			throw new IllegalArgumentException("Image cannot be null.");
+//
+//		this.tags.add(DEF_TAG);
+//		this.originalImage = img;
+//		buildCustomGraphics(originalImage);
+//	}
+	
 	/**
 	 * 
 	 * @param name
 	 *            - display name of this object. NOT UNIQUE!
 	 * @param img
 	 */
-	public URLImageCustomGraphics(String name, BufferedImage img) {
-		super(name);
+	public URLImageCustomGraphics(Long id, String name, BufferedImage img) {
+		super(id, name);
 		if (img == null)
 			throw new IllegalArgumentException("Image cannot be null.");
 

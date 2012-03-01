@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl;
 
 import java.awt.geom.Point2D;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.Handle;
 import org.cytoscape.ding.impl.editor.EditMode;
 import org.cytoscape.model.CyNode;

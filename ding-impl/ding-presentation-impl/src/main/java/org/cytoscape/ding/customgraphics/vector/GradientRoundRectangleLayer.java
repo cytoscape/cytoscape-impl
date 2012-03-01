@@ -4,7 +4,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
 
-import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.Layer;
 import org.cytoscape.ding.customgraphics.paint.GradientPaintFactory;
 import org.cytoscape.ding.impl.customgraphics.DLayer;
@@ -15,15 +14,11 @@ public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 	// Name of this custom graphics.
 	private static final String NAME = "Glossy Round Rectangle Layer";
 	private int r =20;
+
 	
 	
-	public GradientRoundRectangleLayer() {
-		this(IDGenerator.getIDGenerator().getNextId(), NAME);
-	}
-	
-	
-	public GradientRoundRectangleLayer(Long id, String name) {
-		super(id, name);
+	public GradientRoundRectangleLayer(final Long id) {
+		super(id, NAME);
 	}
 	
 	protected void renderImage(Graphics graphics) {

@@ -13,12 +13,12 @@ import java.util.Map;
 
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.DNodeShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;

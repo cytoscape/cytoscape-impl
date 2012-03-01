@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.event.CyEventHelper;

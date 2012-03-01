@@ -18,7 +18,7 @@ import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 public class NullCustomGraphics extends AbstractDCustomGraphics {
 	
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
-	private static BufferedImage DEF_IMAGE;
+	public static BufferedImage DEF_IMAGE;
 	
 	static  {
 		try {
@@ -38,7 +38,7 @@ public class NullCustomGraphics extends AbstractDCustomGraphics {
 	private static final String NAME = "[ Remove Graphics ]";
 
 	public NullCustomGraphics() {
-		super(NAME);
+		super(0l, NAME);
 	}
 
 	public String toString() {

@@ -8,7 +8,6 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.dependency.CustomGraphicsSizeDependency;
 import org.cytoscape.ding.dependency.EdgePaintToArrowHeadPaintDependency;
 import org.cytoscape.ding.impl.AddEdgeNodeViewTaskFactoryImpl;
-import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;

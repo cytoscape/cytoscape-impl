@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Handle;

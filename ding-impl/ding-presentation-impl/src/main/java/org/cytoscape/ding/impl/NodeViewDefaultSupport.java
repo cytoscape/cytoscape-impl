@@ -33,6 +33,7 @@ import java.awt.Font;
 import java.awt.Paint;
 
 import org.cytoscape.ding.DNodeShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;

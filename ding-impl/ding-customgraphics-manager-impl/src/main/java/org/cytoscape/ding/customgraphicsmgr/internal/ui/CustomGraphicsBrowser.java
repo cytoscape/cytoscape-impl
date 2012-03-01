@@ -89,7 +89,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	private void addCustomGraphics(final String urlStr) {
 		CyCustomGraphics cg = null;
 		try {
-			cg = new URLImageCustomGraphics(urlStr);
+			cg = new URLImageCustomGraphics(pool.getNextAvailableID(), urlStr);
 			if (cg != null) {
 				pool.addCustomGraphics(cg, new URL(urlStr));
 				model.addElement(cg);
@@ -146,7 +146,6 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 
 		// This is for debugging
 		private void dumpDataFlavors(Transferable trans) {
-			System.out.println("Flavors:");
 			DataFlavor[] flavors = trans.getTransferDataFlavors();
 			for (int i = 0; i < flavors.length; i++) {
 				System.out.println("*** " + i + ": " + flavors[i]);

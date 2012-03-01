@@ -1,10 +1,7 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +11,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.imageio.ImageIO;
-
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
@@ -29,6 +26,7 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,18 +51,24 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private final File imageHomeDirectory;
 	protected final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
 	private final DialogTaskManager taskManager;
-	
+
 	private final CyEventHelper eventHelper;
+
+	private final VisualMappingManager vmm;
+	private final CyApplicationManager applicationManager;
 
 	/**
 	 * Creates an image pool object and restore existing images from user
 	 * resource directory.
 	 */
 	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final DialogTaskManager taskManager,
-			final CyApplicationConfiguration config, final CyEventHelper eventHelper) {
+			final CyApplicationConfiguration config, final CyEventHelper eventHelper, final VisualMappingManager vmm,
+			final CyApplicationManager applicationManager) {
 
 		this.taskManager = taskManager;
 		this.eventHelper = eventHelper;
+		this.vmm = vmm;
+		this.applicationManager = applicationManager;
 		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
 
 		if (properties == null)
@@ -82,7 +86,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		graphicsMap.put(NULL.getIdentifier(), NULL);
 		this.isUsedCustomGraphics.put(NULL, false);
 
-		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(imageHomeDirectory, this, eventHelper);
+		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(imageHomeDirectory, this, eventHelper, vmm, applicationManager);
 		taskManager.execute(taskFactory);
 	}
 
@@ -244,13 +248,13 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		logger.info("========== Image saving process finished =============");
 	}
 
-	
 	/**
 	 * Prepare files to be saved in the session.
 	 */
 	@Override
 	public void handleEvent(final SessionAboutToBeSavedEvent e) {
-		final SaveGraphicsToSessionTaskFactory factory = new SaveGraphicsToSessionTaskFactory(imageHomeDirectory, this, e);
+		final SaveGraphicsToSessionTaskFactory factory = new SaveGraphicsToSessionTaskFactory(imageHomeDirectory, this,
+				e);
 
 		try {
 			taskManager.execute(factory);
@@ -270,14 +274,25 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			if (filesMap != null) {
 				final List<File> files = filesMap.get(APP_NAME);
 				// TODO: 2.x compatibility
-				
+
 				if (files != null && files.size() != 0) {
 					// get parent directory
 					final File parent = files.get(0).getParentFile();
-					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(parent, this, eventHelper);
+					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(parent, this, eventHelper, vmm, applicationManager);
 					taskManager.execute(taskFactory);
 				}
 			}
 		}
+	}
+
+	@Override
+	public Long getNextAvailableID() {
+		
+		Long key = IDGenerator.getIDGenerator().getNextId();
+		
+		while(graphicsMap.get(key) != null)
+			key = IDGenerator.getIDGenerator().getNextId();
+		
+		return key;
 	}
 }

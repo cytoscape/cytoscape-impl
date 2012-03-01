@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.DNodeShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;

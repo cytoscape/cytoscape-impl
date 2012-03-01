@@ -23,5 +23,11 @@ public interface CustomGraphicsManager {
 	
 	void removeAllCustomGraphics();
 	void removeCustomGraphics(Long id);
+	
+	/**
+	 * Provides id available ID;
+	 * @return 
+	 */
+	Long getNextAvailableID();
 		
 }

@@ -64,6 +64,7 @@ import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.JLayeredPane;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.GraphViewChangeListener;

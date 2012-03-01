@@ -17,9 +17,9 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.ding.Bend;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.DEdgeView;
-import org.cytoscape.ding.impl.DVisualLexicon;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;

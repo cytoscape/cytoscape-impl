@@ -206,8 +206,8 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 			}
 
 			if (img != null) {
-				final CyCustomGraphics cg = new URLImageCustomGraphics(
-						file.toString(), img);
+				final CyCustomGraphics cg = new URLImageCustomGraphics(manager.getNextAvailableID(), file.toString(),
+						img);
 				try {
 					manager.addCustomGraphics(cg, file.toURI().toURL());
 				} catch (MalformedURLException e) {

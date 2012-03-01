@@ -36,6 +36,7 @@ import java.util.Collection;
 
 import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;

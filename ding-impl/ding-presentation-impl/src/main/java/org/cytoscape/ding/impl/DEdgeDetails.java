@@ -39,6 +39,7 @@ import java.util.Set;
 
 import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.impl.visualproperty.EdgeBendVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
