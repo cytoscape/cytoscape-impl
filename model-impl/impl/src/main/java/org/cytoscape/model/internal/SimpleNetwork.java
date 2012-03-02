@@ -110,15 +110,13 @@ class SimpleNetwork {
 		int numRemaining = nodeCount;
 		NodePointer node = firstNode;
 
-		synchronized (this) {
-			while (numRemaining > 0) {
-				// possible NPE here if the linked list isn't constructed correctly
-				// this is the correct behavior
-				final CyNode toAdd = node.cyNode;
-				node = node.nextNode;
-				ret.add(toAdd);
-				numRemaining--;
-			}
+		while (numRemaining > 0) {
+			// possible NPE here if the linked list isn't constructed correctly
+			// this is the correct behavior
+			final CyNode toAdd = node.cyNode;
+			node = node.nextNode;
+			ret.add(toAdd);
+			numRemaining--;
 		}
 
 		return ret;
@@ -128,28 +126,26 @@ class SimpleNetwork {
 		final List<CyEdge> ret = new ArrayList<CyEdge>(edgeCount);
 		EdgePointer edge = null;
 
-		synchronized (this) {
-			int numRemaining = edgeCount;
-			NodePointer node = firstNode;
-			while (numRemaining > 0) {
-				final CyEdge retEdge;
+		int numRemaining = edgeCount;
+		NodePointer node = firstNode;
+		while (numRemaining > 0) {
+			final CyEdge retEdge;
 
-				if (edge != null) {
-					retEdge = edge.cyEdge;
-				} else {
-					for (edge = node.firstOutEdge; 
-					     edge == null; 
-					     node = node.nextNode, edge = node.firstOutEdge);
+			if (edge != null) {
+				retEdge = edge.cyEdge;
+			} else {
+				for (edge = node.firstOutEdge; 
+				     edge == null; 
+				     node = node.nextNode, edge = node.firstOutEdge);
 
-					node = node.nextNode;
-					retEdge = edge.cyEdge;
-				}
-
-				edge = edge.nextOutEdge;
-				numRemaining--;
-
-				ret.add(retEdge);
+				node = node.nextNode;
+				retEdge = edge.cyEdge;
 			}
+
+			edge = edge.nextOutEdge;
+			numRemaining--;
+
+			ret.add(retEdge);
 		}
 
 		return ret;
@@ -239,7 +235,9 @@ class SimpleNetwork {
 		return node; 
 	}
 
-	public boolean removeNodes(final Collection<CyNode> nodes) {
+	protected boolean removeNodesInternal(final Collection<CyNode> nodes) {
+		if (nodes == null || nodes.isEmpty())
+			return false;
 
 		synchronized (this) {
 			for ( CyNode n : nodes ) {
@@ -247,7 +245,7 @@ class SimpleNetwork {
 					return false;
 
 				// remove adjacent edges from network
-				removeEdges(getAdjacentEdgeList(n, CyEdge.Type.ANY));
+				removeEdgesInternal(getAdjacentEdgeList(n, CyEdge.Type.ANY));
 	
 				final NodePointer node = nodePointers.remove(n.getIndex());
 				firstNode = node.remove(firstNode);
@@ -289,7 +287,7 @@ class SimpleNetwork {
 		return edge; 
 	}
 
-	public boolean removeEdges(final Collection<CyEdge> edges) {
+	protected boolean removeEdgesInternal(final Collection<CyEdge> edges) {
 		if ( edges == null || edges.isEmpty() )
 			return false;
 

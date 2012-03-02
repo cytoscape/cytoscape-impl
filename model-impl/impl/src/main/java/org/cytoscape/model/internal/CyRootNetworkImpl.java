@@ -166,7 +166,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		synchronized (this) {
 			node = new CyNodeImpl( SUIDFactory.getNextSUID(), getNextNodeIndex(), eventHelper );
-			super.addNodeInternal( node );
+			addNodeInternal( node );
 		}
 
 		return node; 
@@ -176,7 +176,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	public synchronized boolean removeNodes(final Collection<CyNode> nodes) {
 		for ( CySubNetwork sub : subNetworks )
 			sub.removeNodes(nodes);
-		return super.removeNodes(nodes);
+		return removeNodesInternal(nodes);
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		synchronized (this) {
 			edge = new CyEdgeImpl(SUIDFactory.getNextSUID(), s, t, directed, getNextEdgeIndex());
-			super.addEdgeInternal(s,t, directed, edge);
+			addEdgeInternal(s,t, directed, edge);
 		}
 
 		return edge; 
@@ -196,7 +196,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	public synchronized boolean removeEdges(final Collection<CyEdge> edges) {
 		for ( CySubNetwork sub : subNetworks )
 			sub.removeEdges(edges);
-		return super.removeEdges(edges);
+		return removeEdgesInternal(edges);
 	}
 
 	@Override

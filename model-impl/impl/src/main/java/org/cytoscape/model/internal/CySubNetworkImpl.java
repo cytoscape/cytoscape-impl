@@ -108,7 +108,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			// first add a node to the root network
 			ret = parent.addNode();
 			// then add the resulting CyNode to this network
-			super.addNodeInternal(ret);
+			addNodeInternal(ret);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
@@ -129,7 +129,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			if (!parent.containsNode(node))
 				throw new IllegalArgumentException("node is not contained in parent network!");
 
-			super.addNodeInternal(node);
+			addNodeInternal(node);
 
 			// add node
 			copyDefaultAttrs(parent.getRow(node), this.getRow(node));
@@ -150,7 +150,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			// first add an edge to the root network
 			ret = parent.addEdge(source, target, isDirected);
 			// then add the resulting CyEdge to this network
-			super.addEdgeInternal(source,target,isDirected,ret);
+			addEdgeInternal(source,target,isDirected,ret);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
@@ -179,7 +179,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			addNode(edge.getTarget());
 
 			// add edge
-			super.addEdgeInternal(edge.getSource(),edge.getTarget(),edge.isDirected(),edge);
+			addEdgeInternal(edge.getSource(),edge.getTarget(),edge.isDirected(),edge);
 
 			copyDefaultAttrs(parent.getRow(edge), this.getRow(edge));
 			copyDefaultEdgeAttrs(parent.getRow(edge), this.getRow(edge));
@@ -207,7 +207,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 		eventHelper.fireEvent(new AboutToRemoveNodesEvent(this, nodes));
 
-		boolean ret = super.removeNodes(nodes);
+		boolean ret = removeNodesInternal(nodes);
 
 		if ( ret )
 			eventHelper.fireEvent(new RemovedNodesEvent(this));
@@ -224,7 +224,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		// since this is only a notification, maybe that's OK.
 		eventHelper.fireEvent(new AboutToRemoveEdgesEvent(this, edges));
 
-		boolean ret = super.removeEdges(edges);
+		boolean ret = removeEdgesInternal(edges);
 
 		if ( ret )
 			eventHelper.fireEvent(new RemovedEdgesEvent(this));
