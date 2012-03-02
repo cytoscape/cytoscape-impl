@@ -31,17 +31,22 @@ package org.cytoscape.task.internal.title;
 
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
+import java.util.Iterator;
+import org.cytoscape.work.TunableValidator;
 
 
-public class EditNetworkTitleTask extends AbstractNetworkTask {
+public class EditNetworkTitleTask extends AbstractNetworkTask implements TunableValidator {
 	private final UndoSupport undoSupport;
+	private final CyNetworkManager cyNetworkManagerServiceRef;
 
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Rename Network";
@@ -50,12 +55,53 @@ public class EditNetworkTitleTask extends AbstractNetworkTask {
 	@Tunable(description = "New title")
 	public String title;
 
-	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net) {
+	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net, CyNetworkManager cyNetworkManagerServiceRef) {
 		super(net);
 		this.undoSupport = undoSupport;
-		title = network.getRow(network).get(CyTableEntry.NAME, String.class);
+		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		title = network.getRow(network).get(CyTableEntry.NAME, String.class);		
 	}
 
+	@Override
+	public ValidationState getValidationState(final Appendable errMsg) {
+		title = title.trim();
+		
+		// Check if the network tile already existed
+		boolean titleAlreayExisted = false;
+		Iterator<CyNetwork> it = this.cyNetworkManagerServiceRef.getNetworkSet().iterator();
+
+		while (it.hasNext()){
+			CyNetwork curNetwork = it.next();
+
+			// Exclude current network (itself)
+			if (curNetwork == network){
+				continue;
+			}
+
+			String curTitle = curNetwork.getRow(curNetwork).get(CyTableEntry.NAME, String.class);
+
+			if (title.equalsIgnoreCase(curTitle)){
+				titleAlreayExisted = true;
+				break;
+			}
+		}
+		
+		if (titleAlreayExisted){
+			// Inform user duplicated network title!
+			try {
+				errMsg.append("Duplicated network title!");	
+			}
+			catch (Exception e){
+				System.out.println("Warning: Duplicated network title!");
+			}
+			return ValidationState.INVALID;			
+		}
+
+		
+		return ValidationState.OK;		
+	}
+	
+	
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
 		final String oldTitle = network.getRow(network).get(CyTableEntry.NAME, String.class);

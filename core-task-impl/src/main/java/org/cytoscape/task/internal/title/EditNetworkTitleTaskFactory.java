@@ -30,6 +30,7 @@
 package org.cytoscape.task.internal.title;
 
 
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
@@ -37,12 +38,14 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class EditNetworkTitleTaskFactory extends AbstractNetworkTaskFactory {
 	private final UndoSupport undoSupport;
+	private final CyNetworkManager cyNetworkManagerServiceRef;
 
-	public EditNetworkTitleTaskFactory(final UndoSupport undoSupport) {
+	public EditNetworkTitleTaskFactory(final UndoSupport undoSupport, CyNetworkManager cyNetworkManagerServiceRef) {
 		this.undoSupport = undoSupport;
+		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new EditNetworkTitleTask(undoSupport, network));
+		return new TaskIterator(new EditNetworkTitleTask(undoSupport, network, this.cyNetworkManagerServiceRef));
 	} 
 }
