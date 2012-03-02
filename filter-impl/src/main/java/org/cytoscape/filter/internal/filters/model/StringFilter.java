@@ -53,10 +53,7 @@ import org.slf4j.LoggerFactory;
 public class StringFilter extends AtomicFilter {
 
 	private String searchStr = null;
-
-	//---------------------------------------//
-	// Constructor
-	//----------------------------------------//
+	private final QuickFind quickFind;
 
 	/**
 	 * Creates a new StringPatternFilter object.
@@ -64,15 +61,11 @@ public class StringFilter extends AtomicFilter {
 	 * @param desc  DOCUMENT ME!
 	 */
 	
-	public StringFilter() {
+	public StringFilter(final QuickFind quickFind) {
 		super();
+		this.quickFind = quickFind;
 	}
 	
-	public StringFilter(String pCtrlAttri, int pIndexType, TextIndex pIndex) {
-		controllingAttribute = pCtrlAttri;
-		index_type = pIndexType;
-		quickFind_index = pIndex;
-	}
 	
 	public String getSearchStr() {
 		return searchStr;
@@ -121,7 +114,7 @@ public class StringFilter extends AtomicFilter {
 		
 		//If quickFind_index does not exist, build the Index
 		//if (quickFind_index == null) {
-		quickFind_index = FilterUtil.getQuickFindIndex(controllingAttribute, network, index_type);
+		quickFind_index = FilterUtil.getQuickFindIndex(quickFind, controllingAttribute, network, index_type);
 		//}
 		
 		TextIndex theIndex = (TextIndex) quickFind_index;

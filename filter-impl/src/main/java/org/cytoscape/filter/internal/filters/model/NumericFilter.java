@@ -52,14 +52,10 @@ import org.slf4j.LoggerFactory;
 public class NumericFilter<T extends Number> extends AtomicFilter {
 
 	private T lowBound, highBound;
+	private final QuickFind quickFind;
 
-	public NumericFilter() {
-	}
-
-	public NumericFilter(String pCtrlAttri, int pIndexType, NumberIndex pIndex) {
-		controllingAttribute = pCtrlAttri;
-		index_type = pIndexType;
-		quickFind_index = pIndex;
+	public NumericFilter(final QuickFind quickFind) {
+		this.quickFind = quickFind;
 	}
 
 	public boolean passesFilter(Object obj) {
@@ -111,7 +107,7 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 		
 		//If quickFind_index does not exist, build the Index
 		//if (quickFind_index == null) {
-		quickFind_index = FilterUtil.getQuickFindIndex(controllingAttribute, network, index_type);
+		quickFind_index = FilterUtil.getQuickFindIndex(quickFind, controllingAttribute, network, index_type);
 		//}
 
 		//System.out.println(" NumberFilter.apply(): objectCount = " + objectCount);

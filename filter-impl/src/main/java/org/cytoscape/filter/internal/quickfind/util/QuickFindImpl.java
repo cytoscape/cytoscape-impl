@@ -30,9 +30,9 @@ package org.cytoscape.filter.internal.quickfind.util;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
@@ -53,21 +53,13 @@ import org.cytoscape.work.TaskMonitor;
  *
  * @author Ethan Cerami.
  */
-class QuickFindImpl implements QuickFind {
+public class QuickFindImpl implements QuickFind {
 	private ArrayList listenerList = new ArrayList();
-	private HashMap networkMap = new HashMap();
+	private Map<CyNetwork, GenericIndex> networkMap = new ConcurrentHashMap<CyNetwork, GenericIndex>();
 	private int maxProgress;
 	private int currentProgress;
 	private static final boolean OUTPUT_PERFORMANCE_STATS = false;
 
-	/**
-	 * Creates a new QuickFindImpl object.
-	 *
-	 * @param nodeAttributes  DOCUMENT ME!
-	 * @param edgeAttributes  DOCUMENT ME!
-	 */
-	public QuickFindImpl() {
-	}
 
 	/**
 	 *  DOCUMENT ME!
@@ -156,11 +148,7 @@ class QuickFindImpl implements QuickFind {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param network DOCUMENT ME!
-	 */
+	
 	public synchronized void removeNetwork(CyNetwork network) {
 		networkMap.remove(networkMap);
 
@@ -171,31 +159,15 @@ class QuickFindImpl implements QuickFind {
 		}
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param network DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public synchronized GenericIndex getIndex(CyNetwork network) {
-		return (GenericIndex) networkMap.get(network);	
+	@Override
+	public GenericIndex getIndex(final CyNetwork network) {
+		return networkMap.get(network);	
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param cyNetwork DOCUMENT ME!
-	 * @param indexType DOCUMENT ME!
-	 * @param controllingAttribute DOCUMENT ME!
-	 * @param taskMonitor DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public synchronized GenericIndex reindexNetwork(CyNetwork cyNetwork, int indexType,
-	                                                String controllingAttribute,
-	                                                TaskMonitor taskMonitor)
-	{
+
+	@Override
+	public synchronized GenericIndex reindexNetwork(CyNetwork cyNetwork, int indexType, String controllingAttribute,
+			TaskMonitor taskMonitor) {
 		// If all the values for the controllingAttribute are NULL, return null
 		CyTable table;
 		if (indexType == QuickFind.INDEX_NODES) {

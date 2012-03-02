@@ -39,12 +39,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.filter.internal.filters.util.SelectUtil;
 import org.cytoscape.filter.internal.filters.util.VisualPropertyUtil;
 import org.cytoscape.filter.internal.prefuse.data.query.NumberRangeModel;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
 import org.cytoscape.filter.internal.quickfind.util.QuickFindListener;
 import org.cytoscape.filter.internal.quickfind.util.TaskMonitorBase;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
@@ -69,7 +67,6 @@ import org.cytoscape.model.events.RemovedEdgesListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -90,25 +87,20 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 					NetworkAboutToBeDestroyedListener,
 					NetworkViewAboutToBeDestroyedListener
 {
-	static final int REINDEX_THRESHOLD = 1000;
+	private static final int REINDEX_THRESHOLD = 1000;
+	
+	private final QuickFind quickFind;
+	
 	private final CyApplicationManager applicationManager;
-	private final CyNetworkViewManager viewManager;
-	private final CySwingApplication application;
 	private final CyNetworkManager networkManager;
 	private static final int NODE_SIZE_MULTIPLER = 10;
 
-	/**
-	 * Constructor.
-	 */
-	public QuickFindApp(final CyApplicationManager applicationManager,
-	                       final CyNetworkViewManager viewManager,
-	                       final CySwingApplication application,
-	                       final CyNetworkManager networkManager)
-	{
+	
+	public QuickFindApp(final QuickFind quickFind, final CyApplicationManager applicationManager, final CyNetworkManager networkManager) {
 		this.applicationManager = applicationManager;
-		this.viewManager = viewManager;
-		this.application = application;
 		this.networkManager = networkManager;
+		this.quickFind = quickFind;
+		
 		initListeners();
 	}
 
@@ -116,7 +108,6 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	 * Initializes All Cytoscape Listeners.
 	 */
 	private void initListeners() {
-        QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		quickFind.addQuickFindListener(this);
 	}
 
@@ -126,7 +117,6 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	 * line, and the network is already loaded prior to any apps being loaded
 	 */
 	private void initIndex() {
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 
 		//  If a network already exists within Cytoscape, index it
 		final CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
@@ -144,9 +134,8 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
-		CyNetworkView networkView = e.getNetworkView();
-		CyNetwork cyNetwork = networkView.getModel();
+		final CyNetworkView networkView = e.getNetworkView();
+		final CyNetwork cyNetwork = networkView.getModel();
 		quickFind.removeNetwork(cyNetwork);
 	}
 
@@ -200,7 +189,6 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 		//  Fit Selected Content
 		SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 					final CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 					CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 					GenericIndex index = quickFind.getIndex(cyNetwork);
@@ -268,7 +256,6 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	 */
 	public void onUserRangeSelection(CyNetwork network, Number lowValue, Number highValue) {
 		try {
-			QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 			GenericIndex index = quickFind.getIndex(network);
 			NumberIndex numberIndex = (NumberIndex) index;
 			final List rangeList = numberIndex.getRange(lowValue, highValue);
@@ -377,11 +364,9 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	}
 
 	private void handleNetworkModified(final CyNetwork cyNetwork) {
-		if (!networkManager.networkExists(cyNetwork.getSUID())) {
+		if (!networkManager.networkExists(cyNetwork.getSUID()))
 			return;
-		}
 		
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		if (cyNetwork.getNodeList() != null) {
 			// this network may not have been added to quick find - 
 			// this can happen if an empty network was added
@@ -418,7 +403,10 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
  *
  * @author Ethan Cerami.
  */
-class UserSelectionListener implements ActionListener {
+final class UserSelectionListener implements ActionListener {
+	
+	private final QuickFind quickFind;
+	
 	private final TextIndexComboBox comboBox;
 	private final CyApplicationManager applicationManager;
 
@@ -427,9 +415,10 @@ class UserSelectionListener implements ActionListener {
 	 *
 	 * @param comboBox TextIndexComboBox.
 	 */
-	public UserSelectionListener(TextIndexComboBox comboBox, CyApplicationManager applicationManager) {
+	public UserSelectionListener(final QuickFind quickFind, TextIndexComboBox comboBox, CyApplicationManager applicationManager) {
 		this.comboBox = comboBox;
 		this.applicationManager = applicationManager;
+		this.quickFind = quickFind;
 	}
 
 	/**
@@ -445,7 +434,6 @@ class UserSelectionListener implements ActionListener {
 		Object o = comboBox.getSelectedItem();
 
 		if ((o != null) && o instanceof Hit) {
-			QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 			Hit hit = (Hit) comboBox.getSelectedItem();
 			quickFind.selectHit(currentNetwork, hit);
 		}
@@ -459,6 +447,8 @@ class UserSelectionListener implements ActionListener {
  * @author Ethan Cerami.
  */
 class RangeSelectionListener implements ChangeListener {
+	
+	private final QuickFind quickFind;
 	private final JRangeSliderExtended slider;
 	private final CyApplicationManager applicationManager;
 
@@ -467,9 +457,10 @@ class RangeSelectionListener implements ChangeListener {
 	 *
 	 * @param slider JRangeSliderExtended Object.
 	 */
-	public RangeSelectionListener(JRangeSliderExtended slider, CyApplicationManager applicationManager) {
+	public RangeSelectionListener(final QuickFind quickFind, JRangeSliderExtended slider, CyApplicationManager applicationManager) {
 		this.slider = slider;
 		this.applicationManager = applicationManager;
+		this.quickFind = quickFind;
 	}
 
 	/**
@@ -478,7 +469,6 @@ class RangeSelectionListener implements ChangeListener {
 	 * @param e ChangeEvent Object.
 	 */
 	public void stateChanged(ChangeEvent e) {
-		QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		final CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 		GenericIndex index = quickFind.getIndex(cyNetwork);
 		NumberRangeModel model = (NumberRangeModel) slider.getModel();

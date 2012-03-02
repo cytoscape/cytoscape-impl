@@ -24,6 +24,7 @@ import org.cytoscape.filter.internal.filters.model.StringFilter;
 import org.cytoscape.filter.internal.filters.model.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.ServicesUtil;
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,11 @@ import org.slf4j.LoggerFactory;
 public final class FilterReader {
 	private static final Logger logger = LoggerFactory.getLogger(FilterReader.class);
 
+	private final QuickFind quickFind;
+	
+	public FilterReader(final QuickFind quickFind) {
+		this.quickFind = quickFind;
+	}
 	
 	public Collection<CompositeFilter> read(final File file) {
 		Collection<CompositeFilter> filters = null;
@@ -198,7 +204,7 @@ public final class FilterReader {
 				String _stringFilterValue = line.substring(13);
 				String[] _values = _stringFilterValue.split(":");
 				// controllingAttribute+":" + negation+ ":"+searchStr+":"+index_type;
-				StringFilter _strFilter = new StringFilter();
+				StringFilter _strFilter = new StringFilter(quickFind);
 				_strFilter.setParent(retFilter);
 				_strFilter.setControllingAttribute(_values[0]);
 				_strFilter.setNegation((new Boolean(_values[1])).booleanValue());
@@ -225,7 +231,7 @@ public final class FilterReader {
 				}
 
 				if (dataType.equalsIgnoreCase("double")) {
-					NumericFilter<Double> _numFilter = new NumericFilter<Double>();
+					NumericFilter<Double> _numFilter = new NumericFilter<Double>(quickFind);
 					_numFilter.setParent(retFilter);
 					_numFilter.setControllingAttribute(_values[0]);
 					_numFilter.setNegation((new Boolean(_values[1])).booleanValue());
@@ -234,7 +240,7 @@ public final class FilterReader {
 					_numFilter.setIndexType((new Integer(_values[4])).intValue());
 					retFilter.addChild(_numFilter);
 				} else { // dataType = "int"
-					NumericFilter<Integer> _numFilter = new NumericFilter<Integer>();
+					NumericFilter<Integer> _numFilter = new NumericFilter<Integer>(quickFind);
 					_numFilter.setParent(retFilter);
 					_numFilter.setControllingAttribute(_values[0]);
 					_numFilter.setNegation((new Boolean(_values[1])).booleanValue());

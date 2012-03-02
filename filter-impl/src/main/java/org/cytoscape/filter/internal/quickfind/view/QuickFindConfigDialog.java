@@ -67,7 +67,6 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.filter.internal.filters.util.VisualPropertyUtil;
 import org.cytoscape.filter.internal.quickfind.util.CyAttributesUtil;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableEntry;
@@ -138,19 +137,18 @@ public class QuickFindConfigDialog extends JDialog {
 
 	private final CyApplicationManager applicationManager;
 
-	private final CySwingApplication application;
-
+	private final QuickFind quickFind;
+	
 	/**
 	 * Constructor.
 	 */
-	public QuickFindConfigDialog(CyApplicationManager applicationManager, CySwingApplication application) {
+	public QuickFindConfigDialog(final QuickFind quickFind, CyApplicationManager applicationManager, CySwingApplication application) {
 		this.applicationManager = applicationManager;
-		this.application = application;
+		this.quickFind = quickFind;
 		
 		//  Initialize, based on currently selected network
 		currentNetwork = applicationManager.getCurrentNetwork();
 
-		QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		currentIndex = quickFind.getIndex(currentNetwork);
 		indexType = currentIndex.getIndexType();
 
@@ -253,7 +251,7 @@ public class QuickFindConfigDialog extends JDialog {
 					QuickFindConfigDialog.this.dispose();
 
 					String newAttribute = (String) attributeComboBox.getSelectedItem();
-					ReindexQuickFind task = new ReindexQuickFind(currentNetwork, indexType,
+					ReindexQuickFind task = new ReindexQuickFind(quickFind, currentNetwork, indexType,
 					                                             newAttribute);
 					
 //					// TODO: Port this later
@@ -586,6 +584,9 @@ public class QuickFindConfigDialog extends JDialog {
  * @author Ethan Cerami.
  */
 class ReindexQuickFind implements Task {
+	
+	private final QuickFind quickFind;
+	
 	private String newAttributeKey;
 	private CyNetwork cyNetwork;
 	private int indexType;
@@ -596,17 +597,17 @@ class ReindexQuickFind implements Task {
 	 * @param indexType       Index Type.
 	 * @param newAttributeKey New Attribute Key for Indexing.
 	 */
-	ReindexQuickFind(CyNetwork cyNetwork, int indexType, String newAttributeKey) {
+	ReindexQuickFind(final QuickFind quickFind, CyNetwork cyNetwork, int indexType, String newAttributeKey) {
 		this.cyNetwork = cyNetwork;
 		this.indexType = indexType;
 		this.newAttributeKey = newAttributeKey;
+		this.quickFind = quickFind;
 	}
 
 	/**
 	 * Executes Task:  Reindex.
 	 */
 	public void run(TaskMonitor taskMonitor) {
-		QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		quickFind.reindexNetwork(cyNetwork, indexType, newAttributeKey, taskMonitor);
 	}
 

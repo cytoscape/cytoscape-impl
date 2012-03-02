@@ -6,7 +6,6 @@ import java.util.List;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.internal.filters.model.CompositeFilter;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
 import org.cytoscape.filter.internal.quickfind.util.TaskMonitorBase;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.model.CyEdge;
@@ -105,8 +104,7 @@ public class FilterUtil {
 	}
 	
 	
-	public static GenericIndex getQuickFindIndex(String pCtrlAttribute, CyNetwork pNetwork, int pIndexType) {
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
+	public static GenericIndex getQuickFindIndex(final QuickFind quickFind, String pCtrlAttribute, CyNetwork pNetwork, int pIndexType) {
 		quickFind.reindexNetwork(pNetwork, pIndexType, pCtrlAttribute, new TaskMonitorBase());
 		
 		return quickFind.getIndex(pNetwork);		

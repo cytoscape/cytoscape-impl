@@ -16,6 +16,8 @@ import org.cytoscape.filter.internal.filters.util.ServicesUtil;
 import org.cytoscape.filter.internal.filters.view.FilterMainPanel;
 import org.cytoscape.filter.internal.gui.FilterCytoPanelComponent;
 import org.cytoscape.filter.internal.quickfind.app.QuickFindApp;
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
+import org.cytoscape.filter.internal.quickfind.util.QuickFindImpl;
 import org.cytoscape.filter.internal.read.filter.FilterReader;
 import org.cytoscape.filter.internal.write.filter.FilterWriter;
 import org.cytoscape.model.CyNetworkManager;
@@ -38,6 +40,9 @@ public class CyActivator extends AbstractCyActivator {
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
+		
+		// Singleton of QuickFind
+		final QuickFind quickFind = new QuickFindImpl();
 
 		ServicesUtil.cySwingApplicationServiceRef = cySwingApplicationServiceRef;
 		ServicesUtil.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
@@ -49,14 +54,14 @@ public class CyActivator extends AbstractCyActivator {
 		ServicesUtil.cytoscapeVersionService = cytoscapeVersionService;
 		ServicesUtil.cyApplicationConfigurationServiceRef = cyApplicationConfigurationServiceRef;
 		
-		final FilterReader filterReader = new FilterReader();
+		final FilterReader filterReader = new FilterReader(quickFind);
 		final FilterWriter filterWriter = new FilterWriter();
 		FilterModelLocator filtersModelLocator = new FilterModelLocator();
 		
 		FilterApp filterApp = new FilterApp(filterReader, filterWriter, filtersModelLocator);
-		QuickFindApp quickFindApp = new QuickFindApp(cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
+		QuickFindApp quickFindApp = new QuickFindApp(quickFind, cyApplicationManagerServiceRef, cyNetworkManagerServiceRef);
 		
-		FilterMainPanel filterMainPanel = new FilterMainPanel(filtersModelLocator,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
+		FilterMainPanel filterMainPanel = new FilterMainPanel(quickFind, filtersModelLocator,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
 		FilterCytoPanelComponent filterCytoPanelComponent = new FilterCytoPanelComponent(filterMainPanel);
 		FilterMenuItemAction filterAction = new FilterMenuItemAction(cySwingApplicationServiceRef,filterMainPanel);
 				

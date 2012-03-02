@@ -77,7 +77,6 @@ import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.prefuse.data.query.NumberRangeModel;
 import org.cytoscape.filter.internal.prefuse.util.ui.JRangeSlider;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.filter.internal.quickfind.util.QuickFindFactory;
 import org.cytoscape.filter.internal.quickfind.util.TaskMonitorBase;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
@@ -112,15 +111,18 @@ public class FilterSettingPanel extends JPanel {
 	private final CyApplicationManager applicationManager;
 	private final CyEventHelper eventHelper;
 	
+	private final QuickFind quickFind;
+	
 	private static final Logger logger = LoggerFactory.getLogger(FilterSettingPanel.class);
 	
-	public FilterSettingPanel(final FilterMainPanel pParent,
+	public FilterSettingPanel(final QuickFind quickFind, final FilterMainPanel pParent,
 							  final Object pFilterObj,
 							  final FilterModelLocator modelLocator,
 							  final CyApplicationManager applicationManager,
 							  final CyEventHelper eventHelper) {
 		this.applicationManager = applicationManager;
 		this.eventHelper = eventHelper;
+		this.quickFind = quickFind;
 
 		theFilter = (CompositeFilter) pFilterObj;
         setName(theFilter.getName());
@@ -499,7 +501,6 @@ public class FilterSettingPanel extends JPanel {
 	private AtomicFilter getAtomicFilterFromStr(String pCtrlAttribute, int pIndexType) {
 		AtomicFilter retFilter = null;
 		
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		//quickFind.addNetwork(cyNetwork, new TaskMonitorBase());
 		//index_by_UniqueIdentification = (TextIndex) quickFind.getIndex(cyNetwork);
 		
@@ -520,7 +521,7 @@ public class FilterSettingPanel extends JPanel {
 		
 		if ((attributeType == Integer.class)
 				||(attributeType == Double.class)) {
-				retFilter = new NumericFilter();
+				retFilter = new NumericFilter(quickFind);
 				retFilter.setControllingAttribute(pCtrlAttribute);
 				retFilter.setIndexType(pIndexType);		
 
@@ -529,7 +530,7 @@ public class FilterSettingPanel extends JPanel {
 				retFilter.setIndex(quickFind.getIndex(cyNetwork));
 				
 		} else if ((attributeType == String.class||(attributeType == List.class||(attributeType == Boolean.class)))) {
-				retFilter = new StringFilter();	
+				retFilter = new StringFilter(quickFind);	
 				retFilter.setControllingAttribute(pCtrlAttribute);
 				retFilter.setIndexType(pIndexType);
 				
@@ -943,7 +944,6 @@ public class FilterSettingPanel extends JPanel {
 	
 	
 	private TextIndex createTextIndex(StringFilter pFilter) {
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();
 		CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
 		quickFind.reindexNetwork(cyNetwork, pFilter.getIndexType(),
 				pFilter.getControllingAttribute(), new TaskMonitorBase());
@@ -952,7 +952,6 @@ public class FilterSettingPanel extends JPanel {
 	
 	
 	private NumberIndex createNumberIndex(NumericFilter pNumericFilter) {
-		final QuickFind quickFind = QuickFindFactory.getGlobalQuickFindInstance();					
 		currentNetwork = applicationManager.getCurrentNetwork();
 
 		if (currentNetwork == null)

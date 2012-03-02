@@ -28,6 +28,7 @@
 package org.cytoscape.filter.internal.filters.view;
 
 
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -35,9 +36,11 @@ import org.cytoscape.work.TaskIterator;
 
 final class FilterIndexingTaskFactory implements TaskFactory {
 	private final CyNetwork network;
+	private final QuickFind quickFind;
 
-	FilterIndexingTaskFactory(final CyNetwork network) {
+	FilterIndexingTaskFactory(final QuickFind quickFind, final CyNetwork network) {
 		this.network = network;
+		this.quickFind = quickFind;
 	}
 
 	/** @return an iterator returning a sequence of <code>Task</code>s.
@@ -46,6 +49,6 @@ final class FilterIndexingTaskFactory implements TaskFactory {
 	 */
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new FilterIndexingTask(network));
+		return new TaskIterator(new FilterIndexingTask(quickFind, network));
 	}
 }

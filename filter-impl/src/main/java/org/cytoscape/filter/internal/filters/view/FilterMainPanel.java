@@ -83,6 +83,7 @@ import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxModel;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
 import org.cytoscape.filter.internal.filters.util.WidestStringProvider;
 import org.cytoscape.filter.internal.quickfind.util.CyAttributesUtil;
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -115,6 +116,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	// String constants used for separator entries in the attribute combobox
 	private static final String filtersSeparator = "-- Filters --";
 	private static final String attributesSeperator = "-- Attributes --";
+	
+	private final QuickFind quickFind;
 
 	private static JPopupMenu optionMenu;
 
@@ -149,7 +152,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private final CyEventHelper eventHelper;
 	private final TaskManager taskManager;
 	
-	public FilterMainPanel(final FilterModelLocator modelLocator,
+	public FilterMainPanel(final QuickFind quickFind, final FilterModelLocator modelLocator,
 						   final CyApplicationManager applicationManager,
 	                       final CyNetworkManager networkManager,
 	                       final CyEventHelper eventHelper,
@@ -159,6 +162,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		this.networkManager     = networkManager;
 		this.eventHelper        = eventHelper;
 		this.taskManager        = taskManager;
+		this.quickFind = quickFind;
 		
 		modelLocator.addListener(this);
 
@@ -452,7 +456,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		currentFilterSettingPanel = next;
 		
 		if (currentFilterSettingPanel == null || currentFilterSettingPanel.hasNullIndexChildFilter()) {
-			currentFilterSettingPanel = new FilterSettingPanel(this, pNewFilter, modelLocator, applicationManager,
+			currentFilterSettingPanel = new FilterSettingPanel(quickFind, this, pNewFilter, modelLocator, applicationManager,
 					eventHelper);
 			//Update the HashMap
 			filter2SettingPanelMap.put(pNewFilter, currentFilterSettingPanel);			
@@ -547,7 +551,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			return;
 
 		final CyNetwork network = currentView.getModel();
-		taskManager.execute(new FilterIndexingTaskFactory(network));
+		taskManager.execute(new FilterIndexingTaskFactory(quickFind, network));
 
 		updateCMBAttributes();
 	}
@@ -1179,7 +1183,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		
 		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
 		allFilters.add(newFilter);
-		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, modelLocator,
+		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(quickFind, this, newFilter, modelLocator,
 				applicationManager, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);
 		
@@ -1258,7 +1262,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		newFilter.setNetwork(applicationManager.getCurrentNetwork());
 		modelLocator.addFilter(newFilter);
 		
-		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(this, newFilter, modelLocator,
+		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(quickFind, this, newFilter, modelLocator,
 				applicationManager, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);
 
