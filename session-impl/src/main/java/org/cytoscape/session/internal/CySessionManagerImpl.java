@@ -235,12 +235,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	@Override
 	public void setCurrentSession(CySession sess, final String fileName) {
 		
-		// Only update session file name
-		if(fileName != null && sess == null) {
-			currentFileName = fileName;
-			return;
-		}
-		
 		boolean emptySession = sess == null;
 
 		// Always remove the current session first
