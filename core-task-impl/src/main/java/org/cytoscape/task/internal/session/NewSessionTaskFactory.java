@@ -30,8 +30,7 @@
 package org.cytoscape.task.internal.session; 
 
 
-import org.cytoscape.session.CySessionManager; 
-
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 

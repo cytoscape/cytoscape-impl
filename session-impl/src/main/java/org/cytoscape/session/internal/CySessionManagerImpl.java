@@ -63,6 +63,8 @@ import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionSavedEvent;
+import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -76,7 +78,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Christian Lopes
  */
-public class CySessionManagerImpl implements CySessionManager {
+public class CySessionManagerImpl implements CySessionManager, SessionSavedListener {
 
 	private String currentFileName;
 	private CySession currentSession;
@@ -231,7 +233,13 @@ public class CySessionManagerImpl implements CySessionManager {
 	}
 
 	@Override
-	public void setCurrentSession(CySession sess, String fileName) {
+	public void setCurrentSession(CySession sess, final String fileName) {
+		
+		// Only update session file name
+		if(fileName != null && sess == null) {
+			currentFileName = fileName;
+			return;
+		}
 		
 		boolean emptySession = sess == null;
 
@@ -419,5 +427,18 @@ public class CySessionManagerImpl implements CySessionManager {
 		
 		// Clear undo stack
 		undo.reset();
+	}
+
+	/**
+	 * Update current session session object when session is saved.
+	 */
+	@Override
+	public void handleEvent(SessionSavedEvent e) {
+		
+		if(currentSession != e.getSavedSession())
+			currentSession = e.getSavedSession();
+		
+		if(currentFileName != e.getSavedFileName())
+			currentFileName = e.getSavedFileName();
 	}
 }

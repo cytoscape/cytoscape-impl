@@ -32,6 +32,7 @@ package org.cytoscape.task.internal.session;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
+import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -52,6 +53,17 @@ public class SaveSessionTaskFactory implements TaskFactory {
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new SaveSessionTask(writerMgr, sessionMgr, tracker, cyEventHelper));
+		final CySession session = sessionMgr.getCurrentSession();
+		if (session == null)
+			throw new NullPointerException("Could not find current session.");
+		
+		// Check session file name is set or not.
+		final String sessionFileName = sessionMgr.getCurrentSessionFileName();		
+		
+		// If there is no file name, use Save As task.  Otherwise, overwrite the current session.
+		if (sessionFileName == null)
+			return new TaskIterator(new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
+		else
+			return new TaskIterator(new SaveSessionTask(writerMgr, session, sessionFileName, tracker));
 	}
 }
