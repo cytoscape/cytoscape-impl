@@ -111,27 +111,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 		quickFind.addQuickFindListener(this);
 	}
 
-	/**
-	 * Initializes index, if network already exists.
-	 * This condition may occur if a user loads up a network from the command
-	 * line, and the network is already loaded prior to any apps being loaded
-	 */
-	private void initIndex() {
 
-		//  If a network already exists within Cytoscape, index it
-		final CyNetwork cyNetwork = applicationManager.getCurrentNetwork();
-		if ((cyNetwork != null) && (cyNetwork.getNodeCount() > 0)) {
-			//  Run Indexer in separate background daemon thread.
-			Thread thread = new Thread() {
-				public void run() {
-					quickFind.addNetwork(cyNetwork, new TaskMonitorBase());
-				}
-			};
-
-			thread.start();
-		}
-	}
-	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
 		final CyNetworkView networkView = e.getNetworkView();
@@ -144,6 +124,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	 *
 	 * @param network CyNetwork Object.
 	 */
+	@Override
 	public void networkAddedToIndex(CyNetwork network) {
 		//  No-op
 	}
@@ -153,6 +134,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 	 *
 	 * @param network CyNetwork Object.
 	 */
+	@Override
 	public void networkRemovedfromIndex(CyNetwork network) {
 		//  No-op
 	}
@@ -163,6 +145,8 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 		// No-op
 	}
 
+	
+	@Override
 	public void indexingEnded() {
 		// No-op
 	}
