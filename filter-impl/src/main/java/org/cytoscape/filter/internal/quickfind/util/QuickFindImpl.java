@@ -30,9 +30,10 @@ package org.cytoscape.filter.internal.quickfind.util;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
@@ -54,19 +55,25 @@ import org.cytoscape.work.TaskMonitor;
  * @author Ethan Cerami.
  */
 public class QuickFindImpl implements QuickFind {
-	private ArrayList listenerList = new ArrayList();
-	private Map<CyNetwork, GenericIndex> networkMap = new ConcurrentHashMap<CyNetwork, GenericIndex>();
+	
+	private final List<QuickFindListener> listenerList;
+	private final Map<CyNetwork, GenericIndex> networkMap;
+	
 	private int maxProgress;
 	private int currentProgress;
 	private static final boolean OUTPUT_PERFORMANCE_STATS = false;
 
 
+	public QuickFindImpl() {
+		this.listenerList = new ArrayList<QuickFindListener>();
+		this.networkMap = new HashMap<CyNetwork, GenericIndex>();
+	}
+	
+	
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param network DOCUMENT ME!
-	 * @param taskMonitor DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	public synchronized void addNetwork(CyNetwork network, TaskMonitor taskMonitor) {
 		// check args - short circuit if necessary
 		if (network.getNodeCount() == 0)
@@ -148,7 +155,7 @@ public class QuickFindImpl implements QuickFind {
 		return true;
 	}
 
-	
+	@Override
 	public synchronized void removeNetwork(CyNetwork network) {
 		networkMap.remove(networkMap);
 
@@ -160,7 +167,7 @@ public class QuickFindImpl implements QuickFind {
 	}
 
 	@Override
-	public GenericIndex getIndex(final CyNetwork network) {
+	public synchronized GenericIndex getIndex(final CyNetwork network) {
 		return networkMap.get(network);	
 	}
 
@@ -172,6 +179,7 @@ public class QuickFindImpl implements QuickFind {
 		CyTable table;
 		if (indexType == QuickFind.INDEX_NODES) {
 			CyNode node = null;
+			//
 			if (!(cyNetwork.getNodeList() == null || cyNetwork.getNodeList().size() == 0)){
 				node = cyNetwork.getNodeList().iterator().next();
 			}
