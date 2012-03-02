@@ -60,6 +60,7 @@ import org.cytoscape.filter.internal.filters.model.FilterModelLocator;
 import org.cytoscape.filter.internal.filters.model.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
+import org.cytoscape.view.model.CyNetworkView;
 
 
 
@@ -207,7 +208,10 @@ public class TopoFilterPanel extends JPanel implements ActionListener, ItemListe
 	
 	private void updateView() {
 		eventHelper.flushPayloadEvents();
-		applicationManager.getCurrentNetworkView().updateView();
+		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		
+		if (currentView != null)
+			currentView.updateView();
 	}
 
 	

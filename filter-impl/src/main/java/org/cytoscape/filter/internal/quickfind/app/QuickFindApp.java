@@ -179,7 +179,10 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 
 					if (index.getIndexType() == QuickFind.INDEX_NODES) {
 						SelectUtil.setSelectedNodeState(network, list, true);
-						applicationManager.getCurrentNetworkView().fitSelected();
+						final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+						
+						if (currentView != null)
+							currentView.fitSelected();
 					} else {
 						SelectUtil.setSelectedEdgeState(network, list, true);
 
@@ -280,7 +283,10 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 				public void run() {
 					SelectUtil.setSelectedNodeState(cyNetwork, toBeSelected, true);
 					SelectUtil.setSelectedNodeState(cyNetwork, toBeUnselected, false);
-					applicationManager.getCurrentNetworkView().updateView();
+					final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+					
+					if (currentView != null)
+						currentView.updateView();
 				}
 			});
 	}
@@ -312,7 +318,10 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 				public void run() {
 					SelectUtil.setSelectedEdgeState(cyNetwork, toBeSelected, true);
 					SelectUtil.setSelectedEdgeState(cyNetwork, toBeUnselected, false);
-					applicationManager.getCurrentNetworkView().updateView();
+					final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+					
+					if (currentView != null)
+						currentView.updateView();
 				}
 			});
 	}

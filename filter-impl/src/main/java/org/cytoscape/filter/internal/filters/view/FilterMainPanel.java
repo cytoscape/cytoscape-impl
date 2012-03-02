@@ -110,7 +110,7 @@ import org.cytoscape.work.TaskManager;
 public class FilterMainPanel extends JPanel implements ActionListener,
 						       ItemListener, SetCurrentNetworkListener, NetworkAddedListener,
 						       NetworkAboutToBeDestroyedListener, SessionLoadedListener, RowsSetListener,
-						       RowsCreatedListener, NetworkViewAddedListener, FiltersChangedListener {
+						       RowsCreatedListener, FiltersChangedListener {
 	
 	// String constants used for separator entries in the attribute combobox
 	private static final String filtersSeparator = "-- Filters --";
@@ -297,15 +297,10 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		enableForNetwork();
 		updateFeedbackTableModel();
-	}
-	
-	@Override
-	public void handleEvent(final NetworkViewAddedEvent e) {
-		if (!isShowing())
-			return;
-
+		
 		updateIndex();
 	}
+
 
 	public void updateFeedbackTableModel(){		
 		SwingUtilities.invokeLater(new Runnable() {
@@ -545,14 +540,13 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 
 	private void updateIndex() {
-		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		final CyNetwork curNetwork = applicationManager.getCurrentNetwork();
 		
-		if (currentView == null)
+		// Update only when current network is available.
+		if (curNetwork == null)
 			return;
 
-		final CyNetwork network = currentView.getModel();
-		taskManager.execute(new FilterIndexingTaskFactory(quickFind, network));
-
+		taskManager.execute(new FilterIndexingTaskFactory(quickFind, curNetwork));
 		updateCMBAttributes();
 	}
 	

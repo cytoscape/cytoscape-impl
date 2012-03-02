@@ -58,6 +58,7 @@ import org.cytoscape.filter.internal.filters.model.InteractionFilter;
 import org.cytoscape.filter.internal.filters.model.NodeInteractionFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.filters.util.WidestStringComboBoxPopupMenuListener;
+import org.cytoscape.view.model.CyNetworkView;
 
 
 @SuppressWarnings("serial")
@@ -213,7 +214,10 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 
 	private void updateView() {
 		eventHelper.flushPayloadEvents();
-		applicationManager.getCurrentNetworkView().updateView();
+		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		
+		if (currentView != null)
+			currentView.updateView();
 	}
 
     /** This method is called from within the constructor to

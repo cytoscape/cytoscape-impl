@@ -61,6 +61,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -465,7 +466,9 @@ public class FilterSettingPanel extends JPanel {
 
 	private void updateView() {
 		eventHelper.flushPayloadEvents();
-		applicationManager.getCurrentNetworkView().updateView();
+		final CyNetworkView view = applicationManager.getCurrentNetworkView();
+		if(view != null)
+			view.updateView();
 	}
 
 	private void adjustBoundValues(Vector<String> pBoundVect, String pDataType){
