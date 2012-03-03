@@ -209,7 +209,7 @@ public class CyActivator extends AbstractCyActivator {
 		SaveSessionTaskFactory saveSessionTaskFactory = new SaveSessionTaskFactory( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef);
 		SaveSessionAsTaskFactory saveSessionAsTaskFactory = new SaveSessionAsTaskFactory( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef);
 		ProxySettingsTaskFactory proxySettingsTaskFactory = new ProxySettingsTaskFactory(cyPropertyServiceRef, streamUtilRef);
-		EditNetworkTitleTaskFactory editNetworkTitleTaskFactory = new EditNetworkTitleTaskFactory(undoSupportServiceRef, cyNetworkManagerServiceRef);
+		EditNetworkTitleTaskFactory editNetworkTitleTaskFactory = new EditNetworkTitleTaskFactory(undoSupportServiceRef, cyNetworkManagerServiceRef, cyNetworkNamingServiceRef);
 		CreateNetworkViewTaskFactory createNetworkViewTaskFactory = new CreateNetworkViewTaskFactory(undoSupportServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,cyLayoutsServiceRef,cyEventHelperRef);
 		ExportNetworkImageTaskFactory exportNetworkImageTaskFactory = new ExportNetworkImageTaskFactory(viewWriterManagerServiceRef,cyApplicationManagerServiceRef);
 		ExportNetworkViewTaskFactory exportNetworkViewTaskFactory = new ExportNetworkViewTaskFactory(networkViewWriterManagerServiceRef);

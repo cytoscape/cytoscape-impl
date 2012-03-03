@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
@@ -20,6 +20,7 @@ public class EditNetworkTitleTaskFactoryTest {
 	public void testGetTaskIterator() {
 		CyNetwork net = mock(CyNetwork.class);
 		CyNetworkManager netMgr = mock(CyNetworkManager.class);
+		CyNetworkNaming cyNetworkNaming = mock(CyNetworkNaming.class);
 		
 		CyRow r1 =  mock(CyRow.class);
 		when(net.getRow(net)).thenReturn(r1);
@@ -27,7 +28,7 @@ public class EditNetworkTitleTaskFactoryTest {
 
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
-		EditNetworkTitleTaskFactory factory = new EditNetworkTitleTaskFactory(undoSupport,netMgr);
+		EditNetworkTitleTaskFactory factory = new EditNetworkTitleTaskFactory(undoSupport,netMgr,cyNetworkNaming);
 		factory.setNetwork(net);
 		
 		TaskIterator ti = factory.createTaskIterator();

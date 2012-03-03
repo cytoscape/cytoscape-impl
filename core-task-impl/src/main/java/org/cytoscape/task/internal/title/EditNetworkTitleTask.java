@@ -33,6 +33,7 @@ package org.cytoscape.task.internal.title;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -45,6 +46,7 @@ import org.cytoscape.work.TunableValidator;
 public class EditNetworkTitleTask extends AbstractNetworkTask implements TunableValidator {
 	private final UndoSupport undoSupport;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
+	private final CyNetworkNaming cyNetworkNamingServiceRef;
 
 	
 	@ProvidesTitle
@@ -55,10 +57,12 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 	@Tunable(description = "New title")
 	public String title;
 
-	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net, CyNetworkManager cyNetworkManagerServiceRef) {
+	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net, CyNetworkManager cyNetworkManagerServiceRef,
+			CyNetworkNaming cyNetworkNamingServiceRef) {
 		super(net);
 		this.undoSupport = undoSupport;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.cyNetworkNamingServiceRef = cyNetworkNamingServiceRef;
 		title = network.getRow(network).get(CyTableEntry.NAME, String.class);		
 	}
 
@@ -68,24 +72,12 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		
 		// Check if the network tile already existed
 		boolean titleAlreayExisted = false;
-		Iterator<CyNetwork> it = this.cyNetworkManagerServiceRef.getNetworkSet().iterator();
-
-		while (it.hasNext()){
-			CyNetwork curNetwork = it.next();
-
-			// Exclude current network (itself)
-			if (curNetwork == network){
-				continue;
-			}
-
-			String curTitle = curNetwork.getRow(curNetwork).get(CyTableEntry.NAME, String.class);
-
-			if (title.equalsIgnoreCase(curTitle)){
-				titleAlreayExisted = true;
-				break;
-			}
-		}
 		
+		String newTitle = this.cyNetworkNamingServiceRef.getSuggestedNetworkTitle(title);
+		if (!newTitle.equalsIgnoreCase(title)){
+			titleAlreayExisted= true;
+		}
+				
 		if (titleAlreayExisted){
 			// Inform user duplicated network title!
 			try {

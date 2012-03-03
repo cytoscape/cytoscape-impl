@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Test;
@@ -21,7 +22,8 @@ public class EditNetworkTitleTaskTest {
 		CyNetwork net = mock(CyNetwork.class);
 		TaskMonitor tm = mock(TaskMonitor.class);
 		CyNetworkManager netMgr = mock(CyNetworkManager.class);
-
+		CyNetworkNaming cyNetworkNaming = mock(CyNetworkNaming.class);
+		
 		CyRow r1 =  mock(CyRow.class);
 
 		when(net.getRow(net)).thenReturn(r1);
@@ -29,7 +31,7 @@ public class EditNetworkTitleTaskTest {
 		
 		UndoSupport undoSupport = mock(UndoSupport.class);
 					
-		EditNetworkTitleTask t = new EditNetworkTitleTask(undoSupport, net, netMgr);
+		EditNetworkTitleTask t = new EditNetworkTitleTask(undoSupport, net, netMgr,cyNetworkNaming);
 		
 		t.run(tm);
 		
