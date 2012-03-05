@@ -184,7 +184,7 @@ public class WelcomeScreenDialog extends JDialog {
 				"Open a Recent Session");
 		buildHelpPanel(panel2,
 				new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, networkTaskFactory,
-						config, dsManager, cyProps.getProperties()),
+						config, dsManager, cyProps),
 				"Create New Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef, cyProps), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");

@@ -35,8 +35,10 @@ import org.cytoscape.datasource.DataSource;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.creation.ImportNetworksTaskFactory;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -54,6 +56,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
 
+	private static final String LAYOUT_ALGORITHM = "force-directed";
 	private static final String VIEW_THRESHOLD = "viewThreshold";
 	private static final int DEF_VIEW_THRESHOLD = 3000;
 
@@ -83,20 +86,23 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 	private final int viewThreshold;
 
 	private boolean firstSelection = false;
+	
+	private final CyProperty<Properties> props;
 
 	CreateNewNetworkPanel(Window parent, final BundleContext bc, final TaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory loadTF,
 			final NetworkTaskFactory createViewTaskFactory, final CyApplicationConfiguration config,
-			final DataSourceManager dsManager, final Properties props) {
+			final DataSourceManager dsManager, final CyProperty<Properties> props) {
 		this.parent = parent;
 		this.bc = bc;
+		this.props = props;
 
 		this.importNetworkFromURLTF = loadTF;
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
-		this.viewThreshold = getViewThreshold(props);
+		this.viewThreshold = getViewThreshold(props.getProperties());
 
 		this.dataSourceMap = new HashMap<String, String>();
 		this.networkList = new JComboBox();
@@ -205,6 +211,9 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 		parent.dispose();
 
+		if(layout.isSelected())
+			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, LAYOUT_ALGORITHM);
+				
 		// TODO REFACTOR!!!!!!!!!!!!!!!!!!!
 		guiTaskManager.execute(new TaskFactory() {
 
@@ -251,19 +260,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 			final Set<CyNetwork> networks = this.loadNetworkFileTF.loadCyNetworks(url);
 			taskMonitor.setProgress(1.0d);
-		/*
-			if (networks.size() != 0) {
-				taskMonitor.setTitle("Creating View for the new network");
-				CyNetwork network = networks.iterator().next();
-				final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
-				if (numGraphObjects >= viewThreshold) {
-					// Force to create view.
-					createViewTaskFactory.setNetwork(network);
-					taskMonitor.setStatusMessage("Loading done.  Creating view for the network...");
-					insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator());
-				}
-			}
-		*/
+			
+			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
 		}
 
 	}

@@ -29,22 +29,17 @@
  */
 package org.cytoscape.task.internal.loadnetwork;
 
-import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.creation.ImportNetworksTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 
 class GenerateNetworkViewsTask extends AbstractTask {

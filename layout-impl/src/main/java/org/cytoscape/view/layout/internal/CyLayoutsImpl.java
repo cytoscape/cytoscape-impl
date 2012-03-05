@@ -47,11 +47,11 @@ import java.util.Properties;
  */
 public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 
-	private HashMap<String, CyLayoutAlgorithm> layoutMap;
-	private final Properties props;
+	private final Map<String, CyLayoutAlgorithm> layoutMap;
+	private final CyProperty<Properties> cyProps;
 
-	public CyLayoutsImpl(CyProperty<Properties> p) {
-		props = p.getProperties();
+	public CyLayoutsImpl(final CyProperty<Properties> p) {
+		this.cyProps = p;
 		layoutMap = new HashMap<String,CyLayoutAlgorithm>();
 		addLayout(new GridNodeLayout(null), new HashMap());
 	}
@@ -114,14 +114,10 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	@Override
 	public CyLayoutAlgorithm getDefaultLayout() {
 		// See if the user has set the layout.default property	
-		String defaultLayout = props.getProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME);
+		String defaultLayout = cyProps.getProperties().getProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME);
+		if (defaultLayout == null || layoutMap.containsKey(defaultLayout) == false)
+			defaultLayout = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME; 
 
-		if ((defaultLayout == null) || !layoutMap.containsKey(defaultLayout)) {
-			defaultLayout = "grid";
-		}
-		defaultLayout = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME; 
-
-		CyLayoutAlgorithm l = layoutMap.get(defaultLayout);
-		return l;
+		return layoutMap.get(defaultLayout);
 	}
 }
