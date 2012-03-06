@@ -80,8 +80,6 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	private final int startLineNumber;
 	private String commentChar = null;
 	
-	// If this is on, import everything using ID as the key.
-	private boolean importAll = false;
 	
 	private InputStream is = null;
 	
@@ -139,10 +137,10 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	    throws Exception {
 		this.source = source;
 		this.startLineNumber = startLineNumber;
-		this.mapping = new AttributeMappingParameters(objectType, delimiters, listDelimiter,
-		                                             keyIndex, mappingAttribute, aliasIndexList,
+		this.mapping = new AttributeMappingParameters( delimiters, listDelimiter,
+		                                             keyIndex,
 		                                            attributeNames, attributeTypes, null,
-		                                           importFlag);
+		                                           importFlag, true);
 		this.parser = new AttributeLineParser(mapping);
 	}
 
@@ -154,30 +152,22 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	 * @param startLineNumber  DOCUMENT ME!
 	 * @param commentChar  DOCUMENT ME!
 	 */
-	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping,
-	                                   final int startLineNumber, final String commentChar) {
-		this(source, mapping, startLineNumber, commentChar, false);
-	}
-	
-	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping,
-            final int startLineNumber, final String commentChar, boolean importAll) {
-		this.source = source;
-		this.mapping = mapping;
-		this.startLineNumber = startLineNumber;
-		this.parser = new AttributeLineParser(mapping);
-		this.commentChar = commentChar;
-		this.importAll = importAll;
-	}
 
 	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping,
-            final int startLineNumber, final String commentChar, boolean importAll,
-            InputStream is) {
+            final int startLineNumber, final String commentChar) {
 		this.source = source;
 		this.mapping = mapping;
 		this.startLineNumber = startLineNumber;
 		this.parser = new AttributeLineParser(mapping);
 		this.commentChar = commentChar;
-		this.importAll = importAll;
+	}
+
+	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping, InputStream is) {
+		this.source = source;
+		this.mapping = mapping;
+		this.startLineNumber = mapping.getStartLineNumber();
+		this.parser = new AttributeLineParser(mapping);
+		this.commentChar = mapping.getCommentChar();
 
 		this.is = is;
 	}
@@ -232,10 +222,10 @@ public class DefaultAttributeTableReader implements TextTableReader {
 						// If key dos not exists, ignore the line.
 						if(parts.length>=mapping.getKeyIndex()+1) {
 							try {
-							if(importAll) {
+							//if(importAll) {
 								parser.parseAll(table, parts);
-							} else
-								parser.parseEntry(table, parts);
+							//} else
+							//	parser.parseEntry(table, parts);
 							} catch (Exception ex) {
 								logger.warn("Couldn't parse row: "+ lineCount);
 							}
@@ -267,8 +257,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
 		final Map<String, Object> invalid = parser.getInvalidMap();
-		sb.append(globalCounter + " entries are loaded and mapped onto\n");
-		sb.append(mapping.getObjectType().toString() + " attributes.");
+		sb.append(globalCounter + " entries are loaded and mapped onto attributes.");
 		
 		if(invalid.size() > 0) {
 			sb.append("\n\nThe following enties are invalid and were not imported:\n");

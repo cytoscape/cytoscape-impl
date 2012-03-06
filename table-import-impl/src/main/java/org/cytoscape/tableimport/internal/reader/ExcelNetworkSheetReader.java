@@ -72,7 +72,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	 */
 	public ExcelNetworkSheetReader(final String networkName, final Sheet sheet,
 	                               final NetworkTableMappingParameters nmp) {
-		this(networkName, sheet, nmp, 0);
+		this(networkName, sheet, nmp, nmp.getStartLineNumber());
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	 */
 	public ExcelNetworkSheetReader(final String networkName, final Sheet sheet,
 	                               final NetworkTableMappingParameters nmp, final int startLineNumber) {
-		super(networkName, null, nmp, startLineNumber, null);
+		super(networkName, null, nmp);
 		this.sheet = sheet;
 	}
 
@@ -121,6 +121,8 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	 * @return
 	 */
 	private String[] createElementStringArray(final Row row) {
+		if (nmp.getColumnCount() == -1)
+			return null;
 		String[] cells = new String[nmp.getColumnCount()];
 		Cell cell = null;
 

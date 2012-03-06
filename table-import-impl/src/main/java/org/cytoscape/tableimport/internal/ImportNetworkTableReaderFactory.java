@@ -4,6 +4,8 @@ package org.cytoscape.tableimport.internal;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.activation.FileTypeMap;
+
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
@@ -28,24 +30,20 @@ import org.cytoscape.work.TaskFactory;
 
 public class ImportNetworkTableReaderFactory extends AbstractNetworkReaderFactory {
 	private final static long serialVersionUID = 12023139869460154L;
-	private final String fileFormat;
-	private final CyTableManager tableManager;
-
+	private String fileFormat;
+	
 	/**
 	 * Creates a new ImportNetworkTableReaderFactory object.
 	 */
-	public ImportNetworkTableReaderFactory(final CyFileFilter filter,
-	                                       final String fileFormat) {
+	public ImportNetworkTableReaderFactory(final CyFileFilter filter){
 		super(filter, CytoscapeServices.cyNetworkViewFactory, CytoscapeServices.cyNetworkFactory);
-
-		this.tableManager = CytoscapeServices.cyTableManager;
-		this.fileFormat = fileFormat;
-
+		
 	}
 
 	public TaskIterator createTaskIterator() {
+		this.fileFormat = this.inputName.substring(this.inputName.lastIndexOf('.'));
 		return new TaskIterator(new ImportNetworkTableReaderTask(this.inputStream, fileFormat,
-		                                                         this.inputName, tableManager));
+		                                                         this.inputName));
 	}
 
 	@Override

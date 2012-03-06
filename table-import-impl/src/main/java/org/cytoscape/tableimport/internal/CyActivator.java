@@ -18,6 +18,7 @@ import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -27,8 +28,11 @@ import org.cytoscape.tableimport.internal.ImportAttributeTableReaderFactory;
 import static org.cytoscape.io.DataCategory.*;
 import org.cytoscape.tableimport.internal.ImportNetworkTableReaderFactory;
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationAction;
+import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHandlerFactory;
+import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactory;
+import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -39,6 +43,7 @@ import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 
@@ -71,17 +76,17 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
 		CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
 
-		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
+		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter attrsTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter oboFilter = new BasicCyFileFilter(new String[]{"obo"}, new String[]{"text/obo"},"OBO Files",NETWORK,CytoscapeServices.streamUtil);
 		OBONetworkReaderFactory oboReaderFactory = new OBONetworkReaderFactory(oboFilter);
-		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_txt = new ImportAttributeTableReaderFactory(attrsTableFilter_txt,".txt");
-		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_xls = new ImportAttributeTableReaderFactory(attrsTableFilter_xls,".xls");
+		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_txt = new ImportAttributeTableReaderFactory(attrsTableFilter_txt); //,".txt");
+		ImportAttributeTableReaderFactory importAttributeTableReaderFactory_xls = new ImportAttributeTableReaderFactory(attrsTableFilter_xls); //,".xls");
 		ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction(oboReaderFactory);
-		BasicCyFileFilter networkTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv"}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
+		BasicCyFileFilter networkTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt"}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
 		BasicCyFileFilter networkTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",NETWORK,CytoscapeServices.streamUtil);
-		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_txt = new ImportNetworkTableReaderFactory(networkTableFilter_txt,".txt");
-		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_xls = new ImportNetworkTableReaderFactory(networkTableFilter_xls,".xls");
+		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_txt = new ImportNetworkTableReaderFactory(networkTableFilter_txt);//, "txt");
+		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_xls = new ImportNetworkTableReaderFactory(networkTableFilter_xls); //,".xls");
 		
 		
 		Properties importAttributeTableReaderFactory_xlsProps = new Properties();
@@ -114,6 +119,17 @@ public class CyActivator extends AbstractCyActivator {
 		importNetworkTableReaderFactory_xlsProps.setProperty("readerDescription","Network Table file reader");
 		importNetworkTableReaderFactory_xlsProps.setProperty("readerId","networkTableReader_xls");
 		registerService(bc,importNetworkTableReaderFactory_xls,InputStreamTaskFactory.class, importNetworkTableReaderFactory_xlsProps);
+		
+		int dialogTypeAttribute = ImportTablePanel.SIMPLE_ATTRIBUTE_IMPORT;
+		CyTableManager tableManager= CytoscapeServices.cyTableManager;
+		AttributeMappingParametersHandlerFactory attributeMappingParametersHandlerFactory = new AttributeMappingParametersHandlerFactory(dialogTypeAttribute, tableManager);
+		registerService(bc,attributeMappingParametersHandlerFactory,GUITunableHandlerFactory.class, new Properties());
+		
+		int dialogTypeNetwork = ImportTablePanel.NETWORK_IMPORT;
+		CyTableManager tableManagerNetwork= CytoscapeServices.cyTableManager;
+		NetworkTableMappingParametersHandlerFactory networkTableMappingParametersHandlerFactory = new NetworkTableMappingParametersHandlerFactory(dialogTypeNetwork, tableManagerNetwork);
+		registerService(bc,networkTableMappingParametersHandlerFactory,GUITunableHandlerFactory.class, new Properties());
+
 
 	}
 }

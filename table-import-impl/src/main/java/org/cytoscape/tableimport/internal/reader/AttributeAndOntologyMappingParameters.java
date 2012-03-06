@@ -111,7 +111,7 @@ public class AttributeAndOntologyMappingParameters extends AttributeMappingParam
 	                                             int ontologyIndex, final String ontologyName,
 												 boolean caseSensitive)
 	    throws Exception {
-		super(objectType, delimiters, listDelimiter, keyIndex, mappingAttribute, aliasIndex,
+		super( delimiters, listDelimiter, keyIndex,
 		      attributeNames, attributeTypes, listAttributeTypes, importFlag, caseSensitive);
 		this.ontologyName = ontologyName;
 		this.ontologyIndex = ontologyIndex;
@@ -126,23 +126,4 @@ public class AttributeAndOntologyMappingParameters extends AttributeMappingParam
 		return ontologyIndex;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	
-	/*
-	public Ontology getOntology() {
-		final Ontology testOntology;
-
-		if (Cytoscape.getOntologyServer() != null) {
-			testOntology = Cytoscape.getOntologyServer().getOntologies().get(ontologyName);
-		} else {
-			testOntology = null;
-		}
-
-		return testOntology;
-	}
-	*/
 }

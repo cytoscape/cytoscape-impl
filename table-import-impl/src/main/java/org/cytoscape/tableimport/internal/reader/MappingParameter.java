@@ -50,26 +50,6 @@ public interface MappingParameter {
 	 */
 	public int getColumnCount();
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public int getKeyIndex();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public ObjectType getObjectType();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public String getMappingAttribute();
 
 	/**
 	 *  DOCUMENT ME!
@@ -77,13 +57,6 @@ public interface MappingParameter {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean[] getImportFlag();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public List<Integer> getAliasIndexList();
 
 	/**
 	 *  DOCUMENT ME!
@@ -106,10 +79,4 @@ public interface MappingParameter {
 	 */
 	public String getListDelimiter();
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public Boolean getCaseSensitive();
 }

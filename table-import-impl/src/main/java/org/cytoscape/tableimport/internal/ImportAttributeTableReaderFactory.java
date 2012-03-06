@@ -21,24 +21,26 @@ import org.cytoscape.property.bookmark.BookmarksUtil;
 
 public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactory {
 	private final static long serialVersionUID = 12023139869460898L;
-	private final String fileFormat;
+	private String fileFormat;
 
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public ImportAttributeTableReaderFactory(CyFileFilter filter, String fileFormat)
+	public ImportAttributeTableReaderFactory(CyFileFilter filter)
 	{
 		super(filter, CytoscapeServices.cyTableFactory);
-		this.fileFormat = fileFormat;
+		
 	}
 
 	public TaskIterator createTaskIterator() {
+		this.fileFormat = this.inputName.substring(this.inputName.lastIndexOf('.'));
 		return new TaskIterator(
-			new ImportAttributeTableReaderTask(this.inputStream, fileFormat, CytoscapeServices.cyTableManager));
+			new ImportAttributeTableReaderTask(this.inputStream, fileFormat, inputName, CytoscapeServices.cyTableManager));
 	}
 
 	@Override
 	public void setInputStream(InputStream is, String inputName) {
 		this.inputStream = is;
+		this.inputName = inputName;
 	}
 }

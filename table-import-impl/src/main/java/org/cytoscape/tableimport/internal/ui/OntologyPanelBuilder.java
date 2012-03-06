@@ -279,7 +279,8 @@ public class OntologyPanelBuilder {
 		try {
 			final String selectedSourceName = panel.annotationComboBox.getSelectedItem().toString();
 			final URL sourceURL = new URL(panel.annotationUrlMap.get(selectedSourceName));
-			panel.readAnnotationForPreview(sourceURL, panel.checkDelimiter());
+			
+			panel.readAnnotationForPreviewOntology(  sourceURL, panel.checkDelimiter());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -494,30 +495,6 @@ public class OntologyPanelBuilder {
 		panel.previewPanel.repaint();
 	}
 
-	/**
-	 * Create task for annotation reader and run it.
-	 *
-	 * @param reader
-	 * @param ontology
-	 * @param source
-	 */
-	private void loadGeneAssociation(TextTableReader reader, String ontology, String source) {
-		/*
-		// Create LoadNetwork Task
-		ImportOntologyAnnotationTask task = new ImportOntologyAnnotationTask(reader, ontology,
-		                                                                     source);
-
-		// Configure JTask Dialog Pop-Up Box
-		JTaskConfig jTaskConfig = new JTaskConfig();
-		jTaskConfig.setOwner(CytoscapeServices.cySwingApplication.getJFrame());
-		jTaskConfig.displayCloseButton(true);
-		jTaskConfig.displayStatus(true);
-		jTaskConfig.setAutoDispose(false);
-
-		// Execute Task in New Thread; pops open JTask Dialog Box.
-		TaskManager.executeTask(task, jTaskConfig);
-		*/
-	}
 
 	/**
 	 * Create task for ontology reader and run the task.<br>
@@ -554,9 +531,6 @@ public class OntologyPanelBuilder {
 		final String annotationSource = panel.annotationUrlMap.get(panel.annotationComboBox.getSelectedItem());
 
 
-		// If selected ontology is not loaded, load it first.
-		//TODO: add manager
-//		if (Cytoscape.getOntologyServer().getOntologyNames().contains(selectedOntologyName) == false)
 		loadOntology(ontologySourceLocation, selectedOntologyName, annotationSource);
 
 

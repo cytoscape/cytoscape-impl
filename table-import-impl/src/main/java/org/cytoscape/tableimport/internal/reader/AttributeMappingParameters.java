@@ -45,8 +45,10 @@ import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectTy
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableManager;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,84 +71,42 @@ import org.cytoscape.model.CyTable;
  * @author Keiichiro Ono
  *
  */
-public class AttributeMappingParameters implements MappingParameter {
-	/**
-	 *
-	 */
-	public static final String ID = "name";
-	private static final String DEF_LIST_DELIMITER = PIPE.toString();
-	private static final String DEF_DELIMITER = TAB.toString();
-	private final ObjectType objectType;
-	private final int keyIndex;
-	private final List<Integer> aliasIndex;
+public class AttributeMappingParameters extends AbstractMappingParameters {
+
+	
 	private String[] attributeNames;
 	private Byte[] attributeTypes;
 	private Byte[] listAttributeTypes;
-	private final String mappingAttribute;
-	private List<String> delimiters;
-	private String listDelimiter;
+	private final int keyIndex;
 	private boolean[] importFlag;
-	private Map<String, List<String>> attr2id;
-	private CyTable attributes;
-	//private Aliases existingAliases;
-	private Map<String, String> networkTitle2ID = null;
+	private boolean caseSensitive;
+	
+	public AttributeMappingParameters(InputStream is, String fileType) {
+		super(is, fileType);
 
-	// Case sensitivity
-	private Boolean caseSensitive;
-
-	/**
-	 * Creates a new AttributeMappingParameters object.
-	 *
-	 * @param objectType  DOCUMENT ME!
-	 * @param delimiters  DOCUMENT ME!
-	 * @param listDelimiter  DOCUMENT ME!
-	 * @param keyIndex  DOCUMENT ME!
-	 * @param mappingAttribute  DOCUMENT ME!
-	 * @param aliasIndex  DOCUMENT ME!
-	 * @param attrNames  DOCUMENT ME!
-	 * @param attributeTypes  DOCUMENT ME!
-	 * @param listAttributeTypes  DOCUMENT ME!
-	 * @param importFlag  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
-	 */
-	public AttributeMappingParameters(final ObjectType objectType, final List<String> delimiters,
-	                                  final String listDelimiter, final int keyIndex,
-	                                  final String mappingAttribute,
-	                                  final List<Integer> aliasIndex, final String[] attrNames,
+		this.keyIndex = -1;
+		}
+	
+	public AttributeMappingParameters( final List<String> delimiters,
+	                                  final String listDelimiter, final int keyIndex, final String[] attrNames,
 	                                  Byte[] attributeTypes, Byte[] listAttributeTypes,
-	                                  boolean[] importFlag) throws Exception {
-		this(objectType, delimiters, listDelimiter, keyIndex, mappingAttribute, aliasIndex,
-		     attrNames, attributeTypes, listAttributeTypes, importFlag, true);
+	                                  boolean[] importFlag, boolean caseSensitive) throws Exception {
+		this( delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, listAttributeTypes, importFlag, 
+				caseSensitive, 0, null);
 	}
-
-	/**
-	 * Creates a new AttributeMappingParameters object.
-	 *
-	 * @param objectType  DOCUMENT ME!
-	 * @param delimiters  DOCUMENT ME!
-	 * @param listDelimiter  DOCUMENT ME!
-	 * @param keyIndex  DOCUMENT ME!
-	 * @param mappingAttribute  DOCUMENT ME!
-	 * @param aliasIndex  DOCUMENT ME!
-	 * @param attrNames  DOCUMENT ME!
-	 * @param attributeTypes  DOCUMENT ME!
-	 * @param listAttributeTypes  DOCUMENT ME!
-	 * @param importFlag  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
-	 * @throws IOException  DOCUMENT ME!
-	 */
-	public AttributeMappingParameters(final ObjectType objectType, final List<String> delimiters,
-	                                  final String listDelimiter, final int keyIndex,
-	                                  final String mappingAttribute,
-	                                  final List<Integer> aliasIndex, final String[] attrNames,
-	                                  Byte[] attributeTypes, Byte[] listAttributeTypes,
-	                                  boolean[] importFlag, Boolean caseSensitive)
-	    throws Exception {
-		this.listAttributeTypes = listAttributeTypes;
+	
+	public AttributeMappingParameters(final List<String> delimiters,
+            final String listDelimiter, final int keyIndex,
+            final String[] attrNames,
+            Byte[] attributeTypes, Byte[] listAttributeTypes,
+            boolean[] importFlag, Boolean caseSensitive, int startNumber, String commentChar)
+throws Exception {
+		
+		super(delimiters, listDelimiter, attrNames, attributeTypes, importFlag, startNumber, commentChar);
+		
 		this.caseSensitive = caseSensitive;
-
+		
+		
 		if (attrNames == null) {
 			throw new Exception("attributeNames should not be null.");
 		}
@@ -158,62 +118,12 @@ public class AttributeMappingParameters implements MappingParameter {
 		if (attrNames.length < keyIndex) {
 			throw new IOException("Key is out of range.");
 		}
+		
+		this.listAttributeTypes = listAttributeTypes;
 
-		/*
-		 * These calues should not be null!
-		 */
-		this.objectType = objectType;
 		this.keyIndex = keyIndex;
 		this.attributeNames = attrNames;
-
-		if (this.objectType == NETWORK) {
-			networkTitle2ID = new HashMap<String, String>();
-
-			//Set<CyNetwork> networkSet = Cytoscape.getNetworkSet();
-			Set<CyNetwork> networkSet = CytoscapeServices.cyNetworkManager.getNetworkSet();
-			
-			for (CyNetwork net : networkSet) {
-				//networkTitle2ID.put(net.getTitle(), net.getIdentifier());
-				//networkTitle2ID.put(net.getDefaultNetworkTable().getTitle(), Long.toString(net.getSUID()));
-			}
-		} else {
-			networkTitle2ID = null;
-		}
-
-		/*
-		 * If attribute mapping is null, use ID for mapping.
-		 */
-		if (mappingAttribute == null) {
-			this.mappingAttribute = ID; // Note: ID = 'name'
-		} else {
-			this.mappingAttribute = mappingAttribute;
-		}
-
-		/*
-		 * If delimiter is not available, use default value (TAB)
-		 */
-		if (delimiters == null) {
-			this.delimiters = new ArrayList<String>();
-			this.delimiters.add(DEF_DELIMITER);
-		} else {
-			this.delimiters = delimiters;
-		}
-
-		/*
-		 * If list delimiter is null, use default "|"
-		 */
-		if (listDelimiter == null) {
-			this.listDelimiter = DEF_LIST_DELIMITER;
-		} else {
-			this.listDelimiter = listDelimiter;
-		}
-
-		if (aliasIndex == null) {
-			this.aliasIndex = new ArrayList<Integer>();
-		} else {
-			this.aliasIndex = aliasIndex;
-		}
-
+		
 		/*
 		 * If not specified, import everything as String attributes.
 		 */
@@ -240,78 +150,10 @@ public class AttributeMappingParameters implements MappingParameter {
 			this.importFlag = importFlag;
 		}
 
-		Iterator it = null;
-
-		CyNetwork network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
-		switch (objectType) {
-			case NODE:
-				//attributes = Cytoscape.getNodeAttributes();
-				
-				
-				if (network != null){
-					attributes = network.getDefaultNodeTable();
-
-					//existingAliases = Cytoscape.getOntologyServer().getNodeAliases();
-					it = network.getNodeList().iterator(); //Cytoscape.getRootGraph().nodesIterator();					
-				}
-
-				break;
-
-			case EDGE:
-				if (network != null){
-					attributes = network.getDefaultEdgeTable();
-
-					//existingAliases = Cytoscape.getOntologyServer().getNodeAliases();
-					it = network.getEdgeList().iterator(); //Cytoscape.getRootGraph().nodesIterator();					
-				}
-
-				//attributes = Cytoscape.getEdgeAttributes();
-				//existingAliases = Cytoscape.getOntologyServer().getEdgeAliases();
-				//it = Cytoscape.getRootGraph().edgesIterator();
-
-				break;
-
-			case NETWORK:
-				//attributes = Cytoscape.getNetworkAttributes();
-				//existingAliases = Cytoscape.getOntologyServer().getNetworkAliases();
-				//it = Cytoscape.getNetworkSet().iterator();
-
-				break;
-
-			default:
-				//attributes = null;
-				it = null;
-		}
-
+		
 	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	//public Aliases getAlias() {
-	//	return existingAliases;
-	//}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	//public CyAttributes getAttributes() {
-	//	return attributes;
-	//}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public List<Integer> getAliasIndexList() {
-		return aliasIndex;
-	}
-
+	
+	
 	/**
 	 *  DOCUMENT ME!
 	 *
@@ -340,16 +182,7 @@ public class AttributeMappingParameters implements MappingParameter {
 		return listAttributeTypes;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public boolean[] getImportFlag() {
-		// TODO Auto-generated method stub
-		return importFlag;
-	}
-
+	
 	/**
 	 *  DOCUMENT ME!
 	 *
@@ -359,113 +192,7 @@ public class AttributeMappingParameters implements MappingParameter {
 		// TODO Auto-generated method stub
 		return keyIndex;
 	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public String getListDelimiter() {
-		// TODO Auto-generated method stub
-		return listDelimiter;
-	}
-
-	/**
-	 *  Returns attribute name for mapping.
-	 *
-	 * @return  Key CyAttribute name for mapping.
-	 */
-	public String getMappingAttribute() {
-		return mappingAttribute;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public ObjectType getObjectType() {
-		// TODO Auto-generated method stub
-		return objectType;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public List<String> getDelimiters() {
-		return delimiters;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public String getDelimiterRegEx() {
-		StringBuffer delimiterBuffer = new StringBuffer();
-		delimiterBuffer.append("[");
-
-		for (String delimiter : delimiters) {
-			if (delimiter.equals(" += +")) {
-				return " += +";
-			}
-
-			delimiterBuffer.append(delimiter);
-		}
-
-		delimiterBuffer.append("]");
-
-		return delimiterBuffer.toString();
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param attributeValue DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public List<String> toID(String attributeValue) {
-		return attr2id.get(attributeValue);
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public Map<String, List<String>> getAttributeToIDMap() {
-		return attr2id;
-	}
-
-
-
-	private void putAttrValue(String attributeValue, String objectID) {
-		List<String> objIdList = attr2id.get(attributeValue);
-		if (objIdList == null) {
-			objIdList = new ArrayList<String>();
-		}
-
-		objIdList.add(objectID);
-		attr2id.put(attributeValue, objIdList);
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public int getColumnCount() {
-		// TODO Auto-generated method stub
-		return attributeNames.length;
-	}
-
-	protected Map<String, String> getnetworkTitleMap() {
-		return networkTitle2ID;
-	}
-
+	
 	/**
 	 *  DOCUMENT ME!
 	 *

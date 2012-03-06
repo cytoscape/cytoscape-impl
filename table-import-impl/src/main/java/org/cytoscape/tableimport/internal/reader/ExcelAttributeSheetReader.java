@@ -65,24 +65,10 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	private final AttributeLineParser parser;
 	private final int startLineNumber;
 	private int globalCounter = 0;
-	private boolean importAll = false;
 
 	private static final Logger logger = LoggerFactory.getLogger(ExcelAttributeSheetReader.class);
 	
-	/**
-	 * Constructor.<br>
-	 *
-	 * Takes one Excel sheet as parameter.
-	 *
-	 * @param sheet
-	 * @param mapping
-	 */
-	public ExcelAttributeSheetReader(final Sheet sheet,
-	                                 final AttributeMappingParameters mapping,
-	                                 final int startLineNumber) {
-		this(sheet, mapping, startLineNumber, false);
-	}
-
+	
 	/**
 	 * Creates a new ExcelAttributeSheetReader object.
 	 *
@@ -92,13 +78,11 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	 * @param importAll  DOCUMENT ME!
 	 */
 	public ExcelAttributeSheetReader(final Sheet sheet,
-	                                 final AttributeMappingParameters mapping,
-	                                 final int startLineNumber, boolean importAll) {
+	                                 final AttributeMappingParameters mapping){
 		this.sheet = sheet;
 		this.mapping = mapping;
-		this.startLineNumber = startLineNumber;
+		this.startLineNumber = mapping.getStartLineNumber();
 		this.parser = new AttributeLineParser(mapping);
-		this.importAll = importAll;
 	}
 
 	/**
@@ -123,10 +107,10 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		while ((row = sheet.getRow(rowCount)) != null) {
 			cellsInOneRow = createElementStringArray(row);
 			try {
-				if(importAll)
+				//if(importAll)
 					parser.parseAll(table, cellsInOneRow);
-				else 
-					parser.parseEntry(table, cellsInOneRow);
+				//else 
+				//	parser.parseEntry(table, cellsInOneRow);
 			} catch (Exception ex) {
 				logger.warn("Couldn't parse row: " + rowCount, ex);
 			}
@@ -182,8 +166,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
 		final Map<String, Object> invalid = parser.getInvalidMap();
-		sb.append(globalCounter + " entries are loaded and mapped onto\n");
-		sb.append(mapping.getObjectType().toString() + " attributes.");
+		sb.append(globalCounter + " entries are loaded and mapped onto attributes.");
 
 		int limit = 10;
 		if (invalid.size() > 0) {

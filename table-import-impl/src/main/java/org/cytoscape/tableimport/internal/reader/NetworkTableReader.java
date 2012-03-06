@@ -93,16 +93,15 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	 * @param commentChar  DOCUMENT ME!
 	 */
 	public NetworkTableReader(final String networkName, final InputStream is,
-	                          final NetworkTableMappingParameters nmp, final int startLineNumber,
-	                          final String commentChar) {
+	                          final NetworkTableMappingParameters nmp) {
 		super(networkName);
 		//this.sourceURL = sourceURL;
 		this.is = is;
 		this.nmp = nmp;
-		this.startLineNumber = startLineNumber;
+		this.startLineNumber = nmp.getStartLineNumber();
 		this.nodeList = new ArrayList<Long>();
 		this.edgeList = new ArrayList<Long>();
-		this.commentChar = commentChar;
+		this.commentChar = nmp.getCommentChar();
 
 		parser = new NetworkLineParser(nodeList, edgeList, nmp);
 	}

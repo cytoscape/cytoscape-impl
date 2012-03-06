@@ -56,6 +56,8 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -213,7 +215,7 @@ public class PreviewTablePanel extends JPanel {
 	private void hideUnnecessaryComponents() {
 		fileTypeLabel.setVisible(false);
 
-		if (panelType == NETWORK_PREVIEW) {
+		if (panelType == NETWORK_PREVIEW || panelType == ATTRIBUTE_PREVIEW) {
 			keyPreviewScrollPane.setVisible(false);
 			rightArrowLabel.setVisible(false);
 			legendLabel.setVisible(false);
@@ -221,11 +223,7 @@ public class PreviewTablePanel extends JPanel {
 			aliasLabel.setVisible(false);
 			ontologyTermLabel.setVisible(false);
 			taxonomyLabel.setVisible(false);
-		} else if (panelType == ATTRIBUTE_PREVIEW) {
-			ontologyTermLabel.setVisible(false);
-			taxonomyLabel.setVisible(false);
 		}
-
 		repaint();
 	}
 
@@ -670,13 +668,16 @@ public class PreviewTablePanel extends JPanel {
 	 *            TODO
 	 * @throws IOException
 	 */
-	public void setPreviewTable(final Workbook wb, InputStream is, String fileType, URL sourceURL, List<String> delimiters,
+	public void setPreviewTable(final Workbook wb, String fileType, InputStream tempIs, List<String> delimiters,
 			TableCellRenderer renderer, int size, final String commentLineChar,
 			final int startLine) throws IOException {
 		
-		logger.debug("Loading preview: " + sourceURL);
 		
-		this.is = is;
+		if(tempIs == null) 
+			return;
+		logger.debug("Loading preview for the " + fileType +" file");
+		
+		//this.is = is;
 		this.fileType = fileType;
 		
 		TableCellRenderer curRenderer = renderer;
@@ -704,23 +705,13 @@ public class PreviewTablePanel extends JPanel {
 		TableModel newModel;
 
 		fileTypeLabel.setVisible(true);
-
-		if(fileType == null) {
-			if(sourceURL == null)
-				return;
 			
-			fileTypeLabel.setText("Text File");
-			fileTypeLabel.setIcon(TEXT_FILE_ICON.getIcon());
-			newModel = parseText(sourceURL, size, curRenderer, delimiters, startLine);
-
-			String[] urlParts = sourceURL.toString().split("/");
-			final String tabName = urlParts[urlParts.length - 1];
-			DataTypeUtil.guessTypes(newModel, tabName, dataTypeMap);
-			listDataTypeMap.put(tabName, initListDataTypes(newModel));
-			addTableTab(newModel, tabName, curRenderer);
-			
-		} else if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
+		boolean isTable = false;
+		if (fileType!= null){
+			if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
 				|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
+				
+			isTable = true;
 			fileTypeLabel.setIcon(SPREADSHEET_ICON.getIcon());
 			fileTypeLabel.setText("Excel" + '\u2122' + " Workbook");			
 
@@ -736,7 +727,7 @@ public class PreviewTablePanel extends JPanel {
 			logger.debug("Sheet name = " + wb.getSheetName(0) + ", ROW = "
 					+ sheet.rowIterator().hasNext());
 
-			newModel = parseExcel(sourceURL, size, curRenderer, sheet,
+			newModel = parseExcel( size, curRenderer, sheet,
 					startLine);
 
 			if (newModel.getRowCount() == 0)
@@ -746,22 +737,14 @@ public class PreviewTablePanel extends JPanel {
 			listDataTypeMap
 					.put(wb.getSheetName(0), initListDataTypes(newModel));
 			addTableTab(newModel, wb.getSheetName(0), curRenderer);
-		} else {
-			// Should be text format "csv" or "tsv"
-			//if (isCytoscapeAttributeFile(sourceURL)) {
-			//	fileTypeLabel.setText("Cytoscape Attribute File");
-			//	fileTypeLabel.setIcon(new ImageIcon(getClass()
-			//			.getResource("/images/icon48.png")));
-			//	newModel = parseText(sourceURL, size, curRenderer, null, 1);
-			//} else {
-				fileTypeLabel.setText("Text File");
+			}
+		}
+		if (!isTable){
+			fileTypeLabel.setText("Text File");
 				fileTypeLabel.setIcon(TEXT_FILE_ICON.getIcon());
-				newModel = parseText(sourceURL, size, curRenderer, delimiters,
+				newModel = parseText(tempIs, size, curRenderer, delimiters,
 						startLine);
-			//}
-
-			//String[] urlParts = sourceURL.toString().split("/");
-			//final String tabName = urlParts[urlParts.length - 1];
+			
 			String tabName = "newTable";
 			DataTypeUtil.guessTypes(newModel, tabName, dataTypeMap);
 			listDataTypeMap.put(tabName, initListDataTypes(newModel));
@@ -914,46 +897,27 @@ public class PreviewTablePanel extends JPanel {
 	 * @param colCount
 	 * @return
 	 */
-	private Vector<String> getDefaultColumnNames(final int colCount,
-			final URL sourceURL) {
+	private Vector<String> getDefaultColumnNames(final int colCount) {
 
 		final Vector<String> colNames = new Vector<String>();
 
-		//String[] parts = sourceURL.toString().split("/");
-		//final String fileName = parts[parts.length - 1];
-
-		//if ((colCount == GeneAssociationTags.values().length)
-		//		&& fileName.startsWith("gene_association")) {
-		//	for (Object colName : GeneAssociationTags.values()) {
-		//		colNames.add(colName.toString());
-		//	}
-		//} else {
-			for (int i = 0; i < colCount; i++) {
-				colNames.add("Column " + (i + 1));
-			}
-		//}
+		for (int i = 0; i < colCount; i++) {
+			colNames.add("Column " + (i + 1));
+		}
 
 		return colNames;
 	}
 
-	private TableModel parseText(URL sourceURL, int size,
+	private TableModel parseText(InputStream tempIs, int size,
 			TableCellRenderer renderer, List<String> delimiters, int startLine)
 			throws IOException {
-		//InputStream is = null;
+		
 		String line;
 		String attrName = "Attr1";
 		Vector data;
 		int maxColumn;
 
-		try {
-			BufferedReader bufRd = null;
-
-			if (this.is == null){
-				this.is = URLUtil.getInputStream(sourceURL);				
-			}
-			
-			try {
-				bufRd = new BufferedReader(new InputStreamReader(this.is));
+			BufferedReader bufRd = new BufferedReader(new InputStreamReader( tempIs));
 				/*
 				 * Generate reg. exp. for delimiter.
 				 */
@@ -1029,18 +993,9 @@ public class PreviewTablePanel extends JPanel {
 						break;
 					}
 				}
-			} finally {
-				//Do not close this inputStream after use in preview Panel
-				//if (bufRd != null) {
-				//	bufRd.close();
-				//}
-			}
-		} finally {
 			// If the inputStream is passed in from parameter, do not close it
-			if (sourceURL != null && is != null) {
-				is.close();
-			}
-		}
+			if ( tempIs!= null)
+				tempIs.close();
 
 		if (delimiters == null) {
 			// Cytoscape attr file.
@@ -1049,11 +1004,10 @@ public class PreviewTablePanel extends JPanel {
 			columnNames.add(attrName);
 			return new DefaultTableModel(data, columnNames);
 		} else
-			return new DefaultTableModel(data, getDefaultColumnNames(maxColumn,
-					sourceURL));
+			return new DefaultTableModel(data, getDefaultColumnNames(maxColumn));
 	}
 
-	private TableModel parseExcel(final URL sourceURL, int size,
+	private TableModel parseExcel( int size,
 			TableCellRenderer renderer, final Sheet sheet, int startLine)
 			throws IOException {
 		
@@ -1109,7 +1063,7 @@ public class PreviewTablePanel extends JPanel {
 			rowCount++;
 		}
 
-		return new DefaultTableModel(data, this.getDefaultColumnNames(maxCol, sourceURL));
+		return new DefaultTableModel(data, this.getDefaultColumnNames(maxCol));
 	}
 
 	/**

@@ -38,6 +38,8 @@ package org.cytoscape.tableimport.internal.reader;
 
 import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.*;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -50,7 +52,7 @@ import java.util.List;
  * @author Keiichiro Ono
  *
  */
-public class NetworkTableMappingParameters extends AttributeMappingParameters {
+public class NetworkTableMappingParameters extends AbstractMappingParameters {
 	private static final String DEF_INTERACTION = "pp";
 	private final Integer source;
 	private final Integer target;
@@ -75,17 +77,29 @@ public class NetworkTableMappingParameters extends AttributeMappingParameters {
 	 */
 	public NetworkTableMappingParameters(List<String> delimiters, String listDelimiter,
 	                                     String[] attributeNames, Byte[] attributeTypes,
-	                                     Byte[] listAttributeTypes, boolean[] importFlag,
+	                                     //Byte[] listAttributeTypes,
+	                                     boolean[] importFlag,
 	                                     Integer source, Integer target, Integer interaction,
-	                                     final String defInteraction) throws Exception {
-		super(EDGE, delimiters, listDelimiter, -1, null, null, attributeNames, attributeTypes,
-		      listAttributeTypes, importFlag);
+	                                     final String defInteraction, 
+	                                     int startNumber, String commentChar) throws Exception {
+		
+		
+		super(delimiters, listDelimiter,attributeNames , attributeTypes, importFlag, startNumber, commentChar);
 
 		this.source = source;
 		this.target = target;
 		this.interaction = interaction;
-
 		this.defInteraction = defInteraction;
+	}
+
+	public NetworkTableMappingParameters(InputStream is, String fileType) throws Exception {
+		
+		super(is, fileType);
+		this.source = -1;
+		this.target = -1;
+		this.interaction = -1;
+		this.defInteraction = "";
+		
 	}
 
 	/**
@@ -127,4 +141,8 @@ public class NetworkTableMappingParameters extends AttributeMappingParameters {
 			return defInteraction;
 		}
 	}
+
+
+	
+
 }
