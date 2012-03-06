@@ -30,6 +30,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
+import javax.swing.table.DefaultTableModel;
 
 
 /**
@@ -120,6 +121,18 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	 */
 	@Override
 	public Icon getIcon() { return null; }
+	
+	// Delete the given table from the JTable
+	public void DeleteTable(CyTable cyTable){
+		
+		if (this.currentTable != cyTable){
+			return;
+		}
+
+		browserTableModels.get(cyTable).getBrowserTable().setModel(new DefaultTableModel());				
+		this.browserTableModels.remove(cyTable);
+	}
+	
 	
 	synchronized void showSelectedTable() {
 		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel();

@@ -319,7 +319,12 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					bulkUpdate(rows);
+					try {
+						bulkUpdate(rows);						
+					}
+					catch (Exception e){
+						// do nothing, ignore this exception
+					}
 				}
 			});
 		}

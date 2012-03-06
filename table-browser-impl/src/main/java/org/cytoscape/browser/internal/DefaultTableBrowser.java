@@ -26,6 +26,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
@@ -36,9 +37,12 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
+import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+
 
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
-		NetworkAddedListener, NetworkAboutToBeDestroyedListener {
+		NetworkAddedListener, NetworkAboutToBeDestroyedListener, TableAboutToBeDeletedListener {
 
 	private static final long serialVersionUID = 627394119637512735L;
 
@@ -178,6 +182,14 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 		});
 	}
+	
+	
+	@Override
+	public void handleEvent(final TableAboutToBeDeletedEvent e) {
+		final CyTable cyTable = e.getTable();
+		DeleteTable(cyTable);
+	}
+	
 	
 	private static final class NetworkChooserCustomRenderer extends JLabel implements ListCellRenderer {
 
