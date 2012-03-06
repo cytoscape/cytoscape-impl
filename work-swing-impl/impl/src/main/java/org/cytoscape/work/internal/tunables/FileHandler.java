@@ -52,7 +52,7 @@ public class FileHandler extends AbstractGUITunableHandler {
 	private JTextField fileTextField;
 	private ImageIcon image;
 	private JLabel titleLabel;
-	private JSeparator titleSeparator;
+//	private JSeparator titleSeparator;
 	private MouseClick mouseClick;
 	private GroupLayout layout;
 	private SupportedFileTypesManager fileTypesManager;
@@ -125,7 +125,7 @@ public class FileHandler extends AbstractGUITunableHandler {
 	//	-button to open the FileCHooser
 	//add listener to the field and button
 	private void setGui() {
-		titleSeparator = new JSeparator();
+		//titleSeparator = new JSeparator();
 		titleLabel = new JLabel();
 		image = new ImageIcon(getClass().getResource("/images/ximian/stock_open.png"));
 		fileTextField = new JTextField();
@@ -168,7 +168,7 @@ public class FileHandler extends AbstractGUITunableHandler {
 						    .addContainerGap()
 						    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 							      .addComponent(titleLabel,GroupLayout.PREFERRED_SIZE,350,GroupLayout.PREFERRED_SIZE)
-							      .addComponent(titleSeparator,GroupLayout.DEFAULT_SIZE,350,Short.MAX_VALUE)
+//							      .addComponent(titleSeparator,GroupLayout.DEFAULT_SIZE,350,Short.MAX_VALUE)
 							      .addGroup(layout.createSequentialGroup()
 									.addComponent(fileTextField,GroupLayout.DEFAULT_SIZE,350,Short.MAX_VALUE)
 									.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -180,8 +180,8 @@ public class FileHandler extends AbstractGUITunableHandler {
 					.addGroup(layout.createSequentialGroup()
 						  .addContainerGap()
 						  .addComponent(titleLabel)
-						  .addGap(8, 8, 8)
-						  .addComponent(titleSeparator,GroupLayout.PREFERRED_SIZE,GroupLayout.DEFAULT_SIZE,GroupLayout.PREFERRED_SIZE)
+//						  .addGap(8, 8, 8)
+//						  .addComponent(titleSeparator,GroupLayout.PREFERRED_SIZE,GroupLayout.DEFAULT_SIZE,GroupLayout.PREFERRED_SIZE)
 						  .addGap(7, 7, 7)
 						  .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 						  .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
