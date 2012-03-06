@@ -39,6 +39,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +54,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.xml.soap.Text;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
@@ -225,12 +227,7 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	private org.jdesktop.swingx.JXTitledPanel mainPanel;
 	private DefaultListModel model;
 
-	// End of variables declaration
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	
 	public T getValue() {
 		if (canceled == true)
 			return null;
@@ -295,10 +292,20 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 			else
 				setPreferredSize(new Dimension(230, 60));
 			
-			if(value instanceof VisualPropertyValue)
-				setText(((VisualPropertyValue) value).getDisplayName());
-			else
-				setText("("+ value.toString() +")");
+			String labelText = null;
+			// Use reflection to check exixtence of "getDisplayName" method
+			final Class<? extends Object> testClass = value.getClass();
+			try {
+				final Method displayMethod = testClass.getMethod("getDisplayName", null);
+				final Object returnVal = displayMethod.invoke(value, null);
+				if(returnVal != null)
+					labelText = returnVal.toString();
+			} catch (Exception e) {
+				// Use toString is failed.
+				labelText = value.toString();
+			}
+			
+			setText(labelText);
 			
 			this.setBorder(new DropShadowBorder());
 
