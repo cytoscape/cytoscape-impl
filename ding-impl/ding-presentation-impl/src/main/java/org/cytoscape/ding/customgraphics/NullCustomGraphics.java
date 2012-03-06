@@ -7,12 +7,11 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.graph.render.stateful.CustomGraphic;
 
 /**
  * Null object for Custom Graphics. This is used to reset custom graphics on
  * node views.
- * 
- * @author kono
  * 
  */
 public class NullCustomGraphics extends AbstractDCustomGraphics {
@@ -29,12 +28,13 @@ public class NullCustomGraphics extends AbstractDCustomGraphics {
 		}
 	}
 
-	static final CyCustomGraphics NULL = new NullCustomGraphics();
+	static final CyCustomGraphics<CustomGraphic> NULL = new NullCustomGraphics();
 
-	public static CyCustomGraphics getNullObject() {
+	public static CyCustomGraphics<CustomGraphic> getNullObject() {
 		return NULL;
 	}
 
+	// Human readable name of this null object.
 	private static final String NAME = "[ Remove Graphics ]";
 
 	public NullCustomGraphics() {

@@ -74,7 +74,6 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -1248,14 +1247,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {
-
 		Set<CustomGraphic> dCustomGraphicsSet = cgMap.get(vp);
 		if (dCustomGraphicsSet == null)
 			dCustomGraphicsSet = new HashSet<CustomGraphic>();
 
-		for (final CustomGraphic cg : dCustomGraphicsSet) {
+		for (final CustomGraphic cg : dCustomGraphicsSet)
 			removeCustomGraphic(cg);
-		}
 
 		dCustomGraphicsSet.clear();
 

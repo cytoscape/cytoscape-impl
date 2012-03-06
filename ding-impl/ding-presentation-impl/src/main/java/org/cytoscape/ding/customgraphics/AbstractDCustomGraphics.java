@@ -35,11 +35,6 @@ public abstract class AbstractDCustomGraphics implements
 
 	// For tags
 	protected final SortedSet<String> tags;
-
-
-//	public AbstractDCustomGraphics(final String displayName) {
-//		this(IDGenerator.getIDGenerator().getNextId(), displayName);
-//	}
 	
 	
 	/**
@@ -100,15 +95,6 @@ public abstract class AbstractDCustomGraphics implements
 		return tags;
 	}
 
-
-//	public ObjectPosition getPosition() {
-//		return position;
-//	}
-//
-//	public void setPosition(final ObjectPosition position) {
-//		this.position = position;
-//	}
-	
 
 	// This will be used prop file.
 	public String toString() {
