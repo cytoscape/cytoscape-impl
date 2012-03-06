@@ -9,6 +9,7 @@ import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.Tunable;
 
 /**
  * A utility Task implementation specifically for writing {@link org.cytoscape.model.CyTable} objects.
@@ -37,6 +38,11 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterMa
 			file = addOrReplaceExtension(outputFile);
 
 		return writerManager.getWriter(table,filter,file);
+	}
+
+	@Tunable(description="Save Table As:", params="fileCategory=table;input=false", dependsOn="options!=")
+	public File getOutputFile() {
+		return outputFile;
 	}
 	
 	@ProvidesTitle
