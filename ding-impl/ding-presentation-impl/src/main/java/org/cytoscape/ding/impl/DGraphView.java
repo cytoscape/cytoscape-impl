@@ -2951,7 +2951,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		
 		// Filter some special cases here: In DING, there is no default W, H, and D.  Also, Custm Graphics should be applied for each view.
 		if (vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH
-				|| vp == BasicVisualLexicon.NODE_HEIGHT || (VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
+				|| vp == BasicVisualLexicon.NODE_HEIGHT) {
+			applyToAll(vp, defaultValue);
+			return;
+		}
+		
+		if((VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
 			applyToAll(vp, defaultValue);
 			return;
 		}
