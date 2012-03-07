@@ -372,18 +372,7 @@ public class BiomartRestClient {
 		return filters;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param datasetName
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 * @throws IOException
-	 * 
-	 * @throws IOException
-	 *             DOCUMENT ME!
-	 */
+	
 	public Map<String, String[]> getAttributes(String datasetName)
 			throws IOException {
 		Map<String, String[]> attributes = new HashMap<String, String[]>();

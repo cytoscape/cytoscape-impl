@@ -80,9 +80,7 @@ public final class BiomartMainDialog extends JDialog {
 
 		tunablePanel.add(tPanel);
 
-		client.setGUI(panel);
 		panel.initDataSources(result);
-		panel.setParent(this);
 		
 		tabs.addTab("Query", panel);
 

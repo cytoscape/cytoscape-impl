@@ -45,7 +45,7 @@ public class ShowBiomartGUIAction extends AbstractCyAction {
 		this.taskManager = (DialogTaskManager) taskManager;
 		
 		this.firstTask = new LoadRepositoryTask(client.getRestClient());
-		this.showDialogTask = new ShowBiomartDialogTask(panel, client, app, firstTask);
+		this.showDialogTask = new ShowBiomartDialogTask(panel, client, firstTask);
 	}
 
 	@Override

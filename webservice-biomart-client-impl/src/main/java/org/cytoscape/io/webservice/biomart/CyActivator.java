@@ -1,27 +1,21 @@
 
 package org.cytoscape.io.webservice.biomart;
 
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.work.swing.DialogTaskManager;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.util.Properties;
 
-import org.cytoscape.io.webservice.biomart.task.ShowBiomartGUIAction;
-import org.cytoscape.io.webservice.biomart.BiomartClient;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
-
-import org.cytoscape.application.swing.CyAction;
-
-
-import org.osgi.framework.BundleContext;
-
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -41,12 +35,16 @@ public class CyActivator extends AbstractCyActivator {
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
 		
 		BiomartRestClient biomartRestClient = new BiomartRestClient("http://www.biomart.org/biomart/martservice");
-		BiomartClient biomartClient = new BiomartClient("BioMart Client","REST version of BioMart Web Service Client.",biomartRestClient,cyTableFactoryServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyTableManagerServiceRef,cyRootNetworkFactoryServiceRef);
-		BiomartAttrMappingPanel biomartAttrMappingPanel = new BiomartAttrMappingPanel(biomartClient,taskManagerServiceRef,cyApplicationManagerServiceRef,cyTableManagerServiceRef,cyNetworkManagerServiceRef);
-		ShowBiomartGUIAction showBiomartGUIAction = new ShowBiomartGUIAction(biomartAttrMappingPanel,biomartClient,taskManagerServiceRef,cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
+		BiomartAttrMappingPanel biomartAttrMappingPanel = new BiomartAttrMappingPanel(taskManagerServiceRef,cyApplicationManagerServiceRef,cyTableManagerServiceRef,cyNetworkManagerServiceRef);
 		
-		registerService(bc,showBiomartGUIAction,CyAction.class, new Properties());
+		BiomartClient biomartClient = new BiomartClient("BioMart Client","REST version of BioMart Web Service Client.",biomartRestClient,cyTableFactoryServiceRef,cyNetworkManagerServiceRef,cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyTableManagerServiceRef,cyRootNetworkFactoryServiceRef, biomartAttrMappingPanel);
+		biomartAttrMappingPanel.setClient(biomartClient);
+		
+		//ShowBiomartGUIAction showBiomartGUIAction = new ShowBiomartGUIAction(biomartAttrMappingPanel,biomartClient,taskManagerServiceRef,cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
+		
+		//registerService(bc,showBiomartGUIAction,CyAction.class, new Properties());
 		registerAllServices(bc,biomartAttrMappingPanel, new Properties());
+		registerAllServices(bc,biomartClient, new Properties());
 	}
 }
 

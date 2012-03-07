@@ -55,7 +55,6 @@ import org.cytoscape.work.TaskIterator;
 public class BiomartClient extends AbstractWebServiceClient implements TableImportWebServiceClient {
 	private final CyTableFactory tableFactory;
 	private final BiomartRestClient restClient;
-	private BiomartAttrMappingPanel gui;
 	private ImportTableTask importTask;
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;
@@ -74,7 +73,7 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 	                     final CyNetworkManager networkManager,
 	                     final CyApplicationManager applicationManager,
 	                     final CySwingApplication app, final CyTableManager tableManager,
-						 final CyRootNetworkManager cyRootNetworkFactory)
+						 final CyRootNetworkManager cyRootNetworkFactory, final BiomartAttrMappingPanel gui)
 	{
 		super(restClient.getBaseURL(), displayName, description);
 
@@ -85,12 +84,10 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 		this.app                  = app;
 		this.tableManager         = tableManager;
 		this.cyRootNetworkFactory = cyRootNetworkFactory;
+		
+		this.panel = gui;
 
 		// TODO: set optional parameters (Tunables?)
-	}
-
-	public void setGUI(final BiomartAttrMappingPanel gui) {
-		this.gui = gui;
 	}
 
 	public BiomartRestClient getRestClient() {
@@ -108,11 +105,11 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		if (gui == null)
+		if (panel == null)
 			throw new IllegalStateException(
 					"Could not build query because Query Builder GUI is null.");
 
-		final BiomartQuery query = this.gui.getTableImportQuery();
+		final BiomartQuery query = ((BiomartAttrMappingPanel) panel).getTableImportQuery();
 
 		importTask = new ImportTableTask(restClient, query, tableFactory, networkManager,
 		                                 applicationManager, app.getJFrame(), tableManager,
