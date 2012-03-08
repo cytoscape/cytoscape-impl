@@ -19,6 +19,12 @@ import java.awt.*;
  * @param <T> type of items the List contains
  */
 public class ListSingleHandler<T> extends AbstractGUITunableHandler {
+	
+	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD, 12);
+	private static final Font COMBOBOX_FONT = new Font("SansSerif", Font.PLAIN, 12);
+	private static final Dimension DEF_LABEL_SIZE = new Dimension(300, 20);
+	private static final Dimension DEF_COMBOBOX_SIZE = new Dimension(300, 10);
+	
 	private JComboBox combobox;
 
 	/**
@@ -60,18 +66,19 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 
 		//set Gui
 		panel = new JPanel(new BorderLayout());
-		JTextArea textArea = new JTextArea(getDescription());
-		textArea.setLineWrap(true);
-		textArea.setWrapStyleWord(true);
-		panel.add(textArea,BorderLayout.WEST);
-		textArea.setBackground(null);
-		textArea.setEditable(false);
+		final JLabel textArea = new JLabel(getDescription());
+		textArea.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+		textArea.setFont(LABEL_FONT);
+		textArea.setPreferredSize(DEF_LABEL_SIZE);
+		textArea.setVerticalTextPosition(SwingConstants.CENTER);
+		panel.add(textArea,BorderLayout.NORTH);
 
 		//add list's items to the combobox
 		combobox = new JComboBox(getSingleSelection().getPossibleValues().toArray());
-		combobox.setFont(new Font("sansserif", Font.PLAIN, 11));
+		combobox.setPreferredSize(DEF_COMBOBOX_SIZE);
+		combobox.setFont(COMBOBOX_FONT);
 		combobox.addActionListener(this);
-		panel.add(combobox, BorderLayout.EAST);
+		panel.add(combobox, BorderLayout.CENTER);
 		
 		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
 	}
@@ -80,23 +87,23 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 		combobox.removeAllItems();
 		for ( T value : getSingleSelection().getPossibleValues() ) 
 			combobox.addItem(value);
+		
+		if(combobox.getModel().getSize() != 0)
+			combobox.setSelectedIndex(0);
 	}
 
 	/**
 	 * set the item that is currently selected in the ComboBox as the only possible item selected in <code>listSingleSelection</code>
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public void handle() {
 		if ( combobox == null )
 			return;
 		
-		final T selectedItem = (T)combobox.getSelectedItem();
-		if (selectedItem != null) {
+		final T selectedItem = (T) combobox.getSelectedItem();
+		if (selectedItem != null)
 			getSingleSelection().setSelectedValue(selectedItem);
-			try {
-			setValue(null);
-			} catch (Exception e) { e.printStackTrace(); }
-		}
 	}
 
 	/**
@@ -107,7 +114,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 			return "";
 
 		final T selectedItem = (T)combobox.getSelectedItem();
-		if ( selectedItem == null )
+		if (selectedItem == null)
 			return "";
 
 		getSingleSelection().setSelectedValue(selectedItem);
