@@ -361,8 +361,6 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 
 		if (currentSelection != null)
 			columnNameComboBox.setSelectedItem(currentSelection.toString());
-
-		System.out.println("New Column Added: " + columnNameComboBox.getModel().getSize());
 	}
 
 	protected void removeAttribute(final String attributeName) {
