@@ -206,11 +206,14 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			
 			final CyNetwork network = (CyNetwork) item;
 			if(isSelected || hasFocus) {
-				setBackground(SELECTED_ITEM_BACKGROUND_COLOR);
+				this.setBackground(list.getSelectionBackground());				
+				this.setForeground(list.getSelectionForeground());
 			} else {
-				setBackground(Color.WHITE);
+				this.setBackground(list.getBackground());				
+				this.setForeground(list.getForeground());
 			}
 			
+			setOpaque(true);
 			this.setText(network.getRow(network).get(CyTableEntry.NAME, String.class));
 			return this;
 		}
