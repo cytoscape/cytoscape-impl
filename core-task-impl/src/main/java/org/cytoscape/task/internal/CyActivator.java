@@ -92,6 +92,8 @@ import org.cytoscape.task.internal.setcurrent.SetCurrentNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactory;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactory;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactory;
+import org.cytoscape.task.internal.table.MapGlobalToLocalTableTask;
+import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
@@ -230,6 +232,18 @@ public class CyActivator extends AbstractCyActivator {
 		GroupNodeContextTaskFactory collapseGroupTaskFactory = new GroupNodeContextTaskFactory(cyGroupManager, true);
 		GroupNodeContextTaskFactory expandGroupTaskFactory = new GroupNodeContextTaskFactory(cyGroupManager, false);
 		
+		
+		MapGlobalToLocalTableTaskFactory mapGlobal = new MapGlobalToLocalTableTaskFactory(cyTableManagerServiceRef, cyNetworkManagerServiceRef);
+		
+		Properties mapGlobalProps = new Properties();
+		mapGlobalProps.setProperty("id","mapGlobalToLocalTableTaskFactory");
+		mapGlobalProps.setProperty("preferredMenu","Tools");
+		mapGlobalProps.setProperty("accelerator","cmd m");
+		mapGlobalProps.setProperty("title", "Map Global Table to Local Table");
+		mapGlobalProps.setProperty("menuGravity","1.0");
+		mapGlobalProps.setProperty("toolBarGravity","3.0");
+		mapGlobalProps.setProperty("inToolBar","false");
+		registerAllServices(bc, mapGlobal, mapGlobalProps);
 		
 		Properties loadNetworkFileTaskFactoryProps = new Properties();
 		loadNetworkFileTaskFactoryProps.setProperty("id","loadNetworkFileTaskFactory");
