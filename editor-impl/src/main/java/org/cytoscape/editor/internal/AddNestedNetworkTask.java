@@ -42,7 +42,18 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 	                            Transferable t) {
 		super(nv,view);
 		this.t = t;
-		nestedNetwork = new ListSingleSelection<CyNetwork>(new ArrayList<CyNetwork>(mgr.getNetworkSet()));
+		
+		ArrayList<CyNetwork> networkSet = new ArrayList<CyNetwork>(mgr.getNetworkSet());
+
+		// Remove self from the network list
+		for (int i=0; i<networkSet.size(); i++ ){
+			if (view.getModel() == networkSet.get(i)){
+				networkSet.remove(i);
+				break;
+			}			
+		}
+		
+		nestedNetwork = new ListSingleSelection<CyNetwork>(networkSet);
 	}
 
 	@Override
