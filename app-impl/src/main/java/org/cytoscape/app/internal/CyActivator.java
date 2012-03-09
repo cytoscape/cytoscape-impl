@@ -1,5 +1,6 @@
 package org.cytoscape.app.internal;
 
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.CyAppAdapterImpl;
 import org.cytoscape.app.internal.AppLoaderTaskFactory;
 import org.cytoscape.app.internal.StartupMostlyFinished;
@@ -115,6 +116,8 @@ public class CyActivator extends AbstractCyActivator {
 				appLoaderTaskFactory,
 				cyApplicationConfigurationServiceRef);
 		StartupMostlyFinished startupMostlyFinished = new StartupMostlyFinished(cyEventHelperRef);
+		
+		registerService(bc,cyAppAdapter,CyAppAdapter.class, new Properties());
 		
 		registerService(bc,appLoaderTaskFactory,TaskFactory.class, new Properties());
 		registerAllServices(bc,appManagerAction, new Properties());

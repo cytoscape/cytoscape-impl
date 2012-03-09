@@ -63,7 +63,8 @@
 		<module>datasource-impl</module>
 		<module>datasource-biogrid-impl</module>
 		<module>welcome-impl</module>
-	</modules>
+    <module>scripting-impl</module>
+  </modules>
 
 	<properties>
 		<cytoscape.api.version>3.0.0-alpha8-SNAPSHOT</cytoscape.api.version>
