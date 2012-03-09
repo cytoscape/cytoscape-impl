@@ -998,7 +998,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				
 				final Bend bend = ev.getBend();
 				final Handle handle = bend.getAllHandles().get(anchorInx);
-				final Point2D newPoint = handle.calculateHandleLocation(ev);
+				final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),ev);
 				m_floatBuff1[0] = (float) newPoint.getX();
 				m_floatBuff1[1] = (float) newPoint.getY();
 
@@ -1343,7 +1343,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						
 						final Bend bend = ev.getBend();
 						final Handle handle = bend.getAllHandles().get(anchorInx);
-						final Point2D newPoint = handle.calculateHandleLocation(ev);
+						final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),ev);
 						m_floatBuff1[0] = (float) newPoint.getX();
 						m_floatBuff1[1] = (float) newPoint.getY();
 						

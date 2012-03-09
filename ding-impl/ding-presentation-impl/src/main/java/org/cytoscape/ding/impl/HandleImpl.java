@@ -6,7 +6,9 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.Handle;
 import org.cytoscape.ding.impl.editor.EditMode;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.CyNetworkView;
 
 /**
  * A simple implementation of edge handle.
@@ -31,8 +33,7 @@ public class HandleImpl implements Handle {
 
 
 	@Override
-	public Point2D calculateHandleLocation(final DEdgeView view) {
-		final DGraphView graphView = (DGraphView) view.getGraphView();
+	public Point2D calculateHandleLocation(final CyNetworkView graphView, final View<CyEdge> view) {
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
 		final View<CyNode> sourceView = graphView.getNodeView(source);
@@ -81,14 +82,13 @@ public class HandleImpl implements Handle {
 
 	
 	@Override
-	public void defineHandle(final DEdgeView view, double x, double y) {
-		final DGraphView graphView = (DGraphView) view.getGraphView();
+	public void defineHandle(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
 		this.x = x;
 		this.y = y;
 		convertToRatio(graphView, view, new Point2D.Double(x, y));
 	}
 
-	private void convertToRatio(DGraphView graphView, DEdgeView view, final Point2D absolutePoint) {
+	private void convertToRatio(final CyNetworkView graphView, View<CyEdge> view, final Point2D absolutePoint) {
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
 		final View<CyNode> sourceView = graphView.getNodeView(source);

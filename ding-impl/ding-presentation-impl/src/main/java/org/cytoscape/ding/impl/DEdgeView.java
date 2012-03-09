@@ -359,7 +359,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		for (int j = 0; j < numHandles; j++) {			
 			final Bend bend = m_view.m_edgeDetails.bend(model);
 			final Handle handle = bend.getAllHandles().get(j);
-			final Point2D newPoint = handle.calculateHandleLocation(this);
+			final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),this);
 			m_view.handleLocationBuffer[0] = (float) newPoint.getX();
 			m_view.handleLocationBuffer[1] = (float) newPoint.getY();
 			
@@ -541,7 +541,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	protected final void moveHandleInternal(final int inx, double x, double y) {
 		final Bend bend = m_view.m_edgeDetails.bend(model);
 		final Handle handle = bend.getAllHandles().get(inx);
-		handle.defineHandle(this, x, y);
+		handle.defineHandle(m_view.getViewModel(),this, x, y);
 
 		if (m_view.m_spacialA.delete((m_inx << 6) | inx))
 			m_view.m_spacialA.insert((m_inx << 6) | inx,
@@ -573,15 +573,15 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			final Point2D sourcePt = m_view.getDNodeView(getEdge().getSource()).getOffset();
 			final Point2D targetPt = m_view.getDNodeView(getEdge().getTarget()).getOffset();
 			final Handle firstHandle = bend.getAllHandles().get(0); 
-			final Point2D point = firstHandle.calculateHandleLocation(this);
+			final Point2D point = firstHandle.calculateHandleLocation(m_view.getViewModel(),this);
 			double bestDist = (pt.distance(sourcePt) + pt.distance(point)) - sourcePt.distance(point);
 			int bestInx = 0;
 
 			for (int i = 1; i < bend.getAllHandles().size(); i++) {
 				final Handle handle1 = bend.getAllHandles().get(i);
 				final Handle handle2 = bend.getAllHandles().get(i-1);
-				final Point2D point1 = handle1.calculateHandleLocation(this);
-				final Point2D point2 = handle2.calculateHandleLocation(this);
+				final Point2D point1 = handle1.calculateHandleLocation(m_view.getViewModel(),this);
+				final Point2D point2 = handle2.calculateHandleLocation(m_view.getViewModel(),this);
 
 				final double distCand = (pt.distance(point2) + pt.distance(point1)) - point1.distance(point2);
 
@@ -593,7 +593,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 			final int lastIndex = bend.getAllHandles().size() - 1;
 			final Handle lastHandle = bend.getAllHandles().get(lastIndex);
-			final Point2D lastPoint = lastHandle.calculateHandleLocation(this);
+			final Point2D lastPoint = lastHandle.calculateHandleLocation(m_view.getViewModel(),this);
 			
 			final double lastCand = (pt.distance(targetPt) + pt.distance(lastPoint)) - targetPt.distance(lastPoint);
 
@@ -717,7 +717,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		else
 			handle = bend.getAllHandles().get(anchorIndex/2);
 
-		final Point2D newPoint = handle.calculateHandleLocation(this);
+		final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),this);
 		anchorArr[offset] = (float) newPoint.getX();
 		anchorArr[offset + 1] = (float) newPoint.getY();
 	}
