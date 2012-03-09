@@ -39,20 +39,21 @@ import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.io.webservice.biomart.task.ImportTableTask;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
-import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
+import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskIterator;
+import org.osgi.framework.ServiceException;
 
 
 /**
  * Biomart Web Service Client.
  * 
  */
-public class BiomartClient extends AbstractWebServiceClient implements TableImportWebServiceClient {
+public class BiomartClient extends AbstractWebServiceGUIClient implements TableImportWebServiceClient {
 	private final CyTableFactory tableFactory;
 	private final BiomartRestClient restClient;
 	private ImportTableTask importTask;
@@ -85,7 +86,7 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 		this.tableManager         = tableManager;
 		this.cyRootNetworkFactory = cyRootNetworkFactory;
 		
-		this.panel = gui;
+		this.gui = gui;
 
 		// TODO: set optional parameters (Tunables?)
 	}
@@ -105,11 +106,11 @@ public class BiomartClient extends AbstractWebServiceClient implements TableImpo
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		if (panel == null)
+		if (gui == null)
 			throw new IllegalStateException(
 					"Could not build query because Query Builder GUI is null.");
 
-		final BiomartQuery query = ((BiomartAttrMappingPanel) panel).getTableImportQuery();
+		final BiomartQuery query = ((BiomartAttrMappingPanel) gui).getTableImportQuery();
 
 		importTask = new ImportTableTask(restClient, query, tableFactory, networkManager,
 		                                 applicationManager, app.getJFrame(), tableManager,

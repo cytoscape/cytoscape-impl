@@ -28,8 +28,8 @@ import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.io.webservice.WebServiceClient;
+import org.cytoscape.io.webservice.swing.WebServiceGUIClient;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.util.swing.internal.OpenBrowserImpl;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,8 +114,8 @@ public class WebServiceImportDialog<T> extends JDialog {
 		numClients++;
 		setComponentsEnabled(true);
 		
-		if (client instanceof WebServiceClient) {
-			WebServiceClient service = (WebServiceClient) client;
+		if (client instanceof WebServiceGUIClient) {
+			WebServiceGUIClient service = (WebServiceGUIClient) client;
 			Container container = service.getQueryBuilderGUI();
 			if (container != null) {
 				serviceUIPanels.put((WebServiceClient) client, container);

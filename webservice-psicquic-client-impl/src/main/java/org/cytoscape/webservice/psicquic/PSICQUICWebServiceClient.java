@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.SearchWebServiceClient;
-import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
+import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -31,7 +31,7 @@ import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PSICQUICWebServiceClient extends AbstractWebServiceClient implements NetworkImportWebServiceClient,
+public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implements NetworkImportWebServiceClient,
 		SearchWebServiceClient<Set<String>> {
 
 	private static final Logger logger = LoggerFactory.getLogger(PSICQUICWebServiceClient.class);

@@ -25,10 +25,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>webservice-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>webservice-swing-api</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
         <dependency>
         	<groupId>org.cytoscape</groupId>
         	<artifactId>viewmodel-api</artifactId>

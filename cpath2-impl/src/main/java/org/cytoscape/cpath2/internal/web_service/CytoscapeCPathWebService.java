@@ -17,7 +17,7 @@ import org.cytoscape.cpath2.internal.view.TabUi;
 import org.cytoscape.cpath2.internal.view.cPathSearchPanel;
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.SearchWebServiceClient;
-import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
+import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
@@ -27,7 +27,7 @@ import org.cytoscape.work.Tunable;
 /**
  * CPath Web Service, integrated into the Cytoscape Web Services Framework.
  */
-public class CytoscapeCPathWebService extends AbstractWebServiceClient 
+public class CytoscapeCPathWebService extends AbstractWebServiceGUIClient 
 	implements NetworkImportWebServiceClient, SearchWebServiceClient<Object> 
 {
     // Display name of this client.
