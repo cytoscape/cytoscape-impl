@@ -8,7 +8,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
-import org.cytoscape.view.layout.Point;
+import org.cytoscape.view.layout.LayoutPoint;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
@@ -359,7 +359,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	public void layoutPartion(LayoutPartition partition) {
 		this.partition = partition;
 
-		Point initialLocation = null;
+		LayoutPoint initialLocation = null;
 
 		/* Get all of our profiles */
 		/*
@@ -459,7 +459,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		if (selectedOnly) {
 			double xDelta = 0.0;
 			double yDelta = 0.0;
-			final Point finalLocation = partition.getAverageLocation();
+			final LayoutPoint finalLocation = partition.getAverageLocation();
 			xDelta = finalLocation.getX() - initialLocation.getX();
 			yDelta = finalLocation.getY() - initialLocation.getY();
 

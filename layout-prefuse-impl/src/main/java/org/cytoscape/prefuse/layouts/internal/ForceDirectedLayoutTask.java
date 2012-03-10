@@ -41,7 +41,7 @@ import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
-import org.cytoscape.view.layout.Point;
+import org.cytoscape.view.layout.LayoutPoint;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
@@ -119,7 +119,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 
 	public void layoutPartion(LayoutPartition part) {
-		Point initialLocation = null;
+		LayoutPoint initialLocation = null;
 		// System.out.println("layoutPartion: "+part.getEdgeList().size()+" edges");
 		// Calculate our edge weights
 		part.calculateEdgeWeights();
@@ -185,7 +185,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		if (selectedOnly) {
 			double xDelta = 0.0;
 			double yDelta = 0.0;
-			final Point finalLocation = part.getAverageLocation();
+			final LayoutPoint finalLocation = part.getAverageLocation();
 			xDelta = finalLocation.getX() - initialLocation.getX();
 			yDelta = finalLocation.getY() - initialLocation.getY();
 			for (LayoutNode v: part.getNodeList()) {
