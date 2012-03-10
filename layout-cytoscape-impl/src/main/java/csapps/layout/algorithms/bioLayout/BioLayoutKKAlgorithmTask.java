@@ -1,7 +1,6 @@
 package csapps.layout.algorithms.bioLayout;
 
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -13,6 +12,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
+import org.cytoscape.view.layout.Point;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
@@ -279,7 +279,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * Perform a layout
 	 */
 	public void layoutPartion(LayoutPartition partition) {
-		Dimension initialLocation = null;
+		Point initialLocation = null;
 		this.partition = partition;
 		// Initialize all of our values.  This will create
 		// our internal objects and initialize them
@@ -454,9 +454,9 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 		if (selectedOnly) {
 			double xDelta = 0.0;
 			double yDelta = 0.0;
-			Dimension finalLocation = partition.getAverageLocation();
-			xDelta = finalLocation.getWidth() - initialLocation.getWidth();
-			yDelta = finalLocation.getHeight() - initialLocation.getHeight();
+			final Point finalLocation = partition.getAverageLocation();
+			xDelta = finalLocation.getX() - initialLocation.getX();
+			yDelta = finalLocation.getY() - initialLocation.getY();
 			for (LayoutNode v: partition.getNodeList()) {
 				if (!v.isLocked()) {
 					v.decrement(xDelta, yDelta);
