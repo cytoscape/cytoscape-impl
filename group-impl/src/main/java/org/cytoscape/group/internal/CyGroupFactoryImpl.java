@@ -27,14 +27,10 @@
 */
 package org.cytoscape.group.internal;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -45,8 +41,6 @@ import org.slf4j.LoggerFactory;
 
 
 public class CyGroupFactoryImpl implements CyGroupFactory {
-	private static final Logger logger = LoggerFactory.getLogger(CyGroupFactoryImpl.class);
-	
 	private final CyEventHelper help;
 	private final CyGroupManagerImpl mgr;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -77,25 +71,26 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CyGroup createGroup(CyNetwork network) {
-		return createGroup(network, null, null, null);
+	public CyGroup createGroup(CyNetwork network, boolean register) {
+		return createGroup(network, null, null, null, register);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CyGroup createGroup(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
-		return createGroup(network, null, nodes, edges);
+	public CyGroup createGroup(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, boolean register) {
+		return createGroup(network, null, nodes, edges, register);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CyGroup createGroup(CyNetwork network, CyNode node, List<CyNode> nodes, List<CyEdge> edges) {
+	public CyGroup createGroup(CyNetwork network, CyNode node, List<CyNode> nodes, List<CyEdge> edges, boolean register) {
 		CyGroup group = new CyGroupImpl(help, mgr, network, node, nodes, edges);
-		mgr.addGroup(group);
+		if (register)
+			mgr.addGroup(group);
 		return group;
 	}
 }

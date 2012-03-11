@@ -30,25 +30,18 @@
 package org.cytoscape.group.internal;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
 import org.cytoscape.group.events.GroupAddedEvent;
 
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +49,7 @@ import org.slf4j.LoggerFactory;
  * An implementation of CyNetworkManager.
  */
 public class CyGroupManagerImpl implements CyGroupManager {
-
 	private final CyEventHelper cyEventHelper;
-	private static final Logger logger = LoggerFactory.getLogger(CyGroupManagerImpl.class);
 
 	private Set<CyGroup> groupSet;
 	/**
@@ -86,6 +77,17 @@ public class CyGroupManagerImpl implements CyGroupManager {
 			groupSet.add(group);
 			cyEventHelper.fireEvent(new GroupAddedEvent(CyGroupManagerImpl.this, group));
 		}
+	}
+
+	@Override
+	public synchronized void addGroups(final List<CyGroup> groups) {
+		for (CyGroup group: groups) {
+			if (!groupSet.contains(group)) {
+				groupSet.add(group);
+			}
+		}
+		// Fire GroupsAddedEvent...
+		// cyEventHelper.fireEvent(new GroupAddedEvent(CyGroupManagerImpl.this, group));
 	}
 
 	@Override
