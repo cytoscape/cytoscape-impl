@@ -65,7 +65,8 @@ public class GroupNodesTask extends AbstractTask {
 
 		// At some point, we'll want to seriously think about only adding those edges that are also
 		// selected, but for now....
-		CyGroup group = factory.createGroup(net, selNodes, null);
+		CyGroup group = factory.createGroup(net, selNodes, null, true);
+		// mgr.addGroup(group);
 		tm.setProgress(1.0d);
 	}
 }
