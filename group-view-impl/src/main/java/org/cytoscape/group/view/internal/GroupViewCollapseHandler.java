@@ -92,7 +92,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyGroup group = e.getSource();
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 		CyNetworkView view = cyNetworkViewManager.getNetworkView(network);
-
+		
 		if (e.collapsing()) {
 			// Calculate the center position of all of the
 			// member nodes
@@ -148,8 +148,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 		for (CyNode node: nodeList) {
 			View<CyNode>nView = view.getNodeView(node);
+			double x = nView.getVisualProperty(xLoc);
+			double y = nView.getVisualProperty(yLoc);
 			xCenter += (nView.getVisualProperty(xLoc)) / nodeList.size();
 			yCenter += (nView.getVisualProperty(yLoc)) / nodeList.size();
+			
 		}
 		return getDim(xCenter, yCenter);
 	}
