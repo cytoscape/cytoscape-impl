@@ -554,6 +554,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			graphView.m_spacial.delete(m_inx);
 			graphView.m_spacial.insert(m_inx, xMin, yMin, xMax, yMax);
 			graphView.m_contentChanged = true;
+			setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,x);
+			setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,y);
 		}
 	}
 
