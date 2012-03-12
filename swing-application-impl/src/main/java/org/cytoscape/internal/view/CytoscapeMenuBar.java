@@ -98,6 +98,9 @@ public class CytoscapeMenuBar extends JMenuBar {
 		            " with gravity: " + action.getMenuGravity());
 		actionMenuItemMap.put(action, menu_item);
 
+		revalidate();
+		repaint();
+		
 		return true;
 	}
 
