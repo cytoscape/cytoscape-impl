@@ -48,7 +48,9 @@ public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implem
 
 	@Override
 	public void execute(final TaskFactory factory) {
-		dtm.execute(factory,false);	
+		if (panelTunableMutator.validateAndWriteBack(factory)) {
+			dtm.execute(factory,false);
+		}
 	}
 }
 
