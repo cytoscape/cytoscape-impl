@@ -54,7 +54,6 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.List;
 
 import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.EdgeView;

@@ -18,9 +18,9 @@ public class HandleImpl implements Handle {
 	
 	private static final String DELIMITER =",";
 	
-	private Double cosTheta;
-	private Double sinTheta;
-	private Double ratio;
+	private Double cosTheta = 0.5d;
+	private Double sinTheta = 0.5d;
+	private Double ratio = 0.5;
 	
 	// Original handle location
 	private double x = 0;
@@ -36,6 +36,7 @@ public class HandleImpl implements Handle {
 	public Point2D calculateHandleLocation(final CyNetworkView graphView, final View<CyEdge> view) {
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
+		
 		final View<CyNode> sourceView = graphView.getNodeView(source);
 		final View<CyNode> targetView = graphView.getNodeView(target);
 
