@@ -9,6 +9,8 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 
 /**
@@ -18,7 +20,7 @@ import java.awt.*;
  *
  * @param <T> type of items the List contains
  */
-public class ListSingleHandler<T> extends AbstractGUITunableHandler {
+public class ListSingleHandler<T> extends AbstractGUITunableHandler implements ActionListener {
 	
 	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD, 12);
 	private static final Font COMBOBOX_FONT = new Font("SansSerif", Font.PLAIN, 12);
@@ -102,8 +104,19 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 			return;
 		
 		final T selectedItem = (T) combobox.getSelectedItem();
-		if (selectedItem != null)
+		if (selectedItem != null){
 			getSingleSelection().setSelectedValue(selectedItem);
+			try {
+				setValue(getSingleSelection());
+				
+			} catch (final Exception e) {
+				combobox.setBackground(Color.red);
+				JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+				combobox.setBackground(Color.white);
+				return;
+			}
+		}
 	}
 
 	/**
@@ -119,5 +132,10 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler {
 
 		getSingleSelection().setSelectedValue(selectedItem);
 		return selectedItem.toString();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		handle();
 	}
 }
