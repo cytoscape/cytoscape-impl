@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<graph label="Network A" xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:cy="http://www.cytoscape.org" xmlns="http://www.cs.rpi.edu/XGMML"
+	directed="1">
+	
+	<att type="boolean" name="test" value="1" cy:hidden="false" />
+	<att type="integer" name="_private_int" value="1" cy:hidden="true" />
+	
+	<node label="node1" id="-1">
+		<att type="string" name="name" value="node 1" />
+		<att type="string" name="_private_str" value="_v1" cy:hidden="true" />
+		<att type="list" name="list_1">
+			<att type="string" value="a" />
+			<att type="string" value="b" />
+		</att>
+	</node>
+	<node label="node2" id="-2">
+		<att type="string" name="name" value="node 2" />
+		<att type="string" name="_private_str" value="_v2" cy:hidden="true" />
+		<att type="list" name="_private_list" cy:hidden="true">
+			<att type="string" value="c" />
+			<att type="string" value="d" />
+		</att>
+	</node>
+	<edge label="node1 (DirectedEdge) node2" source="-1" target="-2">
+		<att type="string" name="name" value="node1 (DirectedEdge) node2" />
+		<att type="real" name="_private_real" value="0.1" cy:hidden="true" />
+	</edge>
+</graph>

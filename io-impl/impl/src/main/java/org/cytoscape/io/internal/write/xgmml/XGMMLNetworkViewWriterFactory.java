@@ -10,31 +10,31 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 
 public class XGMMLNetworkViewWriterFactory extends AbstractCyNetworkViewWriterFactory {
 
-	protected final RenderingEngineManager renderingEngineManager;
+	protected final RenderingEngineManager renderingEngineMgr;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
-	protected final CyNetworkManager networkManager;
-	protected final CyRootNetworkManager rootNetworkManager;
+	protected final CyNetworkManager networkMgr;
+	protected final CyRootNetworkManager rootNetworkMgr;
 
 	public XGMMLNetworkViewWriterFactory(final CyFileFilter filter,
-		                                 final RenderingEngineManager renderingEngineManager,
+		                                 final RenderingEngineManager renderingEngineMgr,
 		                                 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 										 final CyNetworkManager networkManager,
-										 final CyRootNetworkManager rootNetworkManager) {
+										 final CyRootNetworkManager rootNetworkMgr) {
 		super(filter);
-		this.renderingEngineManager = renderingEngineManager;
+		this.renderingEngineMgr = renderingEngineMgr;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
-		this.networkManager = networkManager;
-		this.rootNetworkManager = rootNetworkManager;
+		this.networkMgr = networkManager;
+		this.rootNetworkMgr = rootNetworkMgr;
 	}
 
 	@Override
     public CyWriter getWriterTask() {
-        if (view != null) {
-        	return new XGMMLWriter(outputStream, renderingEngineManager, view, unrecognizedVisualPropertyMgr,
-        			networkManager, rootNetworkManager);
-        }
-        
-        return new XGMMLWriter(outputStream, renderingEngineManager, network, unrecognizedVisualPropertyMgr,
-        		networkManager, rootNetworkManager);
+		if (view != null) {
+			return new XGMMLWriter(outputStream, renderingEngineMgr, view, unrecognizedVisualPropertyMgr, networkMgr,
+					rootNetworkMgr);
+		}
+
+		return new XGMMLWriter(outputStream, renderingEngineMgr, network, unrecognizedVisualPropertyMgr, networkMgr,
+				rootNetworkMgr);
     }
 }

@@ -131,7 +131,6 @@ public class HandleGraphDone extends AbstractHandler {
 		if (netId != null)
 			currentNet = manager.getCache().getNetwork(netId);
 		
-		manager.setCurrentNetwork(currentNet);
-		manager.setCurrentRow(currentNet != null ? currentNet.getRow(currentNet) : null);
+		manager.setCurrentElement(currentNet);
 	}
 }

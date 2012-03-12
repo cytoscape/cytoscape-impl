@@ -40,6 +40,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -167,15 +168,21 @@ public class AttributeValueUtil {
     protected ParseState handleAttribute(Attributes atts) throws SAXParseException {
     	ParseState parseState = ParseState.NONE;
     	
-    	final CyRow row = manager.getCurrentRow();
-    	String name = atts.getValue("name");
-        String type = atts.getValue("type");
-        String equationStr = atts.getValue("cy:equation");
-        boolean isEquation = equationStr != null ? Boolean.parseBoolean(equationStr) : false;
+    	final String name = atts.getValue("name");
+    	final String type = atts.getValue("type");
+    	final String equationStr = atts.getValue("cy:equation");
+    	final boolean isEquation = equationStr != null ? Boolean.parseBoolean(equationStr) : false;
+    	final String hiddenStr = atts.getValue("cy:hidden");
+    	final boolean isHidden = hiddenStr != null ? Boolean.parseBoolean(hiddenStr) : false;
         
-        ObjectType objType = typeMap.getType(type);
-        CyColumn column = row.getTable().getColumn(name);
+    	final String tableName = isHidden ? CyNetwork.HIDDEN_ATTRS : CyNetwork.DEFAULT_ATTRS;
+    	final CyNetwork curNet = manager.getCurrentNetwork();
+		final CyTableEntry curElement = manager.getCurrentElement();
+        final CyRow row = curNet.getRow(curElement, tableName);
+        final CyColumn column = row.getTable().getColumn(name);
+        
         Object value = null;
+        ObjectType objType = typeMap.getType(type);
 
         if (isEquation) {
         	// It is an equation...
@@ -210,6 +217,7 @@ public class AttributeValueUtil {
 			// must make sure to clear out any existing values before we parse.
 			case LIST:
 				manager.currentAttributeID = name;
+				manager.setCurrentRow(row);
 				if (column != null && List.class.isAssignableFrom(column.getType()))
 					row.set(name, null);
 				return ParseState.LIST_ATT;
@@ -230,14 +238,6 @@ public class AttributeValueUtil {
             	row.set(name, value);
             }
         }
-    }
-    
-    public static boolean fromXGMMLBoolean(String s) {
-    	return s != null && s.matches("(?i)1|true"); // should be only "1", but let's be nice and also accept "true"
-    }
-    
-    public static String toXGMMLBoolean(boolean value) {
-    	return value ? "1" : "0";
     }
     
     public static double parseDocumentVersion(String value) {

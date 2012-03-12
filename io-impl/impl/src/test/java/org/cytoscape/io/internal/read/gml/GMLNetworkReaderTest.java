@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.FileInputStream;
 
-import org.cytoscape.io.internal.read.AbstractNetworkViewReaderTester;
+import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableFactory;
@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class GMLNetworkReaderTest extends AbstractNetworkViewReaderTester {
+public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	@Mock private RenderingEngineManager renderingEngineManager;
 	@Mock private VisualLexicon lexicon;
 	private UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;

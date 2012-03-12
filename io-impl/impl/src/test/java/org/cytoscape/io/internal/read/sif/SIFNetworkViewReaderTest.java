@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.internal.read.AbstractNetworkViewReaderTester;
+import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge;
@@ -16,7 +16,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
 
-public class SIFNetworkViewReaderTest extends AbstractNetworkViewReaderTester {
+public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 
 	/**
 	 * 'typical' means that all lines have the form "node1 pd node2 [node3 node4

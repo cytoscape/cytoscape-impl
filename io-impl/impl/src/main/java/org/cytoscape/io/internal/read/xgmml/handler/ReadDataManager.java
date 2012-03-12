@@ -109,6 +109,7 @@ public class ReadDataManager {
 	private CyNetwork currentNetwork;
 	private CyNode currentNode;
 	private CyEdge currentEdge;
+	private CyTableEntry currentElement;
 	private CyRow currentRow;
 	
 	// Network view format properties
@@ -156,15 +157,16 @@ public class ReadDataManager {
 		RDFType = null;
 		RDFFormat = null;
 
+		currentElement = null;
 		currentNode = null;
 		currentEdge = null;
 		currentNetwork = null;
 		parentNetwork = null;
 		currentNetworkIsDirected = true;
+		currentRow = null;
 
 		attState = ParseState.NONE;
 		currentAttributeID = null;
-		currentRow = null;
 
 		/* Edge handle list */
 		handleList = null;
@@ -420,8 +422,7 @@ public class ReadDataManager {
 	        node = this.getCurrentNetwork().addNode();
         }
         
-        this.currentNode = node;
-        this.currentRow = this.getCurrentNetwork().getRow(node);
+        this.setCurrentElement(node);
         
         // Add to internal cache:
         cache.cache(oldId, node);
@@ -474,8 +475,7 @@ public class ReadDataManager {
         	}
         	
         	edge = net.addEdge(actualSrc, actualTgt, directed);
-        	this.currentEdge = edge;
-        	this.currentRow = net.getRow(edge);
+        	this.setCurrentElement(edge);
         }
         
         // Add to internal cache:
@@ -569,9 +569,24 @@ public class ReadDataManager {
 	public CyRow getCurrentRow() {
 		return currentRow;
 	}
-
-	public void setCurrentRow(CyRow currentRow) {
-		this.currentRow = currentRow;
+	
+	public void setCurrentRow(CyRow row) {
+		this.currentRow = row;
+	}
+	
+	protected CyTableEntry getCurrentElement() {
+		return currentElement;
+	}
+	
+	public void setCurrentElement(CyTableEntry entry) {
+		this.currentElement = entry;
+		
+		if (entry instanceof CyNetwork)
+			setCurrentNetwork((CyNetwork) entry);
+		if (entry instanceof CyNode)
+			setCurrentNode((CyNode) entry);
+		if (entry instanceof CyEdge)
+			setCurrentEdge((CyEdge) entry);
 	}
 
 	/**

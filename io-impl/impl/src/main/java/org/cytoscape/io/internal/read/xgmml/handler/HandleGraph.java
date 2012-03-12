@@ -138,11 +138,10 @@ public class HandleGraph extends AbstractHandler {
 		if (oldId == null)
 			oldId = String.format("_graph%s_%s", manager.graphCount, net.getSUID());
 		
-		manager.setCurrentNetwork(net);
+		manager.setCurrentElement(net);
 		manager.getNetworkIDStack().push(oldId);
 		
 		if (net != null) {
-			manager.setCurrentRow(net.getRow(net));
 			manager.getCache().cache(oldId, net);
 			
 			if (!(net instanceof CyRootNetwork))
@@ -151,7 +150,7 @@ public class HandleGraph extends AbstractHandler {
 			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0)
 				setNetworkName(net, atts);
 		} else {
-			manager.setCurrentRow(null);
+			manager.setCurrentNetwork(null);
 		}
 		
 		return oldId;
