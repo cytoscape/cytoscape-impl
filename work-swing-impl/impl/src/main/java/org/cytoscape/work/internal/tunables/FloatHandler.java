@@ -4,15 +4,19 @@ package org.cytoscape.work.internal.tunables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.*;
+import java.text.DecimalFormat;
+
 import javax.swing.*;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 
-public class FloatHandler extends AbstractGUITunableHandler {
-	private JTextField textField;
+public class FloatHandler extends AbstractGUITunableHandler implements ActionListener {
+	private JFormattedTextField textField;
 	private boolean horizontal = false;
 
 	/**
@@ -45,11 +49,13 @@ public class FloatHandler extends AbstractGUITunableHandler {
 		}
 
 		//setup GUI
-		textField = new JTextField(f.toString(), 10);
+		textField = new JFormattedTextField(new DecimalFormat());
+		textField.setValue(f);
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN, 12));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
+		textField.addActionListener(this);
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
@@ -60,6 +66,16 @@ public class FloatHandler extends AbstractGUITunableHandler {
 		}
 	}
 
+	public void update(){
+		Float f;
+		try{
+			f= (Float) getValue();
+			textField.setValue(f);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Catches the value inserted in the JTextField, parses it to a <code>Float</code> value, and tries to set it to the
 	 * initial object. If it can't, throws an exception that displays the source error to the user
@@ -69,7 +85,16 @@ public class FloatHandler extends AbstractGUITunableHandler {
 		Float f;
 		try {
 			f = Float.parseFloat(textField.getText());
-			setValue(f);
+			try {
+				setValue(f);
+				
+			} catch (final Exception e) {
+				textField.setBackground(Color.red);
+				JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+				textField.setBackground(Color.white);
+				return;
+			}
 		} catch(final Exception nfe) {
 			textField.setBackground(Color.red);
 			try{
@@ -87,5 +112,33 @@ public class FloatHandler extends AbstractGUITunableHandler {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	/**
+	 * To get the item that is currently selected
+	 */
+	public String getState() {
+		if ( textField == null )
+			return "";
+		try {
+			final String text = textField.getText();
+			if ( text == null )
+				return "";
+			return text;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		
+	}
+	
+	/**
+	 *  Action listener event handler.
+	 *
+	 *  @param ae specifics of the event (ignored!)
+	 */
+	public void actionPerformed(ActionEvent ae) {
+		handle();
 	}
 }

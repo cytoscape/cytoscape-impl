@@ -4,9 +4,17 @@ package org.cytoscape.work.internal.tunables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.lang.reflect.*;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.Properties;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -17,8 +25,8 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  *
  * @author pasteur
  */
-public class DoubleHandler extends AbstractGUITunableHandler {
-	private JTextField textField;
+public class DoubleHandler extends AbstractGUITunableHandler implements ActionListener {
+	private JFormattedTextField textField;
 	private String newline = System.getProperty("line.separator");
 
 	/**
@@ -51,11 +59,14 @@ public class DoubleHandler extends AbstractGUITunableHandler {
 		}
 
 		//set Gui
-		textField = new JTextField(d.toString(), 10);
+		
+		textField = new JFormattedTextField(new DecimalFormat());
+		textField.setValue(d);
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
+		textField.addActionListener(this);
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
@@ -66,6 +77,18 @@ public class DoubleHandler extends AbstractGUITunableHandler {
 		}
 	}
 
+	public void update(){
+		Double d;
+		try {
+			d = (Double)getValue();
+			textField.setValue(d);
+
+		} catch(final Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	/**
 	 * Catches the value inserted in the JTextField, parses it to a <code>Double</code> value, and tries to set it to the initial object. If it can't, throws an exception that displays the source error to the user
 	 */
@@ -77,9 +100,15 @@ public class DoubleHandler extends AbstractGUITunableHandler {
 			d = Double.parseDouble(textField.getText());
 			try {
 				setValue(d);
+				
 			} catch (final Exception e) {
+				textField.setBackground(Color.red);
+				JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
+				textField.setBackground(Color.white);
+				return;
 			}
+			textField.setValue(d);
 		} catch(NumberFormatException nfe) {
 			textField.setBackground(Color.red);
 			try {
@@ -90,11 +119,47 @@ public class DoubleHandler extends AbstractGUITunableHandler {
 			}
 			JOptionPane.showMessageDialog(null,"A double was expected. Value will be set to default: " + d, "Error", JOptionPane.ERROR_MESSAGE);
 			try {
-				textField.setText(getValue().toString());
+				textField.setValue(getValue().toString());
 				textField.setBackground(Color.white);
 			} catch(final Exception e){
 				e.printStackTrace();
 			}
 		}
 	}
+	
+	/**
+	 * To get the item that is currently selected
+	 */
+	public String getState() {
+		if ( textField == null )
+			return "";
+
+		Double d = Double.parseDouble( textField.getText());
+		final String text = d.toString();
+		if ( text == null )
+			return "";
+
+		try {
+			 //d = Double.parseDouble(text);
+			return text;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		
+	}
+	
+	/**
+	 *  Action listener event handler.
+	 *
+	 *  @param ae specifics of the event (ignored!)
+	 */
+	public void actionPerformed(ActionEvent ae) {
+		handle();
+	}
+
 }
+
+
+

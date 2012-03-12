@@ -4,9 +4,12 @@ package org.cytoscape.work.internal.tunables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -21,8 +24,8 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  *
  * @author pasteur
  */
-public class IntegerHandler extends AbstractGUITunableHandler {
-	private JTextField textField;
+public class IntegerHandler extends AbstractGUITunableHandler implements ActionListener {
+	private JFormattedTextField textField;
 	private boolean horizontal = false;
 
 	/**
@@ -58,8 +61,9 @@ public class IntegerHandler extends AbstractGUITunableHandler {
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
-		textField = new JTextField(i.toString(), 10);
+		textField = new JFormattedTextField(i.toString());
 		textField.setHorizontalAlignment(JTextField.RIGHT);
+		textField.addActionListener(this);
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
@@ -70,6 +74,17 @@ public class IntegerHandler extends AbstractGUITunableHandler {
 		}
 	}
 
+	public void update(){
+		Integer i = null;
+		try{
+			i = (Integer)getValue();
+			textField.setValue(i);
+		} catch(final Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	/**
 	 * Catches the value inserted in the JTextField, parses it to a <code>Integer</code> value, and tries to set it to the initial object. If it can't, throws an exception that displays the source error to the user
 	 */
@@ -78,6 +93,7 @@ public class IntegerHandler extends AbstractGUITunableHandler {
 		try {
 			textField.setBackground(Color.white);
 			newValue = Integer.parseInt(textField.getText());
+			
 		} catch(final NumberFormatException nfe) {
 			try {
 				textField.setBackground(Color.red);
@@ -90,8 +106,41 @@ public class IntegerHandler extends AbstractGUITunableHandler {
 		}
 		try {
 			setValue(newValue);
+			
 		} catch (final Exception e) {
+			textField.setBackground(Color.red);
+			JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
+			textField.setBackground(Color.white);
+			return;
 		}
+	}
+
+
+	/**
+	 * To get the item that is currently selected
+	 */
+	public String getState() {
+		if ( textField == null )
+			return "";
+
+		final String text = textField.getText();
+		if ( text == null )
+			return "";
+
+		try {
+			return text;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		handle();
 	}
 }

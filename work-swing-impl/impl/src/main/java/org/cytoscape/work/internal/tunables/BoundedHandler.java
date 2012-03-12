@@ -3,17 +3,23 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.internal.tunables.utils.myBoundedSwing;
 import org.cytoscape.work.internal.tunables.utils.mySlider;
 import org.cytoscape.work.util.AbstractBounded;
+import org.cytoscape.work.util.BoundedDouble;
 
 
 /**
@@ -24,7 +30,7 @@ import org.cytoscape.work.util.AbstractBounded;
  * @param <T> type of <code>AbstractBounded</code>
  */
 @SuppressWarnings("unchecked")
-public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunableHandler {
+public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunableHandler implements ChangeListener, ActionListener {
 	/**
 	 * Representation of the <code>Bounded</code> in a <code>JSlider</code>
 	 */
@@ -88,6 +94,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 				                                  bounded.isUpperBoundStrict());
 				panel.add(label, BorderLayout.WEST);
 				panel.add(boundedField, BorderLayout.EAST);
+				boundedField.addActionListener(this);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -103,6 +110,30 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 		}
 	}
 
+	public void update(){
+		
+		final String title = getDescription();
+
+		try {
+			final T bounded = getBounded();
+			if (useSlider){
+				Number n = (Number) bounded.getValue();
+				slider.setValue(n);
+			}else{
+				final JLabel label =
+					new JLabel(title + " (max: " + bounded.getLowerBound().toString()
+					          + " min: " + bounded.getUpperBound().toString() + ")" );
+				label.setFont(new Font(null, Font.PLAIN,12));
+				boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
+				                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
+				                                  bounded.isUpperBoundStrict());
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	
 	/**
 	 * To set the value (from the JSlider or the JTextField) to the <code>Bounded</code> object
 	 *
@@ -112,8 +143,9 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 		try {
 			final T bounded = getBounded();
 			final Number fieldValue = useSlider ? slider.getValue() : boundedField.getFieldValue();
-			if (fieldValue instanceof Double)
+			if (fieldValue instanceof Double){
 				bounded.setValue((Double)fieldValue);
+			}
 			else if (fieldValue instanceof Float)
 				bounded.setValue((Float)fieldValue);
 			else if (fieldValue instanceof Integer)
@@ -122,6 +154,8 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 				bounded.setValue((Long)fieldValue);
 			else
 				throw new IllegalStateException("unexpected type: " + fieldValue.getClass() + "!");
+			
+			setValue(bounded);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -137,5 +171,16 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 		} catch (final Exception e) {
 			return "";
 		}
+	}
+
+	
+	public void stateChanged(ChangeEvent e) {
+		System.out.println("in satatechange");
+		handle();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		handle();
 	}
 }

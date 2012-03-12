@@ -2,6 +2,8 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.*;
 import javax.swing.*;
 
@@ -14,8 +16,8 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  *
  * @author pasteur
  */
-public class StringHandler extends AbstractGUITunableHandler {
-	private JTextField textField;
+public class StringHandler extends AbstractGUITunableHandler implements ActionListener {
+	private JFormattedTextField textField;
 	private boolean horizontal = false;
 
 	/**
@@ -48,11 +50,12 @@ public class StringHandler extends AbstractGUITunableHandler {
 		}
 
 		//set Gui
-		textField = new JTextField(s, 15);
+		textField = new JFormattedTextField(s);
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
+		textField.addActionListener(this);
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
@@ -62,6 +65,17 @@ public class StringHandler extends AbstractGUITunableHandler {
 			panel.add(textField, BorderLayout.EAST);
 		}
 	}
+	
+	public void update(){
+		String s = null;
+		try {
+			s = (String)getValue();
+			textField.setValue(s);
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 	/**
 	 * Catches the value inserted in the JTextField, and tries to set it to the initial object. If it can't, throws an
@@ -75,5 +89,32 @@ public class StringHandler extends AbstractGUITunableHandler {
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * To get the item that is currently selected
+	 */
+	public String getState() {
+		if ( textField == null )
+			return "";
+
+		final String text = textField.getText();
+		if ( text == null )
+			return "";
+
+		try {
+			return text;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		handle();
 	}
 }

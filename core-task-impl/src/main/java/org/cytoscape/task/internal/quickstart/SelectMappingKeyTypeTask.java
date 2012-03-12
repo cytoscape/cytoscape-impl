@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 import org.cytoscape.task.internal.quickstart.QuickStartState.Job;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesGUI;
+//import org.cytoscape.work.ProvidesGUI;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -41,7 +41,7 @@ public class SelectMappingKeyTypeTask extends AbstractTask {
 	}
 
 	
-	@ProvidesGUI
+	//@ProvidesGUI
 	public JPanel getGUI() {
 		if (mappingKeyTypePanel == null){
 			this.mappingKeyTypePanel = new MappingKeyTypePanel(values, previewKeys, previewData);			

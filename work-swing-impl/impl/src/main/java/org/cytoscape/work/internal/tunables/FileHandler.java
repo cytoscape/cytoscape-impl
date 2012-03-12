@@ -120,6 +120,23 @@ public class FileHandler extends AbstractGUITunableHandler {
 		}
 	}
 
+	public void update(){
+		
+		final int load_or_save = input ? FileUtil.LOAD : FileUtil.SAVE;
+
+		// Use the panel's parent if we have it, otherwise use the possible
+		// parent specified in setFileTunableDirectly. 
+		Component parentComponent = SwingUtilities.getWindowAncestor(panel);
+		if ( parentComponent == null )
+			parentComponent = possibleParent;
+		final File file = fileUtil.getFile(parentComponent, titleLabel.getText(), load_or_save, filters);
+		if (file != null) {
+			fileTextField.setText(file.getAbsolutePath());
+		}else{
+			fileTextField.setText(defaultString);
+		}
+	}
+	
 	//construction of the GUI depending on the file type expected:
 	//	-field to display the file's path
 	//	-button to open the FileCHooser
@@ -253,4 +270,13 @@ public class FileHandler extends AbstractGUITunableHandler {
 		}
 	}
 
+	public String getState(){
+		try{
+			return fileTextField.getText();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return "";
+	}
+	
 }

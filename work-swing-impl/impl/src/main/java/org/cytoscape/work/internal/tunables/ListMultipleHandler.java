@@ -4,6 +4,7 @@ package org.cytoscape.work.internal.tunables;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -27,7 +30,7 @@ import org.cytoscape.work.util.ListMultipleSelection;
  *
  * @param <T> type of items the List contains
  */
-public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
+public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements ListSelectionListener {
 	private JList itemsContainerList;
 	private ListMultipleSelection<T> listMultipleSelection;
 
@@ -85,6 +88,10 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
 		panel.add(scrollpane,BorderLayout.EAST);
 	}
 
+	public void update(){
+		
+	}
+	
 	/**
 	 * set the items that are currently selected in the <code>itemsContainerList</code> as the selected items in <code>listMultipleSelection</code>
 	 */
@@ -95,6 +102,16 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
 		List selectedItems = Arrays.asList(itemsContainerList.getSelectedValues());
 		if (!selectedItems.isEmpty()) {
 			listMultipleSelection.setSelectedValues(selectedItems);
+		}
+		
+		try {
+			setValue(listMultipleSelection);
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -107,5 +124,10 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler {
 
 		final List<T> selection = listMultipleSelection.getSelectedValues();
 		return selection == null ? "" : selection.toString();
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		handle();
 	}
 }

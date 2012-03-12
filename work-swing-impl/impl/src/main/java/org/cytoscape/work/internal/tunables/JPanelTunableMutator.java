@@ -333,23 +333,13 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	private List<GUITunableHandler> findHandlers(Object objectWithTunables) {
 		List<GUITunableHandler> handlers = new ArrayList<GUITunableHandler>();
 
-		// clear any previously set providedGUI panels
-		providedGUI = null;
-
 		// the call to getHandlers will populate guiProviderMap
 		// note that map may be empty!
 		Map<String, GUITunableHandler> tunableHandlerMap = getHandlers(objectWithTunables);
 
-		if (guiProviderMap.containsKey(objectWithTunables)) {
-			try {
-				providedGUI = (JPanel)guiProviderMap.get(objectWithTunables).invoke(objectWithTunables);
-			} catch (final Exception e) {
-				logger.error("Can't retrieve @ProvidesGUI JPanel: ", e);
-			}
-		} else {
-			if ( tunableHandlerMap != null && !tunableHandlerMap.isEmpty() )
-				handlers.addAll(tunableHandlerMap.values());
-		}
+		
+		if ( tunableHandlerMap != null && !tunableHandlerMap.isEmpty() )
+			handlers.addAll(tunableHandlerMap.values());
 
 		return handlers;
 	}

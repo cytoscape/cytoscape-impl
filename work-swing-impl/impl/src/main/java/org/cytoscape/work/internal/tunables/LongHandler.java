@@ -4,7 +4,11 @@ package org.cytoscape.work.internal.tunables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.*;
+import java.text.DecimalFormat;
+
 import javax.swing.*;
 
 import org.cytoscape.work.Tunable;
@@ -16,8 +20,8 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  *
  * @author pasteur
  */
-public class LongHandler extends AbstractGUITunableHandler {
-	private JTextField textField;
+public class LongHandler extends AbstractGUITunableHandler implements ActionListener {
+	private JFormattedTextField textField;
 	private boolean horizontal = false;
 
 	/**
@@ -42,11 +46,13 @@ public class LongHandler extends AbstractGUITunableHandler {
 
 	private void init() {
 		//setup GUI
-		textField = new JTextField(getLong().toString(), 10);
+		textField = new JFormattedTextField(new DecimalFormat());
+		textField.setValue(getLong());
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
+		textField.addActionListener(this);
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
@@ -66,6 +72,16 @@ public class LongHandler extends AbstractGUITunableHandler {
 		}
 	}
 
+	public void update(){
+		Long l = null;
+		try{
+			l = getLong();
+			textField.setValue(l);
+		} catch(final Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Catches the value inserted in the JTextField, parses it to a <code>Long</code> value, and tries
 	 * to set it to the initial object. If it can't, throws an exception that displays the source error to the user
@@ -91,8 +107,41 @@ public class LongHandler extends AbstractGUITunableHandler {
 		}
 		try {
 			setValue(l);
+			
 		} catch (final Exception e) {
+			textField.setBackground(Color.red);
+			JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
+			textField.setBackground(Color.white);
+			return;
 		}
 	}
+	
+	/**
+	 * To get the item that is currently selected
+	 */
+	public String getState() {
+		if ( textField == null )
+			return "";
+
+		final String text = textField.getText();
+		if ( text == null )
+			return "";
+
+		try {
+			return text;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		handle();
+	}
+	
 }

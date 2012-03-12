@@ -3,6 +3,8 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -19,7 +21,7 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  *
  * @author pasteur
  */
-public class BooleanHandler extends AbstractGUITunableHandler {
+public class BooleanHandler extends AbstractGUITunableHandler implements ActionListener {
 	private JCheckBox checkBox;
 	private boolean horizontal = false;
 
@@ -68,6 +70,17 @@ public class BooleanHandler extends AbstractGUITunableHandler {
 			return false;
 		}
 	}
+	
+	
+	public void update(){
+		boolean b;
+		try{
+			b = (Boolean) getValue();
+			checkBox.setSelected(b);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * To set the current value represented in the <code>GUIHandler</code> (in a <code>JCheckBox</code>)to the value of this <code>Boolean</code> object
@@ -86,5 +99,10 @@ public class BooleanHandler extends AbstractGUITunableHandler {
 	 */
 	public String getState() {
 		return String.valueOf(checkBox.isSelected());
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		handle();		
 	}
 }
