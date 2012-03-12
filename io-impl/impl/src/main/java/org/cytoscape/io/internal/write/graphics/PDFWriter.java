@@ -89,7 +89,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		Graphics2D g = null;
 		logger.debug("!!!!! Enter block 2");
 		
-		engine.getProperties().setProperty("exportTextAsShape", new Boolean(!exportTextAsFont).toString());
+		engine.setProperties("exportTextAsShape", new Boolean(!exportTextAsFont).toString());
 		
 		taskMonitor.setProgress(0.2);
 		
