@@ -175,7 +175,6 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 
 	
 	public void stateChanged(ChangeEvent e) {
-		System.out.println("in satatechange");
 		handle();
 	}
 
