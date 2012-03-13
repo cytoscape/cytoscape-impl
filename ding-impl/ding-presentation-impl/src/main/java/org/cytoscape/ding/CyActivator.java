@@ -24,6 +24,7 @@ import org.cytoscape.ding.impl.editor.EdgeBendPropertyEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
+import org.cytoscape.ding.impl.BendFactoryImpl;
 import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.dnd.GraphicalEntity;
@@ -216,6 +217,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		HandleFactory handleFactory = new HandleFactoryImpl();
 		registerService(bc,handleFactory,HandleFactory.class,new Properties());
+
+		BendFactory bendFactory = new BendFactoryImpl();
+		registerService(bc,bendFactory,BendFactory.class,new Properties());
 
 	}
 }
