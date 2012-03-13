@@ -126,9 +126,9 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		
 		
 		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
-		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 200d);
-		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 200d);
-		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 0d);
+		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 100d);
+		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 400d);
+		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 120d);
 
 		innerPanel.setBackground(BACKGROUND_COLOR);
 		// Render it in this panel

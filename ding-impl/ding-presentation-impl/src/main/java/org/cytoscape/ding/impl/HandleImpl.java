@@ -134,6 +134,21 @@ public class HandleImpl implements Handle {
 		// Theta is the angle between v1 and v2
 		final double theta = Math.acos(cosTheta);
 		sinTheta = Math.sin(theta);
+		
+		// Check direction of rotation
+		final double slopeE = (tY-sY)/(tX-sX);
+		final double slopeH = (hY-sY)/(hX-sX);
+		if((sX<=tX && sY <= tY) || (sX>tX && sY > tY)) {
+			if(slopeE>=slopeH) {
+				cosTheta = Math.cos(-theta);
+				sinTheta = Math.sin(-theta);
+			}
+		} else {
+			if(slopeE<=slopeH) {
+				cosTheta = Math.cos(-theta);
+				sinTheta = Math.sin(-theta);
+			}
+		}
 
 //		System.out.println("** (Sx, Sy) = (" + sX + ", " + sY + ")");
 //		System.out.println("** (Tx, Ty) = (" + tX + ", " + tY + ")");
