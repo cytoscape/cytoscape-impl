@@ -2,6 +2,7 @@ package org.cytoscape.welcome.internal;
 
 import java.awt.event.ActionEvent;
 import java.util.Properties;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.events.CyStartEvent;
@@ -21,7 +22,8 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	private static final long serialVersionUID = 2584201062371825221L;
 	
-	public static final String DO_NOT_DISPLAY_PROP_NAME = "hideWelcomScreen";
+	public static final String DO_NOT_DISPLAY_PROP_NAME = "hideWelcomeScreen";
+	public static final String TEMP_DO_NOT_DISPLAY_PROP_NAME = "tempHideWelcomeScreen";
 
 	private static final String MENU_NAME = "Show Welcome Screen...";
 	private static final String PARENT_NAME = "Help";
@@ -65,7 +67,11 @@ public class WelcomeScreenAction extends AbstractCyAction {
 		this.bc = bc;
 		
 		// Show it if necessary
-		startup();
+		SwingUtilities.invokeLater( new Runnable() { 
+			public void run() {
+				startup();
+			}
+		});
 	}
 
 	@Override
@@ -79,20 +85,36 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	}
 	
 	public void startup() {
-		// Simply displays the dialog after startup.
+
+		// Displays the dialog after startup based on whether
+		// the specified property has been set.
 		final String hideString = this.cyProps.getProperties().getProperty(DO_NOT_DISPLAY_PROP_NAME);
-		
-		if (hideString == null)
-			hide = false;
-		else {
-			try {
-				hide = Boolean.parseBoolean(hideString);
-			} catch (Exception ex) {
-				hide = false;
-			}
+		hide = parseBoolean(hideString);
+			
+		if (!hide) {
+			final String tempHideString = this.cyProps.getProperties().getProperty(TEMP_DO_NOT_DISPLAY_PROP_NAME);
+			hide = parseBoolean(tempHideString);
 		}
 		
-		if(hide == false)
+		// remove this property regardless!
+		this.cyProps.getProperties().remove(TEMP_DO_NOT_DISPLAY_PROP_NAME);
+
+		if(!hide)
 			actionPerformed(null);
+	}
+
+	private boolean parseBoolean(String hideString) {
+		boolean lhide = false;
+		if (hideString == null)
+			lhide = false;
+		else {
+			try {
+				// might make it true!
+				lhide = Boolean.parseBoolean(hideString);
+			} catch (Exception ex) {
+				lhide = false;
+			}
+		}
+		return lhide;
 	}
 }
