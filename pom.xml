@@ -63,6 +63,7 @@
 		<module>datasource-impl</module>
 		<module>datasource-biogrid-impl</module>
 		<module>welcome-impl</module>
+		<module>gui-cmdline-parser-impl</module>
     <module>scripting-impl</module>
   </modules>
 
