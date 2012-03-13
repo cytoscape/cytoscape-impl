@@ -26,6 +26,11 @@ public class PsiMiCyFileFilterTest {
 		StreamUtil streamUtil = new StreamUtil() {
 			
 			@Override
+			public InputStream getInputStream(String s) throws IOException {
+				return null;
+			}
+
+			@Override
 			public URLConnection getURLConnection(URL source) throws IOException {
 				return null;
 			}

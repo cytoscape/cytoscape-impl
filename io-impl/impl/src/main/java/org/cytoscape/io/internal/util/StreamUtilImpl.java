@@ -25,6 +25,7 @@ package org.cytoscape.io.internal.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
@@ -38,11 +39,15 @@ import java.util.zip.ZipInputStream;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 
  */
 public class StreamUtilImpl implements StreamUtil {
 
+	private static final Logger logger = LoggerFactory.getLogger(StreamUtilImpl.class);
 	private static final String GZIP = ".gz";
 	private static final String ZIP = ".zip";
 	private static final String JAR = ".jar";
@@ -52,6 +57,14 @@ public class StreamUtilImpl implements StreamUtil {
 	
 	public StreamUtilImpl(CyProperty<Properties> proxyProperties) {
 		properties = proxyProperties.getProperties();
+	}
+
+	@Override
+	public InputStream getInputStream(String name) throws IOException {
+		if (name.matches(StreamUtil.URL_PATTERN)) 
+			return getInputStream(new URL(name));
+		else 
+			return new FileInputStream(name);
 	}
 	
 	/**
