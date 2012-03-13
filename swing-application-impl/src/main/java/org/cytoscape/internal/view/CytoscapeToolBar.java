@@ -36,27 +36,30 @@
 */
 package org.cytoscape.internal.view;
 
-import java.awt.Component;
-import javax.swing.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.SortedMap;
-import java.util.List;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JToolBar;
 
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
 
 /**
- *
+ * Implementation of Toolbar on the Cytoscape Desktop applicaiton.
  */
 public class CytoscapeToolBar extends JToolBar {
+	
 	private final static long serialVersionUID = 1202339868655256L;
-	private Map<CyAction,JButton> actionButtonMap; 
-	private List orderedList;
-	private Map<Object,Float> componentGravity;
+	
+	private Map<CyAction, JButton> actionButtonMap; 
+	private List<Object> orderedList;
+	private Map<Object, Float> componentGravity;
 
 	/**
 	 * Default constructor delegates to the superclass void constructor and then
@@ -66,7 +69,7 @@ public class CytoscapeToolBar extends JToolBar {
 		super("Cytoscape Tools");
 		actionButtonMap = new HashMap<CyAction,JButton>();
 		componentGravity = new HashMap<Object,Float>();
-		orderedList = new ArrayList();
+		orderedList = new ArrayList<Object>();
 	}
 
 	/**
@@ -75,7 +78,6 @@ public class CytoscapeToolBar extends JToolBar {
 	 * gravity property.
 	 */
 	public boolean addAction(CyAction action) {
-
 		if (!action.isInToolBar()) 
 			return false;
 

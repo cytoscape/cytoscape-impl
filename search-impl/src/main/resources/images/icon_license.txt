@@ -1,0 +1,5 @@
+<search_icon.png>
+Artist: Oxygen Team
+Iconset: Oxygen Icons (883 icons)
+License: GNU Lesser General Public License
+URL: http://www.iconarchive.com/show/oxygen-icons-by-oxygen-icons.org/Actions-edit-find-icon.html

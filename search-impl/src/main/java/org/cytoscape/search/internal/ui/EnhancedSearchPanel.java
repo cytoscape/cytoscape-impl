@@ -1,5 +1,16 @@
 package org.cytoscape.search.internal.ui;
 
+import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.EnhancedSearch;
@@ -9,36 +20,40 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EnhancedSearchPanel extends javax.swing.JPanel {
+public class EnhancedSearchPanel extends JPanel {
 
 	private static final long serialVersionUID = 3748296514173533886L;
 	
 	private static final Logger logger = LoggerFactory.getLogger(EnhancedSearchPanel.class);
 	
-	private CyApplicationManager appManager;
-	private EnhancedSearch searchMgr;
-	private DialogTaskManager taskMgr;
+	private Icon searchIcon = new ImageIcon(this.getClass().getResource("/images/search_icon.png"));
+	
+	private static final Font MESSAGE_FONT = new Font("SansSerif", Font.ITALIC, 10);
+	private static final Font REGULAR_FONT = new Font("SansSerif", Font.BOLD, 12);
+	
+	private boolean firstSearch = true;
+	
+	private final CyApplicationManager appManager;
+	private final EnhancedSearch searchMgr;
+	private final DialogTaskManager taskMgr;
 	
 	private final CyNetworkViewManager viewManager;
+	
+	private JLabel lbSearch;
+	private JTextField tfSearchText;
 
 	/** Creates new form NewJPanel */
-	public EnhancedSearchPanel(CyApplicationManager appManager, final CyNetworkViewManager viewManager, EnhancedSearch searchMgr,
-			DialogTaskManager taskMgr) {
-		initComponents();
-
-		// Turn off this for now, we may need this later
-		this.btnSearch.setVisible(false);
-		this.lbSearch.setVisible(true);
-
+	public EnhancedSearchPanel(final CyApplicationManager appManager, final CyNetworkViewManager viewManager,
+			final EnhancedSearch searchMgr, final DialogTaskManager taskMgr) {
+		
 		this.appManager = appManager;
 		this.searchMgr = searchMgr;
 		this.taskMgr = taskMgr;
 		this.viewManager = viewManager;
+		
+		initComponents();
 	}
 
-	private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {
-		doSearching();
-	}
 
 	private void tfSearchTextActionPerformed(java.awt.event.ActionEvent evt) {
 		doSearching();
@@ -47,6 +62,11 @@ public class EnhancedSearchPanel extends javax.swing.JPanel {
 	// Do searching based on the query string from user on text-field
 	private void doSearching() {
 		final String queryStr = this.tfSearchText.getText().trim();
+		
+		// Ignore if the search term is empty
+		if(queryStr == null || queryStr.length() == 0)
+			return;
+		
 		logger.info("Search Start.  Query text = " + queryStr);
 
 		final CyNetwork currentNetwork = appManager.getCurrentNetwork();
@@ -69,39 +89,33 @@ public class EnhancedSearchPanel extends javax.swing.JPanel {
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
 
-		lbSearch = new javax.swing.JLabel();
-		tfSearchText = new javax.swing.JTextField();
-		btnSearch = new javax.swing.JButton();
+		lbSearch = new JLabel();
+		tfSearchText = new JTextField();
 
-		lbSearch.setText("Search:");
+		lbSearch.setIcon(searchIcon);
 		lbSearch.setName("lbSearch"); // NOI18N
 		add(lbSearch);
 
-		tfSearchText.setToolTipText("<html>Enter search text<br>e.g.<br> YL* -- search from all attributes<br>name:YL*  -- Search by attribute 'name', </html>");
+		tfSearchText.setToolTipText("<html>Example Search Query:<br><br> YL* -- search from all attributes<br>name:YL*  -- Search by attribute 'name', </html>");
 		tfSearchText.setName("tfSearchText"); // NOI18N
-		tfSearchText.setPreferredSize(new java.awt.Dimension(150, 25));
+		tfSearchText.setFont(MESSAGE_FONT);
+		tfSearchText.setText("Enter search term...");
+		tfSearchText.setPreferredSize(new java.awt.Dimension(150, 32));
 		tfSearchText.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				tfSearchTextActionPerformed(evt);
 			}
 		});
-		add(tfSearchText);
-
-		btnSearch.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
-		btnSearch.setText("Search");
-		btnSearch.setName("btnSearch"); // NOI18N
-		btnSearch.setPreferredSize(new java.awt.Dimension(70, 23));
-		btnSearch.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				btnSearchActionPerformed(evt);
+		tfSearchText.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				if(firstSearch) {
+					tfSearchText.setText("");
+					tfSearchText.setFont(REGULAR_FONT);
+					firstSearch = false;
+				}
 			}
 		});
-		add(btnSearch);
+		add(tfSearchText);
 	}// </editor-fold>
-
-	// Variables declaration - do not modify
-	private javax.swing.JButton btnSearch;
-	private javax.swing.JLabel lbSearch;
-	private javax.swing.JTextField tfSearchText;
-	// End of variables declaration
 }

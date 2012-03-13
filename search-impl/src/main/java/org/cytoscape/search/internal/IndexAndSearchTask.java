@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import org.apache.lucene.store.RAMDirectory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
@@ -131,6 +133,18 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	private void showResults(final EnhancedSearchQuery queryHandler, final TaskMonitor taskMonitor) {
 		if (network == null || network.getNodeList().size() == 0)
 			return;
+		
+		int nodeHitCount = queryHandler.getNodeHitCount();
+		int edgeHitCount = queryHandler.getEdgeHitCount();
+		if (nodeHitCount == 0 && edgeHitCount == 0) {
+			taskMonitor.setStatusMessage("Could not find any match.");
+			taskMonitor.setTitle("Search Finished");
+			taskMonitor.setProgress(1.0);
+			
+			JOptionPane
+					.showMessageDialog(null, "Could not find any matches.", "No Match!", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 
 		List<CyNode> nodeList = network.getNodeList();
 		for (CyNode n : nodeList) {
@@ -141,10 +155,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			network.getRow(e).set(CyNetwork.SELECTED, false);
 		}
 
-		int nodeHitCount = queryHandler.getNodeHitCount();
-		int edgeHitCount = queryHandler.getEdgeHitCount();
-		if (nodeHitCount == 0 && edgeHitCount == 0)
-			return;
+		
 
 		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges");
 

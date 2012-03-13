@@ -82,7 +82,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private static final String TITLE_PREFIX_STRING ="Session: ";
 	private static final String NEW_SESSION_NAME ="New Session";
 	
-	private static final Dimension DEF_DESKTOP_SIZE = new Dimension(1200, 850);
+	static final Dimension DEF_DESKTOP_SIZE = new Dimension(1300, 850);
 	private static final int DEF_DIVIDER_LOATION = 450;
 	
 	private static final String SMALL_ICON = "/images/c16.png";

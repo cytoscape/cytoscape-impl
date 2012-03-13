@@ -30,7 +30,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		EnhancedSearchPlugin enhancedSearchPlugin = new EnhancedSearchPlugin(cytoscapeDesktopService,cyApplicationManagerRef,guiTaskManagerServiceRef,cyEventHelperServiceRef,cyNetworkViewManagerServiceRef);
 		
-		registerAllServices(bc,enhancedSearchPlugin, new Properties());
+		final Properties searchPluginProps = new Properties();
+		searchPluginProps .setProperty("largeIconURL",getClass().getResource("/images/search_icon.png").toString());
+		registerAllServices(bc,enhancedSearchPlugin, searchPluginProps);
 	}
 }
 
