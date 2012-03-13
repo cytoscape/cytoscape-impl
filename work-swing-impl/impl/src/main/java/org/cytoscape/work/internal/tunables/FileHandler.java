@@ -114,7 +114,10 @@ public class FileHandler extends AbstractGUITunableHandler {
 	 */
 	public void handle() {
 		try {
-			setValue(new File(fileTextField.getText()));
+			if (fileTextField.getText().equals(defaultString) || fileTextField.getText().isEmpty() )
+				setValue(null);
+			else
+				setValue(new File(fileTextField.getText()));
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
