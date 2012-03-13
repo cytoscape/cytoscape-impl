@@ -4,12 +4,12 @@ package org.cytoscape.task.internal.loaddatatable;
 import java.net.URL;
 
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 
 public class LoadAttributesURLTask extends AbstractLoadAttributesTask {
+	
 	@Tunable(description="Attribute Table URL", params="fileCategory=table;input=true")
 	public URL url;
 
