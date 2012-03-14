@@ -30,27 +30,33 @@
 package org.cytoscape.internal.layout.ui;
 
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Properties;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.PanelTaskManager;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.lang.reflect.Field;
-import java.util.Set;
-import java.util.Properties;
 
 
 /**
@@ -75,6 +81,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private CyApplicationManager appMgr;
 	private PanelTaskManager taskManager;
 	private CyProperty cytoscapePropertiesServiceRef;
+	private boolean initialized;
 
 	/**
 	 * Creates a new LayoutSettingsDialog object.
@@ -122,10 +129,17 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			taskManager.execute(currentLayout);
 		} else {
 			// OK, initialize and display
-			initialize();
-			setLocationRelativeTo(desktop.getJFrame());
-			setVisible(true);
-			this.pack();
+			if (isVisible()) {
+				requestFocus();
+			} else {
+				if (!initialized) {
+					initialize();
+					setLocationRelativeTo(desktop.getJFrame());
+					pack();
+				}
+				setVisible(true);
+				initialized = true;
+			}
 		}
 	}
 
@@ -345,6 +359,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			// if it's a string, that means it's the instructions
 			if (!(o instanceof String)) {
 				final CyLayoutAlgorithm newLayout = (CyLayoutAlgorithm)o;
+				newLayout.setNetworkView(appMgr.getCurrentNetworkView());
 				JPanel tunablePanel = taskManager.getConfiguration(newLayout);
 
 				if (tunablePanel == null){
