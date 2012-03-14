@@ -47,6 +47,7 @@ import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
 
 import java.util.Properties;
 
+import org.cytoscape.internal.actions.CommandListAction;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
@@ -393,6 +394,14 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
+
+        CommandListAction cla = new CommandListAction(cytoscapeDesktop);
+        registerService(bc,cla,CyAction.class,new Properties());
+        registerServiceListener(bc,cla,"addTaskFactory","removeTaskFactory",TaskFactory.class);
+        registerServiceListener(bc,cla,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
+        registerServiceListener(bc,cla,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
+        registerServiceListener(bc,cla,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
+
 	}
 
 	private boolean isMac() {
