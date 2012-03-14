@@ -112,13 +112,13 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		if (!selectedOnly)
 			numSelectedNodes = 0;
 
-		if (numSelectedNodes == 1) {
+		final int numNodes = networkView.getNodeViews().size();
+		final int numLayoutNodes = (numSelectedNodes < 1) ? numNodes : numSelectedNodes;
+
+		if (numLayoutNodes == 1) {
 			// We were asked to do a hierchical layout of a single node -- done!
 			return;
 		}
-
-		final int numNodes = networkView.getNodeViews().size();
-		final int numLayoutNodes = (numSelectedNodes < 1) ? numNodes : numSelectedNodes;
 
 		// maps node's index (.getIndex()) to View<CyNode> of given node
 		HashMap<Integer, View<CyNode>> index2NodeView = new HashMap<Integer, View<CyNode>>(numNodes);
