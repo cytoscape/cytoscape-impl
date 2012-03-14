@@ -66,8 +66,10 @@ public class SubmenuTunableHandlerImpl extends AbstractTunableHandler implements
 	public void chosenMenu(String s) {
 		try {
 			final ListSingleSelection<String> listSingleSelection = (ListSingleSelection<String>)getValue();
-			if ( listSingleSelection != null )
+			if ( listSingleSelection != null ) {
 				listSingleSelection.setSelectedValue(s);
+				setValue(listSingleSelection);
+			}
 		} catch (Exception e) { 
 			logger.debug("problem registering the chosen menu :" + s, e);
 		}
