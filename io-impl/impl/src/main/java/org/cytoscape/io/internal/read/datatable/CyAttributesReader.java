@@ -71,7 +71,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private final CyRootNetworkManager rootNetFact;
 
 	@Tunable(description = "Map table to:")
-	public final ListSingleSelection<TableType> dataTypeOptions;
+	public ListSingleSelection<TableType> dataTypeOptions;
 
 	@ProvidesTitle
 	public String getTitle() {
