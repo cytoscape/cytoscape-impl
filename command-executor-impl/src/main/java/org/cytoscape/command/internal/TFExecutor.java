@@ -29,9 +29,8 @@ class TFExecutor implements Executor {
 			TaskIterator ti = tf.createTaskIterator();
 			while (ti.hasNext()) {
 				Task t = ti.next();
-				interceptor.setArgString(args);
-				//interceptor.loadTunables(t);
-				interceptor.execUI(t);
+				interceptor.setConfigurationContext(args);
+				interceptor.validateAndWriteBackTunables(t);
 				t.run(tm);
 			}
 		} catch (Exception e) {

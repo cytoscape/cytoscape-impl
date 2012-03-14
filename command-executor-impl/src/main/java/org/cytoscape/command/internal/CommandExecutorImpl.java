@@ -21,11 +21,12 @@ public class CommandExecutorImpl {
 	private final Map<String, Map<String,Executor>> commandExecutorMap = 
 	                                             new HashMap<String,Map<String,Executor>>();
 
-	private final CommandTunableInterceptorImpl interceptor = new CommandTunableInterceptorImpl(); 
+	private final CommandTunableInterceptorImpl interceptor; 
 	private final CyApplicationManager appMgr;
 
-	public CommandExecutorImpl(CyApplicationManager appMgr) {
+	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor) {
 		this.appMgr = appMgr;
+		this.interceptor = interceptor;
 	}
 
 	public void addTaskFactory(TaskFactory tf, Map props) {
