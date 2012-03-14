@@ -142,7 +142,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		// Event handler. Define actions when mouse is clicked.
 		addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent e) {
+				public void mouseClicked(MouseEvent e) {					
 					final int column = getColumnModel().getColumnIndexAtX(e.getX());
 					final int row = e.getY() / getRowHeight();
 
@@ -192,7 +192,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 							if (url != null)
 								openBrowser.openURL(url.toString());
 						}
+
 					}
+					
 				} // mouseClicked
 
 				@Override
@@ -209,6 +211,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	
 	private void selectFromTable() {
+
 		final TableModel model = this.getModel();
 		if(model instanceof BrowserTableModel == false)
 			return;
@@ -242,12 +245,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		for(CyRow row: allRows) {
 			final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
 			if(targetRows.contains(row)) {
-				System.out.println("=======> selected: " + row.get(CyTableEntry.NAME, String.class));
 				row.set(CyNetwork.SELECTED, true);
 				continue;
 			}
 			if(val) {
-				System.out.println("=======> UNSELECTED: " + row.get(CyTableEntry.NAME, String.class));
 				row.set(CyNetwork.SELECTED, false);
 			}
 		}
@@ -346,6 +347,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	 *  Display elements in the list objects.
 	 */
 	public void showListContents(MouseEvent e) {
+		
 		final int column = this.getSelectedColumn();
 		final int row = this.getSelectedRow();
 

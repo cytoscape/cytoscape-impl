@@ -374,10 +374,18 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			}
 		}
 		
-		final Map<Long, Boolean> suidMap = new HashMap<Long, Boolean>();
+		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
+		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
+
 		for(RowSetRecord rowSetRecord : rows) {
-			if(rowSetRecord.getColumn().equals(CyNetwork.SELECTED) && ((Boolean)rowSetRecord.getValue()) == true)
-				suidMap.put(rowSetRecord.getRow().get(CyTableEntry.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+			if(rowSetRecord.getColumn().equals(CyNetwork.SELECTED)){
+				if(((Boolean)rowSetRecord.getValue()) == true){
+					suidMapSelected.put(rowSetRecord.getRow().get(CyTableEntry.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+				}
+				else{
+					suidMapUnselected.put(rowSetRecord.getRow().get(CyTableEntry.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+				}
+			}
 		}
 		
 		final int rowCount = table.getRowCount();
@@ -390,9 +398,14 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			} catch (NumberFormatException nfe) {
 				System.out.println("Error parsing long from table " + table.getName() + ": " + nfe.getMessage());
 			}
-			if(pk != null && suidMap.keySet().contains(pk)) {
-				table.addRowSelectionInterval(i, i);
-				table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
+			if(pk != null) {
+				if (suidMapSelected.keySet().contains(pk)){
+					table.addRowSelectionInterval(i, i);
+					table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
+				}else if (suidMapUnselected.keySet().contains(pk)){
+					table.removeRowSelectionInterval(i, i);
+				}
+				
 			}
 		}
 	}
@@ -400,6 +413,8 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
 			final Object newRawValue) {
 		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
+			System.out.println("in handle row value updated for selected");
+
 			fireTableDataChanged();
 		} 
 	}
