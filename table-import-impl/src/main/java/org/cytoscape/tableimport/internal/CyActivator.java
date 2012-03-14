@@ -76,7 +76,7 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
 		CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
 
-		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
+		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt", "tab", "net"}, new String[]{"text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter attrsTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter oboFilter = new BasicCyFileFilter(new String[]{"obo"}, new String[]{"text/obo"},"OBO Files",NETWORK,CytoscapeServices.streamUtil);
 		OBONetworkReaderFactory oboReaderFactory = new OBONetworkReaderFactory(oboFilter);
