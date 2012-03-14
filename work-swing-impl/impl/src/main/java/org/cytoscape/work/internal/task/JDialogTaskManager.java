@@ -10,6 +10,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.Task;
@@ -183,7 +184,12 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			public void run() {
 				if (!(executorFuture.isDone() || executorFuture.isCancelled())) {
 					taskMonitor.setFuture(executorFuture);
-					taskMonitor.open();
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							taskMonitor.open();
+						}
+					});
 				}
 			}
 		};
