@@ -94,13 +94,11 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 	 */
 	public void handle() {
 		textField.setBackground(Color.white);
-
 		Double d;
 		try{
-			d = Double.parseDouble(textField.getText());
+			d = ((Number) textField.getValue()).doubleValue();
 			try {
 				setValue(d);
-				
 			} catch (final Exception e) {
 				textField.setBackground(Color.red);
 				JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -108,7 +106,6 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 				textField.setBackground(Color.white);
 				return;
 			}
-			textField.setValue(d);
 		} catch(NumberFormatException nfe) {
 			textField.setBackground(Color.red);
 			try {
@@ -134,7 +131,7 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 		if ( textField == null )
 			return "";
 
-		Double d = Double.parseDouble( textField.getText());
+		Double d = ((Number) textField.getValue()).doubleValue();
 		final String text = d.toString();
 		if ( text == null )
 			return "";
