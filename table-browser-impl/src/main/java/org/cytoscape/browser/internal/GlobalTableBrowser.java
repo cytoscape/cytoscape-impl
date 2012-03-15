@@ -4,21 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.TableChooser.GlobalTableComboBoxModel;
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
@@ -32,8 +26,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, TableAddedListener {
 
 	private static final long serialVersionUID = 2269984225983802421L;
-
-	private static final Class<?>[] OBJECT_TYPES = {CyNode.class, CyEdge.class, CyNetwork.class};
 
 	static final Color GLOBAL_TABLE_COLOR = new Color(0x1E, 0x90, 0xFF);
 	static final Color GLOBAL_TABLE_ENTRY_COLOR = new Color(0x1E, 0x90, 0xFF, 150);
@@ -101,7 +93,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		final CyTable newTable = e.getTable();
 
 		if (newTable.isPublic()) {
-			if (isGlobalTable(newTable)) {
+			if (TableBrowserUtil.isGlobalTable(newTable, networkTableManager)) {
 				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 				comboBoxModel.addAndSetSelectedItem(newTable);
 			}
@@ -111,21 +103,5 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		}
 	}
 
-	private boolean isGlobalTable(final CyTable table) {
-		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
-		final Set<CyNetwork> networks = this.networkTableManager.getNetworkSet();
-
-		for (CyNetwork network : networks) {
-			for (Class<?> type : OBJECT_TYPES) {
-				final Map<String, CyTable> objTables = this.networkTableManager.getTables(network,
-						(Class<? extends CyTableEntry>) type);
-				nonGlobalTables.addAll(objTables.values());
-			}
-		}
-
-		if (nonGlobalTables.contains(table))
-			return false;
-		else
-			return true;
-	}
+	
 }

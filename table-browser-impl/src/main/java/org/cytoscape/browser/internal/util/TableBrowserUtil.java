@@ -3,12 +3,23 @@ package org.cytoscape.browser.internal.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableEntry;
 
-public class TableBrowserUtil {
+public final class TableBrowserUtil {
 
+	private static final Class<?>[] OBJECT_TYPES = {CyNode.class, CyEdge.class, CyNetwork.class};
+	
 	private static final int EOF = -1;
 
 	public static Object parseLong(final String text, final StringBuilder errorMessage) {
@@ -382,5 +393,23 @@ public class TableBrowserUtil {
 		} catch (final IOException e) {
 			throw new IllegalStateException("This should *never* happen!");
 		}
+	}
+	
+	public static boolean isGlobalTable(final CyTable table, final CyNetworkTableManager networkTableManager) {
+		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
+		final Set<CyNetwork> networks = networkTableManager.getNetworkSet();
+
+		for (CyNetwork network : networks) {
+			for (Class<?> type : OBJECT_TYPES) {
+				final Map<String, CyTable> objTables = networkTableManager.getTables(network,
+						(Class<? extends CyTableEntry>) type);
+				nonGlobalTables.addAll(objTables.values());
+			}
+		}
+
+		if (nonGlobalTables.contains(table))
+			return false;
+		else
+			return true;
 	}
 }

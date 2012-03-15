@@ -61,6 +61,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	private final OpenBrowser openBrowser;
 	private final PopupMenuHelper popupMenuHelper; 
 	private final CyEventHelper eventHelper;
+	
 
 	// Tab title for the CytoPanel
 	private final String tabTitle;
@@ -178,10 +179,10 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		BrowserTableModel btm = browserTableModels.get(currentTable);
 		
 		if (btm == null) {
-			final BrowserTable browserTable = new BrowserTable(openBrowser, compiler, 
-			                                                   popupMenuHelper, applicationManager, 
-			                                                   eventHelper);
-			btm = new BrowserTableModel(browserTable, currentTable, compiler);
+			final BrowserTable browserTable = new BrowserTable(openBrowser, compiler, popupMenuHelper,
+					applicationManager, eventHelper, networkTableManager);
+			
+			btm = new BrowserTableModel(browserTable, currentTable, compiler, networkTableManager);
 			browserTableModels.put(currentTable, btm);
 		}
 		

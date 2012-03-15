@@ -19,6 +19,7 @@ import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
@@ -43,6 +44,8 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private final BrowserTable table;
 	private final CyTable dataTable;
 	private final EquationCompiler compiler;
+	
+	private final CyNetworkTableManager networkTableManager;
 
 	// If this is FALSE then we show all rows
 	private boolean regularViewMode;
@@ -55,11 +58,13 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private int maxRowIndex;
 
 
-	public BrowserTableModel(final BrowserTable table, final CyTable dataTable, final EquationCompiler compiler) {
+	public BrowserTableModel(final BrowserTable table, final CyTable dataTable, final EquationCompiler compiler, final CyNetworkTableManager networkTableManager) {
 		this.table = table;
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		this.regularViewMode = false; 
+		this.networkTableManager = networkTableManager;
+		
 		initAttrNamesAndVisibilities();
 
 		// add each row to an array to allow fast lookup from an index
@@ -317,10 +322,12 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		} else {
 			table.clearSelection();
 			SwingUtilities.invokeLater(new Runnable() {
+
 				@Override
 				public void run() {
 					try {
-						bulkUpdate(rows);						
+						if(TableBrowserUtil.isGlobalTable(dataTable, networkTableManager) == false)
+							bulkUpdate(rows);						
 					}
 					catch (Exception e){
 						// do nothing, ignore this exception
@@ -365,7 +372,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private void bulkUpdate(final Collection<RowSetRecord> rows) {
 		final int columnCount = table.getColumnCount();
 		int tablePKeyIndex = 0;
-		// Find SUID index.
+		// Find Primary key index.
 		for (int i = 0; i < columnCount; i++) {
 			final String colName = table.getColumnName(i);
 			if (colName.equals(CyTableEntry.SUID)) {
