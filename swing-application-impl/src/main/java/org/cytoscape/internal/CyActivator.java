@@ -48,6 +48,9 @@ import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
 import java.util.Properties;
 
 import org.cytoscape.internal.actions.CommandListAction;
+import org.cytoscape.internal.commands.ArgRecorder;
+import org.cytoscape.internal.commands.ArgHandlerFactory;
+import org.cytoscape.internal.commands.BasicArgHandlerFactory;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
@@ -395,7 +398,13 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
 
-        CommandListAction cla = new CommandListAction(cytoscapeDesktop);
+
+		BasicArgHandlerFactory argHandlerFactory = new BasicArgHandlerFactory();
+		registerService(bc,argHandlerFactory,ArgHandlerFactory.class,new Properties());
+
+		ArgRecorder argRec = new ArgRecorder();
+        registerServiceListener(bc,argRec,"addTunableHandlerFactory","removeTunableHandlerFactory",ArgHandlerFactory.class);
+        CommandListAction cla = new CommandListAction(cytoscapeDesktop,argRec);
         registerService(bc,cla,CyAction.class,new Properties());
         registerServiceListener(bc,cla,"addTaskFactory","removeTaskFactory",TaskFactory.class);
         registerServiceListener(bc,cla,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
