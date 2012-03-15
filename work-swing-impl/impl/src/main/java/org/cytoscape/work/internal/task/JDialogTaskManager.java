@@ -147,8 +147,10 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		try {
 			dialogTunableMutator.setConfigurationContext(parent);
 
-			if ( displayFactoryTunables && !displayTunables(factory) )
+			if ( displayFactoryTunables && !displayTunables(factory) ) {
+				taskMonitor.cancel();
 				return;
+			}
 
 			taskIterator = factory.createTaskIterator();
 			taskMonitor.setExpectedNumTasks( taskIterator.getNumTasks() );
@@ -157,8 +159,10 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			// We do this outside of the thread so that the task monitor only gets
 			// displayed AFTER the first tunables dialog gets displayed.
 			first = taskIterator.next();
-			if (!displayTunables(first))
+			if (!displayTunables(first)) {
+				taskMonitor.cancel();
 				return;
+			}
 
 		} catch (Exception exception) {
 			taskIterator = null;
@@ -224,8 +228,10 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					final Task task = taskIterator.next();
 					taskMonitor.setTask(task);
 
-					if (!displayTunables(task))
+					if (!displayTunables(task)) {
+						taskMonitor.cancel();
 						return;
+					}
 
 					task.run(taskMonitor);
 
