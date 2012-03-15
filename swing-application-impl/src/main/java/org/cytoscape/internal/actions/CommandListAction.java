@@ -88,10 +88,10 @@ public class CommandListAction extends AbstractCyAction {
 	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) { addCommand(tf,props); }
 	public void addTableTaskFactory(TableTaskFactory tf, Map props) { addCommand(tf,props); }
 
-	public void removeTaskFactory(TaskFactory tf, Map props) { addCommand(tf,props); }
-	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) { addCommand(tf,props); }
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) { addCommand(tf,props); }
-	public void removeTableTaskFactory(TableTaskFactory tf, Map props) { addCommand(tf,props); }
+	public void removeTaskFactory(TaskFactory tf, Map props) { removeCommand(tf,props); }
+	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) { removeCommand(tf,props); }
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) { removeCommand(tf,props); }
+	public void removeTableTaskFactory(TableTaskFactory tf, Map props) { removeCommand(tf,props); }
 
 	private void addCommand(TaskFactory tf, Map properties) {
 		String invocation = getInvocation(properties);
