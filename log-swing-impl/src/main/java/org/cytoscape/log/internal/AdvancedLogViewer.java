@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.*;
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 import javax.swing.table.*;
@@ -18,13 +19,18 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * @author Pasteur
  */
 class AdvancedLogViewer {
-	static final String[] COLUMNS = { "Time", "Log", "Level", "Thread", "Message" };
+	
+	private static final Logger logger = LoggerFactory.getLogger(AdvancedLogViewer.class);
+
+	static final String[] COLUMNS = { "Time", "Log", "Thread", "Message"};//, "Level" };
 
 	/**
 	 * Contains all log events (except those deleted with the Clear button) that were added with the
@@ -65,6 +71,9 @@ class AdvancedLogViewer {
 	final LogViewer		logViewer;
 	final JComboBox		filterTargetComboBox;
 	final JPanel		contents;
+	final JCheckBox trace, debug, info, warn, error;
+	final ArrayList<JCheckBox> levelsList;
+
 
 	public AdvancedLogViewer(TaskManager taskManager, LogViewer logViewer) {
 		this.taskManager = taskManager;
@@ -82,6 +91,7 @@ class AdvancedLogViewer {
 		logsTree.addTreeSelectionListener(new LogsTreeSelectionListener());
 
 		filterTargetComboBox = new JComboBox(COLUMNS);
+		filterTargetComboBox.setSelectedIndex(3);//to show the message as default
 		filterTargetComboBox.addActionListener(new FilterTargetUpdater());
 
 		JScrollPane logsTreeScrollPane = new JScrollPane(logsTree);
@@ -99,13 +109,76 @@ class AdvancedLogViewer {
 		panel1.add(element1, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(4, 4, 4, 2), 0, 0));
 		panel1.add(filterTargetComboBox, new GridBagConstraints(3, 0, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(4, 4, 4, 2), 0, 0));
 		contents.add(panel1, new GridBagConstraints(0, 0, 1, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		JSplitPane splitpane0 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logsTreeScrollPane, logViewer.getComponent());
-		splitpane0.setResizeWeight(0.2);
-		contents.add(splitpane0, new GridBagConstraints(0, 1, 1, 1, 1, 1, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		
+		JPanel panel3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		panel3.setBorder(BorderFactory.createTitledBorder("Log Level"));
+		trace = new JCheckBox();
+		trace.setText("trace");
+		trace.addActionListener(new LevelSelectionListener());
+		panel3.add(trace);
+		debug = new JCheckBox();
+		debug.setText("debug");
+		debug.setSelected(true);
+		debug.addActionListener(new LevelSelectionListener());
+		panel3.add(debug);
+		info = new JCheckBox();
+		info.setText("info");
+		info.setSelected(true);
+		info.addActionListener(new LevelSelectionListener());
+		panel3.add(info);
+		warn = new JCheckBox();
+		warn.setText("warn");
+		warn.setSelected(true);
+		warn.addActionListener(new LevelSelectionListener());
+		panel3.add(warn);
+		error = new JCheckBox();
+		error.setText("error");
+		error.addActionListener(new LevelSelectionListener());
+		panel3.add(error);
+	
+		contents.add(panel3, new GridBagConstraints(0, 2, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		JSplitPane splitpane1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logsTreeScrollPane, logViewer.getComponent());
+		splitpane1.setResizeWeight(0.2);
+		contents.add(splitpane1, new GridBagConstraints(0, 3, 1, 1, 1, 1, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		JPanel panel2 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		panel2.add(clearButton);
 		panel2.add(exportButton);
-		contents.add(panel2, new GridBagConstraints(0, 2, 2, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		contents.add(panel2, new GridBagConstraints(0, 4, 3, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		
+		levelsList = new ArrayList<JCheckBox>();
+		levelsList.add(debug);
+		levelsList.add(error);
+		levelsList.add(trace);
+		levelsList.add(info);
+		levelsList.add(warn);
+		
+		//test();
+	}
+
+
+	/**
+	 * this function is only for testing whether logs 
+	 * in different levels are displayed and filtered
+	 * correctly or not
+	 */
+	private void test() {
+		// TODO Auto-generated method stub
+		logger.debug("test for debug");
+		logger.error("test fo error");
+		logger.info("test for info");
+		logger.trace("test for trace");
+		logger.warn("test for warn");
+	}
+
+
+	/**
+	 * This function is to calculate the seleted filter based on the event array from combobox.
+	 * Since the level is removed from filter the indexes has been changed for the last two items.
+	 * @return index of the filter parameter according to event array structure.
+	 */
+	private int getSelectedFilterIndex(){
+		int index = filterTargetComboBox.getSelectedIndex();
+		return (index>1? index+1:index);
 	}
 
 	public JComponent getComponent()
@@ -127,7 +200,7 @@ class AdvancedLogViewer {
 	{
 		allLogEvents.add(event);
 		updateLogs(event[1]);
-		if (logEventMatches(event, filterTargetComboBox.getSelectedIndex(), getSelectedLog()))
+		if (logEventMatches(event, getSelectedFilterIndex(), getSelectedLog()))
 		{
 			solicitedLogEvents.add(event);
 			logViewer.append(event[2].toUpperCase(), event[4], formatEvent(event));
@@ -215,6 +288,16 @@ class AdvancedLogViewer {
 
 		parent.insert(newChild, childIndex);
 	}
+	
+	private ArrayList<String> getLevels(){
+		ArrayList<String> selectedLevels = new ArrayList<String>();
+		for(JCheckBox cb : levelsList){
+			if (cb.isSelected())
+				selectedLevels.add(cb.getText());
+		}
+		return selectedLevels;
+		
+	}
 
 	/**
 	 * Updates <code>solicitedLogEvents</code> by filtering out <code>allLogEvents</code>.
@@ -229,15 +312,18 @@ class AdvancedLogViewer {
 		{
 			logViewer.clear();
 			solicitedLogEvents.clear();
-			final int target = filterTargetComboBox.getSelectedIndex();
+			final int target = getSelectedFilterIndex();
 			final String selectedPath = getSelectedLog();
+			final  ArrayList<String> logLevels = getLevels();
 			for (int i = 0; (i < allLogEvents.size()) && (!cancel); i++)
 			{
 				final String[] event = allLogEvents.get(i);
-				if (logEventMatches(event, target, selectedPath))
-				{
-					solicitedLogEvents.add(event);
-					logViewer.append(event[2].toUpperCase(), event[4], formatEvent(event));
+				if (logLevels.contains(event[2])){
+					if (logEventMatches(event, target, selectedPath))
+					{
+						solicitedLogEvents.add(event);
+						logViewer.append(event[2].toUpperCase(), event[4], formatEvent(event));
+					}
 				}
 			}
 		}
@@ -360,6 +446,12 @@ class AdvancedLogViewer {
 			allLogEvents.removeAll(solicitedLogEvents);
 			solicitedLogEvents.clear();
 			logViewer.clear();
+		}
+	}
+	
+	class LevelSelectionListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			refreshSolicitedLogEvents();
 		}
 	}
 

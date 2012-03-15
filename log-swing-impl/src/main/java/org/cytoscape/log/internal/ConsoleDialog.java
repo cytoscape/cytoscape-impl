@@ -26,10 +26,11 @@ class ConsoleDialog extends JDialog
 		this.simpleLogViewer = simpleLogViewer;
 
 		contents = new JPanel(new CardLayout());
-		contents.add(simpleLogViewer.getComponent(), "simple");
 		contents.add(advancedLogViewer.getComponent(), "advanced");
+		contents.add(simpleLogViewer.getComponent(), "simple");
 
 		viewSelection = new JCheckBox("Show All Messages");
+		viewSelection.setSelected(true);
 		viewSelection.addActionListener(new ViewSelectionAction());
 
 		getContentPane().add(contents, BorderLayout.CENTER);

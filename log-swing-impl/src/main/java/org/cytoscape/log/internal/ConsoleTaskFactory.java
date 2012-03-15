@@ -136,6 +136,7 @@ class AdvancedUpdater extends QueueProcesser
 		formattedEvent[3] = event.getThreadName();
 		formattedEvent[4] = event.getMessage().toString();
 
+
 		advancedLogViewer.addLogEvent(formattedEvent);
 	}
 }
