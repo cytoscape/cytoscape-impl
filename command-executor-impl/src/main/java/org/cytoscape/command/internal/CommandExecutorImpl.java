@@ -11,8 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
+import org.cytoscape.work.TaskMonitor;
 
 public class CommandExecutorImpl {
 
@@ -42,6 +45,22 @@ public class CommandExecutorImpl {
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
+		removeTF(props);
+	}
+
+	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
+		addTF(new NVTFExecutor(tf,interceptor,appMgr), props);
+	}
+
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
+		removeTF(props);
+	}
+
+	public void addTableTaskFactory(TableTaskFactory tf, Map props) {
+		addTF(new TTFExecutor(tf,interceptor,appMgr), props);
+	}
+
+	public void removeTableTaskFactory(TableTaskFactory tf, Map props) {
 		removeTF(props);
 	}
 
@@ -88,37 +107,40 @@ public class CommandExecutorImpl {
 		}
 	}
 
-	public void executeList(List<String> commandLines) {
-		try {
+	public void executeList(List<String> commandLines, TaskMonitor tm) throws Exception {
 
-			// begin iterating over the lines
-			for ( String line : commandLines ) { 
-				boolean finished = false;
-				
-				// match the namespace
-				for ( String namespace : commandExecutorMap.keySet() ) {
-					if ( finished ) return;
+		double size = (double)commandLines.size();
+		double count = 1.0;
 
-					String commLine = peel( line, namespace );
-					if ( commLine != null ) {
-						Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
-						if ( commandMap != null ) {
+		// begin iterating over the lines
+		for ( String line : commandLines ) { 
+			boolean finished = false;
+			
+			tm.setStatusMessage("Executing command: '" + line + "'");
+			logger.info("Executing command: '" + line + "'");
+			// match the namespace
+			for ( String namespace : commandExecutorMap.keySet() ) {
+				if ( finished ) return;
 
-							// now match and execute the command
-							for ( String command : commandMap.keySet() ) {
-								String args = peel( commLine, command );
-								if ( args != null ) {
-									commandMap.get(command).execute(args);
-									finished = true;
-									break;
-								}
+				String commLine = peel( line, namespace + " " );
+				if ( commLine != null ) {
+					Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
+					if ( commandMap != null ) {
+
+						// now match and execute the command
+						for ( String command : commandMap.keySet() ) {
+							String args = peel( commLine, command );
+							if ( args != null ) {
+								commandMap.get(command).execute(args);
+								finished = true;
+								break;
 							}
 						}
 					}
 				}
 			}
-		} catch (Exception e) {
-			logger.error("Command parsing error: ", e);
+			tm.setProgress(count/size);
+			count += 1.0;
 		}
 	}
 }

@@ -2,23 +2,23 @@
 
 package org.cytoscape.command.internal;
 
-import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 
-class NTFExecutor extends TFExecutor {
-	private final NetworkTaskFactory ntf;
+class TTFExecutor extends TFExecutor {
+	private final TableTaskFactory ttf;
 	private final CyApplicationManager appMgr;
 
-	public NTFExecutor(NetworkTaskFactory ntf, CommandTunableInterceptorImpl interceptor, 
+	public TTFExecutor(TableTaskFactory ttf, CommandTunableInterceptorImpl interceptor, 
 	                   CyApplicationManager appMgr) {
-		super(ntf,interceptor);
-		this.ntf = ntf;
+		super(ttf,interceptor);
+		this.ttf = ttf;
 		this.appMgr = appMgr;
 	}
 
 	public void execute(String args) throws Exception {
-		ntf.setNetwork( appMgr.getCurrentNetwork() );
+		ttf.setTable( appMgr.getCurrentTable() );
 		super.execute(args);
 	}
 }

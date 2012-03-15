@@ -21,32 +21,28 @@ class TFExecutor implements Executor {
 		this.interceptor = interceptor;
 	}
 
-	public void execute(String args) {
-		try {
-			// TODO
-			// At some point in the future, this code should be reorganized into
-			// a proper TaskManager - that's really what's happening here.
-			TaskIterator ti = tf.createTaskIterator();
-			while (ti.hasNext()) {
-				Task t = ti.next();
-				interceptor.setConfigurationContext(args);
-				interceptor.validateAndWriteBackTunables(t);
-				t.run(tm);
-			}
-		} catch (Exception e) {
-			logger.warn("Task failed to execute",e);
+	public void execute(String args) throws Exception {
+		// TODO
+		// At some point in the future, this code should be reorganized into
+		// a proper TaskManager - that's really what's happening here.
+		TaskIterator ti = tf.createTaskIterator();
+		while (ti.hasNext()) {
+			Task t = ti.next();
+			interceptor.setConfigurationContext(args);
+			interceptor.validateAndWriteBackTunables(t);
+			t.run(tm);
 		}
 	}
 
 	private class OutTaskMonitor implements TaskMonitor {
 		public void setTitle(String title) {
-			System.out.println("set title: " + title);
+			//System.out.println("set title: " + title);
 		}
 		public void setProgress(double progress) {
-			System.out.println("set progress: " + progress);
+			//System.out.println("set progress: " + progress);
 		}
 		public void setStatusMessage(String statusMessage) {
-			System.out.println("set statusMessage: " + statusMessage);
+			//System.out.println("set statusMessage: " + statusMessage);
 		}
 
 	}

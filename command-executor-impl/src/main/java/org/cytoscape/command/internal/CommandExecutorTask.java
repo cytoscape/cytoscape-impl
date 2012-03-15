@@ -61,7 +61,7 @@ public class CommandExecutorTask extends AbstractTask {
 		this.cei = cei;
 	}
 
-	public void run(TaskMonitor e) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
         if (file == null)
             throw new NullPointerException("You must specify a non-null command file to load!");
 
@@ -70,15 +70,15 @@ public class CommandExecutorTask extends AbstractTask {
 
 		try {
 
-		fin = new FileReader(file);
-		bin = new BufferedReader(fin);
-		List<String> lines = new ArrayList<String>();
-		String s;
+			fin = new FileReader(file);
+			bin = new BufferedReader(fin);
+			List<String> lines = new ArrayList<String>();
+			String s;
 
-		while ((s = bin.readLine()) != null) 
-			lines.add( s.trim() );
+			while ((s = bin.readLine()) != null) 
+				lines.add( s.trim() );
 
-		cei.executeList(lines);
+			cei.executeList(lines,tm);
 
 		} finally {
 			if ( bin != null )
