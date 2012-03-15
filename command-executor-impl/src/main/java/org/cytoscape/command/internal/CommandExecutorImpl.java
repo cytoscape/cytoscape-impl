@@ -5,6 +5,8 @@ import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,8 @@ public class CommandExecutorImpl {
 	private final Map<String, Map<String,Executor>> commandExecutorMap = 
 	                                             new HashMap<String,Map<String,Executor>>();
 
+	private final String commandRegex ="^(\\S+)\\s+(\\S+)(\\s+.+)?$";
+	private final Pattern commandPattern = Pattern.compile(commandRegex);
 	private final CommandTunableInterceptorImpl interceptor; 
 	private final CyApplicationManager appMgr;
 
@@ -113,32 +117,32 @@ public class CommandExecutorImpl {
 		double count = 1.0;
 
 		// begin iterating over the lines
-		for ( String line : commandLines ) { 
-			boolean finished = false;
-			
-			tm.setStatusMessage("Executing command: '" + line + "'");
-			logger.info("Executing command: '" + line + "'");
-			// match the namespace
-			for ( String namespace : commandExecutorMap.keySet() ) {
-				if ( finished ) return;
+		for ( String fullLine : commandLines ) { 
+			String line = fullLine.trim();
 
-				String commLine = peel( line, namespace + " " );
-				if ( commLine != null ) {
-					Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
-					if ( commandMap != null ) {
+			// ignore comments
+			if ( line.startsWith("#"))
+				continue;
 
-						// now match and execute the command
-						for ( String command : commandMap.keySet() ) {
-							String args = peel( commLine, command );
-							if ( args != null ) {
-								commandMap.get(command).execute(args);
-								finished = true;
-								break;
-							}
-						}
-					}
-				}
-			}
+		  	Matcher m = commandPattern.matcher(line);
+			if ( !m.matches() )
+				throw new RuntimeException("command line (" + line + ") does not match pattern: namespace command [args ...]");
+			String all = m.group(0);
+			String namespace = m.group(1); 
+			String command = m.group(2); 
+			String args = m.group(3); 
+
+			Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
+
+			if ( commandMap == null )
+				throw new RuntimeException("Failed to find command namespace: '" + namespace +"'");	
+
+			Executor ex = commandMap.get(command);
+
+			if ( ex == null )
+				throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
+			ex.execute(args);
+
 			tm.setProgress(count/size);
 			count += 1.0;
 		}
