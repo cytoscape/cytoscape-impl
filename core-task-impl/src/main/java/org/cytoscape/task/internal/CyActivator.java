@@ -415,7 +415,7 @@ public class CyActivator extends AbstractCyActivator {
 		deselectAllTaskFactoryProps.setProperty("accelerator","cmd shift alt a");
 		deselectAllTaskFactoryProps.setProperty("title","Deselect all nodes and edges");
 		deselectAllTaskFactoryProps.setProperty("command","deselect all");
-		deselectAllTaskFactoryProps.setProperty("commandNamespace","network nodes and edges");
+		deselectAllTaskFactoryProps.setProperty("commandNamespace","network");
 		registerService(bc,deselectAllTaskFactory,NetworkTaskFactory.class, deselectAllTaskFactoryProps);
 
 		Properties deselectAllEdgesTaskFactoryProps = new Properties();
