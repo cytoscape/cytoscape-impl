@@ -33,23 +33,31 @@ public abstract class AbstractStringTunableHandler extends AbstractTunableHandle
 
 			String[] args = s.split("\\s+");
 
-			for ( int i = 0; i < args.length; i++ ) {
-				String arg = args[i];
-			
-				// This finds an argument key with a value following it.
-				if ( arg.equals(getName()) && (i+1) < args.length ) {
-					Object value;
+			for ( String arg : args ) {
+
+				String[] keyValue = arg.split("=");
+
+				if ( keyValue.length != 2 ) {
+					logger.warn("couldn't parse 'key=value' string from arg: '" + arg +"'");
+					continue;
+				}
+
+				String key = keyValue[0];
+				String value = keyValue[1];
+
+				if ( key.equals(getName()) ) {
+					Object result;
 					try {
 						// Now process the value, i.e. set the tunable field/method
 						// with a value based on this string.
-						value = processArg(args[i+1]); 
+						result = processArg(value); 
 					} catch (Exception e) {
-						logger.warn("Couldn't parse value from: " + args[i+1], e);
+						logger.warn("Couldn't parse value from: " + value, e);
 						return;
 					}
 
 					// This actually sets the value for the tunable field/method.
-					setValue(value);
+					setValue(result);
 					return;
 				}
 			}
