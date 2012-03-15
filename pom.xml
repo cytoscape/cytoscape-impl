@@ -28,6 +28,7 @@
 		<module>filter-impl</module>
 		<module>graphml-impl</module>
 		<module>group-impl</module>
+		<module>group-data-impl</module>
 		<module>group-view-impl</module>
 		<module>io-impl</module>
 		<module>layout-cytoscape-impl</module>
@@ -122,6 +123,11 @@
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>group-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>group-data-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
 			<dependency>
