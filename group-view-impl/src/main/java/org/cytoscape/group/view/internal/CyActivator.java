@@ -6,6 +6,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.CyNetworkManager;
@@ -29,7 +30,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupManager cyGroupManager = getService(bc,CyGroupManager.class);
 		CyNetworkViewManager cyNetworkViewManager = getService(bc,CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManager = getService(bc,CyNetworkManager.class);
-		VisualMappingManager styleManager = getService(bc,VisualMappingManager.class);
+		CyGroupSettings groupSettings = getService(bc,CyGroupSettings.class);
+		VisualMappingManager styleManager = getService(bc, VisualMappingManager.class);
 
 		GroupViewCollapseHandler gvcHandler = 
 			new GroupViewCollapseHandler(cyGroupManager, cyNetworkViewManager, styleManager);
@@ -39,7 +41,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Listen for double-click
 		GroupViewDoubleClickListener gvsListener =
-			new GroupViewDoubleClickListener(cyGroupManager, cyEventHelperServiceRef, cyNetworkManager, cyNetworkViewManager);
+			new GroupViewDoubleClickListener(cyGroupManager, groupSettings);
 
 		Properties doubleClickProperties = new Properties();
 		doubleClickProperties.setProperty("preferredAction", "OPEN");

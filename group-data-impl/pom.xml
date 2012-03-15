@@ -6,13 +6,13 @@
 	</parent>
 
   <properties>
-    <bundle.symbolicName>org.cytoscape.group-view-impl</bundle.symbolicName>
-    <bundle.namespace>org.cytoscape.group.view.internal</bundle.namespace>
+    <bundle.symbolicName>org.cytoscape.group-data-impl</bundle.symbolicName>
+    <bundle.namespace>org.cytoscape.group.data.internal</bundle.namespace>
   </properties>
 
 	<modelVersion>4.0.0</modelVersion>
   <groupId>org.cytoscape</groupId>
-  <artifactId>group-view-impl</artifactId>
+  <artifactId>group-data-impl</artifactId>
 
 	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
 
@@ -76,28 +76,15 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-api</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-data-api</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>group-api</artifactId>
-			<scope>test</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>model-impl</artifactId>
-			<scope>test</scope>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>model-impl</artifactId>
-			<scope>test</scope>
-			<type>test-jar</type>
-			<version>${project.version}</version>
+			<artifactId>work-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -106,22 +93,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>viewmodel-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>presentation-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>vizmap-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>core-task-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

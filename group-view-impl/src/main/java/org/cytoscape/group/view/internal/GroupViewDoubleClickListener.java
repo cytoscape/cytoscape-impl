@@ -33,9 +33,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.data.CyGroupSettings;
+import org.cytoscape.group.data.CyGroupSettings.DoubleClickAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -44,7 +45,6 @@ import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.view.model.CyNetworkViewManager;
 
 /**
  * Handle selection
@@ -52,37 +52,38 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 {
 	CyGroupManager cyGroupManager;
-	CyNetworkViewManager cyNetworkViewManager;
-	CyNetworkManager cyNetworkManager;
-	CyEventHelper cyEventHelper;
-	boolean	collapseExpand = false;
+	CyGroupSettings cyGroupSettings;
 
 	/**
 	 * 
-	 * @param cyEventHelper
+	 * 
 	 */
-	public GroupViewDoubleClickListener(final CyGroupManager groupManager,
-	                                  final CyEventHelper cyEventHelper,
-	                                  final CyNetworkManager netManager,
-	                                  final CyNetworkViewManager viewManager) {
+	public GroupViewDoubleClickListener(final CyGroupManager groupManager, final CyGroupSettings groupSettings) {
 		this.cyGroupManager = groupManager;
-		this.cyNetworkViewManager = viewManager;
-		this.cyNetworkManager = netManager;
-		this.cyEventHelper = cyEventHelper;
+		this.cyGroupSettings = groupSettings;
 	}
 
 	public TaskIterator createTaskIterator() {
-		if (collapseExpand) {
+		DoubleClickAction action = cyGroupSettings.getDoubleClickAction();
+
+		if (action == DoubleClickAction.ExpandContract) {
 			// Collapse/expand: if we double-click on a collapsed node, expand it.  
 			// if we double-click on a node that is a member of a group, collapse
 			// that group.
 			return new TaskIterator(new CollapseGroupTask());
-		} else {
+		} else if (action == DoubleClickAction.Select) {
 			// Select/deselect: if we double-click on a node that is a member of a group
 			// and any member of the group is not selected, select all members of that group.  
 			// If all members of the group are selected, deselect that group
 			return new TaskIterator(new SelectGroupTask());
-			
+		} else {
+			return new TaskIterator(new NullTask());
+		}
+	}
+
+	class NullTask extends AbstractTask {
+		public void run(TaskMonitor tm) throws Exception {
+			return;
 		}
 	}
 	

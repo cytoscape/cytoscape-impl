@@ -438,8 +438,9 @@ class CyGroupImpl implements CyGroup {
 			// if both the edge and the target are available
 			// since the target node might have been part of a
 			// collapsed group
-			if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget()))
+			if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 				subnet.addEdge(e);
+			}
 		}
 
 		collapseSet.remove(net);
@@ -672,7 +673,6 @@ class CyGroupImpl implements CyGroup {
 
 	private boolean isIncoming(CyEdge edge) {
 		CyNode source = edge.getSource();
-		CyNode target = edge.getTarget();
 		if (source.equals(groupNode) || groupNet.containsNode(source))
 			return false;
 		return true;
