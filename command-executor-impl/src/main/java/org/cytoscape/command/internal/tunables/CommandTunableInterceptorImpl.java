@@ -1,6 +1,5 @@
 package org.cytoscape.command.internal.tunables;
 
-
 import java.util.Map;
 
 import org.cytoscape.work.AbstractTunableInterceptor;
@@ -23,8 +22,7 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 			// Get the handlers for the tunables in the Task.  The
 			// key is the name of the tunable and the value is the handler
 			// for that tunable.
-			Map<String,StringTunableHandler> handlers = getHandlers(o);
-			for ( StringTunableHandler h : handlers.values() ) {
+			for ( StringTunableHandler h : getHandlers(o) ) {
 
 				// Give the handler the arg string and let it do its thing,
 				// which will hopefully be: set the tunable value based on

@@ -87,7 +87,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	/** {@inheritDoc} */
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 
-		List<GUITunableHandler> handlers = findHandlers(objectWithTunables); 
+		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
 
 		for (final GUITunableHandler h : handlers)
 			h.handle();
@@ -114,7 +114,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		else
 			++otherCount;
 
-		List<GUITunableHandler> handlers = findHandlers(objectWithTunables); 
+		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
 
 		// Sanity check:
 		if (factoryCount > 0) {
@@ -330,20 +330,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		return true;
 	}
 
-	private List<GUITunableHandler> findHandlers(Object objectWithTunables) {
-		List<GUITunableHandler> handlers = new ArrayList<GUITunableHandler>();
-
-		// the call to getHandlers will populate guiProviderMap
-		// note that map may be empty!
-		Map<String, GUITunableHandler> tunableHandlerMap = getHandlers(objectWithTunables);
-
-		
-		if ( tunableHandlerMap != null && !tunableHandlerMap.isEmpty() )
-			handlers.addAll(tunableHandlerMap.values());
-
-		return handlers;
-	}
-	
 	protected String getTitle(Object objectWithTunables) {
 		Method method = titleProviderMap.get(objectWithTunables);
 		if (method != null) {

@@ -27,9 +27,8 @@ public class SyncTunableMutator<S> extends AbstractTunableInterceptor<SyncTunabl
 	
 	@Override
 	public boolean validateAndWriteBack(Object o) {
-		final Map<String, SyncTunableHandler> handlers = getHandlers(o);
 		
-		for (SyncTunableHandler handler : handlers.values()) {
+		for (SyncTunableHandler handler : getHandlers(o)) {
 			handler.setValueMap(map);
 			handler.handle();
 		}

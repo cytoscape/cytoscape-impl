@@ -15,8 +15,7 @@ public class ArgRecorder extends AbstractTunableInterceptor<ArgHandler> {
 
 	public List<String> findArgs(Object o) {
 		List<String> desc = new ArrayList<String>();
-		Map<String,ArgHandler> handlers = getHandlers(o);
-		for (final ArgHandler p : handlers.values())
+		for (final ArgHandler p : getHandlers(o))
 			desc.add( p.getDesc() );
 		return desc;
 	}
