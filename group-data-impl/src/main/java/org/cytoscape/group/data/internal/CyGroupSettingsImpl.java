@@ -41,6 +41,8 @@ public class CyGroupSettingsImpl extends AbstractTask implements CyGroupSettings
 	/**********************************
 	 * Default aggregation attributes *
 	 *********************************/
+	// Default aggregations
+
 	@Tunable(description="Enable attribute aggregation", groups={"Attribute Aggregation Settings"})
 	public boolean enableAttributeAggregation = false;
 
@@ -48,149 +50,43 @@ public class CyGroupSettingsImpl extends AbstractTask implements CyGroupSettings
 	@Tunable(description="Integer column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation"}, params="displayState=collapsed",
 	         dependsOn="enableAttributeAggregation=true")
-  public ListSingleSelection<AttributeHandlingType> getIntegerAggregationDefault() {
-		// Get the list of options
-		List<AttributeHandlingType> options = Arrays.asList(IntegerAggregator.getSupportedTypes());
-
-		// Create the selection
-		ListSingleSelection<AttributeHandlingType> types = 
-			new ListSingleSelection<AttributeHandlingType>(options);
-
-		// Initialize it to our default
-		types.setSelectedValue(AttributeHandlingType.AVG);
-		return types;
-	}
-
-	public void setIntegerAggregationDefault(ListSingleSelection<AttributeHandlingType> input) {
-		allGroupDefaultMap.put(Integer.class, new IntegerAggregator(input.getSelectedValue()));
-	}
+	public ListSingleSelection<AttributeHandlingType> integerDefault;
 
 	// Long
 	@Tunable(description="Long column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation"},
 	         dependsOn="enableAttributeAggregation=true")
-  public ListSingleSelection<AttributeHandlingType> getLongAggregationDefault() {
-		// Get the list of options
-		List<AttributeHandlingType> options = Arrays.asList(LongAggregator.getSupportedTypes());
-
-		// Create the selection
-		ListSingleSelection<AttributeHandlingType> types = 
-			new ListSingleSelection<AttributeHandlingType>(options);
-
-		// Initialize it to our default
-		types.setSelectedValue(AttributeHandlingType.AVG);
-		return types;
-	}
-
-	public void setLongAggregationDefault(ListSingleSelection<AttributeHandlingType> input) {
-		allGroupDefaultMap.put(Long.class, new LongAggregator(input.getSelectedValue()));
-	}
+	public ListSingleSelection<AttributeHandlingType> longDefault;
 
 	// Float
 	@Tunable(description="Float column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation"},
 	         dependsOn="enableAttributeAggregation=true")
-  public ListSingleSelection<AttributeHandlingType> getFloatAggregationDefault() {
-		// Get the list of options
-		List<AttributeHandlingType> options = Arrays.asList(FloatAggregator.getSupportedTypes());
-
-		// Create the selection
-		ListSingleSelection<AttributeHandlingType> types = 
-			new ListSingleSelection<AttributeHandlingType>(options);
-
-		// Initialize it to our default
-		types.setSelectedValue(AttributeHandlingType.AVG);
-		return types;
-	}
-
-	public void setFloatAggregationDefault(ListSingleSelection<AttributeHandlingType> input) {
-		allGroupDefaultMap.put(Float.class, new FloatAggregator(input.getSelectedValue()));
-	}
+	public ListSingleSelection<AttributeHandlingType> floatDefault;
 
 	// Double
 	@Tunable(description="Double column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation"},
 	         dependsOn="enableAttributeAggregation=true")
-  public ListSingleSelection<AttributeHandlingType> getDoubleAggregationDefault() {
-		// Get the list of options
-		List<AttributeHandlingType> options = Arrays.asList(DoubleAggregator.getSupportedTypes());
-
-		// Create the selection
-		ListSingleSelection<AttributeHandlingType> types = 
-			new ListSingleSelection<AttributeHandlingType>(options);
-
-		// Initialize it to our default
-		types.setSelectedValue(AttributeHandlingType.AVG);
-		return types;
-	}
-
-	public void setDoubleAggregationDefault(ListSingleSelection<AttributeHandlingType> input) {
-		allGroupDefaultMap.put(Double.class, new DoubleAggregator(input.getSelectedValue()));
-	}
-
+	public ListSingleSelection<AttributeHandlingType> doubleDefault;
 
 	// List
 	@Tunable(description="List column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation"},
 	         dependsOn="enableAttributeAggregation=true")
-  public ListSingleSelection<AttributeHandlingType> getListAggregationDefault() {
-		// Get the list of options
-		List<AttributeHandlingType> options = Arrays.asList(ListAggregator.getSupportedTypes());
-
-		// Create the selection
-		ListSingleSelection<AttributeHandlingType> types = 
-			new ListSingleSelection<AttributeHandlingType>(options);
-
-		// Initialize it to our default
-		types.setSelectedValue(AttributeHandlingType.UNIQUE);
-		return types;
-	}
-
-	public void setListAggregationDefault(ListSingleSelection<AttributeHandlingType> input) {
-		allGroupDefaultMap.put(List.class, new ListAggregator(input.getSelectedValue()));
-	}
+	public ListSingleSelection<AttributeHandlingType> listDefault;
 
 	// String
 	@Tunable(description="String column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation"},
 	         dependsOn="enableAttributeAggregation=true")
-  public ListSingleSelection<AttributeHandlingType> getStringAggregationDefault() {
-		// Get the list of options
-		List<AttributeHandlingType> options = Arrays.asList(StringAggregator.getSupportedTypes());
-
-		// Create the selection
-		ListSingleSelection<AttributeHandlingType> types = 
-			new ListSingleSelection<AttributeHandlingType>(options);
-
-		// Initialize it to our default
-		types.setSelectedValue(AttributeHandlingType.TSV);
-		return types;
-	}
-
-	public void setStringAggregationDefault(ListSingleSelection<AttributeHandlingType> input) {
-		allGroupDefaultMap.put(String.class, new StringAggregator(input.getSelectedValue()));
-	}
+	public ListSingleSelection<AttributeHandlingType> stringDefault;
 
 	// Boolean
 	@Tunable(description="Boolean column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation"},
 	         dependsOn="enableAttributeAggregation=true")
-  public ListSingleSelection<AttributeHandlingType> getBooleanAggregationDefault() {
-		// Get the list of options
-		List<AttributeHandlingType> options = Arrays.asList(BooleanAggregator.getSupportedTypes());
-
-		// Create the selection
-		ListSingleSelection<AttributeHandlingType> types = 
-			new ListSingleSelection<AttributeHandlingType>(options);
-
-		// Initialize it to our default
-		types.setSelectedValue(AttributeHandlingType.OR);
-		return types;
-	}
-
-	public void setBooleanAggregationDefault(ListSingleSelection<AttributeHandlingType> input) {
-		allGroupDefaultMap.put(Boolean.class, new BooleanAggregator(input.getSelectedValue()));
-	}
+	public ListSingleSelection<AttributeHandlingType> booleanDefault;
 
 
 	public CyGroupSettingsImpl(CyGroupManager mgr) {
@@ -199,20 +95,11 @@ public class CyGroupSettingsImpl extends AbstractTask implements CyGroupSettings
 		allGroupOverrideMap = new HashMap<CyColumn,Aggregator>();
 		groupMap = new HashMap<CyGroup,GroupSpecificMaps>();
 
+		initializeDefaults();
+
 		// Set some defaults
 		doubleClickAction.setSelectedValue(DoubleClickAction.ExpandContract);
 
-		// Build the options
-		
-
-		// Initialize the defaults
-		allGroupDefaultMap.put(Boolean.class, new BooleanAggregator(AttributeHandlingType.NONE));
-		allGroupDefaultMap.put(Double.class, new DoubleAggregator(AttributeHandlingType.AVG));
-		allGroupDefaultMap.put(Long.class, new LongAggregator(AttributeHandlingType.NONE));
-		allGroupDefaultMap.put(Integer.class, new IntegerAggregator(AttributeHandlingType.SUM));
-		allGroupDefaultMap.put(Float.class, new FloatAggregator(AttributeHandlingType.SUM));
-		allGroupDefaultMap.put(String.class, new StringAggregator(AttributeHandlingType.MCV));
-		allGroupDefaultMap.put(List.class, new ListAggregator(AttributeHandlingType.UNIQUE));
 	}
 
 	// This is a little funky, but we don't really have a task, so we just provide the run method
@@ -241,6 +128,7 @@ public class CyGroupSettingsImpl extends AbstractTask implements CyGroupSettings
 
 	@Override
 	public Aggregator getAggregator(CyGroup group, CyColumn column) {
+		updateDefaults();
 		Class type = column.getType();
 		Map<Class, Aggregator> defaultMap = allGroupDefaultMap;
 		Map<CyColumn, Aggregator> overrideMap = allGroupOverrideMap;
@@ -281,6 +169,7 @@ public class CyGroupSettingsImpl extends AbstractTask implements CyGroupSettings
 
 	public void handleEvent(GroupAddedEvent e) {
 		CyGroup addedGroup = e.getGroup();
+		updateDefaults();
 		Map<Class,Aggregator> defMap = new HashMap<Class, Aggregator>();
 		for (Class cKey: allGroupDefaultMap.keySet())
 			defMap.put(cKey, allGroupDefaultMap.get(cKey));
@@ -290,6 +179,51 @@ public class CyGroupSettingsImpl extends AbstractTask implements CyGroupSettings
 		groupMap.put(addedGroup, new GroupSpecificMaps(defMap, ovMap));
 	}
 
+	private void updateDefaults() {
+		// Update our defaults first
+		allGroupDefaultMap.put(Boolean.class, new BooleanAggregator(booleanDefault.getSelectedValue()));
+		allGroupDefaultMap.put(Integer.class, new IntegerAggregator(integerDefault.getSelectedValue()));
+		allGroupDefaultMap.put(Float.class, new FloatAggregator(floatDefault.getSelectedValue()));
+		allGroupDefaultMap.put(Long.class, new LongAggregator(longDefault.getSelectedValue()));
+		allGroupDefaultMap.put(Double.class, new DoubleAggregator(doubleDefault.getSelectedValue()));
+		allGroupDefaultMap.put(List.class, new ListAggregator(listDefault.getSelectedValue()));
+		allGroupDefaultMap.put(String.class, new StringAggregator(stringDefault.getSelectedValue()));
+	}
+
+	private void initializeDefaults() {
+		// Create the selection
+		integerDefault = 
+			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(IntegerAggregator.getSupportedTypes()));
+		longDefault = 
+			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(LongAggregator.getSupportedTypes()));
+		floatDefault = 
+			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(FloatAggregator.getSupportedTypes()));
+		doubleDefault = 
+			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(DoubleAggregator.getSupportedTypes()));
+		stringDefault = 
+			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(StringAggregator.getSupportedTypes()));
+		listDefault = 
+			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(ListAggregator.getSupportedTypes()));
+		booleanDefault = 
+			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(BooleanAggregator.getSupportedTypes()));
+
+		integerDefault.setSelectedValue(AttributeHandlingType.AVG);
+		longDefault.setSelectedValue(AttributeHandlingType.NONE);
+		floatDefault.setSelectedValue(AttributeHandlingType.AVG);
+		doubleDefault.setSelectedValue(AttributeHandlingType.AVG);
+		stringDefault.setSelectedValue(AttributeHandlingType.CSV);
+		listDefault.setSelectedValue(AttributeHandlingType.UNIQUE);
+		booleanDefault.setSelectedValue(AttributeHandlingType.NONE);
+
+		// Initialize the defaults
+		allGroupDefaultMap.put(Integer.class, new IntegerAggregator(AttributeHandlingType.AVG));
+		allGroupDefaultMap.put(Long.class, new LongAggregator(AttributeHandlingType.NONE));
+		allGroupDefaultMap.put(Float.class, new FloatAggregator(AttributeHandlingType.AVG));
+		allGroupDefaultMap.put(Double.class, new DoubleAggregator(AttributeHandlingType.AVG));
+		allGroupDefaultMap.put(String.class, new StringAggregator(AttributeHandlingType.CSV));
+		allGroupDefaultMap.put(List.class, new ListAggregator(AttributeHandlingType.UNIQUE));
+		allGroupDefaultMap.put(Boolean.class, new BooleanAggregator(AttributeHandlingType.NONE));
+	}
 
 	class GroupSpecificMaps {
 		Map<Class, Aggregator> defMap;

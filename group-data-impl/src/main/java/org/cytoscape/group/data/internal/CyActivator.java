@@ -33,10 +33,10 @@ public class CyActivator extends AbstractCyActivator {
 
     Properties settingsProps = new Properties();
     settingsProps.setProperty("id","settingsFactory");
-    settingsProps.setProperty("preferredMenu","Tools");
-    settingsProps.setProperty("title", "Group Settings...");
+    settingsProps.setProperty("preferredMenu","Edit.Preferences");
+    settingsProps.setProperty("title", "Group Preferences...");
     settingsProps.setProperty("menuGravity","1.0");
-    settingsProps.setProperty("toolBarGravity","3.4");
+    settingsProps.setProperty("toolBarGravity","4");
     settingsProps.setProperty("inToolBar","false");
     registerService(bc,settingsFactory,TaskFactory.class, settingsProps);
 
