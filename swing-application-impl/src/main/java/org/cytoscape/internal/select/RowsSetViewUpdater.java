@@ -92,14 +92,14 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			}
 
 			if (vp != null) {
-				v.setVisualProperty(vp, record.getValue());
-				refreshView = true;
+				// FIXME: why this is necessary?
+				//v.setVisualProperty(vp, record.getValue());
+				//refreshView = true;
 			}
 		}
 
-		if (refreshView){
-			networkView.updateView();			
-		}
+		if (refreshView)
+			networkView.updateView();
 
 		}});
 	}
