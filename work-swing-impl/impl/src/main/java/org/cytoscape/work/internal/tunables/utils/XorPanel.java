@@ -95,6 +95,7 @@ public class XorPanel extends JPanel {
 		@Override public void setValue(final Object newValue) { }
 		@Override public String getQualifiedName() { return null; }
 		@Override public Properties getParams() { return null; }
+		@Override public Class<?> getType() { return null; }
 		public String getName() { return null; }
 		public JPanel getJPanel() { return null; }
 		public void handle() {}
