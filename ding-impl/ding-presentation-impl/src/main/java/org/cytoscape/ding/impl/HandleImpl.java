@@ -46,6 +46,7 @@ public class HandleImpl implements Handle {
 		final Double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
 		final Point2D newPoint = new Point2D.Double();
+		
 		if (EditMode.isDirectMode() == false) {
 			
 			// Original edge vector v = (vx, vy).  (from source to target)
@@ -131,23 +132,32 @@ public class HandleImpl implements Handle {
 		
 		// Now we can get the Cos(theta)
 		cosTheta = lengthVp/dist1;
-		// Theta is the angle between v1 and v2
-		final double theta = Math.acos(cosTheta);
+		
+//		// Theta is the angle between v1 and v2
+		double theta = Math.acos(cosTheta);
+		
+		// Adjust angle if >PI/2
+		if(dotProduct<0) {
+			// PI/2< theta <=PI
+			theta = Math.PI-theta;
+			cosTheta = Math.cos(theta);
+		}
 		sinTheta = Math.sin(theta);
 		
+//		System.out.println("## Dot prod = " + dotProduct);
+//		System.out.println("** cos = " + cosTheta);
+//		System.out.println("** sin = " + sinTheta);
+		
 		// Check direction of rotation
-		final double slopeE = (tY-sY)/(tX-sX);
-		final double slopeH = (hY-sY)/(hX-sX);
-		if((sX<=tX && sY <= tY) || (sX>tX && sY > tY)) {
-			if(slopeE>=slopeH) {
-				cosTheta = Math.cos(-theta);
-				sinTheta = Math.sin(-theta);
-			}
+		final double slopeE = (tY-sY)/(tX-sX);		
+		
+		// Rotate to opposite direction
+		if((sX<=tX && sY <= tY) || (sX<tX && sY > tY)) {
+			if (slopeE * hX > hY)
+				sinTheta = -sinTheta;
 		} else {
-			if(slopeE<=slopeH) {
-				cosTheta = Math.cos(-theta);
-				sinTheta = Math.sin(-theta);
-			}
+			if (slopeE * hX < hY)
+				sinTheta = -sinTheta;
 		}
 
 //		System.out.println("** (Sx, Sy) = (" + sX + ", " + sY + ")");
