@@ -15,22 +15,16 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 
 
 public class CollapsablePanel extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JButton myExpandButton = null;
-	private JLabel myExpandLabel = null;
 	private boolean expandPaneVisible;
-	// private static String ExpandName = "+";
-	// private static String CollapseName = "-";
 	private String expandName = null;
 	private String collapseName = null;
 	private JPanel rightPanel = new JPanel();
@@ -47,10 +41,7 @@ public class CollapsablePanel extends JPanel implements ActionListener {
 		rightPanel = new JPanel();
 		rightPanel.setLayout(new BorderLayout());
 		Border refBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		// TitledBorder titleborder = BorderFactory.createTitledBorder(refBorder, name);
-		// titleborder.setTitleColor(Color.RED);
 		setBorder(refBorder);
-		//setBorder(BorderFactory.createTitledBorder(name));
 		rightPanel.add(createButton(expandPaneVisible, name), BorderLayout.WEST);
 		super.add(rightPanel);
 				
@@ -78,13 +69,9 @@ public class CollapsablePanel extends JPanel implements ActionListener {
 		if (source == myExpandButton) {
 			if (expandPaneVisible) {
 				setCollapsed(false);
-				// collapsePanel();
-				// myExpandButton.setText(ExpandName);
 				expandPaneVisible = false;
 			}
 			else {
-				// expandPanel();
-				// myExpandButton.setText(CollapseName);
 				setCollapsed(true);
 				expandPaneVisible = true;
 			}
@@ -99,61 +86,37 @@ public class CollapsablePanel extends JPanel implements ActionListener {
 		expandName = "<html><b><i>&nbsp;&nbsp;Hide "+name+"</i></b></html>";
 
 		if (state) {
-			myExpandLabel = new JLabel(collapseName);
-			myExpandButton = new JButton(UIManager.getIcon("Tree.collapsedIcon"));
+			myExpandButton = new JButton(collapseName, UIManager.getIcon("Tree.collapsedIcon"));
 		} else {
-			myExpandLabel = new JLabel(expandName);
-			myExpandButton = new JButton(UIManager.getIcon("Tree.expandedIcon"));
+			myExpandButton = new JButton(expandName, UIManager.getIcon("Tree.expandedIcon"));
 		}
 		myExpandButton.addActionListener(this);
-		myExpandButton.setPreferredSize(new Dimension(15,15));
 		collapsePanel.add(myExpandButton, BorderLayout.LINE_START);
-		collapsePanel.add(myExpandLabel, BorderLayout.CENTER);
 		return collapsePanel;
 	}
-	
-/*
-	private JToggleButton createButton(boolean state) {
-		JToggleButton button = new JToggleButton();
-		if (state)
-			button.setText(CollapseName);
-		else
-			button.setText(ExpandName);
-		button.setPreferredSize(new Dimension(90, 20));
-		button.setMargin(new Insets(2, 2, 2, 2));
-		button.addActionListener(this);
-		return button;
-	}
-*/
 	
 	
 	public void setCollapsed(boolean visible) {
 		if (visible) {
-			// myExpandButton.setSelected(true);
 			expandPanel();
 			myExpandButton.setIcon(UIManager.getIcon("Tree.expandedIcon"));
-			myExpandLabel.setText(expandName);
+			myExpandButton.setText(expandName);
 		}
 		else {
-			// myExpandButton.setSelected(false);
 			collapsePanel();
 			myExpandButton.setIcon(UIManager.getIcon("Tree.collapsedIcon"));
-			myExpandLabel.setText(collapseName);
-			// myExpandButton.setText(ExpandName);
+			myExpandButton.setText(collapseName);
 		}
 	}
 	
 
 	public void setButtonChanges(boolean value) {
-		// myExpandButton.setSelected(value);
 		if (value) {
 			myExpandButton.setIcon(UIManager.getIcon("Tree.collapsedIcon"));
-			myExpandLabel.setText(collapseName);
-			// myExpandButton.setText(CollapseName);
+			myExpandButton.setText(collapseName);
 		} else {
 			myExpandButton.setIcon(UIManager.getIcon("Tree.expandedIcon"));
-			myExpandLabel.setText(expandName);
-			// myExpandButton.setText(ExpandName);
+			myExpandButton.setText(expandName);
 		}
 		
 	}
