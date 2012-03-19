@@ -7,6 +7,7 @@ import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -66,7 +67,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		
 		// If there is no recent items, add dummy menu.
 		if(tracker.getRecentlyOpenedURLs().size() == 0) {
-			registrar.registerService(factory, CyAction.class, new Hashtable<String, String>());
+			registrar.registerService(factory, CyAction.class, new Properties());
 			return;
 		}
 			
@@ -80,12 +81,12 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		final List<URL> urls = tracker.getRecentlyOpenedURLs();
 
 		for (final URL url : urls) {
-			final Dictionary<String, String> dict = new Hashtable<String, String>();
-			dict.put("preferredMenu", MENU_CATEGORY);
-			dict.put("title", url.getFile());
-			dict.put("menuGravity", "6.0");
+			final Properties prop = new Properties();
+			prop.put("preferredMenu", MENU_CATEGORY);
+			prop.put("title", url.getFile());
+			prop.put("menuGravity", "6.0");
 			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager, appManager, tracker, url);
-			registrar.registerService(factory, TaskFactory.class, dict);
+			registrar.registerService(factory, TaskFactory.class, prop);
 
 			this.currentMenuItems.add(factory);
 		}
