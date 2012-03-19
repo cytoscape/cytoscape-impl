@@ -287,6 +287,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Ref to foreground canvas object.
 	 */
 	ArbitraryGraphicsCanvas m_foregroundCanvas;
+	
+	/**
+	 * Current image width
+	 */
+	int imageWidth = 0;
+	
+	/**
+	 * Current image Height
+	 */
+	int imageHeight = 0;
 
 	/**
 	 *
@@ -1143,7 +1153,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final long start = System.currentTimeMillis();
 		cyEventHelper.flushPayloadEvents();
 		m_networkCanvas.repaint();
-		logger.debug("Repaint finised in " + (System.currentTimeMillis() - start) + " msec.");
+		
+		//Check if image size has changed if so, visual property needs to be changed as well
+		if( m_networkCanvas.getWidth() != imageWidth || m_networkCanvas.getHeight() != imageHeight)
+		{
+			imageWidth = m_networkCanvas.getWidth();
+			imageHeight = m_networkCanvas.getHeight();
+			setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,(double)imageWidth);
+			setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,(double)imageHeight);
+		}
+		logger.debug("Repaint finished in " + (System.currentTimeMillis() - start) + " msec.");
 	}
 
 	/**
