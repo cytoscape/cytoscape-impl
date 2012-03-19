@@ -5,10 +5,10 @@ import java.awt.geom.Point2D;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.Handle;
 import org.cytoscape.ding.impl.editor.EditMode;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.View;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 /**
  * A simple implementation of edge handle.
@@ -40,44 +40,21 @@ public class HandleImpl implements Handle {
 		final View<CyNode> sourceView = graphView.getNodeView(source);
 		final View<CyNode> targetView = graphView.getNodeView(target);
 
-		final Double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
-		final Double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
+		final double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
+		final double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
+		final double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
+		final double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
-		final Point2D newPoint = new Point2D.Double();
-		
+		final Point2D newPoint;
 		if (EditMode.isDirectMode() == false) {
-			
-			// Original edge vector v = (vx, vy).  (from source to target)
-			final double vx = tX-sX;
-			final double vy = tY-sY;
-			
-			// rotate
-			double newX = vx*cosTheta - vy*sinTheta;
-			double newY = vx*sinTheta + vy*cosTheta;
-			
-			// New rotated vector v' = (newX, newY).
-			// Resize vector
-			newX = newX*ratio;
-			newY = newY*ratio;
-			
-			// ... And this is the new handle position.
-			final double handleX = newX+sX;
-			final double handleY = newY+sY;
-			newPoint.setLocation(handleX, handleY);
-			
-//			System.out.println("(Sx, Sy) = (" + sX + ", " + sY + ")");
-//			System.out.println("(Tx, Ty) = (" + tX + ", " + tY + ")");
-//			System.out.println("(handleX, handleY) = (" + handleX + ", " + handleY + ")");
-//			System.out.println("** theta degree = " + Math.acos(cosTheta)* 180 / Math.PI);
+			newPoint = convert(sX, sY, tX, tY);
 		} else {
+			newPoint = new Point2D.Double();
 			if(x==0 && y==0) {
 				// If default, use center
 				newPoint.setLocation(tX - sX, tY - sY);
 			} else
 				newPoint.setLocation(x, y);
-
 		}
 		return newPoint;
 	}
@@ -97,12 +74,12 @@ public class HandleImpl implements Handle {
 		final View<CyNode> targetView = graphView.getNodeView(target);
 
 		// Location of source node
-		final Double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
+		final double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
+		final double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
 		// Location of target node
-		final Double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final Double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
+		final double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
+		final double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
 		// Location of handle
 		final double hX = absolutePoint.getX();
@@ -110,67 +87,70 @@ public class HandleImpl implements Handle {
 
 		// Vector v1
 		// Distance from source to target (Edge length)
-		double dist1 = Math.sqrt(Math.pow(tX - sX, 2) + Math.pow(tY - sY, 2));
+		final double v1x = tX - sX;
+		final double v1y = tY - sY;
+		final double dist1 = Math.sqrt(Math.pow(v1x, 2) + Math.pow(v1y, 2));
 		
 		// Vector v2
 		// Distance from source to current handle
-		double dist2 = Math.sqrt(Math.pow(hX - sX, 2) + Math.pow(hY - sY, 2));
+		final double v2x = hX - sX;
+		final double v2y = hY - sY;
+		final double dist2 = Math.sqrt(Math.pow(v2x, 2) + Math.pow(v2y, 2));
 		
 		// Ratio of vector lengths
 		ratio = dist2/dist1; 
 				
 		// Dot product of v1 and v2
-		double dotProduct = ((tX-sX) * (hX-sX)) + ((tY-sY) * (hY-sY));
-		double dist2Squared = Math.pow(dist2, 2);
+		final double dotProduct = (v1x * v2x) + (v1y * v2y);
+		cosTheta = dotProduct/(dist1*dist2);
 		
-		// vp is a component vector parallel to v2.
-		// vp = k*v2
-		final double r = dotProduct/dist2Squared;
-		
-		// Now, we can get the length of the vp
-		final double lengthVp = Math.sqrt(Math.pow(r * (hX-sX), 2) + Math.pow(r * (hY-sY), 2));
-		
-		// Now we can get the Cos(theta)
-		cosTheta = lengthVp/dist1;
-		
-//		// Theta is the angle between v1 and v2
-		double theta = Math.acos(cosTheta);
-		
-		// Adjust angle if >PI/2
-		if(dotProduct<0) {
-			// PI/2< theta <=PI
-			theta = Math.PI-theta;
-			cosTheta = Math.cos(theta);
-		}
+		// Theta is the angle between v1 and v2
+		final double theta = Math.acos(cosTheta);
 		sinTheta = Math.sin(theta);
 		
-//		System.out.println("## Dot prod = " + dotProduct);
+//		System.out.println("\n\n## Dot prod = " + dotProduct);
 //		System.out.println("** cos = " + cosTheta);
 //		System.out.println("** sin = " + sinTheta);
-		
-		// Check direction of rotation
-		final double slopeE = (tY-sY)/(tX-sX);		
-		
-		// Rotate to opposite direction
-		if((sX<=tX && sY <= tY) || (sX<tX && sY > tY)) {
-			if (slopeE * hX > hY)
-				sinTheta = -sinTheta;
-		} else {
-			if (slopeE * hX < hY)
-				sinTheta = -sinTheta;
-		}
-
-//		System.out.println("** (Sx, Sy) = (" + sX + ", " + sY + ")");
-//		System.out.println("** (Tx, Ty) = (" + tX + ", " + tY + ")");
-//		System.out.println("!Handle ID = " + this.hashCode());
-//		System.out.println("** edge Distance = " + dist1);
-//		System.out.println("** Handle Distance = " + dist2);
-//		System.out.println("** distance R2 = " + ratio);
-//		System.out.println("** cos = " + cosTheta);
-//		System.out.println("** sin = " + sinTheta);
-//		System.out.println("** theta rad = " + theta);
-//		System.out.println("** theta degree = " + (theta* 180 / Math.PI));
+//		System.out.println("** theta = " + theta);
+//		System.out.println("** (Hx, Hy) = (" + hX + ", " + hY + ")");
+		final Point2D validate = convert(sX, sY, tX, tY);
+		if(Math.abs(validate.getX()-hX) > 2 || Math.abs(validate.getY()-hY) > 2)
+			sinTheta = -sinTheta;
 	}
+	
+	/**
+	 * Rotate and scale the vector to the handle position
+	 * 
+	 * @param sX
+	 * @param sY
+	 * @param tX
+	 * @param tY
+	 * @return
+	 */
+	private Point2D convert(double sX, double sY,double tX, double tY ) {
+		final Point2D newPoint = new Point2D.Double();
+		
+		// Original edge vector v = (vx, vy). (from source to target)
+		final double vx = tX - sX;
+		final double vy = tY - sY;
+
+		// rotate
+		double newX = vx * cosTheta - vy * sinTheta;
+		double newY = vx * sinTheta + vy * cosTheta;
+
+		// New rotated vector v' = (newX, newY).
+		// Resize vector
+		newX = newX * ratio;
+		newY = newY * ratio;
+
+		// ... And this is the new handle position.
+		final double handleX = newX + sX;
+		final double handleY = newY + sY;
+		newPoint.setLocation(handleX, handleY);
+		
+		return newPoint;
+	}
+	
 
 
 	/**
