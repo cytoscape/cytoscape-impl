@@ -13,18 +13,26 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 
 public class CollapsablePanel extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
-	private JToggleButton myExpandButton = null;
+	private JButton myExpandButton = null;
+	private JLabel myExpandLabel = null;
 	private boolean expandPaneVisible;
-	private static String ExpandName = "+";
-	private static String CollapseName = "-";
+	// private static String ExpandName = "+";
+	// private static String CollapseName = "-";
+	private String expandName = null;
+	private String collapseName = null;
 	private JPanel rightPanel = new JPanel();
 	private JPanel leftPanel = new JPanel();	
 	private List<Component> listInPane;
@@ -38,11 +46,12 @@ public class CollapsablePanel extends JPanel implements ActionListener {
 		
 		rightPanel = new JPanel();
 		rightPanel.setLayout(new BorderLayout());
-		TitledBorder titleborder = BorderFactory.createTitledBorder(name);
-		titleborder.setTitleColor(Color.RED);
-		setBorder(titleborder);
+		Border refBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		// TitledBorder titleborder = BorderFactory.createTitledBorder(refBorder, name);
+		// titleborder.setTitleColor(Color.RED);
+		setBorder(refBorder);
 		//setBorder(BorderFactory.createTitledBorder(name));
-		rightPanel.add(myExpandButton = createButton(expandPaneVisible), BorderLayout.WEST);
+		rightPanel.add(createButton(expandPaneVisible, name), BorderLayout.WEST);
 		super.add(rightPanel);
 				
 		leftPanel = new JPanel();
@@ -68,19 +77,42 @@ public class CollapsablePanel extends JPanel implements ActionListener {
 		Object source = e.getSource();
 		if (source == myExpandButton) {
 			if (expandPaneVisible) {
-				collapsePanel();
-				myExpandButton.setText(ExpandName);
+				setCollapsed(false);
+				// collapsePanel();
+				// myExpandButton.setText(ExpandName);
 				expandPaneVisible = false;
 			}
 			else {
-				expandPanel();
-				myExpandButton.setText(CollapseName);
+				// expandPanel();
+				// myExpandButton.setText(CollapseName);
+				setCollapsed(true);
 				expandPaneVisible = true;
 			}
 		}
 	}
 
+	private JPanel createButton(boolean state, String name) {
+		JPanel collapsePanel = new JPanel(new BorderLayout(0, 2));
+		String label = null;
+		myExpandButton = null;
+		collapseName = "<html><b><i>&nbsp;&nbsp;Show "+name+"</i></b></html>";
+		expandName = "<html><b><i>&nbsp;&nbsp;Hide "+name+"</i></b></html>";
+
+		if (state) {
+			myExpandLabel = new JLabel(collapseName);
+			myExpandButton = new JButton(UIManager.getIcon("Tree.collapsedIcon"));
+		} else {
+			myExpandLabel = new JLabel(expandName);
+			myExpandButton = new JButton(UIManager.getIcon("Tree.expandedIcon"));
+		}
+		myExpandButton.addActionListener(this);
+		myExpandButton.setPreferredSize(new Dimension(15,15));
+		collapsePanel.add(myExpandButton, BorderLayout.LINE_START);
+		collapsePanel.add(myExpandLabel, BorderLayout.CENTER);
+		return collapsePanel;
+	}
 	
+/*
 	private JToggleButton createButton(boolean state) {
 		JToggleButton button = new JToggleButton();
 		if (state)
@@ -92,28 +124,37 @@ public class CollapsablePanel extends JPanel implements ActionListener {
 		button.addActionListener(this);
 		return button;
 	}
+*/
 	
 	
 	public void setCollapsed(boolean visible) {
 		if (visible) {
-			myExpandButton.setSelected(true);
+			// myExpandButton.setSelected(true);
 			expandPanel();
-			myExpandButton.setText(CollapseName);
+			myExpandButton.setIcon(UIManager.getIcon("Tree.expandedIcon"));
+			myExpandLabel.setText(expandName);
 		}
 		else {
-			myExpandButton.setSelected(false);
+			// myExpandButton.setSelected(false);
 			collapsePanel();
-			myExpandButton.setText(ExpandName);
+			myExpandButton.setIcon(UIManager.getIcon("Tree.collapsedIcon"));
+			myExpandLabel.setText(collapseName);
+			// myExpandButton.setText(ExpandName);
 		}
 	}
 	
 
 	public void setButtonChanges(boolean value) {
-		myExpandButton.setSelected(value);
-		if (value)
-			myExpandButton.setText(CollapseName);
-		else
-			myExpandButton.setText(ExpandName);
+		// myExpandButton.setSelected(value);
+		if (value) {
+			myExpandButton.setIcon(UIManager.getIcon("Tree.collapsedIcon"));
+			myExpandLabel.setText(collapseName);
+			// myExpandButton.setText(CollapseName);
+		} else {
+			myExpandButton.setIcon(UIManager.getIcon("Tree.expandedIcon"));
+			myExpandLabel.setText(expandName);
+			// myExpandButton.setText(ExpandName);
+		}
 		
 	}
 	
