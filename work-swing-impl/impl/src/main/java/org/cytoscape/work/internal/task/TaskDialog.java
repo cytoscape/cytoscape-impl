@@ -254,6 +254,8 @@ class TaskDialog extends JDialog {
 	}
 
 	void initComponents() {
+		//Set the button that has focus as default button. Thereby, enter key will activate that button.
+		UIManager.put("Button.defaultButtonFollowsFocus", Boolean.TRUE);
 		initTextArea(descriptionLabel);
 		initTextArea(descriptionLabel2);
 		initTextArea(statusLabel);
