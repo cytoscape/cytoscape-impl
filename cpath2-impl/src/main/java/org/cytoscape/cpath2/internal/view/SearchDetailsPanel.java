@@ -135,7 +135,7 @@ public class SearchDetailsPanel extends JPanel {
             } else {
                 taskFactory = factory.createExecuteGetRecordByCPathIdTaskFactory(webApi, ids, format, title);
             }
-            factory.getTaskManager().execute(taskFactory);
+            factory.getTaskManager().execute(taskFactory.createTaskIterator());
         } catch (IndexOutOfBoundsException e) {
             //  Ignore
         }

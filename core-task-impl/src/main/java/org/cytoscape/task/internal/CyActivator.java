@@ -92,7 +92,6 @@ import org.cytoscape.task.internal.setcurrent.SetCurrentNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactory;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactory;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactory;
-import org.cytoscape.task.internal.table.MapGlobalToLocalTableTask;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactory;
@@ -231,7 +230,6 @@ public class CyActivator extends AbstractCyActivator {
 		GroupNodesTaskFactory groupNodesTaskFactory = new GroupNodesTaskFactory(cyGroupManager, cyGroupFactory);
 		GroupNodeContextTaskFactory collapseGroupTaskFactory = new GroupNodeContextTaskFactory(cyGroupManager, true);
 		GroupNodeContextTaskFactory expandGroupTaskFactory = new GroupNodeContextTaskFactory(cyGroupManager, false);
-		
 		
 		MapGlobalToLocalTableTaskFactory mapGlobal = new MapGlobalToLocalTableTaskFactory(cyTableManagerServiceRef, cyNetworkManagerServiceRef);
 		

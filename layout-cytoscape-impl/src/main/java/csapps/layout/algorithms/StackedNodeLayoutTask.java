@@ -1,42 +1,27 @@
 package csapps.layout.algorithms;
 
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
 public class StackedNodeLayoutTask extends AbstractBasicLayoutTask {
 
-	private double y_start_position;
-	private double x_position;
-	private Collection nodeViews;
-	private Collection nodes;
-	private boolean selectedOnly = false;
+	private StackedNodeLayoutContext context;
 	
-	public StackedNodeLayoutTask(final CyNetworkView networkView, final String name,
-			  final boolean selectedOnly, final Set<View<CyNode>> staticNodes,
-			  double x_position, double y_start_position)
-
-	{
-		super(networkView, name, selectedOnly, staticNodes);
-		
-		this.selectedOnly = selectedOnly;
-		
-		this.x_position =x_position;
-		this.y_start_position=y_start_position;
-		this.nodeViews = staticNodes;
-		
+	public StackedNodeLayoutTask(final String name, final StackedNodeLayoutContext context) {
+		super(name, context);
+		this.context = context;
 	}
 
 	final protected void doLayout(final TaskMonitor taskMonitor) {
 
+		List<CyNode> nodes;
 		if (selectedOnly){
 			nodes = CyTableUtil.getNodesInState(networkView.getModel(),"selected",true);
 		}
@@ -44,14 +29,15 @@ public class StackedNodeLayoutTask extends AbstractBasicLayoutTask {
 			// select all nodes from the view
 			nodes = networkView.getModel().getNodeList();			
 		}
-		construct();
+		construct(nodes);
 	}
 	
 	/**
 	 *  DOCUMENT ME!
+	 * @param nodes 
 	 */
-	public void construct() {
-		double yPosition = y_start_position;
+	public void construct(List<CyNode> nodes) {
+		double yPosition = context.y_start_position;
 		
 		Iterator it = nodes.iterator();
 
@@ -59,7 +45,7 @@ public class StackedNodeLayoutTask extends AbstractBasicLayoutTask {
 			CyNode node = (CyNode) it.next();
 			View<CyNode> nodeView = networkView.getNodeView(node);
 			
-			nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x_position);
+			nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, context.x_position);
 			nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPosition);
 			
 			int y = new Float((nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT).toString())).intValue();

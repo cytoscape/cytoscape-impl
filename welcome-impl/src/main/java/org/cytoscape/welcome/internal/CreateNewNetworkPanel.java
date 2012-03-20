@@ -167,7 +167,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			public void mouseClicked(MouseEvent ev) {
 				// Load network from file.
 				parent.dispose();
-				guiTaskManager.execute(importNetworkFileTF);
+				guiTaskManager.execute(importNetworkFileTF.createTaskIterator());
 			}
 		});
 		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
@@ -215,15 +215,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, LAYOUT_ALGORITHM);
 				
 		// TODO REFACTOR!!!!!!!!!!!!!!!!!!!
-		guiTaskManager.execute(new TaskFactory() {
-
-			@Override
-			public TaskIterator createTaskIterator() {
-				return new TaskIterator(2,
-						new CreateNetworkViewTask(url, importNetworkFromURLTF, createViewTaskFactory));
-			}
-		});
-
+		guiTaskManager.execute(new TaskIterator(2,
+				new CreateNetworkViewTask(url, importNetworkFromURLTF, createViewTaskFactory)));
 	}
 
 	private int getViewThreshold(final Properties props) {

@@ -1,21 +1,45 @@
 package org.cytoscape.log.internal;
 
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
-import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-import javax.swing.table.*;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
@@ -462,11 +486,12 @@ class AdvancedLogViewer {
 				return;
 
 			final File file = fileChooser.getSelectedFile();
-			taskManager.execute(new ExportTaskFactory(file));
+			ExportTaskFactory taskFactory = new ExportTaskFactory(file);
+			taskManager.execute(taskFactory.createTaskIterator());
 		}
 	}
 
-	class ExportTaskFactory implements TaskFactory {
+	class ExportTaskFactory extends AbstractTaskFactory {
 		private final File file;
 
 		ExportTaskFactory(final File file) {

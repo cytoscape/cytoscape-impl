@@ -28,19 +28,13 @@
 package org.cytoscape.io.internal.read;
 
 
-import java.io.InputStream;
-
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 
 
-public abstract class AbstractTableReaderFactory implements InputStreamTaskFactory {
-	private final CyFileFilter filter;
-
-	protected InputStream inputStream;
-	protected String inputName;
+public abstract class AbstractTableReaderFactory extends SimpleInputStreamTaskFactory {
 	protected final CyTableFactory tableFactory;
 	protected final CyTableManager tableManager;
 
@@ -48,9 +42,9 @@ public abstract class AbstractTableReaderFactory implements InputStreamTaskFacto
 	                                  final CyTableFactory tableFactory,
 	                                  final CyTableManager tableManager)
 	{
+		super(filter);
 		if (filter == null)
 			throw new NullPointerException("filter is null!");
-		this.filter = filter;
 
 		if (tableFactory == null)
 			throw new NullPointerException("tableFactory is null!");
@@ -59,16 +53,5 @@ public abstract class AbstractTableReaderFactory implements InputStreamTaskFacto
 		if (tableManager == null)
 			throw new NullPointerException("tableManager is null!");
 		this.tableManager = tableManager;
-	}
-
-	public void setInputStream(InputStream is, String in) {
-		if (is == null)
-			throw new NullPointerException("Input stream is null!");
-		inputStream = is;
-		inputName = in;
-	}
-
-	public CyFileFilter getFileFilter() {
-		return filter;
 	}
 }

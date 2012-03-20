@@ -36,21 +36,31 @@
 */
 package org.cytoscape.internal.layout.ui;
 
-import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.work.swing.SubmenuTaskManager;
-import org.cytoscape.work.swing.DynamicSubmenuListener;
-import org.cytoscape.work.undo.UndoSupport;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JMenu;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.StringEnableSupport;
 import org.cytoscape.event.CyEventHelper;
-
-import javax.swing.*;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
-import java.util.*;
-
+import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutContext;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DynamicSubmenuListener;
+import org.cytoscape.work.swing.SubmenuTaskManager;
+import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +73,8 @@ public class LayoutMenuPopulator {
 	private Map<CyLayoutAlgorithm,MenuListener> listenerMap = new HashMap<CyLayoutAlgorithm,MenuListener>();
 	private Set<JMenu> parentMenuSet = new HashSet<JMenu>();
 	private UndoSupport undo;
-	private CyEventHelper eventHelper; 
+	private CyEventHelper eventHelper;
+	private DynamicTaskFactoryProvisioner factoryProvisioner;
 
 	private static final Logger logger = LoggerFactory.getLogger(LayoutMenuPopulator.class);
 
@@ -73,9 +84,10 @@ public class LayoutMenuPopulator {
 		this.swingApp = swingApp;
 		this.undo = undo;
 		this.eventHelper = eventHelper;
+		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
 	}
 
-	public void addLayout(CyLayoutAlgorithm layout, Map props) {
+	public <T extends AbstractLayoutAlgorithmContext> void addLayout(CyLayoutAlgorithm<T> layout, Map props) {
 		String prefMenu = getPreferredMenu(props); 
 
 		String menuName = (String)props.get("title");
@@ -88,14 +100,15 @@ public class LayoutMenuPopulator {
 		//       That class provides submenu bits that the framework needs so
 		//       Implementors of CyLayoutAlgorithm would need to mimic that
 		//       somehow if they choose to implement from scratch.
-		UndoSupportTaskFactory taskFactory = new UndoSupportTaskFactory((AbstractLayoutAlgorithm) layout, undo, eventHelper);
-		
+		UndoSupportTaskFactory<T> taskFactory = new UndoSupportTaskFactory<T>((AbstractLayoutAlgorithm<T>) layout, undo, eventHelper);
+		T context = taskFactory.createLayoutContext();
+		TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(taskFactory, context));
 		// get the submenu listener from the task manager
-		DynamicSubmenuListener submenu = tm.getConfiguration(taskFactory);
+		DynamicSubmenuListener submenu = tm.getConfiguration(provisioner, context);
 		submenu.setMenuTitle(menuName);
 
 		// now wrap it in a menulistener that sets the current network view for the layout
-		MenuListener ml = new NetworkViewMenuListener( submenu, appMgr, taskFactory, "networkAndView" );
+		MenuListener ml = new NetworkViewMenuListener( submenu, appMgr, "networkAndView" );
 
 		JMenu parentMenu = swingApp.getJMenu(prefMenu);
 		parentMenu.addMenuListener(ml);
@@ -109,6 +122,22 @@ public class LayoutMenuPopulator {
 		listenerMap.put(layout,ml);
 	}
 
+	private <T extends CyLayoutContext> NetworkViewTaskFactory wrapWithContext(final CyLayoutAlgorithm<T> layout, final T tunableContext) {
+		return new NetworkViewTaskFactory() {
+			@Override
+			public boolean isReady(CyNetworkView networkView) {
+				tunableContext.setNetworkView(networkView);
+				return layout.isReady(tunableContext);
+			}
+			
+			@Override
+			public TaskIterator createTaskIterator(CyNetworkView networkView) {
+				tunableContext.setNetworkView(networkView);
+				return layout.createTaskIterator(tunableContext);
+			}
+		};
+	}
+	
 	public void removeLayout(CyLayoutAlgorithm layout, Map props) {
 		String prefMenu = getPreferredMenu(props); 
 		

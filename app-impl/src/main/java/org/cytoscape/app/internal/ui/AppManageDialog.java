@@ -28,11 +28,31 @@
  */
 package org.cytoscape.app.internal.ui;
 
-import org.cytoscape.app.internal.Category;
-import org.cytoscape.app.internal.DownloadableInfo;
-import org.cytoscape.app.internal.Installable;
-import org.cytoscape.app.internal.ManagerException;
-import org.cytoscape.app.internal.ManagerUtil;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+
 import org.cytoscape.app.internal.AppException;
 import org.cytoscape.app.internal.AppInfo;
 import org.cytoscape.app.internal.AppInquireAction;
@@ -40,54 +60,24 @@ import org.cytoscape.app.internal.AppManager;
 import org.cytoscape.app.internal.AppManagerInquireTask;
 import org.cytoscape.app.internal.AppManagerInquireTaskFactory;
 import org.cytoscape.app.internal.AppStatus;
+import org.cytoscape.app.internal.Category;
+import org.cytoscape.app.internal.DownloadableInfo;
+import org.cytoscape.app.internal.Installable;
+import org.cytoscape.app.internal.ManagerException;
+import org.cytoscape.app.internal.ManagerUtil;
 import org.cytoscape.app.internal.ThemeInfo;
 import org.cytoscape.app.internal.action.AppManagerAction;
-
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.property.bookmark.DataSource;
-
-//import cytoscape.dialogs.preferences.BookmarkDialog;
-//import cytoscape.dialogs.preferences.EditBookmarkDialog;
-
-//import org.cytoscape.app.internal.AppTracker;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.cytoscape.work.TaskMonitor;
-//import cytoscape.util.OpenBrowser;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
-//import org.cytoscape.work.TaskManager;
-//import org.cytoscape.work.TaskMonitor;
-
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
-import java.util.ArrayList;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.Color;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.Dimension;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.TaskFactory;
-import java.io.File;
 
 public class AppManageDialog extends javax.swing.JDialog implements
 		TreeSelectionListener, ActionListener {
@@ -236,8 +226,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 		(this.currentAppSiteURL, new UrlAction(this, this.currentAppSiteURL));
 		
 		AppManagerInquireTaskFactory _taskFactory = new AppManagerInquireTaskFactory(task);
-
-		this.guiTaskManagerServiceRef.execute(_taskFactory);
+		this.guiTaskManagerServiceRef.execute(_taskFactory.createTaskIterator());
 	}
 	
 	/*
@@ -1113,8 +1102,8 @@ public class AppManageDialog extends javax.swing.JDialog implements
     }// </editor-fold>                        
 
                                                       
-    private void btnSelectLocalAppActionPerformed(java.awt.event.ActionEvent evt) {
-        this.guiTaskManagerServiceRef.execute(this.appLoaderTaskFactory);
+    private void btnSelectLocalAppActionPerformed(ActionEvent evt) {
+        this.guiTaskManagerServiceRef.execute(appLoaderTaskFactory.createTaskIterator());
     }                                                    
 
     private void btnDeleteSiteActionPerformed(java.awt.event.ActionEvent evt) {                                              
@@ -1229,7 +1218,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 		InstallTask task = new InstallTask(obj, node);
 
 		AppManagerInstallTaskFactory _taskFactory = new AppManagerInstallTaskFactory(task);
-		this.guiTaskManagerServiceRef.execute(_taskFactory);
+		this.guiTaskManagerServiceRef.execute(_taskFactory.createTaskIterator());
 
 		DownloadableInfo info = task.getDownloadedApp();
 		if (info != null) {
@@ -1241,7 +1230,7 @@ public class AppManageDialog extends javax.swing.JDialog implements
 	}
 
 	
-	private class AppManagerInstallTaskFactory implements TaskFactory {
+	private class AppManagerInstallTaskFactory extends AbstractTaskFactory {
 		Task task;
 		public AppManagerInstallTaskFactory(Task task){
 			this.task = task;

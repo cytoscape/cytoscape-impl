@@ -32,6 +32,7 @@ package org.cytoscape.task.internal.creation;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
@@ -75,7 +76,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactory extends AbstractNetworkTask
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(3,
 			new NewNetworkSelectedNodesEdgesTask(undoSupport, network, crnf, cnvf,
 			                                     netmgr, networkViewManager, naming, vmm,

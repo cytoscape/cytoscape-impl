@@ -1,8 +1,10 @@
 package org.cytoscape.psi_mi.internal;
 
 
-import java.io.File;
-import java.io.FileInputStream;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -15,16 +17,15 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReader;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import static org.mockito.Mockito.*;
-
-import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReader;
+import org.mockito.Mockito;
 
 public class PerfTest {
 
@@ -46,7 +47,7 @@ public class PerfTest {
 
 	public PerfTest() {
         layout = mock(CyLayoutAlgorithm.class);
-        when(layout.createTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
+        when(layout.createTaskIterator(Mockito.any(CyLayoutContext.class))).thenReturn(new TaskIterator(new SimpleTask()));
 
         layouts = mock(CyLayoutAlgorithmManager.class);
         when(layouts.getLayout(anyString())).thenReturn(layout);

@@ -37,7 +37,6 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 
-import javax.swing.event.MenuEvent;
 import java.awt.event.ActionEvent;
 
 

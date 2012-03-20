@@ -4,18 +4,11 @@
 
 package csapps.layout; 
 
-import org.cytoscape.work.undo.UndoSupport;
-
-import csapps.layout.JGraphLayoutWrapper;
-
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-
-
-import org.osgi.framework.BundleContext;
+import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.osgi.framework.BundleContext;
 
 
 
@@ -27,16 +20,14 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
-		
-		JGraphLayoutWrapper jGraphAnnealingLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.ANNEALING);
-		JGraphLayoutWrapper jGraphMoenLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.MOEN);
-		JGraphLayoutWrapper jGraphCircleGraphLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.CIRCLE_GRAPH);
-		JGraphLayoutWrapper jGraphRadialTreeLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.RADIAL_TREE);
-		JGraphLayoutWrapper jGraphGEMLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.GEM);
-		JGraphLayoutWrapper jGraphSpringEmbeddedLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.SPRING_EMBEDDED);
-		JGraphLayoutWrapper jGraphSugiyamaLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.SUGIYAMA);
-		JGraphLayoutWrapper jGraphTreeLayout = new JGraphLayoutWrapper(undoSupportServiceRef,JGraphLayoutWrapper.TREE);
+		JGraphLayoutWrapper jGraphAnnealingLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.ANNEALING);
+		JGraphLayoutWrapper jGraphMoenLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.MOEN);
+		JGraphLayoutWrapper jGraphCircleGraphLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.CIRCLE_GRAPH);
+		JGraphLayoutWrapper jGraphRadialTreeLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.RADIAL_TREE);
+		JGraphLayoutWrapper jGraphGEMLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.GEM);
+		JGraphLayoutWrapper jGraphSpringEmbeddedLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.SPRING_EMBEDDED);
+		JGraphLayoutWrapper jGraphSugiyamaLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.SUGIYAMA);
+		JGraphLayoutWrapper jGraphTreeLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.TREE);
 		
 		
 		Properties jGraphAnnealingLayoutProps = new Properties();

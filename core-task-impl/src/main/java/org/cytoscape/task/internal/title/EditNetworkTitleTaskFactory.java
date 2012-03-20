@@ -30,6 +30,7 @@
 package org.cytoscape.task.internal.title;
 
 
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
@@ -49,7 +50,7 @@ public class EditNetworkTitleTaskFactory extends AbstractNetworkTaskFactory {
 		this.cyNetworkNamingServiceRef = cyNetworkNamingServiceRef;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(new EditNetworkTitleTask(undoSupport, network, this.cyNetworkManagerServiceRef, this.cyNetworkNamingServiceRef));
 	} 
 }

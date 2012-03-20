@@ -30,18 +30,18 @@
 package org.cytoscape.task.internal.creation;  
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 
-public class NewEmptyNetworkTaskFactory implements TaskFactory, NewEmptyNetworkViewFactory {
+public class NewEmptyNetworkTaskFactory extends AbstractTaskFactory implements NewEmptyNetworkViewFactory {
 	private final CyNetworkFactory cnf;
 	private final CyNetworkViewFactory cnvf;
 	private final CyNetworkManager netMgr;
@@ -72,7 +72,7 @@ public class NewEmptyNetworkTaskFactory implements TaskFactory, NewEmptyNetworkV
 
 	public CyNetworkView createNewEmptyNetworkView() {
 		// no tunables, so no need to set the execution context
-		syncTaskMgr.execute(this);	
+		syncTaskMgr.execute(createTaskIterator());	
 		return task.getView(); 
 	}
 }

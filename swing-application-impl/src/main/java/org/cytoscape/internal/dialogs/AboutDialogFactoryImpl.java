@@ -36,10 +36,10 @@
 package org.cytoscape.internal.dialogs;
 
 import org.cytoscape.application.CyVersion;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class AboutDialogFactoryImpl implements TaskFactory {
+public class AboutDialogFactoryImpl extends AbstractTaskFactory {
 	private CyVersion version;
 
 	public AboutDialogFactoryImpl(CyVersion version) {

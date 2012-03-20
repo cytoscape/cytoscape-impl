@@ -1,31 +1,28 @@
 package org.cytoscape.log.internal;
 
 
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.application.swing.CySwingApplication;
-
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.Date;
-import java.text.DateFormat;
 
-import javax.swing.ImageIcon;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
+import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
 
 
 /**
  * @author Pasteur
  */
-public class ConsoleTaskFactory implements TaskFactory {
+public class ConsoleTaskFactory extends AbstractTaskFactory {
 	final BlockingQueue<PaxLoggingEvent> simpleQueue;
 	final BlockingQueue<PaxLoggingEvent> advancedQueue;
 	final ExecutorService service;

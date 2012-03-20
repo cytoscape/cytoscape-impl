@@ -239,8 +239,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	private void extractTable(InputStream stream, String entryName) throws Exception {
-		csvCyReaderFactory.setInputStream(stream, entryName);
-		CyTableReader reader = (CyTableReader) csvCyReaderFactory.createTaskIterator().next();
+		CyTableReader reader = (CyTableReader) csvCyReaderFactory.createTaskIterator(stream, entryName).next();
 		reader.run(taskMonitor);
 
 		// Assume one table per entry

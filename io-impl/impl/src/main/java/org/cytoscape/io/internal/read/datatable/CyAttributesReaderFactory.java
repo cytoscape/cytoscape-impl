@@ -1,6 +1,8 @@
 package org.cytoscape.io.internal.read.datatable;
 
 
+import java.io.InputStream;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractTableReaderFactory;
@@ -28,7 +30,7 @@ public class CyAttributesReaderFactory extends AbstractTableReaderFactory {
 		this.rootNetFact = rootNetFact;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new CyAttributesReader(inputStream, tableFactory, appMgr,
 		                                               netMgr, tableManager,rootNetFact));
 	}

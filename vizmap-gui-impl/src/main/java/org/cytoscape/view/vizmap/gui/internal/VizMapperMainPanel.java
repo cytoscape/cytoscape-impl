@@ -142,7 +142,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		viewModeAction.addPropertyChangeListener(this);
 		
 		// Load default styles
-		tManager.execute(taskFactory);
+		tManager.execute(taskFactory.createTaskIterator());
 	}
 
 	private void initPanel() {

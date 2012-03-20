@@ -2,52 +2,17 @@ package csapps.layout.algorithms.bioLayout;
 
 
 import java.util.ArrayList;
-import java.util.Set;
 
-import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 
 
 public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
-	/**
-	 * Sets the number of iterations for each update
-	 */
-	//@Tunable(description="Number of iterations before updating display (0: update only at end)", groups="Algorithm settings")
-	public int update_iterations;// = 0; // 0 means we only update at the end
-
-	/**
-	 * The multipliers and computed result for the
-	 * attraction and repulsion values.
-	 */
-	//@Tunable(description="Divisor to calculate the attraction force", groups="Algorithm settings")
-	public double attraction_multiplier;// = .03;
 	private double attraction_constant;
-	//@Tunable(description="Multiplier to calculate the repulsion force", groups="Algorithm settings")
-	public double repulsion_multiplier;// = 0.04;
 	private double repulsion_constant;
-	//@Tunable(description="Multiplier to calculate the gravity force", groups="Algorithm settings")
-	public double gravity_multiplier;// = 1;
 	private double gravity_constant;
-
-	/**
-	 * conflict_avoidance is a constant force that
-	 * gets applied when two vertices are very close
-	 * to each other.
-	 */
-	//@Tunable(description="Constant force applied to avoid conflicts", groups="Algorithm settings")
-	public double conflict_avoidance;// = 20;
-
-	/**
-	 * max_distance_factor is the portion of the graph
-	 * beyond which repulsive forces will not operate.
-	 */
-	//@Tunable(description="Percent of graph used for node repulsion calculations", groups="Algorithm settings")
-	public double max_distance_factor;// = 20;
 
 	/**
 	 * maxDistance is the actual calculated distance
@@ -64,25 +29,6 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 */
 	private double maxVelocity_divisor = 25;
 	private double maxVelocity;
-
-	/**
-	 * The spread factor -- used to give extra space to expand
-	 */
-	//@Tunable(description="Amount of extra room for layout", groups="Algorithm settings")
-	public double spread_factor;// = 2;
-
-	/**
-	 * The initial temperature factor.  This will get damped
-	 * out through the iterations
-	 */
-	//@Tunable(description="Initial temperature", groups="Algorithm settings")
-	public double temperature;// = 80;
-
-	/**
-	 * The number of iterations to run.
-	 */
-	//@Tunable(description="Number of iterations", groups="Algorithm settings")
-	public int nIterations;// = 500;
 
 	/**
 	 * This ArrayList is used to calculate the slope of the magnitude
@@ -102,6 +48,8 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	private double width = 0;
 	private double height = 0;
 
+	private BioLayoutFRContext context;
+
 	/**
 	 * Profile data -- not used, for now
 	Profile initProfile;
@@ -111,25 +59,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	Profile updateProfile;
 	 */
 
-	public BioLayoutFRAlgorithmTask(
-		final CyNetworkView networkView, final String name, final boolean selectedOnly, 
-		final Set<View<CyNode>> staticNodes,
-		int update_iterations, final double attraction_multiplier,final double repulsion_multiplier,  
-		final double gravity_multiplier,final double conflict_avoidance, final double max_distance_factor,
-		final double spread_factor,final double temperature,final int nIterations,
-		final boolean supportWeights, final boolean singlePartition, final boolean randomize)
-	{		
-		super(networkView, name, selectedOnly, staticNodes, singlePartition, randomize);
+	public BioLayoutFRAlgorithmTask(final String name, final BioLayoutFRContext context, final boolean supportWeights) {		
+		super(name, context, context.singlePartition);
+		this.context = context;
 
-		this.update_iterations =update_iterations;
-		this.attraction_multiplier =attraction_multiplier;
-		this.repulsion_multiplier=repulsion_multiplier;
-		this.gravity_multiplier=gravity_multiplier;
-		this.conflict_avoidance=conflict_avoidance;
-		this.max_distance_factor=max_distance_factor;
-		this.spread_factor=spread_factor;
-		this.temperature=temperature;
-		this.nIterations=nIterations;
 		this.supportWeights =supportWeights;
 		
 		displacementArray = new ArrayList<Double>(100);
@@ -167,193 +100,6 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	}
 
 	/**
-	 * Sets the number of iterations
-	 *
-	 * @param value the number of iterations
-	 */
-	public void setNumberOfIterations(int value) {
-		this.nIterations = value;
-	}
-
-	/**
-	 * Sets the number of iterations
-	 *
-	 * @param value the number of iterations
-	 */
-	public void setNumberOfIterations(String value) {
-		Integer val = Integer.valueOf(value);
-		nIterations = val.intValue();
-	}
-
-	/**
-	 * Sets the initial temperature
-	 *
-	 * @param value the initial temperature value
-	 */
-	public void setTemperature(double value) {
-		this.temperature = value;
-	}
-
-	/**
-	 * Sets the initial temperature
-	 *
-	 * @param value the initial temperature value
-	 */
-	public void setTemperature(String value) {
-		Double val = new Double(value);
-		temperature = val.doubleValue();
-	}
-
-	/**
-	 * Sets the attraction multiplier used to calculate
-	 * the attraction force
-	 *
-	 * @param value the attraction multiplier
-	 */
-	public void setAttractionMultiplier(double am) {
-		attraction_multiplier = am;
-	}
-
-	/**
-	 * Sets the attraction multiplier used to calculate
-	 * the attraction force
-	 *
-	 * @param value the attraction multiplier
-	 */
-	public void setAttractionMultiplier(String value) {
-		Double val = new Double(value);
-		attraction_multiplier = val.doubleValue();
-	}
-
-	/**
-	 * Sets the repulsion multiplier used to calculate
-	 * the repulsion force
-	 *
-	 * @param value the repulsion multiplier
-	 */
-	public void setRepulsionMultiplier(double am) {
-		repulsion_multiplier = am;
-	}
-
-	/**
-	 * Sets the repulsion multiplier used to calculate
-	 * the repulsion force
-	 *
-	 * @param value the repulsion multiplier
-	 */
-	public void setRepulsionMultiplier(String value) {
-		Double val = new Double(value);
-		repulsion_multiplier = val.doubleValue();
-	}
-
-	/**
-	 * Sets the gravity multiplier used to calculate
-	 * the gravity force
-	 *
-	 * @param value the gravity multiplier
-	 */
-	public void setGravityMultiplier(double am) {
-		gravity_multiplier = am;
-	}
-
-	/**
-	 * Sets the gravity multiplier used to calculate
-	 * the gravity force
-	 *
-	 * @param value the gravity multiplier
-	 */
-	public void setGravityMultiplier(String value) {
-		Double val = new Double(value);
-		gravity_multiplier = val.doubleValue();
-	}
-
-	/**
-	 * Sets the spread factor used to provide space for
-	 * the graph larger than the area of the nodes themselves.
-	 * The graph space will be (width*spread_factor, height*spread_factor)
-	 *
-	 * @param value the spread factor
-	 */
-	public void setSpreadFactor(double value) {
-		spread_factor = value;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param value DOCUMENT ME!
-	 */
-	public void setSpreadFactor(String value) {
-		Double val = new Double(value);
-		spread_factor = val.doubleValue();
-	}
-
-	/**
-	 * Sets the number of iterations to execute between each
-	 * screen update.  If the value is 0 or -1, no updates
-	 * will be done until the algorithm completes.
-	 *
-	 * @param value the number of iterations between updates
-	 */
-	public void setUpdateIterations(String value) {
-		Integer val = Integer.valueOf(value);
-		update_iterations = val.intValue();
-	}
-
-	/**
-	 * Sets the number of iterations to execute between each
-	 * screen update.  If the value is 0 or -1, no updates
-	 * will be done until the algorithm completes.
-	 *
-	 * @param value the number of iterations between updates
-	 */
-	public void setUpdateIterations(int value) {
-		update_iterations = value;
-	}
-
-	/**
-	 * Sets an additional repulsive force to nodes
-	 * when they overlap
-	 *
-	 * @param value the additional repulsive force
-	 */
-	public void setConflictAvoidanceForce(String value) {
-		Double val = new Double(value);
-		conflict_avoidance = val.doubleValue();
-	}
-
-	/**
-	 * Sets an additional repulsive force to nodes
-	 * when they overlap
-	 *
-	 * @param value the additional repulsive force
-	 */
-	public void setConflictAvoidanceForce(double value) {
-		conflict_avoidance = value;
-	}
-
-	/**
-	 * Sets the percentage of the graph beyond which we
-	 * don't calculate repulsive forces.
-	 *
-	 * @param value the maximum distance factor
-	 */
-	public void setMaxDistanceFactor(String value) {
-		Double val = new Double(value);
-		max_distance_factor = val.doubleValue();
-	}
-
-	/**
-	 * Sets the percentage of the graph beyond which we
-	 * don't calculate repulsive forces.
-	 *
-	 * @param value the maximum distance factor
-	 */
-	public void setMaxDistanceFactor(double value) {
-		max_distance_factor = value;
-	}
-
-	/**
 	 * Perform a layout
 	 */
 	public void layoutPartion(LayoutPartition partition) {
@@ -383,10 +129,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		// Initialize our temperature
 		double temp;
 
-		if (temperature == 0) {
+		if (context.temperature == 0) {
 			temp = Math.sqrt(this.width*this.height)/2;
 		} else {
-			temp = Math.sqrt(this.width*this.height) * this.temperature/100;
+			temp = Math.sqrt(this.width*this.height) * this.context.temperature/100;
 		}
 
 		// Figure out our starting point
@@ -395,7 +141,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Randomize our points, if any points lie
 		// outside of our bounds
-		if (randomize)
+		if (context.randomize)
 			partition.randomizeLocations();
 
 		// Calculate our force constant
@@ -411,11 +157,11 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		// iterProfile.start();
 		int iteration = 0;
 
-		for (iteration = 0; (iteration < nIterations) && !cancelled; iteration++) {
+		for (iteration = 0; (iteration < context.nIterations) && !cancelled; iteration++) {
 			if ((temp = doOneIteration(iteration, temp)) == 0)
 				break;
 
-			if (debug || ((update_iterations > 0) && ((iteration % update_iterations) == 0))) {
+			if (debug || ((context.update_iterations > 0) && ((iteration % context.update_iterations) == 0))) {
 				if (iteration > 0) {
 					// Actually move the pieces around
 					for (LayoutNode v: partition.getNodeList()) {
@@ -436,7 +182,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 			}
 
 			taskMonitor.setStatusMessage("Calculating new node positions - " + iteration);
-			taskMonitor.setProgress(iteration / nIterations);
+			taskMonitor.setProgress(iteration / context.nIterations);
 		}
 
 		// iterProfile.done("Iterations complete in ");
@@ -631,7 +377,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 			// If its too close, increase the force by a constant
 			if (deltaDistance < (radius + (u.getWidth() / 2))) {
 				// System.out.println("Applying conflict_avoidance force: "+conflict_avoidance);
-				fr += conflict_avoidance;
+				fr += context.conflict_avoidance;
 			}
 
 			if (Double.isNaN(fr)) {
@@ -774,7 +520,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * @return the new temperature
 	 */
 	private double cool(double temp, int iteration) {
-		temp *= (1.0 - ((double)iteration / (double)nIterations));
+		temp *= (1.0 - ((double)iteration / (double)context.nIterations));
 
 		return temp;
 	}
@@ -787,7 +533,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	private void calculateSize() {
 		// double spreadFactor = Math.max(spread_factor, edgeList.length/nodeList.length);
 		// LayoutNode v0 = (LayoutNode)nodeList.get(0); // Get the first vertex to get to the class variables
-		double spreadFactor = spread_factor;
+		double spreadFactor = context.spread_factor;
 		double averageWidth = partition.getWidth() / partition.nodeCount();
 		double averageHeight = partition.getHeight() / partition.nodeCount();
 		double current_area = (partition.getMaxX() - partition.getMinX()) * (partition.getMaxY()
@@ -810,7 +556,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		this.maxVelocity = Math.max(Math.max(averageWidth * 2, averageHeight * 2),
 		                            Math.max(width, height) / maxVelocity_divisor);
 		this.maxDistance = Math.max(Math.max(averageWidth * 10, averageHeight * 10),
-		                            Math.min(width, height) * max_distance_factor / 100);
+		                            Math.min(width, height) * context.max_distance_factor / 100);
 
 		        System.out.println("Size: "+width+" x "+height);
 		        System.out.println("maxDistance = "+maxDistance);
@@ -824,9 +570,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 */
 	private void calculateForces() {
 		double force = Math.sqrt((this.height * this.width) / partition.nodeCount());
-		attraction_constant = force * attraction_multiplier;
-		repulsion_constant = force * repulsion_multiplier;
-		gravity_constant = gravity_multiplier;
+		attraction_constant = force * context.attraction_multiplier;
+		repulsion_constant = force * context.repulsion_multiplier;
+		gravity_constant = context.gravity_multiplier;
 
 /*
 		        System.out.println("attraction_constant = "+attraction_constant

@@ -30,7 +30,7 @@
 package org.cytoscape.task.internal.creation;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
@@ -62,7 +62,7 @@ public class CloneNetworkTaskFactory extends AbstractNetworkTaskFactory {
 		this.appMgr = appMgr;
     }
 
-    public TaskIterator createTaskIterator() {
+    public TaskIterator createTaskIterator(CyNetwork network) {
     	return new TaskIterator(2,new CloneNetworkTask(network, networkMgr, networkViewMgr, vmm, netFactory, 
     			netViewFactory, naming, appMgr));
     }

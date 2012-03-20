@@ -125,34 +125,32 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 
 	@Override 
-	public JDialog getConfiguration(TaskFactory tf) {
+	public JDialog getConfiguration(TaskFactory factory, Object tunableContext) {
 		throw new UnsupportedOperationException("There is no configuration available for a DialogTaskManager");	
 	}
 
 
 	@Override
-	public void execute(final TaskFactory factory) {
-		execute(factory, true);
+	public void execute(final TaskIterator iterator) {
+		execute(iterator, null);
 	}
 
 	/**
 	 * For users of this class.
 	 */
-	public void execute(final TaskFactory factory, boolean displayFactoryTunables) {
+	public void execute(final TaskIterator taskIterator, Object tunableContext) {
 		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent);
 		
-		TaskIterator taskIterator;
 		final Task first; 
 
 		try {
 			dialogTunableMutator.setConfigurationContext(parent);
 
-			if ( displayFactoryTunables && !displayTunables(factory) ) {
+			if ( tunableContext != null && !displayTunables(tunableContext) ) {
 				taskMonitor.cancel();
 				return;
 			}
 
-			taskIterator = factory.createTaskIterator();
 			taskMonitor.setExpectedNumTasks( taskIterator.getNumTasks() );
 
 			// Get the first task and display its tunables.  This is a bit of a hack.  
@@ -165,7 +163,6 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			}
 
 		} catch (Exception exception) {
-			taskIterator = null;
 			logger.warn("Caught exception getting and validating task. ", exception);	
 			taskMonitor.showException(exception);
 			return;
@@ -251,6 +248,10 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	}
 
 	private boolean displayTunables(final Object task) throws Exception {
+		if (task == null) {
+			return true;
+		}
+		
 		boolean ret = dialogTunableMutator.validateAndWriteBack(task);
 
 		for ( TunableRecorder ti : tunableRecorders ) 

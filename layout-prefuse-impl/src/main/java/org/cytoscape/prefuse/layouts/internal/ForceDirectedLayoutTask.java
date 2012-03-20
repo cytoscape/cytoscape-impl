@@ -35,15 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 
 import prefuse.util.force.DragForce;
 import prefuse.util.force.ForceItem;
@@ -59,11 +56,11 @@ import prefuse.util.force.SpringForce;
 public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	private ForceSimulator m_fsim;
 
-	public int numIterations;
-	public double defaultSpringCoefficient;
-	public double defaultSpringLength;
-	public double defaultNodeMass;
-	public ForceDirectedLayout.Integrators integrator;
+//	public int numIterations;
+//	public double defaultSpringCoefficient;
+//	public double defaultSpringLength;
+//	public double defaultNodeMass;
+	private ForceDirectedLayout.Integrators integrator;
 	
 	/**
 	 * Value to set for doing unweighted layouts
@@ -73,25 +70,16 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	private boolean supportWeights = true;
 	private Map<LayoutNode,ForceItem> forceItems;
 
+	private ForceDirectedLayoutContext context;
+
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public ForceDirectedLayoutTask(final CyNetworkView networkView, final String name,
-				       final boolean selectedOnly,
-				       final Set<View<CyNode>> staticNodes,
-				       final int numIterations,
-				       final double defaultSpringCoefficient,
-				       final double defaultSpringLength,
-				       final double defaultNodeMass,
-				       final ForceDirectedLayout.Integrators integrator,
-				       final boolean singlePartition)
-	{
-		super(networkView, name, singlePartition, selectedOnly, staticNodes);
-		
-		this.numIterations = numIterations;
-		this.defaultSpringCoefficient = defaultSpringCoefficient;
-		this.defaultSpringLength = defaultSpringLength;
-		this.defaultNodeMass = defaultNodeMass;
+	public ForceDirectedLayoutTask(final String name, final ForceDirectedLayoutContext context,
+				       final ForceDirectedLayout.Integrators integrator) {
+		super(name, context, context.singlePartition);
+
+		this.context = context;
 		this.integrator = integrator;
 		
 		if (edgeWeighter == null)
@@ -164,11 +152,11 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 		// perform layout
 		long timestep = 1000L;
-		for ( int i = 0; i < numIterations && !cancelled; i++ ) {
-			timestep *= (1.0 - i/(double)numIterations);
+		for ( int i = 0; i < context.numIterations && !cancelled; i++ ) {
+			timestep *= (1.0 - i/(double)context.numIterations);
 			long step = timestep+50;
 			m_fsim.runSimulator(step);
-			setTaskStatus((int)(((double)i/(double)numIterations)*90.+5));
+			setTaskStatus((int)(((double)i/(double)context.numIterations)*90.+5));
 		}
 		
 		// update positions
@@ -205,7 +193,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	 * a mass value of 1.0.
 	 */
 	protected float getMassValue(LayoutNode n) {
-		return (float)defaultNodeMass;
+		return (float)context.defaultNodeMass;
 	}
 
 	/**
@@ -217,7 +205,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	*/
 	protected float getSpringLength(LayoutEdge e) {
 		double weight = e.getWeight();
-		return (float)(defaultSpringLength/weight);
+		return (float)(context.defaultSpringLength/weight);
 	}
 
 	/**
@@ -229,7 +217,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	 * -1 means to ignore this method and use the global default.
 	 */
 	protected float getSpringCoefficient(LayoutEdge e) {
-		return (float)defaultSpringCoefficient;
+		return (float)context.defaultSpringCoefficient;
 	}
 
 	/**

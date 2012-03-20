@@ -4,6 +4,8 @@ import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 // TODO: Wire this in OSGi; this class is never called... (remove?)
@@ -15,7 +17,7 @@ public class GetParentInteractionsTaskFactory extends AbstractNodeViewTaskFactor
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
 		CyNetwork network = netView.getModel();
 		CyNode node = nodeView.getModel();
 		return new TaskIterator(new GetParentInteractions(network, node, factory));

@@ -30,11 +30,11 @@ package org.cytoscape.filter.internal.filters.view;
 
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-final class FilterIndexingTaskFactory implements TaskFactory {
+final class FilterIndexingTaskFactory extends AbstractTaskFactory {
 	private final CyNetwork network;
 	private final QuickFind quickFind;
 

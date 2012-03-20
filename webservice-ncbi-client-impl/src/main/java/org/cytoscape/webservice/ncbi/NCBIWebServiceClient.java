@@ -40,11 +40,11 @@ public class NCBIWebServiceClient extends AbstractWebServiceClient
 	}
 
 	@Override
-	public TaskIterator createTaskIterator() {
-		if (currentQuery == null)
+	public TaskIterator createTaskIterator(Object query) {
+		if (query == null)
 			throw new NullPointerException("Query object is null.");
 		else {
-			networkTask = new ImportNetworkFromGeneTask(this.currentQuery.toString(),
+			networkTask = new ImportNetworkFromGeneTask(query.toString(),
 			                                            networkFactory, tableFactory,
 			                                            manager, tableManager);
 			return new TaskIterator(networkTask);

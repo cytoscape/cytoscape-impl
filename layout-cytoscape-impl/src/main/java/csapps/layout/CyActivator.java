@@ -4,8 +4,14 @@
 
 package csapps.layout; 
 
-import org.cytoscape.work.undo.UndoSupport;
+import java.util.Properties;
 
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.osgi.framework.BundleContext;
+
+import csapps.layout.algorithms.GroupAttributesLayout;
+import csapps.layout.algorithms.StackedNodeLayout;
 import csapps.layout.algorithms.bioLayout.BioLayoutFRAlgorithm;
 import csapps.layout.algorithms.bioLayout.BioLayoutKKAlgorithm;
 import csapps.layout.algorithms.circularLayout.CircularLayoutAlgorithm;
@@ -13,17 +19,6 @@ import csapps.layout.algorithms.graphPartition.AttributeCircleLayout;
 import csapps.layout.algorithms.graphPartition.DegreeSortedCircleLayout;
 import csapps.layout.algorithms.graphPartition.ISOMLayout;
 import csapps.layout.algorithms.hierarchicalLayout.HierarchicalLayoutAlgorithm;
-import csapps.layout.algorithms.GroupAttributesLayout;
-import csapps.layout.algorithms.StackedNodeLayout;
-
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-
-
-import org.osgi.framework.BundleContext;
-
-import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
 
 
 
@@ -35,18 +30,17 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
+		CircularLayoutAlgorithm circularLayoutAlgorithm = new CircularLayoutAlgorithm();
+		HierarchicalLayoutAlgorithm hierarchicalLayoutAlgorithm = new HierarchicalLayoutAlgorithm();
+		AttributeCircleLayout attributeCircleLayout = new AttributeCircleLayout();
+		DegreeSortedCircleLayout degreeSortedCircleLayout = new DegreeSortedCircleLayout();
+		ISOMLayout ISOMLayout = new ISOMLayout();
+		BioLayoutKKAlgorithm bioLayoutKKAlgorithmFALSE = new BioLayoutKKAlgorithm(false);
+		BioLayoutKKAlgorithm bioLayoutKKAlgorithmTRUE = new BioLayoutKKAlgorithm(true);
+		BioLayoutFRAlgorithm bioLayoutFRAlgorithm = new BioLayoutFRAlgorithm(true);
+		StackedNodeLayout stackedNodeLayout = new StackedNodeLayout();
+		GroupAttributesLayout groupAttributesLayout = new GroupAttributesLayout();
 		
-		CircularLayoutAlgorithm circularLayoutAlgorithm = new CircularLayoutAlgorithm(undoSupportServiceRef);
-		HierarchicalLayoutAlgorithm hierarchicalLayoutAlgorithm = new HierarchicalLayoutAlgorithm(undoSupportServiceRef);
-		AttributeCircleLayout attributeCircleLayout = new AttributeCircleLayout(undoSupportServiceRef);
-		DegreeSortedCircleLayout degreeSortedCircleLayout = new DegreeSortedCircleLayout(undoSupportServiceRef);
-		ISOMLayout ISOMLayout = new ISOMLayout(undoSupportServiceRef);
-		BioLayoutKKAlgorithm bioLayoutKKAlgorithmFALSE = new BioLayoutKKAlgorithm(undoSupportServiceRef,false);
-		BioLayoutKKAlgorithm bioLayoutKKAlgorithmTRUE = new BioLayoutKKAlgorithm(undoSupportServiceRef,true);
-		BioLayoutFRAlgorithm bioLayoutFRAlgorithm = new BioLayoutFRAlgorithm(undoSupportServiceRef,true);
-		StackedNodeLayout stackedNodeLayout = new StackedNodeLayout(undoSupportServiceRef);
-		GroupAttributesLayout groupAttributesLayout = new GroupAttributesLayout(undoSupportServiceRef);
 		
 		Properties circularLayoutAlgorithmProps = new Properties();
 		circularLayoutAlgorithmProps.setProperty("preferredMenu","Layout.Cytoscape Layouts");

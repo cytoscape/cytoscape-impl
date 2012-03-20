@@ -104,20 +104,20 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		logger.info("RegistryManager initialized in " + sec + " sec.");
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(Object query) {
 		if (regManager == null)
 			throw new NullPointerException("RegistryManager is null");
 
-		if (currentQuery == null)
+		if (query == null)
 			throw new NullPointerException("Query object is null.");
 		else {
 			searchTask = new SearchRecoredsTask(client, SearchMode.MIQL);
 			final Map<String, String> activeSource = regManager.getActiveServices();
-			final String query = currentQuery.toString();
-			searchTask.setQuery(query);
+			final String query2 = query.toString();
+			searchTask.setQuery(query2);
 			searchTask.setTargets(activeSource.values());
 
-			networkTask = new ImportNetworkFromPSICQUICTask(query, client, networkManager, regManager, searchTask,
+			networkTask = new ImportNetworkFromPSICQUICTask(query2, client, networkManager, regManager, searchTask,
 					SearchMode.MIQL, createViewTaskFactory);
 
 			return new TaskIterator(searchTask, networkTask);

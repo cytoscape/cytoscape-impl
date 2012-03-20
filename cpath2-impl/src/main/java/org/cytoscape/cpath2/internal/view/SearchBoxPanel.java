@@ -205,7 +205,7 @@ public class SearchBoxPanel extends JPanel {
         	};
             ExecutePhysicalEntitySearchTaskFactory search = new ExecutePhysicalEntitySearchTaskFactory
                     (webApi, keyword.trim(), ncbiTaxonomyId, handler);
-            factory.getTaskManager().execute(search);
+            factory.getTaskManager().execute(search.createTaskIterator());
         }
     }
 

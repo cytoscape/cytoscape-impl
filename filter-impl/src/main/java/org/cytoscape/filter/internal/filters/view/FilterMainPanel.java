@@ -101,8 +101,6 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.DropDownMenuButton;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.work.TaskManager;
 
 
@@ -546,7 +544,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		if (curNetwork == null)
 			return;
 
-		taskManager.execute(new FilterIndexingTaskFactory(quickFind, curNetwork));
+		FilterIndexingTaskFactory taskFactory = new FilterIndexingTaskFactory(quickFind, curNetwork);
+		taskManager.execute(taskFactory.createTaskIterator());
 		updateCMBAttributes();
 	}
 	

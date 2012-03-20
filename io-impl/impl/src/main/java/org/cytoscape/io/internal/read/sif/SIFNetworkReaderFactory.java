@@ -27,6 +27,8 @@
  */
 package org.cytoscape.io.internal.read.sif;
 
+import java.io.InputStream;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
@@ -48,7 +50,7 @@ public class SIFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 		this.eventHelper = eventHelper;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new SIFNetworkReader(inputStream, layouts, cyNetworkViewFactory, cyNetworkFactory,
 				eventHelper));
 	}

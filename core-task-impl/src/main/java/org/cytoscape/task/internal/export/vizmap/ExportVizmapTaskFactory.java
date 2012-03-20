@@ -2,10 +2,10 @@ package org.cytoscape.task.internal.export.vizmap;
 
 import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class ExportVizmapTaskFactory implements TaskFactory {
+public class ExportVizmapTaskFactory extends AbstractTaskFactory {
 
 	private final VizmapWriterManager writerManager;
 	private final VisualMappingManager vmMgr;

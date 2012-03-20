@@ -5,36 +5,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.Tunable;
 
 
 public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
-	private final String attribute;
-	private final double spacing;
-	private final boolean supportNodeAttributes;
+	private final AttributeCircleLayoutContext context;
 
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public AttributeCircleLayoutTask(
-		final CyNetworkView networkView, final String name, final boolean selectedOnly,
-		final Set<View<CyNode>> staticNodes, final String attribute, final double spacing,
-		final boolean supportNodeAttributes, final boolean singlePartition)
-	{
-		super(networkView, name, singlePartition, selectedOnly, staticNodes);
-
-		this.attribute = attribute;
-		this.spacing = spacing;
-		this.supportNodeAttributes = supportNodeAttributes;
+	public AttributeCircleLayoutTask(final String name, final AttributeCircleLayoutContext context) {
+		super(name, context, context.singlePartition);
+		this.context = context;
 	}
 
 	/**
@@ -53,10 +39,10 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 
 		int count = nodes.size();
 		int r = (int) Math.sqrt(count);
-		r *= spacing;
+		r *= context.spacing;
 
-		if (this.attribute != null && count > 0) {
-			final CyColumn column = nodes.get(0).getRow().getTable().getColumn(attribute);
+		if (context.attribute != null && count > 0) {
+			final CyColumn column = nodes.get(0).getRow().getTable().getColumn(context.attribute);
 			Class<?> klass = (column == null) ? null : column.getType();
 			if (klass != null && Comparable.class.isAssignableFrom(klass)){
 				// FIXME: I assume this would be better, but get type errors if I try:
@@ -91,8 +77,8 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 		}
 
 		public int compare(LayoutNode o1, LayoutNode o2) {
-			T v1 = o1.getRow().get(attribute, klass);
-			T v2 = o2.getRow().get(attribute, klass);
+			T v1 = o1.getRow().get(context.attribute, klass);
+			T v2 = o2.getRow().get(context.attribute, klass);
 			if (String.class.isAssignableFrom(klass)){ // i.e. if klass _is_ String.class
 				String s1 = String.class.cast(v1);
 				String s2 = String.class.cast(v2);

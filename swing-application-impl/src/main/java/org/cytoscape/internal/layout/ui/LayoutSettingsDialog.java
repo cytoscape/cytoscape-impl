@@ -53,9 +53,15 @@ import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.CyLayoutContext;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.PanelTaskManager;
 
 
@@ -67,7 +73,7 @@ import org.cytoscape.work.swing.PanelTaskManager;
  */
 public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private final static long serialVersionUID = 1202339874277105L;
-	private CyLayoutAlgorithm currentLayout = null;
+	private TaskFactory currentLayout = null;
 
 	// Dialog components
 	private JLabel titleLabel; // Our title
@@ -81,6 +87,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private CyApplicationManager appMgr;
 	private PanelTaskManager taskManager;
 	private CyProperty cytoscapePropertiesServiceRef;
+	private DynamicTaskFactoryProvisioner factoryProvisioner;
 	private boolean initialized;
 
 	/**
@@ -103,6 +110,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.appMgr = appMgr;
 		this.taskManager = taskManager;
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
+		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
 		
 		Properties props = (Properties)this.cytoscapePropertiesServiceRef.getProperties();
 		
@@ -125,8 +133,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		if (command.equals("done"))
 			setVisible(false);
 		else if (command.equals("execute")) {
-			currentLayout.setNetworkView(appMgr.getCurrentNetworkView());
-			taskManager.execute(currentLayout);
+			taskManager.execute(currentLayout.createTaskIterator());
 		} else {
 			// OK, initialize and display
 			if (isVisible()) {
@@ -359,8 +366,13 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			// if it's a string, that means it's the instructions
 			if (!(o instanceof String)) {
 				final CyLayoutAlgorithm newLayout = (CyLayoutAlgorithm)o;
-				newLayout.setNetworkView(appMgr.getCurrentNetworkView());
-				JPanel tunablePanel = taskManager.getConfiguration(newLayout);
+				CyLayoutContext context = newLayout.createLayoutContext();
+				TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(newLayout, context));
+				if (!provisioner.isReady()) {
+					throw new IllegalArgumentException("Layout is not fully configured");
+				}
+				
+				JPanel tunablePanel = taskManager.getConfiguration(provisioner, context);
 
 				if (tunablePanel == null){
 					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not avialable!", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -370,12 +382,28 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					algorithmPanel.removeAll();
 					algorithmPanel.add(tunablePanel);					
 				}
-				currentLayout = newLayout;
+				currentLayout = provisioner;
 				LayoutSettingsDialog.this.pack();
 			}
 		}
 	}
 
+	private <T extends CyLayoutContext> NetworkViewTaskFactory wrapWithContext(final CyLayoutAlgorithm<T> layout, final T tunableContext) {
+		return new NetworkViewTaskFactory() {
+			@Override
+			public boolean isReady(CyNetworkView networkView) {
+				tunableContext.setNetworkView(networkView);
+				return layout.isReady(tunableContext);
+			}
+			
+			@Override
+			public TaskIterator createTaskIterator(CyNetworkView networkView) {
+				tunableContext.setNetworkView(networkView);
+				return layout.createTaskIterator(tunableContext);
+			}
+		};
+	}
+	
 	private class MyItemRenderer extends JLabel implements ListCellRenderer {
 		private final static long serialVersionUID = 1202339874266209L;
 		public MyItemRenderer() {

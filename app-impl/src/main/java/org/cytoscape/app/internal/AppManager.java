@@ -36,41 +36,26 @@
 
 package org.cytoscape.app.internal;
 
-import org.cytoscape.app.internal.action.AppManagerAction;
-import org.cytoscape.app.internal.util.FileUtil;
-import org.cytoscape.app.internal.util.ZipUtil;
-import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.app.AbstractCyApp;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.jar.JarFile;
+
 import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.app.internal.action.AppManagerAction;
+import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList; // import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-
-import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * @author skillcoy
@@ -708,9 +693,7 @@ public class AppManager {
 				AppLoaderTask2 task = new AppLoaderTask2(adapter);
 				task.setFile(new File(FileName));
 				
-				AppLoaderTaskFactory2 factory = new AppLoaderTaskFactory2();
-				factory.setTask(task);
-				this.guiTaskManagerServiceRef.execute(factory);				
+				this.guiTaskManagerServiceRef.execute(new TaskIterator(task));
 			}
 		}
 		// don't need to register if we have the info object

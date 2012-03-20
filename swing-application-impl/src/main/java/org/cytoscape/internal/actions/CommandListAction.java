@@ -37,25 +37,33 @@
 package org.cytoscape.internal.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.internal.actions.dummies.*;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.internal.actions.dummies.DummyNetwork;
+import org.cytoscape.internal.actions.dummies.DummyNetworkView;
+import org.cytoscape.internal.actions.dummies.DummyTable;
+import org.cytoscape.internal.commands.ArgRecorder;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.internal.commands.ArgRecorder;
-
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +78,8 @@ public class CommandListAction extends AbstractCyAction {
 	private final Map<String,String> argStrings;
 	private final CySwingApplication swingApp;
 	private final ArgRecorder argRec;
+	private final StaticTaskFactoryProvisioner factoryProvisioner;
+	private final Map<Object, TaskFactory> provisioners;
 
 	public CommandListAction(CySwingApplication swingApp, ArgRecorder argRec) {
 		super("List All Commands...");
@@ -78,6 +88,8 @@ public class CommandListAction extends AbstractCyAction {
 		this.argRec = argRec;
 		this.commands = new HashMap<TaskFactory,String>();
 		this.argStrings = new HashMap<String,String>();
+	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
+		this.provisioners = new IdentityHashMap<Object, TaskFactory>();
 	}
 
 	public void actionPerformed(ActionEvent ae) {
@@ -97,26 +109,30 @@ public class CommandListAction extends AbstractCyAction {
 		});
 	}
 
-	public void addTaskFactory(TaskFactory tf, Map props) { 
-		addCommand(tf,props); 
+	public void addTaskFactory(TaskFactory tf, Map props) { addCommand(tf,props); }
+	
+	public void addNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
+		TaskFactory provisioner = factoryProvisioner.createFor(tf, new DummyNetwork());
+		provisioners.put(tf, provisioner);
+		addCommand(provisioner,props);
 	}
-	public void addNetworkTaskFactory(NetworkTaskFactory tf, Map props) { 
-		tf.setNetwork( new DummyNetwork() );
-		addCommand(tf,props); 
+	
+	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
+		TaskFactory provisioner = factoryProvisioner.createFor(tf, new DummyNetworkView());
+		provisioners.put(tf, provisioner);
+		addCommand(provisioner,props);
 	}
-	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) { 
-		tf.setNetworkView( new DummyNetworkView() );
-		addCommand(tf,props); 
-	}
-	public void addTableTaskFactory(TableTaskFactory tf, Map props) { 
-		tf.setTable( new DummyTable() );
-		addCommand(tf,props); 
+	
+	public void addTableTaskFactory(TableTaskFactory tf, Map props) {
+		TaskFactory provisioner = factoryProvisioner.createFor(tf, new DummyTable());
+		provisioners.put(tf, provisioner);
+		addCommand(provisioner,props);
 	}
 
-	public void removeTaskFactory(TaskFactory tf, Map props) { removeCommand(tf,props); }
-	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) { removeCommand(tf,props); }
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) { removeCommand(tf,props); }
-	public void removeTableTaskFactory(TableTaskFactory tf, Map props) { removeCommand(tf,props); }
+	public void removeTaskFactory(TaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
+	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
+	public void removeTableTaskFactory(TableTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
 
 	private void addCommand(TaskFactory tf, Map properties) {
 		String invocation = getInvocation(properties);
@@ -164,5 +180,38 @@ public class CommandListAction extends AbstractCyAction {
 			logger.debug("Could not create invocation string for command.",e);
 			return "<unknown args>";
 		}
+	}
+	
+	static class StaticTaskFactoryProvisioner {
+		TaskFactory createFor(final NetworkTaskFactory factory, CyNetwork network) {
+			final Reference<CyNetwork> reference = new WeakReference<CyNetwork>(network);
+			return new AbstractTaskFactory() {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return factory.createTaskIterator(reference.get());
+				}
+			};
+		}
+		
+		TaskFactory createFor(final NetworkViewTaskFactory factory, CyNetworkView networkView) {
+			final Reference<CyNetworkView> reference = new WeakReference<CyNetworkView>(networkView);
+			return new AbstractTaskFactory() {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return factory.createTaskIterator(reference.get());
+				}
+			};
+		}
+		
+		TaskFactory createFor(final TableTaskFactory factory, CyTable table) {
+			final Reference<CyTable> reference = new WeakReference<CyTable>(table);
+			return new AbstractTaskFactory() {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return factory.createTaskIterator(reference.get());
+				}
+			};
+		}
+		
 	}
 }

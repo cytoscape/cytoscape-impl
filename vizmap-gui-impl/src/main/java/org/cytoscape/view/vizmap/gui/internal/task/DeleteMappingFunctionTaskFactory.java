@@ -2,12 +2,12 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
-public class DeleteMappingFunctionTaskFactory implements TaskFactory {
+public class DeleteMappingFunctionTaskFactory extends AbstractTaskFactory {
 
 	private final PropertySheetPanel panel;
 	private final SelectedVisualStyleManager manager;

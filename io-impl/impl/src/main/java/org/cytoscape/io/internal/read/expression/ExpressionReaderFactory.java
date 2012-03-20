@@ -1,6 +1,8 @@
 package org.cytoscape.io.internal.read.expression;
 
 
+import java.io.InputStream;
+
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractTableReaderFactory;
 import org.cytoscape.model.CyTableFactory;
@@ -16,7 +18,7 @@ public class ExpressionReaderFactory extends AbstractTableReaderFactory {
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new ExpressionReader(inputStream, tableFactory, tableManager));
 	}
 }

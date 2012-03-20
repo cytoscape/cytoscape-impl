@@ -9,6 +9,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -82,10 +83,10 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 			pref = prop.getProperties().getProperty("preferredLayoutAlgorithm", pref);
 
 		final CyLayoutAlgorithm layout = layouts.getLayout(pref);
-		layout.setNetworkView(view);
-		
+		CyLayoutContext context = layout.createLayoutContext();
+		context.setNetworkView(view);
 		// Force to run this task here to avoid concurrency problem.
-		TaskIterator itr = layout.createTaskIterator();
+		TaskIterator itr = layout.createTaskIterator(context);
 		Task nextTask = itr.next();
 		try {
 			nextTask.run(parentTaskMonitor);

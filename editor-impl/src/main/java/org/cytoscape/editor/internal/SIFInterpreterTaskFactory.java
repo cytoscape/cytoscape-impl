@@ -7,7 +7,7 @@ import org.cytoscape.work.TaskIterator;
 
 
 public class SIFInterpreterTaskFactory extends AbstractNetworkViewTaskFactory {
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return new TaskIterator(new SIFInterpreterTask(view));
 	}
 }

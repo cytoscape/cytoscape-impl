@@ -1,10 +1,10 @@
 package org.cytoscape.task.internal.quickstart.subnetworkbuilder;
 
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SubnetworkBuilderTaskFactory implements TaskFactory {
+public class SubnetworkBuilderTaskFactory extends AbstractTaskFactory {
 
 	private final CyNetworkManager networkManager;
 	private final SubnetworkBuilderUtil util;

@@ -288,12 +288,7 @@ public class SourceStatusPanel extends JPanel {
 		final ImportNetworkFromPSICQUICTask networkTask = new ImportNetworkFromPSICQUICTask(query, client,
 				networkManager, manager, sourceURLs, mode, createViewTaskFactory);
 
-		taskManager.execute(new TaskFactory() {
-			@Override
-			public TaskIterator createTaskIterator() {
-				return new TaskIterator(networkTask);
-			}
-		});
+		taskManager.execute(new TaskIterator(networkTask));
 		
 		Window parentWindow = ((Window) getRootPane().getParent());
 		parentWindow.pack();

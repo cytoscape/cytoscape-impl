@@ -5,11 +5,11 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class SwitchGraphicsDetailTaskFactory implements TaskFactory {
+public class SwitchGraphicsDetailTaskFactory extends AbstractTaskFactory {
 	private final CyApplicationManager appManager;
 	private final CyProperty<Properties> defaultProps;
 

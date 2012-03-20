@@ -2,11 +2,9 @@ package csapps.layout;
 
 
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
-import org.cytoscape.work.undo.UndoSupport;
-
 import org.jgraph.plugins.layouts.AnnealingLayoutAlgorithm;
 import org.jgraph.plugins.layouts.CircleGraphLayout;
 import org.jgraph.plugins.layouts.GEMLayoutAlgorithm;
@@ -19,7 +17,7 @@ import org.jgraph.plugins.layouts.SugiyamaLayoutAlgorithm;
 import org.jgraph.plugins.layouts.TreeLayoutAlgorithm;
 
 
-public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm implements TunableValidator {
+public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutAlgorithmContext> {
 	public static final int ANNEALING = 0;
 	public static final int MOEN = 1;
 	public static final int CIRCLE_GRAPH = 2;
@@ -36,9 +34,9 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm implements Tuna
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public JGraphLayoutWrapper(UndoSupport un, int layout_type) {
+	public JGraphLayoutWrapper(int layout_type) {
 		// names here will be overridden by provided methods
-		super(un, "jgraph", "jgraph", true);
+		super("jgraph", "jgraph", true);
 		
 		this.layout_type = layout_type;
 
@@ -87,14 +85,8 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm implements Tuna
 		layoutSettings = layout.createSettings();
 	}
 
-	@Override //TODO how to validate the parameter values?
-	public ValidationState getValidationState(final Appendable errMsg) {		
-		return ValidationState.OK;
-	}
-
-	public TaskIterator createTaskIterator() {
-		
-		return new TaskIterator(new JGraphLayoutWrapperTask(networkView, getName(), selectedOnly, staticNodes,
+	public TaskIterator createTaskIterator(AbstractLayoutAlgorithmContext context) {
+		return new TaskIterator(new JGraphLayoutWrapperTask(getName(), context,
 				layout, layoutSettings));
 	}
 
@@ -166,5 +158,10 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm implements Tuna
 		}
 
 		return "";
+	}
+	
+	@Override
+	public AbstractLayoutAlgorithmContext createLayoutContext() {
+		return new AbstractLayoutAlgorithmContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
 	}
 }

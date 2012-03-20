@@ -6,15 +6,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 
 import csapps.layout.Profile;
 
@@ -92,30 +88,18 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 	Profile calculationProfile;
 	Profile distanceProfile;
 
+	private BioLayoutKKContext context;
+
 	/**
 	 * This is the constructor for the bioLayout algorithm.
 	 * @param supportEdgeWeights a boolean to indicate whether we should
 	 *                                                  behave as if we support weights
 	 */
-	public BioLayoutKKAlgorithmTask(
-		final CyNetworkView networkView, final String name, final boolean selectedOnly,
-		final Set<View<CyNode>> staticNodes, final double m_averageIterationsPerNode,
-		final double m_nodeDistanceStrengthConstant,
-		final double m_nodeDistanceRestLengthConstant,
-		final double m_disconnectedNodeDistanceSpringStrength,
-		final double m_disconnectedNodeDistanceSpringRestLength,
-		final double m_anticollisionSpringStrength,
-		final boolean supportWeights, final boolean singlePartition, final int m_layoutPass, final boolean randomize)
-	{
-		super(networkView, name, selectedOnly, staticNodes, singlePartition, randomize);
-		this.m_averageIterationsPerNode = m_averageIterationsPerNode;
-		this.m_nodeDistanceStrengthConstant = m_nodeDistanceStrengthConstant;
-		this.m_nodeDistanceRestLengthConstant = m_nodeDistanceRestLengthConstant;
-		this.m_disconnectedNodeDistanceSpringStrength = m_disconnectedNodeDistanceSpringStrength;
-		this.m_disconnectedNodeDistanceSpringRestLength = m_disconnectedNodeDistanceSpringRestLength;
-		this.m_anticollisionSpringStrength = m_anticollisionSpringStrength;
+	public BioLayoutKKAlgorithmTask(final String name, final BioLayoutKKContext context, final boolean supportWeights) {
+		super(name, context, context.singlePartition);
+		this.context = context;
 		this.supportWeights = supportWeights;
-		this.m_layoutPass = m_layoutPass;
+		this.m_layoutPass = context.m_layoutPass;
 	}
 
 	/**
@@ -335,7 +319,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Randomize our points, if any points lie
 		// outside of our bounds
-		if (randomize)
+		if (context.randomize)
 			partition.randomizeLocations();
 
 		// Calculate our edge weights

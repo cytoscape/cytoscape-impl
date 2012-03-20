@@ -37,12 +37,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.view.layout.LayoutPartition;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 
 
 /**
@@ -68,7 +65,6 @@ public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask
 	 */
 	private final static boolean DEBUG = false;
 	protected static boolean debug = DEBUG; // so we can overload it with a property
-	protected boolean randomize;
 	
 	/**
 	 * Whether or not to use edge weights for layout
@@ -78,17 +74,12 @@ public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask
 	/**
 	 * This is the constructor for the bioLayout algorithm.
 	 */
-	public BioLayoutAlgorithmTask(final CyNetworkView networkView, final String name,
-				  final boolean selectedOnly, final Set<View<CyNode>> staticNodes,
-				  final boolean singlePartition, final boolean randomize)
-	{
-		//super(undoSupport);
-		super(networkView, name, singlePartition, selectedOnly, staticNodes);
+	public BioLayoutAlgorithmTask(final String name, final BioLayoutContext context,
+				  final boolean singlePartition) {
+		super(name, context, singlePartition);
 		
 		if (edgeWeighter == null)
 			edgeWeighter = new EdgeWeighter();
-		
-		this.randomize = randomize;
 	}
 
 	/**
@@ -146,25 +137,6 @@ public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask
 	public void setDebug(String value) {
 		Boolean val = new Boolean(value);
 		debug = val.booleanValue();
-	}
-
-	/**
-	 * Sets the randomize flag
-	 *
-	 * @param flag boolean value that turns initial randomization on or off
-	 */
-	public void setRandomize(boolean flag) {
-		randomize = flag;
-	}
-
-	/**
-	 * Sets the randomize flag
-	 *
-	 * @param flag boolean string that turns initial randomization on or off
-	 */
-	public void setRandomize(String value) {
-		Boolean val = new Boolean(value);
-		randomize = val.booleanValue();
 	}
 
 	/**

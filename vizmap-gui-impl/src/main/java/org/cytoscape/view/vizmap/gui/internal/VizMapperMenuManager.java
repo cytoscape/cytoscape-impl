@@ -157,7 +157,7 @@ public class VizMapperMenuManager {
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(taskFactory);
+				taskManager.execute(taskFactory.createTaskIterator());
 			}
 		});
 
@@ -192,7 +192,7 @@ public class VizMapperMenuManager {
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(taskFactory);
+				taskManager.execute(taskFactory.createTaskIterator());
 			}
 		});
 

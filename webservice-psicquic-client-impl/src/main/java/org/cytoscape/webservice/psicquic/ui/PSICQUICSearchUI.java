@@ -34,7 +34,6 @@ import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
 import org.cytoscape.webservice.psicquic.ui.SelectorBuilder.Species;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
@@ -247,12 +246,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 		searchTask.setQuery(query);
 		searchTask.setTargets(activeSource.values());
 
-		taskManager.execute(new TaskFactory() {
-			@Override
-			public TaskIterator createTaskIterator() {
-				return new TaskIterator(searchTask, new SetTableTask(searchTask));
-			}
-		});
+		taskManager.execute(new TaskIterator(searchTask, new SetTableTask(searchTask)));
 	}
 
 	private final class SetTableTask extends AbstractTask {

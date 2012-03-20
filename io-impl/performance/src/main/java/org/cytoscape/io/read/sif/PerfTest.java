@@ -25,6 +25,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -32,6 +33,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.mockito.Mockito;
 
 
 public class PerfTest {
@@ -55,7 +57,7 @@ public class PerfTest {
 		taskMonitor = mock(TaskMonitor.class);
 
 		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
-		when(def.createTaskIterator()).thenReturn(new TaskIterator(new SimpleTask()));
+		when(def.createTaskIterator(Mockito.any(CyLayoutContext.class))).thenReturn(new TaskIterator(new SimpleTask()));
 
 		layouts = mock(CyLayoutAlgorithmManager.class);
 		when(layouts.getDefaultLayout()).thenReturn(def);

@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.schemas.summary_response.BasicRecordType;
+import org.cytoscape.cpath2.internal.task.ExecuteGetRecordByCPathIdTaskFactory;
 import org.cytoscape.cpath2.internal.view.model.NetworkWrapper;
 import org.cytoscape.cpath2.internal.web_service.CPathProperties;
 import org.cytoscape.cpath2.internal.web_service.CPathResponseFormat;
@@ -168,7 +169,8 @@ public class DownloadDetails extends JDialog {
         }
 
         TaskManager taskManager = factory.getTaskManager();
-        taskManager.execute(factory.createExecuteGetRecordByCPathIdTaskFactory(webApi, ids, format, networkTitle, networkToMerge));
+        ExecuteGetRecordByCPathIdTaskFactory taskFactory = factory.createExecuteGetRecordByCPathIdTaskFactory(webApi, ids, format, networkTitle, networkToMerge);
+        taskManager.execute(taskFactory.createTaskIterator());
     }
 }
 

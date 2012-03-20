@@ -1,7 +1,9 @@
 package org.cytoscape.command.internal;
 
-import org.cytoscape.application.CyApplicationManager;
+import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.command.internal.CommandExecutorImpl;
 import org.cytoscape.command.internal.CommandExecutorTaskFactory;
 import org.cytoscape.command.internal.tunables.*;
@@ -11,18 +13,12 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.util.*;
 
 import org.osgi.framework.BundleContext;
 
-import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
-
 import java.io.File;
 import java.net.URL;
-
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -35,7 +31,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CommandTunableInterceptorImpl interceptor = new CommandTunableInterceptorImpl();
 		
-		CommandExecutorImpl commandExecutorImpl = new CommandExecutorImpl(cyApplicationManagerServiceRef,interceptor);
+		CommandExecutorImpl commandExecutorImpl = new CommandExecutorImpl(cyApplicationManagerServiceRef, interceptor);
 		CommandExecutorTaskFactory commandExecutorTaskFactory = new CommandExecutorTaskFactory(commandExecutorImpl);
 		
 		

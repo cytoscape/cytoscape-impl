@@ -19,9 +19,8 @@ public class ZoomInTaskFactoryTest {
 
 		UndoSupport undoSupport = mock(UndoSupport.class);
 		ZoomInTaskFactory factory = new ZoomInTaskFactory(undoSupport);
-		factory.setNetworkView(view);
 
-		TaskIterator ti = factory.createTaskIterator();
+		TaskIterator ti = factory.createTaskIterator(view);
 		assertNotNull(ti);
 
 		assertTrue( ti.hasNext() );

@@ -32,7 +32,7 @@ public class MacCyActivator extends AbstractCyActivator {
 		application.setAboutHandler(new AboutHandler() {
 			@Override
 			public void handleAbout(AboutEvent event) {
-				taskManager.execute(aboutDialogFactory);
+				taskManager.execute(aboutDialogFactory.createTaskIterator());
 			}
 		});
 	}

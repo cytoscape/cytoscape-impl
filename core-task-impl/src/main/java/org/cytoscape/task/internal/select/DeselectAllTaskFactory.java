@@ -31,6 +31,7 @@ package org.cytoscape.task.internal.select;
 
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
@@ -51,7 +52,7 @@ public class DeselectAllTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(new DeselectAllTask(undoSupport, network, networkViewManager,
 		                                            eventHelper));
 	}

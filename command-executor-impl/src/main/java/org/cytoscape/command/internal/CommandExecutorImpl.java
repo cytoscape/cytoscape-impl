@@ -1,22 +1,21 @@
 package org.cytoscape.command.internal;
 
 
-import java.util.Properties;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
+import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.work.TaskFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 import org.cytoscape.work.TaskMonitor;
 
 public class CommandExecutorImpl {
@@ -31,8 +30,11 @@ public class CommandExecutorImpl {
 	private final CommandTunableInterceptorImpl interceptor; 
 	private final CyApplicationManager appMgr;
 
+	private final DynamicTaskFactoryProvisioner factoryProvisioner;
+	
 	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor) {
 		this.appMgr = appMgr;
+		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
 		this.interceptor = interceptor;
 	}
 
@@ -45,7 +47,7 @@ public class CommandExecutorImpl {
 	}
 
 	public void addNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
-		addTF(new NTFExecutor(tf,interceptor,appMgr), props);
+		addTF(new TFExecutor(factoryProvisioner.createFor(tf), interceptor), props);
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
@@ -53,7 +55,7 @@ public class CommandExecutorImpl {
 	}
 
 	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
-		addTF(new NVTFExecutor(tf,interceptor,appMgr), props);
+		addTF(new TFExecutor(factoryProvisioner.createFor(tf),interceptor), props);
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
@@ -61,7 +63,7 @@ public class CommandExecutorImpl {
 	}
 
 	public void addTableTaskFactory(TableTaskFactory tf, Map props) {
-		addTF(new TTFExecutor(tf,interceptor,appMgr), props);
+		addTF(new TFExecutor(factoryProvisioner.createFor(tf),interceptor), props);
 	}
 
 	public void removeTableTaskFactory(TableTaskFactory tf, Map props) {

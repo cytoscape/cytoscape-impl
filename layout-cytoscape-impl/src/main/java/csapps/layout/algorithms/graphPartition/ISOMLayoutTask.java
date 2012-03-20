@@ -2,7 +2,6 @@ package csapps.layout.algorithms.graphPartition;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -10,9 +9,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.Tunable;
 
 import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntIntHashMap;
@@ -23,16 +19,8 @@ import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 
 public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 
-	public int maxEpoch;
 	private int epoch;
-	public int radiusConstantTime;
-	public int radius;
-	public int minRadius;
 	private double adaption;
-	public double initialAdaptation;
-	public double minAdaptation;
-	public double sizeFactor;
-	public double coolingFactor;
 	private LayoutPartition partition;
 
 	//Queue, First In First Out, use add() and get(0)/remove(0)
@@ -44,25 +32,11 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	double squared_size;
 
 	CyNetwork network;
+	private ISOMLayoutContext context;
 	
-	public ISOMLayoutTask(
-		final CyNetworkView networkView, final String name, final boolean selectedOnly,
-		final Set<View<CyNode>> staticNodes, final int maxEpoch,
-		final int radiusConstantTime, final int radius, final int minRadius,
-		final double initialAdaptation, final double minAdaptation,
-		final double sizeFactor, final double coolingFactor, final boolean singlePartition)
-	{
-		super(networkView, name, singlePartition, selectedOnly, staticNodes);
-	
-		this.maxEpoch = maxEpoch;
-		this.radiusConstantTime = radiusConstantTime;
-		this.radius = radius;
-		this.minRadius = minRadius;
-		this.initialAdaptation = initialAdaptation;
-		this.minAdaptation = minAdaptation;
-		this.sizeFactor = sizeFactor;
-		this.coolingFactor = coolingFactor;
-		
+	public ISOMLayoutTask(final String name, ISOMLayoutContext context) {
+		super(name, context, context.singlePartition);
+		this.context = context;
 		network = networkView.getModel();
 		q = new IntArrayList();
 	}
@@ -73,15 +47,15 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 		int nodeCount = partition.nodeCount();
 		nodeIndexToDataMap = new OpenIntObjectHashMap(PrimeFinder.nextPrime(nodeCount));
 		nodeIndexToLayoutIndex = new OpenIntIntHashMap(PrimeFinder.nextPrime(nodeCount));
-		squared_size = network.getNodeCount() * sizeFactor;
+		squared_size = network.getNodeCount() * context.sizeFactor;
 
 		epoch = 1;
 
-		adaption = initialAdaptation;
+		adaption = context.initialAdaptation;
 
-		System.out.println("Epoch: " + epoch + " maxEpoch: " + maxEpoch);
+		System.out.println("Epoch: " + epoch + " maxEpoch: " + context.maxEpoch);
 
-		while (epoch < maxEpoch) {
+		while (epoch < context.maxEpoch) {
 			partition.resetNodes();
 			adjust();
 			updateParameters();
@@ -150,11 +124,11 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	public void updateParameters() {
 		epoch++;
 
-		double factor = Math.exp(-1 * coolingFactor * ((1.0 * epoch) / maxEpoch));
-		adaption = Math.max(minAdaptation, factor * initialAdaptation);
+		double factor = Math.exp(-1 * context.coolingFactor * ((1.0 * epoch) / context.maxEpoch));
+		adaption = Math.max(context.minAdaptation, factor * context.initialAdaptation);
 
-		if ((radius > minRadius) && ((epoch % radiusConstantTime) == 0)) {
-			radius--;
+		if ((context.radius > context.minRadius) && ((epoch % context.radiusConstantTime) == 0)) {
+			context.radius--;
 		}
 	}
 
@@ -196,7 +170,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 			currentNode.setY(current_y + (factor * dy));
 			partition.moveNodeToLocation(currentNode);
 
-			if (currData.distance < radius) {
+			if (currData.distance < context.radius) {
 				int[] neighbors = neighborsArray(network, currentNode.getNode());
 
 				for (int neighbor_index = 0; neighbor_index < neighbors.length; ++neighbor_index) {

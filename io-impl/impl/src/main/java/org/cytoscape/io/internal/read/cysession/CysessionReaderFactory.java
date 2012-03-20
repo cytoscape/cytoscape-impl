@@ -28,19 +28,21 @@
 package org.cytoscape.io.internal.read.cysession;
 
 
+import java.io.InputStream;
+
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractPropertyReaderFactory;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class CysessionReaderFactory extends AbstractPropertyReaderFactory {
+public class CysessionReaderFactory extends SimpleInputStreamTaskFactory {
 
 
 	public CysessionReaderFactory( CyFileFilter filter ) {
 		super(filter);
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String name) {
 		return new TaskIterator( new CysessionReader(inputStream) );
 	}
 }

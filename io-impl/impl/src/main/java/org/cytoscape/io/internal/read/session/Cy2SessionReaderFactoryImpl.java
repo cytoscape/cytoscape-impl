@@ -33,22 +33,18 @@ import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
-import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskIterator;
 
-public class Cy2SessionReaderFactoryImpl implements InputStreamTaskFactory {
+public class Cy2SessionReaderFactoryImpl extends SimpleInputStreamTaskFactory {
 
-	private final CyFileFilter filter;
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final ReadCache cache;
 	private final CyRootNetworkManager rootNetworkManager;
-
-	private InputStream inputStream;
-	private String inputName;
 
 	public Cy2SessionReaderFactoryImpl(final CyFileFilter filter,
 									   final ReadCache cache,
@@ -56,7 +52,7 @@ public class Cy2SessionReaderFactoryImpl implements InputStreamTaskFactory {
 									   final CyPropertyReaderManager propertyReaderMgr,
 									   final VizmapReaderManager vizmapReaderMgr,
 									   final CyRootNetworkManager rootNetworkManager) {
-		this.filter = filter;
+		super(filter);
 		this.cache = cache;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
@@ -65,19 +61,7 @@ public class Cy2SessionReaderFactoryImpl implements InputStreamTaskFactory {
 	}
 
 	@Override
-	public void setInputStream(InputStream is, String in) {
-		if (is == null) throw new NullPointerException("Input stream is null");
-		inputStream = is;
-		inputName = in;
-	}
-
-	@Override
-	public CyFileFilter getFileFilter() {
-		return filter;
-	}
-
-	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new Cy2SessionReaderImpl(inputStream, cache, networkReaderMgr, propertyReaderMgr,
 				vizmapReaderMgr, rootNetworkManager));
 	}

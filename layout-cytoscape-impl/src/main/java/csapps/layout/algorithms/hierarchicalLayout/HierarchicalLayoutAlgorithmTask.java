@@ -6,14 +6,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
@@ -22,36 +20,17 @@ import org.cytoscape.work.TaskMonitor;
 
 public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
-	private int nodeHorizontalSpacing;
-	private int nodeVerticalSpacing;
-	private int componentSpacing;
-	private int bandGap;
-	private int leftEdge;
-	private int topEdge;
-	private int rightMargin;
-	private boolean selected_only;
 	private HashMap<Integer, HierarchyFlowLayoutOrderNode> nodes2HFLON = new HashMap<Integer, HierarchyFlowLayoutOrderNode>();
 	private TaskMonitor taskMonitor;
 	CyNetwork network;
+	private HierarchicalLayoutContext context;
+	
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public HierarchicalLayoutAlgorithmTask(final CyNetworkView networkView, final String name,
-				  final boolean selectedOnly, final Set<View<CyNode>> staticNodes,
-				  final int nodeHorizontalSpacing, final int nodeVerticalSpacing, final int componentSpacing,
-				  final int bandGap,final int leftEdge, final int topEdge, final int rightMargin, 
-				  final boolean selected_only)
-	{
-		super(networkView, name, selectedOnly, staticNodes);
-
-		this.nodeHorizontalSpacing = nodeHorizontalSpacing;
-		this.nodeVerticalSpacing = nodeVerticalSpacing;
-		this.componentSpacing = componentSpacing;
-		this.bandGap = bandGap;
-		this.leftEdge= leftEdge;
-		this.topEdge= topEdge;
-		this.rightMargin= rightMargin;
-		this.selected_only = selected_only;
+	public HierarchicalLayoutAlgorithmTask(final String name, HierarchicalLayoutContext context) {
+		super(name, context);
+		this.context = context;
 	}
 
 
@@ -402,13 +381,13 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 		int lastComponent = -1;
 		int lastLayer = -1;
-		int startBandY = topEdge;
-		int cleanBandY = topEdge;
-		int startComponentX = leftEdge;
-		int cleanComponentX = leftEdge;
-		int startLayerY = topEdge;
-		int cleanLayerY = topEdge;
-		int cleanLayerX = leftEdge;
+		int startBandY = context.topEdge;
+		int cleanBandY = context.topEdge;
+		int startComponentX = context.leftEdge;
+		int cleanComponentX = context.leftEdge;
+		int startLayerY = context.topEdge;
+		int cleanLayerY = context.topEdge;
+		int cleanLayerX = context.leftEdge;
 		int[] layerStart = new int[numLayoutNodes + 1];
 
 		/* layout nodes which are selected */
@@ -457,17 +436,17 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				layerStart[lastLayer] = startComponentX;
 
 				/* initialize for new component */
-				startComponentX = cleanComponentX + componentSpacing;
+				startComponentX = cleanComponentX + context.componentSpacing;
 
 				if (maxX > startComponentX)
-					startComponentX = maxX + componentSpacing;
+					startComponentX = maxX + context.componentSpacing;
 
-				if (startComponentX > rightMargin) {
+				if (startComponentX > context.rightMargin) {
 					/* new band */
-					startBandY = cleanBandY + bandGap;
+					startBandY = cleanBandY + context.bandGap;
 					cleanBandY = startBandY;
-					startComponentX = leftEdge;
-					cleanComponentX = leftEdge;
+					startComponentX = context.leftEdge;
+					cleanComponentX = context.leftEdge;
 				}
 
 				startLayerY = startBandY;
@@ -478,7 +457,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				/* new layer */
 				layerStart[lastLayer] = startComponentX;
 
-				startLayerY = cleanLayerY + nodeVerticalSpacing;
+				startLayerY = cleanLayerY + context.nodeVerticalSpacing;
 				cleanLayerY = startLayerY;
 				cleanLayerX = startComponentX;
 				layerStart[currentLayer] = -1;
@@ -486,7 +465,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 			node.setXPos(cleanLayerX);
 			node.setYPos(startLayerY);
-			cleanLayerX += nodeHorizontalSpacing;
+			cleanLayerX += context.nodeHorizontalSpacing;
 
 			int currentBottom;
 			int currentRight;
@@ -662,7 +641,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 				while (iterToHlp.hasNext()) {
 					Integer neigh = (Integer) iterToHlp.next();
-					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) nodeHorizontalSpacing));
+					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) context.nodeHorizontalSpacing));
 
 					// mozda ako je ivica izmedju 2 dummy cvora da duplira daljinu // FIXME: translate to english
 				}
@@ -678,7 +657,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 				while (iterToHlp.hasNext()) {
 					Integer neigh = (Integer) iterToHlp.next();
-					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) nodeHorizontalSpacing));
+					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) context.nodeHorizontalSpacing));
 				}
 
 				xHlp--;
@@ -692,7 +671,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 				while (iterFromHlp.hasNext()) {
 					Integer neigh = (Integer) iterFromHlp.next();
-					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) nodeHorizontalSpacing));
+					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) context.nodeHorizontalSpacing));
 				}
 
 				xHlp++;
@@ -706,7 +685,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 				while (iterFromHlp.hasNext()) {
 					Integer neigh = (Integer) iterFromHlp.next();
-					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) nodeHorizontalSpacing));
+					layerMin += (Math.abs(nodesBak2HFLON.get(neigh).xPos - curPos) / ((double) context.nodeHorizontalSpacing));
 				}
 
 				xHlp--;
@@ -820,13 +799,13 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				else
 					idealPosX = ((idealPosXUp / neighsCountUp) + (idealPosXDown / neighsCountDown)) / 2;
 
-				if ((idealPosX % nodeHorizontalSpacing) != 0)
-					if ((idealPosX - nodes[x].xPos) < nodeHorizontalSpacing)
-						idealPosX = ((int) (idealPosX / nodeHorizontalSpacing)) * nodeHorizontalSpacing;
-					else if ((nodes[x].xPos - idealPosX) < nodeHorizontalSpacing)
-						idealPosX = ((int) (idealPosX / nodeHorizontalSpacing) + 1) * nodeHorizontalSpacing;
+				if ((idealPosX % context.nodeHorizontalSpacing) != 0)
+					if ((idealPosX - nodes[x].xPos) < context.nodeHorizontalSpacing)
+						idealPosX = ((int) (idealPosX / context.nodeHorizontalSpacing)) * context.nodeHorizontalSpacing;
+					else if ((nodes[x].xPos - idealPosX) < context.nodeHorizontalSpacing)
+						idealPosX = ((int) (idealPosX / context.nodeHorizontalSpacing) + 1) * context.nodeHorizontalSpacing;
 					else
-						idealPosX = ((int) ((idealPosX / nodeHorizontalSpacing) + 0.5)) * nodeHorizontalSpacing;
+						idealPosX = ((int) ((idealPosX / context.nodeHorizontalSpacing) + 0.5)) * context.nodeHorizontalSpacing;
 
 				int oldXPos = nodes[x].xPos;
 				nodes[x].xPos = idealPosX;
@@ -842,8 +821,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 					for (int i = x + 1; (i <= endInd) && !q; i++) {
 						//	System.out.print(nodesBak[i].xPos + " " + nodesBak[i+1].xPos + " " + x + " " + i + " ");
 						if ((nodesBak[i].layer == nodesBak[x].layer)
-						    && (nodesBak[i].xPos < (nodesBak[i - 1].xPos + nodeHorizontalSpacing))) {
-							nodesBak[i].xPos = nodesBak[i - 1].xPos + nodeHorizontalSpacing;
+						    && (nodesBak[i].xPos < (nodesBak[i - 1].xPos + context.nodeHorizontalSpacing))) {
+							nodesBak[i].xPos = nodesBak[i - 1].xPos + context.nodeHorizontalSpacing;
 
 							/*if (((LayerOrderNode)ind2Lon.get(Integer.valueOf(x))).GetPriority() < ((LayerOrderNode)ind2Lon.get(Integer.valueOf(i))).GetPriority())
 							    q = true;*/
@@ -860,14 +839,14 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 						for (int i = x + 1; i <= endInd; i++)
 							if ((nodes[i].layer == nodes[x].layer)
-							    && (nodes[i].xPos < (nodes[i - 1].xPos + nodeHorizontalSpacing))) {
-								nodes[i].xPos = nodes[i - 1].xPos + nodeHorizontalSpacing;
+							    && (nodes[i].xPos < (nodes[i - 1].xPos + context.nodeHorizontalSpacing))) {
+								nodes[i].xPos = nodes[i - 1].xPos + context.nodeHorizontalSpacing;
 							} else {
 								break;
 							}
 					} else {
 						if (nodes[x + 1].layer == nodes[x].layer)
-							nodes[x].xPos = nodes[x + 1].xPos - nodeHorizontalSpacing;
+							nodes[x].xPos = nodes[x + 1].xPos - context.nodeHorizontalSpacing;
 						else
 							nodes[x].xPos = oldXPos;
 					}
@@ -878,8 +857,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 					for (int i = x - 1; (i >= 0) && !q; i--) {
 						//System.out.print(nodesBak[i].xPos + " " + nodesBak[i+1].xPos + " " + x + " " + i + " ");
 						if ((nodesBak[i].layer == nodesBak[x].layer)
-						    && (nodesBak[i].xPos > (nodesBak[i + 1].xPos - nodeHorizontalSpacing))) {
-							nodesBak[i].xPos = nodesBak[i + 1].xPos - nodeHorizontalSpacing;
+						    && (nodesBak[i].xPos > (nodesBak[i + 1].xPos - context.nodeHorizontalSpacing))) {
+							nodesBak[i].xPos = nodesBak[i + 1].xPos - context.nodeHorizontalSpacing;
 
 							/*if (((LayerOrderNode)ind2Lon.get(Integer.valueOf(x))).GetPriority() < ((LayerOrderNode)ind2Lon.get(Integer.valueOf(i))).GetPriority())
 							{
@@ -898,14 +877,14 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 						for (int i = x - 1; i >= 0; i--)
 							if ((nodes[i].layer == nodes[x].layer)
-							    && (nodes[i].xPos > (nodes[i + 1].xPos - nodeHorizontalSpacing))) {
-								nodes[i].xPos = nodes[i + 1].xPos - nodeHorizontalSpacing;
+							    && (nodes[i].xPos > (nodes[i + 1].xPos - context.nodeHorizontalSpacing))) {
+								nodes[i].xPos = nodes[i + 1].xPos - context.nodeHorizontalSpacing;
 							} else {
 								break;
 							}
 					} else {
 						if (nodes[x - 1].layer == nodes[x].layer)
-							nodes[x].xPos = nodes[x - 1].xPos + nodeHorizontalSpacing;
+							nodes[x].xPos = nodes[x - 1].xPos + context.nodeHorizontalSpacing;
 						else
 							nodes[x].xPos = oldXPos;
 					}

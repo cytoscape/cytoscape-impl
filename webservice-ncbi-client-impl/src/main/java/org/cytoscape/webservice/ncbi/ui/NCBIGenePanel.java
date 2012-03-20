@@ -112,8 +112,8 @@ public class NCBIGenePanel extends AttributeImportPanel {
 	@Override
 	protected void importAttributes() {
 		logger.debug("Import start.");
-		client.setQuery(new NCBIQuery(getCategory(), createIDSet()));
-		taskManager.execute(client);
+		NCBIQuery query = new NCBIQuery(getCategory(), createIDSet());
+		taskManager.execute(client.createTaskIterator(query));
 	}
 	
 	private Set<AnnotationCategory> getCategory() {

@@ -7,10 +7,8 @@ import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
 
-public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory, TaskFactory {
+public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory {
 
 	private final CyFileFilter filter;
 	private CyNetwork network;
@@ -27,11 +25,6 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory, Ta
 		return new ExportAsBioPAXTask(fileName, outputStream, network);
 	}
 
-	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(getWriterTask());
-	}
-	
 	@Override
 	public void setOutputStream(OutputStream outputStream) {
 		this.outputStream = outputStream;

@@ -44,6 +44,7 @@ import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +109,7 @@ public class ExportAsBioPAXAction extends AbstractCyAction {
 				FileOutputStream stream = new FileOutputStream(fileName);
 				taskFactory.setOutputStream(stream);
 				try {
-					taskManager.execute(taskFactory);
+					taskManager.execute(new TaskIterator(taskFactory.getWriterTask()));
 				} finally {
 					stream.close();
 				}

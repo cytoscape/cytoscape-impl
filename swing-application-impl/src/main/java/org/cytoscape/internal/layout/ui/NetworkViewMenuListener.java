@@ -36,29 +36,21 @@
 */
 package org.cytoscape.internal.layout.ui;
 
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.work.swing.DynamicSubmenuListener;
-import org.cytoscape.application.swing.StringEnableSupport;
-
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.StringEnableSupport;
+import org.cytoscape.work.swing.DynamicSubmenuListener;
 
 
 public class NetworkViewMenuListener implements MenuListener {
 
-	private final CyApplicationManager appMgr;
 	private final MenuListener actualMenuListener;
-	private final NetworkViewTaskFactory networkViewTF;
 	private final StringEnableSupport menuEnableSupport; 
 
-	public NetworkViewMenuListener(DynamicSubmenuListener actualMenuListener, CyApplicationManager appMgr, NetworkViewTaskFactory networkViewTF, String enableFor) {
+	public NetworkViewMenuListener(DynamicSubmenuListener actualMenuListener, CyApplicationManager appMgr, String enableFor) {
 		this.actualMenuListener = actualMenuListener;
-		this.appMgr = appMgr;
-		this.networkViewTF = networkViewTF;
 		this.menuEnableSupport = new StringEnableSupport(actualMenuListener, enableFor, appMgr);
 	}
 
@@ -67,7 +59,6 @@ public class NetworkViewMenuListener implements MenuListener {
 		if ( !menuEnableSupport.isCurrentlyEnabled() )
 			return;
 
-		networkViewTF.setNetworkView(appMgr.getCurrentNetworkView());
 		actualMenuListener.menuSelected(m);
 	}
 

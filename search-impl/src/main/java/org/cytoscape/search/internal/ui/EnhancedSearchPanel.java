@@ -73,9 +73,9 @@ public class EnhancedSearchPanel extends JPanel {
 		if (currentNetwork != null) {
 			logger.debug("Target Network ID = " + currentNetwork.getSUID());
 
-			final SearchTaskFactory factory = new SearchTaskFactory(currentNetwork, searchMgr,
+			final SearchTaskFactory factory = new SearchTaskFactory(searchMgr,
 					queryStr, viewManager, appManager);
-			this.taskMgr.execute(factory);
+			this.taskMgr.execute(factory.createTaskIterator(currentNetwork));
 		} else
 			logger.error("Could not find network for search");
 	}

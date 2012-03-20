@@ -3,7 +3,7 @@ package org.cytoscape.task.internal.setcurrent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -13,7 +13,7 @@ import org.cytoscape.work.TaskIterator;
  * factory shouldn't be registered by the swing GUI as it doesn't
  * make sense in that context.
  */
-public class SetCurrentNetworkTaskFactoryImpl implements TaskFactory {
+public class SetCurrentNetworkTaskFactoryImpl extends AbstractTaskFactory {
 	private final CyApplicationManager applicationManager;
 	private final CyNetworkManager netmgr;
 

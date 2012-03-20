@@ -358,8 +358,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 		}
 
 		// Set query. Just pass the text in the panel.
-		client.setQuery(this.queryTextPane.getText());
-		taskManager.execute(client);
+		taskManager.execute(client.createTaskIterator(this.queryTextPane.getText()));
 
 	}
 

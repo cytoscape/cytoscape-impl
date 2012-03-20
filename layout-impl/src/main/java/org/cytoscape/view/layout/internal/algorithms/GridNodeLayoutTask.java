@@ -53,14 +53,12 @@ public class GridNodeLayoutTask extends AbstractBasicLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public GridNodeLayoutTask(final CyNetworkView networkView, final String name,
-				  final boolean selectedOnly, final Set<View<CyNode>> staticNodes,
-				  final double nodeVerticalSpacing, final double nodeHorizontalSpacing)
+	public GridNodeLayoutTask(final String name, final GridNodeLayoutContext context)
 	{
-		super(networkView, name, selectedOnly, staticNodes);
+		super(name, context);
 
-		this.nodeVerticalSpacing = nodeVerticalSpacing;
-		this.nodeHorizontalSpacing = nodeHorizontalSpacing;
+		this.nodeVerticalSpacing = context.nodeVerticalSpacing;
+		this.nodeHorizontalSpacing = context.nodeHorizontalSpacing;
 	}
 
 	/**

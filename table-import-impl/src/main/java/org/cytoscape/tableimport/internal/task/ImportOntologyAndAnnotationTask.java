@@ -3,10 +3,8 @@ package org.cytoscape.tableimport.internal.task;
 
 import java.io.InputStream;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
@@ -28,6 +26,7 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 	private final InputStream gaStream;
 	private final String gaTableName;
 	private final CyTableManager tableManager;
+	private final InputStream is;
 	
 	ImportOntologyAndAnnotationTask(final CyNetworkManager manager,
 	                                final InputStreamTaskFactory factory, final InputStream is,
@@ -45,13 +44,13 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 		this.gaTableName = tableName;
 		this.tableManager = tableManager;
 		
-		this.factory.setInputStream(is, ontologyDagName);
+		this.is = is;
 	}
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		logger.debug("Start");
-		Task loadOBOTask = factory.createTaskIterator().next();
+		Task loadOBOTask = factory.createTaskIterator(null, is, ontologyDagName).next();
 		
 		final GeneAssociationReader gaReader =
 			new GeneAssociationReader(tableFactory, ontologyDagName, gaStream,

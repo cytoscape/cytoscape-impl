@@ -22,9 +22,8 @@ public class HideSelectedNodesTaskFactoryTest {
 			new HideSelectedNodesTaskFactory(undoSupport, eventHelper);
 
 		CyNetworkView view = mock(CyNetworkView.class);
-		factory.setNetworkView(view);
 		
-		TaskIterator ti = factory.createTaskIterator();
+		TaskIterator ti = factory.createTaskIterator(view);
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );

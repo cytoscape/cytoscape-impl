@@ -28,19 +28,21 @@
 package org.cytoscape.io.internal.read.properties;
 
 
+import java.io.InputStream;
+
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractPropertyReaderFactory;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class PropertiesReaderFactory extends AbstractPropertyReaderFactory {
+public class PropertiesReaderFactory extends SimpleInputStreamTaskFactory {
 
 
 	public PropertiesReaderFactory( CyFileFilter filter ) {
 		super(filter);
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator( new PropertiesReader(inputStream) );
 	}
 }

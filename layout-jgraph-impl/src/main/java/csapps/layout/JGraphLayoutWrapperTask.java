@@ -13,7 +13,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
@@ -37,22 +37,17 @@ public class JGraphLayoutWrapperTask extends AbstractBasicLayoutTask{
 	private JGraphLayoutSettings layoutSettings = null;
 	private boolean canceled = false;
 
-	private CyNetworkView networkView;
 	private TaskMonitor taskMonitor;
-	private CyNetwork network;
 	
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public JGraphLayoutWrapperTask(final CyNetworkView networkView, final String name,
-				  final boolean selectedOnly, final Set<View<CyNode>> staticNodes,
-				  JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings)
+	public JGraphLayoutWrapperTask(final String name, AbstractLayoutAlgorithmContext context, JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings)
 	{
-		super(networkView, name, selectedOnly, staticNodes);
+		super(name, context);
 
 		this.layoutSettings = layoutSettings;
 		this.layout = layout;
-		this.networkView = networkView;
 	}
 
 	/**
@@ -61,7 +56,6 @@ public class JGraphLayoutWrapperTask extends AbstractBasicLayoutTask{
 	@Override
 	final protected void doLayout(final TaskMonitor taskMonitor) {
 		this.taskMonitor = taskMonitor;
-		this.network = networkView.getModel();
 		construct();
 	}
 	

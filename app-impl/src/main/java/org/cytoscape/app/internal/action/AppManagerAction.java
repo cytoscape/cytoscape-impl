@@ -48,29 +48,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cytoscape.app.internal.DownloadableInfo;
-import org.cytoscape.app.internal.ManagerException;
-import org.cytoscape.app.internal.ManagerUtil;
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.AppInquireAction;
 import org.cytoscape.app.internal.AppManager;
 import org.cytoscape.app.internal.AppManagerInquireTask;
 import org.cytoscape.app.internal.AppManagerInquireTaskFactory;
 import org.cytoscape.app.internal.AppStatus;
+import org.cytoscape.app.internal.DownloadableInfo;
+import org.cytoscape.app.internal.ManagerException;
+import org.cytoscape.app.internal.ManagerUtil;
 import org.cytoscape.app.internal.ui.AppManageDialog;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  *
@@ -167,8 +167,7 @@ public class AppManagerAction extends AbstractCyAction implements SessionLoadedL
 		Task task = new AppManagerInquireTask(this.DefaultAppUrl, new ManagerAction(dlg, DefaultTitle, this.DefaultAppUrl));
 
 		AppManagerInquireTaskFactory _taskFactory = new AppManagerInquireTaskFactory(task);
-
-		this.dialogTaskManager.execute(_taskFactory);
+		this.dialogTaskManager.execute(_taskFactory.createTaskIterator());
 	}
 	
 	@Override

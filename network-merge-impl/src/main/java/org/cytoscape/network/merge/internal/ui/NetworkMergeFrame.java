@@ -36,83 +36,67 @@
 
 package org.cytoscape.network.merge.internal.ui;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.session.CyNetworkNaming;
-
-import org.cytoscape.network.merge.internal.NetworkMerge;
-import org.cytoscape.network.merge.internal.AttributeBasedNetworkMerge;
-import org.cytoscape.network.merge.internal.model.AttributeMappingImpl;
-import org.cytoscape.network.merge.internal.model.MatchingAttributeImpl;
-import org.cytoscape.network.merge.internal.model.AttributeMapping;
-import org.cytoscape.network.merge.internal.model.MatchingAttribute;
-import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
-import org.cytoscape.network.merge.internal.conflict.AttributeConflictHandler;
-//import org.cytoscape.network.merge.internal.conflict.IDMappingAttributeConflictHandler;
-import org.cytoscape.network.merge.internal.conflict.DefaultAttributeConflictHandler;
-import org.cytoscape.network.merge.internal.conflict.AttributeConflictManager;
-import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
-import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollectorImpl;
-import org.cytoscape.network.merge.internal.task.*;
-import org.cytoscape.network.merge.internal.util.AttributeValueMatcher;
-import org.cytoscape.network.merge.internal.util.DefaultAttributeValueMatcher;
-import org.cytoscape.network.merge.internal.util.AttributeMerger;
-import org.cytoscape.network.merge.internal.util.DefaultAttributeMerger;
-
-import java.util.List;
-import java.util.Vector;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.HashMap;
-
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.Insets;
-import java.awt.GridLayout;
-import java.awt.FlowLayout;
-import java.awt.Color;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.Vector;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
-import javax.swing.ListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JButton;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.AbstractListModel;
-import javax.swing.JComboBox;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.BoxLayout;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.WindowConstants;
-import javax.swing.JRadioButton;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
+import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
+import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollectorImpl;
+import org.cytoscape.network.merge.internal.model.AttributeMapping;
+import org.cytoscape.network.merge.internal.model.AttributeMappingImpl;
+import org.cytoscape.network.merge.internal.model.MatchingAttribute;
+import org.cytoscape.network.merge.internal.model.MatchingAttributeImpl;
+import org.cytoscape.network.merge.internal.task.HandleConflictsTaskFactory;
+import org.cytoscape.network.merge.internal.task.NetworkMergeTaskFactory;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.work.TaskManager;
 
 /**
  *
@@ -829,7 +813,7 @@ public class NetworkMergeFrame extends JFrame {
                                  this.inNetworkMergeCheckBox.isSelected());
                         
                         // Execute Task in New Thread; pop open JTask Dialog Box.
-                        taskManager.execute(nmTask);
+                        taskManager.execute(nmTask.createTaskIterator());
                         //TODO: HOW TO KNOW IF IT IS CANCELED?
                         //if (nmTask.isCancelled()) return; 
                        
@@ -838,7 +822,7 @@ public class NetworkMergeFrame extends JFrame {
                         // conflict handling task
                         if (!conflictCollector.isEmpty()) {
                                 HandleConflictsTaskFactory hcTask = new HandleConflictsTaskFactory(conflictCollector);
-                                taskManager.execute(hcTask);
+                                taskManager.execute(hcTask.createTaskIterator());
                         }
 
 //                }

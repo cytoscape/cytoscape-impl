@@ -29,22 +29,22 @@
  */
 package org.cytoscape.group.view.internal;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.data.CyGroupSettings.DoubleClickAction;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 /**
  * Handle selection
@@ -63,19 +63,19 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 		this.cyGroupSettings = groupSettings;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
 		DoubleClickAction action = cyGroupSettings.getDoubleClickAction();
 
 		if (action == DoubleClickAction.ExpandContract) {
 			// Collapse/expand: if we double-click on a collapsed node, expand it.  
 			// if we double-click on a node that is a member of a group, collapse
 			// that group.
-			return new TaskIterator(new CollapseGroupTask());
+			return new TaskIterator(new CollapseGroupTask(nodeView, networkView));
 		} else if (action == DoubleClickAction.Select) {
 			// Select/deselect: if we double-click on a node that is a member of a group
 			// and any member of the group is not selected, select all members of that group.  
 			// If all members of the group are selected, deselect that group
-			return new TaskIterator(new SelectGroupTask());
+			return new TaskIterator(new SelectGroupTask(nodeView, networkView));
 		} else {
 			return new TaskIterator(new NullTask());
 		}
@@ -87,8 +87,10 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 		}
 	}
 	
-	class SelectGroupTask extends AbstractTask {
-		public SelectGroupTask() {}
+	class SelectGroupTask extends AbstractNodeViewTask {
+		public SelectGroupTask(View<CyNode> nodeView, CyNetworkView networkView) {
+			super(nodeView, networkView);
+		}
 		
 		public void run(TaskMonitor tm) throws Exception {
 			CyNode node = nodeView.getModel();
@@ -125,9 +127,10 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 		}
 	}
 	
-	class CollapseGroupTask extends AbstractTask {
+	class CollapseGroupTask extends AbstractNodeViewTask {
 
-		public CollapseGroupTask() {
+		public CollapseGroupTask(View<CyNode> nodeView, CyNetworkView networkView) {
+			super(nodeView, networkView);
 		}
 		
 		public void run(TaskMonitor tm) throws Exception {

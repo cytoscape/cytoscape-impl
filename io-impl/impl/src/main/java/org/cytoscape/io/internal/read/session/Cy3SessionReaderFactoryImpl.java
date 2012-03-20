@@ -34,15 +34,14 @@ import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
-import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskIterator;
 
-public class Cy3SessionReaderFactoryImpl implements InputStreamTaskFactory {
+public class Cy3SessionReaderFactoryImpl extends SimpleInputStreamTaskFactory {
 
-	private final CyFileFilter filter;
 	private final ReadCache cache;
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
@@ -50,9 +49,6 @@ public class Cy3SessionReaderFactoryImpl implements InputStreamTaskFactory {
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyNetworkTableManager networkTableMgr;
 	private final CyRootNetworkManager rootNetworkMgr;
-
-	private InputStream inputStream;
-	private String inputName;
 
 	public Cy3SessionReaderFactoryImpl(final CyFileFilter filter,
 									   final ReadCache cache,
@@ -62,7 +58,7 @@ public class Cy3SessionReaderFactoryImpl implements InputStreamTaskFactory {
 									   final CSVCyReaderFactory csvCyReaderFactory,
 									   final CyNetworkTableManager networkTableMgr,
 									   final CyRootNetworkManager rootNetworkMgr) {
-		this.filter = filter;
+		super(filter);
 		this.cache = cache;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
@@ -73,19 +69,7 @@ public class Cy3SessionReaderFactoryImpl implements InputStreamTaskFactory {
 	}
 
 	@Override
-	public void setInputStream(InputStream is, String in) {
-		if (is == null) throw new NullPointerException("Input stream is null");
-		inputStream = is;
-		inputName = in;
-	}
-
-	@Override
-	public CyFileFilter getFileFilter() {
-		return filter;
-	}
-
-	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, cache, networkReaderMgr, propertyReaderMgr,
 				vizmapReaderMgr, csvCyReaderFactory, networkTableMgr, rootNetworkMgr));
 	}

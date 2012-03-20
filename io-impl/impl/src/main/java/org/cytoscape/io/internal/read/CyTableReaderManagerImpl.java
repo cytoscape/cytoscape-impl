@@ -6,7 +6,7 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 
-public class CyTableReaderManagerImpl extends GenericReaderManager<InputStreamTaskFactory, CyTableReader> implements
+public class CyTableReaderManagerImpl extends GenericReaderManager<InputStreamTaskFactory<?>, CyTableReader> implements
 		CyTableReaderManager {
 
 	public CyTableReaderManagerImpl(final StreamUtil streamUtil) {

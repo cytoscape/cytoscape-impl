@@ -28,27 +28,22 @@
 package org.cytoscape.task.internal.table;
 
 
-import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.task.AbstractTableTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 
-public final class DeleteTableTaskFactory implements TableTaskFactory {
+public final class DeleteTableTaskFactory extends AbstractTableTaskFactory {
 	
-	protected CyTable table = null;
 	protected CyTableManager tableManager;
 	
 	public DeleteTableTaskFactory(CyTableManager tableManager){
 		this.tableManager = tableManager;
 	}
 
-	public void setTable(CyTable table){
-		this.table = table;
-	}
-	
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyTable table) {
 		if (table == null)
 			throw new IllegalStateException("you forgot to set the CyTable on this task factory!");
 		return new TaskIterator(new DeleteTableTask(tableManager, table));

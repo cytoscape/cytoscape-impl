@@ -1,20 +1,20 @@
 package org.cytoscape.task.internal.loadvizmap;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.task.creation.LoadVisualStyles;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.task.creation.LoadVisualStyles;
-
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.io.File;
+import org.cytoscape.work.TaskIterator;
 
 
-public class LoadVizmapFileTaskFactoryImpl implements TaskFactory, LoadVisualStyles {
+public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implements LoadVisualStyles {
 
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmMgr;
@@ -41,7 +41,7 @@ public class LoadVizmapFileTaskFactoryImpl implements TaskFactory, LoadVisualSty
 		m.put("file",f);
 
 		syncTaskManager.setExecutionContext(m);
-		syncTaskManager.execute(this);
+		syncTaskManager.execute(createTaskIterator());
 
 		return task.getStyles();
 	}

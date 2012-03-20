@@ -5,15 +5,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.layout.AbstractBasicLayoutTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -23,35 +20,17 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 	
 	private static Logger logger = LoggerFactory.getLogger(GroupAttributesLayoutTask.class);
 
-	private double spacingx;
-	private double spacingy;
-	private double maxwidth;
-	private double minrad;
-	private double radmult;
-	
-	final private String attributeName;
-	private String attributeNamespace;
-	
 	private TaskMonitor taskMonitor;	
 	private CyNetwork network;
+
+	private GroupAttributesLayoutContext context;
 	
-	public GroupAttributesLayoutTask(final CyNetworkView networkView, final String name, final boolean selectedOnly,
-			final Set<View<CyNode>> staticNodes, final double spacingx, final double spacingy, final double maxwidth,
-			final double minrad, final double radmult, final String attributeName, final String attributeNamespace) {
+	public GroupAttributesLayoutTask(final String name, GroupAttributesLayoutContext context) {
+		super(name, context);
 		
-		super(networkView, name, selectedOnly, staticNodes);
-		
-		if (attributeName == null)
+		this.context = context;
+		if (context.attributeName == null)
 			throw new NullPointerException("Attribute is null.  This is required for this layout.");
-
-		this.spacingx = spacingx;
-		this.spacingy = spacingy;
-		this.maxwidth = maxwidth;
-		this.minrad = minrad;
-		this.radmult = radmult;
-
-		this.attributeName = attributeName;
-		this.attributeNamespace = attributeNamespace;
 	}
 
 
@@ -86,7 +65,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 	*/
 	private void construct() {
 		
-		if (this.attributeName == null){
+		if (context.attributeName == null){
 			logger.warn("Attribute name is not defined.");
 			return;
 		}
@@ -94,7 +73,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 		taskMonitor.setStatusMessage("Initializing");
 
 		CyTable dataTable = network.getDefaultNodeTable();
-		Class<?> klass = dataTable.getColumn(attributeName).getType();
+		Class<?> klass = dataTable.getColumn(context.attributeName).getType();
 		
 		if (Comparable.class.isAssignableFrom(klass)){
 			Class<Comparable>kasted = (Class<Comparable>) klass;
@@ -129,12 +108,12 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 
 			offsetx += diameter;
 
-			if (offsetx > maxwidth) {
-				offsety += (maxheight + spacingy);
+			if (offsetx > context.maxwidth) {
+				offsety += (maxheight + context.spacingy);
 				offsetx = 0.0;
 				maxheight = 0.0;
 			} else
-				offsetx += spacingx;
+				offsetx += context.spacingx;
 		}
 	}
 	
@@ -144,7 +123,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 		
 		for (CyNode node:network.getNodeList()){
 			// TODO: support namespace
-			T key = network.getRow(node).get(attributeName, klass);
+			T key = network.getRow(node).get(context.attributeName, klass);
 
 			if (key == null) {
 				if (invalidNodes != null)
@@ -202,10 +181,10 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 			return 0.0;
 		}
 
-		double radius = radmult * Math.sqrt(partition.size());
+		double radius = context.radmult * Math.sqrt(partition.size());
 
-		if (radius < minrad)
-			radius = minrad;
+		if (radius < context.minrad)
+			radius = context.minrad;
 
 		double phidelta = (2.0 * Math.PI) / partition.size();
 		double phi = 0.0;

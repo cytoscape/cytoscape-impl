@@ -37,14 +37,14 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
 /**
  * Task to load a new network.
  */
-public class LoadNetworkFileTaskFactoryImpl implements TaskFactory {
+public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory {
 
 	private CyNetworkReaderManager mgr;
 	private CyNetworkManager netmgr;

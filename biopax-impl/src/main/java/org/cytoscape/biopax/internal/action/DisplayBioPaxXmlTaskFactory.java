@@ -2,15 +2,13 @@ package org.cytoscape.biopax.internal.action;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class DisplayBioPaxXmlTaskFactory implements NodeViewTaskFactory {
+public class DisplayBioPaxXmlTaskFactory extends AbstractNodeViewTaskFactory {
 
-	private View<CyNode> nodeView;
-	private CyNetworkView networkView;
 	private CySwingApplication cySwingApplication;
 
 	public DisplayBioPaxXmlTaskFactory(CySwingApplication cySwingApplication) {
@@ -18,14 +16,8 @@ public class DisplayBioPaxXmlTaskFactory implements NodeViewTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
 		return new TaskIterator(new DisplayBioPaxXmlTask(nodeView, networkView, cySwingApplication));
-	}
-
-	@Override
-	public void setNodeView(View<CyNode> nodeView, CyNetworkView networkView) {
-		this.nodeView = nodeView;
-		this.networkView = networkView;
 	}
 
 }

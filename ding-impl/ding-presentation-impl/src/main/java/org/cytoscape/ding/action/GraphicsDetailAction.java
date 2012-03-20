@@ -51,7 +51,7 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent ev) {
 		
 		SwitchGraphicsDetailTaskFactory tf = new SwitchGraphicsDetailTaskFactory(applicationManager, defaultProps);
-		taskManagerServiceRef.execute(tf);		
+		taskManagerServiceRef.execute(tf.createTaskIterator());		
 	} 
 
 	/**

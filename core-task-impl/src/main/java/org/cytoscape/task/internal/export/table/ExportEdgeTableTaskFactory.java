@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.export.table;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 
 public class ExportEdgeTableTaskFactory extends AbstractNetworkViewTaskFactory {
@@ -14,7 +15,7 @@ public class ExportEdgeTableTaskFactory extends AbstractNetworkViewTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetworkView view) {
 		CyTable table = view.getModel().getDefaultEdgeTable();
 		return new TaskIterator(2, new CyTableWriter(writerManager, table));
 	}

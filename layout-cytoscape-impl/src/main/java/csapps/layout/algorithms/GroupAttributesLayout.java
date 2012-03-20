@@ -42,8 +42,6 @@ import java.util.Set;
 
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.undo.UndoSupport;
 
 /*
   This layout partitions the graph according to the selected node attribute's values.
@@ -57,42 +55,16 @@ import org.cytoscape.work.undo.UndoSupport;
 /**
  *
  */
-public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
-	/*
-	  Layout parameters:
-	    - spacingx: Horizontal spacing (on the x-axis) between two partitions in a row.
-	    - spacingy: Vertical spacing (on the y-axis) between the largest partitions of two rows.
-	    - maxwidth: Maximum width of a row
-	    - minrad:   Minimum radius of a partition.
-	    - radmult:  The scale of the radius of the partition. Increasing this value
-	                will increase the size of the partition proportionally.
-	 */
-	@Tunable(description="Horizontal spacing between two partitions in a row")
-	public double spacingx = 400.0;
-	@Tunable(description="Vertical spacing between the largest partitions of two rows")
-	public double spacingy = 400.0;
-	@Tunable(description="Maximum width of a row")
-	public double maxwidth = 5000.0;
-	@Tunable(description="Minimum width of a partition")
-	public double minrad = 100.0;
-	@Tunable(description="Scale of the radius of the partition")
-	public double radmult = 50.0;
-	
-	//@Tunable(description="The attribute to use for the layout")
-	public String attributeName;
-	//@Tunable(description="The namespace of the attribute to use for the layout")
-	public String attributeNamespace;
-	
+public class GroupAttributesLayout extends AbstractLayoutAlgorithm<GroupAttributesLayoutContext> {
 	/**
 	 * Creates a new GroupAttributesLayout object.
 	 */
-	public GroupAttributesLayout(UndoSupport undoSupport) {
-		super(undoSupport, "attributes-layout", "Group Attributes Layout", true);
+	public GroupAttributesLayout() {
+		super("attributes-layout", "Group Attributes Layout", true);
 	}
 
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new GroupAttributesLayoutTask(networkView, getName(), selectedOnly, staticNodes,
-				spacingx,spacingy,maxwidth,minrad,radmult,attributeName,attributeNamespace));
+	public TaskIterator createTaskIterator(GroupAttributesLayoutContext context) {
+		return new TaskIterator(new GroupAttributesLayoutTask(getName(), context));
 	}
 	
 	@Override
@@ -107,24 +79,13 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
 		return ret;
 	}
 	
-	
-	@Override
-	public void setLayoutAttribute(String value) {
-		if (value.equals("(none)"))
-			this.attributeName = null;
-		else
-			this.attributeName = value;
-	}
-	
-	
 	@Override
 	public List<String> getInitialAttributeList() {
 		return null;
 	}
 
-
-	//TODO
-	public boolean tunablesAreValid(final Appendable errMsg) {
-		return true;
+	@Override
+	public GroupAttributesLayoutContext createLayoutContext() {
+		return new GroupAttributesLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
 	}
 }

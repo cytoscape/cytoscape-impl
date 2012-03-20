@@ -13,13 +13,13 @@ import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenRecentSessionTaskFactory implements TaskFactory {
+public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 	
 	private static final Logger logger = LoggerFactory.getLogger(OpenRecentSessionTaskFactory.class);
 

@@ -3,10 +3,10 @@ package org.cytoscape.scripting.internal;
 import javax.script.ScriptEngineManager;
 
 import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class ExecuteScriptTaskFactory implements TaskFactory {
+public class ExecuteScriptTaskFactory extends AbstractTaskFactory {
 	
 	private final ScriptEngineManager manager;
 	private final CyAppAdapter cyAppAdapter;

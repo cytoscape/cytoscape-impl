@@ -1,14 +1,18 @@
 package org.cytoscape.work.internal.sync;
 
 
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import org.cytoscape.work.*;
-
-import java.lang.reflect.Field;
-import java.util.*;
 
 public class SyncTaskManagerTest {
 
@@ -25,10 +29,10 @@ public class SyncTaskManagerTest {
 
 		TestTaskFactory tf = new TestTaskFactory();
 		
-		taskManager.execute(tf);
+		taskManager.execute(tf.createTaskIterator());
 	}
 
-	public class TestTaskFactory implements TaskFactory {
+	public class TestTaskFactory extends AbstractTaskFactory {
 		public TaskIterator createTaskIterator() { return new TaskIterator( new TestTask() ); }
 	}
 

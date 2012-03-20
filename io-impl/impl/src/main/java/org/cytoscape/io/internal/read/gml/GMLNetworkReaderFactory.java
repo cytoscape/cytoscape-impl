@@ -1,5 +1,7 @@
 package org.cytoscape.io.internal.read.gml;
 
+import java.io.InputStream;
+
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
@@ -24,7 +26,7 @@ public class GMLNetworkReaderFactory extends AbstractNetworkReaderFactory {
 	}
 
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new GMLNetworkReader(inputStream, cyNetworkFactory, cyNetworkViewFactory,
 													 renderingEngineManager, unrecognizedVisualPropertyMgr));
 	}

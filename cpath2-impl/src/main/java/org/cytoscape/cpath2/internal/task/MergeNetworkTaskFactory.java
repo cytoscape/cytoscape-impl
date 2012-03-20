@@ -4,10 +4,10 @@ import java.net.URL;
 
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class MergeNetworkTaskFactory implements TaskFactory {
+public class MergeNetworkTaskFactory extends AbstractTaskFactory {
 	private final URL cpathURL;
 	private final CyNetwork cyNetwork;
 	private final CPath2Factory factory;

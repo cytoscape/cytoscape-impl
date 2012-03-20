@@ -42,20 +42,18 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 
 
 	@Override 
-	public Object getConfiguration(TaskFactory tf) {
+	public Object getConfiguration(TaskFactory factory, Object context) {
 		throw new UnsupportedOperationException("There is no configuration available for a SyncrhonousTaskManager");	
 	}
 
 
 	@Override
-	public void execute(final TaskFactory factory) {
+	public void execute(final TaskIterator taskIterator, Object tunableContext) {
 		final LoggingTaskMonitor taskMonitor = new LoggingTaskMonitor();
 		
 		try {
-			if ( !displayTunables(factory) )
+			if ( !displayTunables(tunableContext) )
 				return;
-
-			TaskIterator taskIterator = factory.createTaskIterator();
 
 			// now execute all subsequent tasks
 			while (taskIterator.hasNext()) {
@@ -73,8 +71,15 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 		}
 	}
 
+	@Override
+	public void execute(TaskIterator iterator) {
+		execute(iterator, null);
+	}
 
 	private boolean displayTunables(final Object task) throws Exception {
+		if (task == null) {
+			return true;
+		}
 		boolean ret = syncTunableMutator.validateAndWriteBack(task);
 
 		for ( TunableRecorder ti : tunableRecorders ) 

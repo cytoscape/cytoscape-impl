@@ -29,21 +29,6 @@
 package org.cytoscape.task.internal.loadnetwork;
 
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.creation.ImportNetworksTaskFactory;
-
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.io.util.StreamUtil;
-
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-import org.cytoscape.property.CyProperty;
-
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,11 +36,23 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.creation.ImportNetworksTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
+
 
 /**
  * Task to load a new network.
  */
-public class LoadNetworkURLTaskFactoryImpl implements TaskFactory, ImportNetworksTaskFactory {
+public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implements ImportNetworksTaskFactory {
 
 	private CyNetworkReaderManager mgr;
 	private CyNetworkManager netmgr;
@@ -98,7 +95,7 @@ public class LoadNetworkURLTaskFactoryImpl implements TaskFactory, ImportNetwork
 		m.put("url", url);
 		
 		syncTaskManager.setExecutionContext(m);
-		syncTaskManager.execute(this);
+		syncTaskManager.execute(createTaskIterator());
 
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		for(CyNetwork network: task.getCyNetworks())

@@ -4,10 +4,10 @@ import java.io.File;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SaveGraphicsToSessionTaskFactory implements TaskFactory {
+public class SaveGraphicsToSessionTaskFactory extends AbstractTaskFactory {
 
 	private final File location;
 	private final CustomGraphicsManager manager;

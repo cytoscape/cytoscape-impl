@@ -6,14 +6,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
@@ -33,9 +31,8 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 	private boolean[] drawnBiComps;
 
 
-	public CircularLayoutAlgorithmTask(final CyNetworkView networkView, final String name,
-			final boolean singlePartition, final boolean selectedOnly, final Set<View<CyNode>> staticNodes) {
-		super(networkView, name, singlePartition, selectedOnly, staticNodes);
+	public CircularLayoutAlgorithmTask(final String name, CircularLayoutContext context) {
+		super(name, context, context.singlePartition);
 	}
 
 

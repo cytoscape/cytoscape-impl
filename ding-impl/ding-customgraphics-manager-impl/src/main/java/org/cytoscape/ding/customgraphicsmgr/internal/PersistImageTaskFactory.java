@@ -3,10 +3,10 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
 import java.io.File;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class PersistImageTaskFactory implements TaskFactory {
+public class PersistImageTaskFactory extends AbstractTaskFactory {
 
 	private final File location;
 	private final CustomGraphicsManager manager;

@@ -1,9 +1,9 @@
 package org.cytoscape.group.data.internal;
 
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-class CyGroupSettingsTaskFactory implements TaskFactory {
+class CyGroupSettingsTaskFactory extends AbstractTaskFactory {
 	CyGroupSettingsImpl settings;
 
 	public CyGroupSettingsTaskFactory(CyGroupSettingsImpl settings) {

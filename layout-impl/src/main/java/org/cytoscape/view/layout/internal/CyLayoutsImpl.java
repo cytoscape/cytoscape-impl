@@ -30,15 +30,15 @@
 package org.cytoscape.view.layout.internal;
 
 
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 
 
 /**
@@ -53,7 +53,7 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	public CyLayoutsImpl(final CyProperty<Properties> p) {
 		this.cyProps = p;
 		layoutMap = new HashMap<String,CyLayoutAlgorithm>();
-		addLayout(new GridNodeLayout(null), new HashMap());
+		addLayout(new GridNodeLayout(), new HashMap());
 	}
 
 	/**

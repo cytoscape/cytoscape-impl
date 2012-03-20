@@ -118,8 +118,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			if (retValue == JOptionPane.YES_OPTION) {
 				// Create View
 				for (final CyNetwork network : networks) {
-					createViewTaskFactory.setNetwork(network);
-					insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator());
+					insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(network));
 				}
 			}
 		}

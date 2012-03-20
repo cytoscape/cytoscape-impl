@@ -16,6 +16,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiCyFileFilter.PSIMIVersion;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -23,6 +24,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class PsiMiNetworkViewReaderTest {
 		MockitoAnnotations.initMocks(this);
 
 		when(layouts.getDefaultLayout()).thenReturn(layout);
-		when(layout.createTaskIterator()).thenReturn(new TaskIterator(task));
+		when(layout.createTaskIterator(Mockito.any(CyLayoutContext.class))).thenReturn(new TaskIterator(task));
 
 		networkFactory = new NetworkTestSupport().getNetworkFactory();
 		networkViewFactory = new NetworkViewTestSupport().getNetworkViewFactory();

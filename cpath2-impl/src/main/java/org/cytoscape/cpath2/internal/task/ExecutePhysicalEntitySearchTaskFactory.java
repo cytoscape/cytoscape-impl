@@ -1,10 +1,10 @@
 package org.cytoscape.cpath2.internal.task;
 
 import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class ExecutePhysicalEntitySearchTaskFactory implements TaskFactory {
+public class ExecutePhysicalEntitySearchTaskFactory extends AbstractTaskFactory {
 	private final CPathWebService webApi;
 	private final String keyword;
 	private final int ncbiTaxonomyId;

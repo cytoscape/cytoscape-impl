@@ -27,12 +27,14 @@
  */
 package org.cytoscape.io.internal.read.vizmap;
 
+import java.io.InputStream;
+
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractPropertyReaderFactory;
 import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class VizmapXMLReaderFactory extends AbstractPropertyReaderFactory {
+public class VizmapXMLReaderFactory extends SimpleInputStreamTaskFactory {
 
 	private final VisualStyleSerializer visualStyleSerializer;
 
@@ -41,7 +43,7 @@ public class VizmapXMLReaderFactory extends AbstractPropertyReaderFactory {
 		this.visualStyleSerializer = visualStyleSerializer;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new VizmapXMLReader(inputStream, visualStyleSerializer));
 	}
 }

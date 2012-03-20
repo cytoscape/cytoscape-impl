@@ -105,14 +105,12 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 	}
 
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(Object query) {
 		if (gui == null)
 			throw new IllegalStateException(
 					"Could not build query because Query Builder GUI is null.");
 
-		final BiomartQuery query = ((BiomartAttrMappingPanel) gui).getTableImportQuery();
-
-		importTask = new ImportTableTask(restClient, query, tableFactory, networkManager,
+		importTask = new ImportTableTask(restClient, (BiomartQuery) query, tableFactory, networkManager,
 		                                 applicationManager, app.getJFrame(), tableManager,
 										 cyRootNetworkFactory);
 

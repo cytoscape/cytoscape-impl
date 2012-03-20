@@ -38,29 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.util.ListSingleSelection;
 
 
-public class AttributeCircleLayout extends AbstractLayoutAlgorithm implements TunableValidator {
-	
-	@Tunable(description = "The attribute to use for the layout")
-	public String attribute = CyTableEntry.NAME;
-	
-//	@Tunable(description="Node attribute to be use")
-//	public ListSingleSelection<Integer> attrName;
-	
-	@Tunable(description = "Circle size")
-	public double spacing = 100.0;
-	@Tunable(description = "Don't partition graph before layout", groups = "Standard settings")
-	public boolean singlePartition;
-
+public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCircleLayoutContext> {
 	private final boolean supportNodeAttributes;
 
 	/**
@@ -68,32 +50,24 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm implements Tu
 	 *
 	 * @param supportAttributes  DOCUMENT ME!
 	 */
-	public AttributeCircleLayout(final UndoSupport undoSupport, final boolean supportNodeAttributes)
+	public AttributeCircleLayout(final boolean supportNodeAttributes)
 	{
-		super(undoSupport, (supportNodeAttributes ? "attribute-circle": "circle"), 
-		                   (supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"),
-		                   true);
+		super((supportNodeAttributes ? "attribute-circle": "circle"), 
+		      (supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"),
+		      true);
 		this.supportNodeAttributes = supportNodeAttributes;
 	}
 
 	/**
 	 * Creates a new AttributeCircleLayout object.
 	 */
-	public AttributeCircleLayout(final UndoSupport undoSupport) {
-		this(undoSupport,true);
+	public AttributeCircleLayout() {
+		this(true);
 	}
 
 	@Override
-	public ValidationState getValidationState(final Appendable errMsg) {
-		return attribute.length() > 0 && spacing > 0.0 ? ValidationState.OK : ValidationState.INVALID;
-	}
-
-	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(
-			new AttributeCircleLayoutTask(networkView, getName(), selectedOnly,
-						      staticNodes, attribute, spacing,
-						      supportNodeAttributes, singlePartition));
+	public TaskIterator createTaskIterator(AttributeCircleLayoutContext context) {
+		return new TaskIterator(new AttributeCircleLayoutTask(getName(), context));
 	}
 
 	// Required methods for AbstactLayout
@@ -118,18 +92,6 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm implements Tu
 	}
 
 	/**
-	 * Sets the attribute to use for the weights
-	 *
-	 * @param value the name of the attribute
-	 */
-	public void setLayoutAttribute(String value) {
-		if (value.equals("(none)"))
-			this.attribute = null;
-		else
-			this.attribute = value;
-	}
-
-	/**
 	 *
 	 * We don't have any special widgets
 	 *
@@ -140,5 +102,10 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm implements Tu
 		attList.add("(none)");
 
 		return attList;
+	}
+	
+	@Override
+	public AttributeCircleLayoutContext createLayoutContext() {
+		return new AttributeCircleLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
 	}
 }

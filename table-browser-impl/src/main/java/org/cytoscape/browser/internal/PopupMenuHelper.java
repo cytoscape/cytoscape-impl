@@ -29,25 +29,17 @@ package org.cytoscape.browser.internal;
 
 
 import java.awt.Component;
-import java.awt.Point;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
-import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.work.TaskFactory;
@@ -62,12 +54,14 @@ public class PopupMenuHelper {
 	private final TaskManager taskManager;
 	private final Map<TableCellTaskFactory, Map> tableCellFactoryMap;
 	private final Map<TableColumnTaskFactory, Map> tableColumnFactoryMap;
+	private final StaticTaskFactoryProvisioner factoryProvisioner;
 
 	public PopupMenuHelper(final TaskManager taskManager) {
 		this.taskManager = taskManager;
 
 		tableCellFactoryMap   = new HashMap<TableCellTaskFactory, Map>();
 		tableColumnFactoryMap = new HashMap<TableColumnTaskFactory, Map>();
+		factoryProvisioner = new StaticTaskFactoryProvisioner();
 	}
 
 	public void createColumnHeaderMenu(final CyColumn column, final Component invoker, final int x,
@@ -80,8 +74,9 @@ public class PopupMenuHelper {
 		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
 
 		for (final Map.Entry<TableColumnTaskFactory, Map> mapEntry : tableColumnFactoryMap.entrySet()) {
-			mapEntry.getKey().setColumn(column);
-			createMenuItem(mapEntry.getKey(), tracker, mapEntry.getValue());
+			TableColumnTaskFactory taskFactory = mapEntry.getKey();
+			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column);
+			createMenuItem(provisioner, tracker, mapEntry.getValue());
 		}
 
 		menu.show(invoker, x, y);
@@ -97,8 +92,9 @@ public class PopupMenuHelper {
 		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
 
 		for (final Map.Entry<TableCellTaskFactory, Map> mapEntry : tableCellFactoryMap.entrySet()) {
-			mapEntry.getKey().setColumnAndPrimaryKey(column, primaryKeyValue);
-			createMenuItem(mapEntry.getKey(), tracker, mapEntry.getValue());
+			TableCellTaskFactory taskFactory = mapEntry.getKey();
+			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
+			createMenuItem(provisioner, tracker, mapEntry.getValue());
 		}
 
 		menu.show(invoker, x, y);
@@ -156,7 +152,7 @@ public class PopupMenuHelper {
 		}
 
 		public void actionPerformed(ActionEvent ae) {
-			taskManager.execute(tf);
+			taskManager.execute(tf.createTaskIterator());
 		}
 	}
 }

@@ -36,36 +36,20 @@
 
 package org.cytoscape.linkout.internal;
 
-import org.cytoscape.application.CyApplicationConfiguration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.cytoscape.property.CyProperty;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import org.cytoscape.util.swing.OpenBrowser;
-
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableEntry;
-
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-
-
-import java.io.File;
-import java.io.FileInputStream;
-
-import java.util.Properties;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

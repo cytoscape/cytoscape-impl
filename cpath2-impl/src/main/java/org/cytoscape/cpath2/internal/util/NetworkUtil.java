@@ -40,6 +40,7 @@ import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.task.LoadNetworkFromUrlTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskFactory;
 
 /**
  * This is a network utilities class.
@@ -119,7 +120,8 @@ public class NetworkUtil extends Thread {
             // are we merging ?
             if (merging) {
                 // start merge network task
-                factory.getTaskManager().execute(factory.createMergeNetworkTaskFactory(cpathURL, cyNetwork));
+            	TaskFactory taskFactory = factory.createMergeNetworkTaskFactory(cpathURL, cyNetwork);
+                factory.getTaskManager().execute(taskFactory.createTaskIterator());
                 postProcess(cyNetwork, true);
             } else {
                 // the biopax graph reader is going to be called
@@ -129,7 +131,7 @@ public class NetworkUtil extends Thread {
                     System.setProperty("biopax.network_view_title", networkTitle);
                 }
                 LoadNetworkFromUrlTaskFactory taskFactory = new LoadNetworkFromUrlTaskFactory(cpathURL, factory);
-                factory.getTaskManager().execute(taskFactory);
+                factory.getTaskManager().execute(taskFactory.createTaskIterator());
                 postProcess(factory.getCyApplicationManager().getCurrentNetwork(), false);
             }
         }

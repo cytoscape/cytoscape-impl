@@ -22,9 +22,8 @@ public class FitContentTaskFactoryTest {
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
 		FitContentTaskFactory factory = new FitContentTaskFactory(undoSupport);
-		factory.setNetworkView(view);
 		
-		TaskIterator ti = factory.createTaskIterator();
+		TaskIterator ti = factory.createTaskIterator(view);
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );

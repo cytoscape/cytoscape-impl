@@ -31,10 +31,10 @@ package org.cytoscape.task.internal.select;
 
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
@@ -52,7 +52,7 @@ public class SelectFromFileListTaskFactory extends AbstractNetworkTaskFactory {
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(new SelectFromFileListTask(undoSupport, network,
 		                                                   networkViewManager, eventHelper));
 	} 

@@ -30,31 +30,27 @@
 package org.cytoscape.internal.task;
 
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.Icon;
-import java.awt.Component;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.swing.PanelTaskManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,19 +67,21 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	private static class ExecuteButtonListener implements ActionListener {
 		final private TaskFactory factory;
 		final private PanelTaskManager manager;
+		final private Object context;
 
-		ExecuteButtonListener(final TaskFactory factory, final PanelTaskManager manager) {
+		ExecuteButtonListener(final TaskFactory factory, Object context, final PanelTaskManager manager) {
 			this.factory = factory;
 			this.manager = manager;
+			this.context = context;
 		}
 
 		public void actionPerformed(final ActionEvent event) {
 			// Perform input validation?
-			if (factory instanceof TunableValidator) {
+			if (context instanceof TunableValidator) {
 				final Appendable errMsg = new StringBuilder();
 				try {
 					final ValidationState validationState =
-						((TunableValidator)factory).getValidationState(errMsg);
+						((TunableValidator)context).getValidationState(errMsg);
 					if (validationState == ValidationState.INVALID) {
 						JOptionPane.showMessageDialog(new JFrame(), errMsg.toString(),
 									      "Input Validation Problem",
@@ -102,20 +100,22 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 				}
 			}
 
-			manager.execute(factory);
+			manager.execute(factory.createTaskIterator());
 		}
 	}
 
 
 	final private static CytoPanelName DEFAULT_CYTOPANEL = CytoPanelName.WEST;
 	final private TaskFactory factory;
+	final private Object context;
 	final private PanelTaskManager manager;
 	final private Map<String, String> serviceProps;
 	final private CytoPanelName cytoPanelName;
 	final private CyServiceRegistrar registrar;
 	final private static Logger logger = LoggerFactory.getLogger(CytoPanelTaskFactoryTunableAction.class);
 
-	public CytoPanelTaskFactoryTunableAction(final TaskFactory factory, 
+	public CytoPanelTaskFactoryTunableAction(final TaskFactory factory,
+											 final Object context,
 	                                         final PanelTaskManager manager,
 	                                         final Map<String, String> serviceProps, 
 	                                         final CyApplicationManager appMgr,
@@ -127,7 +127,8 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 		this.manager = manager;
 		this.serviceProps = serviceProps;
 		this.registrar = registrar;
-		this.cytoPanelName = getCytoPanelName(); 
+		this.cytoPanelName = getCytoPanelName();
+		this.context = context;
 	}
 
 	private CytoPanelName getCytoPanelName() {
@@ -149,7 +150,7 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	 *  Creates a new CytoPanel component and adds it to a CytoPanel.
 	 */
 	public void actionPerformed(final ActionEvent a) {
-		final JPanel innerPanel = manager.getConfiguration(factory);
+		final JPanel innerPanel = manager.getConfiguration(factory, context);
 		if (innerPanel == null)
 			return;
 
@@ -204,7 +205,7 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 			outerPanel.add(innerPanel);
 
 			final JButton executeButton = new JButton("Execute");
-			executeButton.addActionListener(new ExecuteButtonListener(factory, manager));
+			executeButton.addActionListener(new ExecuteButtonListener(factory, context, manager));
 			outerPanel.add(executeButton);
 	
 			final JButton closeButton = new JButton("Close");

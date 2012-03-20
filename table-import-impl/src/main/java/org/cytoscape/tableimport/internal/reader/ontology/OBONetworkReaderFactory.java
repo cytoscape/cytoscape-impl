@@ -4,46 +4,28 @@ import java.io.InputStream;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
-public class OBONetworkReaderFactory implements InputStreamTaskFactory {
-
-	private final CyFileFilter filter;
+public class OBONetworkReaderFactory extends SimpleInputStreamTaskFactory {
 
 	protected final CyNetworkViewFactory cyNetworkViewFactory;
 	protected final CyNetworkFactory cyNetworkFactory;
 
-	protected InputStream inputStream;
-	protected String inputName;
-
 	private final CyEventHelper eventHelper;
 
 	public OBONetworkReaderFactory(CyFileFilter filter) {
-		this.filter = filter;
+		super(filter);
 		this.cyNetworkViewFactory = CytoscapeServices.cyNetworkViewFactory;
 		this.cyNetworkFactory = CytoscapeServices.cyNetworkFactory;
 		this.eventHelper = CytoscapeServices.cyEventHelper;
 	}
 
-	public void setInputStream(InputStream is, String in) {
-		if (is == null)
-			throw new NullPointerException("Input stream is null");
-		if (in == null)
-			throw new NullPointerException("Input stream name is null");
-		inputStream = is;
-		inputName = in;
-	}
-
-	public CyFileFilter getFileFilter() {
-		return filter;
-	}
-
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new OBOReader(inputName, inputStream, cyNetworkViewFactory, cyNetworkFactory, eventHelper));
 	}
 }

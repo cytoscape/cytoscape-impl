@@ -4,11 +4,11 @@ import java.io.File;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class RestoreImageTaskFactory implements TaskFactory {
+public class RestoreImageTaskFactory extends AbstractTaskFactory {
 
 	private final File imageLocation;
 	private final CustomGraphicsManagerImpl manager;

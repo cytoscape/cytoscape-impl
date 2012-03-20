@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.internal.tunables.JPanelTunableMutator;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.slf4j.Logger;
@@ -37,8 +38,8 @@ public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implem
 	}
 
 	@Override 
-	public JPanel getConfiguration(TaskFactory tf) {
-		return panelTunableMutator.buildConfiguration(tf);
+	public JPanel getConfiguration(TaskFactory factory, Object tunableContext) {
+		return panelTunableMutator.buildConfiguration(tunableContext);
 	}
 
 	@Override
@@ -47,10 +48,15 @@ public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implem
 	}
 
 	@Override
-	public void execute(final TaskFactory factory) {
-		if (panelTunableMutator.validateAndWriteBack(factory)) {
-			dtm.execute(factory,false);
+	public void execute(final TaskIterator iterator, Object tunableContext) {
+		if (panelTunableMutator.validateAndWriteBack(tunableContext)) {
+			dtm.execute(iterator, null);
 		}
+	}
+	
+	@Override
+	public void execute(final TaskIterator iterator) {
+		dtm.execute(iterator, null);	
 	}
 }
 

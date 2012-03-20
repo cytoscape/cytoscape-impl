@@ -29,10 +29,11 @@
 package org.cytoscape.task.internal.export.graphics;
 
 
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.internal.export.ViewWriter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.internal.export.ViewWriter;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -46,7 +47,7 @@ public class ExportNetworkImageTaskFactory extends AbstractNetworkViewTaskFactor
 		this.applicationManager = applicationManager;
 	}
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return new TaskIterator(2, new ViewWriter( presentationWriterMgr, view, applicationManager.getCurrentRenderingEngine() ) );
 	}
 }

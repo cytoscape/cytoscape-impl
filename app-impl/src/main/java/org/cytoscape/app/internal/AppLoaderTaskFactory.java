@@ -6,11 +6,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class AppLoaderTaskFactory implements TaskFactory {
+public class AppLoaderTaskFactory extends AbstractTaskFactory {
 	
 	private final CyAppAdapter adapter;
 	 

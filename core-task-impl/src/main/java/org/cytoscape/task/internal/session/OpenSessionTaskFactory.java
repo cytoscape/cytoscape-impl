@@ -39,11 +39,11 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class OpenSessionTaskFactory implements TaskFactory, LoadSession {
+public class OpenSessionTaskFactory extends AbstractTaskFactory implements LoadSession {
 
 	private CySessionManager mgr;
 	private CySessionReaderManager rmgr;
@@ -76,7 +76,7 @@ public class OpenSessionTaskFactory implements TaskFactory, LoadSession {
 		m.put("file", file);
 
 		syncTaskManager.setExecutionContext(m);
-		syncTaskManager.execute(this);
+		syncTaskManager.execute(createTaskIterator());
 
 		return task.getCySession();
 	}

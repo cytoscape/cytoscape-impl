@@ -30,7 +30,8 @@
 package org.cytoscape.task.internal.zoom;  
 
 
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;  
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -43,7 +44,7 @@ public class FitSelectedTaskFactory extends AbstractNetworkViewTaskFactory {
 	}
 
 
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return new TaskIterator(new FitSelectedTask(undoSupport, view));
 	} 
 }

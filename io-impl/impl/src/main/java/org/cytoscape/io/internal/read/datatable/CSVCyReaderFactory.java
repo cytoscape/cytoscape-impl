@@ -5,15 +5,13 @@ import java.io.InputStream;
 
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskIterator;
 
 
-public class CSVCyReaderFactory implements InputStreamTaskFactory {
-	private final CyFileFilter filter;
-	private InputStream stream;
+public class CSVCyReaderFactory extends SimpleInputStreamTaskFactory {
 	private final boolean readSchema;
 	private final boolean handleEquations;
 	private final CyTableFactory tableFactory;
@@ -24,7 +22,7 @@ public class CSVCyReaderFactory implements InputStreamTaskFactory {
 				  final boolean handleEquations, final CyTableFactory tableFactory,
 				  final EquationCompiler compiler, final CyTableManager tableManager)
 	{
-		this.filter          = filter;
+		super(filter);
 		this.readSchema      = readSchema;
 		this.handleEquations = handleEquations;
 		this.tableFactory    = tableFactory;
@@ -33,18 +31,8 @@ public class CSVCyReaderFactory implements InputStreamTaskFactory {
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator() {
+	public TaskIterator createTaskIterator(InputStream stream, String inputName) {
 		return new TaskIterator(new CSVCyReader(stream, readSchema, handleEquations,
 							tableFactory, compiler, tableManager));
-	}
-
-	@Override
-	public CyFileFilter getFileFilter() {
-		return filter;
-	}
-
-	@Override
-	public void setInputStream(InputStream stream, String inputName) {
-		this.stream = stream;
 	}
 }

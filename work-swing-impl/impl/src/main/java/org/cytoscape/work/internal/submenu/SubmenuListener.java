@@ -1,31 +1,30 @@
 
 package org.cytoscape.work.internal.submenu;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.PopupMenuEvent;
+
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DynamicSubmenuListener;
 
-import javax.swing.JMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JPopupMenu;
-import javax.swing.event.MenuListener;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.event.PopupMenuEvent;
-
 class SubmenuListener implements DynamicSubmenuListener {
 
-	private final TaskFactory tf;
 	private final SubmenuTunableMutator stm;
 
 	private String menuName;
 	private JMenuItem lastMenuItem;
 	private boolean enableState;
+	private Object tunableContext;
 
-	SubmenuListener(SubmenuTunableMutator stm, TaskFactory tf) {
+	SubmenuListener(SubmenuTunableMutator stm, TaskFactory tf, Object tunableContext) {
 		this.stm = stm;
-		this.tf = tf;
 		this.menuName = "None Specified";
-		this.enableState = true; 
+		this.enableState = true;
+		this.tunableContext = tunableContext;
+		stm.registerTunableContext(tf, tunableContext);
 	}
 
 	@Override
@@ -41,13 +40,13 @@ class SubmenuListener implements DynamicSubmenuListener {
 	@Override
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e)  {
 		JPopupMenu parentMenu = (JPopupMenu)(e.getSource());
-		lastMenuItem = stm.buildConfiguration(tf);
+		lastMenuItem = stm.buildConfiguration(tunableContext);
 		if ( lastMenuItem != null ) {
 			if ( lastMenuItem instanceof JMenu )
 				lastMenuItem.setText(menuName);
 			lastMenuItem.setEnabled(enableState);
 			parentMenu.add( lastMenuItem );
-		} 
+		}
 	}
 
 	@Override
@@ -63,7 +62,7 @@ class SubmenuListener implements DynamicSubmenuListener {
 	@Override
 	public void menuSelected(MenuEvent e)  {
 		JMenu parentMenu = (JMenu)(e.getSource());
-		lastMenuItem = stm.buildConfiguration(tf);
+		lastMenuItem = stm.buildConfiguration(tunableContext);
 		if ( lastMenuItem != null ) {
 			String title = lastMenuItem.getText(); 
 			if (title == null || title.isEmpty()) {

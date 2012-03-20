@@ -1,23 +1,23 @@
 
 package org.cytoscape.network.merge.internal.task;
 
-import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
-import org.cytoscape.network.merge.internal.model.*;
-import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
+import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
+import org.cytoscape.network.merge.internal.model.AttributeMapping;
+import org.cytoscape.network.merge.internal.model.MatchingAttribute;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /**
  *
  * @author jj
  */
-public class NetworkMergeTaskFactory implements TaskFactory {
+public class NetworkMergeTaskFactory extends AbstractTaskFactory {
     final CyNetwork network;
     final MatchingAttribute matchingAttribute;
     final AttributeMapping nodeAttributeMapping;

@@ -1,12 +1,11 @@
 
 package org.cytoscape.prefuse.layouts.internal;
 
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.prefuse.layouts.internal.ForceDirectedLayout;
+import java.util.Properties;
+
+import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.osgi.framework.BundleContext;
-import org.cytoscape.service.util.AbstractCyActivator;
-import java.util.Properties;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -16,9 +15,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
-		
-		ForceDirectedLayout forceDirectedLayout = new ForceDirectedLayout(undoSupportServiceRef);
+		ForceDirectedLayout forceDirectedLayout = new ForceDirectedLayout();
 
         Properties forceDirectedLayoutProps = new Properties();
         forceDirectedLayoutProps.setProperty("preferredMenu","Layout.Prefuse Layouts");
