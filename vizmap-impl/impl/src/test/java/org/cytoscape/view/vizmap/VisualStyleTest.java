@@ -24,27 +24,27 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 	@Before
 	public void setUp() throws Exception {
 		final Class<String> type = String.class;
-        CyProperty<Properties> cyProperties = mock(CyProperty.class);
-        NetworkViewTestSupport nvts = new NetworkViewTestSupport();
-        network = nvts.getNetworkFactory().createNetwork();
-
-        node1 = network.addNode();
-        node2 = network.addNode();
-        node3 = network.addNode();
-
-        edge = network.addEdge(node1, node2, true);
-        CyTable nodeTable = network.getDefaultNodeTable();
-        nodeTable.createColumn(attrName, String.class, true);
-        nodeTable.getRow(node1.getSUID()).set(attrName, "red");
-        nodeTable.getRow(node2.getSUID()).set(attrName, "green");
-        nodeTable.getRow(node3.getSUID()).set(attrName, "foo");
-
-        networkView = nvts.getNetworkViewFactory().createNetworkView(network);
+		CyProperty<Properties> cyProperties = mock(CyProperty.class);
 		
+		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
+		network = nvts.getNetworkFactory().createNetwork();
+
+		node1 = network.addNode();
+		node2 = network.addNode();
+		node3 = network.addNode();
+
+		edge = network.addEdge(node1, node2, true);
+		CyTable nodeTable = network.getDefaultNodeTable();
+		nodeTable.createColumn(attrName, String.class, true);
+		nodeTable.getRow(node1.getSUID()).set(attrName, "red");
+		nodeTable.getRow(node2.getSUID()).set(attrName, "green");
+		nodeTable.getRow(node3.getSUID()).set(attrName, "foo");
+
+		networkView = nvts.getNetworkViewFactory().createNetworkView(network);
+
 		// Create root node.
 		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
-		
-		
+
 		// Create root node.
 		final NullVisualProperty minimalRoot = new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property");
 		final BasicVisualLexicon minimalLex = new BasicVisualLexicon(minimalRoot);
@@ -54,9 +54,9 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		final Collection<VisualProperty<?>> edgeVP = minimalLex.getAllDescendants(BasicVisualLexicon.EDGE);
 		when(lexManager.getNodeVisualProperties()).thenReturn(nodeVP);
 		when(lexManager.getEdgeVisualProperties()).thenReturn(edgeVP);
-		
+
 		when(lexManager.getAllVisualLexicon()).thenReturn(lexSet);
-		
+
 		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager);
 		originalTitle = "Style 1";
 		newTitle = "Style 2";

@@ -36,7 +36,6 @@ package org.cytoscape.view.vizmap.internal;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
@@ -46,7 +45,6 @@ import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.Visualizable;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.slf4j.Logger;
@@ -61,9 +59,11 @@ public class VisualStyleImpl implements VisualStyle {
 	private static final String DEFAULT_TITLE = "?";
 
 	private final Map<VisualProperty<?>, VisualMappingFunction<?, ?>> mappings;
-	private final Map<VisualProperty<?>, Object> perVSDefaults;
+	private final Map<VisualProperty<?>, Object> styleDefaults;
 
 	private final VisualLexiconManager lexManager;
+	
+	private final Map<Class<? extends CyTableEntry>, ApplyHandler> applyHandlersMap;
 
 	private String title;
 
@@ -85,27 +85,30 @@ public class VisualStyleImpl implements VisualStyle {
 			this.title = title;
 
 		mappings = new HashMap<VisualProperty<?>, VisualMappingFunction<?, ?>>();
-		perVSDefaults = new HashMap<VisualProperty<?>, Object>();
+		styleDefaults = new HashMap<VisualProperty<?>, Object>();
+		
+		// Init Apply handlers for node, egde and network.
+		this.applyHandlersMap = new HashMap<Class<? extends CyTableEntry>, ApplyHandler>();
+		applyHandlersMap.put(CyNetwork.class, new ApplyToNetworkHandler(this, lexManager));
+		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager));
+		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager));
 
 		logger.info("New Visual Style Created: Style Name = " + this.title);
 	}
 
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void addVisualMappingFunction(final VisualMappingFunction<?, ?> mapping) {
 		mappings.put(mapping.getVisualProperty(), mapping);
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param <V>
-	 *            DOCUMENT ME!
-	 * @param t
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <V> VisualMappingFunction<?, V> getVisualMappingFunction(VisualProperty<V> t) {
 		return (VisualMappingFunction<?, V>) mappings.get(t);
@@ -114,26 +117,18 @@ public class VisualStyleImpl implements VisualStyle {
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void removeVisualMappingFunction(VisualProperty<?> t) {
 		mappings.remove(t);
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param <T>
-	 *            DOCUMENT ME!
-	 * @param vp
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <V> V getDefaultValue(final VisualProperty<V> vp) {
-		return (V) perVSDefaults.get(vp);
+		return (V) styleDefaults.get(vp);
 	}
 
 	/**
@@ -141,55 +136,61 @@ public class VisualStyleImpl implements VisualStyle {
 	 */
 	@Override
 	public <V, S extends V> void setDefaultValue(final VisualProperty<V> vp, final S value) {
-		perVSDefaults.put(vp, value);
+		styleDefaults.put(vp, value);
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param networkView
-	 *            DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
-	public void apply(final CyNetworkView networkView) {
-		if (networkView == null) {
+	public void apply(final View<? extends CyTableEntry> view) {
+		if (view == null) {
 			logger.warn("Tried to apply Visual Style to null view");
 			return;
 		}
-
-		logger.info(networkView.getSUID() + ": Visual Style Apply method called: " + this.title);
-
-		
+	
 		final long start = System.currentTimeMillis();
 		
-		final Collection<View<CyNode>> nodeViews = networkView.getNodeViews();
-		final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
-		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
-		networkViewSet.add(networkView);
-
-		applyViewDefaults(networkView, lexManager.getNodeVisualProperties());
-		applyViewDefaults(networkView, lexManager.getEdgeVisualProperties());
-		applyViewDefaults(networkView, lexManager.getNetworkVisualProperties());
+		ApplyHandler handler = null;
+		for(final Class<?> viewType: applyHandlersMap.keySet()) {
+			if(viewType.isAssignableFrom(view.getModel().getClass())) {
+				handler = this.applyHandlersMap.get(viewType);
+				break;
+			}
+		}
 		
-		// Current visual prop tree.
-		applyImpl(networkView, nodeViews, lexManager.getNodeVisualProperties());
-		applyImpl(networkView, edgeViews, lexManager.getEdgeVisualProperties());
-		applyImpl(networkView, networkViewSet, lexManager.getNetworkVisualProperties());
-
+		if(handler==null)
+			throw new IllegalArgumentException("This view type is not supported: " + view.getClass());
+		
+		handler.apply(view);
+		
 		logger.info(title + ": Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
 	}
 	
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	@Override
+//	public void apply(final View<? extends CyTableEntry> view) {
+//		if (view == null) {
+//			logger.warn("Tried to apply Visual Style to null view");
+//			return;
+//		}
+//		
+//		// First, apply default values
+//		for ( VisualProperty<?> vp : vps ) {
+//			Object defaultValue = getDefaultValue(vp);
+//
+//			if (defaultValue == null) {
+//				this.perVSDefaults.put(vp, vp.getDefault());
+//				defaultValue = getDefaultValue(vp);
+//			}
+//
+//			view.setViewDefault(vp,defaultValue);
+//		}
+//	}
 	
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param <T>
-	 *            DOCUMENT ME!
-	 * @param views
-	 *            DOCUMENT ME!
-	 * @param visualProperties
-	 *            DOCUMENT ME!
-	 */
+	
 	private void applyImpl(final CyNetworkView networkView, final Collection<? extends View<?>> views,
 			final Collection<VisualProperty<?>> visualProperties) {
 		
@@ -225,7 +226,7 @@ public class VisualStyleImpl implements VisualStyle {
 			Object defaultValue = getDefaultValue(vp);
 
 			if (defaultValue == null) {
-				this.perVSDefaults.put(vp, vp.getDefault());
+				this.styleDefaults.put(vp, vp.getDefault());
 				defaultValue = getDefaultValue(vp);
 			}
 
@@ -243,10 +244,7 @@ public class VisualStyleImpl implements VisualStyle {
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param title
-	 *            DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setTitle(String title) {
@@ -254,18 +252,24 @@ public class VisualStyleImpl implements VisualStyle {
 	}
 
 	/**
-	 * toString method returns title of this Visual Style.
-	 * 
-	 * @return DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
 		return this.title;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Collection<VisualMappingFunction<?, ?>> getAllVisualMappingFunctions() {
 		return mappings.values();
 	}
-
+	
+	
+	Map<VisualProperty<?>, Object> getStyleDefaults() {
+		return this.styleDefaults;
+	}
+	
 }
