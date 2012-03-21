@@ -45,8 +45,10 @@ import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -93,6 +95,7 @@ class CyGroupImpl implements CyGroup {
 		this.networkSet = new HashSet<CyNetwork>();
 		this.collapseSet = new HashSet<CyNetwork>();
 
+		networkSet.add(rootNetwork);
 		networkSet.add(network);
 
 		if (nodes == null)
@@ -139,8 +142,8 @@ class CyGroupImpl implements CyGroup {
 		updateMetaEdges(true);
 
 		// Initialize our attributes
-		// TODO: updateCountAttributes();
-		// TODO: setGroupStateAttribute(false);
+		updateCountAttributes(rootNetwork);
+		setGroupStateAttribute(network, false);
 	}
 
 	/**
@@ -194,7 +197,9 @@ class CyGroupImpl implements CyGroup {
 
 		if (!batchUpdate) {
 			updateMetaEdges(false);
-			// TODO: updateCountAttributes();
+			for (CyNetwork net: collapseSet) {
+				updateCountAttributes(net);
+			}
 			cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, node, GroupChangedEvent.ChangeType.NODE_ADDED));
 		}
 	}
@@ -247,7 +252,9 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 		updateMetaEdges(false);
-		// TODO: updateCountAttributes();
+		for (CyNetwork net: collapseSet) {
+			updateCountAttributes(net);
+		}
 		batchUpdate = false;
 		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, nodes, GroupChangedEvent.ChangeType.NODES_ADDED));
 	}
@@ -292,7 +299,9 @@ class CyGroupImpl implements CyGroup {
 		groupNet.removeNodes(nodes);
 		batchUpdate = false;
 		updateMetaEdges(false);
-		// TODO: updateCountAttributes();
+		for (CyNetwork net: collapseSet) {
+			updateCountAttributes(net);
+		}
 		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, nodes, GroupChangedEvent.ChangeType.NODES_REMOVED));
 	}
 
@@ -381,6 +390,15 @@ class CyGroupImpl implements CyGroup {
 
 		CySubNetwork subnet = (CySubNetwork) net;
 
+		// First collapse any children that are groups
+		for (CyNode node: getNodeList()) {
+			// Is this a group?
+			if (mgr.isGroup(node, net)) {
+				// Yes, collapse it
+				mgr.getGroup(node,net).collapse(net);
+			}
+		}
+
 		// Collapse it.
 		// Remove all of the nodes from the target network
 		subnet.removeNodes(getNodeList());
@@ -402,7 +420,8 @@ class CyGroupImpl implements CyGroup {
 		collapseSet.add(net);
 		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, true));
 		// Update attributes?
-		// TODO: setGroupStateAttribute(net, true);
+		setGroupStateAttribute(net, true);
+		updateCountAttributes(net);
 	}
 
 	/**
@@ -446,7 +465,7 @@ class CyGroupImpl implements CyGroup {
 		collapseSet.remove(net);
 		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, false));
 		// Update attributes?
-		// TODO: setGroupStateAttribute(net, false);
+		setGroupStateAttribute(net, false);
 	}
 
 	/**
@@ -693,6 +712,90 @@ class CyGroupImpl implements CyGroup {
 			table.createColumn(attribute, type, false);
 
 		return;
+	}
+
+	/**
+ 	 * Set the state attribute for this group.  The problem is that a group might be in
+ 	 * different states in different networks, so this is a list of the form: 
+ 	 * [network1:state,network2:state,...]
+ 	 */
+	private void setGroupStateAttribute(CyNetwork net, boolean collapsed) {
+		CyTable nodeTable = rootNetwork.getDefaultNodeTable();
+		CyColumn stateColumn = nodeTable.getColumn(GROUP_STATE_ATTR);
+		if (!rootNetwork.getDefaultNetworkTable().rowExists(net.getSUID()))
+			return;
+
+		String netName = rootNetwork.getRow(net).get(net.NAME, String.class);
+
+		if (!nodeTable.rowExists(groupNode.getSUID())) {
+			// Shouldn't happen!
+			return;
+		}
+
+		List<String> newList = new ArrayList<String>();
+		if (stateColumn == null) {
+			nodeTable.createListColumn(GROUP_STATE_ATTR, String.class, true);
+			newList.add(netName+":"+collapsed);
+		} else {
+			List<String> stateList = net.getRow(groupNode).getList(GROUP_STATE_ATTR, String.class);
+			for (String s: stateList) {
+				String[] tokens = s.split(":");
+				if (netName.equals(tokens[0])) {
+					newList.add(netName+":"+collapsed);
+				} else {
+					newList.add(s);
+				}
+			}
+		}
+		rootNetwork.getRow(groupNode).set(GROUP_STATE_ATTR, newList);
+		return;
+	}
+
+	private boolean getGroupStateAttribute(CyNetwork net) {
+		CyTable nodeTable = net.getDefaultNodeTable();
+		CyColumn stateColumn = nodeTable.getColumn(GROUP_STATE_ATTR);
+		String netName = net.getRow(net).get(net.NAME, String.class);
+		if (stateColumn == null || !nodeTable.rowExists(groupNode.getSUID())) {
+			return false;
+		}
+		List<String> stateList = net.getRow(groupNode).getList(GROUP_STATE_ATTR, String.class);
+		for (String s: stateList) {
+			String[] tokens = s.split(":");
+			if (netName.equals(tokens[0])) {
+				return Boolean.valueOf(tokens[1]).booleanValue();
+			}
+		}
+		return false;
+	}
+
+	private void updateCountAttributes(CyNetwork net) {
+		CyTable nodeTable = net.getDefaultNodeTable();
+		CyColumn childrenColumn = nodeTable.getColumn(CHILDREN_ATTR);
+		if (childrenColumn == null) {
+			nodeTable.createColumn(CHILDREN_ATTR, Integer.class, true);
+		}
+
+		if (!nodeTable.rowExists(groupNode.getSUID())) {
+			// Shouldn't happen!
+			return;
+		}
+		CyRow groupRow = nodeTable.getRow(groupNode.getSUID());
+		groupRow.set(CHILDREN_ATTR, groupNet.getNodeCount());
+
+		CyColumn descendentsColumn = nodeTable.getColumn(DESCENDENTS_ATTR);
+		if (descendentsColumn == null) {
+			nodeTable.createColumn(DESCENDENTS_ATTR, Integer.class, true);
+		}
+
+		int nDescendents = groupNet.getNodeCount();
+		for (CyNode node: groupNet.getNodeList()) {
+			if (mgr.isGroup(node, rootNetwork)) {
+				Integer d = nodeTable.getRow(node.getSUID()).get(DESCENDENTS_ATTR, Integer.class);
+				if (d != null)
+					nDescendents += d.intValue();
+			}
+		}
+		groupRow.set(DESCENDENTS_ATTR, nDescendents);
 	}
 
 }
