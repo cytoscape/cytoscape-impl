@@ -50,7 +50,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.EnumSet;
-import java.util.Collection;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
@@ -110,18 +109,18 @@ class MergeAttributeTable extends JTable{
         return mergedNetworkName;
     }
     
-    private String[] getComboboxOption(int col) {
+    private Vector<String> getComboboxOption(int col) {
         CyNetwork net = model.getNetork(col);
         CyTable table = attributeMapping.getCyTable(net);
-        Collection<CyColumn> cyCols = table.getColumns();
-        int n = cyCols.size();
-        String[] ret = new String[n+1];
-        int i=0;
-        for (CyColumn cyCol : cyCols) {
-            ret[i++] = cyCol.getName();
-        }
-        ret[n] = nullAttr;
-        return ret;
+        Vector<String> colNames = new Vector<String>();
+            for (CyColumn cyCol : table.getColumns()) {
+                String colName = cyCol.getName();
+                if (!colName.equals("SUID") && !colName.equals("selected")) {
+                    colNames.add(colName);
+                }
+            }
+        colNames.add(nullAttr);
+        return colNames;
     }
 
     protected void setColumnEditorAndRenderer() {
@@ -138,7 +137,7 @@ class MergeAttributeTable extends JTable{
             final TableColumn column = getColumnModel().getColumn(i);
 
             if (this.isColumnOriginalNetwork(i)) {
-                final String[] attrs = getComboboxOption(i);
+                final Vector<String> attrs = getComboboxOption(i);
                 final JComboBox comboBox = new JComboBox(attrs);
                 column.setCellEditor(new DefaultCellEditor(comboBox));
                 column.setCellRenderer(new TableCellRenderer() {
@@ -184,17 +183,7 @@ class MergeAttributeTable extends JTable{
                                     boolean isSelected, boolean hasFocus,
                                     int row, int column) {
 
-                                if (row<2) {
-                                        JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                                        label.setBackground(Color.LIGHT_GRAY);
-                                        label.setToolTipText("Reserved by system");
-                                        if (isSelected) {
-                                                label.setForeground(table.getSelectionForeground());
-                                        } else {
-                                                label.setForeground(table.getForeground());
-                                        }
-                                        return label;
-                                } else if (row>=table.getRowCount()-1) {
+                                if (row>=table.getRowCount()-1) {
                                         JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                                         label.setBackground(Color.LIGHT_GRAY);
                                         if (isSelected) {
@@ -204,7 +193,7 @@ class MergeAttributeTable extends JTable{
                                         }
                                         return label;
                                 } else {
-                                        if (isNode && row==2) {
+                                        if (isNode && row==0) {
                                                 JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                                                 label.setForeground(Color.RED);
                                                 if (isSelected) {
@@ -268,17 +257,7 @@ class MergeAttributeTable extends JTable{
                                     boolean isSelected, boolean hasFocus,
                                     int row, int column) {
 
-                                if (row<2) {
-                                        JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                                        label.setBackground(Color.LIGHT_GRAY);
-                                        label.setToolTipText("Reserved by system");
-                                        if (isSelected) {
-                                                label.setForeground(table.getSelectionForeground());
-                                        } else {
-                                                label.setForeground(table.getForeground());
-                                        }
-                                        return label;
-                                } else if (row>=table.getRowCount()-1) {
+                                if (row>=table.getRowCount()-1) {
                                         JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                                         label.setBackground(Color.LIGHT_GRAY);
                                         if (isSelected) {

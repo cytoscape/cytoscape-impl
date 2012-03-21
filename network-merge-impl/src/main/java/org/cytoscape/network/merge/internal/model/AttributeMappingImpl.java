@@ -391,7 +391,7 @@ public class AttributeMappingImpl implements AttributeMapping {
         final List<String> attributeNames = new ArrayList<String>();
         for (CyColumn col : table.getColumns()) {
             String colName = col.getName();
-            if (!colName.equals("SUID")) { //skip SUID
+            if (!colName.equals("SUID") && !colName.equals("selected")) { //skip SUID & selected
                 attributeNames.add(col.getName());
             }
         }

@@ -36,21 +36,17 @@
 
 package org.cytoscape.network.merge.internal.ui;
 
-import org.cytoscape.network.merge.internal.model.MatchingAttribute;
-
 import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Arrays;
-
+import java.util.Vector;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 
 /**
  * Table for selecting which attribute to use for matching nodes 
@@ -75,17 +71,25 @@ class MatchNodeTable extends JTable{
             
             CyNetwork net = model.getNetork(i);
             CyTable table = net.getDefaultNodeTable();
-            CyColumn[] cols = table.getColumns().toArray(new CyColumn[0]);
             
-            String[] colNames = new String[cols.length];
-            for (int j=0; j<cols.length; j++) {
-                colNames[j] = cols[j].getName();
+            Vector<String> colNames = new Vector<String>();
+            for (CyColumn cyCol : table.getColumns()) {
+                String colName = cyCol.getName();
+                if (!colName.equals("SUID") && !colName.equals("selected")) {
+                    colNames.add(colName);
+                }
             }
             
+            CyColumn cyCol = matchingAttribute.getAttributeForMatching(net);
+            
             JComboBox comboBox = new JComboBox(colNames);
-            column.setCellEditor(new DefaultCellEditor(comboBox));
-
             ComboBoxTableCellRenderer comboRenderer = new ComboBoxTableCellRenderer(colNames);
+            if (cyCol!=null) {
+                String colName = cyCol.getName();
+                comboBox.setSelectedItem(colName);
+                comboRenderer.setSelectedItem(colName);
+            }
+            column.setCellEditor(new DefaultCellEditor(comboBox));
             column.setCellRenderer(comboRenderer);
         }
     }
@@ -137,9 +141,15 @@ class MatchNodeTable extends JTable{
 
         @Override
         public void setValueAt(Object value, int row, int col) {
-            if (value!=null);
-            matchingAttribute.putAttributeForMatching(networks.get(col), (CyColumn)value);
-            fireTableDataChanged();
+            if (value!=null) {
+                CyNetwork net = networks.get(col);
+                CyTable table = net.getDefaultNodeTable();
+                CyColumn cyCol = table.getColumn((String)value);
+                if (cyCol!=null) {
+                    matchingAttribute.putAttributeForMatching(net, cyCol);
+                    fireTableDataChanged();
+                }
+            }
         }
 
         @Override

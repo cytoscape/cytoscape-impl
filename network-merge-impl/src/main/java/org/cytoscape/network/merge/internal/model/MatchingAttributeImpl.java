@@ -43,6 +43,7 @@ import java.util.HashMap;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 
 /**
  * Class to store the information which attribute to be used 
@@ -86,7 +87,10 @@ public class MatchingAttributeImpl implements MatchingAttribute {
             throw new java.lang.NullPointerException();
         }
         
-        putAttributeForMatching(net,net.getDefaultNodeTable().getPrimaryKey());
+        //putAttributeForMatching(net,net.getDefaultNodeTable().getPrimaryKey());
+        CyTable table = net.getDefaultNodeTable();
+        CyColumn col = table.getColumn("name");
+        putAttributeForMatching(net,col);
     }
             
     @Override
