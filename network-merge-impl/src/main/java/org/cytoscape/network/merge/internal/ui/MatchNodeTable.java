@@ -97,7 +97,6 @@ class MatchNodeTable extends JTable{
     public void fireTableStructureChanged() {
         model.fireTableStructureChanged();
         setColumnEditorAndCellRenderer();
-        //setCellRenderer();
     }
 
     private class MatchNodeTableModel extends AbstractTableModel {
@@ -125,7 +124,7 @@ class MatchNodeTable extends JTable{
 
         @Override
         public Object getValueAt(int row, int col) {
-            return matchingAttribute.getAttributeForMatching(networks.get(col));
+            return matchingAttribute.getAttributeForMatching(networks.get(col)).getName();
         }
 
         @Override

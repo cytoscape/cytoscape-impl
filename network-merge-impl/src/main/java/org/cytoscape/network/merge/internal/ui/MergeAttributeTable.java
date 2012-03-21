@@ -153,11 +153,7 @@ class MergeAttributeTable extends JTable{
                                 if (row<(isNode?1:0)) {//TODO Cytoscape3
                                         JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                                         label.setBackground(Color.LIGHT_GRAY);
-                                        if (row==0) {
-                                                label.setToolTipText("Change this in the matching node table above");
-                                        } else {
-                                                label.setToolTipText("Reserved by system");
-                                        }
+                                        label.setToolTipText("Change this in the matching node table above");
                                         return label;
                                 } else {
                                         Component renderer = comboBoxRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -425,8 +421,8 @@ class MergeAttributeTable extends JTable{
             return null;
         }
 
-        //@Override
-        public String getValueAt(final int row, final int col) {
+        @Override
+        public Object getValueAt(final int row, final int col) {
             final int iAttr = row; //TODO used in Cytoscape3
 
             if (row==getRowCount()-1) {
@@ -442,7 +438,7 @@ class MergeAttributeTable extends JTable{
             }
 
             if (isColumnMergedType(col)) {
-                return attributeMapping.getMergedAttributeType(iAttr).toString();
+                return attributeMapping.getMergedAttributeType(iAttr);
             }
 
             return null;
