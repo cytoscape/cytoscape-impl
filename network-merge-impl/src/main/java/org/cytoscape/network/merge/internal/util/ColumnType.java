@@ -103,7 +103,7 @@ public enum ColumnType {
     }
     
     public static ColumnType getType(CyColumn col) {
-        Class<?> type = col.getClass();
+        Class<?> type = col.getType();
         if (List.class.isAssignableFrom(type)) {
             return listTypes.get(col.getListElementType());
         } else {

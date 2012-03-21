@@ -425,9 +425,7 @@ class MergeAttributeTable extends JTable{
 
         //@Override
         public int getRowCount() {
-            int n = attributeMapping.getSizeMergedAttributes();
-            //n = n+1; // +1: add an empty row in the end (TODO: use this one in Cytoscape3.0)
-            n = n+3; //TODO REMOVE in Cytoscape3.0
+            int n = attributeMapping.getSizeMergedAttributes()+1; // +1: add an empty row in the end
             return attributeMapping.getSizeNetwork()==0?0:n; 
         }
 

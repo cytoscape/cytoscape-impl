@@ -382,13 +382,18 @@ public class AttributeMappingImpl implements AttributeMapping {
 
     @Override
     public void addNetwork(final CyNetwork net, CyTable table) {
-        if (net==null) {
+        if (net==null || table==null) {
             throw new java.lang.NullPointerException();
         }
         
+        cyTables.put(net, table);
+        
         final List<String> attributeNames = new ArrayList<String>();
         for (CyColumn col : table.getColumns()) {
-            attributeNames.add(col.getName());
+            String colName = col.getName();
+            if (!colName.equals("SUID")) { //skip SUID
+                attributeNames.add(col.getName());
+            }
         }
         Collections.sort(attributeNames);
 

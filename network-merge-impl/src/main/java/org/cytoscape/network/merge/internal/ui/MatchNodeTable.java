@@ -77,10 +77,15 @@ class MatchNodeTable extends JTable{
             CyTable table = net.getDefaultNodeTable();
             CyColumn[] cols = table.getColumns().toArray(new CyColumn[0]);
             
-            JComboBox comboBox = new JComboBox(cols);
+            String[] colNames = new String[cols.length];
+            for (int j=0; j<cols.length; j++) {
+                colNames[j] = cols[j].getName();
+            }
+            
+            JComboBox comboBox = new JComboBox(colNames);
             column.setCellEditor(new DefaultCellEditor(comboBox));
 
-            ComboBoxTableCellRenderer comboRenderer = new ComboBoxTableCellRenderer(cols);
+            ComboBoxTableCellRenderer comboRenderer = new ComboBoxTableCellRenderer(colNames);
             column.setCellRenderer(comboRenderer);
         }
     }
