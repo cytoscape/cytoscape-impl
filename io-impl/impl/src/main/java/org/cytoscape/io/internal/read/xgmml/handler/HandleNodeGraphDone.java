@@ -28,7 +28,6 @@
 package org.cytoscape.io.internal.read.xgmml.handler;
 
 import org.cytoscape.io.internal.read.xgmml.ParseState;
-import org.cytoscape.model.CyNode;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -37,9 +36,10 @@ public class HandleNodeGraphDone extends HandleGraphDone {
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
 		graphDone();
+		manager.setCurrentElement(manager.getCurrentGroup().getGroupNode());
 		
-		CyNode node = manager.getCompoundNodeStack().pop();
-		manager.setCurrentElement(node);
+		if (!manager.getGroupStack().empty())
+			manager.getGroupStack().pop();
 		
 		return ParseState.NODE_ATT;
 	}

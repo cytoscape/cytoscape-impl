@@ -82,7 +82,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 		
 		final String id = getLabel(atts); // This is the network ID in 2.x
-		addCurrentNetwork(id, currentNet, atts);
+		addCurrentNetwork(id, currentNet, atts, true);
 		
 		return current;
 	}
@@ -104,7 +104,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 		
 		final Object id = getId(atts);
-		addCurrentNetwork(id, currentNet, atts);
+		addCurrentNetwork(id, currentNet, atts, true);
 		
 		return current;
 	}
@@ -123,7 +123,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 
 		final Object id = getId(atts);
-		addCurrentNetwork(id, currentNet, atts);
+		addCurrentNetwork(id, currentNet, atts, true);
 
 		return current;
 	}
@@ -132,9 +132,10 @@ public class HandleGraph extends AbstractHandler {
 	 * @param oldId The original Id of the graph element. If null, one will be created.
 	 * @param net Can be null if just adding an XLink to an existing network
 	 * @param atts The attributes of the graph tag
+	 * @param isPublic Should be true for networks that must be registered later.
 	 * @return The string identifier of the network
 	 */
-	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts) {
+	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts, boolean isPublic) {
 		if (oldId == null)
 			oldId = String.format("_graph%s_%s", manager.graphCount, net.getSUID());
 		
@@ -144,7 +145,7 @@ public class HandleGraph extends AbstractHandler {
 		if (net != null) {
 			manager.getCache().cache(oldId, net);
 			
-			if (!(net instanceof CyRootNetwork))
+			if (isPublic && !(net instanceof CyRootNetwork))
 				manager.addNetwork(net);
 			
 			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0)

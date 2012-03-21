@@ -27,15 +27,15 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 /**
- * This handler parses the node graph elements to extract the network pointer id.
+ * This handler parses nested node graph elements in order to create CyGroups.
  */
 public class HandleNodeGraph extends HandleGraph {
 
@@ -43,33 +43,14 @@ public class HandleNodeGraph extends HandleGraph {
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
 		manager.graphCount++;
 		
+		// Create a group
 		final CyNode node = manager.getCurrentNode();
-		manager.getCompoundNodeStack().push(node);
+		final CyGroup group = manager.createGroup(node);
 		
-		final String href = atts.getValue(ReadDataManager.XLINK, "href");
-		Object netId = null;
-		CyNetwork network = null;
-		
-		if (href != null) {
-			// The network has already been created
-			netId = AttributeValueUtil.getIdFromXLink(href);
-			
-			if (netId == null)
-				logger.error("The node's network pointer will not be created: "
-						+ "the network ID cannot be parsed from the XLink reference.");
-			
-			addCurrentNetwork(netId, network, atts);
-		} else {
-			netId = getId(atts);
-			
-			// Create network
-			final CyRootNetwork rootNet = manager.getRootNetwork();
-			network = rootNet.addSubNetwork();
-			netId = addCurrentNetwork(netId, network, atts);
-		}
-		
-		if (netId != null)
-			manager.getCache().addNetworkPointer(node, netId);
+		// Do not create a CySubNetwork! Just use the one that is created by the group.
+		final CyNetwork grNet = group.getGroupNetwork();
+		final Object oldId = getId(atts);
+		addCurrentNetwork(oldId, grNet, atts, false);
 
 		return current;
     }

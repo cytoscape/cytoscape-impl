@@ -28,8 +28,6 @@
 package org.cytoscape.io.internal.read.xgmml.handler;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.read.xgmml.MetadataEntries;
 import org.cytoscape.io.internal.read.xgmml.MetadataParser;
@@ -37,7 +35,9 @@ import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
@@ -54,8 +54,6 @@ public class AttributeValueUtil {
     static final String ATTR_VALUE = "value";
     static final String LOCKED_VISUAL_PROPS = "lockedVisualProperties";
     
-    static final Pattern XLINK_PATTERN = Pattern.compile(".*#(-?\\d+)");
-
     private Locator locator;
 
     private final ReadDataManager manager;
@@ -176,9 +174,21 @@ public class AttributeValueUtil {
     	final boolean isHidden = hiddenStr != null ? Boolean.parseBoolean(hiddenStr) : false;
         
     	final String tableName = isHidden ? CyNetwork.HIDDEN_ATTRS : CyNetwork.DEFAULT_ATTRS;
-    	final CyNetwork curNet = manager.getCurrentNetwork();
 		final CyTableEntry curElement = manager.getCurrentElement();
-        final CyRow row = curNet.getRow(curElement, tableName);
+		CyNetwork curNet = manager.getCurrentNetwork();
+        
+		// This is necessary, because external edges of 2.x Groups may be written
+		// under the group subgraph, but the edge will be created on the root-network only,
+		if (curElement instanceof CyNode || curElement instanceof CyEdge) {
+			boolean containsElement = (curElement instanceof CyNode && curNet.containsNode((CyNode) curElement));
+			containsElement |= (curElement instanceof CyEdge && curNet.containsEdge((CyEdge) curElement));
+			
+			// So if the current network does not contain this element, the CyRootNetwork should contain it
+			if (!containsElement)
+				curNet = manager.getRootNetwork();
+		}
+		
+		final CyRow row = curNet.getRow(curElement, tableName);
         final CyColumn column = row.getTable().getColumn(name);
         
         Object value = null;
@@ -240,19 +250,5 @@ public class AttributeValueUtil {
         }
     }
     
-    public static double parseDocumentVersion(String value) {
-		double version = 0.0;
-    	
-    	try {
-			version = Double.parseDouble(value);
-		} catch (Exception nfe) {
-		}
-    	
-    	return version;
-	}
     
-	public static Long getIdFromXLink(String href) {
-		Matcher matcher = XLINK_PATTERN.matcher(href);
-		return matcher.matches() ? Long.valueOf(matcher.group(1)) : null;
-	}
 }

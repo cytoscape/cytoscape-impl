@@ -28,9 +28,11 @@
 package org.cytoscape.io.internal.util;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -46,8 +48,6 @@ public class ReadCache {
 	/* Map of old ID to node/edge indexes */
 	private Map<Object, Integer> indexMap;
 	
-	private Map<CyNode, Object/*network's id*/> networkPointerMap;
-	
 	/* Maps of XML ID's to elements (the keys should be a Long if reading a Cy3 session file) */
 	private Map<Object, CyNetwork> networkByIdMap;
 	private Map<Object, CyNetworkView> networkViewByIdMap;
@@ -59,6 +59,9 @@ public class ReadCache {
 	
 	private Map<CyNetwork, Set<Long>> nodeLinkMap;
 	private Map<CyNetwork, Set<Long>> edgeLinkMap;
+	
+	private Map<CyNode, Object/*network's id*/> networkPointerMap;
+	private Set<CyGroup> groups;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReadCache.class);
 	
@@ -76,6 +79,7 @@ public class ReadCache {
 		nodeLinkMap = new HashMap<CyNetwork, Set<Long>>();
 		edgeLinkMap = new HashMap<CyNetwork, Set<Long>>();
 		networkPointerMap = new HashMap<CyNode, Object>();
+		groups = new HashSet<CyGroup>();
 	}
 	
 	public void dispose() {
@@ -89,6 +93,7 @@ public class ReadCache {
 		nodeLinkMap = null;
 		edgeLinkMap = null;
 		networkPointerMap = null;
+		groups = null;
 	}
 	
 	/**
@@ -116,6 +121,13 @@ public class ReadCache {
 			indexMap.put(xgmmlId, index);
 		}
     }
+	
+	public void cache(CyGroup group) {
+		if (group == null)
+			throw new NullPointerException("Cannot parse group: null.");
+		
+		groups.add(group);
+	}
 	
 	/**
 	 * Probably only necessary when parsing 2.x session files.
@@ -205,7 +217,11 @@ public class ReadCache {
 	public Map<Object, CyNode> getNodeByNameMap() {
 		return nodeByNameMap;
 	}
-
+	
+	public Set<CyGroup> getGroups() {
+		return groups;
+	}
+	
 	public void createNetworkPointers() {
 		if (networkPointerMap != null) {
 			// Iterate the rows and recreate the network pointers

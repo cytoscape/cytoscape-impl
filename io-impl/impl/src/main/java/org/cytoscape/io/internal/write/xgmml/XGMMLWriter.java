@@ -45,7 +45,6 @@ import java.util.Set;
 
 import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -56,7 +55,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -129,7 +127,6 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     private final VisualLexicon visualLexicon;
     private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
     private final CyNetworkManager networkMgr;
-    private final CyRootNetworkManager rootNetworkMgr;
 
     private HashMap<CyNode, CyNode> writtenNodeMap = new HashMap<CyNode, CyNode>();
     private HashMap<CyEdge, CyEdge> writtenEdgeMap = new HashMap<CyEdge, CyEdge>();
@@ -146,10 +143,8 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
                        final RenderingEngineManager renderingEngineMgr,
                        final CyNetworkView networkView,
                        final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-                       final CyNetworkManager networkMgr,
-                       final CyRootNetworkManager rootNetworkMgr) {
-		this(outputStream, renderingEngineMgr, networkView.getModel(), unrecognizedVisualPropertyMgr, networkMgr,
-				rootNetworkMgr);
+                       final CyNetworkManager networkMgr) {
+		this(outputStream, renderingEngineMgr, networkView.getModel(), unrecognizedVisualPropertyMgr, networkMgr);
 		this.networkView = networkView;
     }
     
@@ -157,12 +152,10 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
                        final RenderingEngineManager renderingEngineMgr,
                        final CyNetwork network,
                        final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-                       final CyNetworkManager networkMgr,
-                       final CyRootNetworkManager rootNetworkMgr) {
+                       final CyNetworkManager networkMgr) {
 		this.outputStream = outputStream;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.networkMgr = networkMgr;
-		this.rootNetworkMgr = rootNetworkMgr;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
 		
 		if (network instanceof CyRootNetwork) {
@@ -452,9 +445,15 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			writeAttributePair("id", node.getSUID());
 			writeAttributePair("label", getLabel(net, node));
 			
-			final CyNetwork netPointer = node.getNetworkPointer();
+			if (sessionFormat) {
+				// Write node's network pointer
+				final CyNetwork netPointer = node.getNetworkPointer();
+				
+				if (netPointer != null)
+					writeAttributePair("cy:networkPointer", netPointer.getSUID());
+			}
 			
-			if (sessionFormat && networkView == null && netPointer == null) {
+			if (sessionFormat && networkView == null) {
 				write("/>\n");
 			} else {
 				write(">\n");
@@ -462,28 +461,6 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 				
 				// Output the node attributes
 				writeAttributes(net.getRow(node));
-				
-		        // Write node's sub-graph:
-				if (sessionFormat) {
-					if (netPointer != null) {
-						// Write the network pointer as a sub-graph reference (XLink)...
-						CyRootNetwork netPointerRoot = rootNetworkMgr.getRootNetwork(netPointer);
-						
-						// This sub-network has already been written or belongs to another XGMML file...
-						String linkId = "" + netPointer.getSUID();
-						boolean sameRoot = netPointerRoot.equals(rootNetworkMgr.getRootNetwork(net));
-						
-						if (!sameRoot) {
-							// This XGMML file will be saved as part of a CYS file,
-							// and the sub-network does NOT belong to the same root-network
-							// ...So add the other root-network's file name to the XLink URI
-							final String fileName = SessionUtil.getXGMMLFilename(netPointerRoot);
-							linkId = fileName + linkId;
-						}
-						
-						writeSubGraphReference(linkId);
-					}
-				}
 				
 		        // Output the node graphics if we have a view and it is a simple XGMML export
 				if (!sessionFormat && networkView != null)

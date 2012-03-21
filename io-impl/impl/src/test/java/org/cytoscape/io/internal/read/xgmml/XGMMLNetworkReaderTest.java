@@ -1,14 +1,23 @@
 package org.cytoscape.io.internal.read.xgmml;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.GroupTestSupport;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.ReadCache;
@@ -17,6 +26,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
@@ -62,16 +72,14 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		NetworkViewTestSupport networkViewTestSupport = new NetworkViewTestSupport();
 		networkViewFactory = networkViewTestSupport.getNetworkViewFactory();
 		
+		GroupTestSupport groupTestSupport = new GroupTestSupport();
+		CyGroupFactory groupFactory = groupTestSupport.getGroupFactory();
+		
 		readCache = new ReadCache();
-		readDataMgr = new ReadDataManager(readCache, mock(EquationCompiler.class), networkFactory, rootNetworkMgr);
+		readDataMgr = new ReadDataManager(readCache, mock(EquationCompiler.class), networkFactory, rootNetworkMgr, groupFactory);
 		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr);
 		handlerFactory.init();
 		parser = new XGMMLParser(handlerFactory, readDataMgr);
-		
-		ByteArrayInputStream is = new ByteArrayInputStream("".getBytes("UTF-8")); // TODO: use XGMML string or load from file
-
-		reader = new XGMMLNetworkReader(is, networkViewFactory, networkFactory, renderingEngineMgr, rootNetworkMgr,
-				readDataMgr, parser, unrecognizedVisualPropertyMgr);
 
 		CyTableManager tableMgr= mock(CyTableManager.class);
 		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);
@@ -107,9 +115,48 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		CyTable hiddenEdgeTbl = net.getRow(net.getEdgeList().get(0), CyNetwork.HIDDEN_ATTRS).getTable();
 		assertNotNull(hiddenEdgeTbl.getColumn("_private_real"));
 	}
+	
+	@Test
+	public void testParseExpandedGroup() throws Exception {
+		CyNetworkView[] views = getViews("group_2x_expanded.xgmml");
+		// The group network should not be registered, so the network list must contain only the base network
+		assertEquals(1, reader.getNetworks().length);
+		CyNetwork net = checkSingleNetwork(views, 3, 2);
+		
+		// Test CyGroup
+		Set<CyGroup> groups = reader.getGroups();
+		assertEquals(1, groups.size());
+		
+		CyGroup gr = groups.toArray(new CyGroup[1])[0];
+		assertFalse(gr.isCollapsed(net));
+		assertEquals(2, gr.getNodeList().size());
+//		assertEquals(1, gr.getInternalEdgeList().size()); // TODO: fix it
+		assertEquals(1, gr.getExternalEdgeList().size());
+	}
+	
+	@Test
+	public void testParseCollapsedGroup() throws Exception {
+		CyNetworkView[] views = getViews("group_2x_collapsed.xgmml");
+		// The group network should not be registered, so the network list must contain only the base network
+		assertEquals(1, reader.getNetworks().length);
+		CyNetwork net = checkSingleNetwork(views, 2, 1);
+		
+		// Test CyGroup
+		Set<CyGroup> groups = reader.getGroups();
+		assertEquals(1, groups.size());
+		
+		CyGroup gr = groups.toArray(new CyGroup[1])[0];
+		assertTrue(gr.isCollapsed(net));
+		assertEquals(2, gr.getNodeList().size());
+		assertEquals(1, gr.getInternalEdgeList().size());
+		assertEquals(1, gr.getExternalEdgeList().size());
+	}
 
 	@Test
-	public void testIsLockedVisualProperty() {
+	public void testIsLockedVisualProperty() throws Exception {
+		reader = new XGMMLNetworkReader(new ByteArrayInputStream("".getBytes("UTF-8")), viewFactory, netFactory,
+				renderingEngineMgr, rootNetworkMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
+		
 		CyNetwork network = mock(CyNetwork.class);
 		assertFalse(reader.isLockedVisualProperty(network, "GRAPH_VIEW_ZOOM"));
 		assertFalse(reader.isLockedVisualProperty(network, "GRAPH_VIEW_CENTER_X"));
@@ -148,16 +195,16 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 
 	private CyNetworkView[] getViews(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
-		XGMMLNetworkReader snvp = new XGMMLNetworkReader(new FileInputStream(f), viewFactory, netFactory,
+		reader = new XGMMLNetworkReader(new FileInputStream(f), viewFactory, netFactory,
 				renderingEngineMgr, rootNetworkMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
-		snvp.run(taskMonitor);
+		reader.run(taskMonitor);
 
-		final CyNetwork[] networks = snvp.getNetworks();
+		final CyNetwork[] networks = reader.getNetworks();
 		final CyNetworkView[] views = new CyNetworkView[networks.length];
 		int i = 0;
 
 		for (CyNetwork network : networks) {
-			views[i] = snvp.buildCyNetworkView(network);
+			views[i] = reader.buildCyNetworkView(network);
 			i++;
 		}
 

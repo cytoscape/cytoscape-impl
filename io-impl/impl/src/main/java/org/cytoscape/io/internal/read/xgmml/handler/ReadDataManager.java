@@ -40,6 +40,8 @@ import java.util.Stack;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -56,6 +58,7 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 public class ReadDataManager {
 
@@ -75,8 +78,12 @@ public class ReadDataManager {
 	
 	/* Stack of original network IDs */
 	private Stack<Object> networkStack;
-	/* Stack of nodes that have a nested graph*/
-	private Stack<CyNode> compoundNodeStack;
+	
+	/* Groups */
+	private Stack<CyGroup> groupStack;
+	private Map<CyNode/*group node*/, Set<CyNetwork>/*networks that contain the group*/> groupNodeNetworkMap;
+	private Map<CyGroup/*group*/, Set<Object>/*node IDs*/> innerNodes;
+	private Map<CyGroup/*group*/, Set<Object>/*edge IDs*/> innerEdges;
 	
 	/* Attribute values */
 	protected ParseState attState = ParseState.NONE;
@@ -125,17 +132,20 @@ public class ReadDataManager {
 	private final EquationCompiler equationCompiler;
 	private final CyNetworkFactory networkFactory;
 	private final CyRootNetworkManager rootNetworkManager;
+	private final CyGroupFactory groupFactory;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReadDataManager.class);
 
 	public ReadDataManager(final ReadCache cache,
 						   final EquationCompiler equationCompiler,
 						   final CyNetworkFactory networkFactory,
-						   final CyRootNetworkManager rootNetworkManager) {
+						   final CyRootNetworkManager rootNetworkManager,
+						   final CyGroupFactory groupFactory) {
 		this.equationCompiler = equationCompiler;
 		this.cache = cache;
 		this.networkFactory = networkFactory;
 		this.rootNetworkManager = rootNetworkManager;
+		this.groupFactory = groupFactory;
 		init();
 	}
 
@@ -175,7 +185,10 @@ public class ReadDataManager {
 		edgeBendY = null;
 		
 		networkStack = new Stack<Object>();
-		compoundNodeStack = new Stack<CyNode>();
+		groupStack = new Stack<CyGroup>();
+		groupNodeNetworkMap = new HashMap<CyNode, Set<CyNetwork>>();
+		innerNodes = new HashMap<CyGroup, Set<Object>>();
+		innerEdges = new HashMap<CyGroup, Set<Object>>();
 		
 		networks = new LinkedHashSet<CyNetwork>();
 		equations = new Hashtable<CyRow, Map<String, String>>();
@@ -196,6 +209,14 @@ public class ReadDataManager {
 		// At least it should get rid of references to CyNodes, CyNodes and CyEdges!
 		networks = null;
 		equations = null;
+		currentElement = null;
+		currentNetwork = null;
+		currentNode = null;
+		currentEdge = null;
+		currentRow = null;
+		groupNodeNetworkMap = null;
+		innerNodes = null;
+		innerEdges = null;
 		
 		// Important: graphics related maps and lists cannot be disposed here,
 		// because they may be necessary when creating the network views.
@@ -209,7 +230,7 @@ public class ReadDataManager {
 	}
 	
 	public void setDocumentVersion(String documentVersion) {
-		this.documentVersion = AttributeValueUtil.parseDocumentVersion(documentVersion);
+		this.documentVersion = XGMMLParseUtil.parseDocumentVersion(documentVersion);
 	}
 
 	public boolean isSessionFormat() {
@@ -384,9 +405,9 @@ public class ReadDataManager {
 	protected Stack<Object> getNetworkIDStack() {
 		return networkStack;
 	}
-
-	public Stack<CyNode> getCompoundNodeStack() {
-		return compoundNodeStack;
+	
+	public Stack<CyGroup> getGroupStack() {
+		return groupStack;
 	}
 
 	protected CyRootNetwork createRootNetwork() {
@@ -491,7 +512,7 @@ public class ReadDataManager {
 	
 	protected void addElementLink(String href, Class<? extends CyTableEntry> clazz) {
 		Map<CyNetwork, Set<Long>> map = null;
-		Long id = AttributeValueUtil.getIdFromXLink(href);
+		Long id = XGMMLParseUtil.getIdFromXLink(href);
 		
 		if (clazz == CyNode.class)      map = cache.getNodeLinks();
 		else if (clazz == CyEdge.class) map = cache.getEdgeLinks();
@@ -508,6 +529,61 @@ public class ReadDataManager {
 			
 			idSet.add(id);
 		}
+	}
+	
+	protected void addInnerNode(final CyGroup group, final Object oldNodeId) throws SAXException {
+		if (group == null) throw new SAXException("Cannot parse inner node: group is null.");
+		if (oldNodeId == null) throw new SAXException("Cannot parse inner node: node id is null.");
+		
+		Set<Object> nodeIDs = innerNodes.get(group);
+		
+		if (nodeIDs == null) {
+			nodeIDs = new HashSet<Object>();
+			innerNodes.put(group, nodeIDs);
+		}
+		
+		nodeIDs.add(oldNodeId);
+	}
+	
+	protected void addInnerEdge(final CyGroup group, final Object oldEdgeId) throws SAXException {
+		if (group == null) throw new SAXException("Cannot parse inner edge: group is null.");
+		if (oldEdgeId == null) throw new SAXException("Cannot parse inner edge: edge id is null.");
+		
+		Set<Object> edgeIDs = innerEdges.get(group);
+		
+		if (edgeIDs == null) {
+			edgeIDs = new HashSet<Object>();
+			innerEdges.put(group, edgeIDs);
+		}
+		
+		edgeIDs.add(oldEdgeId);
+	}
+	
+	protected CyGroup createGroup(CyNode groupNode) {
+		final CyNetwork curNet = getCurrentNetwork();
+		final CyGroup group = groupFactory.createGroup(curNet, groupNode, null, null, true);
+		
+		groupStack.add(group);
+		cache.cache(group);
+		
+		return group;
+	}
+
+	
+	protected boolean hasGroups() {
+		return !groupNodeNetworkMap.isEmpty();
+	}
+	
+	protected Map<CyNode, Set<CyNetwork>> getGroupNodeNetworkMap() {
+		return groupNodeNetworkMap;
+	}
+
+	protected Map<CyGroup, Set<Object>> getInnerNodes() {
+		return innerNodes;
+	}
+
+	protected Map<CyGroup, Set<Object>> getInnerEdges() {
+		return innerEdges;
 	}
 	
 	public Object getNetworkViewId() {
@@ -574,6 +650,10 @@ public class ReadDataManager {
 		this.currentRow = row;
 	}
 	
+	public CyGroup getCurrentGroup() {
+		return groupStack.isEmpty() ? null : groupStack.peek();
+	}
+
 	protected CyTableEntry getCurrentElement() {
 		return currentElement;
 	}

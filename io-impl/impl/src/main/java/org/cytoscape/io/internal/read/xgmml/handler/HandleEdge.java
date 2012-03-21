@@ -27,10 +27,13 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -39,11 +42,13 @@ public class HandleEdge extends AbstractHandler {
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
 		// Get the label, id, source and target
+		Object id = null;
 		String href = atts.getValue(ReadDataManager.XLINK, "href");
+		boolean duplicate = false;
 		
 		if (href == null) {
 			// Create the edge:
-			Object id = getId(atts);
+			id = getId(atts);
 			String label = getLabel(atts);
 			Object sourceId = asLongOrString(atts.getValue("source"));
 			Object targetId = asLongOrString(atts.getValue("target"));
@@ -97,15 +102,37 @@ public class HandleEdge extends AbstractHandler {
 				label = String.format("%s (%s) %s", sourceId, (directed ? "directed" : "undirected"), targetId);
 			
 			if (sourceNode != null && targetNode != null) {
-				final CyEdge edge = manager.createEdge(sourceNode, targetNode, id, label, directed);
+				CyNetwork curNet = manager.getCurrentNetwork();
+				
+				// We need to do this because of groups that are exported from Cytoscape 2.x.
+				// The problem is that internal edges are duplicated in the document when the group is expanded,
+				// but we don't want to create them twice.
+				boolean checkDuplicate = manager.hasGroups() && manager.getDocumentVersion() > 0.0
+						&& manager.getDocumentVersion() < 3.0;
+				CyEdge edge = checkDuplicate ? manager.getCache().getEdge(id) : null;
+				duplicate = edge != null;
+				
+				if (edge == null) {
+					edge = manager.createEdge(sourceNode, targetNode, id, label, directed);
+				} else if (curNet instanceof CySubNetwork && !curNet.containsEdge(edge)) {
+					((CySubNetwork) curNet).addEdge(edge);
+					manager.setCurrentElement(edge);
+				}
 				
 				if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) {
-					CyRow row = manager.getCurrentNetwork().getRow(edge);
-					row.set(CyEdge.NAME, label);
-					row.set(CyEdge.INTERACTION, interaction);
+					// This check is necessary, because meta-edges of 2.x Groups may be written
+					// under the group subgraph, but the edge will be created on the root-network only.
+					if (!curNet.containsEdge(edge))
+						curNet = manager.getRootNetwork();
 					
-					if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork()) {
-						row = manager.getRootNetwork().getRow(edge);
+					if (curNet != null && curNet.containsEdge(edge)) {
+						CyRow row = curNet.getRow(edge);
+						row.set(CyEdge.NAME, label);
+						row.set(CyEdge.INTERACTION, interaction);
+					}
+					
+					if (manager.getRootNetwork() != null && !manager.getRootNetwork().equals(curNet)) {
+						CyRow row = manager.getRootNetwork().getRow(edge);
 						row.set(CyEdge.NAME, label);
 						row.set(CyEdge.INTERACTION, interaction);
 					}
@@ -118,8 +145,17 @@ public class HandleEdge extends AbstractHandler {
 			// The edge might not have been created yet!
 			// Save the reference so it can be added to the network after the whole graph is parsed.
 			manager.addElementLink(href, CyEdge.class);
+			id = XGMMLParseUtil.getIdFromXLink(href);
 		}
 
+		// Is this edge part of a group?
+		final CyGroup group = manager.getCurrentGroup();
+		
+		if (group != null && !duplicate) {
+			// There is a group node, so this edge must be an internal or external group edge.
+			manager.addInnerEdge(group, id);
+		}
+		
 		return current;
 	}
 	

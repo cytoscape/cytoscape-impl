@@ -89,8 +89,7 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 		
 		try {
 			readXGMML(tm);
-			Set<CyNetwork> netSet = readDataMgr.getNetworks();
-			this.cyNetworks = netSet.toArray(new CyNetwork[netSet.size()]);
+			complete(tm);
 		} catch (Exception e) {
 			throw new IOException("Could not parse XGMML file.", e);
 		} finally {
@@ -122,6 +121,11 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 	
 	protected void init(TaskMonitor tm) {
 		readDataMgr.init();
+	}
+	
+	protected void complete(TaskMonitor tm) {
+		Set<CyNetwork> netSet = readDataMgr.getNetworks();
+		this.cyNetworks = netSet.toArray(new CyNetwork[netSet.size()]);
 	}
 	
 	/**
