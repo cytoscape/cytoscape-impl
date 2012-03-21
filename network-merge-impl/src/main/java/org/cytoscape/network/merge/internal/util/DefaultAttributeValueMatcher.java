@@ -41,6 +41,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 
 /**
@@ -64,9 +65,11 @@ public class DefaultAttributeValueMatcher implements AttributeValueMatcher {
                         return true;
                 }
                
-			   	// TODO figure out where to get networks from
-                CyRow row1 = null; //entry1.getCyRow(attr1.getTable().getTitle());
-                CyRow row2 = null; //entry2.getCyRow(attr2.getTable().getTitle());
+                CyTable table1 = attr1.getTable();
+                CyTable table2 = attr2.getTable();
+                CyRow row1 = table1.getRow(entry1.getSUID());
+                CyRow row2 = table2.getRow(entry2.getSUID());
+                
                 
                 Class<?> type1 = attr1.getType(); 
                 Class<?> type2 = attr2.getType();

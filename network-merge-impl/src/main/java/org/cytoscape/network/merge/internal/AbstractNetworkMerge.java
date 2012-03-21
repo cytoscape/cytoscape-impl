@@ -83,7 +83,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
      * 
      * @return true if n1 and n2 matches
      */
-    protected abstract boolean matchNode(CyNode n1, CyNode n2);
+    protected abstract boolean matchNode(CyNetwork net1, CyNode n1, CyNetwork net2, CyNode n2);
     
     /**
      * Merge (matched) nodes into one
@@ -314,9 +314,9 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
                         if (gos2!=null) {
                         	CyTableEntry go2 = gos2.iterator().next();
                             if (isNode) { //NODE
-                                matched = matchNode((CyNode)go1,(CyNode)go2);
+                                matched = matchNode(net1, (CyNode)go1, net2, (CyNode)go2);
                                 if (matched) {                                    
-                                    matchedNodes.add(getNodePair((CyNode)go1,(CyNode)go2));
+                                    matchedNodes.add(getNodePair((CyNode)go1, (CyNode)go2));
                                 }
                             } else {// EDGE
                                 matched = matchEdge(net1,net2,(CyEdge)go1,(CyEdge)go2, matchedNodes);

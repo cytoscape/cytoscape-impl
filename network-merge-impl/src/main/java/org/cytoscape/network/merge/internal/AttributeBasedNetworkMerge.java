@@ -114,8 +114,8 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
     }
     
     @Override
-    protected boolean matchNode(final CyNode n1, final CyNode n2) {
-        if (n1==null || n2==null) {
+    protected boolean matchNode(final CyNetwork net1, final CyNode n1, final CyNetwork net2, final CyNode n2) {
+        if (net1==null || n1==null || net2==null || n2==null) {
             throw new java.lang.NullPointerException();
         }
 
@@ -124,8 +124,8 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
                 return true;
         }
         
-        CyColumn attr1 = matchingAttribute.getAttributeForMatching(n1.getNetworkPointer());
-        CyColumn attr2 = matchingAttribute.getAttributeForMatching(n2.getNetworkPointer());
+        CyColumn attr1 = matchingAttribute.getAttributeForMatching(net1);
+        CyColumn attr2 = matchingAttribute.getAttributeForMatching(net2);
         
         if (attr1==null || attr2==null) {
             throw new java.lang.IllegalArgumentException("Please specify the matching attribute first");
@@ -136,20 +136,23 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
     
     @Override
     protected void proprocess(CyNetwork toNetwork) {
-        setAttributeTypes(toNetwork,nodeAttributeMapping);
-        setAttributeTypes(toNetwork,edgeAttributeMapping);
+        setAttributeTypes(toNetwork.getDefaultNodeTable(),nodeAttributeMapping);
+        setAttributeTypes(toNetwork.getDefaultEdgeTable(),edgeAttributeMapping);
     }
     
-    private void setAttributeTypes(CyNetwork toNetwork, AttributeMapping attributeMapping) {
-        CyTable table = attributeMapping.getCyTable(toNetwork);
+    private void setAttributeTypes(CyTable toTable, AttributeMapping attributeMapping) {
         int n = attributeMapping.getSizeMergedAttributes();
         for (int i=0; i<n; i++) {
             String attr = attributeMapping.getMergedAttribute(i);
+            if (toTable.getColumn(attr)!=null) {
+                continue; //TODO: check if the type is the same
+            }
+            
             ColumnType type = attributeMapping.getMergedAttributeType(i);
             if (type.isList()) {
-                table.createListColumn(attr, type.getType(), true); //TODO: HOW TO SET IMMUTABILITY?
+                toTable.createListColumn(attr, type.getType(), true); //TODO: HOW TO SET IMMUTABILITY?
             } else {
-                table.createColumn(attr, type.getClass(), true);
+                toTable.createColumn(attr, type.getClass(), true);
             }
         }
     }
@@ -212,7 +215,7 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
 
             try {
 				// TODO how to handle network?
-                attributeMerger.mergeAttribute(mapGOAttr, toEntry, attr_merged, null, newNetwork );
+                attributeMerger.mergeAttribute(mapGOAttr, toEntry, attr_merged, newNetwork );
             } catch (Exception e) {
                 e.printStackTrace();
                 continue;

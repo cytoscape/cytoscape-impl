@@ -54,8 +54,9 @@ public interface AttributeMerger {
          * @param <T>
          * @param mapGOAttr
          * @param toGO
-         * @param toAttrName 
+         * @param toAttrName
+         * @param toNetwork 
          */
         public <T extends CyTableEntry> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
-                                     T toGO, CyColumn toAttrName, CyNetwork fromNetwork, CyNetwork toNetwork);
+                                     T toGO, CyColumn toAttrName, CyNetwork toNetwork);
 }
