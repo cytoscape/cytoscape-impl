@@ -13,6 +13,7 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.creation.ImportNetworksTaskFactory;
+import org.cytoscape.task.creation.LoadSession;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
@@ -35,8 +36,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private final CyApplicationConfiguration config;
 	private final DataSourceManager dsManager;
 	
-	private final NetworkTaskFactory networkTaskFactory;
-	private final TaskFactory openSessionTaskFactory;
+	private final LoadSession openSessionTaskFactory;
 	private final TaskFactory importNetworkFileTF;
 
 	private final CySwingApplication app;
@@ -47,9 +47,11 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private boolean hide = false;
 
 	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, 
-			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory, TaskManager guiTaskManager,
-			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworksTaskFactory, final NetworkTaskFactory networkTaskFactory,
-			final CyApplicationConfiguration config, final DataSourceManager dsManager, final CyProperty<Properties> cyProps) {
+			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, 
+			final LoadSession openSessionTaskFactory, TaskManager guiTaskManager,
+			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworksTaskFactory, 
+			final CyApplicationConfiguration config, final DataSourceManager dsManager, 
+			final CyProperty<Properties> cyProps) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 
@@ -57,7 +59,6 @@ public class WelcomeScreenAction extends AbstractCyAction {
 		this.fileTracker = fileTracker;
 		this.guiTaskManager = guiTaskManager;
 		this.importNetworksTaskFactory = importNetworksTaskFactory;
-		this.networkTaskFactory = networkTaskFactory;
 		this.config = config;
 		this.dsManager = dsManager;
 		this.app = app;
@@ -76,8 +77,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(bc,openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config,
-				importNetworkFileTF, importNetworksTaskFactory, networkTaskFactory, dsManager, cyProps, hide);
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(bc,openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config, importNetworkFileTF, importNetworksTaskFactory, dsManager, cyProps, hide);
 		welcomeScreen.setLocationRelativeTo(app.getJFrame());
 		welcomeScreen.setVisible(true);
 		this.hide = welcomeScreen.getHideStatus();

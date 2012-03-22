@@ -43,12 +43,12 @@ public class OpenPanel extends JPanel {
 
 	private final RecentlyOpenedTracker fileTracker;
 	private final TaskManager taskManager;
-	private final TaskFactory openSessionTaskFactory;
+	private final LoadSession openSessionTaskFactory;
 
 	Window parent;
 
 	OpenPanel(Window parent, final RecentlyOpenedTracker fileTracker, final TaskManager taskManager,
-			final TaskFactory openSessionTaskFactory) {
+			final LoadSession openSessionTaskFactory) {
 		this.fileTracker = fileTracker;
 		this.parent = parent;
 		this.taskManager = taskManager;
@@ -85,7 +85,7 @@ public class OpenPanel extends JPanel {
 				public void mouseClicked(MouseEvent e) {
 					 try {
 						final File targetFile = new File(target.toURI());
-						taskManager.execute(new TaskIterator(new OpenSessionDirectTask(targetFile)));
+						taskManager.execute(openSessionTaskFactory.loadSession(targetFile));
 					} catch (URISyntaxException e1) {
 						e1.printStackTrace();
 					}
@@ -104,32 +104,10 @@ public class OpenPanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				parent.dispose();
-				taskManager.execute(openSessionTaskFactory.createTaskIterator());
+				taskManager.execute(openSessionTaskFactory.loadSession());
 			}
 		});
 
 		this.add(open);
-	}
-
-	private final class OpenSessionDirectTask extends AbstractTask {
-		
-		private final File file;
-		
-		OpenSessionDirectTask(final File file) {
-			this.file = file;
-		}
-		
-		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			if(openSessionTaskFactory instanceof LoadSession) {
-				taskMonitor.setTitle("Opening Session File");
-				taskMonitor.setProgress(0.1d);
-				taskMonitor.setStatusMessage("Opening session file.  Please wait...");
-				LoadSession loadSession = (LoadSession) openSessionTaskFactory;
-				CySession session = loadSession.loadSession(file);
-				taskMonitor.setProgress(1.0d);
-			}
-		}
-
 	}
 }

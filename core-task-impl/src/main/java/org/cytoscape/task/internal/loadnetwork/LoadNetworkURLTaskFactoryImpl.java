@@ -47,6 +47,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 
 
 /**
@@ -64,13 +65,14 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	
 	private final SynchronousTaskManager<?> syncTaskManager;
 	
-	private LoadNetworkURLTask task;
+	private final TunableSetter tunableSetter; 
 
 	public LoadNetworkURLTaskFactoryImpl(CyNetworkReaderManager mgr,
 					     CyNetworkManager netmgr,
 					     final CyNetworkViewManager networkViewManager,
 					     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
-					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager)
+					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager,
+						 TunableSetter tunableSetter)
 	{
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -78,29 +80,21 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.props = cyProps.getProperties();
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.streamUtil = streamUtil;
-		
+		this.tunableSetter = tunableSetter;
 		this.syncTaskManager = syncTaskManager;
 	}
 
 	public TaskIterator createTaskIterator() {
-		task = new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil);
 		// Usually we need to create view, so expected number is 2.
-		return new TaskIterator(2, task);
+		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil));
 	}
 	
 	@Override
-	public Set<CyNetwork> loadCyNetworks(final URL url) {
+	public TaskIterator loadCyNetworks(final URL url) {
 		
 		final Map<String,Object> m = new HashMap<String,Object>();
 		m.put("url", url);
-		
-		syncTaskManager.setExecutionContext(m);
-		syncTaskManager.execute(createTaskIterator());
-
-		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
-		for(CyNetwork network: task.getCyNetworks())
-			networks.add(network);
-		
-		return networks;
+	
+		return tunableSetter.createTaskIterator( this.createTaskIterator(), m);
 	}
 }

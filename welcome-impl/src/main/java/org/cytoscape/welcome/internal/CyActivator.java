@@ -10,6 +10,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.creation.ImportNetworksTaskFactory;
+import org.cytoscape.task.creation.LoadSession;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.SubmenuTaskManager;
@@ -24,13 +25,10 @@ public class CyActivator extends AbstractCyActivator {
 		CySwingApplication cytoscapeDesktop = getService(bc, CySwingApplication.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc, RecentlyOpenedTracker.class);
-		TaskFactory openSessionTaskFactory = getService(bc, TaskFactory.class, "(id=openSessionTaskFactory)");
+		LoadSession openSessionTaskFactory = getService(bc, LoadSession.class);
 		SubmenuTaskManager submenuTaskManagerServiceRef = getService(bc, SubmenuTaskManager.class);
 		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
-		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class,
-				"(id=loadNetworkURLTaskFactory)");
-		NetworkTaskFactory createNetworkViewTaskFactory = getService(bc, NetworkTaskFactory.class,
-				"(id=createNetworkViewTaskFactory)");
+		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 				CyApplicationConfiguration.class);
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
@@ -40,7 +38,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(bc, cytoscapeDesktop,
 				openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory,
-				submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF, createNetworkViewTaskFactory,
+				submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF,
 				cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
 		
 		registerAllServices(bc, welcomeScreenAction, new Properties());

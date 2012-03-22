@@ -78,7 +78,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	private final ImportNetworksTaskFactory importNetworkFromURLTF;
 	private final TaskFactory importNetworkFileTF;
-	private final NetworkTaskFactory createViewTaskFactory;
+
 
 	private final DataSourceManager dsManager;
 	private final Map<String, String> dataSourceMap;
@@ -91,14 +91,13 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	CreateNewNetworkPanel(Window parent, final BundleContext bc, final TaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory loadTF,
-			final NetworkTaskFactory createViewTaskFactory, final CyApplicationConfiguration config,
+			final CyApplicationConfiguration config,
 			final DataSourceManager dsManager, final CyProperty<Properties> props) {
 		this.parent = parent;
 		this.bc = bc;
 		this.props = props;
 
 		this.importNetworkFromURLTF = loadTF;
-		this.createViewTaskFactory = createViewTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
@@ -214,9 +213,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		if(layout.isSelected())
 			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, LAYOUT_ALGORITHM);
 				
-		// TODO REFACTOR!!!!!!!!!!!!!!!!!!!
-		guiTaskManager.execute(new TaskIterator(2,
-				new CreateNetworkViewTask(url, importNetworkFromURLTF, createViewTaskFactory)));
+		guiTaskManager.execute( importNetworkFromURLTF.loadCyNetworks(url) );
 	}
 
 	private int getViewThreshold(final Properties props) {
@@ -231,33 +228,6 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		return threshold;
 	}
 
-	private final class CreateNetworkViewTask extends AbstractTask {
-
-		private final ImportNetworksTaskFactory loadNetworkFileTF;
-		private final NetworkTaskFactory createViewTaskFactory;
-
-		private final URL url;
-
-		public CreateNetworkViewTask(final URL url, final ImportNetworksTaskFactory loadNetworkFileTF,
-				final NetworkTaskFactory createViewTaskFactory) {
-			this.loadNetworkFileTF = loadNetworkFileTF;
-			this.createViewTaskFactory = createViewTaskFactory;
-			this.url = url;
-		}
-
-		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			taskMonitor.setTitle("Loading network...");
-			taskMonitor.setStatusMessage("Loading network.  Please wait...");
-			taskMonitor.setProgress(0.01d);
-
-			final Set<CyNetwork> networks = this.loadNetworkFileTF.loadCyNetworks(url);
-			taskMonitor.setProgress(1.0d);
-			
-			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
-		}
-
-	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {

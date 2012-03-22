@@ -42,6 +42,7 @@ import org.cytoscape.task.creation.LoadSession;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 
 public class OpenSessionTaskFactory extends AbstractTaskFactory implements LoadSession {
 
@@ -52,17 +53,19 @@ public class OpenSessionTaskFactory extends AbstractTaskFactory implements LoadS
 	private final RecentlyOpenedTracker tracker;
 
 	private final SynchronousTaskManager<?> syncTaskManager;
+	private final TunableSetter tunableSetter; 
 	
 	private OpenSessionTask task;
 
 	public OpenSessionTaskFactory(CySessionManager mgr, final CySessionReaderManager rmgr,
 			final CyApplicationManager appManager, final RecentlyOpenedTracker tracker,
-			final SynchronousTaskManager<?> syncTaskManager) {
+			final SynchronousTaskManager<?> syncTaskManager, final TunableSetter tunableSetter) {
 		this.mgr = mgr;
 		this.rmgr = rmgr;
 		this.appManager = appManager;
 		this.tracker = tracker;
 		this.syncTaskManager = syncTaskManager;
+		this.tunableSetter = tunableSetter;
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -71,13 +74,14 @@ public class OpenSessionTaskFactory extends AbstractTaskFactory implements LoadS
 	}
 
 	@Override
-	public CySession loadSession(File file) {
+	public TaskIterator loadSession(File file) {
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", file);
 
-		syncTaskManager.setExecutionContext(m);
-		syncTaskManager.execute(createTaskIterator());
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+	}
 
-		return task.getCySession();
+	public TaskIterator loadSession() {
+		return this.createTaskIterator();
 	}
 }

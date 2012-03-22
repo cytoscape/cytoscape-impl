@@ -11,6 +11,7 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.junit.Test;
 
 public class OpenSessionTaskFactoryTest {
@@ -22,9 +23,10 @@ public class OpenSessionTaskFactoryTest {
 		CySessionReaderManager rmgr = mock(CySessionReaderManager.class);
 		CyApplicationManager appManager = mock(CyApplicationManager.class);
 		RecentlyOpenedTracker tracker = mock(RecentlyOpenedTracker.class);
+		TunableSetter ts = mock(TunableSetter.class);
 
 		SynchronousTaskManager synchronousTaskManager = mock(SynchronousTaskManager.class);
-		OpenSessionTaskFactory factory = new OpenSessionTaskFactory(mgr, rmgr, appManager, tracker, synchronousTaskManager);
+		OpenSessionTaskFactory factory = new OpenSessionTaskFactory(mgr, rmgr, appManager, tracker, synchronousTaskManager,ts);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

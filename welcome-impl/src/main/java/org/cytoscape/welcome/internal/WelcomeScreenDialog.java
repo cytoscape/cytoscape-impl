@@ -27,6 +27,7 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.creation.ImportNetworksTaskFactory;
+import org.cytoscape.task.creation.LoadSession;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
@@ -53,13 +54,12 @@ public class WelcomeScreenDialog extends JDialog {
 
 	private final OpenBrowser openBrowserServiceRef;
 	private final RecentlyOpenedTracker fileTracker;
-	private final TaskFactory openSessionTaskFactory;
+	private final LoadSession openSessionTaskFactory;
 
 	private final TaskManager guiTaskManager;
 
 	private final CyApplicationConfiguration config;
 	private final ImportNetworksTaskFactory loadNetworkTF;
-	private final NetworkTaskFactory networkTaskFactory;
 
 	private final DataSourceManager dsManager;
 	
@@ -70,15 +70,16 @@ public class WelcomeScreenDialog extends JDialog {
 	
 	final JCheckBox checkBox = new JCheckBox();
 
-	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, final TaskFactory openSessionTaskFactory,
-			TaskManager guiTaskManager, final CyApplicationConfiguration config,
-			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworkTF, final NetworkTaskFactory networkTaskFactory,
-			final DataSourceManager dsManager, final CyProperty<Properties> cyProps, final boolean hide) {
+	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, 
+	                           RecentlyOpenedTracker fileTracker, final LoadSession openSessionTaskFactory, 
+							   TaskManager guiTaskManager, final CyApplicationConfiguration config,
+	                           final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworkTF, 
+	                           final DataSourceManager dsManager, final CyProperty<Properties> cyProps, 
+							   final boolean hide) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.fileTracker = fileTracker;
 		this.config = config;
 		this.loadNetworkTF = importNetworkTF;
-		this.networkTaskFactory = networkTaskFactory;
 		this.dsManager = dsManager;
 		this.openSessionTaskFactory = openSessionTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
@@ -182,10 +183,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, openSessionTaskFactory),
 				"Open a Recent Session");
-		buildHelpPanel(panel2,
-				new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, networkTaskFactory,
-						config, dsManager, cyProps),
-				"Create New Network");
+		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, config, dsManager, cyProps), "Create New Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef, cyProps), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
 

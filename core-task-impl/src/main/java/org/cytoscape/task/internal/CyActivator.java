@@ -39,6 +39,7 @@ import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.creation.LoadVisualStyles;
 import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
+import org.cytoscape.task.creation.LoadSession;
 import org.cytoscape.task.internal.creation.CloneNetworkTaskFactory;
 import org.cytoscape.task.internal.creation.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.internal.creation.NewEmptyNetworkTaskFactory;
@@ -110,6 +111,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
@@ -155,6 +157,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc,CyLayoutAlgorithmManager.class);
 		CyTableWriterManager cyTableWriterManagerRef = getService(bc,CyTableWriterManager.class);
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc,SynchronousTaskManager.class);
+		TunableSetter tunableSetterServiceRef = getService(bc,TunableSetter.class);
 		
 		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef);
 		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef);
@@ -165,7 +168,7 @@ public class CyActivator extends AbstractCyActivator {
 		LoadVizmapFileTaskFactoryImpl loadVizmapFileTaskFactory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderManagerServiceRef,visualMappingManagerServiceRef,synchronousTaskManagerServiceRef);
 
 		LoadNetworkFileTaskFactoryImpl loadNetworkFileTaskFactory = new LoadNetworkFileTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef);
-		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef, synchronousTaskManagerServiceRef);
+		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef, synchronousTaskManagerServiceRef, tunableSetterServiceRef);
 
 		SetCurrentNetworkTaskFactoryImpl setCurrentNetworkTaskFactory = new SetCurrentNetworkTaskFactoryImpl(cyApplicationManagerServiceRef,cyNetworkManagerServiceRef);
 		DeleteSelectedNodesAndEdgesTaskFactory deleteSelectedNodesAndEdgesTaskFactory = new DeleteSelectedNodesAndEdgesTaskFactory(undoSupportServiceRef,cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyEventHelperRef);
@@ -206,7 +209,7 @@ public class CyActivator extends AbstractCyActivator {
 		FitSelectedTaskFactory fitSelectedTaskFactory = new FitSelectedTaskFactory(undoSupportServiceRef);
 		FitContentTaskFactory fitContentTaskFactory = new FitContentTaskFactory(undoSupportServiceRef);
 		NewSessionTaskFactory newSessionTaskFactory = new NewSessionTaskFactory(cySessionManagerServiceRef);
-		OpenSessionTaskFactory openSessionTaskFactory = new OpenSessionTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,recentlyOpenedTrackerServiceRef, synchronousTaskManagerServiceRef);
+		OpenSessionTaskFactory openSessionTaskFactory = new OpenSessionTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,recentlyOpenedTrackerServiceRef, synchronousTaskManagerServiceRef, tunableSetterServiceRef);
 		SaveSessionTaskFactory saveSessionTaskFactory = new SaveSessionTaskFactory( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef);
 		SaveSessionAsTaskFactory saveSessionAsTaskFactory = new SaveSessionAsTaskFactory( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef);
 		ProxySettingsTaskFactory proxySettingsTaskFactory = new ProxySettingsTaskFactory(cyPropertyServiceRef, streamUtilRef);
@@ -737,6 +740,7 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty("command","open-session");
 		openSessionTaskFactoryProps.setProperty("commandNamespace","cytoscape");
 		registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
+		registerService(bc,openSessionTaskFactory,LoadSession.class, openSessionTaskFactoryProps);
 
 		Properties saveSessionTaskFactoryProps = new Properties();
 		saveSessionTaskFactoryProps.setProperty("preferredMenu","File");

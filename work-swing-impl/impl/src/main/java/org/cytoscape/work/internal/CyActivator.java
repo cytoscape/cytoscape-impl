@@ -14,12 +14,15 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.internal.submenu.SubmenuTaskManagerImpl;
 import org.cytoscape.work.internal.submenu.SubmenuTunableHandlerImpl;
 import org.cytoscape.work.internal.submenu.SubmenuTunableMutator;
 import org.cytoscape.work.internal.sync.SyncTaskManager;
 import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutator;
+import org.cytoscape.work.internal.sync.TunableSetterImpl;
+import org.cytoscape.work.internal.sync.TunableRecorderManager;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
@@ -161,5 +164,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerServiceListener(bc,submenuTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SubmenuTunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,syncTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SyncTunableHandlerFactory.class, TunableHandlerFactory.class);
+
+		TunableRecorderManager trm = new TunableRecorderManager();
+		registerServiceListener(bc,trm,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
+
+		TunableSetterImpl tsi = new TunableSetterImpl(syncTunableMutator,trm);
+		registerService(bc,tsi,TunableSetter.class, new Properties());
 	}
 }
