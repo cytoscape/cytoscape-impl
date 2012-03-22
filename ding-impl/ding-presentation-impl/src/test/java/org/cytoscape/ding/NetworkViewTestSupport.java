@@ -3,12 +3,11 @@ package org.cytoscape.ding;
 
 import static org.mockito.Mockito.mock;
 
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -24,21 +23,21 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 	protected CyNetworkViewFactory viewFactory;
 
 	public NetworkViewTestSupport() {
+		super();
 		
         DVisualLexicon dVisualLexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
 
-		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
 		TableTestSupport tableTestSupport = new TableTestSupport();
 
         viewFactory = new DingViewModelFactory(tableTestSupport.getTableFactory(),
-		                                       networkTestSupport.getRootNetworkFactory(),
+		                                       getRootNetworkFactory(),
 		                                       mock(UndoSupport.class),
 		                                       new RTreeFactory(),
 		                                       dVisualLexicon,
 		                                       mock(DialogTaskManager.class),
 		                                       mock(SubmenuTaskManager.class),
 		                                       mock(CyServiceRegistrar.class),
-		                                       mock(CyNetworkTableManager.class),
+		                                       networkTableMgr,
 		                                       mock(CyEventHelper.class),
 		                                       mock(ViewTaskFactoryListener.class),
 											   mock(AnnotationFactoryManager.class));
