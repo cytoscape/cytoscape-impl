@@ -124,4 +124,22 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 		
 		assertEquals(0, mgr.getNetworkSet().size());
 	}
+	
+	@Test
+	public void testNoneDefaultTables() throws Exception {
+		final String noneDefTableName = "external";
+		final String extraColName = "new column";
+		final Integer testValue = 22;
+		
+		CyTable extTable = tableFactory.createTable(noneDefTableName, CyTableEntry.SUID, Long.class, true, true);
+		extTable.createColumn(extraColName, Integer.class, false);
+		mgr.setTable(goodNetwork, CyNetwork.class, noneDefTableName, extTable);
+		
+		final CyRow extRow = goodNetwork.getRow(goodNetwork, noneDefTableName);
+		assertNotNull(extRow);
+		
+		extRow.set(extraColName, testValue);
+		
+		assertEquals(testValue, goodNetwork.getRow(goodNetwork, noneDefTableName).get(extraColName, Integer.class));
+	}
 }
