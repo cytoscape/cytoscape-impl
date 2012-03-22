@@ -35,13 +35,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -66,7 +59,6 @@ import org.cytoscape.ding.impl.events.GraphViewEdgesUnselectedEvent;
 import org.cytoscape.ding.impl.events.GraphViewNodesSelectedEvent;
 import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
-import org.cytoscape.dnd.DropUtil;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -84,7 +76,7 @@ import org.cytoscape.work.undo.UndoSupport;
 /**
  * Canvas to be used for drawing actual network visualization
  */
-public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener, DropTargetListener,
+public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener,
 		KeyListener, MouseWheelListener {
 
 	private final static long serialVersionUID = 1202416511420671L;
@@ -154,7 +146,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		addMouseWheelListener(this);
 		addKeyListener(this);
 		setFocusable(true);
-		new DropTarget(this, DnDConstants.ACTION_COPY, this); 
 		popup = new PopupMenuHelper(m_view, this);
 
 		mousePressedDelegator = new MousePressedDelegator();
@@ -795,71 +786,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 
-	/**
-	 * default dragEnter handler.  Accepts the drag.
-	 * @param dte the DropTargetDragEvent
-	 *
-	 */
-	public void dragEnter(DropTargetDragEvent dte) {
-		dte.acceptDrag(DnDConstants.ACTION_COPY);
-	}
-
-	/**
-	 * default dragExit handler.  Does nothing, can be overridden.
-	 * @param dte the DropTargetDragEvent
-	 *
-	 */
-	public void dragExit(DropTargetEvent dte) { }
-
-	/**
-	 * default dropActionChanged handler.  Does nothing, can be overridden.
-	 * @param dte the DropTargetDragEvent
-	 *
-	 */
-	public void dropActionChanged(DropTargetDragEvent dte) { }
-
-	/**
-	 * default dragOver handler.  Does nothing, can be overridden.
-	 * @param dte the DropTargetDragEvent
-	 *
-	 */
-	public void dragOver(DropTargetDragEvent dte) { }
-
-	/**
-	 * default drop handler.  
-	 */
-	public void drop(DropTargetDropEvent dte) {
-		requestFocusInWindow();
-		dte.acceptDrop(DnDConstants.ACTION_COPY);
-
-		Transferable t = dte.getTransferable();
-		String action = getPreferredDropAction(t);
-
-		Point rawPt = dte.getLocation();
-		double[] loc = new double[2];
-		loc[0] = rawPt.getX();
-		loc[1] = rawPt.getY();
-		m_view.xformComponentToNodeCoords(loc);
-		Point xformPt = new Point();
-		xformPt.setLocation(loc[0],loc[1]); 
-
-		NodeView nview = m_view.getPickedNodeView(rawPt);
-		if ( nview != null ) 
-			popup.createDropNodeViewMenu(m_view.m_drawPersp,nview,rawPt,xformPt,t,action);
-		else
-			popup.createDropEmptySpaceMenu(rawPt,xformPt,t,action); 
-
-		dte.dropComplete(true);
-	}
-
-	private String getPreferredDropAction(Transferable t) {
-		String[] actions = DropUtil.getTransferableDataStrings(t);
-		if (actions.length > 0)
-			return actions[0];
-		else
-			return null;
-	}
-
+	
 	private void adjustZoom(int notches) {
 		
 		final double factor;
@@ -1029,7 +956,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			String action = "Edge";
 			NodeView nview = m_view.getPickedNodeView(rawPt);
 			if ( nview != null ) 
-				popup.createDropNodeViewMenu(m_view.m_drawPersp,nview,rawPt,xformPt,null,action);
+				popup.createNodeViewMenu(m_view.m_drawPersp, nview, e.getX(), e.getY(), action);
 		}
 	}
 
@@ -1177,6 +1104,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				} else {
 					// Clicked on empty space...
 					popup.createEmptySpaceMenu(e.getX(), e.getY(),"NEW"); 
+					Point rawPt = e.getPoint();
+					double[] loc = new double[2];
+					loc[0] = rawPt.getX();
+					loc[1] = rawPt.getY();
+					m_view.xformComponentToNodeCoords(loc);
+					Point xformPt = new Point();
+					xformPt.setLocation(loc[0],loc[1]); 
+					popup.createNetworkViewLocationMenu(rawPt, xformPt, null);
 				}
 			}
 		}
@@ -1187,8 +1122,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
 			if ( nview != null )
 				popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),"OPEN");
-			else 
+			else {
 				popup.createEmptySpaceMenu(e.getX(), e.getY(),"OPEN"); 
+			}
 		}
 	}
 

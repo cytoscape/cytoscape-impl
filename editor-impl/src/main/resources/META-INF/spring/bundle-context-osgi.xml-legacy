@@ -31,22 +31,6 @@
         </osgi:service-properties>
 	</osgi:service>
 
-	<osgi:service id="dropNetworkViewTaskFactoryService" ref="dropNetworkViewTaskFactory"
-		interface="org.cytoscape.dnd.DropNetworkViewTaskFactory">
-        <osgi:service-properties>
-           <entry key="title" value="Create Node" />
-           <entry key="preferredAction" value="Node" />
-        </osgi:service-properties>
-	</osgi:service>
-
-	<osgi:service id="dropNodeViewTaskFactoryService" ref="dropNodeViewTaskFactory"
-		interface="org.cytoscape.dnd.DropNodeViewTaskFactory">
-        <osgi:service-properties>
-           <entry key="title" value="Create Nested Network" />
-           <entry key="preferredAction" value="Network" />
-        </osgi:service-properties>
-	</osgi:service>
-
 	<osgi:service id="currentNetworkViewListenerService" ref="currentNetworkViewListener"
 		interface="org.cytoscape.application.events.SetCurrentNetworkViewListener">
 	</osgi:service>

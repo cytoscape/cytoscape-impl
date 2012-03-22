@@ -75,14 +75,6 @@
 		</osgi:service-properties>
 	</osgi:service>
 
-	<osgi:service id="addEdgeNodeViewTaskFactoryService" ref="addEdgeNodeViewTaskFactory"
-		interface="org.cytoscape.dnd.DropNodeViewTaskFactory">
-		<osgi:service-properties>
-			<entry key="title" value="Create Edge" />
-			<entry key="preferredAction" value="Edge" />
-		</osgi:service-properties>
-	</osgi:service>
-
 	<!-- Visual Lexicon for Ding -->
 	<osgi:service id="dVisualLexiconService" ref="dVisualLexicon"
 		interface="org.cytoscape.view.model.VisualLexicon">
@@ -108,18 +100,6 @@
 		cardinality="0..N">
 		<osgi:listener bind-method="addNetworkViewTaskFactory"
 			unbind-method="removeNetworkViewTaskFactory" ref="dingRenderingEngineFactory" />
-	</osgi:set>
-
-	<osgi:set id="dropNodeViewTaskFactorySet" interface="org.cytoscape.dnd.DropNodeViewTaskFactory"
-		cardinality="0..N">
-		<osgi:listener bind-method="addDropNodeViewTaskFactory"
-			unbind-method="removeDropNodeViewTaskFactory" ref="dingRenderingEngineFactory" />
-	</osgi:set>
-
-	<osgi:set id="dropEmptySpaceTaskFactorySet" interface="org.cytoscape.dnd.DropNetworkViewTaskFactory"
-		cardinality="0..N">
-		<osgi:listener bind-method="addDropNetworkViewTaskFactory"
-			unbind-method="removeDropNetworkViewTaskFactory" ref="dingRenderingEngineFactory" />
 	</osgi:set>
 
 	<osgi:service id="objectPositionValueEditorService" ref="objectPositionValueEditor"

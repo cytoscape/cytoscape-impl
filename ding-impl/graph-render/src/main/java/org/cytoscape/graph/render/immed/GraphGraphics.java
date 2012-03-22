@@ -418,6 +418,15 @@ public final class GraphGraphics {
 			throw new RuntimeException("noninvertible matrix - cannot happen");
 		}
 	}
+	
+	public final void xformNodetoImageCoords(final double[] coords) {
+		if (m_debug) {
+			checkDispatchThread();
+			checkCleared();
+		}
+
+		m_currXform.transform(coords, 0, coords, 0, 1);
+	}
 
 	/**
 	 * Called to get the current AffineTransform Matrix.

@@ -9,7 +9,6 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.datasource.DataSourceManager;
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.CyFileFilter;
@@ -150,7 +149,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private NetworkImportWebServiceClient networkImportWebServiceClient;
 	private AbstractWebServiceClient abstractWebServiceClient;
 	private DataImportFinishedEvent dataImportFinishedEvent;
-	private DropNetworkViewTaskFactory dropNetworkViewTaskFactory;
 	private AbstractCyApp cyApp;
 	private final VisualMappingFunctionFactory visualMappingFunctionContinuousFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory;

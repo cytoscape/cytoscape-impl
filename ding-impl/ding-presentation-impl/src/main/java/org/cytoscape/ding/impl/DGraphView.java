@@ -86,8 +86,6 @@ import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -113,6 +111,7 @@ import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.intr.IntBTree;
@@ -387,8 +386,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final Map<NodeViewTaskFactory, Map> nodeViewTFs;
 	final Map<EdgeViewTaskFactory, Map> edgeViewTFs;
 	final Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
-	final Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
-	final Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
+	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTfs;
 
 	final DialogTaskManager manager;
 	final SubmenuTaskManager menuTaskManager;
@@ -411,18 +409,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			CyRootNetworkManager cyRoot, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
-			Map<NodeViewTaskFactory, Map> nodeViewTFs,
-			Map<EdgeViewTaskFactory, Map> edgeViewTFs,
-			Map<NetworkViewTaskFactory, Map> emptySpaceTFs,
-			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
-			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
+			ViewTaskFactoryListener vtfl,
 			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
 			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr) {
 		
-		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, nodeViewTFs, edgeViewTFs,
-				emptySpaceTFs, dropNodeViewTFs, dropEmptySpaceTFs, manager, menuTaskManager, eventHelper, tableMgr, annMgr);
+		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, 
+				vtfl, manager, menuTaskManager, eventHelper, tableMgr, annMgr);
 	}
 
 	
@@ -448,11 +442,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			CyRootNetworkManager cyRoot, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
-			Map<NodeViewTaskFactory, Map> nodeViewTFs,
-			Map<EdgeViewTaskFactory, Map> edgeViewTFs,
-			Map<NetworkViewTaskFactory, Map> emptySpaceTFs,
-			Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs,
-			Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs,
+			ViewTaskFactoryListener vtfl,
 			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
 			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
@@ -464,11 +454,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		logger.debug("Phase 1: rendering start.");
 
 		this.dingLexicon = dingLexicon;
-		this.nodeViewTFs = nodeViewTFs;
-		this.edgeViewTFs = edgeViewTFs;
-		this.emptySpaceTFs = emptySpaceTFs;
-		this.dropNodeViewTFs = dropNodeViewTFs;
-		this.dropEmptySpaceTFs = dropEmptySpaceTFs;
+		this.nodeViewTFs = vtfl.nodeViewTFs;
+		this.edgeViewTFs = vtfl.edgeViewTFs;
+		this.emptySpaceTFs = vtfl.emptySpaceTFs; 
+		this.networkViewLocationTfs = vtfl.networkViewLocationTFs;
 		this.manager = manager;
 		this.menuTaskManager = menuTaskManager;
 		this.cyEventHelper = cyEventHelper;
@@ -2188,6 +2177,18 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public void xformComponentToNodeCoords(double[] coords) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_grafx.xformImageToNodeCoords(coords);
+		}
+	}
+	
+	/**
+	 * DOCUMENT ME!
+	 *
+	 * @param coords
+	 *            DOCUMENT ME!
+	 */
+	public void xformNodeToComponentCoords(double[] coords) {
+		synchronized (m_lock) {
+			m_networkCanvas.m_grafx.xformNodetoImageCoords(coords);
 		}
 	}
 

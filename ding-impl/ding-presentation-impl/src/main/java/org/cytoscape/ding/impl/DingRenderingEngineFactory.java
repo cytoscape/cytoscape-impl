@@ -118,8 +118,7 @@ public class DingRenderingEngineFactory implements
 			else
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
-					vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs,
-					vtfListener.dropEmptySpaceTFs, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
+					vtfListener,dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());

@@ -60,7 +60,6 @@ class AddEdgeStateMonitor {
 
 	private static Map<CyNetworkView,CyNode> sourceNodes = new HashMap<CyNetworkView,CyNode>();
 	private static Map<CyNetworkView,Point2D> sourcePoints = new HashMap<CyNetworkView,Point2D>();
-	private static Map<CyNetworkView,Transferable> transfers = new HashMap<CyNetworkView,Transferable>();
 
 	AddEdgeStateMonitor(InnerCanvas canvas, DGraphView m_view) {
 		this.canvas = canvas;
@@ -92,24 +91,10 @@ class AddEdgeStateMonitor {
 		else
 			sourcePoints.put(view,p);
 	}
-
-	static Transferable getTransferable(CyNetworkView view) {
-		return transfers.get(view);
-	}
-
 	static void reset(CyNetworkView view) {
 		setSourceNode(view,null);
 		setSourcePoint(view,null);
-		transfers.remove(view);
 	}
-
-	static void setTransferable(CyNetworkView view, Transferable t) {
-		// Only update the transferable if it's a new one, 
-		// otherwise use the old one.
-		if ( t != null )
-			transfers.put(view,t);
-	}
-
 	void drawRubberBand(MouseEvent e) {
 		nextPoint = e.getPoint();
 

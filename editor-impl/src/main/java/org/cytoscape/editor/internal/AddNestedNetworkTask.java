@@ -1,11 +1,7 @@
 package org.cytoscape.editor.internal;
 
 
-import java.awt.geom.Point2D;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 
-import java.util.List;
 import java.util.ArrayList;
 
 import org.cytoscape.task.AbstractNodeViewTask;
@@ -18,7 +14,6 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.cytoscape.dnd.DropUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,27 +26,19 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 	@Tunable(description="Network")
 	public ListSingleSelection<CyNetwork> nestedNetwork;
 
-	private final Transferable t;
-
 	@ProvidesTitle
 	public String getTitle() {
 		return "Choose Network for Node";
 	}
 	
-	public AddNestedNetworkTask(View<CyNode> nv, CyNetworkView view, CyNetworkManager mgr,
-	                            Transferable t) {
+	public AddNestedNetworkTask(View<CyNode> nv, CyNetworkView view, CyNetworkManager mgr) {
 		super(nv,view);
-		this.t = t;
 		nestedNetwork = new ListSingleSelection<CyNetwork>(new ArrayList<CyNetwork>(mgr.getNetworkSet()));
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if ( !DropUtil.transferableMatches(t,"Network") ) {
-			logger.warn("Transferable object does not match expected type (Network) for task.");
-			return;
-		}
-
+	
 		CyNode n = nodeView.getModel();
 		n.setNetworkPointer( nestedNetwork.getSelectedValue() );
 		netView.updateView();

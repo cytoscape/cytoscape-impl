@@ -164,10 +164,7 @@
 			<artifactId>webservice-api</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>dnd-api</artifactId>
-		</dependency>
+		
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>

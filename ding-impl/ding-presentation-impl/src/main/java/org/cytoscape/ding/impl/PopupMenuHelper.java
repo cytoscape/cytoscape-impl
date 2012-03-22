@@ -43,12 +43,11 @@ import javax.swing.JPopupMenu;
 
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.TunableEdgeViewTaskFactory;
@@ -119,35 +118,6 @@ class PopupMenuHelper {
 	}
 
 	/**
-	 * Creates a menu based on a drop event on a NodeView.
-	 */
-	void createDropNodeViewMenu(CyNetwork network, NodeView nview, Point rawPt, Point xformPt, Transferable t, String action) {
-		if (nview != null ) {
-			Collection<DropNodeViewTaskFactory> usableTFs = getPreferredActions(m_view.dropNodeViewTFs,action);
-			View<CyNode> nv = (DNodeView)nview;
-
-			// build a menu of actions if more than factory exists
-			if ( usableTFs.size() > 1) {
-				String nodeLabel = network.getRow(nv.getModel()).get("name",String.class);
-				JPopupMenu menu = new JPopupMenu(nodeLabel);
-				JMenuTracker tracker = new JMenuTracker(menu);
-
-				for ( DropNodeViewTaskFactory nvtf : usableTFs ) {
-					TaskFactory provisioner = factoryProvisioner.createFor(nvtf, nv, m_view, t, rawPt, xformPt);
-					createMenuItem(nv, menu, provisioner, null, tracker, m_view.dropNodeViewTFs.get( nvtf ));
-				}
-
-				menu.show(invoker, (int)(rawPt.getX()), (int)(rawPt.getY()));
-
-			// execute the task directly if only one factory exists
-			} else if ( usableTFs.size() == 1) {
-				DropNodeViewTaskFactory tf  = usableTFs.iterator().next();
-				m_view.manager.execute(tf.createTaskIterator(nv, m_view, t, rawPt, xformPt));
-			}
-		}
-	}
-
-	/**
 	 * Creates a menu based on the NodeView.
 	 */
 	void createNodeViewMenu(CyNetwork network, NodeView nview, int x, int y , String action) {
@@ -180,26 +150,7 @@ class PopupMenuHelper {
 		}
 	}
 
-	/**
-	 * Creates a menu based on the NetworkView.
-	 */
-	void createDropEmptySpaceMenu(Point rawPt, Point xformPt, Transferable t,String action) {
-		// build a menu of actions if more than factory exists
-		Collection<DropNetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.dropEmptySpaceTFs,action);
-		if ( usableTFs.size() > 1 ) {
-			JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
-			JMenuTracker tracker = new JMenuTracker(menu);
-			for ( DropNetworkViewTaskFactory nvtf : usableTFs ) {
-				TaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view, t, rawPt, xformPt);
-				createMenuItem(null, menu, provisioner, null, tracker, m_view.dropEmptySpaceTFs.get( nvtf ) );
-			}
-			menu.show(invoker, (int)(rawPt.getX()), (int)(rawPt.getY()));
-		// execute the task directly if only one factory exists
-		} else if ( usableTFs.size() == 1) {
-			DropNetworkViewTaskFactory tf = usableTFs.iterator().next();
-			m_view.manager.execute(tf.createTaskIterator(m_view, t, rawPt, xformPt));
-		}
-	}
+	
 	/**
 	 * Creates a menu based on the NetworkView.
 	 */
@@ -219,6 +170,20 @@ class PopupMenuHelper {
 			NetworkViewTaskFactory tf = usableTFs.iterator().next();
 			m_view.manager.execute(tf.createTaskIterator(m_view));
 		}
+	}
+	
+	/**
+	 * Creates a menu based on the NetworkView.
+	 */
+	void createNetworkViewLocationMenu(Point rawPt, Point xformPt, String action) {
+		Collection<NetworkViewLocationTaskFactory> usableTFs = getPreferredActions(m_view.networkViewLocationTfs,action);
+			final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
+			final JMenuTracker tracker = new JMenuTracker(menu);
+			for ( NetworkViewLocationTaskFactory nvltf : usableTFs ) {
+				TaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
+				createMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
+			}
+			menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));
 	}
 
 	/**

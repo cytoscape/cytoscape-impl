@@ -3,9 +3,8 @@ package org.cytoscape.ding.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -16,8 +15,7 @@ public class ViewTaskFactoryListener {
 	final Map<NodeViewTaskFactory, Map> nodeViewTFs;
 	final Map<EdgeViewTaskFactory, Map> edgeViewTFs;
 	final Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
-	final Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
-	final Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
+	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTFs;
 
 
 	public ViewTaskFactoryListener(){
@@ -25,8 +23,7 @@ public class ViewTaskFactoryListener {
 		nodeViewTFs = new HashMap<NodeViewTaskFactory, Map>();
 		edgeViewTFs = new HashMap<EdgeViewTaskFactory, Map>();
 		emptySpaceTFs = new HashMap<NetworkViewTaskFactory, Map>();
-		dropNodeViewTFs = new HashMap<DropNodeViewTaskFactory, Map>();
-		dropEmptySpaceTFs = new HashMap<DropNetworkViewTaskFactory, Map>();
+		networkViewLocationTFs = new HashMap<NetworkViewLocationTaskFactory, Map>();
 
 	}
 
@@ -74,34 +71,15 @@ public class ViewTaskFactoryListener {
 		emptySpaceTFs.remove(evtf);
 	}
 
-	public void addDropNetworkViewTaskFactory(DropNetworkViewTaskFactory evtf,
-			Map props) {
-		if (evtf == null)
+	public void addNetworkViewLocationTaskFactory(NetworkViewLocationTaskFactory nvltf, Map props){
+		if(nvltf == null)
 			return;
-
-		dropEmptySpaceTFs.put(evtf, props);
+		networkViewLocationTFs.put(nvltf, props);
 	}
-
-	public void removeDropNetworkViewTaskFactory(
-			DropNetworkViewTaskFactory evtf, Map props) {
-		if (evtf == null)
+	
+	public void removeNetworkViewLocationTaskFactory(NetworkViewLocationTaskFactory nvltf, Map props){
+		if(nvltf == null)
 			return;
-
-		dropEmptySpaceTFs.remove(evtf);
+		networkViewLocationTFs.remove(nvltf);
 	}
-
-	public void addDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		dropNodeViewTFs.put(nvtf, props);
-	}
-
-	public void removeDropNodeViewTaskFactory(DropNodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		dropNodeViewTFs.remove(nvtf);
-	}
-
 }

@@ -130,10 +130,6 @@
 			<artifactId>l2fprod-common-fontchooser</artifactId>
 			<version>7.3</version>
 		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>dnd-api</artifactId>
-		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>

@@ -71,8 +71,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				vtfListener.nodeViewTFs, vtfListener.edgeViewTFs, vtfListener.emptySpaceTFs, vtfListener.dropNodeViewTFs, 
-				vtfListener.dropEmptySpaceTFs, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
+				vtfListener, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
 
 		registrar.registerAllServices(dgv, new Properties());
 

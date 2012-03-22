@@ -19,8 +19,7 @@ import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.dnd.DropNetworkViewTaskFactory;
-import org.cytoscape.dnd.DropNodeViewTaskFactory;
+import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
@@ -69,15 +68,13 @@ public class DNodeViewTest {
 	private UndoSupport undo;
 
 	@Mock
+	private ViewTaskFactoryListener vtfl;
+	@Mock
 	private Map<NodeViewTaskFactory, Map> nodeViewTFs;
 	@Mock
 	private Map<EdgeViewTaskFactory, Map> edgeViewTFs;
 	@Mock
 	private Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
-	@Mock
-	private Map<DropNodeViewTaskFactory, Map> dropNodeViewTFs;
-	@Mock
-	private Map<DropNetworkViewTaskFactory, Map> dropEmptySpaceTFs;
 	@Mock
 	private DialogTaskManager manager;
 	@Mock
@@ -116,8 +113,9 @@ public class DNodeViewTest {
 		
 		buildNetwork();
 		networkView = new DGraphView(network, dataFactory, cyRoot, undo, spacialFactory, lexicon,
-				nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
-				dropEmptySpaceTFs, manager, submenuTaskManager, eventHelper, tableMgr, annMgr);
+				vtfl,
+				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
+				dropEmptySpaceTFs,*/ manager, submenuTaskManager, eventHelper, tableMgr, annMgr);
 		
 		dnv1 = (DNodeView) networkView.getDNodeView(node1);
 		dnv2 = (DNodeView) networkView.getDNodeView(node2);
