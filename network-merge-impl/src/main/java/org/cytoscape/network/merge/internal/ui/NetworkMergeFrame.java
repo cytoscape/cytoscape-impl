@@ -84,6 +84,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
@@ -93,10 +94,11 @@ import org.cytoscape.network.merge.internal.model.AttributeMapping;
 import org.cytoscape.network.merge.internal.model.AttributeMappingImpl;
 import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 import org.cytoscape.network.merge.internal.model.MatchingAttributeImpl;
-import org.cytoscape.network.merge.internal.task.HandleConflictsTaskFactory;
-import org.cytoscape.network.merge.internal.task.NetworkMergeTaskFactory;
+import org.cytoscape.network.merge.internal.task.NetworkMergeTask;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.task.creation.NetworkViewCreator;
 
 /**
  *
@@ -108,12 +110,14 @@ public class NetworkMergeFrame extends JFrame {
         private CyNetworkFactory cnf;
         private CyNetworkNaming cnn;
         private TaskManager taskManager;
+        private NetworkViewCreator netViewCreator;
 
 	/** Creates new form NetworkMergeFrame */
 	public NetworkMergeFrame(CyNetworkManager cnm, 
                         CyNetworkFactory cnf,
                         CyNetworkNaming cnn,
-                        TaskManager taskManager) {
+                        TaskManager taskManager,
+						NetworkViewCreator netViewCreator) {
 		frame = this;
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 
@@ -796,12 +800,13 @@ public class NetworkMergeFrame extends JFrame {
                         
                         CyNetwork net = cnf.createNetwork();
                         String netName = cnn.getSuggestedNetworkTitle(mergeNodeAttributeTable.getMergedNetworkName());
-                        //TODO: set network name
+						net.getRow(net).set(CyTableEntry.NAME,netName);
+                        cnm.addNetwork(net);
                         
                         AttributeConflictCollector conflictCollector = new AttributeConflictCollectorImpl();
 
                         // network merge task
-                        NetworkMergeTaskFactory nmTask = new NetworkMergeTaskFactory(net,
+                        NetworkMergeTask nmTask = new NetworkMergeTask(net,
                                  this.matchingAttribute,
                                  this.nodeAttributeMapping,
                                  this.edgeAttributeMapping,
@@ -810,22 +815,14 @@ public class NetworkMergeFrame extends JFrame {
                                  conflictCollector,
                                  selectedNetworkAttributeIDType,
                                  tgtType,
-                                 this.inNetworkMergeCheckBox.isSelected());
+                                 this.inNetworkMergeCheckBox.isSelected(),
+								 netViewCreator);
+
+						TaskIterator ti = new TaskIterator(2,nmTask);
+
                         
                         // Execute Task in New Thread; pop open JTask Dialog Box.
-                        taskManager.execute(nmTask.createTaskIterator());
-                        //TODO: HOW TO KNOW IF IT IS CANCELED?
-                        //if (nmTask.isCancelled()) return; 
-                       
-                        cnm.addNetwork(net);
-
-                        // conflict handling task
-                        if (!conflictCollector.isEmpty()) {
-                                HandleConflictsTaskFactory hcTask = new HandleConflictsTaskFactory(conflictCollector);
-                                taskManager.execute(hcTask.createTaskIterator());
-                        }
-
-//                }
+                        taskManager.execute(ti);
 
 		setVisible(false);
 		dispose();

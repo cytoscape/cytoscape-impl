@@ -40,6 +40,7 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.creation.LoadVisualStyles;
 import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.task.creation.NetworkViewCreator;
 import org.cytoscape.task.internal.creation.CloneNetworkTaskFactory;
 import org.cytoscape.task.internal.creation.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.internal.creation.NewEmptyNetworkTaskFactory;
@@ -671,6 +672,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty("command","create-view");
 		createNetworkViewTaskFactoryProps.setProperty("commandNamespace","network");
 		registerService(bc,createNetworkViewTaskFactory,NetworkTaskFactory.class, createNetworkViewTaskFactoryProps);
+		registerService(bc,createNetworkViewTaskFactory,NetworkViewCreator.class, createNetworkViewTaskFactoryProps);
 
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
 		exportNetworkImageTaskFactoryProps.setProperty("preferredMenu","File.Export.Network View");

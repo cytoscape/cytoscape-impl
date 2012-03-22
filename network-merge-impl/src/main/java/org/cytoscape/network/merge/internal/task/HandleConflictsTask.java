@@ -35,32 +35,27 @@ public class HandleConflictsTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Handle conflicts.\n\nIt may take a while.\nPlease wait...");
 		taskMonitor.setProgress(0.0);
 
-		try {
-			int nBefore = conflictCollector.getMapToGOAttr().size();
+		int nBefore = conflictCollector.getMapToGOAttr().size();
 
-			List<AttributeConflictHandler> conflictHandlers = new ArrayList<AttributeConflictHandler>();
+		List<AttributeConflictHandler> conflictHandlers = new ArrayList<AttributeConflictHandler>();
 
-			AttributeConflictHandler conflictHandler;
+		AttributeConflictHandler conflictHandler;
 
-			//             if (idMapping!=null) {
-			//                conflictHandler = new IDMappingAttributeConflictHandler(idMapping);
-			//                conflictHandlers.add(conflictHandler);
-			//             }
+		//             if (idMapping!=null) {
+		//                conflictHandler = new IDMappingAttributeConflictHandler(idMapping);
+		//                conflictHandlers.add(conflictHandler);
+		//             }
 
-			conflictHandler = new DefaultAttributeConflictHandler();
-			conflictHandlers.add(conflictHandler);
+		conflictHandler = new DefaultAttributeConflictHandler();
+		conflictHandlers.add(conflictHandler);
 
-			AttributeConflictManager conflictManager = new AttributeConflictManager(conflictCollector,conflictHandlers);
-			conflictManager.handleConflicts();
+		AttributeConflictManager conflictManager = new AttributeConflictManager(conflictCollector,conflictHandlers);
+		conflictManager.handleConflicts();
 
-			int nAfter = conflictCollector.getMapToGOAttr().size();
+		int nAfter = conflictCollector.getMapToGOAttr().size();
 
-			taskMonitor.setProgress(1.0);
-			taskMonitor.setStatusMessage("Successfully handled " + (nBefore-nAfter) + " attribute conflicts. "
+		taskMonitor.setProgress(1.0);
+		taskMonitor.setStatusMessage("Successfully handled " + (nBefore-nAfter) + " attribute conflicts. "
 					      + nAfter+" conflicts remains.");
-		} catch(Exception e) {
-			throw new Exception(e);
-		}
-
 	}
 }

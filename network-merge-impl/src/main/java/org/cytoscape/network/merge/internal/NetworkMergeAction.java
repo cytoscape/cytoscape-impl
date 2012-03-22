@@ -44,6 +44,7 @@ import org.cytoscape.network.merge.internal.ui.NetworkMergeFrame;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.task.creation.NetworkViewCreator;
 
 import java.awt.event.ActionEvent;
 
@@ -60,9 +61,11 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private final CyNetworkFactory cnf;
 	private final CyNetworkNaming cnn;
 	private final TaskManager taskManager;
+	private final NetworkViewCreator netViewCreator; 
 
 	public NetworkMergeAction(CySwingApplication swingApp, CyNetworkManager cnm,
-			CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager) {
+			CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager,
+			NetworkViewCreator netViewCreator) {
 		super(APP_MENU_TITLE);
 		setPreferredMenu(PARENT_MENU);
 		
@@ -71,6 +74,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 		this.cnf = cnf;
 		this.cnn = cnn;
 		this.taskManager = taskManager;
+		this.netViewCreator = netViewCreator;
 	}
 
 	/**
@@ -79,7 +83,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 	@Override
 	public void actionPerformed(final ActionEvent ae) {
 
-		final NetworkMergeFrame frame = new NetworkMergeFrame(cnm, cnf, cnn, taskManager);
+		final NetworkMergeFrame frame = new NetworkMergeFrame(cnm, cnf, cnn, taskManager, netViewCreator);
 		frame.setLocationRelativeTo(swingApp.getJFrame());
 		frame.setVisible(true);
 		// TODO: make this value user-editable (always on top or not).

@@ -33,6 +33,7 @@ package org.cytoscape.task.internal.creation;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.creation.NetworkViewCreator;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -40,7 +41,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class CreateNetworkViewTaskFactory extends AbstractNetworkTaskFactory {
+public class CreateNetworkViewTaskFactory extends AbstractNetworkTaskFactory implements NetworkViewCreator {
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyNetworkViewFactory viewFactory;
@@ -68,5 +69,9 @@ public class CreateNetworkViewTaskFactory extends AbstractNetworkTaskFactory {
 		else
 			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, network, viewFactory, networkViewManager,
 					layouts, eventHelper));
+	}
+
+	public TaskIterator createView(CyNetwork network) {
+		return createTaskIterator(network);
 	}
 }

@@ -18,6 +18,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.task.creation.NetworkViewCreator;
 
 /**
  *
@@ -31,12 +32,13 @@ public class NetworkMergeTask extends AbstractTask {
 	//private AttributeMapping edgeAttributeMapping;
 	private List<CyNetwork> selectedNetworkList;
 	private Operation operation;
-	//private AttributeConflictCollector conflictCollector;
+	private AttributeConflictCollector conflictCollector;
 	//private Map<String,Map<String,Set<String>>> selectedNetworkAttributeIDType;
 	//private final String tgtType;
 	final private AttributeBasedNetworkMerge networkMerge ;  
 	//private boolean cancelled;
 
+	final private NetworkViewCreator netViewCreator; 
 	/**
 	 * Constructor.<br>
 	 *
@@ -49,8 +51,9 @@ public class NetworkMergeTask extends AbstractTask {
 				 final Operation operation,
 				 final AttributeConflictCollector conflictCollector,
 				 final Map<String,Map<String,Set<String>>> selectedNetworkAttributeIDType,
-				 final String tgtType,
-                                 final boolean inNetworkMerge) {
+				 final String tgtType, 
+				 final boolean inNetworkMerge,
+				 final NetworkViewCreator netViewCreator) {
                 this.network = network;
 		//this.matchingAttribute = matchingAttribute;
 		//this.nodeAttributeMapping = nodeAttributeMapping;
@@ -58,7 +61,7 @@ public class NetworkMergeTask extends AbstractTask {
 		this.selectedNetworkList = selectedNetworkList;
 		this.operation = operation;
 		//this.mergedNetworkName = mergedNetworkName;
-		//this.conflictCollector = conflictCollector;
+		this.conflictCollector = conflictCollector;
 		//this.selectedNetworkAttributeIDType = selectedNetworkAttributeIDType;
 		//this.tgtType = tgtType;
 		//cancelled = true;        
@@ -80,6 +83,7 @@ public class NetworkMergeTask extends AbstractTask {
 							      attributeMerger,
 							      attributeValueMatcher);
                 networkMerge.setWithinNetworkMerge(inNetworkMerge);
+		this.netViewCreator = netViewCreator;
 	}
     
 	public boolean isCancelled() {
@@ -94,7 +98,6 @@ public class NetworkMergeTask extends AbstractTask {
 	 */
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-            try {
 			networkMerge.setTaskMonitor(taskMonitor);
 
 //			if (selectedNetworkAttributeIDType!=null) {
@@ -168,10 +171,11 @@ public class NetworkMergeTask extends AbstractTask {
 			//                                  + conflictCollector.getMapToIDAttr().size()
 			//                                  + " attribute conflicts.");
 
-		} catch(Exception e) {
-			throw new Exception(e);
-		}
-		
-        
+			if (!conflictCollector.isEmpty()) {
+				HandleConflictsTask hcTask = new HandleConflictsTask(conflictCollector);
+				insertTasksAfterCurrentTask( hcTask );
+			} else {
+				insertTasksAfterCurrentTask( netViewCreator.createView( network ) );
+			}
 	}
 }
