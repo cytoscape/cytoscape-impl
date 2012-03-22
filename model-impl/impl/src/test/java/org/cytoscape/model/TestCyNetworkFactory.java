@@ -46,6 +46,7 @@ import org.junit.Test;
 
 
 public class TestCyNetworkFactory {
+	
 	public TestCyNetworkFactory() { }
 
 	public static CyNetwork getInstance() {
@@ -61,14 +62,14 @@ public class TestCyNetworkFactory {
 	}
 
 	public static CyRootNetwork getPublicRootInstance(DummyCyEventHelper deh) {	
-		CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
-		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
-		Interpreter interp = new InterpreterImpl();
+		final CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
+		final CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
+		
+		final Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		CyRootNetworkImpl ar =
-			new CyRootNetworkImpl(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),
-			               serviceRegistrar, true);
-		return ar; 
+		
+		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(deh, interp, serviceRegistrar);
+		return new CyRootNetworkImpl(deh, tm, ntm, tableFactory, serviceRegistrar, true);
 	}
 
 	public static CyRootNetwork getPrivateRootInstance() {	

@@ -133,8 +133,8 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 	cyEventHelper.fireEvent(new NetworkAddedEvent(CyNetworkManagerImpl.this, network));
     }
 
-    @Override
-    public synchronized void reset() {
-	networkMap.clear();
-    }
+	@Override
+	public synchronized void reset() {
+		networkMap.clear();
+	}
 }

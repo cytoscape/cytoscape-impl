@@ -18,6 +18,9 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import static org.mockito.Mockito.*;
 
 
+/**
+ * Provides utility methods to create actual network instances for testing.
+ */
 public class NetworkTestSupport {
 
 	protected CyNetworkFactory networkFactory;
@@ -28,9 +31,14 @@ public class NetworkTestSupport {
 
 	public NetworkTestSupport() {
 		eventHelper = new DummyCyEventHelper();
-		tableMgr = mock(CyTableManagerImpl.class); 
-		networkTableMgr = mock(CyNetworkTableManagerImpl.class);
+		networkTableMgr = new CyNetworkTableManagerImpl();
+		
+		// Mock objects.
+		final CyNetworkManager networkManager = mock(CyNetworkManager.class);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		
+		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager); 
+		
 		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
 		networkFactory = new CyNetworkFactoryImpl(eventHelper, tableMgr, networkTableMgr, tableFactory, serviceRegistrar);
 		rootNetworkManager = new CyRootNetworkManagerImpl();
@@ -48,5 +56,3 @@ public class NetworkTestSupport {
 		return rootNetworkManager;
 	}
 }
-
-

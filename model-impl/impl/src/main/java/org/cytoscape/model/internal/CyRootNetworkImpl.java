@@ -29,30 +29,28 @@
 package org.cytoscape.model.internal;
 
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.lang.ref.WeakReference;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.events.ColumnCreatedListener;
-import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -66,13 +64,13 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork {
 
 	private final long suid;
+	
 	private final CyEventHelper eventHelper;
 	private final List<CySubNetwork> subNetworks;
 	private final CySubNetwork base;
 	private final CyTableManagerImpl tableMgr;
-	private final CyNetworkTableManagerImpl networkTableMgr; 
+	private final CyNetworkTableManager networkTableMgr; 
 	private final CyTableFactory tableFactory;
-	private final CyServiceRegistrar serviceRegistrar;
 	private final boolean publicTables;
 	private final VirtualColumnAdder columnAdder;
 	private final NameSetListener nameSetListener; 
@@ -83,28 +81,24 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	public CyRootNetworkImpl(final CyEventHelper eh, 
 	                         final CyTableManagerImpl tableMgr,
-	                         final CyNetworkTableManagerImpl networkTableMgr,
+	                         final CyNetworkTableManager networkTableMgr,
 	                         final CyTableFactory tableFactory,
 	                         final CyServiceRegistrar serviceRegistrar, 
 	                         final boolean publicTables)
 	{
-		super(SUIDFactory.getNextSUID(),tableFactory,publicTables,0);
+		super(SUIDFactory.getNextSUID(), networkTableMgr, tableFactory,publicTables,0);
 		this.eventHelper = eh;
 		this.tableMgr = tableMgr;
 		this.networkTableMgr = networkTableMgr;
 		this.tableFactory = tableFactory;
 		this.publicTables = publicTables;
-		this.serviceRegistrar = serviceRegistrar;
 		suid = super.getSUID(); 
 		subNetworks = new ArrayList<CySubNetwork>();
 		nextNodeIndex = 0;
 		nextEdgeIndex = 0;
-
+		
+		initTables(this);
 		updateRootNetworkTables();
-
-		networkTableMgr.setTableMap(CyNetwork.class, this, netTables);
-		networkTableMgr.setTableMap(CyNode.class, this, nodeTables);
-		networkTableMgr.setTableMap(CyEdge.class, this, edgeTables);
 
 		columnAdder = new VirtualColumnAdder();
 		serviceRegistrar.registerService(columnAdder, ColumnCreatedListener.class, new Properties());
@@ -115,41 +109,42 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		base = addSubNetwork(); 
 
-		registerAllTables(netTables.values());
-		registerAllTables(nodeTables.values());
-		registerAllTables(edgeTables.values());
+		registerAllTables(networkTableMgr.getTables(this, CyNetwork.class).values());
+		registerAllTables(networkTableMgr.getTables(this, CyNode.class).values());
+		registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
 	}
 
 	private void registerAllTables(Collection<CyTable> tables) {
-		for (CyTable table : tables) {
+		for (final CyTable table : tables)
 			tableMgr.addTable(table);
-		}
 	}
 
 	private void updateRootNetworkTables() {
+		
+		final CyTable edgeSharedTable = tableFactory.createTable(suid + " shared edge", CyTableEntry.SUID, Long.class,
+				publicTables, false, getInitialTableSize(subNetworks.size()));
+		networkTableMgr.setTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS, edgeSharedTable);
+		
+		edgeSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
+				
+		final CyTable networkSharedTable = tableFactory.createTable(suid
+				+ " shared network", CyTableEntry.SUID, Long.class, publicTables, false, InitialTableSize.SMALL);
+		networkTableMgr.setTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS, networkSharedTable);
+		
+		networkSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
+		
+		final CyTable nodeSharedTable = tableFactory.createTable(suid + " shared node", CyTableEntry.SUID, Long.class,
+				publicTables, false, getInitialTableSize(subNetworks.size()));
+		networkTableMgr.setTable(this, CyNode.class, CyRootNetwork.SHARED_ATTRS, nodeSharedTable);
+		
+		nodeSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
+		
 		getRow(this).set(CyTableEntry.NAME, "");
-
-		netTables.put(CyRootNetwork.SHARED_ATTRS, 
-		              tableFactory.createTable(suid + " shared network", CyTableEntry.SUID, 
-		                                       Long.class, publicTables, false, InitialTableSize.SMALL));
-		netTables.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
-
-		nodeTables.put(CyRootNetwork.SHARED_ATTRS, 
-		               tableFactory.createTable(suid + " shared node", CyTableEntry.SUID, 
-		                                        Long.class, publicTables, false, 
-		                                        getInitialTableSize(subNetworks.size())));
-		nodeTables.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
-
-		edgeTables.put(CyRootNetwork.SHARED_ATTRS, 
-		               tableFactory.createTable(suid + " shared edge", CyTableEntry.SUID, 
-		                                        Long.class, publicTables, false, 
-		                                        getInitialTableSize(subNetworks.size())));
-        edgeTables.get(CyRootNetwork.SHARED_ATTRS).createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
 	}
 
 	private void linkDefaultTables(CyTable srcTable, CyTable tgtTable) {
 		// Add all columns from source table as virtual columns in target table.
-		tgtTable.addVirtualColumns(srcTable,CyTableEntry.SUID,true);
+		tgtTable.addVirtualColumns(srcTable, CyTableEntry.SUID, true);
 
 		// Now add a listener for column created events to add
 		// virtual columns to any subsequent source columns added.
@@ -223,14 +218,21 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	@Override
 	public synchronized CySubNetwork addSubNetwork() {
+		// Subnetwork's ID
 		final long newSUID = SUIDFactory.getNextSUID();
+		
 		final CySubNetworkImpl sub = new CySubNetworkImpl(this,newSUID,eventHelper,tableMgr,networkTableMgr,
 		                                                  tableFactory,publicTables,subNetworks.size());
 		networkAddedListenerDelegator.addListener(sub);
+		
+		CyTable networkTable = networkTableMgr.getTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS);
+		CyTable nodeTable = networkTableMgr.getTable(this, CyNode.class, CyRootNetwork.SHARED_ATTRS);
+		CyTable edgeTable = networkTableMgr.getTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS);
 
-		linkDefaultTables( netTables.get(CyRootNetwork.SHARED_ATTRS), sub.getDefaultNetworkTable() );
-		linkDefaultTables( nodeTables.get(CyRootNetwork.SHARED_ATTRS), sub.getDefaultNodeTable() );
-		linkDefaultTables( edgeTables.get(CyRootNetwork.SHARED_ATTRS), sub.getDefaultEdgeTable() );
+		linkDefaultTables(networkTable, sub.getDefaultNetworkTable());
+		linkDefaultTables(nodeTable, sub.getDefaultNodeTable());
+		linkDefaultTables(edgeTable, sub.getDefaultEdgeTable());
+
 		subNetworks.add(sub);
 		return sub;
 	}
@@ -279,17 +281,17 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	@Override
 	public CyTable getSharedNetworkTable() {
-		return netTables.get(CyRootNetwork.SHARED_ATTRS); 
+		return networkTableMgr.getTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS); 
 	}
 
 	@Override
 	public CyTable getSharedNodeTable() {
-		return nodeTables.get(CyRootNetwork.SHARED_ATTRS); 
+		return networkTableMgr.getTable(this, CyNode.class, CyRootNetwork.SHARED_ATTRS); 
 	}
 
 	@Override
 	public CyTable getSharedEdgeTable() {
-		return edgeTables.get(CyRootNetwork.SHARED_ATTRS); 
+		return networkTableMgr.getTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS); 
 	}
 
 	@Override

@@ -60,6 +60,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	private final CyEventHelper eventHelper;
 	private final CyNetworkTableManager networkTableManager;
 	private final CyNetworkManager networkManager;
+	
 	private final Map<Long, CyTable> tables;
 
 	/**
@@ -75,55 +76,42 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		tables = new HashMap<Long, CyTable>();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 */
+
 	@Override
 	public synchronized void reset() {
-//		networkTableMap.clear();
 		tables.clear();
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param t DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
+	@Override
 	public synchronized void addTable(final CyTable t) {
-		if (t == null) {
+		if (t == null)
 			throw new NullPointerException("added table is null");
-		}
 
 		tables.put(t.getSUID(), t);
 		eventHelper.fireEvent(new TableAddedEvent(this, t));
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param includePrivate DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public synchronized Set<CyTable> getAllTables(final boolean includePrivate) {
-		Set<CyTable> res = new HashSet<CyTable>();
+		final Set<CyTable> res = new HashSet<CyTable>();
 
-		for (Long key : tables.keySet()) {
-			if (includePrivate || tables.get(key).isPublic()) {
+		for (final Long key : tables.keySet()) {
+			if (includePrivate || tables.get(key).isPublic())
 				res.add(tables.get(key));
-			}
 		}
 
 		return res;
 	}
 
+
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param suid DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public synchronized CyTable getTable(final long suid) {

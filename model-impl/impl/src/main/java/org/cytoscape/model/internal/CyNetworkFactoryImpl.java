@@ -31,6 +31,7 @@ package org.cytoscape.model.internal;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -43,7 +44,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	
 	private final CyEventHelper help;
 	private final CyTableManagerImpl mgr;
-	private final CyNetworkTableManagerImpl networkTableMgr;
+	private final CyNetworkTableManager networkTableMgr;
 	private final CyTableFactory tableFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -53,7 +54,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 * @param help An instance of CyEventHelper. 
 	 */
 	public CyNetworkFactoryImpl(final CyEventHelper help, final CyTableManagerImpl mgr,
-					final CyNetworkTableManagerImpl networkTableMgr,
+					final CyNetworkTableManager networkTableMgr,
 				    final CyTableFactory tableFactory,
 				    final CyServiceRegistrar serviceRegistrar)
 	{
@@ -81,7 +82,7 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 */
 	@Override
 	public CyNetwork createNetwork() {
-		CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, true);
+		final CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, true);
 		logger.info("CyNetwork w/ public tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ public tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
 		return net.getBaseNetwork(); 

@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 
 
 public final class CyTableImpl implements CyTable, TableAddedListener {
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyTableImpl.class);
 
 	private Set<String> currentlyActiveAttributes;

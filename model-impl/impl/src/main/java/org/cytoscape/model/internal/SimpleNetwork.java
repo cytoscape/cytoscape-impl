@@ -31,20 +31,11 @@ package org.cytoscape.model.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.events.ColumnCreatedListener;
-import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 /**
@@ -54,6 +45,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * add a provided CyNode/CyEdge object to the network topology. 
  */
 class SimpleNetwork {
+	
+	// Unique ID for this
 	private final Long suid;
 
 	// We use IntTHash here because we really don't want to
@@ -66,10 +59,11 @@ class SimpleNetwork {
 
 	private int nodeCount;
 	private int edgeCount;
+	
 	private NodePointer firstNode;
 
 	SimpleNetwork(final long suid) {
-		this.suid = Long.valueOf(suid); 
+		this.suid = suid; 
 		nodeCount = 0;
 		edgeCount = 0;
 		firstNode = null; 
@@ -568,16 +562,13 @@ class SimpleNetwork {
 		return tentativeEdgeCount;
 	}
 
-	private EdgePointer getEdgePointer(final CyEdge edge) {
-		assert(edge != null);
-		return edgePointers.get(edge.getIndex());
-	}
-
 	private NodePointer getNodePointer(final CyNode node) {
 		assert(node != null);
 		return nodePointers.get(node.getIndex());
 	}
 
+	
+	@Override
 	public boolean equals(final Object o) {
 		if (!(o instanceof SimpleNetwork))
 			return false;
@@ -587,11 +578,14 @@ class SimpleNetwork {
 		return ag.suid.longValue() == this.suid.longValue();
 	}
 
+	
+	@Override
 	public int hashCode() {
 		return (int) (suid.longValue() ^ (suid.longValue() >>> 32));
 	}
 
 
+	@Override
 	public String toString() {
 		return "CyNetwork: " + suid;
 	}

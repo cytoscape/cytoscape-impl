@@ -28,37 +28,28 @@
 package org.cytoscape.model.internal;
 
 
+import java.util.Collection;
+
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableEntry;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.events.AddedNodesEvent;
-import org.cytoscape.model.events.AddedEdgesEvent;
-import org.cytoscape.model.events.AboutToRemoveNodesEvent;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.AboutToRemoveNodesEvent;
+import org.cytoscape.model.events.AddedEdgesEvent;
+import org.cytoscape.model.events.AddedNodesEvent;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedEdgesEvent;
-import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 
 /**
@@ -74,25 +65,30 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	private final CyRootNetworkImpl parent;
 	private boolean fireAddedNodesAndEdgesEvents;
 	private final CyTableManager tableMgr;
+	
+	private final CyNetworkTableManager networkTableMgr;
 
 	CySubNetworkImpl(final CyRootNetworkImpl par, 
 	                 final long suid,
 	                 final CyEventHelper eventHelper, 
 	                 final CyTableManager tableMgr,
-	                 final CyNetworkTableManagerImpl netTableMgr, 
+	                 final CyNetworkTableManager netTableMgr, 
 	                 final CyTableFactory tableFactory, 
 	                 boolean publicTables,
 	                 int tableSizeDeterminer) {
-		super(suid,tableFactory,publicTables,tableSizeDeterminer);
+		super(suid, netTableMgr, tableFactory,publicTables,tableSizeDeterminer);
 
 		assert(par != null);
 		this.parent = par;
 		this.eventHelper = eventHelper;
 		this.tableMgr = tableMgr;
+		this.networkTableMgr = netTableMgr;
+		
+		initTables(this);
 
-		netTableMgr.setTableMap(CyNetwork.class, this, netTables);
-		netTableMgr.setTableMap(CyNode.class, this, nodeTables);
-		netTableMgr.setTableMap(CyEdge.class, this, edgeTables);
+//		netTableMgr.setTableMap(CyNetwork.class, this, netTables);
+//		netTableMgr.setTableMap(CyNode.class, this, nodeTables);
+//		netTableMgr.setTableMap(CyEdge.class, this, edgeTables);
 
 		fireAddedNodesAndEdgesEvents = false;
 	}
@@ -244,11 +240,11 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	// finished creating the network so that we don't fire
 	// lots of table related events prematurely.
 	private void registerSubnetworkTables() {
-		for (final CyTable table : netTables.values())
+		for (final CyTable table : networkTableMgr.getTables(this, CyNetwork.class).values())
 			tableMgr.addTable(table);
-		for (final CyTable table : nodeTables.values())
+		for (final CyTable table : networkTableMgr.getTables(this, CyNode.class).values())
 			tableMgr.addTable(table);
-		for (final CyTable table : edgeTables.values())
+		for (final CyTable table : networkTableMgr.getTables(this, CyEdge.class).values())
 			tableMgr.addTable(table);
 
 		updateSharedNames( getDefaultNodeTable(), parent.getSharedNodeTable() );
