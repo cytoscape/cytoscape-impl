@@ -59,9 +59,7 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 		}
 
 		//set Gui
-		
-		textField = new JFormattedTextField(new DecimalFormat());
-		textField.setValue(d);
+		textField = new JFormattedTextField(d.toString());
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
@@ -96,7 +94,7 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 		textField.setBackground(Color.white);
 		Double d;
 		try{
-			d = ((Number) textField.getValue()).doubleValue();
+			d = Double.parseDouble(textField.getText());
 			try {
 				setValue(d);
 			} catch (final Exception e) {
@@ -131,8 +129,7 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 		if ( textField == null )
 			return "";
 
-		Double d = ((Number) textField.getValue()).doubleValue();
-		final String text = d.toString();
+		final String text = textField.getText();
 		if ( text == null )
 			return "";
 
