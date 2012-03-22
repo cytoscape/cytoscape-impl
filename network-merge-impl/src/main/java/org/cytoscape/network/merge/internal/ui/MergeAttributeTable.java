@@ -36,36 +36,19 @@
 
 package org.cytoscape.network.merge.internal.ui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.table.*;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.network.merge.internal.model.AttributeMapping;
 import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 import org.cytoscape.network.merge.internal.util.ColumnType;
-
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.EnumSet;
-
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.Component;
-import java.awt.Color;
-
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.JOptionPane;
-import javax.swing.table.JTableHeader;
-import javax.swing.JComboBox;
-import javax.swing.table.TableColumn;
-import javax.swing.DefaultCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  * Table for customizing attribute mapping from original netowrks
@@ -113,12 +96,12 @@ class MergeAttributeTable extends JTable{
         CyNetwork net = model.getNetork(col);
         CyTable table = attributeMapping.getCyTable(net);
         Vector<String> colNames = new Vector<String>();
-            for (CyColumn cyCol : table.getColumns()) {
-                String colName = cyCol.getName();
-                if (!colName.equals("SUID") && !colName.equals("selected")) {
-                    colNames.add(colName);
-                }
+        for (CyColumn cyCol : table.getColumns()) {
+            String colName = cyCol.getName();
+            if (!colName.equals("SUID") && !colName.equals("selected")) {
+                colNames.add(colName);
             }
+        }
         colNames.add(nullAttr);
         return colNames;
     }
@@ -144,36 +127,36 @@ class MergeAttributeTable extends JTable{
                     private DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
                     private ComboBoxTableCellRenderer comboBoxRenderer = new ComboBoxTableCellRenderer(attrs);
 
-                    //@Override
+                    @Override
                     public Component getTableCellRendererComponent(
-                                    JTable table, Object value,
-                                    boolean isSelected, boolean hasFocus,
-                                    int row, int column) {
+                                JTable table, Object value,
+                                boolean isSelected, boolean hasFocus,
+                                int row, int column) {
 
-                                if (row<(isNode?1:0)) {//TODO Cytoscape3
-                                        JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                                        label.setBackground(Color.LIGHT_GRAY);
-                                        label.setToolTipText("Change this in the matching node table above");
-                                        return label;
+                            if (row<(isNode?1:0)) {//TODO Cytoscape3
+                                JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                                label.setBackground(Color.LIGHT_GRAY);
+                                label.setToolTipText("Change this in the matching node table above");
+                                return label;
+                            } else {
+                                Component renderer = comboBoxRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                                if (isSelected) {
+                                    renderer.setForeground(table.getSelectionForeground());
+                                    renderer.setBackground(table.getSelectionBackground());
                                 } else {
-                                        Component renderer = comboBoxRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                                        if (isSelected) {
-                                            renderer.setForeground(table.getSelectionForeground());
-                                            renderer.setBackground(table.getSelectionBackground());
-                                        } else {
-                                            renderer.setForeground(table.getForeground());
-                                            renderer.setBackground(table.getBackground());
-                                        }
-                                        return renderer;
+                                    renderer.setForeground(table.getForeground());
+                                    renderer.setBackground(table.getBackground());
                                 }
-                          }
+                                return renderer;
+                            }
+                        }
                 });
 
             } else if (this.isColumnMergedNetwork(i)) {
                 column.setCellRenderer(new TableCellRenderer() {
                     private DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
                     
-                    //@Override
+                    @Override
                     public Component getTableCellRendererComponent(
                                     JTable table, Object value,
                                     boolean isSelected, boolean hasFocus,
@@ -537,8 +520,6 @@ class MergeAttributeTable extends JTable{
                         //if (attributeMapping.getOriginalAttribute(netID, iAttr)==null) return;
                         attributeMapping.removeOriginalAttribute(net, iAttr);
                     } else {
-                        String mergedAttr = attributeMapping.getMergedAttribute(iAttr);
-                                                
                         attributeMapping.setOriginalAttribute(net, v, iAttr);// set the v
                     }
                     fireTableDataChanged();
@@ -554,7 +535,7 @@ class MergeAttributeTable extends JTable{
         }
 
         private void resetNetworks() {
-            networks = new ArrayList<CyNetwork>(matchingAttribute.getNetworkSet());
+            networks = new ArrayList<CyNetwork>(attributeMapping.getNetworkSet());
             //TODO: sort networks maybe alphabetically
         }
         

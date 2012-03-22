@@ -644,7 +644,7 @@ public class NetworkMergeFrame extends JFrame {
 
 		mergeEdgeAttributePanel.setLayout(new BoxLayout(mergeEdgeAttributePanel, BoxLayout.LINE_AXIS));
 
-		mergeEdgeAttributeTable = new MergeAttributeTable(edgeAttributeMapping,matchingAttribute);
+		mergeEdgeAttributeTable = new MergeAttributeTable(edgeAttributeMapping);
 		mergeEdgeAttributeScrollPane.setViewportView(mergeEdgeAttributeTable);
 
 		mergeEdgeAttributePanel.add(mergeEdgeAttributeScrollPane);
