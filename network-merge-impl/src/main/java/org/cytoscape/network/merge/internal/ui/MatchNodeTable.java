@@ -75,7 +75,7 @@ class MatchNodeTable extends JTable{
             Vector<String> colNames = new Vector<String>();
             for (CyColumn cyCol : table.getColumns()) {
                 String colName = cyCol.getName();
-                if (!colName.equals("SUID") && !colName.equals("selected")) {
+                if (!colName.equals("SUID")) {
                     colNames.add(colName);
                 }
             }
