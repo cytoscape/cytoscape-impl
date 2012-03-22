@@ -49,6 +49,7 @@
     <att type="string" name="node.opacity" value="100.0"/>
     <att>
       <graph>
+        <att type="string" name="gr_att_1" value="Lorem Ipsum"/>
         <node xlink:href="#-2"/>
         <node xlink:href="#-1"/>
         <edge label="node0 (DirectedEdge) node1" source="-1" target="-2">

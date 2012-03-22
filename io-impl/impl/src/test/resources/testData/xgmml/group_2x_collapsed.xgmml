@@ -35,6 +35,7 @@
     <att type="string" name="node.opacity" value="100.0"/>
     <att>
       <graph>
+        <att type="string" name="gr_att_1" value="Lorem Ipsum"/>
         <node label="node1" id="-2">
           <att type="string" name="NODE_TYPE" value="DefaultNode"/>
           <att type="real" name="__metanodeHintX" value="-61.0" cy:hidden="true"/>

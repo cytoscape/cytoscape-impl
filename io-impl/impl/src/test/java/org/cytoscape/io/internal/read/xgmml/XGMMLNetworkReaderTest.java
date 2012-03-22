@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
@@ -132,6 +131,10 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		assertEquals(2, gr.getNodeList().size());
 //		assertEquals(1, gr.getInternalEdgeList().size()); // TODO: fix it
 		assertEquals(1, gr.getExternalEdgeList().size());
+		
+		// Check if the nested graph's attribute was imported to the group network
+		CyRow grNetrow = gr.getGroupNetwork().getRow(gr.getGroupNetwork());
+		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
 	}
 	
 	@Test
@@ -150,6 +153,10 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		assertEquals(2, gr.getNodeList().size());
 		assertEquals(1, gr.getInternalEdgeList().size());
 		assertEquals(1, gr.getExternalEdgeList().size());
+		
+		// Check if the nested graph's attribute was imported to the group network
+		CyRow grNetrow = gr.getGroupNetwork().getRow(gr.getGroupNetwork());
+		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
 	}
 
 	@Test

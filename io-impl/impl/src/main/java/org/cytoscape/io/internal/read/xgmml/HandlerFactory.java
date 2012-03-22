@@ -131,6 +131,7 @@ public class HandlerFactory {
 					{ NODE, "graphics", NODE_GRAPHICS, new HandleNodeGraphics() },
 					{ NODE, "att", NODE_ATT, new HandleNodeAttribute() },
 					{ NODE_ATT, "graph", NODE_GRAPH, new HandleNodeGraph() },
+					{ NODE_GRAPH, "att", NET_ATT, new HandleGraphAttribute() },
 					{ NODE_GRAPHICS, "att", NODE_GRAPHICS, new HandleNodeGraphics() },
 					// Handle edges
 					{ GRAPH, "edge", EDGE, new HandleEdge() },
