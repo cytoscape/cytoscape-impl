@@ -62,6 +62,7 @@ public class NetworkMergeTask extends AbstractTask {
 		this.operation = operation;
 		//this.mergedNetworkName = mergedNetworkName;
 		this.conflictCollector = conflictCollector;
+		this.netViewCreator = netViewCreator;
 		//this.selectedNetworkAttributeIDType = selectedNetworkAttributeIDType;
 		//this.tgtType = tgtType;
 		//cancelled = true;        
@@ -83,7 +84,6 @@ public class NetworkMergeTask extends AbstractTask {
 							      attributeMerger,
 							      attributeValueMatcher);
                 networkMerge.setWithinNetworkMerge(inNetworkMerge);
-		this.netViewCreator = netViewCreator;
 	}
     
 	public boolean isCancelled() {

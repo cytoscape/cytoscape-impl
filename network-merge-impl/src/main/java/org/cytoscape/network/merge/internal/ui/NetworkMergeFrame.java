@@ -125,6 +125,7 @@ public class NetworkMergeFrame extends JFrame {
                 this.cnf = cnf;
                 this.cnn = cnn;
                 this.taskManager = taskManager;
+                this.netViewCreator = netViewCreator;
 
 		checkCyThesaurus = checkCyThesaurus();
 
