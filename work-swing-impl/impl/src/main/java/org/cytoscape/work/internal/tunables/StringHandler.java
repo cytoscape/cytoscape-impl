@@ -1,6 +1,7 @@
 package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,8 +18,11 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  * @author pasteur
  */
 public class StringHandler extends AbstractGUITunableHandler implements ActionListener {
+	
+	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
+	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD ,13);
+	
 	private JFormattedTextField textField;
-	private boolean horizontal = false;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>String</code> type
@@ -52,10 +56,13 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		//set Gui
 		textField = new JFormattedTextField(s);
 		panel = new JPanel(new BorderLayout());
-		JLabel label = new JLabel(getDescription());
-		label.setFont(new Font(null, Font.PLAIN,12));
-		textField.setHorizontalAlignment(JTextField.RIGHT);
+		final JLabel label = new JLabel(getDescription());
+		label.setFont(LABEL_FONT);
+		textField.setFont(TEXT_FONT);
+		
+		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.addActionListener(this);
+		textField.setPreferredSize(new Dimension(200, 15));
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
