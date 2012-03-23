@@ -225,10 +225,16 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					final Task task = taskIterator.next();
 					taskMonitor.setTask(task);
 
+					// hide the dialog to avoid swing threading issues
+					// while displaying tunables
+					taskMonitor.showDialog(false);
+
 					if (!displayTunables(task)) {
 						taskMonitor.cancel();
 						return;
 					}
+
+					taskMonitor.showDialog(true);
 
 					task.run(taskMonitor);
 

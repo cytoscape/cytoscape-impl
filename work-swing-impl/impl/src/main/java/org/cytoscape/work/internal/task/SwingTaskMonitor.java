@@ -25,6 +25,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	private Future<?> future = null;
 	private int expectedNumTasks = 1;
 	private int currentTaskNum = -1; // so that the first task is numbered 0
+	private boolean showDialog = true;
 
 	/**
 	 * Based on the expected number of tasks, this is the fraction of the overall
@@ -68,7 +69,19 @@ class SwingTaskMonitor implements TaskMonitor {
 		if (progress > 0)
 			dialog.setPercentCompleted(progress);
 		
-		dialog.setVisible(true);
+		dialog.setVisible(showDialog);
+	}
+
+	/**
+	 * Used to toggle the monitor dialog so that when tunables
+	 * are being displayed there are no Swing related threading 
+	 * issues.
+	 */
+	public void showDialog(boolean sd) {
+		showDialog = sd;
+		if ( dialog != null ) {
+			dialog.setVisible(showDialog);
+		}
 	}
 
 	public synchronized void close() {
