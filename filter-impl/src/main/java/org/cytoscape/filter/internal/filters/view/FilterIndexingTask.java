@@ -44,9 +44,6 @@ final class FilterIndexingTask extends AbstractTask {
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Indexing Network Data");
-		long start = System.currentTimeMillis();
 		quickFind.addNetwork(network, taskMonitor);
-		long end = System.currentTimeMillis();
-		System.err.println("+++++++++++++++ addNetwork() took " + (end - start) + "ms");
 	}
 }
