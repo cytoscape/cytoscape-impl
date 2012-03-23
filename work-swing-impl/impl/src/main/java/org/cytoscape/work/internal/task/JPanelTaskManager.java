@@ -48,13 +48,6 @@ public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implem
 	}
 
 	@Override
-	public void execute(final TaskIterator iterator, Object tunableContext) {
-		if (panelTunableMutator.validateAndWriteBack(tunableContext)) {
-			dtm.execute(iterator, null);
-		}
-	}
-	
-	@Override
 	public void execute(final TaskIterator iterator) {
 		dtm.execute(iterator, null);	
 	}

@@ -48,14 +48,10 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 
 
 	@Override
-	public void execute(final TaskIterator taskIterator, Object tunableContext) {
+	public void execute(final TaskIterator taskIterator) {
 		final LoggingTaskMonitor taskMonitor = new LoggingTaskMonitor();
 		
 		try {
-			if ( !displayTunables(tunableContext) )
-				return;
-
-			// now execute all subsequent tasks
 			while (taskIterator.hasNext()) {
 				final Task task = taskIterator.next();
 				taskMonitor.setTask(task);
@@ -69,11 +65,6 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 		} catch (Exception exception) {
 			taskMonitor.showException(exception);
 		}
-	}
-
-	@Override
-	public void execute(TaskIterator iterator) {
-		execute(iterator, null);
 	}
 
 	private boolean displayTunables(final Object task) throws Exception {

@@ -24,10 +24,6 @@ public class SubmenuTaskManagerImpl extends AbstractTaskManager<DynamicSubmenuLi
 		return listener; 
 	}
 
-	public void execute(TaskIterator iterator, Object tunableContext) {
-		dialogTaskManager.execute(iterator, tunableContext);
-	}
-	
 	@Override
 	public void execute(TaskIterator iterator) {
 		dialogTaskManager.execute(iterator);
