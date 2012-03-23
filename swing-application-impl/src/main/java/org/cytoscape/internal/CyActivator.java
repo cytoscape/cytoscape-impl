@@ -116,6 +116,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -309,13 +310,13 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
 
 		Properties arrangeGridTaskFactoryProps = new Properties();
-		arrangeGridTaskFactoryProps.setProperty("enableFor", "networkAndView");
+		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeGridTaskFactoryProps.setProperty("preferredMenu", "View.Arrange Network Windows[110]");
 		arrangeGridTaskFactoryProps.setProperty("title", "Grid");
 		registerService(bc, arrangeGridTaskFactory, TaskFactory.class, arrangeGridTaskFactoryProps);
 
 		Properties arrangeCascadeTaskFactoryProps = new Properties();
-		arrangeCascadeTaskFactoryProps.setProperty("enableFor", "networkAndView");
+		arrangeCascadeTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeCascadeTaskFactoryProps.setProperty("preferredMenu",
 		                                           "View.Arrange Network Windows[110]");
 		arrangeCascadeTaskFactoryProps.setProperty("title", "Cascade");
@@ -323,7 +324,7 @@ public class CyActivator extends AbstractCyActivator {
 		                arrangeCascadeTaskFactoryProps);
 
 		Properties arrangeHorizontalTaskFactoryProps = new Properties();
-		arrangeHorizontalTaskFactoryProps.setProperty("enableFor", "networkAndView");
+		arrangeHorizontalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeHorizontalTaskFactoryProps.setProperty("preferredMenu",
 		                                              "View.Arrange Network Windows[110]");
 		arrangeHorizontalTaskFactoryProps.setProperty("title", "Horizontal");
@@ -331,7 +332,7 @@ public class CyActivator extends AbstractCyActivator {
 		                arrangeHorizontalTaskFactoryProps);
 
 		Properties arrangeVerticalTaskFactoryProps = new Properties();
-		arrangeVerticalTaskFactoryProps.setProperty("enableFor", "networkAndView");
+		arrangeVerticalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeVerticalTaskFactoryProps.setProperty("preferredMenu",
 		                                            "View.Arrange Network Windows[110]");
 		arrangeVerticalTaskFactoryProps.setProperty("title", "Vertical");

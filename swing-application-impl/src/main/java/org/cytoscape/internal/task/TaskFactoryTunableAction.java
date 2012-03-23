@@ -41,26 +41,26 @@ import org.slf4j.LoggerFactory;
 
 public class TaskFactoryTunableAction extends AbstractCyAction {
 
-    private static final long serialVersionUID = 8009915597814265396L;
+	private static final long serialVersionUID = 8009915597814265396L;
 
-    private final static Logger logger = LoggerFactory.getLogger(TaskFactoryTunableAction.class);
+	private final static Logger logger = LoggerFactory.getLogger(TaskFactoryTunableAction.class);
 
-    final protected TaskFactory factory;
-    final protected DialogTaskManager manager;
+	final protected TaskFactory factory;
+	final protected DialogTaskManager manager;
 	final protected CyApplicationManager applicationManager;
 
-    public TaskFactoryTunableAction(final DialogTaskManager manager, final TaskFactory factory, final Map<String, String> serviceProps,
-	    final CyApplicationManager applicationManager) {
-	super(serviceProps, applicationManager, factory);
-	this.manager = manager;
-	this.applicationManager = applicationManager;
-	this.factory = factory;
-    }
+	public TaskFactoryTunableAction(final DialogTaskManager manager, final TaskFactory factory,
+			final Map<String, String> serviceProps, final CyApplicationManager applicationManager) {
+		super(serviceProps, applicationManager, factory);
+		this.manager = manager;
+		this.applicationManager = applicationManager;
+		this.factory = factory;
+	}
 
-    public void actionPerformed(ActionEvent a) {
-	logger.debug("About to execute task from factory: " + factory.toString());
-	
-	// execute the task(s) in a separate thread
-	manager.execute(factory.createTaskIterator());
-    }
+	public void actionPerformed(ActionEvent a) {
+		logger.debug("About to execute task from factory: " + factory.toString());
+
+		// execute the task(s) in a separate thread
+		manager.execute(factory.createTaskIterator());
+	}
 }

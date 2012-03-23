@@ -83,7 +83,6 @@ public class VizMapperMenuManager {
 		this.generateValues = new JMenu("Mapping Value Generators");
 		this.rightClickMenu.add(generateValues);
 
-		// modifyValues = new JMenu(modifyMenuLabel);
 	}
 
 	public void setIconManager(IconManager iconManager) {
@@ -165,11 +164,13 @@ public class VizMapperMenuManager {
 			mainMenu.add(menuItem);
 		else if(menuDef.toString().equals(CONTEXT_MENU))
 			edit.add(menuItem);
-
+	}
+	
+	private void executeTask() {
+		
 	}
 
 	public void removeTaskFactory(final TaskFactory taskFactory, Map properties) {
-
 	}
 	
 	public void addMappingGenerator(final DiscreteMappingGenerator<?> generator, @SuppressWarnings("rawtypes") Map properties) {

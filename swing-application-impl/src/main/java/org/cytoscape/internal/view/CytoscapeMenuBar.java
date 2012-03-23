@@ -92,10 +92,9 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if (accelerator != null)
 			menu_item.setAccelerator(accelerator);
 
-		((JMenu)gravityTracker.getMenu()).addMenuListener(action);
+		((JMenu) gravityTracker.getMenu()).addMenuListener(action);
 		gravityTracker.addMenuItem(menu_item, action.getMenuGravity());
-		logger.debug("Inserted action for menu: " + menu_name +
-		            " with gravity: " + action.getMenuGravity());
+		logger.debug("Inserted action for menu: " + menu_name + " with gravity: " + action.getMenuGravity());
 		actionMenuItemMap.put(action, menu_item);
 
 		revalidate();
