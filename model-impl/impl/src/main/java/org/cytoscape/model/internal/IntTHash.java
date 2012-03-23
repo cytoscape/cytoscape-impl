@@ -37,6 +37,7 @@
 package org.cytoscape.model.internal;
 
 import java.util.NoSuchElementException;
+import java.util.Arrays;
 
 
 /**
@@ -110,6 +111,7 @@ public final class IntTHash<T> {
 	 * @exception NullPointerException if value is null.
 	 */
 	public final T put(final int key, final T value) {
+		//System.out.println("putting: " + key + " -> " + value);
 		if (key < 0)
 			throw new IllegalArgumentException("key is negative");
 
@@ -121,6 +123,7 @@ public final class IntTHash<T> {
 		final Object returnVal = m_vals[m_prevInx];
 
 		if (returnVal == null) {
+			//System.out.println("m_elements: " + m_elements + "   m_thres: " + m_thresholdSize);
 			if (m_elements == m_thresholdSize) {
 				incrSize();
 
@@ -131,7 +134,10 @@ public final class IntTHash<T> {
 		}
 
 		m_vals[m_prevInx] = value;
-		m_keys[m_prevInx] = key;
+		if ( value == null )
+			m_keys[m_prevInx] = -1;
+		else
+			m_keys[m_prevInx] = key;
 
 		return clazz.cast(returnVal);
 	}
@@ -156,9 +162,17 @@ public final class IntTHash<T> {
 	}
 
 	public final T remove(final int key) {
+		//System.out.println("about to remove: " + key + " size: " + m_elements);
 		Object ret = get(key);
 		put(key,null);
+		m_elements--;
+		//System.out.println("removed: " + key + " size: " + m_elements);
 		return clazz.cast(ret);
+	}
+
+	// for unit testing
+	int size() {
+		return m_elements;
 	}
 
 	private void calcPrevInx(int key) {
@@ -171,25 +185,25 @@ public final class IntTHash<T> {
 				incr = 1 + (key % (m_keys.length - 1));
 	}
 
-	private final void incrSize() {
-		final int newSize;
-
+	private int calcNewSize() {
 		try {
 			int primesInx = 0;
 
-			while (m_keys.length != PRIMES[primesInx++])
-				;
+			while (m_keys.length != PRIMES[primesInx++]);
 
-			newSize = PRIMES[primesInx];
+			return PRIMES[primesInx];
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new IllegalStateException("too many elements in this hashtable");
 		}
+	}
 
+	private final void incrSize() {
+		//System.out.println("incrSize " + m_elements + "  mkeys size: " + m_keys.length);
+		final int newSize = calcNewSize();
+		//System.out.println("newSize " + newSize);
 		final int[] newKeys = new int[newSize];
 		final Object[] newVals = new Object[newSize];
-
-		for (int i = 0; i < newKeys.length; i++)
-			newKeys[i] = -1;
+		Arrays.fill(newKeys, -1);
 
 		m_thresholdSize = (int) (THRESHOLD_FACTOR * (double) newKeys.length);
 
@@ -198,22 +212,28 @@ public final class IntTHash<T> {
 		int oldIndex = -1;
 
 		for (int i = 0; i < m_elements; i++) {
+			//System.out.println("element: " + i + " oldIndex: " + oldIndex);
+			//System.out.println("INCR SIZE: " + Arrays.toString(m_keys));
 			while (m_keys[++oldIndex] < 0);
 
 			incr = 0;
 
-			for (newIndex = m_keys[oldIndex] % newKeys.length; newKeys[newIndex] >= 0;
+			for (newIndex = m_keys[oldIndex] % newKeys.length; 
+			     newKeys[newIndex] >= 0;
 			     newIndex = (newIndex + incr) % newKeys.length)
 				if (incr == 0)
 					incr = 1 + (m_keys[oldIndex] % (newKeys.length - 1));
 
 			newKeys[newIndex] = m_keys[oldIndex];
 			newVals[newIndex] = m_vals[oldIndex];
+			//System.out.println("new index: " + newIndex + "  (old: " + oldIndex +")");
+			//System.out.println("new key: " + newKeys[newIndex] + "  (old: " + m_keys[oldIndex] +")");
 		}
 
 		m_keys = newKeys;
 		m_vals = newVals;
 		m_prevKey = -1;
 		m_prevInx = -1;
+		//System.out.println("new keys: " + Arrays.toString(newKeys));
 	}
 }
