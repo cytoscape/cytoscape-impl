@@ -37,10 +37,10 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.task.creation.LoadVisualStyles;
-import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.task.creation.LoadVisualStyles;
 import org.cytoscape.task.creation.NetworkViewCreator;
+import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.internal.creation.CloneNetworkTaskFactory;
 import org.cytoscape.task.internal.creation.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.internal.creation.NewEmptyNetworkTaskFactory;
@@ -97,6 +97,7 @@ import org.cytoscape.task.internal.table.DeleteTableTaskFactory;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactory;
+import org.cytoscape.task.internal.vizmap.ApplyVisualStyleTaskFactory;
 import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
 import org.cytoscape.task.internal.zoom.FitSelectedTaskFactory;
 import org.cytoscape.task.internal.zoom.ZoomInTaskFactory;
@@ -236,6 +237,16 @@ public class CyActivator extends AbstractCyActivator {
 		GroupNodeContextTaskFactory expandGroupTaskFactory = new GroupNodeContextTaskFactory(cyGroupManager, false);
 		
 		MapGlobalToLocalTableTaskFactory mapGlobal = new MapGlobalToLocalTableTaskFactory(cyTableManagerServiceRef, cyNetworkManagerServiceRef);
+		
+		// Apply Visual Style Task
+		ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactory(visualMappingManagerServiceRef);
+		Properties applyVisualStyleProps = new Properties();
+		applyVisualStyleProps.setProperty("id","applyVisualStyleTaskFactory");
+		applyVisualStyleProps.setProperty("title", "Apply visual style");
+		applyVisualStyleProps.setProperty("command","apply-visualstyle");
+		applyVisualStyleProps.setProperty("commandNamespace","vizmap");
+		registerAllServices(bc, applyVisualStyleTaskFactory, applyVisualStyleProps);
+		
 		
 		Properties mapGlobalProps = new Properties();
 		mapGlobalProps.setProperty("id","mapGlobalToLocalTableTaskFactory");
