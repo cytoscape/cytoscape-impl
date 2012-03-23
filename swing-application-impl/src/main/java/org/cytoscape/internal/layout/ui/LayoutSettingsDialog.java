@@ -35,6 +35,9 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -89,6 +92,10 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private CyProperty cytoscapePropertiesServiceRef;
 	private DynamicTaskFactoryProvisioner factoryProvisioner;
 	private boolean initialized;
+	/**
+	 *  Store the layout context.
+	 */
+	private Map<CyLayoutAlgorithm, CyLayoutContext> contextMap;
 
 	/**
 	 * Creates a new LayoutSettingsDialog object.
@@ -111,6 +118,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.taskManager = taskManager;
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
 		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
+		this.contextMap = new HashMap<CyLayoutAlgorithm, CyLayoutContext>();
 		
 		Properties props = (Properties)this.cytoscapePropertiesServiceRef.getProperties();
 		
@@ -366,7 +374,13 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			// if it's a string, that means it's the instructions
 			if (!(o instanceof String)) {
 				final CyLayoutAlgorithm newLayout = (CyLayoutAlgorithm)o;
-				CyLayoutContext context = newLayout.createLayoutContext();
+				//Checking if the context has already been charged, if so there is no need to do it again
+				CyLayoutContext context = contextMap.get(newLayout);
+				if (context == null)
+				{
+					context = newLayout.createLayoutContext();
+					contextMap.put(newLayout, context);
+				}
 				TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(newLayout, context));
 				if (!provisioner.isReady()) {
 					throw new IllegalArgumentException("Layout is not fully configured");
