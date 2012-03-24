@@ -58,6 +58,7 @@ import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
+import org.cytoscape.application.swing.CySwingApplication;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
@@ -71,6 +72,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
@@ -114,7 +116,7 @@ public class CyActivator extends AbstractCyActivator {
 		VizMapperUtil vizMapperUtil = new VizMapperUtil(vmmServiceRef);
 		VisualPropertyDependencyManagerImpl vpDependencyManager = new VisualPropertyDependencyManagerImpl();
 		DefaultViewEditorImpl defViewEditor = new DefaultViewEditorImpl(defaultViewPanel,editorManager,cyApplicationManagerServiceRef,vmmServiceRef,selectedVisualStyleManager,vizMapperUtil,vpDependencyManager,cyEventHelperServiceRef);
-		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(vizMapperUtil, visualStyleFactoryServiceRef,vmmServiceRef);
+		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,vmmServiceRef);
 		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(vmmServiceRef,selectedVisualStyleManager);
 		ImportDefaultVizmapTaskFactory importDefaultVizmapTaskFactory = new ImportDefaultVizmapTaskFactory(vizmapReaderManagerServiceRef,vmmServiceRef,cyApplicationConfigurationServiceRef, cyEventHelperServiceRef);
 		VizMapPropertySheetBuilder vizMapPropertySheetBuilder = new VizMapPropertySheetBuilder(menuManager,cyNetworkManagerServiceRef,propertySheetPanel,editorManager,defaultViewPanel,cyTableManagerServiceRef,vizMapperUtil,vmmServiceRef);
@@ -122,9 +124,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SetViewModeAction viewModeAction = new SetViewModeAction();
 		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef,viewModeAction );
-		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(vmmServiceRef,selectedVisualStyleManager,vizMapperUtil,vizMapperMainPanel);
-		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager,vizMapperUtil,vizMapperMainPanel);
-		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(selectedVisualStyleManager,cyApplicationManagerServiceRef, vmmServiceRef, vizMapperMainPanel);
+		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(selectedVisualStyleManager);
+		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager);
+		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(cySwingApplicationServiceRef, selectedVisualStyleManager,cyApplicationManagerServiceRef, vmmServiceRef);
 		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
 		
 		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
