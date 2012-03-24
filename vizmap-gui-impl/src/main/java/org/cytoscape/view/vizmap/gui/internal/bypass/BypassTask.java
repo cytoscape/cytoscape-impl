@@ -2,6 +2,8 @@ package org.cytoscape.view.vizmap.gui.internal.bypass;
 
 import java.awt.Component;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -45,8 +47,15 @@ public class BypassTask<T extends CyTableEntry> extends AbstractTask {
 		final boolean lock = view.isValueLocked(vp);
 
 		if (!lock) {
-			final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
-			view.setLockedValue(vp, newValue);
+			// Should be executed in EDT
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
+					view.setLockedValue(vp, newValue);
+				}
+			});
+			
 		} else {
 			// Unlock it
 			view.clearValueLock(vp);
