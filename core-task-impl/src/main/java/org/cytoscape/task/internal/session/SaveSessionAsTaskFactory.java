@@ -29,29 +29,46 @@
  */
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.session.UnnamedSessionSaver;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 
-public class SaveSessionAsTaskFactory extends AbstractTaskFactory {
+public class SaveSessionAsTaskFactory extends AbstractTaskFactory implements UnnamedSessionSaver {
 
 	private CySessionManager sessionMgr;
 	private CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper cyEventHelper;
+	
+	private final TunableSetter tunableSetter;
 
 	public SaveSessionAsTaskFactory(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
+			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper, TunableSetter tunableSetter) {
 		this.sessionMgr = sessionMgr;
 		this.writerMgr = writerMgr;
 		this.tracker = tracker;
 		this.cyEventHelper = cyEventHelper;
+		this.tunableSetter = tunableSetter;
 	}
 
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(File file) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("file", file);
+
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }

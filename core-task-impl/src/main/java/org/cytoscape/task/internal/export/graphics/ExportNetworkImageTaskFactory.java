@@ -32,12 +32,13 @@ package org.cytoscape.task.internal.export.graphics;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.export.graphics.NetworkImageExporter;
 import org.cytoscape.task.internal.export.ViewWriter;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 
 
-public class ExportNetworkImageTaskFactory extends AbstractNetworkViewTaskFactory {
+public class ExportNetworkImageTaskFactory extends AbstractNetworkViewTaskFactory implements NetworkImageExporter{
 	
 	private final PresentationWriterManager presentationWriterMgr; 
 	private final CyApplicationManager applicationManager;

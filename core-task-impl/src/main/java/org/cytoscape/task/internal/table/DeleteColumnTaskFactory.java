@@ -30,11 +30,12 @@ package org.cytoscape.task.internal.table;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
+import org.cytoscape.task.table.ColumnDelete;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public final class DeleteColumnTaskFactory extends AbstractTableColumnTaskFactory {
+public final class DeleteColumnTaskFactory extends AbstractTableColumnTaskFactory implements ColumnDelete{
 	private final UndoSupport undoSupport;
 
 	public DeleteColumnTaskFactory(final UndoSupport undoSupport) {

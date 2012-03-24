@@ -11,11 +11,17 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Test;
+import org.mockito.Mock;
 
 
 public class EditNetworkTitleTaskFactoryTest {
+	
+	@Mock
+	TunableSetter ts;
+	
 	@Test
 	public void testGetTaskIterator() {
 		CyNetwork net = mock(CyNetwork.class);
@@ -28,7 +34,7 @@ public class EditNetworkTitleTaskFactoryTest {
 
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
-		EditNetworkTitleTaskFactory factory = new EditNetworkTitleTaskFactory(undoSupport,netMgr,cyNetworkNaming);
+		EditNetworkTitleTaskFactory factory = new EditNetworkTitleTaskFactory(undoSupport,netMgr,cyNetworkNaming, ts);
 		
 		TaskIterator ti = factory.createTaskIterator(net);
 		assertNotNull(ti);

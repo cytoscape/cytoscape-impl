@@ -32,11 +32,12 @@ package org.cytoscape.task.internal.select;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.task.select.FirstNeighborsNodeViewSelecter;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class SelectFirstNeighborsNodeViewTaskFactory extends AbstractNodeViewTaskFactory {
+public class SelectFirstNeighborsNodeViewTaskFactory extends AbstractNodeViewTaskFactory implements FirstNeighborsNodeViewSelecter{
 
 	private final Type direction;
 

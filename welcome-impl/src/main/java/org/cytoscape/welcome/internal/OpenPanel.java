@@ -23,7 +23,7 @@ import javax.swing.border.LineBorder;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.session.CySession;
-import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.task.session.LoadSession;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -85,7 +85,7 @@ public class OpenPanel extends JPanel {
 				public void mouseClicked(MouseEvent e) {
 					 try {
 						final File targetFile = new File(target.toURI());
-						taskManager.execute(openSessionTaskFactory.loadSession(targetFile));
+						taskManager.execute(openSessionTaskFactory.createTaskIterator(targetFile));
 					} catch (URISyntaxException e1) {
 						e1.printStackTrace();
 					}
@@ -104,7 +104,7 @@ public class OpenPanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				parent.dispose();
-				taskManager.execute(openSessionTaskFactory.loadSession());
+				taskManager.execute(openSessionTaskFactory.createTaskIterator());
 			}
 		});
 

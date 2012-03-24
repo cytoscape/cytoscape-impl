@@ -30,30 +30,47 @@
 package org.cytoscape.task.internal.select;  
 
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.select.FromFileListSelecter;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class SelectFromFileListTaskFactory extends AbstractNetworkTaskFactory {
+public class SelectFromFileListTaskFactory extends AbstractNetworkTaskFactory implements FromFileListSelecter {
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
 
+	private final TunableSetter tunableSetter; 
+
 	public SelectFromFileListTaskFactory(final UndoSupport undoSupport,
 	                                     final CyNetworkViewManager networkViewManager,
-	                                     final CyEventHelper eventHelper)
+	                                     final CyEventHelper eventHelper, TunableSetter tunableSetter)
 	{
 		this.undoSupport        = undoSupport;
 		this.networkViewManager = networkViewManager;
 		this.eventHelper        = eventHelper;
+		this.tunableSetter = tunableSetter;
 	}
 
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(new SelectFromFileListTask(undoSupport, network,
 		                                                   networkViewManager, eventHelper));
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(CyNetwork network, File file) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("file", file);
+
+		return tunableSetter.createTaskIterator(this.createTaskIterator(network), m); 
 	} 
 }

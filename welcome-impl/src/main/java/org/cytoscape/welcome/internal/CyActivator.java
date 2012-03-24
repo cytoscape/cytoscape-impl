@@ -9,8 +9,8 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.creation.ImportNetworksTaskFactory;
-import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.task.loadnetwork.NetworkURLLoader;
+import org.cytoscape.task.session.LoadSession;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.SubmenuTaskManager;
@@ -28,7 +28,7 @@ public class CyActivator extends AbstractCyActivator {
 		LoadSession openSessionTaskFactory = getService(bc, LoadSession.class);
 		SubmenuTaskManager submenuTaskManagerServiceRef = getService(bc, SubmenuTaskManager.class);
 		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
-		ImportNetworksTaskFactory importNetworkTF = getService(bc, ImportNetworksTaskFactory.class);
+		NetworkURLLoader importNetworkTF = getService(bc, NetworkURLLoader.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 				CyApplicationConfiguration.class);
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);

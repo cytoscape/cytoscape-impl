@@ -32,12 +32,13 @@ package org.cytoscape.task.internal.hide;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.hide.AllNodesUnHider;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class UnHideAllNodesTaskFactory extends AbstractNetworkViewTaskFactory {
+public class UnHideAllNodesTaskFactory extends AbstractNetworkViewTaskFactory implements AllNodesUnHider {
 	private final UndoSupport undoSupport;
 	private final CyEventHelper eventHelper;
 

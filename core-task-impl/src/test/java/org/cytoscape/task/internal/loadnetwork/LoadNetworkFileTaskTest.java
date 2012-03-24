@@ -43,12 +43,15 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableSetter;
 import org.junit.Before;
 import org.junit.Test;
 
 public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 
 	File file;
+	TunableSetter ts = mock(TunableSetter.class);
+
 
 	@Before
 	public void setUp() throws Exception {
@@ -59,7 +62,7 @@ public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 
 	@Test
 	public void testRun() throws Exception {
-		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil);
+		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, ts);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
@@ -78,7 +81,7 @@ public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 
 	@Test(expected = NullPointerException.class)
 	public void testNullFile() throws Exception {
-		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil);
+		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, ts);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;

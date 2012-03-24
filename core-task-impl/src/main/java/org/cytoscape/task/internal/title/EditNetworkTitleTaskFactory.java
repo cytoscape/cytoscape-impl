@@ -30,27 +30,43 @@
 package org.cytoscape.task.internal.title;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.title.NetworkTitleEditor;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class EditNetworkTitleTaskFactory extends AbstractNetworkTaskFactory {
+public class EditNetworkTitleTaskFactory extends AbstractNetworkTaskFactory implements NetworkTitleEditor{
 	private final UndoSupport undoSupport;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
 	private final CyNetworkNaming cyNetworkNamingServiceRef;
+	
+	private final TunableSetter tunableSetter;
 
 	public EditNetworkTitleTaskFactory(final UndoSupport undoSupport, CyNetworkManager cyNetworkManagerServiceRef,
-			CyNetworkNaming cyNetworkNamingServiceRef) {
+			CyNetworkNaming cyNetworkNamingServiceRef, TunableSetter tunableSetter) {
 		this.undoSupport = undoSupport;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 		this.cyNetworkNamingServiceRef = cyNetworkNamingServiceRef;
+		this.tunableSetter = tunableSetter;
 	}
 
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(new EditNetworkTitleTask(undoSupport, network, this.cyNetworkManagerServiceRef, this.cyNetworkNamingServiceRef));
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(CyNetwork network, String title) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("title", title);
+
+		return tunableSetter.createTaskIterator(this.createTaskIterator(network), m); 
 	} 
 }

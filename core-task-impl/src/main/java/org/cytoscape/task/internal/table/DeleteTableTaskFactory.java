@@ -31,10 +31,11 @@ package org.cytoscape.task.internal.table;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.AbstractTableTaskFactory;
+import org.cytoscape.task.table.TableDelete;
 import org.cytoscape.work.TaskIterator;
 
 
-public final class DeleteTableTaskFactory extends AbstractTableTaskFactory {
+public final class DeleteTableTaskFactory extends AbstractTableTaskFactory implements TableDelete{
 	
 	protected CyTableManager tableManager;
 	

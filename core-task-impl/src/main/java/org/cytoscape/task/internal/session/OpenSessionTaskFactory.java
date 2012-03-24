@@ -38,7 +38,7 @@ import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.task.session.LoadSession;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
@@ -74,14 +74,11 @@ public class OpenSessionTaskFactory extends AbstractTaskFactory implements LoadS
 	}
 
 	@Override
-	public TaskIterator loadSession(File file) {
+	public TaskIterator createTaskIterator(File file) {
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 
-	public TaskIterator loadSession() {
-		return this.createTaskIterator();
-	}
 }

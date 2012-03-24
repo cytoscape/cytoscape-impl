@@ -28,22 +28,37 @@
 package org.cytoscape.task.internal.table;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
+import org.cytoscape.task.table.ColumnNameEditor;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public final class RenameColumnTaskFactory extends AbstractTableColumnTaskFactory {
+public final class RenameColumnTaskFactory extends AbstractTableColumnTaskFactory implements ColumnNameEditor{
 	private final UndoSupport undoSupport;
 
-	public RenameColumnTaskFactory(final UndoSupport undoSupport) {
+	private final TunableSetter tunableSetter; 
+
+	public RenameColumnTaskFactory(final UndoSupport undoSupport, TunableSetter tunableSetter) {
 		this.undoSupport = undoSupport;
+		this.tunableSetter = tunableSetter;
 	}
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory!");
 		return new TaskIterator(new RenameColumnTask(undoSupport, column));
+	}
+	@Override
+	public TaskIterator createTaskIterator(CyColumn column, String newColumnName) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("newColumnName", newColumnName);
+
+		return tunableSetter.createTaskIterator(this.createTaskIterator(column), m); 
 	}
 }

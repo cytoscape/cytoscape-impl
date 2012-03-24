@@ -33,12 +33,13 @@ package org.cytoscape.task.internal.select;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.select.AllNodesDeselecter;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class DeselectAllNodesTaskFactory extends AbstractNetworkTaskFactory {
+public class DeselectAllNodesTaskFactory extends AbstractNetworkTaskFactory implements AllNodesDeselecter {
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;

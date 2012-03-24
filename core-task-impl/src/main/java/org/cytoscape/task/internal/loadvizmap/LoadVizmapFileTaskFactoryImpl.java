@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.io.read.VizmapReaderManager;
-import org.cytoscape.task.creation.LoadVisualStyles;
+import org.cytoscape.task.loadvizmap.LoadVisualStyles;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTaskFactory;

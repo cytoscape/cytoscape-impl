@@ -30,20 +30,36 @@
 package org.cytoscape.task.internal.session; 
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.session.NewSessionCreator;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 
 
-public class NewSessionTaskFactory extends AbstractTaskFactory {
+public class NewSessionTaskFactory extends AbstractTaskFactory implements NewSessionCreator {
 
 	private CySessionManager mgr;
 
-	public NewSessionTaskFactory(CySessionManager mgr) {
+	private final TunableSetter tunableSetter; 
+
+	public NewSessionTaskFactory(CySessionManager mgr, TunableSetter tunableSetter) {
 		this.mgr = mgr;
+		this.tunableSetter = tunableSetter;
 	}
 
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new NewSessionTask(mgr));
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(boolean destroyCurrentSession) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("destroyCurrentSession", destroyCurrentSession);
+
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }

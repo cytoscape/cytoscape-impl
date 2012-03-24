@@ -3,12 +3,13 @@ package org.cytoscape.task.internal.edit;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.task.edit.SelectedNodesConnector;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class ConnectSelectedNodesTaskFactory extends AbstractTaskFactory {
+public class ConnectSelectedNodesTaskFactory extends AbstractTaskFactory implements SelectedNodesConnector{
 	private final UndoSupport undoSupport;
 	private final CyApplicationManager appManager;
 	private final CyEventHelper eventHelper;

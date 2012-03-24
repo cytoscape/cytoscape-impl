@@ -34,12 +34,13 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.select.FirstNeighborsSelecter;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class SelectFirstNeighborsTaskFactory extends AbstractNetworkTaskFactory {
+public class SelectFirstNeighborsTaskFactory extends AbstractNetworkTaskFactory implements FirstNeighborsSelecter{
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;

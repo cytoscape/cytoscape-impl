@@ -12,8 +12,8 @@ import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.creation.ImportNetworksTaskFactory;
-import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.task.loadnetwork.NetworkURLLoader;
+import org.cytoscape.task.session.LoadSession;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
@@ -32,7 +32,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private final OpenBrowser openBrowser;
 	private final RecentlyOpenedTracker fileTracker;
 	private final TaskManager guiTaskManager;
-	private final ImportNetworksTaskFactory importNetworksTaskFactory;
+	private final NetworkURLLoader importNetworksTaskFactory;
 	private final CyApplicationConfiguration config;
 	private final DataSourceManager dsManager;
 	
@@ -49,7 +49,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, 
 			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, 
 			final LoadSession openSessionTaskFactory, TaskManager guiTaskManager,
-			final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworksTaskFactory, 
+			final TaskFactory importNetworkFileTF, final NetworkURLLoader importNetworksTaskFactory, 
 			final CyApplicationConfiguration config, final DataSourceManager dsManager, 
 			final CyProperty<Properties> cyProps) {
 		super(MENU_NAME);

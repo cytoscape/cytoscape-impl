@@ -9,6 +9,7 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableSetter;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -22,6 +23,9 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Mock
 	private TaskMonitor tm;
 	
+	@Mock
+	TunableSetter ts;
+	
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
@@ -31,7 +35,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesURLTaskFactory() throws Exception {
 
-		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr);
+		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr, ts);
 		
 		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

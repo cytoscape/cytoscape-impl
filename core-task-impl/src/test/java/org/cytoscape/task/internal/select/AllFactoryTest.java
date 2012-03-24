@@ -41,9 +41,11 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 
 public class AllFactoryTest {
@@ -54,6 +56,9 @@ public class AllFactoryTest {
 	CyEventHelper eventHelper;
 	UndoSupport undoSupport;
 
+	@Mock
+	TunableSetter ts;
+	
 	@Before
 	public void setUp() throws Exception {
 		net = mock(CyNetwork.class);
@@ -121,7 +126,7 @@ public class AllFactoryTest {
 
 	@Test
 	public void testSelectFromFileListTaskFactory() {
-		executeTest(new SelectFromFileListTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new SelectFromFileListTaskFactory(undoSupport, networkViewManager, eventHelper, ts));
 	}
 
 	private void executeTest(NetworkTaskFactory ntf) {

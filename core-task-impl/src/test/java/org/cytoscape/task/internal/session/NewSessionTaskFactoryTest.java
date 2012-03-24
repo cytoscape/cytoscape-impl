@@ -7,16 +7,21 @@ import static org.mockito.Mockito.mock;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.junit.Test;
+import org.mockito.Mock;
 
 public class NewSessionTaskFactoryTest {
+	
+	@Mock
+	TunableSetter ts;
 	
 	@Test
 	public void testRun() throws Exception {
 
 		CySessionManager mgr = mock(CySessionManager.class);;
 
-		NewSessionTaskFactory factory = new NewSessionTaskFactory(mgr);
+		NewSessionTaskFactory factory = new NewSessionTaskFactory(mgr, ts);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

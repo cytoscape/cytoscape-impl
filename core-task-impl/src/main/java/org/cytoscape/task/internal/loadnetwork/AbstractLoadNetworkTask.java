@@ -40,7 +40,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.creation.ImportNetworksTaskFactory;
+import org.cytoscape.task.loadnetwork.NetworkURLLoader;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;

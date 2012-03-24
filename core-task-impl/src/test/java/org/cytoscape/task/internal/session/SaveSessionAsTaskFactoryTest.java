@@ -10,10 +10,15 @@ import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 import org.junit.Test;
+import org.mockito.Mock;
 
 public class SaveSessionAsTaskFactoryTest {
 
+	@Mock
+	TunableSetter ts;
+	
 	@Test
 	public void testRun() throws Exception {
 
@@ -22,7 +27,7 @@ public class SaveSessionAsTaskFactoryTest {
 		RecentlyOpenedTracker tracker = mock(RecentlyOpenedTracker.class);
 		CyEventHelper cyEventHelper = mock(CyEventHelper.class);
 
-		SaveSessionAsTaskFactory factory = new SaveSessionAsTaskFactory(wmgr,mgr,tracker, cyEventHelper);
+		SaveSessionAsTaskFactory factory = new SaveSessionAsTaskFactory(wmgr,mgr,tracker, cyEventHelper, ts);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

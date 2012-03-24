@@ -71,7 +71,4 @@ public class CreateNetworkViewTaskFactory extends AbstractNetworkTaskFactory imp
 					layouts, eventHelper));
 	}
 
-	public TaskIterator createView(CyNetwork network) {
-		return createTaskIterator(network);
-	}
 }

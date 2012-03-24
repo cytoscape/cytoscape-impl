@@ -26,8 +26,8 @@ import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.creation.ImportNetworksTaskFactory;
-import org.cytoscape.task.creation.LoadSession;
+import org.cytoscape.task.loadnetwork.NetworkURLLoader;
+import org.cytoscape.task.session.LoadSession;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
@@ -59,7 +59,7 @@ public class WelcomeScreenDialog extends JDialog {
 	private final TaskManager guiTaskManager;
 
 	private final CyApplicationConfiguration config;
-	private final ImportNetworksTaskFactory loadNetworkTF;
+	private final NetworkURLLoader loadNetworkTF;
 
 	private final DataSourceManager dsManager;
 	
@@ -73,7 +73,7 @@ public class WelcomeScreenDialog extends JDialog {
 	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, 
 	                           RecentlyOpenedTracker fileTracker, final LoadSession openSessionTaskFactory, 
 							   TaskManager guiTaskManager, final CyApplicationConfiguration config,
-	                           final TaskFactory importNetworkFileTF, final ImportNetworksTaskFactory importNetworkTF, 
+	                           final TaskFactory importNetworkFileTF, final NetworkURLLoader importNetworkTF, 
 	                           final DataSourceManager dsManager, final CyProperty<Properties> cyProps, 
 							   final boolean hide) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
