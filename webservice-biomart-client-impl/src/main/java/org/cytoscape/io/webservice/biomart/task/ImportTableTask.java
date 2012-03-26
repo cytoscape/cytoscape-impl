@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
@@ -234,14 +235,17 @@ public class ImportTableTask extends AbstractTask {
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			final CyTable table = tables.iterator().next();
 			if (table != null) {
-				JOptionPane.showMessageDialog(parent,
-						"New table loaded.\n" + table.getTitle() + " contains "
-								+ table.getRowCount() + " rows.",
-						"Table Loaded from BioMart",
-						JOptionPane.INFORMATION_MESSAGE);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						JOptionPane.showMessageDialog(parent, "New table loaded.\n" + table.getTitle() + " contains "
+								+ table.getRowCount() + " rows.", "Table Loaded from BioMart",
+								JOptionPane.INFORMATION_MESSAGE);
+
+					}
+				});
 			}
 		}
-
 	}
 
 }

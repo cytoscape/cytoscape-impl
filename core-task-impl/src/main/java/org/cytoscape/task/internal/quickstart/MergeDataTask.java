@@ -42,9 +42,7 @@ public class MergeDataTask extends AbstractTask {
 		nodeTable.addVirtualColumn(columnName, pKey.getName(), table, pKey.getName(), false);
 				
 		taskMonitor.setStatusMessage("Finished!");
-		taskMonitor.setProgress(1.0);
-		
-		JOptionPane.showMessageDialog(null, generateReport(table, columnName), "Network and Attributes Loaded", JOptionPane.INFORMATION_MESSAGE);
+		taskMonitor.setProgress(1.0);		
 	}
 	
 	private String generateReport(final CyTable table, final String columnName) {
