@@ -1,24 +1,23 @@
 
 package org.cytoscape.network.merge.internal.task;
 
-import org.cytoscape.network.merge.internal.AttributeBasedNetworkMerge;
-import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
-import org.cytoscape.network.merge.internal.model.*;
-import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
-import org.cytoscape.network.merge.internal.util.AttributeMerger;
-import org.cytoscape.network.merge.internal.util.AttributeValueMatcher;
-import org.cytoscape.network.merge.internal.util.DefaultAttributeMerger;
-import org.cytoscape.network.merge.internal.util.DefaultAttributeValueMatcher;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.network.merge.internal.AttributeBasedNetworkMerge;
+import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
+import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
+import org.cytoscape.network.merge.internal.model.AttributeMapping;
+import org.cytoscape.network.merge.internal.model.MatchingAttribute;
+import org.cytoscape.network.merge.internal.util.AttributeMerger;
+import org.cytoscape.network.merge.internal.util.AttributeValueMatcher;
+import org.cytoscape.network.merge.internal.util.DefaultAttributeMerger;
+import org.cytoscape.network.merge.internal.util.DefaultAttributeValueMatcher;
+import org.cytoscape.task.creation.NetworkViewCreator;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.task.creation.NetworkViewCreator;
 
 /**
  *
@@ -175,7 +174,7 @@ public class NetworkMergeTask extends AbstractTask {
 				HandleConflictsTask hcTask = new HandleConflictsTask(conflictCollector);
 				insertTasksAfterCurrentTask( hcTask );
 			} else {
-				insertTasksAfterCurrentTask( netViewCreator.createView( network ) );
+				insertTasksAfterCurrentTask( netViewCreator.createTaskIterator( network ) );
 			}
 	}
 }
