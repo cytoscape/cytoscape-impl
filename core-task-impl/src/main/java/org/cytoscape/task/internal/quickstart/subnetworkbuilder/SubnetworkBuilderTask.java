@@ -2,8 +2,6 @@ package org.cytoscape.task.internal.quickstart.subnetworkbuilder;
 
 import java.util.Set;
 
-import javax.swing.JOptionPane;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.AbstractTask;
@@ -45,12 +43,8 @@ public class SubnetworkBuilderTask extends AbstractTask {
 			insertTasksAfterCurrentTask(util.getWebServiceImportTask());
 		} else if (selected == USE_EXISTING_NETWORK) {
 			final Set<CyNetwork> networks = networkManager.getNetworkSet();
-			if (networks.size() == 0) {
-				// No network is available. Need to load new one.
-				JOptionPane.showMessageDialog(null, "No network is available.  Need to load a new one.",
-						"No network found", JOptionPane.ERROR_MESSAGE);
+			if (networks.size() == 0)
 				insertTasksAfterCurrentTask(util.getWebServiceImportTask());
-			}
 		}
 		monitor.setProgress(1.0);
 	}
