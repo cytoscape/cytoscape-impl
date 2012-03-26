@@ -69,7 +69,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -117,20 +117,20 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private final JToggleButton selectionModeButton;
 	
-	private final Class<? extends CyTableEntry> objType;
+	private final Class<? extends CyIdentifiable> objType;
 	
 	private final CyApplicationManager appManager;
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
 			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
-			final JComboBox tableChooser, final Class<? extends CyTableEntry> objType, final CyApplicationManager appManager) {
+			final JComboBox tableChooser, final Class<? extends CyIdentifiable> objType, final CyApplicationManager appManager) {
 		this(serviceRegistrar, compiler, deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser,
 				new JToggleButton(), objType, appManager);
 	}
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
 			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
-			final JComboBox tableChooser, final JToggleButton selectionModeButton, Class<? extends CyTableEntry> objType, final CyApplicationManager appManager) {
+			final JComboBox tableChooser, final JToggleButton selectionModeButton, Class<? extends CyIdentifiable> objType, final CyApplicationManager appManager) {
 		this.compiler = compiler;
 		this.selectionModeButton = selectionModeButton;
 		this.appManager = appManager;

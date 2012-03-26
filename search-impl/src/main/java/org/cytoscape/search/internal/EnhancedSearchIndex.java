@@ -44,7 +44,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.search.internal.util.EnhancedSearchUtils;
 import org.cytoscape.work.TaskMonitor;
@@ -99,7 +99,7 @@ public class EnhancedSearchIndex {
 	 * Make a Document object with an un-indexed identifier field and indexed
 	 * attribute fields
 	 */
-	private static Document createDocument(CyNetwork network, CyTableEntry graphObject, String graphObjectType, int index) {
+	private static Document createDocument(CyNetwork network, CyIdentifiable graphObject, String graphObjectType, int index) {
 		Document doc = new Document();
 		String identifier = Integer.toString(index);
 		

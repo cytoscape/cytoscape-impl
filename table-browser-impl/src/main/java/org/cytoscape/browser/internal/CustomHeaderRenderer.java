@@ -44,7 +44,7 @@ import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 
@@ -117,7 +117,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		if(col.getType() == List.class) {
 			toolTip = "<html>This is a List column<br />" +
 					"The lists contain " + col.getListElementType() + "</html>";
-		} else if(text.equals(CyTableEntry.SUID))
+		} else if(text.equals(CyIdentifiable.SUID))
 			toolTip = "Session-Unique ID (Primary Key).  This is column is immutable.";
 		else
 			toolTip = "Data type of this column is " + col.getType().getName();
@@ -131,7 +131,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 			setBackground(COLUMN_COLOR);
 		}
 
-		if (text.equals(CyTableEntry.SUID))
+		if (text.equals(CyIdentifiable.SUID))
 			this.setFont(COLUMN_SUID_FONT);
 		else
 			this.setFont(COLUMN_FONT);

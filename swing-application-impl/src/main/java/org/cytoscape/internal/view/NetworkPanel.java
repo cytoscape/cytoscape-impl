@@ -69,7 +69,7 @@ import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -407,7 +407,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				// if it's the network name, then update the title 
 				CyNetwork n = nameTables.get(e.getSource());
 				if (n != null) {
-					final String title = n.getRow(n).get(CyTableEntry.NAME, String.class);
+					final String title = n.getRow(n).get(CyNetwork.NAME, String.class);
 					updateTitle(n, title); 
 					return;
 				}
@@ -515,7 +515,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				parentTreeNode = new NetworkTreeNode("", null);
 
 			// Actual tree node for this network
-			String netName = network.getRow(network).get(CyTableEntry.NAME, String.class);
+			String netName = network.getRow(network).get(CyNetwork.NAME, String.class);
 			
 			if (netName == null) {
 				logger.error("Network name is null--SUID=" + network.getSUID());

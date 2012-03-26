@@ -3,7 +3,7 @@ package org.cytoscape.tableimport.internal.task;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class RegisterOntologyTask extends AbstractTask {
 		if(network == null)
 			throw new NullPointerException("No Ontology DAG loaded");
 		
-		network.getRow(network).set(CyTableEntry.NAME, name);
+		network.getRow(network).set(CyNetwork.NAME, name);
 		manager.addNetwork(network);
 		
 		logger.debug("Registered: model ID = " + network.getSUID());

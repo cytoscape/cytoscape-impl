@@ -18,7 +18,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,8 +143,8 @@ public class PsiMiTabParser {
 				CyRow targetRow = network.getRow(target);
 
 				// set various node attrs
-				sourceRow.set(CyTableEntry.NAME, sourceRawID);
-				targetRow.set(CyTableEntry.NAME, targetRawID);
+				sourceRow.set(CyNetwork.NAME, sourceRawID);
+				targetRow.set(CyNetwork.NAME, targetRawID);
 
 				setInteractorType(sourceRow,mline.srcAliases);
 				setInteractorType(targetRow,mline.tgtAliases);
@@ -165,7 +165,7 @@ public class PsiMiTabParser {
 					interactionId = mline.interactionIDs.get(0);
 
 				edgeRow.set(INTERACTION, interactionId);
-				edgeRow.set(CyTableEntry.NAME, sourceRawID + " (" + interactionId + ") " + targetRawID);
+				edgeRow.set(CyNetwork.NAME, sourceRawID + " (" + interactionId + ") " + targetRawID);
 
 				setTypedEdgeListAttribute(edgeRow, mline.interactionTypes, INTERACTION_TYPE_ID, INTERACTION_TYPE);
 				setTypedEdgeListAttribute(edgeRow, mline.detectionMethods, DETECTION_METHOD_ID, DETECTION_METHOD);

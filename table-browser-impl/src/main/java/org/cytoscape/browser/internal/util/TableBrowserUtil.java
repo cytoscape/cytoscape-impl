@@ -14,7 +14,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 public final class TableBrowserUtil {
 
@@ -402,7 +402,7 @@ public final class TableBrowserUtil {
 		for (CyNetwork network : networks) {
 			for (Class<?> type : OBJECT_TYPES) {
 				final Map<String, CyTable> objTables = networkTableManager.getTables(network,
-						(Class<? extends CyTableEntry>) type);
+						(Class<? extends CyIdentifiable>) type);
 				nonGlobalTables.addAll(objTables.values());
 			}
 		}

@@ -27,6 +27,6 @@ public class DummyNetwork implements CyNetwork {
 	public CyTable getDefaultNetworkTable() {return null;}
 	public CyTable getDefaultNodeTable() {return null;}
 	public CyTable getDefaultEdgeTable() {return null;}
-	public CyRow getRow(CyTableEntry entry, String tableName) {return null;}
-	public CyRow getRow(CyTableEntry entry) {return null;}
+	public CyRow getRow(CyIdentifiable entry, String tableName) {return null;}
+	public CyRow getRow(CyIdentifiable entry) {return null;}
 }

@@ -58,7 +58,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -458,7 +458,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 		
 		if (title == null || title.isEmpty())
-			title = view.getModel().getRow(view.getModel()).get(CyTableEntry.NAME, String.class);
+			title = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
 		
 		return title;
 	}

@@ -27,7 +27,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
@@ -49,13 +49,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private final JToggleButton selectionModeButton;
 	
 	private final JComboBox networkChooser;
-	private final Class<? extends CyTableEntry> objType;
+	private final Class<? extends CyIdentifiable> objType;
 
 	private boolean rowSelectionMode;
 	private boolean ignoreSetCurrentNetwork = true;
 	
 
-	public DefaultTableBrowser(String tabTitle, Class<? extends CyTableEntry> objType, CyTableManager tableManager,
+	public DefaultTableBrowser(String tabTitle, Class<? extends CyIdentifiable> objType, CyTableManager tableManager,
 			CyNetworkTableManager networkTableManager, CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
 			OpenBrowser openBrowser, CyNetworkManager networkManager, TableTaskFactory deleteTableTaskFactoryService,
 			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
@@ -214,7 +214,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 			
 			setOpaque(true);
-			this.setText(network.getRow(network).get(CyTableEntry.NAME, String.class));
+			this.setText(network.getRow(network).get(CyNetwork.NAME, String.class));
 			return this;
 		}
 	}

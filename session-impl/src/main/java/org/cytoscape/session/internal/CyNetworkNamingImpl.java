@@ -32,7 +32,7 @@ package org.cytoscape.session.internal;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	@Override
 	public String getSuggestedSubnetworkTitle(final CyNetwork parentNetwork) {
 		for (int i = 0; true; i++) {
-			final String parentName = parentNetwork.getRow(parentNetwork).get(CyTableEntry.NAME, String.class);
+			final String parentName = parentNetwork.getRow(parentNetwork).get(CyNetwork.NAME, String.class);
 			final String nameCandidate = parentName + " <" + SUBNETWORK_SUFFIX + " " + (i+1) + ">";
 
 			if (!isNetworkTitleTaken(nameCandidate))

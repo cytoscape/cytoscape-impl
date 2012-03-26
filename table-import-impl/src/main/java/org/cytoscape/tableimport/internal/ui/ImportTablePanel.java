@@ -109,7 +109,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -176,7 +176,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	public static final String NETWORK_IMPORT_TEMPLATE_CHANGED = "networkImportTemplateChanged";
 
 	private static final String[] keyTable = { "Alias?", "Column (Attribute Name)", "Data Type" };
-	private static final String ID = CyTableEntry.NAME; 
+	private static final String ID = CyNetwork.NAME; 
 
 	// Key column index
 	protected int keyInFile;

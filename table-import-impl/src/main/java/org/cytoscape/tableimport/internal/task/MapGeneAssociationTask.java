@@ -8,7 +8,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationReader;
 import org.cytoscape.tableimport.internal.reader.ontology.OBOReader;
 import org.cytoscape.work.AbstractTask;
@@ -63,8 +63,8 @@ public class MapGeneAssociationTask extends AbstractTask {
 
 	// TODO: parallelize this
 	private void buildMapping(TaskMonitor taskMonitor, final String networkName, CyTable nodeTable, CyTable globalTable) {
-		final List<String> nodeNames = nodeTable.getColumn(CyTableEntry.NAME).getValues(String.class);
-		final List<String> globalKeys = globalTable.getColumn(CyTableEntry.NAME).getValues(String.class);
+		final List<String> nodeNames = nodeTable.getColumn(CyNetwork.NAME).getValues(String.class);
+		final List<String> globalKeys = globalTable.getColumn(CyNetwork.NAME).getValues(String.class);
 
 		// Create immutable key column for this mapping
 		final String colName = "Mapping Key for " + networkName;
@@ -87,6 +87,6 @@ public class MapGeneAssociationTask extends AbstractTask {
 			taskMonitor.setProgress(progress);
 		}
 		
-		nodeTable.addVirtualColumns(globalTable, CyTableEntry.NAME, false);
+		nodeTable.addVirtualColumns(globalTable, CyNetwork.NAME, false);
 	}
 }

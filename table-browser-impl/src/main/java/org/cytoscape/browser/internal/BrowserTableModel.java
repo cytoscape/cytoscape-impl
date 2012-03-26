@@ -22,7 +22,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -375,7 +375,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		// Find Primary key index.
 		for (int i = 0; i < columnCount; i++) {
 			final String colName = table.getColumnName(i);
-			if (colName.equals(CyTableEntry.SUID)) {
+			if (colName.equals(CyIdentifiable.SUID)) {
 				tablePKeyIndex = i;
 				break;
 			}
@@ -387,10 +387,10 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		for(RowSetRecord rowSetRecord : rows) {
 			if(rowSetRecord.getColumn().equals(CyNetwork.SELECTED)){
 				if(((Boolean)rowSetRecord.getValue()) == true){
-					suidMapSelected.put(rowSetRecord.getRow().get(CyTableEntry.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+					suidMapSelected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class), (Boolean) rowSetRecord.getValue());
 				}
 				else{
-					suidMapUnselected.put(rowSetRecord.getRow().get(CyTableEntry.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+					suidMapUnselected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class), (Boolean) rowSetRecord.getValue());
 				}
 			}
 		}

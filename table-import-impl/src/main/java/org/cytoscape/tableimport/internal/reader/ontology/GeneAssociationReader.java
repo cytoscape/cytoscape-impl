@@ -24,7 +24,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
@@ -220,8 +220,8 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 			logger.warn("Could not find associated Ontology DAG.");
 		else {
 			this.dagTable = ontologyDAG.getDefaultNodeTable();
-			termIDList = ontologyDAG.getDefaultNodeTable().getColumn(CyTableEntry.NAME).getValues(String.class);
-			logger.debug("DAG Name = " + ontologyDAG.getRow(ontologyDAG).get(CyTableEntry.NAME, String.class));
+			termIDList = ontologyDAG.getDefaultNodeTable().getColumn(CyNetwork.NAME).getValues(String.class);
+			logger.debug("DAG Name = " + ontologyDAG.getRow(ontologyDAG).get(CyNetwork.NAME, String.class));
 		}
 		
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
@@ -238,7 +238,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		}
 
 		// Create result table
-		table = tableFactory.createTable(tableName, CyTableEntry.NAME, String.class, true, true);
+		table = tableFactory.createTable(tableName, CyNetwork.NAME, String.class, true, true);
 
 		createColumns();
 
@@ -403,7 +403,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		// Set primary key for the table, which is DB Object ID
 		final String primaryKeyValue = entries[DB_OBJ_ID];
 		final CyRow row = table.getRow(primaryKeyValue);
-		row.set(CyTableEntry.NAME, primaryKeyValue);
+		row.set(CyNetwork.NAME, primaryKeyValue);
 
 		// Check namespace
 		final String namespace = NAMESPACE_MAP.get(entries[ASPECT]);
@@ -501,7 +501,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 	}
 	
 	private String convertToName(final String id) {
-		final Collection<CyRow> rows = ontologyDAG.getDefaultNodeTable().getMatchingRows(CyTableEntry.NAME, id);
+		final Collection<CyRow> rows = ontologyDAG.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, id);
 		if (rows != null) {
 			final CyRow row = rows.iterator().next();
 			final String termName = row.get(OBOReader.TERM_NAME, String.class);

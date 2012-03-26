@@ -33,7 +33,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -151,7 +151,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 			networkTable.createColumn(DAG_ATTR, Boolean.class, true);
 		
 		networkTable.getRow(ontologyDAG.getSUID()).set(DAG_ATTR, true);
-		ontologyDAG.getRow(ontologyDAG).set(CyTableEntry.NAME, dagName);
+		ontologyDAG.getRow(ontologyDAG).set(CyNetwork.NAME, dagName);
 	}
 
 
@@ -203,7 +203,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 				termNode = termID2nodeMap.get(val);
 				if (termNode == null) {
 					termNode = this.ontologyDAG.addNode();
-					ontologyDAG.getRow(termNode).set(CyTableEntry.NAME, val);
+					ontologyDAG.getRow(termNode).set(CyNetwork.NAME, val);
 					termID2nodeMap.put(val, termNode);
 					id = val;					
 				}

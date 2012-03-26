@@ -12,7 +12,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 import psidev.psi.mi.xml.model.Alias;
 import psidev.psi.mi.xml.model.Attribute;
@@ -156,7 +156,7 @@ public class PSIMI25EntryMapper {
 			
 			final CyNode node = network.addNode();
 			final String nameColumn = interactor.getNames().getShortLabel();
-			nodeTable.getRow(node.getSUID()).set(CyTableEntry.NAME, nameColumn);
+			nodeTable.getRow(node.getSUID()).set(CyNetwork.NAME, nameColumn);
 			
 			final InteractorType itrType = interactor.getInteractorType();
 			final Names typeNames = itrType.getNames();
@@ -230,9 +230,9 @@ public class PSIMI25EntryMapper {
 
 		// TODO: what's the best value for interaction?
 		edgeTable.getRow(edge.getSUID()).set(CyEdge.INTERACTION, "pp");
-		final String sourceName = nodeTable.getRow(sourceCyNode.getSUID()).get(CyTableEntry.NAME, String.class);
-		final String targetName = nodeTable.getRow(targetCyNode.getSUID()).get(CyTableEntry.NAME, String.class);
-		edgeTable.getRow(edge.getSUID()).set(CyTableEntry.NAME, sourceName + " (pp) " + targetName);
+		final String sourceName = nodeTable.getRow(sourceCyNode.getSUID()).get(CyNetwork.NAME, String.class);
+		final String targetName = nodeTable.getRow(targetCyNode.getSUID()).get(CyNetwork.NAME, String.class);
+		edgeTable.getRow(edge.getSUID()).set(CyNetwork.NAME, sourceName + " (pp) " + targetName);
 
 		mapNames(edgeTable, edge.getSUID(), interaction.getNames(), null);
 		mapAttributes(interaction.getAttributes(), edgeTable, edge.getSUID());

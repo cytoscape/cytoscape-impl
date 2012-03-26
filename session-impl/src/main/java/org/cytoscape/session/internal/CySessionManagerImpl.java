@@ -51,7 +51,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -157,7 +157,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Class<? extends CyTableEntry>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
+	private static Class<? extends CyIdentifiable>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
 	
 	private Set<CyTableMetadata> buildMetadata(Set<CyTable> tables, Set<CyNetwork> networks) {
 		Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
@@ -175,7 +175,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 					allNetworks.add(rootNet);
 					
 					// TODO: remove it once manager is fixed to return all tables
-					for (Class<? extends CyTableEntry> type : TYPES) {
+					for (Class<? extends CyIdentifiable> type : TYPES) {
 						Map<String, CyTable> tableMap = netTblMgr.getTables(rootNet, type);
 						allTables.addAll(tableMap.values());
 					}
@@ -206,7 +206,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		Map<CyTable, Set<CyTableMetadata>> result = new HashMap<CyTable, Set<CyTableMetadata>>();
 		
 		for (CyNetwork network : networks) {
-			for (Class<? extends CyTableEntry> type : TYPES) {
+			for (Class<? extends CyIdentifiable> type : TYPES) {
 				Map<String, CyTable> tableMap = netTblMgr.getTables(network, type);
 				
 				for (Entry<String, CyTable> entry : tableMap.entrySet()) {

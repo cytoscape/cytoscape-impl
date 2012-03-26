@@ -16,7 +16,7 @@ import javax.xml.soap.Node;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.util.swing.JTreeTable;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
@@ -77,7 +77,7 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 		
 		setForeground(treeNode.getNodeColor());
 		setForeground(treeNode.getNodeColor());
-		setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyTableEntry.NAME, String.class));
+		setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyNetwork.NAME, String.class));
 
 		return this;
 	}

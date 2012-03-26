@@ -13,7 +13,7 @@ public class DummyNetworkView implements CyNetworkView {
 	public Collection<View<CyNode>> getNodeViews() {return null;}
 	public View<CyEdge> getEdgeView(final CyEdge edge) {return null;}
 	public Collection<View<CyEdge>> getEdgeViews() {return null;}
-	public Collection<View<? extends CyTableEntry>> getAllViews() {return null;}
+	public Collection<View<? extends CyIdentifiable>> getAllViews() {return null;}
 	public void fitContent() {}
 	public void fitSelected() {}
 	public void updateView() {}
