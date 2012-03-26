@@ -8,7 +8,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -49,7 +49,7 @@ public class MergeDataTask extends AbstractTask {
 
 		final StringBuilder builder = new StringBuilder();
 		
-		builder.append("Data sets loaded:\n  Network: " + util.getTargetNetwork().getRow(util.getTargetNetwork()).get(CyTableEntry.NAME, String.class));
+		builder.append("Data sets loaded:\n  Network: " + util.getTargetNetwork().getRow(util.getTargetNetwork()).get(CyNetwork.NAME, String.class));
 		builder.append("\n  Data Table: " + table.getTitle());
 		builder.append("\n\n  ID Type: " + columnName);
 		builder.append("\n  Matched entries: " + checkMatching(columnName, table.getColumn(columnName).getType()));
