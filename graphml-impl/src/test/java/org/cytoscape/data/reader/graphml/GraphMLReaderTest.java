@@ -13,7 +13,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -141,7 +141,7 @@ public class GraphMLReaderTest {
 		
 		final CyNetwork rootNetwork = networks[0];
 		for(CyNode node: rootNetwork.getNodeList())
-			System.out.println("In root network: " + rootNetwork.getRow(node).get(CyTableEntry.NAME, String.class));
+			System.out.println("In root network: " + rootNetwork.getRow(node).get(CyNetwork.NAME, String.class));
 		
 		assertEquals(11, rootNetwork.getNodeCount());
 		assertEquals(12, rootNetwork.getEdgeCount());
@@ -172,7 +172,7 @@ public class GraphMLReaderTest {
 		
 		final CyNetwork rootNetwork = networks[0];
 		for(CyNode node: rootNetwork.getNodeList())
-			System.out.println("In root network: " + rootNetwork.getRow(node).get(CyTableEntry.NAME, String.class));
+			System.out.println("In root network: " + rootNetwork.getRow(node).get(CyNetwork.NAME, String.class));
 		
 		assertEquals(8, rootNetwork.getNodeCount());
 		assertEquals(10, rootNetwork.getEdgeCount());

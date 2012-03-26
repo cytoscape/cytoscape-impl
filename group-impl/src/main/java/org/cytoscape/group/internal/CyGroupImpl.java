@@ -50,7 +50,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 
@@ -705,7 +705,7 @@ class CyGroupImpl implements CyGroup {
 		return source;
 	}
 
-	private void createIfNecessary(CyTableEntry entry, String tableName, 
+	private void createIfNecessary(CyIdentifiable entry, String tableName, 
 	                               String attribute, Class type) {
 		CyTable table = rootNetwork.getRow(entry, tableName).getTable();
 		if (table.getColumn(attribute) == null)

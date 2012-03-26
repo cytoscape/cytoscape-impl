@@ -45,7 +45,7 @@ import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 
 /**
@@ -67,7 +67,7 @@ public class CyAttributesUtil {
 	 * @param attributeKey  Attribute Key.
 	 * @return array of String Objects or null.
 	 */
-	public static String[] getAttributeValues(CyNetwork network, CyTableEntry graphObject, String attributeKey) {
+	public static String[] getAttributeValues(CyNetwork network, CyIdentifiable graphObject, String attributeKey) {
 		String[] terms = null;
 
 		if (attributeKey.equals(QuickFind.UNIQUE_IDENTIFIER)) {
@@ -136,13 +136,13 @@ public class CyAttributesUtil {
 	 * @param numDistinctValues Number of Distinct Values.
 	 * @return Array of Distinct Value Strings.
 	 */
-	public static String[] getDistinctAttributeValues(CyNetwork network, Iterator<? extends CyTableEntry> iterator,
+	public static String[] getDistinctAttributeValues(CyNetwork network, Iterator<? extends CyIdentifiable> iterator,
 	                                                  String attributeKey, int numDistinctValues) {
 		Set<String> set = new HashSet<String>();
 		int counter = 0;
 
 		while (iterator.hasNext() && (counter < numDistinctValues)) {
-			CyTableEntry graphObject = iterator.next();
+			CyIdentifiable graphObject = iterator.next();
 			String[] values = CyAttributesUtil.getAttributeValues(network,graphObject, attributeKey);
 
 			if ((values != null) && (values.length > 0)) {
@@ -183,7 +183,7 @@ public class CyAttributesUtil {
 	}
 
 	public static boolean isNullAttribute(CyNetwork cyNetwork, String indexType, String attributeName) {
-		Collection<? extends CyTableEntry> entries; 
+		Collection<? extends CyIdentifiable> entries; 
 		if (indexType.equals("node")) {
 			entries = cyNetwork.getNodeList();
 		} else if (indexType.equals("edge")) {
@@ -194,7 +194,7 @@ public class CyAttributesUtil {
 		if (entries.size() == 0) {
 			return true;
 		}
-		for (CyTableEntry entry : entries) {
+		for (CyIdentifiable entry : entries) {
 			CyRow row = cyNetwork.getRow(entry);
 			Class<?> type = row.getTable().getColumn(attributeName).getType();
 			if (row.get(attributeName, type) != null) {

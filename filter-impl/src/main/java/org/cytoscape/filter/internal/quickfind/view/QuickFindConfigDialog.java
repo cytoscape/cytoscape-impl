@@ -69,7 +69,7 @@ import org.cytoscape.filter.internal.quickfind.util.CyAttributesUtil;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -672,7 +672,7 @@ class DetermineDistinctValuesTask implements Task {
 		//  Obtain distinct attribute values
 		CyNetwork network = applicationManager.getCurrentNetwork();
 
-		Iterator<? extends CyTableEntry> iterator;
+		Iterator<? extends CyIdentifiable> iterator;
 
 		if (parentDialog.getIndexType() == QuickFind.INDEX_NODES) {
 			iterator = network.getNodeList().iterator();

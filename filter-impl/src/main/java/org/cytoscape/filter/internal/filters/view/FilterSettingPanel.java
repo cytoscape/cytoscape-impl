@@ -88,7 +88,7 @@ import org.cytoscape.filter.internal.widgets.autocomplete.view.TextIndexComboBox
 import org.cytoscape.filter.internal.widgets.slider.JRangeSliderExtended;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,7 +203,7 @@ public class FilterSettingPanel extends JPanel {
 	
 
 	private Class<?> getAttributeDataType(CyNetwork network, String pAttribute, int pType) {
-		Collection<? extends CyTableEntry> entries;
+		Collection<? extends CyIdentifiable> entries;
 		
 		if (pType == QuickFind.INDEX_NODES) {
 			entries = network.getNodeList();
@@ -217,7 +217,7 @@ public class FilterSettingPanel extends JPanel {
 			return null;
 		}
 		
-		CyTableEntry entry = entries.iterator().next();
+		CyIdentifiable entry = entries.iterator().next();
 		CyRow row = network.getRow(entry);
 		return row.getTable().getColumn(pAttribute).getType();
 	}

@@ -20,7 +20,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
@@ -39,7 +39,7 @@ public class GraphMLParser extends DefaultHandler {
 	private Map<String, String> datatypeMap;
 	private Map<String, String> datanameMap;
 
-	private CyTableEntry currentObject = null;
+	private CyIdentifiable currentObject = null;
 
 	// Attribute values
 	private String currentAttributeID = null;
@@ -61,7 +61,7 @@ public class GraphMLParser extends DefaultHandler {
 	// Current CyNetwork. GraphML can have multiple networks in a file.
 	private CyNetwork currentNetwork;
 
-	private final Map<String, CyTableEntry> nodeid2CyNodeMap;
+	private final Map<String, CyIdentifiable> nodeid2CyNodeMap;
 	
 	private String lastTag;
 	private CyNode lastNode;
@@ -82,7 +82,7 @@ public class GraphMLParser extends DefaultHandler {
 		datatypeMap = new HashMap<String, String>();
 		datanameMap = new HashMap<String, String>();
 
-		this.nodeid2CyNodeMap = new HashMap<String, CyTableEntry>();
+		this.nodeid2CyNodeMap = new HashMap<String, CyIdentifiable>();
 	}
 
 	CyNetwork[] getCyNetworks() {
@@ -154,7 +154,7 @@ public class GraphMLParser extends DefaultHandler {
 					network.removeNodes(toBeRemoved);
 			}
 		}
-		currentNetwork.getRow(currentNetwork).set(CyTableEntry.NAME, networkID);
+		currentNetwork.getRow(currentNetwork).set(CyNetwork.NAME, networkID);
 		
 		networkStack.push(currentNetwork);
 		cyNetworks.add(currentNetwork);
@@ -174,7 +174,7 @@ public class GraphMLParser extends DefaultHandler {
 			currentObject = nodeid2CyNodeMap.get(currentAttributeID);
 			if (currentObject == null) {
 				currentObject = rootNetwork.addNode();
-				rootNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentAttributeID);
+				rootNetwork.getRow(currentObject).set(CyNetwork.NAME, currentAttributeID);
 				nodeid2CyNodeMap.put(currentAttributeID, currentObject);
 			}
 
@@ -188,7 +188,7 @@ public class GraphMLParser extends DefaultHandler {
 			currentObject = nodeid2CyNodeMap.get(currentAttributeID);
 			if (currentObject == null) {
 				currentObject = currentNetwork.addNode();
-				currentNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentAttributeID);
+				currentNetwork.getRow(currentObject).set(CyNetwork.NAME, currentAttributeID);
 				nodeid2CyNodeMap.put(currentAttributeID, currentObject);
 			}
 		}
@@ -207,7 +207,7 @@ public class GraphMLParser extends DefaultHandler {
 		if (networkStack.size() > 1) {
 			final CyNetwork rootNetwork = networkStack.get(0);
 			currentObject = rootNetwork.addEdge(sourceNode, targetNode, directed);
-			rootNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
+			rootNetwork.getRow(currentObject).set(CyNetwork.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
 			rootNetwork.getRow(currentObject).set(CyEdge.INTERACTION, "-");
 
 			for (CyNetwork network : networkStack) {
@@ -218,7 +218,7 @@ public class GraphMLParser extends DefaultHandler {
 		} else {
 			try {
 				currentObject = currentNetwork.addEdge(sourceNode, targetNode, directed);
-				currentNetwork.getRow(currentObject).set(CyTableEntry.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
+				currentNetwork.getRow(currentObject).set(CyNetwork.NAME, currentEdgeSourceName + " (-) " + currentEdgeTargetName);
 				currentNetwork.getRow(currentObject).set(CyEdge.INTERACTION, "-");
 			} catch (Exception e) {
 				logger.warn("Edge entry ignored: " + currentEdgeSourceName + " (-) " + currentEdgeTargetName, e);

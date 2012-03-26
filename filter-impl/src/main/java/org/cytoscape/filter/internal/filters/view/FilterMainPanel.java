@@ -87,7 +87,7 @@ import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -381,7 +381,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 */
 	private List<Object> getCyAttributesList(CyNetwork network, String pType) {
 		Vector<String> attributeList = new Vector<String>();
-		Collection<? extends CyTableEntry> entries = null;
+		Collection<? extends CyIdentifiable> entries = null;
 		
 		if (pType.equalsIgnoreCase("node")) {
 			entries = network.getNodeList();
@@ -395,7 +395,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			return Collections.emptyList();
 		}
 		
-		CyTableEntry tableEntry = entries.iterator().next();
+		CyIdentifiable tableEntry = entries.iterator().next();
 		final Collection<CyColumn> columns = network.getRow(tableEntry).getTable().getColumns();
 		
 		for (final CyColumn column : columns) {

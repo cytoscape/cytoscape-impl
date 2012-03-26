@@ -44,7 +44,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -334,7 +334,7 @@ public class QuickFindImpl implements QuickFind {
 		
 		//
 		Date start = new Date();
-		Iterator<? extends CyTableEntry> iterator;
+		Iterator<? extends CyIdentifiable> iterator;
 
 		if (indexType == QuickFind.INDEX_NODES) {
 			taskMonitor.setStatusMessage("Indexing node attributes");
@@ -351,7 +351,7 @@ public class QuickFindImpl implements QuickFind {
 		while (iterator.hasNext()) {
 			currentProgress++;
 
-			CyTableEntry graphObject = iterator.next();
+			CyIdentifiable graphObject = iterator.next();
 			addToIndex(network,attributeType, graphObject, controllingAttribute, index);
 
 			//  Determine percent complete
@@ -403,7 +403,7 @@ public class QuickFindImpl implements QuickFind {
 	 * @param controllingAttribute  Controlling attribute.
 	 * @param index                 Index to add to.
 	 */
-	private void addToIndex(CyNetwork network, Class<?> attributeType, CyTableEntry graphObject,
+	private void addToIndex(CyNetwork network, Class<?> attributeType, CyIdentifiable graphObject,
 	                        String controllingAttribute, GenericIndex index) {
 		CyRow row = network.getRow(graphObject);
 		//  Get attribute values, and index
@@ -431,7 +431,7 @@ public class QuickFindImpl implements QuickFind {
 	 * @param graphObject   Graph Object.
 	 * @param index         Index to add to.
 	 */
-	private void addStringsToIndex(String[] value, CyTableEntry graphObject, GenericIndex index) {
+	private void addStringsToIndex(String[] value, CyIdentifiable graphObject, GenericIndex index) {
 		//  Add to index
 		for (int i = 0; i < value.length; i++) {
 			index.addToIndex(value[i], graphObject);

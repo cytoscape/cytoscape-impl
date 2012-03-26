@@ -8,7 +8,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 public class SelectUtil {
 	public static void unselectAllNodes(CyNetwork network) {
@@ -27,8 +27,8 @@ public class SelectUtil {
 		setSelectedState(network, list, selected);
 	}
 
-	static void setSelectedState(CyNetwork network, Collection<? extends CyTableEntry> list, Boolean selected) {
-		for (CyTableEntry edge : list) {
+	static void setSelectedState(CyNetwork network, Collection<? extends CyIdentifiable> list, Boolean selected) {
+		for (CyIdentifiable edge : list) {
 			CyRow row = network.getRow(edge);
 			row.set(CyNetwork.SELECTED, selected);
 		}
@@ -43,7 +43,7 @@ public class SelectUtil {
 		return getSelected(cyNetwork, cyNetwork.getEdgeList());
 	}
 	
-	static <T extends CyTableEntry> Set<T> getSelected(CyNetwork network, Collection<T> items) {
+	static <T extends CyIdentifiable> Set<T> getSelected(CyNetwork network, Collection<T> items) {
 		Set<T> entries = new HashSet<T>();
 		for (T item : items) {
 			CyRow row = network.getRow(item);
@@ -62,7 +62,7 @@ public class SelectUtil {
 		selectAll(cyNetwork,cyNetwork.getEdgeList());
 	}
 	
-	static <T extends CyTableEntry> void selectAll(CyNetwork network, Collection<T> items) {
+	static <T extends CyIdentifiable> void selectAll(CyNetwork network, Collection<T> items) {
 		for (T item : items) {
 			CyRow row = network.getRow(item);
 			if (!row.get(CyNetwork.SELECTED, Boolean.class)) {
@@ -79,7 +79,7 @@ public class SelectUtil {
 		return countSelected(cyNetwork, cyNetwork.getNodeList());
 	}
 	
-	static <T extends CyTableEntry> int countSelected(CyNetwork network, Collection<T> items) {
+	static <T extends CyIdentifiable> int countSelected(CyNetwork network, Collection<T> items) {
 		int count = 0;
 		for (T item : items) {
 			CyRow row = network.getRow(item);
