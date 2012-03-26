@@ -406,7 +406,7 @@ public class AttributeMappingImpl implements AttributeMapping {
 
             for (int i=0; i<nAttr; i++) {
 //                //TODO REMOVE IN Cytoscape3.0
-//                if (attributeNames.get(i).compareTo(CyTableEntry.NAME)==0) {
+//                if (attributeNames.get(i).compareTo(CyNetwork.NAME)==0) {
 //                    continue;
 //                }//TODO REMOVE IN Cytoscape3.0
                 
@@ -414,7 +414,7 @@ public class AttributeMappingImpl implements AttributeMapping {
             }
             
 //            //TODO REMOVE IN 3.0, canonicalName in each network form a separate attribute in resulting network
-//            addNewAttribute(netID, CyTableEntry.NAME);//TODO REMOVE IN Cytoscape3.0
+//            addNewAttribute(netID, CyNetwork.NAME);//TODO REMOVE IN Cytoscape3.0
             
 
         } else { // for each attributes to be added, search if the same attribute exists
@@ -437,8 +437,8 @@ public class AttributeMappingImpl implements AttributeMapping {
                 final String at = attributeNames.get(i);
                  
 //                //TODO REMOVE IN Cytoscape3.0, canonicalName in each network form a separate attribute in resulting network
-//                if (at.compareTo(CyTableEntry.NAME)==0) {
-//                    addNewAttribute(netID, CyTableEntry.NAME);
+//                if (at.compareTo(CyNetwork.NAME)==0) {
+//                    addNewAttribute(netID, CyNetwork.NAME);
 //                    continue;
 //                }//TODO REMOVE IN Cytoscape3.0
                  
@@ -572,8 +572,8 @@ public class AttributeMappingImpl implements AttributeMapping {
         
         String attrMerged = attributeName;
 //        //TODO remove in Cytosape3
-//        if (attributeName.compareTo(CyTableEntry.NAME)==0) {
-//            attrMerged = net+"."+CyTableEntry.NAME;
+//        if (attributeName.compareTo(CyNetwork.NAME)==0) {
+//            attrMerged = net+"."+CyNetwork.NAME;
 //        }//TODO remove in Cytosape3
         
         mergedAttributes.add(getDefaultMergedAttrName(attrMerged)); // add in merged attr

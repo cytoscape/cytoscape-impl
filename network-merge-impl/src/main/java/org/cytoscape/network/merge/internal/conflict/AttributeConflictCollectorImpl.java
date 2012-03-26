@@ -37,7 +37,7 @@
 
 package org.cytoscape.network.merge.internal.conflict;
 
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyColumn;
 
 import java.util.Map;
@@ -53,18 +53,18 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
 
         protected class Conflicts {
                 //public final CyTable cyAttributes;
-                public Map<CyTableEntry,CyColumn> mapFromGOFromAttr;
+                public Map<CyIdentifiable,CyColumn> mapFromGOFromAttr;
 
                 public Conflicts() {
                         //this.cyAttributes = cyAttributes;
-                        mapFromGOFromAttr = new HashMap<CyTableEntry,CyColumn>();
+                        mapFromGOFromAttr = new HashMap<CyIdentifiable,CyColumn>();
                 }
 
-                public void addConflict(final CyTableEntry from, final CyColumn fromAttr) {
+                public void addConflict(final CyIdentifiable from, final CyColumn fromAttr) {
                         mapFromGOFromAttr.put(from, fromAttr);
                 }
 
-                public boolean removeConflict(final CyTableEntry from, final CyColumn fromAttr) {
+                public boolean removeConflict(final CyIdentifiable from, final CyColumn fromAttr) {
                         CyColumn attr = mapFromGOFromAttr.get(from);
                         if (attr==null || attr!=fromAttr) {
                                 return false;
@@ -75,10 +75,10 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
                 }
         }
 
-        protected Map<CyTableEntry,Map<CyColumn,Conflicts>> mapToGOToAttrConflicts;
+        protected Map<CyIdentifiable,Map<CyColumn,Conflicts>> mapToGOToAttrConflicts;
 
         public AttributeConflictCollectorImpl() {
-                this.mapToGOToAttrConflicts = new HashMap<CyTableEntry,Map<CyColumn,Conflicts>>();
+                this.mapToGOToAttrConflicts = new HashMap<CyIdentifiable,Map<CyColumn,Conflicts>>();
         }
 
         
@@ -88,10 +88,10 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
         }
 
         @Override
-        public Map<CyTableEntry,CyColumn> getMapToGOAttr() {
-                Map<CyTableEntry,CyColumn> mapToGOAttr = new HashMap<CyTableEntry,CyColumn>();
-                for (Map.Entry<CyTableEntry,Map<CyColumn,Conflicts>> entry : mapToGOToAttrConflicts.entrySet()) {
-                        CyTableEntry go = entry.getKey();
+        public Map<CyIdentifiable,CyColumn> getMapToGOAttr() {
+                Map<CyIdentifiable,CyColumn> mapToGOAttr = new HashMap<CyIdentifiable,CyColumn>();
+                for (Map.Entry<CyIdentifiable,Map<CyColumn,Conflicts>> entry : mapToGOToAttrConflicts.entrySet()) {
+                        CyIdentifiable go = entry.getKey();
                         for (CyColumn attr : entry.getValue().keySet()) {
                                 mapToGOAttr.put(go,attr);
                         }
@@ -101,7 +101,7 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
         }
 
         @Override
-        public Map<CyTableEntry,CyColumn> getConflicts(final CyTableEntry to, final CyColumn toAttr){
+        public Map<CyIdentifiable,CyColumn> getConflicts(final CyIdentifiable to, final CyColumn toAttr){
                 if (to==null || toAttr==null) {
                         throw new java.lang.NullPointerException();
                 }
@@ -115,7 +115,7 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
         }
 
 //        @Override
-//        public CyTable getCyAttributes(final CyTableEntry to, final String toAttr) {
+//        public CyTable getCyAttributes(final CyIdentifiable to, final String toAttr) {
 //                if (to==null || toAttr==null) {
 //                        throw new java.lang.NullPointerException();
 //                }
@@ -129,9 +129,9 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
 //        }
 
         @Override
-        public void addConflict(final CyTableEntry from,
+        public void addConflict(final CyIdentifiable from,
                                         final CyColumn fromAttr,
-                                        final CyTableEntry to,
+                                        final CyIdentifiable to,
                                         final CyColumn toAttr) {
                 if (from==null || fromAttr==null || to==null || toAttr==null) {
                         throw new java.lang.NullPointerException();
@@ -157,7 +157,7 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
         }
 
     @Override
-        public boolean removeConflicts(CyTableEntry to, CyColumn toAttr) {
+        public boolean removeConflicts(CyIdentifiable to, CyColumn toAttr) {
                 if (to==null || toAttr==null) {
                         throw new java.lang.NullPointerException();
                 }
@@ -176,7 +176,7 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
         }
 
         @Override
-        public boolean removeConflict(final CyTableEntry from, final CyColumn fromAttr, final CyTableEntry to, final CyColumn toAttr) {
+        public boolean removeConflict(final CyIdentifiable from, final CyColumn fromAttr, final CyIdentifiable to, final CyColumn toAttr) {
                 if (from==null || fromAttr==null || to==null || toAttr==null) {
                         throw new java.lang.NullPointerException();
                 }

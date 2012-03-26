@@ -16,7 +16,7 @@ import org.cytoscape.io.internal.util.vizmap.model.VisualStyle;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -182,7 +182,7 @@ public class CalculatorConverterTest {
 	
 	private void testConvertDefaltValue(String key,
 										String oldKey,
-										Class<? extends CyTableEntry> type,
+										Class<? extends CyIdentifiable> type,
 										String value,
 										String expected) {
 		CalculatorConverter c = new CalculatorConverter(key, oldKey);
@@ -191,7 +191,7 @@ public class CalculatorConverterTest {
 		assertEquals(expected, vp.getDefault());
 	}
 	
-	private VisualProperty getVisualProperty(String id, VisualStyle vs, Class<? extends CyTableEntry> type) {
+	private VisualProperty getVisualProperty(String id, VisualStyle vs, Class<? extends CyIdentifiable> type) {
 		List<VisualProperty> list = null;
 		
 		if (type == CyNode.class)

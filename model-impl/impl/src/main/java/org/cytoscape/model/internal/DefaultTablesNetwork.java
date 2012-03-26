@@ -39,7 +39,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
 
@@ -86,11 +86,11 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 		return networkTableManager.getTable(networkRef.get(), CyEdge.class, CyNetwork.DEFAULT_ATTRS); 
 	}
 
-	public CyRow getRow(final CyTableEntry entry) {
+	public CyRow getRow(final CyIdentifiable entry) {
 		return getRow(entry, CyNetwork.DEFAULT_ATTRS);
 	}
 
-	public CyRow getRow(final CyTableEntry entry, final String tableName) {
+	public CyRow getRow(final CyIdentifiable entry, final String tableName) {
 		if ( entry == null )
 			throw new NullPointerException("null entry");
 
@@ -120,40 +120,40 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 
 	private void createNetworkTables(long suidx, CyTableFactory tableFactory, boolean pubTables) {		
 		final CyTable defTable = tableFactory.createTable(suidx
-				+ " default network", CyTableEntry.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
+				+ " default network", CyIdentifiable.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.DEFAULT_ATTRS, defTable);
 		
 		final CyTable hiddenTable = tableFactory.createTable(suidx
-				+ " hidden network", CyTableEntry.SUID, Long.class, false, false, InitialTableSize.SMALL);
+				+ " hidden network", CyIdentifiable.SUID, Long.class, false, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.HIDDEN_ATTRS, hiddenTable);
 		// Add default network columns.
-		defTable.createColumn(CyTableEntry.NAME, String.class, true);
+		defTable.createColumn(CyNetwork.NAME, String.class, true);
 		
 	}
 
 	private void createNodeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num) {
 		final CyTable defTable = tableFactory.createTable(suidx
-				+ " default node", CyTableEntry.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
+				+ " default node", CyIdentifiable.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.DEFAULT_ATTRS, defTable);
 		
 		final CyTable hiddenTable = tableFactory.createTable(suidx
-				+ " hidden node", CyTableEntry.SUID, Long.class, false, false, InitialTableSize.SMALL);
+				+ " hidden node", CyIdentifiable.SUID, Long.class, false, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.HIDDEN_ATTRS, hiddenTable);
 		
-		defTable.createColumn(CyTableEntry.NAME, String.class, true);
+		defTable.createColumn(CyNetwork.NAME, String.class, true);
 		defTable.createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);		
 	}
 
 	private void createEdgeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num) {
-		final CyTable defTable = tableFactory.createTable(suidx + " default edge", CyTableEntry.SUID, Long.class,
+		final CyTable defTable = tableFactory.createTable(suidx + " default edge", CyIdentifiable.SUID, Long.class,
 				pubTables, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.DEFAULT_ATTRS, defTable);
 		
 		final CyTable hiddenTable = tableFactory.createTable(suidx
-				+ " hidden edge", CyTableEntry.SUID, Long.class, false, false, InitialTableSize.SMALL);
+				+ " hidden edge", CyIdentifiable.SUID, Long.class, false, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.HIDDEN_ATTRS, hiddenTable);
 		
-		defTable.createColumn(CyTableEntry.NAME, String.class, true);
+		defTable.createColumn(CyNetwork.NAME, String.class, true);
 		defTable.createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
 		defTable.createColumn(CyEdge.INTERACTION, String.class, true);		
 	}

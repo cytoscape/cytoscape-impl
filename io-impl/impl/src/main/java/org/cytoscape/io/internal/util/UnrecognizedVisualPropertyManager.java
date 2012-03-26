@@ -9,10 +9,10 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.view.model.CyNetworkView;
@@ -25,8 +25,8 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 	public static final String RENDERER_TABLE_TITLE = "UnrecognizedRenderer";
 	public static final String VISUAL_PROPERTY_TABLE_TITLE = "UnrecognizedVisualProperties";
 
-	private static final String RENDERER_TABLE_PK = CyTableEntry.SUID;
-	private static final String VISUAL_PROPERTY_TABLE_PK = CyTableEntry.SUID;
+	private static final String RENDERER_TABLE_PK = CyIdentifiable.SUID;
+	private static final String VISUAL_PROPERTY_TABLE_PK = CyIdentifiable.SUID;
 
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableMgr;
@@ -51,7 +51,7 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 	 * @param attValue The visual property string value.
 	 */
 	public void addUnrecognizedVisualProperty(CyNetworkView netView,
-											  View<? extends CyTableEntry> view,
+											  View<? extends CyIdentifiable> view,
 											  String attName,
 											  String attValue) {
 		if (netView == null) throw new IllegalArgumentException("The 'netView' argument cannot be null");
@@ -102,7 +102,7 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 	 * @param view Node or edge view.
 	 * @return A map which has unrecognized visual property names as keys and visual property string values as values.
 	 */
-	public Map<String, String> getUnrecognizedVisualProperties(CyNetworkView netView, View<? extends CyTableEntry> view) {
+	public Map<String, String> getUnrecognizedVisualProperties(CyNetworkView netView, View<? extends CyIdentifiable> view) {
 		if (netView == null) throw new IllegalArgumentException("The 'netView' argument cannot be null");
 		if (view == null) throw new IllegalArgumentException("The 'view' argument cannot be null");
 
@@ -136,8 +136,8 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 		dropTables(e.getNetworkView());
 	}
 	
-	private String getTargetType(View<? extends CyTableEntry> view) {
-		CyTableEntry model = view.getModel();
+	private String getTargetType(View<? extends CyIdentifiable> view) {
+		CyIdentifiable model = view.getModel();
 
 		String type = "network";
 		if (model instanceof CyNode) type = "node";

@@ -44,7 +44,7 @@ import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
@@ -71,7 +71,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Map<CyNetworkView, String> visualStyleMap = new HashMap<CyNetworkView, String>();
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<CyTableMetadata>();
 	protected final Map<String, List<File>> appFileListMap = new HashMap<String, List<File>>();
-	protected final Map<Class<? extends CyTableEntry>, Map<Object, ? extends CyTableEntry>> objectMap = new HashMap<Class<? extends CyTableEntry>, Map<Object, ? extends CyTableEntry>>();
+	protected final Map<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>> objectMap = new HashMap<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>>();
 	
 	private boolean inputStreamRead;
 	

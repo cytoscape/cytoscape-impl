@@ -54,7 +54,7 @@ import org.cytoscape.io.internal.util.vizmap.model.Vizmap;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
@@ -339,7 +339,7 @@ public class VisualStyleSerializer {
 
 	@SuppressWarnings("unchecked")
 	private <K, V> void createVisualProperties(VisualStyle vs,
-											   Class<? extends CyTableEntry> targetType,
+											   Class<? extends CyIdentifiable> targetType,
 											   List<org.cytoscape.io.internal.util.vizmap.model.VisualProperty> vpModelList) {
 		for (org.cytoscape.io.internal.util.vizmap.model.VisualProperty vpModel : vpModelList) {
 			String vpId = vpModel.getName();

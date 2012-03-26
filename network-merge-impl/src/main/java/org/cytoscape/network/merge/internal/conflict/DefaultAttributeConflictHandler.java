@@ -42,7 +42,7 @@ import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 import org.cytoscape.network.merge.internal.util.ColumnType;
 
@@ -60,9 +60,9 @@ public class DefaultAttributeConflictHandler implements AttributeConflictHandler
          * @return
          *      true if successful, false if failed
          */
-        public boolean handleIt(final CyTableEntry to,
+        public boolean handleIt(final CyIdentifiable to,
                                 final CyColumn toAttr,
-                                final Map<CyTableEntry,CyColumn> mapFromGOFromAttr) {
+                                final Map<CyIdentifiable,CyColumn> mapFromGOFromAttr) {
                 //TODO: write a reasonable default one
                 if (to==null || toAttr==null || mapFromGOFromAttr==null) {
                         throw new java.lang.NullPointerException();
@@ -78,8 +78,8 @@ public class DefaultAttributeConflictHandler implements AttributeConflictHandler
                         Set<String> values = new TreeSet<String>();
                         values.add(toValue);
 
-                        for (Map.Entry<CyTableEntry,CyColumn> entry : mapFromGOFromAttr.entrySet()) {
-                                CyTableEntry from = entry.getKey();
+                        for (Map.Entry<CyIdentifiable,CyColumn> entry : mapFromGOFromAttr.entrySet()) {
+                                CyIdentifiable from = entry.getKey();
                                 CyColumn fromAttr = entry.getValue();
 								// TODO figure out which network to be using 
                                 Object fromValue = null; //from.getCyRow(fromAttr.getTable().getTitle()).getRaw(fromAttr.getName());

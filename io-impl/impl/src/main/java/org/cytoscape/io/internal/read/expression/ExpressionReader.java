@@ -45,7 +45,7 @@ import java.util.Vector;
 
 import org.cytoscape.io.internal.read.AbstractTableReader;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNode;

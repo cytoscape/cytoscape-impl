@@ -52,7 +52,7 @@ import org.cytoscape.io.internal.util.vizmap.model.VisualStyle;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 /**
  * Converter for Cytoscape 2.x calculators, which are serialized as a properties file
@@ -90,9 +90,9 @@ public class CalculatorConverter {
 	private String key;
 	private String legacyKey;
 	private String visualPropertyId;
-	private Class<? extends CyTableEntry> targetType;
+	private Class<? extends CyIdentifiable> targetType;
 
-	private static final Map<Class<? extends CyTableEntry>, Map<String, CalculatorConverter>> converters;
+	private static final Map<Class<? extends CyIdentifiable>, Map<String, CalculatorConverter>> converters;
 
 	/** old_style -> new_style */
 	private static final Map<String, String> oldLineStyles;
@@ -100,7 +100,7 @@ public class CalculatorConverter {
 	private static final Map<String, String> oldArrowColors;
 
 	static {
-		converters = new HashMap<Class<? extends CyTableEntry>, Map<String, CalculatorConverter>>();
+		converters = new HashMap<Class<? extends CyIdentifiable>, Map<String, CalculatorConverter>>();
 		converters.put(CyNode.class, new HashMap<String, CalculatorConverter>());
 		converters.put(CyEdge.class, new HashMap<String, CalculatorConverter>());
 		converters.put(CyNetwork.class, new HashMap<String, CalculatorConverter>());
@@ -459,7 +459,7 @@ public class CalculatorConverter {
 		return b;
 	}
 	
-	static Class<? extends CyTableEntry> parseTargetDataType(String calcKey) {
+	static Class<? extends CyIdentifiable> parseTargetDataType(String calcKey) {
 		calcKey = calcKey.toLowerCase();
 
 		if (calcKey.matches("[a-zA-Z]+(node|edge)[reverse]?selectioncolor")) return CyNetwork.class;

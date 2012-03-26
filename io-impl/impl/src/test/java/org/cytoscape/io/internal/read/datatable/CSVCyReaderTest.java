@@ -13,7 +13,7 @@ import java.util.List;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.TableTestSupport;
@@ -56,7 +56,7 @@ public class CSVCyReaderTest {
 		assertEquals(2, table.getRowCount());
 		CyRow row = table.getRow(5L);
 		assertNotNull(row);
-		Long value = row.get(CyTableEntry.SUID, Long.class);
+		Long value = row.get(CyIdentifiable.SUID, Long.class);
 		assertEquals((Long) 5L, value);
 		assertTrue(table.isPublic());
 		assertEquals(Mutability.MUTABLE, table.getMutability());

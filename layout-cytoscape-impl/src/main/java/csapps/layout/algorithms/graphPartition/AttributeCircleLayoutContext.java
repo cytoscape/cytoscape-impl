@@ -2,14 +2,15 @@ package csapps.layout.algorithms.graphPartition;
 
 import java.util.Set;
 
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
+import org.cytoscape.model.CyNetwork;
 
 public class AttributeCircleLayoutContext extends AbstractLayoutAlgorithmContext implements TunableValidator {
 	@Tunable(description = "The attribute to use for the layout")
-	public String attribute = CyTableEntry.NAME;
+	public String attribute = CyNetwork.NAME;
 	
 //	@Tunable(description="Node attribute to be use")
 //	public ListSingleSelection<Integer> attrName;

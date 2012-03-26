@@ -99,8 +99,8 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 		keys[0] = mock(CyNetwork.class);
 		keys[1] = mock(CyNetwork.class);
 		
-		CyTable sampleT1 = tableFactory.createTable(tableName1, CyTableEntry.NAME, String.class, true, true);
-		CyTable sampleT2 = tableFactory.createTable(tableName2, CyTableEntry.NAME, String.class, true, true);
+		CyTable sampleT1 = tableFactory.createTable(tableName1, CyNetwork.NAME, String.class, true, true);
+		CyTable sampleT2 = tableFactory.createTable(tableName2, CyNetwork.NAME, String.class, true, true);
 		
 		mgr.setTable(keys[0], CyNetwork.class, tableName1, sampleT1);
 		mgr.setTable(keys[1], CyNetwork.class, tableName2, sampleT2);
@@ -131,7 +131,7 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 		final String extraColName = "new column";
 		final Integer testValue = 22;
 		
-		CyTable extTable = tableFactory.createTable(noneDefTableName, CyTableEntry.SUID, Long.class, true, true);
+		CyTable extTable = tableFactory.createTable(noneDefTableName, CyIdentifiable.SUID, Long.class, true, true);
 		extTable.createColumn(extraColName, Integer.class, false);
 		mgr.setTable(goodNetwork, CyNetwork.class, noneDefTableName, extTable);
 		

@@ -36,7 +36,7 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +101,7 @@ public class ReadCache {
 	 * @param xgmmlId The XGMML id of the element.
 	 * @param element A CyNetwork, CyNetworkView, CyNode or CyEdge.
 	 */
-	public void cache(Object xgmmlId, CyTableEntry element) {
+	public void cache(Object xgmmlId, CyIdentifiable element) {
     	int index = -1;
     	
 		if (xgmmlId != null) {
@@ -153,7 +153,7 @@ public class ReadCache {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T extends CyTableEntry> T getObjectById(Object oldId, Class<T> type) {
+	public <T extends CyIdentifiable> T getObjectById(Object oldId, Class<T> type) {
 		if (type == CyNetwork.class)
 			return (T) networkByIdMap.get(oldId);
 		if (type == CyNetworkView.class)

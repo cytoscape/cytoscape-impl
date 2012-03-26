@@ -38,7 +38,7 @@ import org.cytoscape.model.events.SetNetworkPointerEvent;
 import org.cytoscape.model.events.UnsetNetworkPointerEvent;
 
 
-class CyNodeImpl extends CyTableEntryImpl implements CyNode {
+class CyNodeImpl extends CyIdentifiableImpl implements CyNode {
 	final private int index;
 	private CyNetwork nestedNet;
 	final private CyEventHelper eventHelper;

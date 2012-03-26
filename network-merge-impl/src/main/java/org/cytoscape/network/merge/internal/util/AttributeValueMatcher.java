@@ -37,7 +37,7 @@
 package org.cytoscape.network.merge.internal.util;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 /**
  * Match attribute values
@@ -54,6 +54,6 @@ public interface AttributeValueMatcher {
      * @param attr2
      * @return 
      */
-    public boolean matched(CyTableEntry entry1, CyColumn attr1, 
-                CyTableEntry entry2, CyColumn attr2);
+    public boolean matched(CyIdentifiable entry1, CyColumn attr1, 
+                CyIdentifiable entry2, CyColumn attr2);
 }

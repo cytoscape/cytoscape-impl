@@ -40,7 +40,7 @@ package org.cytoscape.network.merge.internal.util;
 import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
 /**
@@ -57,6 +57,6 @@ public interface AttributeMerger {
          * @param toAttrName
          * @param toNetwork 
          */
-        public <T extends CyTableEntry> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
+        public <T extends CyIdentifiable> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
                                      T toGO, CyColumn toAttrName, CyNetwork toNetwork);
 }

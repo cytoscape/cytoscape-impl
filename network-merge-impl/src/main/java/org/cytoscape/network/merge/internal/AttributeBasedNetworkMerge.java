@@ -53,7 +53,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 /**
  * Attribute based Network merge
@@ -188,7 +188,7 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge{
      * set attribute for the merge node/edge according to attribute mapping
      * 
      */
-    protected <T extends CyTableEntry> void setAttribute(CyNetwork newNetwork,
+    protected <T extends CyIdentifiable> void setAttribute(CyNetwork newNetwork,
 	                            T toEntry, 
                                 final Map<CyNetwork,Set<T>> mapNetGOs,
                                 final AttributeMapping attributeMapping) {        

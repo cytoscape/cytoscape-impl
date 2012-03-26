@@ -33,23 +33,23 @@ import java.util.Map;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.SUIDFactory;
 
 
-class CyTableEntryImpl implements CyTableEntry {
+class CyIdentifiableImpl implements CyIdentifiable {
 	private final Long suid;
 
-	CyTableEntryImpl(long suid) {
+	CyIdentifiableImpl(long suid) {
 		this.suid = Long.valueOf(suid);
 	}
 
-	CyTableEntryImpl() {
+	CyIdentifiableImpl() {
 		this(SUIDFactory.getNextSUID());
 	}
 
 	/**
-	 * @see org.cytoscape.model.CyTableEntry#getSUID()
+	 * @see org.cytoscape.model.CyIdentifiable#getSUID()
 	 */
 	@Override
 	final public Long getSUID() {
@@ -71,9 +71,9 @@ class CyTableEntryImpl implements CyTableEntry {
 			return true;
 		if (obj == null)
 			return false;
-		if (! (obj instanceof CyTableEntryImpl))
+		if (! (obj instanceof CyIdentifiableImpl))
 			return false;
-		CyTableEntryImpl other = (CyTableEntryImpl) obj;
+		CyIdentifiableImpl other = (CyIdentifiableImpl) obj;
 		return (suid == other.suid);
 	}
 }

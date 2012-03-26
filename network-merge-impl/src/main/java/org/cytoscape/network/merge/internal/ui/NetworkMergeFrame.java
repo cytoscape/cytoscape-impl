@@ -84,7 +84,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.network.merge.internal.NetworkMerge.Operation;
@@ -801,7 +801,7 @@ public class NetworkMergeFrame extends JFrame {
                         
                         CyNetwork net = cnf.createNetwork();
                         String netName = cnn.getSuggestedNetworkTitle(mergeNodeAttributeTable.getMergedNetworkName());
-						net.getRow(net).set(CyTableEntry.NAME,netName);
+						net.getRow(net).set(CyNetwork.NAME,netName);
                         cnm.addNetwork(net);
                         
                         AttributeConflictCollector conflictCollector = new AttributeConflictCollectorImpl();

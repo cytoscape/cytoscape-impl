@@ -79,7 +79,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -474,7 +474,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 	@SuppressWarnings("unchecked")
 	private void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder) {
-		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) builder.getType();
+		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) builder.getType();
 		String namespace = builder.getNamespace();
 
 		if ("VIEW".equals(namespace)) {
@@ -488,7 +488,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		builder.setCyTable(targetTable);
 	}
 	
-	private void mergeTables(CyTable source, CyTable target, Class<? extends CyTableEntry> type) {
+	private void mergeTables(CyTable source, CyTable target, Class<? extends CyIdentifiable> type) {
 		CyColumn sourceKey = source.getPrimaryKey();
 		CyColumn targetKey = target.getPrimaryKey();
 		String keyName = sourceKey.getName();
@@ -497,7 +497,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (keyName.equals(targetKey.getName())) {
 			for (CyRow sourceRow : source.getAllRows()) {
 				Long key = sourceRow.get(keyName, Long.class);
-				CyTableEntry entry = cache.getObjectById(key, type);
+				CyIdentifiable entry = cache.getObjectById(key, type);
 				Long mappedKey = entry != null ? entry.getSUID() : null;
 				
 				if (mappedKey == null)

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
@@ -24,14 +24,14 @@ public class LinkoutTask extends AbstractTask {
 	private static final Logger logger = LoggerFactory.getLogger(LinkoutTask.class);
 
 	private final String link;
-	private final CyTableEntry[] tableEntries;
+	private final CyIdentifiable[] tableEntries;
 	private final OpenBrowser browser;
 	private final CyNetwork network;
 
 	private static final String REGEX = "%.+%"; 
 	private static final Pattern regexPattern = Pattern.compile(REGEX); 
 
-	public LinkoutTask(String link, OpenBrowser browser, CyNetwork network, CyTableEntry... tableEntries ) {
+	public LinkoutTask(String link, OpenBrowser browser, CyNetwork network, CyIdentifiable... tableEntries ) {
 		this.link = link;
 		this.tableEntries = tableEntries;
 		this.browser = browser;
@@ -61,7 +61,7 @@ public class LinkoutTask extends AbstractTask {
 			throw new RuntimeException("Problem opening linkout URL: " + url);
 	}
 
-	private String substituteAttributes(String url, CyTableEntry tableEntry, String id) {
+	private String substituteAttributes(String url, CyIdentifiable tableEntry, String id) {
 	 
 		// Replace %ATTRIBUTE.NAME% mark with the value of the attribute final
 		Matcher mat = regexPattern.matcher(url);

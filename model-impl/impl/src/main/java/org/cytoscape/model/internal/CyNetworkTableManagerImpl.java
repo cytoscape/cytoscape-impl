@@ -9,13 +9,13 @@ import java.util.WeakHashMap;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 
 public class CyNetworkTableManagerImpl implements CyNetworkTableManager, NetworkAboutToBeDestroyedListener {
 
-	private final Map<CyNetwork, Map<Class<? extends CyTableEntry>, Map<String, CyTable>>> tables;
+	private final Map<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>> tables;
 	
 	public CyNetworkTableManagerImpl() {
 		// Use WeakReferences for CyNetworks because we can't get notified
@@ -23,11 +23,11 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 		// for the CyTable maps too because CyNetworks may be holding a
 		// reference to them.  This set up allows us to automatically clean
 		// up this map whenever CyNetworks get garbage collected.
-		tables = new WeakHashMap<CyNetwork, Map<Class<? extends CyTableEntry>, Map<String, CyTable>>>();
+		tables = new WeakHashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>>();
 	}
 	
 	@Override
-	public void setTable(CyNetwork network, Class<? extends CyTableEntry> type, String namespace, CyTable table) {		
+	public void setTable(CyNetwork network, Class<? extends CyIdentifiable> type, String namespace, CyTable table) {		
 		// Null checks.  All parameters should not be null.
 		if (network == null)
 			throw new IllegalArgumentException("network cannot be null");
@@ -41,9 +41,9 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 		if (table == null)
 			throw new IllegalArgumentException("table cannot be null");
 		
-		Map<Class<? extends CyTableEntry>, Map<String, CyTable>> byType = tables.get(network);
+		Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
 		if (byType == null) {
-			byType = new HashMap<Class<? extends CyTableEntry>, Map<String,CyTable>>();
+			byType = new HashMap<Class<? extends CyIdentifiable>, Map<String,CyTable>>();
 			final Map<String, CyTable> type2Tables = new HashMap<String, CyTable>();
 			type2Tables.put(namespace, table);
 			byType.put(type, type2Tables);
@@ -69,8 +69,8 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 
 	@Override
 	public CyTable getTable(CyNetwork network,
-			Class<? extends CyTableEntry> type, String namespace) {
-		Map<Class<? extends CyTableEntry>, Map<String, CyTable>> byType = tables.get(network);
+			Class<? extends CyIdentifiable> type, String namespace) {
+		Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
 		if (network == null) {
 			throw new IllegalArgumentException("network cannot be null");
 		}
@@ -92,7 +92,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 
 	@Override
 	public void removeTable(CyNetwork network,
-			Class<? extends CyTableEntry> type, String namespace) {
+			Class<? extends CyIdentifiable> type, String namespace) {
 		if (network == null) {
 			throw new IllegalArgumentException("network cannot be null");
 		}
@@ -107,7 +107,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 			throw new IllegalArgumentException("cannot remove default tables");
 		}
 		
-		Map<Class<? extends CyTableEntry>, Map<String, CyTable>> byType = tables.get(network);
+		Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
 		if (byType == null) {
 			return;
 		}
@@ -120,14 +120,14 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 	}
 
 	@Override
-	public Map<String, CyTable> getTables(CyNetwork network, Class<? extends CyTableEntry> type) {
+	public Map<String, CyTable> getTables(CyNetwork network, Class<? extends CyIdentifiable> type) {
 		if (network == null)
 			throw new IllegalArgumentException("network cannot be null");
 		
 		if (type == null)
 			throw new IllegalArgumentException("type cannot be null");
 
-		final Map<Class<? extends CyTableEntry>, Map<String, CyTable>> byType = tables.get(network);
+		final Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
 		if (byType == null)
 			return Collections.emptyMap();
 		

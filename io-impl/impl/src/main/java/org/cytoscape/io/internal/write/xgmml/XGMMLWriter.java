@@ -53,7 +53,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -572,11 +572,11 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	}
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-	private void writeGraphics(View<? extends CyTableEntry> view) throws IOException {
+	private void writeGraphics(View<? extends CyIdentifiable> view) throws IOException {
         if (view == null) return;
         writeElement("<graphics");
         
-        CyTableEntry element = view.getModel();
+        CyIdentifiable element = view.getModel();
         final VisualProperty<?> root;
         
         if (element instanceof CyNode)
@@ -669,7 +669,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	private void writeVisualPropertyAtt(View<? extends CyTableEntry> view, VisualProperty vp) throws IOException {
+	private void writeVisualPropertyAtt(View<? extends CyIdentifiable> view, VisualProperty vp) throws IOException {
     	Object value = view.getVisualProperty(vp);
     	value = vp.toSerializableString(value);
     	
@@ -708,7 +708,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	 * @param attName
 	 * @return
 	 */
-    private boolean ignoreGraphicsAttribute(final CyTableEntry element, String attName) {
+    private boolean ignoreGraphicsAttribute(final CyIdentifiable element, String attName) {
     	// If a session format, only those visual properties that belong to the view
     	// (not a visual style) should be saved in the XGMML file.
     	boolean b = (sessionFormat && (element instanceof CyNode) && !attName.matches("x|y|z"));
@@ -894,7 +894,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         }
     }
 
-    private String getLabel(CyNetwork network, CyTableEntry entry) {
+    private String getLabel(CyNetwork network, CyIdentifiable entry) {
         String label = encode(network.getRow(entry).get(CyNetwork.NAME, String.class));
         
         if (label == null || label.isEmpty())

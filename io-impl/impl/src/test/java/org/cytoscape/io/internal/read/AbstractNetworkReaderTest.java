@@ -81,7 +81,7 @@ public class AbstractNetworkReaderTest {
 	 */
 	protected void findInteraction(CyNetwork net, String source, String target, String interaction, int count) {
 		for (CyNode n : net.getNodeList()) {
-			String sname = net.getRow(n).get(CyNode.NAME, String.class);
+			String sname = net.getRow(n).get(CyNetwork.NAME, String.class);
 			assertNotNull("Source name is NULL", sname);
 			
 			if (source.equals(sname)) {
@@ -89,7 +89,7 @@ public class AbstractNetworkReaderTest {
 				assertEquals("wrong number of neighbors", count, neigh.size());
 				
 				for (CyNode nn : neigh) {
-					String tname = net.getRow(nn).get(CyNode.NAME, String.class);
+					String tname = net.getRow(nn).get(CyNetwork.NAME, String.class);
 					assertNotNull("Target name is NULL", tname);
 					
 					if (tname.equals(target)) {

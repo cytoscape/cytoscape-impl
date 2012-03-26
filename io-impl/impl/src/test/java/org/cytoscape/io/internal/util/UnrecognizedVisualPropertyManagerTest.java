@@ -11,7 +11,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTable.SavePolicy;
@@ -107,7 +107,7 @@ public class UnrecognizedVisualPropertyManagerTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends CyTableEntry> View<T> mockView(final Long id, final Class<T> type) {
+	private <T extends CyIdentifiable> View<T> mockView(final Long id, final Class<T> type) {
 		View<T> view = mock(View.class);
 		when(view.getSUID()).thenReturn(id);
 

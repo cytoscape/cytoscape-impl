@@ -127,13 +127,13 @@ public class HandleEdge extends AbstractHandler {
 					
 					if (curNet != null && curNet.containsEdge(edge)) {
 						CyRow row = curNet.getRow(edge);
-						row.set(CyEdge.NAME, label);
+						row.set(CyNetwork.NAME, label);
 						row.set(CyEdge.INTERACTION, interaction);
 					}
 					
 					if (manager.getRootNetwork() != null && !manager.getRootNetwork().equals(curNet)) {
 						CyRow row = manager.getRootNetwork().getRow(edge);
-						row.set(CyEdge.NAME, label);
+						row.set(CyNetwork.NAME, label);
 						row.set(CyEdge.INTERACTION, interaction);
 					}
 				}

@@ -55,10 +55,10 @@ public class HandleNode extends AbstractHandler {
 			node = manager.createNode(id, label);
 			
 			if ( label != null && (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) ) {
-				manager.getCurrentNetwork().getRow(node).set(CyNode.NAME, label);
+				manager.getCurrentNetwork().getRow(node).set(CyNetwork.NAME, label);
 				
 				if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork()) {
-					manager.getRootNetwork().getRow(node).set(CyNode.NAME, label);
+					manager.getRootNetwork().getRow(node).set(CyNetwork.NAME, label);
 				}
 			}
 			

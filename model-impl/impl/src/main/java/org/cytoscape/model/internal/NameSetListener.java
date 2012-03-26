@@ -31,9 +31,9 @@ package org.cytoscape.model.internal;
 
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowSetRecord;
@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Any time that the CyTableEntry.NAME column is set
+ * Any time that the CyNetwork.NAME column is set
  * in a local table, update the shared table with the
  * new name.
  */
@@ -60,9 +60,9 @@ class NameSetListener implements RowsSetListener {
 		for ( CyTable shared : sharedList ) {
 			for ( RowSetRecord record : e.getPayloadCollection() ) {
 				// assume payload collection is for same column
-				if ( !record.getColumn().equals(CyTableEntry.NAME) )
+				if ( !record.getColumn().equals(CyNetwork.NAME) )
 					continue;
-				CyRow r = shared.getRow( record.getRow().get( CyTableEntry.SUID, Long.class ) );
+				CyRow r = shared.getRow( record.getRow().get( CyIdentifiable.SUID, Long.class ) );
 				if ( r != null ) 
 					r.set(CyRootNetwork.SHARED_NAME, record.getValue());
 			}

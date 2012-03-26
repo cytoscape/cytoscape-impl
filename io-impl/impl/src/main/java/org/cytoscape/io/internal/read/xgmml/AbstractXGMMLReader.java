@@ -44,7 +44,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -172,10 +172,10 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 	abstract void setEdgeViewProperties(CyNetworkView netView, View<CyEdge> edgeView);
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected void setVisualProperties(final CyNetworkView netView, final View<? extends CyTableEntry> view,
+	protected void setVisualProperties(final CyNetworkView netView, final View<? extends CyIdentifiable> view,
 			Map<String, String> atts) {
 		if (view != null && atts != null) {
-			CyTableEntry model = view.getModel();
+			CyIdentifiable model = view.getModel();
 			Class<?> type = CyNetwork.class;
 			
 			if (model instanceof CyNode)      type = CyNode.class;
@@ -212,7 +212,7 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 	 * @param attName
 	 * @return
 	 */
-	protected boolean isLockedVisualProperty(final CyTableEntry element, String attName) {
+	protected boolean isLockedVisualProperty(final CyIdentifiable element, String attName) {
 		// These are NOT locked properties
 		boolean b = !((element instanceof CyNode) && attName.matches("x|y|z"));
 		b = b &&

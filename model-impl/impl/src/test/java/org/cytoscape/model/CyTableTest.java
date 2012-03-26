@@ -40,7 +40,7 @@ import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.events.RowSetRecord;
@@ -58,10 +58,10 @@ public class CyTableTest extends AbstractCyTableTest {
 	public void setUp() {
 		eventHelper = new DummyCyEventHelper();
 		final Interpreter interpreter = new InterpreterImpl();
-		table = new CyTableImpl("homer", CyTableEntry.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
+		table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					eventHelper, interpreter, 1000);
 		attrs = table.getRow(1L);
-		table2 = new CyTableImpl("marge", CyTableEntry.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
+		table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					 eventHelper, interpreter, 1000);
 	}
 

@@ -35,7 +35,7 @@ import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -125,7 +125,7 @@ public class XGMMLNetworkViewReader extends AbstractXGMMLReader {
 	}
 
 	@Override
-	protected boolean isLockedVisualProperty(final CyTableEntry element, String attName) {
+	protected boolean isLockedVisualProperty(final CyIdentifiable element, String attName) {
 		return this.settingLockedVisualProperties;
 	}
 }

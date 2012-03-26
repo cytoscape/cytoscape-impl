@@ -41,7 +41,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 //import cytoscape.view.CyNetworkView;
 //import cytoscape.visual.CalculatorCatalog;
@@ -482,7 +482,7 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	 * @param id
 	 *            A node id, whose computed attribute values are retrieved.
 	 */
-	private void getBoundaryValues(CyNetwork network, String[][] attr, CyTableEntry entry) {
+	private void getBoundaryValues(CyNetwork network, String[][] attr, CyIdentifiable entry) {
 		for (int i = 0; i < attr.length; i++) {
 			for (int j = 0; j < attr[i].length; j++) {
 				final Class<?> attrType =

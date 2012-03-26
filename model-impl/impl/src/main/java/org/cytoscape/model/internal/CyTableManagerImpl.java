@@ -40,7 +40,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.Mutability;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
@@ -167,7 +167,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		// Collect set of tables to dispose
 		CyNetwork network = e.getNetwork();
 		Set<CyTable> tablesToDispose = new HashSet<CyTable>();
-		for (Class<? extends CyTableEntry> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
+		for (Class<? extends CyIdentifiable> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
 			tablesToDispose.addAll(networkTableManager.getTables(network, type).values());
 		}
 		
@@ -176,7 +176,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 			if (otherNetwork.getSUID() == network.getSUID()) {
 				continue;
 			}
-			for (Class<? extends CyTableEntry> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
+			for (Class<? extends CyIdentifiable> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
 				tablesToDispose.removeAll(networkTableManager.getTables(otherNetwork, type).values());
 			}
 		}

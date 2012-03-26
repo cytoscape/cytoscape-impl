@@ -18,7 +18,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -110,7 +110,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 		tm.setProgress(0.0);
 
 		final CyTable table = tableFactory.createTable(
-				"Table " + Integer.toString(nextTableNumber++), CyTableEntry.NAME,
+				"Table " + Integer.toString(nextTableNumber++), CyNetwork.NAME,
 				String.class, true, true);
 		cyTables = new CyTable[] { table };
 		tm.setProgress(0.1);
@@ -125,14 +125,14 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 			}
 		}
 		tm.setProgress(0.7);
-		Class<? extends CyTableEntry> type = getMappingClass();
+		Class<? extends CyIdentifiable> type = getMappingClass();
 
 		if (netMgr.getNetworkSet().size() > 0 && type != null)
 			super.insertTasksAfterCurrentTask(new MapNetworkAttrTask(type, table, netMgr, appMgr,rootNetFact));
 		tm.setProgress(1.0);
 	}
 
-	private Class<? extends CyTableEntry> getMappingClass() {
+	private Class<? extends CyIdentifiable> getMappingClass() {
 		final TableType sel = dataTypeOptions.getSelectedValue();
 		if (sel == TableType.NODE)
 			return CyNode.class;

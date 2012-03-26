@@ -37,7 +37,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
@@ -188,7 +188,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	}
 
 	private void copyDefaultAttrs(final CyRow originalRow, final CyRow copyRow) {
-		copyRow.set(CyTableEntry.NAME, originalRow.get(CyTableEntry.NAME, String.class));
+		copyRow.set(CyNetwork.NAME, originalRow.get(CyNetwork.NAME, String.class));
 		copyRow.set(CyNetwork.SELECTED, originalRow.get(CyNetwork.SELECTED, Boolean.class));
 	}
 
@@ -254,7 +254,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 	private void updateSharedNames(CyTable src, CyTable tgt) {
 		for ( CyRow sr : src.getAllRows() ) {
-			CyRow tr = tgt.getRow( sr.get(CyTableEntry.SUID,Long.class) );
+			CyRow tr = tgt.getRow( sr.get(CyIdentifiable.SUID,Long.class) );
 			tr.set( CyRootNetwork.SHARED_NAME, sr.get(CyNetwork.NAME,String.class) );
 		}
 	}

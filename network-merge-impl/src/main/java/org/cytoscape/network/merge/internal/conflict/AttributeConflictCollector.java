@@ -37,7 +37,7 @@
 
 package org.cytoscape.network.merge.internal.conflict;
 
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyColumn;
 
 import java.util.Map;
@@ -58,7 +58,7 @@ public interface AttributeConflictCollector {
          *
          * @return all map of to node id to attribute
          */
-        public Map<CyTableEntry,CyColumn> getMapToGOAttr();
+        public Map<CyIdentifiable,CyColumn> getMapToGOAttr();
 
         /**
          * Get conflicts for a specific toID and toAttribute
@@ -66,7 +66,7 @@ public interface AttributeConflictCollector {
          * @param toAttr
          * @return conflict map from id to attrs if exist, null otherwise
          */
-        public Map<CyTableEntry,CyColumn> getConflicts(CyTableEntry toGO, CyColumn toAttr);
+        public Map<CyIdentifiable,CyColumn> getConflicts(CyIdentifiable toGO, CyColumn toAttr);
 
 //        /**
 //         *
@@ -74,7 +74,7 @@ public interface AttributeConflictCollector {
 //         * @param toAttr
 //         * @return
 //         */
-//        public CyTable getCyAttributes(CyTableEntry to, String toAttr);
+//        public CyTable getCyAttributes(CyIdentifiable to, String toAttr);
 
         /**
          *
@@ -83,7 +83,7 @@ public interface AttributeConflictCollector {
          * @param toID
          * @param toAttr
          */
-        public void addConflict(CyTableEntry from, CyColumn fromAttr, CyTableEntry to, CyColumn toAttr);
+        public void addConflict(CyIdentifiable from, CyColumn fromAttr, CyIdentifiable to, CyColumn toAttr);
 
         /**
          *
@@ -91,7 +91,7 @@ public interface AttributeConflictCollector {
          * @param toAttr
          * @return
          */
-        public boolean removeConflicts(CyTableEntry to, CyColumn toAttr);
+        public boolean removeConflicts(CyIdentifiable to, CyColumn toAttr);
 
         /**
          *
@@ -101,5 +101,5 @@ public interface AttributeConflictCollector {
          * @param toAttr
          * @return
          */
-        public boolean removeConflict(CyTableEntry from, CyColumn fromAttr, CyTableEntry to, CyColumn toAttr);
+        public boolean removeConflict(CyIdentifiable from, CyColumn fromAttr, CyIdentifiable to, CyColumn toAttr);
 }

@@ -44,7 +44,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -264,7 +264,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				CyNode node = network.addNode();
 
 				// FIXME this fires too many events!!
-				network.getRow(node).set(CyTableEntry.NAME, label);
+				network.getRow(node).set(CyNetwork.NAME, label);
 
 				nodeIDMap.put(label, node);
 				gml_id2order.put(nodes.get(idx), idx);
@@ -306,7 +306,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				CyNode node_1 = nodeIDMap.get(sourceName);
 				CyNode node_2 = nodeIDMap.get(targetName);
 				CyEdge edge = network.addEdge(node_1, node_2, isDirected.booleanValue());
-				network.getRow(edge).set(CyTableEntry.NAME, edgeName);
+				network.getRow(edge).set(CyNetwork.NAME, edgeName);
 				network.getRow(edge).set("interaction", label);
 				edge_names.add(idx, edge);
 
@@ -490,7 +490,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			} else if (keyVal.key.equals(TITLE) && keyVal.value != null) {
 				CyRow netRow = view.getModel().getRow(view.getModel());
 				String netName = keyVal.value.toString();
-				netRow.set(CyTableEntry.NAME, netName);
+				netRow.set(CyNetwork.NAME, netName);
 			}
 		}
 	}
@@ -559,7 +559,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 */
 	private void layoutNodeGraphics(CyNetworkView netView, List<KeyValue> list, View<CyNode> view) {
 		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
-		CyTableEntry model = view.getModel();
+		CyIdentifiable model = view.getModel();
 
 		for (KeyValue keyVal : list) {
 			String key = keyVal.key;
@@ -625,7 +625,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	@SuppressWarnings("unchecked")
 	private void layoutEdgeGraphics(CyNetworkView netView, List<KeyValue> list, View<CyEdge> view) {
 		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
-		CyTableEntry model = view.getModel();
+		CyIdentifiable model = view.getModel();
 
 		for (KeyValue keyVal : list) {
 			String key = keyVal.key;
@@ -684,7 +684,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 * @param attName
 	 * @return
 	 */
-	protected boolean isLockedVisualProperty(final CyTableEntry element, String attName) {
+	protected boolean isLockedVisualProperty(final CyIdentifiable element, String attName) {
 		// These are NOT locked properties
 		boolean b = !((element instanceof CyNode) && attName.matches("x|y|z"));
 

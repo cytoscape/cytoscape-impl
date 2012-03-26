@@ -47,7 +47,7 @@ import java.util.HashMap;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 import org.cytoscape.work.TaskMonitor;
 
@@ -259,7 +259,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
      * 
      * @return list of map from network to node/edge
      */    
-    private <T extends CyTableEntry> List<Map<CyNetwork,Set<T>>> getMatchedList(final List<CyNetwork> networks, final boolean isNode, Set<Set<CyNode>> matchedNodes) {
+    private <T extends CyIdentifiable> List<Map<CyNetwork,Set<T>>> getMatchedList(final List<CyNetwork> networks, final boolean isNode, Set<Set<CyNode>> matchedNodes) {
         if (networks==null) {
             throw new java.lang.NullPointerException();
         }
@@ -312,7 +312,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 
                         final Set<T> gos2 = matchedGO.get(net2);
                         if (gos2!=null) {
-                        	CyTableEntry go2 = gos2.iterator().next();
+                        	CyIdentifiable go2 = gos2.iterator().next();
                             if (isNode) { //NODE
                                 matched = matchNode(net1, (CyNode)go1, net2, (CyNode)go2);
                                 if (matched) {                                    
@@ -369,7 +369,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
      * 
      * @return list of matched nodes
      */    
-    private <T extends CyTableEntry> List<Map<CyNetwork,Set<T>>> selectMatchedGOList(final List<Map<CyNetwork,Set<T>>> matchedGOList,
+    private <T extends CyIdentifiable> List<Map<CyNetwork,Set<T>>> selectMatchedGOList(final List<Map<CyNetwork,Set<T>>> matchedGOList,
                                                                           final Operation op, 
                                                                           final List<CyNetwork> networks) {
         if (matchedGOList==null || op==null) {

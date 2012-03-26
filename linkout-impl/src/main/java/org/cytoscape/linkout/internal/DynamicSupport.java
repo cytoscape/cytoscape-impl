@@ -45,7 +45,7 @@ import java.util.Map;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
@@ -75,8 +75,8 @@ public class DynamicSupport {
     }
 
 	private Map<String,String> menuTitleURLMap = new HashMap<String,String>();
-	private CyTableEntry[] tableEntries;
-	private CyTableEntry tableEntry2;
+	private CyIdentifiable[] tableEntries;
+	private CyIdentifiable tableEntry2;
 	private CyNetwork network;
 
 	protected final OpenBrowser browser;
@@ -85,7 +85,7 @@ public class DynamicSupport {
 		this.browser = browser;
 	}
 
-	protected synchronized void setURLs(CyNetwork network, CyTableEntry... entries) {
+	protected synchronized void setURLs(CyNetwork network, CyIdentifiable... entries) {
 		this.network = network;
 		menuTitleURLMap.clear();
 		if ( entries == null || network == null) {
@@ -96,7 +96,7 @@ public class DynamicSupport {
 
 		tableEntries = entries; 
 
-		for ( CyTableEntry entry : tableEntries )
+		for ( CyIdentifiable entry : tableEntries )
 			generateExternalLinks(network.getRow(entry), menuTitleURLMap);
 
 		List<String> menuTitles = new ArrayList<String>( menuTitleURLMap.keySet() );

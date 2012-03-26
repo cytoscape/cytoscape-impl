@@ -31,7 +31,7 @@ package org.cytoscape.model.internal;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 

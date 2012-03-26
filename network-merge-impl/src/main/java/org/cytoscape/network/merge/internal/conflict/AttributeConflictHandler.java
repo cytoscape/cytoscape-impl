@@ -40,7 +40,7 @@ package org.cytoscape.network.merge.internal.conflict;
 import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 /**
  *
@@ -56,5 +56,5 @@ public interface AttributeConflictHandler {
          * @return
          *      true if successful, false if failed
          */
-        public boolean handleIt(CyTableEntry to, CyColumn toAttr, Map<CyTableEntry,CyColumn> mapFromGOFromAttr);
+        public boolean handleIt(CyIdentifiable to, CyColumn toAttr, Map<CyIdentifiable,CyColumn> mapFromGOFromAttr);
 }

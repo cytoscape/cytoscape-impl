@@ -51,7 +51,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -116,7 +116,7 @@ public class ReadDataManager {
 	private CyNetwork currentNetwork;
 	private CyNode currentNode;
 	private CyEdge currentEdge;
-	private CyTableEntry currentElement;
+	private CyIdentifiable currentElement;
 	private CyRow currentRow;
 	
 	// Network view format properties
@@ -258,7 +258,7 @@ public class ReadDataManager {
 	 * @param attName The name of the attribute
 	 * @param attValue The value of the attribute
 	 */
-	protected void addGraphicsAttribute(CyTableEntry element, String attName, String attValue) {
+	protected void addGraphicsAttribute(CyIdentifiable element, String attName, String attValue) {
 		if (!ignoreGraphicsAttribute(element, attName)) {
 			Map<Long, Map<String, String>> graphics = null;
 
@@ -300,7 +300,7 @@ public class ReadDataManager {
 		attributes.put(attName, attValue);
 	}
 
-	protected void addGraphicsAttributes(CyTableEntry element, Attributes atts) {
+	protected void addGraphicsAttributes(CyIdentifiable element, Attributes atts) {
 		if (element != null) {
 			final int attrLength = atts.getLength();
 
@@ -324,7 +324,7 @@ public class ReadDataManager {
 		}
 	}
 
-	public Map<String, String> getGraphicsAttributes(CyTableEntry element) {
+	public Map<String, String> getGraphicsAttributes(CyIdentifiable element) {
 		if (element instanceof CyNetwork) return networkGraphics.get(element.getSUID());
 		if (element instanceof CyNode)    return nodeGraphics.get(element.getSUID());
 		if (element instanceof CyEdge)    return edgeGraphics.get(element.getSUID());
@@ -332,7 +332,7 @@ public class ReadDataManager {
 		return null;
 	}
 	
-	public <T extends CyTableEntry> Map<String, String> getViewGraphicsAttributes(Object oldId, boolean locked) {
+	public <T extends CyIdentifiable> Map<String, String> getViewGraphicsAttributes(Object oldId, boolean locked) {
 		return locked ? viewLockedGraphics.get(oldId) : viewGraphics.get(oldId);
 	}
 
@@ -345,7 +345,7 @@ public class ReadDataManager {
 	}
 
 	/**
-	 * Just stores all the equation strings per CyTableEntry and column name.
+	 * Just stores all the equation strings per CyIdentifiable and column name.
 	 * It does not create the real Equation objects yet.
 	 * @param row The network/node/edge row
 	 * @param columnName The name of the column
@@ -510,7 +510,7 @@ public class ReadDataManager {
 			networks.add(net);
 	}
 	
-	protected void addElementLink(String href, Class<? extends CyTableEntry> clazz) {
+	protected void addElementLink(String href, Class<? extends CyIdentifiable> clazz) {
 		Map<CyNetwork, Set<Long>> map = null;
 		Long id = XGMMLParseUtil.getIdFromXLink(href);
 		
@@ -654,11 +654,11 @@ public class ReadDataManager {
 		return groupStack.isEmpty() ? null : groupStack.peek();
 	}
 
-	protected CyTableEntry getCurrentElement() {
+	protected CyIdentifiable getCurrentElement() {
 		return currentElement;
 	}
 	
-	public void setCurrentElement(CyTableEntry entry) {
+	public void setCurrentElement(CyIdentifiable entry) {
 		this.currentElement = entry;
 		
 		if (entry instanceof CyNetwork)
@@ -675,7 +675,7 @@ public class ReadDataManager {
 	 * @param attName The name of the XGMML attribute
 	 * @return
 	 */
-	private boolean ignoreGraphicsAttribute(final CyTableEntry element, String attName) {
+	private boolean ignoreGraphicsAttribute(final CyIdentifiable element, String attName) {
 		boolean b = false;
 		
 		// When reading XGMML as part of a CYS file, these graphics attributes should not be parsed.

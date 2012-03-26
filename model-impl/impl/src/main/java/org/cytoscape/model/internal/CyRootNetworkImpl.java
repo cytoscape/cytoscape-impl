@@ -43,7 +43,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
 import org.cytoscape.model.SUIDFactory;
@@ -121,30 +121,30 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	private void updateRootNetworkTables() {
 		
-		final CyTable edgeSharedTable = tableFactory.createTable(suid + " shared edge", CyTableEntry.SUID, Long.class,
+		final CyTable edgeSharedTable = tableFactory.createTable(suid + " shared edge", CyIdentifiable.SUID, Long.class,
 				publicTables, false, getInitialTableSize(subNetworks.size()));
 		networkTableMgr.setTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS, edgeSharedTable);
 		
 		edgeSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
 				
 		final CyTable networkSharedTable = tableFactory.createTable(suid
-				+ " shared network", CyTableEntry.SUID, Long.class, publicTables, false, InitialTableSize.SMALL);
+				+ " shared network", CyIdentifiable.SUID, Long.class, publicTables, false, InitialTableSize.SMALL);
 		networkTableMgr.setTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS, networkSharedTable);
 		
 		networkSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
 		
-		final CyTable nodeSharedTable = tableFactory.createTable(suid + " shared node", CyTableEntry.SUID, Long.class,
+		final CyTable nodeSharedTable = tableFactory.createTable(suid + " shared node", CyIdentifiable.SUID, Long.class,
 				publicTables, false, getInitialTableSize(subNetworks.size()));
 		networkTableMgr.setTable(this, CyNode.class, CyRootNetwork.SHARED_ATTRS, nodeSharedTable);
 		
 		nodeSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
 		
-		getRow(this).set(CyTableEntry.NAME, "");
+		getRow(this).set(CyNetwork.NAME, "");
 	}
 
 	private void linkDefaultTables(CyTable srcTable, CyTable tgtTable) {
 		// Add all columns from source table as virtual columns in target table.
-		tgtTable.addVirtualColumns(srcTable, CyTableEntry.SUID, true);
+		tgtTable.addVirtualColumns(srcTable, CyIdentifiable.SUID, true);
 
 		// Now add a listener for column created events to add
 		// virtual columns to any subsequent source columns added.

@@ -40,7 +40,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -174,7 +174,7 @@ public class AttributeValueUtil {
     	final boolean isHidden = hiddenStr != null ? Boolean.parseBoolean(hiddenStr) : false;
         
     	final String tableName = isHidden ? CyNetwork.HIDDEN_ATTRS : CyNetwork.DEFAULT_ATTRS;
-		final CyTableEntry curElement = manager.getCurrentElement();
+		final CyIdentifiable curElement = manager.getCurrentElement();
 		CyNetwork curNet = manager.getCurrentNetwork();
         
 		// This is necessary, because external edges of 2.x Groups may be written

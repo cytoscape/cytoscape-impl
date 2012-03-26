@@ -18,7 +18,7 @@ public class CyColumnTest extends AbstractCyColumnTest{
 	}
 	@Before
 	public void setUp (){
-		this.table = new CyTableImpl("homer", CyTableEntry.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
+		this.table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 				eventHelper, interpreter, 1000);
 		table.createColumn("test1", String.class, false);
 	}

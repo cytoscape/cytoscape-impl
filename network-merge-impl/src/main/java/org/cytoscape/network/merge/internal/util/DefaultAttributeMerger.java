@@ -39,7 +39,7 @@ package org.cytoscape.network.merge.internal.util;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
 
@@ -70,7 +70,7 @@ public class DefaultAttributeMerger implements AttributeMerger {
          * @param conflictCollector
          */
         //@Override
-        public <T extends CyTableEntry> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
+        public <T extends CyIdentifiable> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
                                      T toGO, CyColumn toAttr, CyNetwork toNetwork) {
                 if ((mapGOAttr == null) || (toGO == null) || (toAttr == null)) {
                     throw new java.lang.IllegalArgumentException("Null argument.");
