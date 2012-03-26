@@ -42,7 +42,7 @@ import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.ControlType;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
-import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -266,7 +266,7 @@ public class BioPaxVisualStyleUtil {
 	private void createNodeLabel(VisualStyle style) {
 		// create pass through mapper for node labels
 		style.addVisualMappingFunction(passthroughFactory
-				.createVisualMappingFunction(CyNode.NAME, String.class, null,
+				.createVisualMappingFunction(CyNetwork.NAME, String.class, null,
 						BasicVisualLexicon.NODE_LABEL));
 	}
 

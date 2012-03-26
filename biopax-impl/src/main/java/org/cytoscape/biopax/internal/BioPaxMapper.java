@@ -192,7 +192,7 @@ public class BioPaxMapper {
 		AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, Boolean.TRUE, Boolean.class);
 	
 		//  default Quick Find Index
-		AttributeUtil.set(network, network, "quickfind.default_index", CyNode.NAME, String.class);
+		AttributeUtil.set(network, network, "quickfind.default_index", CyNetwork.NAME, String.class);
 
 		// (converted to L3, processed) RDF/XML data
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -706,7 +706,7 @@ public class BioPaxMapper {
 			setChemicalModificationAttributes(network, node, chemicalModificationsWrapper);	
 		}
 		// update the name (also used for node's label and quick find)
-		AttributeUtil.set(network, node, CyNode.NAME, name, String.class);		
+		AttributeUtil.set(network, node, CyNetwork.NAME, name, String.class);		
 		
 		// traverse to create the rest of attr.
 		bpeAutoMapper.traverse(element, model);

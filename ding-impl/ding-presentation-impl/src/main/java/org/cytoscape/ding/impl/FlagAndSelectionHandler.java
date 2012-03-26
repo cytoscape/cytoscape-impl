@@ -43,7 +43,7 @@ import org.cytoscape.ding.NodeView;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,11 +138,11 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 		select(selectedEdges, true);
 	}
 
-	private void select(final Collection<? extends CyTableEntry> nodesOrEdges, final boolean selected) {
+	private void select(final Collection<? extends CyIdentifiable> nodesOrEdges, final boolean selected) {
 		if (nodesOrEdges.isEmpty())
 			return;
 		
-		for (final CyTableEntry nodeOrEdge : nodesOrEdges)
+		for (final CyIdentifiable nodeOrEdge : nodesOrEdges)
 			network.getRow(nodeOrEdge).set(CyNetwork.SELECTED, selected);		
 	}
 

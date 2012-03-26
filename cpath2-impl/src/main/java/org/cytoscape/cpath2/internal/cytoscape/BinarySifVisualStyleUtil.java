@@ -16,6 +16,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.model.CyNetwork;
 
 /**
  * Binary SIF Visual Style.
@@ -170,7 +171,7 @@ public class BinarySifVisualStyleUtil {
 	private void createNodeLabel(VisualStyle style) {
 		// create pass through mapper for node labels
 		style.addVisualMappingFunction(passthroughFactory
-				.createVisualMappingFunction(CyNode.NAME, String.class, null,
+				.createVisualMappingFunction(CyNetwork.NAME, String.class, null,
 						BasicVisualLexicon.NODE_LABEL));
 	}
 }

@@ -59,8 +59,8 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 		nodeName = "Node_"+ new_node_index;		
 		new_node_index++;
 
-		net.getRow(n).set(CyNode.NAME, nodeName);
-		rnm.getRootNetwork(net).getRow(n).set(CyNode.NAME, nodeName);
+		net.getRow(n).set(CyNetwork.NAME, nodeName);
+		rnm.getRootNetwork(net).getRow(n).set(CyNetwork.NAME, nodeName);
 		
 		eh.flushPayloadEvents();
 		View<CyNode> nv = view.getNodeView(n);

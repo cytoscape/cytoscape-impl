@@ -169,7 +169,7 @@ public class BioPaxDetailsPanel extends JPanel {
 		CyRow row = network.getRow(node);
 		
         // name
-        stringRef = row.get(CyNode.NAME, String.class);
+        stringRef = row.get(CyNetwork.NAME, String.class);
         buf.append("<h2>" + stringRef + "</h2>");
 
         // type (to the text buffer)

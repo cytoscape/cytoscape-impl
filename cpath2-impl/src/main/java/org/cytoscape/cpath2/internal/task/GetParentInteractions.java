@@ -28,7 +28,7 @@ public class GetParentInteractions implements Task {
 
     public GetParentInteractions (CyNetwork network, CyNode node, CPath2Factory factory) {
     	// TODO: Debug, investigate this cPath1 (Pathway Commons, BioPAX Level2 webservice specific code...)
-        String cpathId = network.getRow(node).get(CyNode.NAME, String.class); // TODO actually, - must be from "shared name" virtual attr. column
+        String cpathId = network.getRow(node).get(CyNetwork.NAME, String.class); // TODO actually, - must be from "shared name" virtual attr. column
 //        this.cpathId = node.getSUID();
         this.cpathId = Integer.parseInt(cpathId); //well, well
         this.node = node;
@@ -54,7 +54,7 @@ public class GetParentInteractions implements Task {
             CySwingApplication application = factory.getCySwingApplication();
             JDialog dialog = new JDialog(application.getJFrame());
 
-            String nodeLabel = network.getRow(node).get(CyNode.NAME, String.class);
+            String nodeLabel = network.getRow(node).get(CyNetwork.NAME, String.class);
             if (nodeLabel != null) {
                 dialog.setTitle(nodeLabel);
             } else {

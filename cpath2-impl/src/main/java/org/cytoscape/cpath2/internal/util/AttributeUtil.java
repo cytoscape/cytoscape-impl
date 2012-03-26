@@ -6,16 +6,16 @@ import java.util.Map.Entry;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
 public class AttributeUtil {
 	
-	public static void set(CyNetwork network, CyTableEntry entry, String name, Object value, Class<?> type) {
+	public static void set(CyNetwork network, CyIdentifiable entry, String name, Object value, Class<?> type) {
 		set(network, entry, null, name, value, type);
 	}
 
-	public static void copyAttributes(CyNetwork network, CyTableEntry source, CyTableEntry target) {
+	public static void copyAttributes(CyNetwork network, CyIdentifiable source, CyIdentifiable target) {
 		CyRow sourceRow = network.getRow(source);
 		for (Entry<String, Object> entry : sourceRow.getAllValues().entrySet()) {
 			String key = entry.getKey();
@@ -32,7 +32,7 @@ public class AttributeUtil {
 	}
 	
 	
-	public static void set(CyNetwork network, CyTableEntry entry, String tableName, String name, Object value, Class<?> type) {
+	public static void set(CyNetwork network, CyIdentifiable entry, String tableName, String name, Object value, Class<?> type) {
 		CyRow row = (tableName==null) ? network.getRow(entry) : network.getRow(entry,tableName);
 		CyTable table = row.getTable();
 		CyColumn column = table.getColumn(name);

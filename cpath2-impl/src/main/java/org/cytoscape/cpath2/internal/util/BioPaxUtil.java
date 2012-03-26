@@ -724,7 +724,7 @@ public final class BioPaxUtil {
 			setChemicalModificationAttributes(network, node, chemicalModificationsWrapper);	
 		}
 		// update the name (also used for node's label and quick find)
-		AttributeUtil.set(network, node, CyNode.NAME, name, String.class);		
+		AttributeUtil.set(network, node, CyNetwork.NAME, name, String.class);		
 		
 		// traverse to create the rest of attr.
 		bpeAutoMapper.traverse(element, null);

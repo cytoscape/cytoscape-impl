@@ -121,12 +121,12 @@ public class MergeNetworkTask implements Task {
         for (CyNode node : network.getNodeList()) {
             CyNode mergedNode = mergedNetwork.addNode();
             AttributeUtil.copyAttributes(mergedNetwork, node, mergedNode);
-            String name = network.getRow(mergedNode).get(CyNode.NAME, String.class);
+            String name = network.getRow(mergedNode).get(CyNetwork.NAME, String.class);
             newNodes.put(name, mergedNode);
         }
         for (CyEdge edge : network.getEdgeList()) {
-        	String sourceName = network.getRow(edge.getSource()).get(CyNode.NAME, String.class);
-        	String targetName = network.getRow(edge.getTarget()).get(CyNode.NAME, String.class);
+        	String sourceName = network.getRow(edge.getSource()).get(CyNetwork.NAME, String.class);
+        	String targetName = network.getRow(edge.getTarget()).get(CyNetwork.NAME, String.class);
         	CyNode source = newNodes.get(sourceName);
         	CyNode target = newNodes.get(targetName);
             CyEdge mergedEdge = mergedNetwork.addEdge(source, target, true);

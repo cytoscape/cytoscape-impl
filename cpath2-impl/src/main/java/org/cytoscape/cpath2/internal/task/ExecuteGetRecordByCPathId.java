@@ -253,7 +253,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		final CyNetwork cyNetwork = view.getModel();
 
 		// Set the Quick Find Default Index
-		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNode.NAME, String.class);
+		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNetwork.NAME, String.class);
 
 		// Specify that this is a BINARY_NETWORK
 		AttributeUtil.set(cyNetwork, cyNetwork, "BIOPAX_NETWORK", Boolean.TRUE, Boolean.class);
@@ -352,13 +352,13 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		for (CyNode node : cyNetwork.getNodeList()) {
 			CyNode newNode = mergedNetwork.addNode();
 			AttributeUtil.copyAttributes(mergedNetwork, node, newNode);
-			String name = cyNetwork.getRow(node).get(CyNode.NAME, String.class);
+			String name = cyNetwork.getRow(node).get(CyNetwork.NAME, String.class);
 			nodes.put(name, newNode);
 		}
 		Set<CyEdge> edges = new HashSet<CyEdge>();
 		for (CyEdge edge : cyNetwork.getEdgeList()) {
-			String sourceName = cyNetwork.getRow(edge.getSource()).get(CyNode.NAME, String.class);
-			String targetName = cyNetwork.getRow(edge.getTarget()).get(CyNode.NAME, String.class);
+			String sourceName = cyNetwork.getRow(edge.getSource()).get(CyNetwork.NAME, String.class);
+			String targetName = cyNetwork.getRow(edge.getTarget()).get(CyNetwork.NAME, String.class);
 			CyNode source = nodes.get(sourceName);
 			CyNode target = nodes.get(targetName);
 			CyEdge newEdge = mergedNetwork.addEdge(source, target, true);
@@ -420,7 +420,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			Map<String, CyNode> nodes = new HashMap<String, CyNode>();
 			for (int j = 0; j < currentList.size(); j++) {
 				CyNode node = currentList.get(j);
-				String name = cyNetwork.getRow(node).get(CyNode.NAME, String.class);
+				String name = cyNetwork.getRow(node).get(CyNetwork.NAME, String.class);
 				// 'name' is actually a CPATH-ID (for SIF imports)
 				nodes.put(name, node);
 				ids[j] = Long.valueOf(name);
@@ -475,7 +475,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		int counter = 0;
 		for (CyNode node : cyNetwork.getNodeList()) {
 			CyRow row = cyNetwork.getRow(node);
-			String label = row.get(CyNode.NAME, String.class);
+			String label = row.get(CyNetwork.NAME, String.class);
 			if (label != null) {
 				currentList.add(node);
 				counter++;

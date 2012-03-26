@@ -95,7 +95,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
@@ -462,11 +462,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.menuTaskManager = menuTaskManager;
 		this.cyEventHelper = cyEventHelper;
 
-		final CyTable nodeCAM = dataFactory.createTable("node view", CyTableEntry.SUID, Long.class, false, false);
+		final CyTable nodeCAM = dataFactory.createTable("node view", CyIdentifiable.SUID, Long.class, false, false);
 		nodeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.setTable(model, CyNode.class, "VIEW", nodeCAM);
 
-		final CyTable edgeCAM = dataFactory.createTable("edge view", CyTableEntry.SUID, Long.class, false, false);
+		final CyTable edgeCAM = dataFactory.createTable("edge view", CyIdentifiable.SUID, Long.class, false, false);
 		edgeCAM.createColumn("hidden", Boolean.class, false);
 		tableMgr.setTable(model, CyEdge.class, "VIEW", edgeCAM);
 
@@ -498,7 +498,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		logger.debug("Phase 2: Canvas created: time = "
 				+ (System.currentTimeMillis() - start));
 
-		this.title = model.getRow(model).get(CyTableEntry.NAME, String.class);
+		this.title = model.getRow(model).get(CyNetwork.NAME, String.class);
 
 		// Create view model / presentations for the graph
 		for (final CyNode nn : model.getNodeList())
@@ -2836,8 +2836,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
-	public Collection<View<? extends CyTableEntry>> getAllViews() {
-		final Set<View<? extends CyTableEntry>> views = new HashSet<View<? extends CyTableEntry>>();
+	public Collection<View<? extends CyIdentifiable>> getAllViews() {
+		final Set<View<? extends CyIdentifiable>> views = new HashSet<View<? extends CyIdentifiable>>();
 
 		views.addAll(getNodeViews());
 		views.addAll(getEdgeViews());
