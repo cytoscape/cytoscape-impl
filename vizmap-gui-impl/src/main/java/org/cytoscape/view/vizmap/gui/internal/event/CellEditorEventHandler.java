@@ -38,7 +38,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -249,7 +249,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		 * Ignore if not compatible.
 		 */
 		@SuppressWarnings("unchecked")
-		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) editor.getTargetObjectType();
+		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) editor.getTargetObjectType();
 		final CyTable attrForTest = tableMgr.getTable(applicationManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 
 		final Class<K> dataType = (Class<K>)attrForTest.getColumn(ctrAttrName).getType();
@@ -307,7 +307,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 				+ newMapping.getMappingColumnName() + ", "
 				+ vp.getDisplayName());
 
-		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyTableEntry>) vp.getTargetDataType());
+		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyIdentifiable>) vp.getTargetDataType());
 		VizMapperProperty<VisualProperty<V>, String, ?> newRootProp = vizMapPropertySheetBuilder
 				.getPropertyBuilder().buildProperty(newMapping,
 						category.getDisplayName(), propertySheetPanel, factory);
@@ -335,7 +335,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		// This is the currently selected Visual Style.
 		final VisualStyle style = manager.getCurrentVisualStyle();
 		
-		final VisualProperty<Visualizable> startVP = util.getCategory((Class<? extends CyTableEntry>) vp.getTargetDataType());
+		final VisualProperty<Visualizable> startVP = util.getCategory((Class<? extends CyIdentifiable>) vp.getTargetDataType());
 		final VisualMappingFunction<?, ?> currentMapping = style.getVisualMappingFunction(vp);
 		
 		logger.debug("Current Mapping for " + vp.getDisplayName() + " is: " + currentMapping);
@@ -348,7 +348,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			
 			// Mapping does not exist. Need to create new one.
 			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(),
-					(Class<? extends CyTableEntry>) vp.getTargetDataType());
+					(Class<? extends CyIdentifiable>) vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
 			if (factory.getMappingFunctionType() == ContinuousMapping.class) {

@@ -12,7 +12,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
@@ -31,11 +31,11 @@ public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor im
 
 	private static final Logger logger = LoggerFactory.getLogger(AttributeComboBoxPropertyEditor.class);
 
-	private final Class<? extends CyTableEntry> type;
+	private final Class<? extends CyIdentifiable> type;
 
 	private final AttributeSetManager attrManager;
 
-	public AttributeComboBoxPropertyEditor(final Class<? extends CyTableEntry> type,
+	public AttributeComboBoxPropertyEditor(final Class<? extends CyIdentifiable> type,
 			final AttributeSetManager attrManager, final CyApplicationManager appManager) {
 		super();
 		this.attrManager = attrManager;

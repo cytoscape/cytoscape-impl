@@ -36,7 +36,7 @@ import java.util.Map;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
@@ -79,7 +79,7 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#apply(org.cytoscape.view.model.View)
 	 */
 	@Override
-	public void apply(CyRow row, View<? extends CyTableEntry> view) {
+	public void apply(CyRow row, View<? extends CyIdentifiable> view) {
 		if ( row == null )
 			return;
 
@@ -105,11 +105,11 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	 * @param <V>
 	 *            the type-parameter of the View
 	 */
-	private void applyDiscreteMapping(final CyRow row, final View<? extends CyTableEntry> view) {
+	private void applyDiscreteMapping(final CyRow row, final View<? extends CyIdentifiable> view) {
 		
 		V value = null;
 
-		if(attrName.equals(CyTableEntry.SUID)) {
+		if(attrName.equals(CyIdentifiable.SUID)) {
 			// Special case: SUID
 			Object key = Long.valueOf(view.getModel().getSUID());
 			if (key != null)

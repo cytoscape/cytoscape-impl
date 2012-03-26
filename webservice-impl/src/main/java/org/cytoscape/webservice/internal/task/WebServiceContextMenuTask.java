@@ -1,11 +1,11 @@
 package org.cytoscape.webservice.internal.task;
 
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class WebServiceContextMenuTask<T extends CyTableEntry> extends AbstractTask {
+public class WebServiceContextMenuTask<T extends CyIdentifiable> extends AbstractTask {
 	
 	private final View<T> view;
 	

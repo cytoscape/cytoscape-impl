@@ -39,7 +39,7 @@ import javax.swing.JPopupMenu;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.View;
 
 
@@ -80,7 +80,7 @@ public class WebServiceContextMenuManager {
 		addMenu(edgeView, menu);
 	}
 
-	private void addMenu(View<? extends CyTableEntry> view, JPopupMenu menu) {
+	private void addMenu(View<? extends CyIdentifiable> view, JPopupMenu menu) {
 		if (menu == null)
 			menu = new JPopupMenu();
 		else {

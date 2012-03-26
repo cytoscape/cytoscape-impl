@@ -51,7 +51,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -124,13 +124,13 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		final CyNode source = dummyNet.addNode();
 		final CyNode target = dummyNet.addNode();
 
-		dummyNet.getRow(source).set(CyTableEntry.NAME, "Source");
-		dummyNet.getRow(target).set(CyTableEntry.NAME, "Target");
+		dummyNet.getRow(source).set(CyNetwork.NAME, "Source");
+		dummyNet.getRow(target).set(CyNetwork.NAME, "Target");
 
 		final CyEdge edge = dummyNet.addEdge(source, target, true);
-		dummyNet.getRow(edge).set(CyTableEntry.NAME, "Source (interaction) Target");
+		dummyNet.getRow(edge).set(CyNetwork.NAME, "Source (interaction) Target");
 
-		dummyNet.getRow(dummyNet).set(CyTableEntry.NAME, "Default Appearance");
+		dummyNet.getRow(dummyNet).set(CyNetwork.NAME, "Default Appearance");
 		final CyNetworkView dummyview = cyNetworkViewFactory
 				.createNetworkView(dummyNet);
 

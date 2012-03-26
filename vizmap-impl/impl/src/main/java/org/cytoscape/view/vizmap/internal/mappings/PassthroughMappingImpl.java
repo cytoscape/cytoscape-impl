@@ -33,7 +33,7 @@ import java.util.List;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
@@ -66,14 +66,14 @@ public class PassthroughMappingImpl<K, V> extends
 	 * @see org.cytoscape.view.vizmap.mappings.PassthroughMapping#apply(org.cytoscape.view.model.View)
 	 */
 	@Override
-	public void apply(final CyRow row, final View<? extends CyTableEntry> view) {
+	public void apply(final CyRow row, final View<? extends CyIdentifiable> view) {
 		if ( row == null )
 			return;
 
 		if (view == null)
 			return; // empty list, nothing to do
 
-		if(attrName.equals(CyTableEntry.SUID)) {
+		if(attrName.equals(CyIdentifiable.SUID)) {
 			// Special case: SUID
 			view.setVisualProperty(vp, (V)Long.valueOf(view.getModel().getSUID()));
 		} else if (row.isSet(attrName)) {

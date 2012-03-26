@@ -60,7 +60,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -110,8 +110,8 @@ public class DefaultViewEditorImpl extends JDialog implements
 	private static final int ICON_WIDTH = 48;
 	private static final int ICON_HEIGHT = 48;
 
-	private final Map<Class<? extends CyTableEntry>, Set<VisualProperty<?>>> vpSets;
-	private final Map<Class<? extends CyTableEntry>, JList> listMap;
+	private final Map<Class<? extends CyIdentifiable>, Set<VisualProperty<?>>> vpSets;
+	private final Map<Class<? extends CyIdentifiable>, JList> listMap;
 
 	private final CyApplicationManager cyApplicationManager;
 
@@ -160,8 +160,8 @@ public class DefaultViewEditorImpl extends JDialog implements
 		this.vmm = vmm;
 		this.util = util;
 		this.selectedManager = selectedManager;
-		vpSets = new HashMap<Class<? extends CyTableEntry>, Set<VisualProperty<?>>>();
-		listMap = new HashMap<Class<? extends CyTableEntry>, JList>();
+		vpSets = new HashMap<Class<? extends CyIdentifiable>, Set<VisualProperty<?>>>();
+		listMap = new HashMap<Class<? extends CyIdentifiable>, JList>();
 
 		this.cyApplicationManager = cyApplicationManager;
 		this.setModal(true);
@@ -539,7 +539,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 		
 		final VisualLexicon lex = currentEngine.getVisualLexicon();
 		
-		for (Class<? extends CyTableEntry> key : vpSets.keySet()) {
+		for (Class<? extends CyIdentifiable> key : vpSets.keySet()) {
 			final DefaultListModel model = new DefaultListModel();
 			final JList list = listMap.get(key);
 			

@@ -9,7 +9,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 /**
  * Map minimal set of information from MITAB25.
@@ -96,14 +96,14 @@ public class Mitab25Mapper {
 		source = nodeMap.get(sourceID[0]);
 		if(source == null) {
 			source = network.addNode();
-			network.getRow(source).set(CyTableEntry.NAME, sourceIDHalf);
+			network.getRow(source).set(CyNetwork.NAME, sourceIDHalf);
 			network.getRow(source).set(DATABASE_UNIQUE_ID, sourceID[0]);
 			nodeMap.put(sourceID[0], source);
 		}
 		target = nodeMap.get(targetID[0]);
 		if (target == null) {
 			target = network.addNode();
-			network.getRow(target).set(CyTableEntry.NAME, targetIDHalf);
+			network.getRow(target).set(CyNetwork.NAME, targetIDHalf);
 			network.getRow(target).set(DATABASE_UNIQUE_ID, targetID[0]);
 			nodeMap.put(targetID[0], target);
 		}
@@ -134,9 +134,9 @@ public class Mitab25Mapper {
 		interactionType = entry[11].split(SEPARATOR);
 		e = network.addEdge(source, target, true);
 		network.getRow(e).set(
-				CyTableEntry.NAME,
-				network.getRow(source).get(CyTableEntry.NAME, String.class) + " (" + interactionID[0] + ") "
-						+ network.getRow(target).get(CyTableEntry.NAME, String.class));
+				CyNetwork.NAME,
+				network.getRow(source).get(CyNetwork.NAME, String.class) + " (" + interactionID[0] + ") "
+						+ network.getRow(target).get(CyNetwork.NAME, String.class));
 		network.getRow(e).set(CyEdge.INTERACTION, interactionID[0]);
 
 //		setEdgeListAttribute(edgeAttr, e.getIdentifier(), interactionType, INTERACTION_TYPE);

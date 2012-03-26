@@ -6,7 +6,7 @@ import java.util.Set;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.webservice.ncbi.rest.EntrezRestClient;
@@ -61,7 +61,7 @@ public class ImportNetworkFromGeneTask extends AbstractTask {
 		newNetwork = restClient.importNetwork(searchResult, taskMonitor);
 
 		// Register it
-		newNetwork.getRow(newNetwork).set(CyTableEntry.NAME, "NCBI");
+		newNetwork.getRow(newNetwork).set(CyNetwork.NAME, "NCBI");
 		manager.addNetwork(newNetwork);
 	}
 

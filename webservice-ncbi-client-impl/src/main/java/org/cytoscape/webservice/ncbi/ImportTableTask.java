@@ -15,7 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.webservice.ncbi.rest.EntrezRestClient;
 import org.cytoscape.webservice.ncbi.ui.AnnotationCategory;
 import org.slf4j.Logger;
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.cytoscape.model.CyNetwork;
 
 public class ImportTableTask implements Callable<Double> {
 
@@ -148,7 +149,7 @@ public class ImportTableTask implements Callable<Double> {
 
 		// Create row
 		final CyRow row = table.getRow(geneID);
-		row.set(CyTableEntry.NAME, geneID);
+		row.set(CyNetwork.NAME, geneID);
 
 		// First, extract general information.  This will be imported always.
 		

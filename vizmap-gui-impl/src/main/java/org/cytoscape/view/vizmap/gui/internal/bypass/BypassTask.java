@@ -4,7 +4,7 @@ import java.awt.Component;
 
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -18,7 +18,7 @@ import org.cytoscape.work.TaskMonitor;
  * 
  * @param <T>
  */
-public class BypassTask<T extends CyTableEntry> extends AbstractTask {
+public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 
 	// Target view object. Node or Edge.
 	private final View<T> view;

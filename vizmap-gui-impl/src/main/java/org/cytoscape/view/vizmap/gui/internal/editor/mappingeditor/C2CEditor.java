@@ -4,7 +4,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -28,7 +28,7 @@ public class C2CEditor extends AbstractContinuousMappingEditor<Number, Number> {
 		// TODO: error chekcing
 		mapping = (ContinuousMapping<Number, Number>) value;
 		@SuppressWarnings("unchecked")
-		Class<? extends CyTableEntry> type = (Class<? extends CyTableEntry>) mapping.getVisualProperty().getTargetDataType();
+		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) mapping.getVisualProperty().getTargetDataType();
 		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 		this.editorPanel = new C2CMappingEditorPanel(selectedManager.getCurrentVisualStyle(), mapping, attr, appManager, vmm);		
 	}

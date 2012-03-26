@@ -51,7 +51,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.Range;
@@ -245,7 +245,7 @@ public class EditorManagerImpl implements EditorManager {
 	 * Editor name is NODE, EDGE, or NETWORK.
 	 */
 	@Override
-	public PropertyEditor getDataTableComboBoxEditor(final Class<? extends CyTableEntry> targetObjectType) {
+	public PropertyEditor getDataTableComboBoxEditor(final Class<? extends CyIdentifiable> targetObjectType) {
 
 		final ListEditor editor = attrComboBoxEditors.get(targetObjectType);
 

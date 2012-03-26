@@ -11,7 +11,7 @@ import javax.swing.JOptionPane;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -107,7 +107,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		for (String sourceURL : result.keySet()) {
 			final CyNetwork network = result.get(sourceURL);
-			network.getRow(network).set(CyTableEntry.NAME, registryManager.getSource2NameMap().get(sourceURL) + " " + suffix);
+			network.getRow(network).set(CyNetwork.NAME, registryManager.getSource2NameMap().get(sourceURL) + " " + suffix);
 			addNetworkData(network);
 			manager.addNetwork(network);
 			networks.add(network);

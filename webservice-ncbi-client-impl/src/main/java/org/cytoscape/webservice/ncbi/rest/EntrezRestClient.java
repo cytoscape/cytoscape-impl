@@ -24,7 +24,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.webservice.ncbi.ImportTableTask;
@@ -166,7 +166,7 @@ public class EntrezRestClient {
 		logger.debug("Table Import Executor initialized.");
 		final Date currentDate = new Date();
 		final CyTable table = tableFactory.createTable("NCBI Global Table: " + currentDate.toString(),
-				CyTableEntry.NAME, String.class, true, true);
+				CyNetwork.NAME, String.class, true, true);
 
 		int group = 0;
 		int buketNum = 10;

@@ -48,7 +48,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -147,13 +147,13 @@ public class VizMapPropertyBuilder {
 
 		final Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
 
-		final Map<CyNetwork,Set<CyTableEntry>> graphObjectSet = new HashMap<CyNetwork,Set<CyTableEntry>>();
+		final Map<CyNetwork,Set<CyIdentifiable>> graphObjectSet = new HashMap<CyNetwork,Set<CyIdentifiable>>();
 		for (CyNetwork targetNetwork : networks) {
-			Iterator<? extends CyTableEntry> it = null;
-			graphObjectSet.put(targetNetwork, new HashSet<CyTableEntry>());
+			Iterator<? extends CyIdentifiable> it = null;
+			graphObjectSet.put(targetNetwork, new HashSet<CyIdentifiable>());
 
 			((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(topProperty,
-					editorManager.getDataTableComboBoxEditor((Class<? extends CyTableEntry>) vp.getTargetDataType()));
+					editorManager.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) vp.getTargetDataType()));
 			if (vp.getTargetDataType().equals(CyNode.class)) {
 				it = targetNetwork.getNodeList().iterator();
 			} else if (vp.getTargetDataType().equals(CyEdge.class)) {
@@ -177,7 +177,7 @@ public class VizMapPropertyBuilder {
 			final SortedSet<K> attrSet = new TreeSet<K>();
 
 			for (CyNetwork net : graphObjectSet.keySet()) {
-				for (CyTableEntry go : graphObjectSet.get(net)) {
+				for (CyIdentifiable go : graphObjectSet.get(net)) {
 					final CyRow row = net.getRow(go);
 					final CyTable table = row.getTable();
 					final CyColumn column = table.getColumn(attrName);
@@ -244,15 +244,15 @@ public class VizMapPropertyBuilder {
 			String stringVal;
 
 			for (CyNetwork net : graphObjectSet.keySet()) {
-			for (CyTableEntry go : graphObjectSet.get(net)) {
+			for (CyIdentifiable go : graphObjectSet.get(net)) {
 				CyColumn column = net.getRow(go).getTable().getColumn(attrName);
 
 				if (column != null) {
 					Class<?> attrClass = column.getType();
 
-					id = net.getRow(go).get(CyTableEntry.NAME, String.class);
+					id = net.getRow(go).get(CyNetwork.NAME, String.class);
 
-					if (attrName.equals(CyTableEntry.SUID))
+					if (attrName.equals(CyIdentifiable.SUID))
 						value = go.getSUID();
 					else if (attrClass.isAssignableFrom(List.class))
 						value = net.getRow(go).getList(attrName, column.getListElementType());

@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
@@ -29,9 +29,9 @@ import org.cytoscape.view.vizmap.VisualStyle;
  */
 public class VizMapperUtil {
 	
-	private static final Map<Class<? extends CyTableEntry>, VisualProperty<Visualizable>> TARGET_TYPE_MAP;
+	private static final Map<Class<? extends CyIdentifiable>, VisualProperty<Visualizable>> TARGET_TYPE_MAP;
 	static {
-		TARGET_TYPE_MAP = new HashMap<Class<? extends CyTableEntry>, VisualProperty<Visualizable>>();
+		TARGET_TYPE_MAP = new HashMap<Class<? extends CyIdentifiable>, VisualProperty<Visualizable>>();
 		TARGET_TYPE_MAP.put(CyNode.class, BasicVisualLexicon.NODE);
 		TARGET_TYPE_MAP.put(CyEdge.class, BasicVisualLexicon.EDGE);
 		TARGET_TYPE_MAP.put(CyNetwork.class, BasicVisualLexicon.NETWORK);
@@ -94,7 +94,7 @@ public class VizMapperUtil {
 		}
 	}
 	
-	public VisualProperty<Visualizable> getCategory(Class<? extends CyTableEntry> targetDataType) {
+	public VisualProperty<Visualizable> getCategory(Class<? extends CyIdentifiable> targetDataType) {
 		return TARGET_TYPE_MAP.get(targetDataType);
 	}
 	

@@ -17,7 +17,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -238,7 +238,7 @@ public class VizMapPropertySheetBuilder {
 				((PropertyEditorRegistry) this.propertySheetPanel
 						.getTable().getEditorFactory())
 						.registerEditor(calculatorTypeProp, editorManager
-								.getDataTableComboBoxEditor((Class<? extends CyTableEntry>) targetVP.getTargetDataType()));
+								.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) targetVP.getTargetDataType()));
 			}
 			props.add(calculatorTypeProp);
 		}

@@ -17,7 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class ImportNetworkTask implements Callable<Double> {
 
 		// This is the center of spokes
 		final CyNode centerNode = network.addNode();
-		network.getRow(centerNode).set(CyTableEntry.NAME, geneIDString);
+		network.getRow(centerNode).set(CyNetwork.NAME, geneIDString);
 		this.nodeName2CyNodeMap.put(geneIDString, centerNode);
 
 		final NodeList ids = result.getElementsByTagName("Gene-commentary");
@@ -154,14 +154,14 @@ public class ImportNetworkTask implements Callable<Double> {
 						nodeName2CyNodeMap.put(id, targetNode);
 					}
 
-					network.getRow(targetNode).set(CyTableEntry.NAME, id);
+					network.getRow(targetNode).set(CyNetwork.NAME, id);
 					logger.debug("New Node Name = " + id);
 					final CyEdge newEdge = network.addEdge(centerNode, targetNode, false);
 					network.getRow(newEdge).set(
-							CyTableEntry.NAME,
-							network.getRow(centerNode).get(CyTableEntry.NAME, String.class) + " ("
+							CyNetwork.NAME,
+							network.getRow(centerNode).get(CyNetwork.NAME, String.class) + " ("
 									+ processor.getInteractionType() + ") "
-									+ network.getRow(targetNode).get(CyTableEntry.NAME, String.class));
+									+ network.getRow(targetNode).get(CyNetwork.NAME, String.class));
 				}
 			}
 		}

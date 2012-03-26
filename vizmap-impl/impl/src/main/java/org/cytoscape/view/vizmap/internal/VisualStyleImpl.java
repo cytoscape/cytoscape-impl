@@ -41,7 +41,7 @@ import java.util.Map;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -63,7 +63,7 @@ public class VisualStyleImpl implements VisualStyle {
 
 	private final VisualLexiconManager lexManager;
 	
-	private final Map<Class<? extends CyTableEntry>, ApplyHandler> applyHandlersMap;
+	private final Map<Class<? extends CyIdentifiable>, ApplyHandler> applyHandlersMap;
 
 	private String title;
 
@@ -88,7 +88,7 @@ public class VisualStyleImpl implements VisualStyle {
 		styleDefaults = new HashMap<VisualProperty<?>, Object>();
 		
 		// Init Apply handlers for node, egde and network.
-		this.applyHandlersMap = new HashMap<Class<? extends CyTableEntry>, ApplyHandler>();
+		this.applyHandlersMap = new HashMap<Class<? extends CyIdentifiable>, ApplyHandler>();
 		applyHandlersMap.put(CyNetwork.class, new ApplyToNetworkHandler(this, lexManager));
 		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager));
 		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager));
@@ -143,7 +143,7 @@ public class VisualStyleImpl implements VisualStyle {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void apply(final View<? extends CyTableEntry> view) {
+	public void apply(final View<? extends CyIdentifiable> view) {
 		if (view == null) {
 			logger.warn("Tried to apply Visual Style to null view");
 			return;
@@ -171,7 +171,7 @@ public class VisualStyleImpl implements VisualStyle {
 //	 * {@inheritDoc}
 //	 */
 //	@Override
-//	public void apply(final View<? extends CyTableEntry> view) {
+//	public void apply(final View<? extends CyIdentifiable> view) {
 //		if (view == null) {
 //			logger.warn("Tried to apply Visual Style to null view");
 //			return;
@@ -211,7 +211,7 @@ public class VisualStyleImpl implements VisualStyle {
 			final CyNetwork net = networkView.getModel();
 
 			for (View<?> v : views) {
-				View<? extends CyTableEntry> view = (View<? extends CyTableEntry>)v;
+				View<? extends CyIdentifiable> view = (View<? extends CyIdentifiable>)v;
 				mapping.apply( net.getRow( view.getModel() ), view);
 				
 				if (view.getVisualProperty(vp) == vpDefault)

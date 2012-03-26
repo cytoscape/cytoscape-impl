@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -30,7 +30,7 @@ public class ApplyToNodeHandler extends AbstractApplyHandler {
 	 * @param vp
 	 */
 	@Override
-	protected void applyMappedValue(final View<? extends CyTableEntry> nodeView, final VisualProperty<?> vp,
+	protected void applyMappedValue(final View<? extends CyIdentifiable> nodeView, final VisualProperty<?> vp,
 			final VisualMappingFunction<?, ?> mapping) {
 		
 		final View<CyNode> view = (View<CyNode>) nodeView;
