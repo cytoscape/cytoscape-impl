@@ -10,7 +10,7 @@ import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -56,9 +56,9 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 						final CyEdge newEdge = network.addEdge(source, target, false);
 						newEdges.add(newEdge);
 						network.getRow(newEdge).set(
-							CyTableEntry.NAME,
-							network.getRow(source).get(CyTableEntry.NAME, String.class) + " (" + INTERACTION + ") "
-							+ network.getRow(target).get(CyTableEntry.NAME, String.class));
+							CyNetwork.NAME,
+							network.getRow(source).get(CyNetwork.NAME, String.class) + " (" + INTERACTION + ") "
+							+ network.getRow(target).get(CyNetwork.NAME, String.class));
 						network.getRow(newEdge).set(CyEdge.INTERACTION, INTERACTION);
 					}
 				}

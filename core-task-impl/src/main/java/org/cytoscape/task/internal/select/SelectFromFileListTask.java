@@ -41,7 +41,7 @@ import java.util.Set;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ProvidesTitle;
@@ -95,7 +95,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 			// Loop through all the node of the graph selecting those in the file:
 			List<CyNode> nodeList = network.getNodeList();
 			for (final CyNode node : nodeList) {
-				if (fileNodes.contains(network.getRow(node).get(CyTableEntry.NAME, String.class)))
+				if (fileNodes.contains(network.getRow(node).get(CyNetwork.NAME, String.class)))
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 			}
 			tm.setProgress(0.8);

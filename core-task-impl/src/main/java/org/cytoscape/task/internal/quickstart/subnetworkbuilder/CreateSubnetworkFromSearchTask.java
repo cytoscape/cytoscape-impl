@@ -8,7 +8,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.task.internal.select.SelectFirstNeighborsTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
@@ -53,7 +53,7 @@ public class CreateSubnetworkFromSearchTask extends AbstractTask {
 		boolean found = false;
 		List<CyNode> nodeList = target.getNodeList();
 		for (final CyNode node : nodeList) {
-			final String nodeName = target.getRow(node).get(CyTableEntry.NAME, String.class);
+			final String nodeName = target.getRow(node).get(CyNetwork.NAME, String.class);
 
 			if (geneList.contains(nodeName) && state.getDiseaseGenes().contains(nodeName)) {
 				target.getRow(node).set(CyNetwork.SELECTED, true);

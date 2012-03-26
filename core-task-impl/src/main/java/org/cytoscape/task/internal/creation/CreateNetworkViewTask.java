@@ -32,7 +32,7 @@ package org.cytoscape.task.internal.creation;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -113,7 +113,7 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 
 		} catch (Exception e) {
 			throw new Exception("Could not create network view for network: "
-				+ network.getRow(network).get(CyTableEntry.NAME, String.class), e);
+				+ network.getRow(network).get(CyNetwork.NAME, String.class), e);
 		}
 
 		if (undoSupport != null)
@@ -121,7 +121,7 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 		
 		taskMonitor.setProgress(1.0d);
 		taskMonitor.setStatusMessage("Network view successfully create for:  "
-				+ network.getRow(network).get(CyTableEntry.NAME, String.class));
+				+ network.getRow(network).get(CyNetwork.NAME, String.class));
 		
 		logger.info("Network view creation finished in " + (System.currentTimeMillis() -start) + " msec.");
 	}

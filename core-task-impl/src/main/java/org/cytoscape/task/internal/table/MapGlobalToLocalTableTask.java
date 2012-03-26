@@ -10,7 +10,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -79,9 +79,9 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 		if (globalTable.getPrimaryKey().getType() != String.class)
 			throw new IllegalStateException("Local table's primary key should be type String!");
 
-		final CyColumn trgCol = localTable.getColumn(CyTableEntry.NAME);
+		final CyColumn trgCol = localTable.getColumn(CyNetwork.NAME);
 		if (trgCol != null)
-			localTable.addVirtualColumns(globalTable, CyTableEntry.NAME, false);
+			localTable.addVirtualColumns(globalTable, CyNetwork.NAME, false);
 	}
 
 }

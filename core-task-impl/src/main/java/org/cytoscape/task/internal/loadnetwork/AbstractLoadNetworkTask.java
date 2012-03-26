@@ -38,7 +38,7 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.loadnetwork.NetworkURLLoader;
 import org.cytoscape.view.model.CyNetworkView;

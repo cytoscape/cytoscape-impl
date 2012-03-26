@@ -2,7 +2,7 @@ package org.cytoscape.task.internal.title;
 
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.undo.AbstractCyEdit;
 
 
@@ -19,14 +19,14 @@ final class NetworkTitleEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		final String savedTitle = network.getRow(network).get(CyTableEntry.NAME, String.class);
-		network.getRow(network).set(CyTableEntry.NAME, previousTitle);
+		final String savedTitle = network.getRow(network).get(CyNetwork.NAME, String.class);
+		network.getRow(network).set(CyNetwork.NAME, previousTitle);
 		previousTitle = savedTitle;
 	}
 
 	public void undo() {
-		final String savedTitle = network.getRow(network).get(CyTableEntry.NAME, String.class);
-		network.getRow(network).set(CyTableEntry.NAME, previousTitle);
+		final String savedTitle = network.getRow(network).get(CyNetwork.NAME, String.class);
+		network.getRow(network).set(CyNetwork.NAME, previousTitle);
 		previousTitle = savedTitle;
 	}
 }

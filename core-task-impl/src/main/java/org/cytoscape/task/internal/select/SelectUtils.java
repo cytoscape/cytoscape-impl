@@ -42,7 +42,7 @@ import java.util.Collection;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 final class SelectUtils {
 
@@ -54,9 +54,9 @@ final class SelectUtils {
 		setSelected(network,edges, select);
 	}
 
-	private void setSelected(final CyNetwork network, final Collection<? extends CyTableEntry> objects, final boolean select) {
+	private void setSelected(final CyNetwork network, final Collection<? extends CyIdentifiable> objects, final boolean select) {
 
-		for (final CyTableEntry nodeOrEdge : objects)
+		for (final CyIdentifiable nodeOrEdge : objects)
 			network.getRow(nodeOrEdge).set(CyNetwork.SELECTED, select);
 	}
 }

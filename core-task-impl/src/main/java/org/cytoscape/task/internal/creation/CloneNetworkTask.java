@@ -42,7 +42,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -115,8 +115,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 			cloneNodes(origNet, newNet);
 			cloneEdges(origNet, newNet);
 
-			newNet.getRow(newNet).set(CyTableEntry.NAME,
-					naming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyTableEntry.NAME, String.class)));
+			newNet.getRow(newNet).set(CyNetwork.NAME,
+					naming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyNetwork.NAME, String.class)));
 		return newNet;
 	}
 

@@ -32,7 +32,7 @@ package org.cytoscape.task.internal.title;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -63,7 +63,7 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		this.undoSupport = undoSupport;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 		this.cyNetworkNamingServiceRef = cyNetworkNamingServiceRef;
-		title = network.getRow(network).get(CyTableEntry.NAME, String.class);		
+		title = network.getRow(network).get(CyNetwork.NAME, String.class);		
 	}
 
 	@Override
@@ -96,9 +96,9 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 	
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
-		final String oldTitle = network.getRow(network).get(CyTableEntry.NAME, String.class);
+		final String oldTitle = network.getRow(network).get(CyNetwork.NAME, String.class);
 		e.setProgress(0.3);
-		network.getRow(network).set(CyTableEntry.NAME, title);
+		network.getRow(network).set(CyNetwork.NAME, title);
 		e.setProgress(0.6);
 		undoSupport.postEdit(
 			new NetworkTitleEdit(network, oldTitle));

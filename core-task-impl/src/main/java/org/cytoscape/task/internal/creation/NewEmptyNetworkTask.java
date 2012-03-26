@@ -34,7 +34,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -74,7 +74,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		tm.setProgress(0.0);
 		final CyNetwork newNet = cnf.createNetwork();
 		tm.setProgress(0.2);
-		newNet.getRow(newNet).set(CyTableEntry.NAME, namingUtil.getSuggestedNetworkTitle("Network"));
+		newNet.getRow(newNet).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle("Network"));
 		tm.setProgress(0.4);
 		view = cnvf.createNetworkView(newNet);		
 		tm.setProgress(0.6);

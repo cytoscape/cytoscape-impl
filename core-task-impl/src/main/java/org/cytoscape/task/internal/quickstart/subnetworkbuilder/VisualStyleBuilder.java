@@ -3,7 +3,7 @@ package org.cytoscape.task.internal.quickstart.subnetworkbuilder;
 import java.awt.Color;
 import java.awt.Paint;
 
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -12,6 +12,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.model.CyNetwork;
 
 import static org.cytoscape.task.internal.quickstart.subnetworkbuilder.CreateSubnetworkFromSearchTask.*;
 
@@ -132,7 +133,7 @@ public class VisualStyleBuilder {
 
 	// Label Mapping.
 	final VisualMappingFunction<String, String> nodeLabelMapping = ptFactory.createVisualMappingFunction(
-		CyTableEntry.NAME, String.class, null, BasicVisualLexicon.NODE_LABEL);
+		CyNetwork.NAME, String.class, null, BasicVisualLexicon.NODE_LABEL);
 	newStyle.addVisualMappingFunction(nodeLabelMapping);
 
 	return newStyle;

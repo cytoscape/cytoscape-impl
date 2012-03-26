@@ -10,7 +10,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableEntry;
+import org.cytoscape.model.CyIdentifiable;
 
 
 /** An undoable edit that will undo and redo the connecting of selected nodes. */
@@ -33,10 +33,10 @@ final class ConnectSelectedNodesEdit extends AbstractCyEdit {
 			final CyNode source = edge.getSource();
 			final CyNode target = edge.getTarget();
 			final CyEdge newEdge = network.addEdge(source, target, /* isDirected = */ false);
-			network.getRow(newEdge).set(CyTableEntry.NAME,
-			                       network.getRow(source).get(CyTableEntry.NAME, String.class)
+			network.getRow(newEdge).set(CyNetwork.NAME,
+			                       network.getRow(source).get(CyNetwork.NAME, String.class)
 			                       + " (" + ConnectSelectedNodesTask.INTERACTION + ") "
-			                       + network.getRow(target).get(CyTableEntry.NAME, String.class));
+			                       + network.getRow(target).get(CyNetwork.NAME, String.class));
 			network.getRow(newEdge).set(CyEdge.INTERACTION, ConnectSelectedNodesTask.INTERACTION);
 			newEdges.add(newEdge);
 		}
