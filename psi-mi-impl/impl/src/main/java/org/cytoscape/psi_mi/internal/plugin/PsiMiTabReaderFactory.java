@@ -4,14 +4,14 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class PsiMiTabReaderFactory extends SimpleInputStreamTaskFactory {
+public class PsiMiTabReaderFactory extends AbstractInputStreamTaskFactory {
 
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final CyNetworkFactory cyNetworkFactory;

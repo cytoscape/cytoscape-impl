@@ -17,7 +17,7 @@ import org.cytoscape.work.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenericReaderManager<T extends InputStreamTaskFactory<?>, R extends Task>  {
+public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Task>  {
 	
 	private static final Logger logger = LoggerFactory.getLogger( GenericReaderManager.class ); 
 	
@@ -90,7 +90,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory<?>, R extends
 					}
 					
 					
-					return (R) factory.createTaskIterator(null, stream, inputName).next();
+					return (R) factory.createTaskIterator(stream, inputName).next();
 				} catch (IOException e) {
 					logger.warn("Error opening stream to URI: " + uri.toString(), e);
 				}
@@ -116,7 +116,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory<?>, R extends
 				// of the first 2KB rather than the stream itself. 
 				if (cff.accepts(CopyInputStream.copyKBytes(stream,1), category)) {
 					logger.debug("successfully matched READER " + factory);
-					return (R)factory.createTaskIterator(null, stream, inputName).next();	
+					return (R)factory.createTaskIterator(stream, inputName).next();	
 				}
 			}
 		} catch (IOException ioe) {

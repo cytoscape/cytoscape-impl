@@ -34,13 +34,13 @@ import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskIterator;
 
-public class Cy3SessionReaderFactoryImpl extends SimpleInputStreamTaskFactory {
+public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory {
 
 	private final ReadCache cache;
 	private final CyNetworkReaderManager networkReaderMgr;

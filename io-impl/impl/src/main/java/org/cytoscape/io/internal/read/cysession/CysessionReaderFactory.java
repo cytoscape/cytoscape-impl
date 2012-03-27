@@ -31,11 +31,11 @@ package org.cytoscape.io.internal.read.cysession;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class CysessionReaderFactory extends SimpleInputStreamTaskFactory {
+public class CysessionReaderFactory extends AbstractInputStreamTaskFactory {
 
 
 	public CysessionReaderFactory( CyFileFilter filter ) {

@@ -3,12 +3,12 @@ package org.cytoscape.sbml.internal;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SBMLNetworkViewTaskFactory extends SimpleInputStreamTaskFactory {
+public class SBMLNetworkViewTaskFactory extends AbstractInputStreamTaskFactory {
 
 	private final CyNetworkFactory networkFactory;
 	private final CyNetworkViewFactory viewFactory;

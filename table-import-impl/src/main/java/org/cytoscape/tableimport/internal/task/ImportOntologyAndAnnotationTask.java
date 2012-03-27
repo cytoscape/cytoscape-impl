@@ -50,7 +50,7 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		logger.debug("Start");
-		Task loadOBOTask = factory.createTaskIterator(null, is, ontologyDagName).next();
+		Task loadOBOTask = factory.createTaskIterator(is, ontologyDagName).next();
 		
 		final GeneAssociationReader gaReader =
 			new GeneAssociationReader(tableFactory, ontologyDagName, gaStream,

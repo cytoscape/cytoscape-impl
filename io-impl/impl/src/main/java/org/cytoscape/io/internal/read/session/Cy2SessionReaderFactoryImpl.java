@@ -33,12 +33,12 @@ import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskIterator;
 
-public class Cy2SessionReaderFactoryImpl extends SimpleInputStreamTaskFactory {
+public class Cy2SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory {
 
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;

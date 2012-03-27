@@ -1,11 +1,11 @@
 package org.cytoscape.tableimport.internal;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyTableFactory;
 
 // Copy from io-impl
-public abstract class AbstractTableReaderFactory extends SimpleInputStreamTaskFactory {
+public abstract class AbstractTableReaderFactory extends AbstractInputStreamTaskFactory {
 
 	protected final CyTableFactory tableFactory;
 

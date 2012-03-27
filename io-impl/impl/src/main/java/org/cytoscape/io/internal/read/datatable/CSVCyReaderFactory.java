@@ -5,13 +5,13 @@ import java.io.InputStream;
 
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskIterator;
 
 
-public class CSVCyReaderFactory extends SimpleInputStreamTaskFactory {
+public class CSVCyReaderFactory extends AbstractInputStreamTaskFactory {
 	private final boolean readSchema;
 	private final boolean handleEquations;
 	private final CyTableFactory tableFactory;

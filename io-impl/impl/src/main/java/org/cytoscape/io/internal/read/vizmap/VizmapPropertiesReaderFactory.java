@@ -31,11 +31,11 @@ import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class VizmapPropertiesReaderFactory extends SimpleInputStreamTaskFactory {
+public class VizmapPropertiesReaderFactory extends AbstractInputStreamTaskFactory {
 
     private final VisualStyleSerializer visualStyleSerializer;
     

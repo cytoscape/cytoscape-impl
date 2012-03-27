@@ -3,14 +3,14 @@ package org.cytoscape.io.internal.read.graphml;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class GraphMLReaderFactory extends SimpleInputStreamTaskFactory {
+public class GraphMLReaderFactory extends AbstractInputStreamTaskFactory {
 
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final CyNetworkFactory cyNetworkFactory;

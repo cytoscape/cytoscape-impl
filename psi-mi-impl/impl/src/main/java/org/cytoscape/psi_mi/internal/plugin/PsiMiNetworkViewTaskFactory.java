@@ -3,14 +3,14 @@ package org.cytoscape.psi_mi.internal.plugin;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiCyFileFilter.PSIMIVersion;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class PsiMiNetworkViewTaskFactory extends SimpleInputStreamTaskFactory {	
+public class PsiMiNetworkViewTaskFactory extends AbstractInputStreamTaskFactory {	
 	private final CyNetworkViewFactory networkViewFactory;
 	private final CyNetworkFactory networkFactory;
 	private final CyLayoutAlgorithmManager layouts;

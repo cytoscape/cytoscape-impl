@@ -31,11 +31,11 @@ package org.cytoscape.io.internal.read.bookmarks;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class BookmarkReaderFactory extends SimpleInputStreamTaskFactory {
+public class BookmarkReaderFactory extends AbstractInputStreamTaskFactory {
 
 
 	public BookmarkReaderFactory( CyFileFilter filter ) {

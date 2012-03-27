@@ -31,11 +31,11 @@ package org.cytoscape.io.internal.read.properties;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class PropertiesReaderFactory extends SimpleInputStreamTaskFactory {
+public class PropertiesReaderFactory extends AbstractInputStreamTaskFactory {
 
 
 	public PropertiesReaderFactory( CyFileFilter filter ) {

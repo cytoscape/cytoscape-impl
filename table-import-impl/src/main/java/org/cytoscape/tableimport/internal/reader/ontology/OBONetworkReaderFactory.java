@@ -4,13 +4,13 @@ import java.io.InputStream;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.SimpleInputStreamTaskFactory;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class OBONetworkReaderFactory extends SimpleInputStreamTaskFactory {
+public class OBONetworkReaderFactory extends AbstractInputStreamTaskFactory {
 
 	protected final CyNetworkViewFactory cyNetworkViewFactory;
 	protected final CyNetworkFactory cyNetworkFactory;
