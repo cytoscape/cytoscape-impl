@@ -93,24 +93,12 @@ public class Parser {
 		              .withDescription( "Load a network file (any format).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("N"));
-
+		
 		opt.addOption(OptionBuilder
-		              .withLongOpt("edge-table")
-		              .withDescription("Load an edge attributes table file (any table format).")
+		              .withLongOpt("table")
+		              .withDescription("Load an attribute table file (any table format).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("e"));
-
-		opt.addOption(OptionBuilder
-		              .withLongOpt("node-table")
-		              .withDescription("Load a node attributes table file (any table format).")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("n"));
-
-		opt.addOption(OptionBuilder
-		              .withLongOpt("global-table")
-		              .withDescription("Load a global attributes table file (any table format).")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("g"));
+		              .create("T"));
 
 		opt.addOption(OptionBuilder
 		              .withLongOpt("plugin")
@@ -196,14 +184,8 @@ public class Parser {
 			if (line.hasOption("V"))
 				startupConfig.setVizMapProps(line.getOptionValues("V"));
 
-			if (line.hasOption("n"))
-				startupConfig.setNodeTables(line.getOptionValues("n"));
-
-			if (line.hasOption("e"))
-				startupConfig.setEdgeTables(line.getOptionValues("e"));
-
-			if (line.hasOption("g"))
-				startupConfig.setGlobalTables(line.getOptionValues("g"));
+			if (line.hasOption("T"))
+				startupConfig.setTables(line.getOptionValues("T"));
 		}
 	}
 

@@ -111,6 +111,10 @@
 			<artifactId>cmdline</artifactId>
 			<version>${cytoscape.support.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>core-task-api</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

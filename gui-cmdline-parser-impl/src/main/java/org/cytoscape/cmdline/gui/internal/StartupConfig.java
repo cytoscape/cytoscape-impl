@@ -33,12 +33,26 @@ package org.cytoscape.cmdline.gui.internal;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.task.loaddatatable.AttributesFileLoader;
+import org.cytoscape.task.loaddatatable.AttributesURLLoader;
+import org.cytoscape.task.loadnetwork.NetworkFileLoader;
+import org.cytoscape.task.loadnetwork.NetworkURLLoader;
+import org.cytoscape.task.loadvizmap.LoadVisualStyles;
+import org.cytoscape.task.session.LoadSession;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 
 import java.util.Properties;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -47,7 +61,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 public class StartupConfig {
 	private static final Logger logger = LoggerFactory.getLogger(StartupConfig.class);
 
@@ -55,10 +68,36 @@ public class StartupConfig {
 	private final Properties localProps = new Properties(); 
 	private final StreamUtil streamUtil; 
 	private boolean taskStart = false;
+	private LoadSession loadSession;
+	private NetworkFileLoader networkFileLoader;
+	private NetworkURLLoader networkURLLoader;
+	private LoadVisualStyles visualStylesLoader;
+	private AttributesURLLoader attributesURLLoader;
+	private AttributesFileLoader attributesFileLoader;
+	private final TaskManager taskManager;
+	
+	private File sessionName;
+	private ArrayList<File> networkFiles;
+	private ArrayList<URL> networkURLs;
+	private ArrayList<File> vizmapFiles;
+	private ArrayList<File> tableFiles;
+	private ArrayList<URL> tableURLs;
 
-	public StartupConfig(Properties globalProps, StreamUtil streamUtil) {
+	public StartupConfig(Properties globalProps, StreamUtil streamUtil, 
+			LoadSession loadSession, NetworkFileLoader networkFileLoader,
+			NetworkURLLoader networkURLLoader, LoadVisualStyles visualStylesLoader, TaskManager taskManager) {
 		this.globalProps = globalProps;
 		this.streamUtil = streamUtil;
+		this.loadSession = loadSession;
+		this.networkFileLoader = networkFileLoader;
+		this.networkURLLoader = networkURLLoader;
+		this.visualStylesLoader = visualStylesLoader;
+		this.taskManager = taskManager;
+		networkFiles= new ArrayList<File>();
+		networkURLs = new ArrayList<URL>();
+		vizmapFiles = new ArrayList<File>();
+		tableFiles = new ArrayList<File>();
+		tableURLs = new ArrayList<URL>();
 	}
 
 	public void setProperties(String[] potentialProps) {
@@ -110,26 +149,65 @@ public class StartupConfig {
 	}
 
 	public void setSession(String args){
+		try{
+			sessionName = new File(args);
+		}catch(Exception e){
+			logger.error(e.toString());
+		}
 		taskStart = true;
 	}
 
 	public void setNetworks(String[] args){
+		
+		networkFiles = new ArrayList<File>();
+		networkURLs = new ArrayList<URL>();
+		
+		for (String name : args){
+			try{
+			if (StreamUtil.URL_PATTERN.matches(name))
+				networkURLs.add(new URL(name));
+			else 
+				networkFiles.add(new File(name));
+			}catch (Exception e){
+				logger.error(e.toString());
+			}
+		}
+		
 		taskStart = true;
 	}
 
 	public void setVizMapProps(String[] args){
+		
+		vizmapFiles = new ArrayList<File>();
+		
+		for (String name: args){
+			try{
+				vizmapFiles.add(new File(name));
+			}catch(Exception e){
+				
+			}
+		}
+		
 		taskStart = true;
 	}
 
-	public void setNodeTables(String[] args){
-		taskStart = true;
-	}
 
-	public void setEdgeTables(String[] args){
-		taskStart = true;
-	}
-
-	public void setGlobalTables(String[] args){
+	public void setTables(String[] args){
+		
+		tableFiles = new ArrayList<File>();
+		tableURLs = new ArrayList<URL>();
+		
+		for (String name : args){
+			try{
+			if (StreamUtil.URL_PATTERN.matches(name))
+				tableURLs.add(new URL(name));
+			else 
+				tableFiles.add(new File(name));
+			}catch (Exception e){
+				logger.error(e.toString());
+			}
+		}
+		
 		taskStart = true;
 	}
 
@@ -148,28 +226,45 @@ public class StartupConfig {
 		// disable it here.
 		globalProps.setProperty("tempHideWelcomeScreen","true");
 
+		ArrayList<TaskIterator> taskIteratorList = new ArrayList<TaskIterator>();
+		
 	/*
-
 		taskIterator.append( pluginManager.loadSimplifiedPlugins() );
 		taskIterator.append( pluginManager.loadBundlePlugins() );
-			
+	 */			
 		if ( sessionName != null ) 	{
-			taskIterator.append( sessionTaskFactory.loadSession( sessionName ) );
+			taskIteratorList.add( loadSession.createTaskIterator(sessionName));
 
 		} else {
-			for ( String network : networkNames )
-				taskIterator.append( loadNetwork.loadNetwork( network ) );
-			for ( String nodeTable : nodeTables )
-				taskIterator.append( loadTable.loadTable( nodeTable, CyNode.class ) );
-			for ( String edgeTable : edgeTables )
-				taskIterator.append( loadTable.loadTable( edgeTable, CyEdge.class ) );
-			for ( String globalTable : globalTables )
-				taskIterator.append( loadTable.loadTable( globalTable, null ) );
-			for ( String vizmap : vizmapProps )
-				taskIterator.append( vizmapLoader.loadVizmap( vizmap ) );
+			for ( File network : networkFiles )
+				taskIteratorList.add( networkFileLoader.creatTaskIterator(network) );
+			for ( URL network : networkURLs )
+				taskIteratorList.add( networkURLLoader.loadCyNetworks(network) );
+			for ( File table : tableFiles )
+				taskIteratorList.add( attributesFileLoader.createTaskIterator(table) );
+			for ( URL table : tableURLs )
+				taskIteratorList.add( attributesURLLoader.createTaskIterator(table) );
+			for ( File vizmap : vizmapFiles )
+				taskIteratorList.add( visualStylesLoader.createTaskIterator(vizmap));
 		}
 
+		Task initTask = new DummyTaks();
+		TaskIterator taskIterator = new TaskIterator(taskIteratorList.size(), initTask);
+		for (int i= taskIteratorList.size()-1; i>= 0 ; i--){
+			TaskIterator ti = taskIteratorList.get(i);
+			taskIterator.insertTasksAfter(initTask, ti);
+		}
+		
 		taskManager.execute(taskIterator);
-		*/
+		
+	}
+	
+	private class DummyTaks extends AbstractTask{
+
+		@Override
+		public void run(TaskMonitor taskMonitor) throws Exception {
+			//DO nothing it is a dummy tas just to initiate the iterator
+		}
+		
 	}
 }

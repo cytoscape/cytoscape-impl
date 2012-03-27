@@ -12,6 +12,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 
 
 public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implements LoadVisualStyles {
@@ -21,11 +22,15 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	private final SynchronousTaskManager<?> syncTaskManager;
 
 	private LoadVizmapFileTask task; 
+
+	private final TunableSetter tunableSetter; 
+
 	
-	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr, SynchronousTaskManager<?> syncTaskManager) {
+	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr, SynchronousTaskManager<?> syncTaskManager, TunableSetter tunableSetter) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmMgr = vmMgr;
 		this.syncTaskManager = syncTaskManager;
+		this.tunableSetter = tunableSetter;
 	}
 
 	@Override
@@ -44,5 +49,14 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		syncTaskManager.execute(createTaskIterator());
 
 		return task.getStyles();
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(File file) {
+
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("file", file);
+
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }
