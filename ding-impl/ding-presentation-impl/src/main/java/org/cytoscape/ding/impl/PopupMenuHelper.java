@@ -154,36 +154,24 @@ class PopupMenuHelper {
 	/**
 	 * Creates a menu based on the NetworkView.
 	 */
-	void createEmptySpaceMenu(int x, int y, String action) {
-		// build a menu of actions if more than factory exists
+	void createEmptySpaceMenu(Point rawPt, Point xformPt, String action) {
+		
+		final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
+		final JMenuTracker tracker = new JMenuTracker(menu);
+		
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
-		if ( usableTFs.size() > 1 || (usableTFs.size() == 1 && action.equals("NEW"))) {
-			final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
-			final JMenuTracker tracker = new JMenuTracker(menu);
-			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
-				TaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
-				createMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
-			}
-			menu.show(invoker, x, y);
-		// execute the task directly if only one factory exists
-		} else if ( usableTFs.size() == 1) {
-			NetworkViewTaskFactory tf = usableTFs.iterator().next();
-			m_view.manager.execute(tf.createTaskIterator(m_view));
+		for ( NetworkViewTaskFactory nvtf : usableTFs ) {
+			TaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
+			createMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
 		}
-	}
-	
-	/**
-	 * Creates a menu based on the NetworkView.
-	 */
-	void createNetworkViewLocationMenu(Point rawPt, Point xformPt, String action) {
-		Collection<NetworkViewLocationTaskFactory> usableTFs = getPreferredActions(m_view.networkViewLocationTfs,action);
-			final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
-			final JMenuTracker tracker = new JMenuTracker(menu);
-			for ( NetworkViewLocationTaskFactory nvltf : usableTFs ) {
-				TaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
-				createMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
-			}
-			menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));
+		
+		Collection<NetworkViewLocationTaskFactory> usableTFs2 = getPreferredActions(m_view.networkViewLocationTfs,action);
+		for ( NetworkViewLocationTaskFactory nvltf : usableTFs2 ) {
+			TaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
+			createMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
+		}
+		
+		menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));
 	}
 
 	/**

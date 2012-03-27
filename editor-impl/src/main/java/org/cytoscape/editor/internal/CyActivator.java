@@ -60,15 +60,15 @@ public class CyActivator extends AbstractCyActivator {
 		sifInterpreterTaskFactoryProps.setProperty("title","SIF Interpreter");
 		registerService(bc,sifInterpreterTaskFactory,NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
 
-		Properties dropNetworkViewTaskFactoryProps = new Properties();
-		dropNetworkViewTaskFactoryProps.setProperty("preferredAction","Node");
-		dropNetworkViewTaskFactoryProps.setProperty("title","Add Node");
-		registerService(bc,networkViewLocationTaskFactory,NetworkViewLocationTaskFactory.class, dropNetworkViewTaskFactoryProps);
+		Properties networkViewLocationTaskFactoryProps = new Properties();
+		networkViewLocationTaskFactoryProps.setProperty("preferredAction","NEW");
+		networkViewLocationTaskFactoryProps.setProperty("title","Add Node");
+		registerService(bc,networkViewLocationTaskFactory,NetworkViewLocationTaskFactory.class, networkViewLocationTaskFactoryProps);
 		
-		Properties dropNodeViewTaskFactoryProps = new Properties();
-		dropNodeViewTaskFactoryProps.setProperty("preferredAction","Network");
-		dropNodeViewTaskFactoryProps.setProperty("title","Add Nested Network");
-		registerService(bc,addNestedNetworkTaskFactory,NodeViewTaskFactory.class, dropNodeViewTaskFactoryProps);
+		Properties nodeViewTaskFactoryProps = new Properties();
+		nodeViewTaskFactoryProps.setProperty("preferredAction","NEW");
+		nodeViewTaskFactoryProps.setProperty("title","Add Nested Network");
+		registerService(bc,addNestedNetworkTaskFactory,NodeViewTaskFactory.class, nodeViewTaskFactoryProps);
 	}
 }
 

@@ -147,17 +147,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,dingNetworkViewFactory,CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 		
 		Properties addImageTaskFactoryProps = new Properties();
-		addImageTaskFactoryProps.setProperty("preferredAction","Image");
+		addImageTaskFactoryProps.setProperty("preferredAction","NEW");
 		addImageTaskFactoryProps.setProperty("title","Add Image");
 		registerService(bc,addImageTaskFactory,NetworkViewLocationTaskFactory.class,addImageTaskFactoryProps);
 
 		Properties addShapeTaskFactoryProps = new Properties();
-		addShapeTaskFactoryProps.setProperty("preferredAction","Shape");
+		addShapeTaskFactoryProps.setProperty("preferredAction","NEW");
 		addShapeTaskFactoryProps.setProperty("title","Add Shape");
 		registerService(bc,addShapeTaskFactory,NetworkViewLocationTaskFactory.class,addShapeTaskFactoryProps);
 
 		Properties addTextTaskFactoryProps = new Properties();
-		addTextTaskFactoryProps.setProperty("preferredAction","Text");
+		addTextTaskFactoryProps.setProperty("preferredAction","NEW");
 		addTextTaskFactoryProps.setProperty("title","Add Text");
 		registerService(bc,addTextTaskFactory,NetworkViewLocationTaskFactory.class,addTextTaskFactoryProps);
 
