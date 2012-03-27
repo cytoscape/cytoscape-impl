@@ -11,7 +11,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.network.merge.internal.NetworkMergeAction;
 
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.task.creation.NetworkViewCreator;
+import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
 
 
 import org.osgi.framework.BundleContext;
@@ -29,7 +29,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
-		NetworkViewCreator netViewCreator = getService(bc,NetworkViewCreator.class);
+		CreateNetworkViewTaskFactory netViewCreator = getService(bc,CreateNetworkViewTaskFactory.class);
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);

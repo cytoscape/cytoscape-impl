@@ -15,7 +15,7 @@ import org.cytoscape.network.merge.internal.util.AttributeMerger;
 import org.cytoscape.network.merge.internal.util.AttributeValueMatcher;
 import org.cytoscape.network.merge.internal.util.DefaultAttributeMerger;
 import org.cytoscape.network.merge.internal.util.DefaultAttributeValueMatcher;
-import org.cytoscape.task.creation.NetworkViewCreator;
+import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -37,7 +37,7 @@ public class NetworkMergeTask extends AbstractTask {
 	final private AttributeBasedNetworkMerge networkMerge ;  
 	//private boolean cancelled;
 
-	final private NetworkViewCreator netViewCreator; 
+	final private CreateNetworkViewTaskFactory netViewCreator; 
 	/**
 	 * Constructor.<br>
 	 *
@@ -52,7 +52,7 @@ public class NetworkMergeTask extends AbstractTask {
 				 final Map<String,Map<String,Set<String>>> selectedNetworkAttributeIDType,
 				 final String tgtType, 
 				 final boolean inNetworkMerge,
-				 final NetworkViewCreator netViewCreator) {
+				 final CreateNetworkViewTaskFactory netViewCreator) {
                 this.network = network;
 		//this.matchingAttribute = matchingAttribute;
 		//this.nodeAttributeMapping = nodeAttributeMapping;

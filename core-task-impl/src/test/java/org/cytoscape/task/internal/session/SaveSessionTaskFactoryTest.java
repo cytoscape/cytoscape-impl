@@ -20,7 +20,7 @@ public class SaveSessionTaskFactoryTest {
 		CyEventHelper cyEventHelper = mock(CyEventHelper.class);
 
 		
-		SaveSessionTaskFactory factory = new SaveSessionTaskFactory(wmgr,mgr,tracker, cyEventHelper);
+		SaveSessionTaskFactoryImpl factory = new SaveSessionTaskFactoryImpl(wmgr,mgr,tracker, cyEventHelper);
 		
 		TaskIterator ti = factory.createTaskIterator();
 //		assertNotNull(ti);

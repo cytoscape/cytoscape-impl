@@ -37,7 +37,7 @@ import org.cytoscape.io.DataCategory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.loadnetwork.NetworkURLLoader;
+import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
@@ -76,7 +76,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	private final BundleContext bc;
 
-	private final NetworkURLLoader importNetworkFromURLTF;
+	private final LoadNetworkURLTaskFactory importNetworkFromURLTF;
 	private final TaskFactory importNetworkFileTF;
 
 
@@ -90,7 +90,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 	private final CyProperty<Properties> props;
 
 	CreateNewNetworkPanel(Window parent, final BundleContext bc, final TaskManager guiTaskManager,
-			final TaskFactory importNetworkFileTF, final NetworkURLLoader loadTF,
+			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
 			final CyApplicationConfiguration config,
 			final DataSourceManager dsManager, final CyProperty<Properties> props) {
 		this.parent = parent;

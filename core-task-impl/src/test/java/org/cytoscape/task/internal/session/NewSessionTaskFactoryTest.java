@@ -21,7 +21,7 @@ public class NewSessionTaskFactoryTest {
 
 		CySessionManager mgr = mock(CySessionManager.class);;
 
-		NewSessionTaskFactory factory = new NewSessionTaskFactory(mgr, ts);
+		NewSessionTaskFactoryImpl factory = new NewSessionTaskFactoryImpl(mgr, ts);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

@@ -23,7 +23,7 @@ import javax.swing.border.LineBorder;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.session.CySession;
-import org.cytoscape.task.session.LoadSession;
+import org.cytoscape.task.session.OpenSessionTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -43,12 +43,12 @@ public class OpenPanel extends JPanel {
 
 	private final RecentlyOpenedTracker fileTracker;
 	private final TaskManager taskManager;
-	private final LoadSession openSessionTaskFactory;
+	private final OpenSessionTaskFactory openSessionTaskFactory;
 
 	Window parent;
 
 	OpenPanel(Window parent, final RecentlyOpenedTracker fileTracker, final TaskManager taskManager,
-			final LoadSession openSessionTaskFactory) {
+			final OpenSessionTaskFactory openSessionTaskFactory) {
 		this.fileTracker = fileTracker;
 		this.parent = parent;
 		this.taskManager = taskManager;

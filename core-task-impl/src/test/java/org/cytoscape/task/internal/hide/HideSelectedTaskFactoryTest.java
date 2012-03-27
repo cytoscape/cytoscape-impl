@@ -18,8 +18,8 @@ public class HideSelectedTaskFactoryTest {
 	public void testRun() throws Exception {
 		UndoSupport undoSupport = mock(UndoSupport.class);
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
-		HideSelectedTaskFactory factory =
-			new HideSelectedTaskFactory(undoSupport, eventHelper);
+		HideSelectedTaskFactoryImpl factory =
+			new HideSelectedTaskFactoryImpl(undoSupport, eventHelper);
 
 		CyNetworkView view = mock(CyNetworkView.class);
 		

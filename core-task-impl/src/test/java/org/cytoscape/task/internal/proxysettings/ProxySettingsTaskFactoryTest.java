@@ -22,7 +22,7 @@ public class ProxySettingsTaskFactoryTest {
 
 		Properties properties = new Properties();
 		final CyProperty<Properties> proxyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
-		ProxySettingsTaskFactory factory = new ProxySettingsTaskFactory(proxyProperties, streamUtil);
+		ProxySettingsTaskFactoryImpl factory = new ProxySettingsTaskFactoryImpl(proxyProperties, streamUtil);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

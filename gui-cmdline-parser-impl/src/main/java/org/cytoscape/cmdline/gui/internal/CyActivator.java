@@ -6,10 +6,10 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.loadnetwork.NetworkFileLoader;
-import org.cytoscape.task.loadnetwork.NetworkURLLoader;
-import org.cytoscape.task.loadvizmap.LoadVisualStyles;
-import org.cytoscape.task.session.LoadSession;
+import org.cytoscape.task.loadnetwork.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
+import org.cytoscape.task.loadvizmap.LoadVizmapFileTaskFactory;
+import org.cytoscape.task.session.OpenSessionTaskFactory;
 import org.cytoscape.work.TaskManager;
 
 import java.util.Properties; 
@@ -26,10 +26,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyVersion cyVersion = getService(bc,CyVersion.class);
 		CyShutdown cyShutdown = getService(bc,CyShutdown.class);
 		StreamUtil streamUtil = getService(bc,StreamUtil.class);
-		LoadSession loadSession = getService(bc, LoadSession.class);
-		NetworkFileLoader networkFileLoader = getService(bc, NetworkFileLoader.class);
-		NetworkURLLoader networkURLLoader = getService(bc, NetworkURLLoader.class);
-		LoadVisualStyles visualStylesLoader = getService(bc, LoadVisualStyles.class);
+		OpenSessionTaskFactory loadSession = getService(bc, OpenSessionTaskFactory.class);
+		LoadNetworkFileTaskFactory networkFileLoader = getService(bc, LoadNetworkFileTaskFactory.class);
+		LoadNetworkURLTaskFactory networkURLLoader = getService(bc, LoadNetworkURLTaskFactory.class);
+		LoadVizmapFileTaskFactory visualStylesLoader = getService(bc, LoadVizmapFileTaskFactory.class);
 		TaskManager <?,?> taskManager = getService(bc, TaskManager.class);
 
 		CyProperty<Properties> props = (CyProperty<Properties>)getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");

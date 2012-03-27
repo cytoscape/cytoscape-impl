@@ -44,7 +44,7 @@ import org.cytoscape.network.merge.internal.ui.NetworkMergeFrame;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.task.creation.NetworkViewCreator;
+import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
 
 import java.awt.event.ActionEvent;
 
@@ -61,11 +61,11 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private final CyNetworkFactory cnf;
 	private final CyNetworkNaming cnn;
 	private final TaskManager taskManager;
-	private final NetworkViewCreator netViewCreator; 
+	private final CreateNetworkViewTaskFactory netViewCreator; 
 
 	public NetworkMergeAction(CySwingApplication swingApp, CyNetworkManager cnm,
 			CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager,
-			NetworkViewCreator netViewCreator) {
+			CreateNetworkViewTaskFactory netViewCreator) {
 		super(APP_MENU_TITLE);
 		setPreferredMenu(PARENT_MENU);
 		

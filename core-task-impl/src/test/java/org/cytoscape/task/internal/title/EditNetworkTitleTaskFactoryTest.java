@@ -34,7 +34,7 @@ public class EditNetworkTitleTaskFactoryTest {
 
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
-		EditNetworkTitleTaskFactory factory = new EditNetworkTitleTaskFactory(undoSupport,netMgr,cyNetworkNaming, ts);
+		EditNetworkTitleTaskFactoryImpl factory = new EditNetworkTitleTaskFactoryImpl(undoSupport,netMgr,cyNetworkNaming, ts);
 		
 		TaskIterator ti = factory.createTaskIterator(net);
 		assertNotNull(ti);

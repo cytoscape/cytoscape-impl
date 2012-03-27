@@ -26,7 +26,7 @@ public class OpenSessionTaskFactoryTest {
 		TunableSetter ts = mock(TunableSetter.class);
 
 		SynchronousTaskManager synchronousTaskManager = mock(SynchronousTaskManager.class);
-		OpenSessionTaskFactory factory = new OpenSessionTaskFactory(mgr, rmgr, appManager, tracker, synchronousTaskManager,ts);
+		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, rmgr, appManager, tracker, synchronousTaskManager,ts);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

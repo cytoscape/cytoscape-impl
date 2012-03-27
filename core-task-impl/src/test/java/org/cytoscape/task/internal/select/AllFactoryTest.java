@@ -70,63 +70,63 @@ public class AllFactoryTest {
 
 	@Test
 	public void testDeselectAllEdgesTaskFactory() {
-		executeTest(new DeselectAllEdgesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new DeselectAllEdgesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testDeselectAllNodesTaskFactory() {
-		executeTest(new DeselectAllNodesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new DeselectAllNodesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testDeselectAllTaskFactory() {
-		executeTest(new DeselectAllTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new DeselectAllTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testInvertSelectedEdgesTaskFactory() {
-		executeTest(new InvertSelectedEdgesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new InvertSelectedEdgesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testInvertSelectedNodesTaskFactory() {
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		executeTest(new InvertSelectedNodesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new InvertSelectedNodesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testSelectAdjacentEdgesTaskFactory() {
-		executeTest(new SelectAdjacentEdgesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new SelectAdjacentEdgesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testSelectAllEdgesTaskFactory() {
-		executeTest(new SelectAllEdgesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new SelectAllEdgesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testSelectAllNodesTaskFactory() {
-		executeTest(new SelectAllNodesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new SelectAllNodesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testSelectAllTaskFactory() {
-		executeTest(new SelectAllTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new SelectAllTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testSelectConnectedNodesTaskFactory() {
-		executeTest(new SelectConnectedNodesTaskFactory(undoSupport, networkViewManager, eventHelper));
+		executeTest(new SelectConnectedNodesTaskFactoryImpl(undoSupport, networkViewManager, eventHelper));
 	}
 
 	@Test
 	public void testSelectFirstNeighborsTaskFactory() {
-		executeTest(new SelectFirstNeighborsTaskFactory(undoSupport, networkViewManager, eventHelper, CyEdge.Type.ANY));
+		executeTest(new SelectFirstNeighborsTaskFactoryImpl(undoSupport, networkViewManager, eventHelper, CyEdge.Type.ANY));
 	}
 
 	@Test
 	public void testSelectFromFileListTaskFactory() {
-		executeTest(new SelectFromFileListTaskFactory(undoSupport, networkViewManager, eventHelper, ts));
+		executeTest(new SelectFromFileListTaskFactoryImpl(undoSupport, networkViewManager, eventHelper, ts));
 	}
 
 	private void executeTest(NetworkTaskFactory ntf) {

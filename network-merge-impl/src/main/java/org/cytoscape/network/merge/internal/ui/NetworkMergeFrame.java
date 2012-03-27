@@ -98,7 +98,7 @@ import org.cytoscape.network.merge.internal.task.NetworkMergeTask;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.task.creation.NetworkViewCreator;
+import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
 
 /**
  *
@@ -110,14 +110,14 @@ public class NetworkMergeFrame extends JFrame {
         private CyNetworkFactory cnf;
         private CyNetworkNaming cnn;
         private TaskManager taskManager;
-        private NetworkViewCreator netViewCreator;
+        private CreateNetworkViewTaskFactory netViewCreator;
 
 	/** Creates new form NetworkMergeFrame */
 	public NetworkMergeFrame(CyNetworkManager cnm, 
                         CyNetworkFactory cnf,
                         CyNetworkNaming cnn,
                         TaskManager taskManager,
-						NetworkViewCreator netViewCreator) {
+						CreateNetworkViewTaskFactory netViewCreator) {
 		frame = this;
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 

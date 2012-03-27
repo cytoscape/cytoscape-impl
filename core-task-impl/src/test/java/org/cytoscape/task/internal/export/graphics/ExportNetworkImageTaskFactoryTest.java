@@ -42,7 +42,7 @@ public class ExportNetworkImageTaskFactoryTest {
 	
 	@Test
 	public void testExportNetworkImageTaskFactory() throws Exception {
-		final ExportNetworkImageTaskFactory factory = new ExportNetworkImageTaskFactory(viewWriterMgr, applicationManager);
+		final ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(viewWriterMgr, applicationManager);
 		final CyNetworkView view = mock(CyNetworkView.class);
 		
 		final TaskIterator itr = factory.createTaskIterator(view);

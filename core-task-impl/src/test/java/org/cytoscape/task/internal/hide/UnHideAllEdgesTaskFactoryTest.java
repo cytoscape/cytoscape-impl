@@ -18,8 +18,8 @@ public class UnHideAllEdgesTaskFactoryTest {
 	public void testRun() throws Exception {
 		UndoSupport undoSupport = mock(UndoSupport.class);
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
-		UnHideAllEdgesTaskFactory factory =
-			new UnHideAllEdgesTaskFactory(undoSupport, eventHelper);
+		UnHideAllEdgesTaskFactoryImpl factory =
+			new UnHideAllEdgesTaskFactoryImpl(undoSupport, eventHelper);
 
 		CyNetworkView view = mock(CyNetworkView.class);
 		

@@ -26,8 +26,8 @@ import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.loadnetwork.NetworkURLLoader;
-import org.cytoscape.task.session.LoadSession;
+import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
+import org.cytoscape.task.session.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
@@ -54,12 +54,12 @@ public class WelcomeScreenDialog extends JDialog {
 
 	private final OpenBrowser openBrowserServiceRef;
 	private final RecentlyOpenedTracker fileTracker;
-	private final LoadSession openSessionTaskFactory;
+	private final OpenSessionTaskFactory openSessionTaskFactory;
 
 	private final TaskManager guiTaskManager;
 
 	private final CyApplicationConfiguration config;
-	private final NetworkURLLoader loadNetworkTF;
+	private final LoadNetworkURLTaskFactory loadNetworkTF;
 
 	private final DataSourceManager dsManager;
 	
@@ -71,9 +71,9 @@ public class WelcomeScreenDialog extends JDialog {
 	final JCheckBox checkBox = new JCheckBox();
 
 	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, 
-	                           RecentlyOpenedTracker fileTracker, final LoadSession openSessionTaskFactory, 
+	                           RecentlyOpenedTracker fileTracker, final OpenSessionTaskFactory openSessionTaskFactory, 
 							   TaskManager guiTaskManager, final CyApplicationConfiguration config,
-	                           final TaskFactory importNetworkFileTF, final NetworkURLLoader importNetworkTF, 
+	                           final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory importNetworkTF, 
 	                           final DataSourceManager dsManager, final CyProperty<Properties> cyProps, 
 							   final boolean hide) {
 		this.openBrowserServiceRef = openBrowserServiceRef;

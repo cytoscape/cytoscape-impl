@@ -6,14 +6,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.task.loaddatatable.AttributesURLLoader;
-import org.cytoscape.task.loaddatatable.AttributesFileLoader;
+import org.cytoscape.task.loaddatatable.LoadAttributesURLTaskFactory;
+import org.cytoscape.task.loaddatatable.LoadAttributesFileTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements AttributesURLLoader {
+public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements LoadAttributesURLTaskFactory {
 	
 	private CyTableReaderManager mgr;
 	
