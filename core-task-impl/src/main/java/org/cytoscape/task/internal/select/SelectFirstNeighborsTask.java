@@ -30,6 +30,7 @@
 package org.cytoscape.task.internal.select;
 
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +63,11 @@ public class SelectFirstNeighborsTask extends AbstractSelectTask {
 	@Override
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
-		final CyNetworkView view = networkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
 		undoSupport.postEdit(
 			new SelectionEdit(eventHelper, "Select First-Neighbour Nodes", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));

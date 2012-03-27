@@ -42,6 +42,7 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -254,11 +255,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			return;
 		}
 		
-		CyNetworkView view = networkViewManager.getNetworkView(e.getNetwork());
-
-		if (view != null) {
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(e.getNetwork());
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
+		if (view != null)
 			setFocus(view);
-		}
 	}
 
 	@Override

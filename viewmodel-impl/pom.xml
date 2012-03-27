@@ -115,6 +115,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>model-api</artifactId>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>

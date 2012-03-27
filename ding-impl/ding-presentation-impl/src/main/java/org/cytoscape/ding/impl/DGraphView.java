@@ -155,6 +155,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private static final Logger logger = LoggerFactory.getLogger(DGraphView.class);
 	
+	private static final String ENGINE_ID = "ding";
+	
 	private static enum ZOrder {
 		BACKGROUND_PANE, NETWORK_PANE, FOREGROUND_PANE;
 		
@@ -2644,13 +2646,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return this.props;
 	}
 	
-	@Override
-	public void setProperties(String key, String value) {
-		this.props.setProperty(key, value);
-		if (key.equals("exportTextAsShape"))
-			setPrintingTextAsShape(Boolean.parseBoolean(value));
-		
-	}
+//	@Override
+//	public void setProperties(String key, String value) {
+//		this.props.setProperty(key, value);
+//		if (key.equals("exportTextAsShape"))
+//			setPrintingTextAsShape(Boolean.parseBoolean(value));
+//		
+//	}
 	
 	/**
 	 * Common API for all rendering engines.
@@ -3011,4 +3013,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 
+	@Override
+	public String getRenderingEngineID() {
+		return ENGINE_ID;
+	}
 }

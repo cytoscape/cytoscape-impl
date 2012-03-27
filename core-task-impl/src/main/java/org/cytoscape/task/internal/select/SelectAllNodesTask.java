@@ -30,6 +30,8 @@
 package org.cytoscape.task.internal.select;
 
 
+import java.util.Collection;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -53,7 +55,11 @@ public class SelectAllNodesTask extends AbstractSelectTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
-		final CyNetworkView view = networkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
 		undoSupport.postEdit(
 			new SelectionEdit(eventHelper, "Select All Nodes", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));

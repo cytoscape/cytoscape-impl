@@ -33,6 +33,7 @@ package org.cytoscape.task.internal.select;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,7 +75,11 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		if (file == null)
 			throw new NullPointerException("You must specify a non-null file to load!");
 
-		final CyNetworkView view = networkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
 		final SelectionEdit edit =
 			new SelectionEdit(eventHelper, "Select Nodes From File", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY);

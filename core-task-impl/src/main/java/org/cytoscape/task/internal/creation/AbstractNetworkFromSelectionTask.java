@@ -96,7 +96,11 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			throw new NullPointerException("Source network is null.");
 		tm.setProgress(0.0);
 
-		final CyNetworkView sourceView = networkViewManager.getNetworkView(parentNetwork);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);		
+		CyNetworkView sourceView = null;
+		if(views.size() != 0)
+			sourceView = views.iterator().next();
+		
 		tm.setProgress(0.1);
 
 		// Get the selected nodes, but only create network if nodes are actually

@@ -30,6 +30,8 @@
 package org.cytoscape.task.internal.select;
 
 
+import java.util.Collection;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -52,7 +54,11 @@ public class InvertSelectedEdgesTask extends AbstractSelectTask {
 
 	public void run(final TaskMonitor tm) {
 		tm.setProgress(0.0);
-		final CyNetworkView view = networkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
 		undoSupport.postEdit(
 			new SelectionEdit(eventHelper, "Invert Selected Edges", network, view,
 			                  SelectionEdit.SelectionFilter.EDGES_ONLY));

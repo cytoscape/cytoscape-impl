@@ -29,6 +29,7 @@ package org.cytoscape.search.internal;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -120,7 +121,11 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	 * If view(s) exists for the current network, update them.
 	 */
 	private void updateView() {
-		final CyNetworkView targetView = viewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
+		CyNetworkView targetView = null;
+		if(views.size() != 0)
+			targetView = views.iterator().next();
+		
 		if(targetView != null)
 			targetView.updateView();
 		

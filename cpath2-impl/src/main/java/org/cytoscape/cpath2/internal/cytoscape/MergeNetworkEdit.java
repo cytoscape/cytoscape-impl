@@ -91,7 +91,11 @@ public class MergeNetworkEdit extends AbstractCyEdit {
         this.cyEdges = cyEdges;
 
         this.cyNodes = new HashMap<CyNode, Point2D.Double>();
-        CyNetworkView view = factory.getCyNetworkViewManager().getNetworkView(cyNetwork);
+        final Collection<CyNetworkView> views = factory.getCyNetworkViewManager().getNetworkViews(cyNetwork);
+        CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
         if (view != null) {
             for (CyNode cyNode : cyNodes) {
                 View<CyNode> nv = view.getNodeView(cyNode);
@@ -118,8 +122,11 @@ public class MergeNetworkEdit extends AbstractCyEdit {
     public void redo() {
 
         // get ref to view
-        CyNetworkView view = factory.getCyNetworkViewManager().getNetworkView(cyNetwork);
-
+    		final Collection<CyNetworkView> views = factory.getCyNetworkViewManager().getNetworkViews(cyNetwork);
+    		CyNetworkView view = null;
+    		if(views.size() != 0)
+    			view = views.iterator().next();
+    		
         if (view != null) {
 
             // iterate through nodes and restore each one (also set proper position)

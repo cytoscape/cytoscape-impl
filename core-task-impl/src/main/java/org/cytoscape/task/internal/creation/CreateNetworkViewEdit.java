@@ -67,9 +67,10 @@ final class CreateNetworkViewEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		;
-
-		final CyNetworkView view = networkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
 
 		networkCenterX = view.getVisualProperty(NETWORK_CENTER_X_LOCATION);
 		networkCenterY = view.getVisualProperty(NETWORK_CENTER_Y_LOCATION);

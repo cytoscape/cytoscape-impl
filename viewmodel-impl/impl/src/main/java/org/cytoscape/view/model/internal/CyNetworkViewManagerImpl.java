@@ -26,14 +26,15 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.view.model.internal;
 
-
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -47,14 +48,13 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * An implementation of CyNetworkViewManager.
  */
 public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAboutToBeDestroyedListener {
 	private static final Logger logger = LoggerFactory.getLogger(CyNetworkViewManagerImpl.class);
 
-	private final Map<CyNetwork, CyNetworkView> networkViewMap;
+	private final Map<CyNetwork, Collection<CyNetworkView>> networkViewMap;
 	private final CyEventHelper cyEventHelper;
 
 	/**
@@ -62,7 +62,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	 * @param cyEventHelper
 	 */
 	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper) {
-		networkViewMap = new HashMap<CyNetwork, CyNetworkView>();
+		networkViewMap = new WeakHashMap<CyNetwork, Collection<CyNetworkView>>();
 		this.cyEventHelper = cyEventHelper;
 	}
 
@@ -74,23 +74,44 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	@Override
 	public synchronized void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
 		final CyNetwork network = event.getNetwork();
-		if (viewExists(network))
-			destroyNetworkView(networkViewMap.get(network));
+		if (viewExists(network)) {
+			// Remove ALL views associated with this network model
+			for (final CyNetworkView view : networkViewMap.get(network))
+				destroyNetworkView(view);
+		}
 	}
 
 	@Override
 	public synchronized Set<CyNetworkView> getNetworkViewSet() {
-		return new HashSet<CyNetworkView>(networkViewMap.values());
+		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+		
+		final Collection<Collection<CyNetworkView>> vals = networkViewMap.values();
+		for (Collection<CyNetworkView> setFoViews : vals)
+			views.addAll(setFoViews);
+
+		return views;
 	}
 
 	@Override
-	public synchronized CyNetworkView getNetworkView(CyNetwork network) {
-		return networkViewMap.get(network);
+	public synchronized Collection<CyNetworkView> getNetworkViews(final CyNetwork network) {
+		final Collection<CyNetworkView> views = networkViewMap.get(network); 
+		
+		if(views != null)
+			return views;
+		else
+			return new HashSet<CyNetworkView>();
 	}
 
 	@Override
-	public synchronized boolean viewExists(CyNetwork network) {
-		return networkViewMap.containsKey(network);
+	public synchronized boolean viewExists(final CyNetwork network) {
+		if(networkViewMap.containsKey(network) == false)
+			return false;
+		
+		final Collection<CyNetworkView> views = networkViewMap.get(network);
+		if(views.size() == 0)
+			return false;
+		else
+			return true;
 	}
 
 	@Override
@@ -112,7 +133,9 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 			if (!networkViewMap.containsKey(network))
 				throw new IllegalArgumentException("network view is not recognized by this NetworkManager");
 
-			networkViewMap.remove(network);
+			final Collection<CyNetworkView> views = networkViewMap.get(network);
+			views.remove(view);
+			networkViewMap.put(network, views);
 		}
 
 		cyEventHelper.fireEvent(new NetworkViewDestroyedEvent(this));
@@ -127,10 +150,15 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 
 		final CyNetwork network = view.getModel();
 
-
 		synchronized (this) {
 			logger.debug("Adding new Network View Model: Model ID = " + network.getSUID());
-			networkViewMap.put(network, view);
+			Collection<CyNetworkView> existingSet = networkViewMap.get(network);
+
+			if (existingSet == null)
+				existingSet = new HashSet<CyNetworkView>();
+			existingSet.add(view);
+
+			networkViewMap.put(network, existingSet);
 		}
 
 		logger.debug("Firing event: NetworkViewAddedEvent");

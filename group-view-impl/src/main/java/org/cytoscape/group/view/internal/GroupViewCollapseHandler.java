@@ -30,6 +30,7 @@
 package org.cytoscape.group.view.internal;
 
 import java.awt.Dimension;
+import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.group.CyGroup;
@@ -91,7 +92,10 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyNetwork network = e.getNetwork();
 		CyGroup group = e.getSource();
 		CyRootNetwork rootNetwork = group.getRootNetwork();
-		CyNetworkView view = cyNetworkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
 		
 		if (e.collapsing()) {
 			// Calculate the center position of all of the
@@ -121,7 +125,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	public void handleEvent(GroupCollapsedEvent e) {
 		CyNetwork network = e.getNetwork();
 		CyGroup group = e.getSource();
-		CyNetworkView view = cyNetworkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 		VisualStyle viewStyle = cyStyleManager.getVisualStyle(view);
 

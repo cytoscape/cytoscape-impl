@@ -71,6 +71,8 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	
 	private final static long serialVersionUID = 1202416511863994L;
 	
+	private static final String ENGINE_ID = "ding-bev";
+	
 	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	
 	private static final Color VIEW_WINDOW_COLOR =  new Color(50, 50, 255, 50);
@@ -340,11 +342,11 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		return dgv.getProperties();
 	}
 
-	@Override
-	public void setProperties(String key, String value) {
-		dgv.setProperties(key, value);
-		
-	}
+//	@Override
+//	public void setProperties(String key, String value) {
+//		dgv.setProperties(key, value);
+//		
+//	}
 	
 	@Override
 	public Printable createPrintable() {
@@ -363,5 +365,8 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	}
 
 
-	
+	@Override
+	public String getRenderingEngineID() {
+		return ENGINE_ID;
+	}
 }

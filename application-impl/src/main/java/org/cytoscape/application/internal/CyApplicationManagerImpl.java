@@ -58,6 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -211,7 +212,9 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			
 			logger.info("Set current network called.  Current network ID = " + networkId);
 			currentNetwork = network; 
-			currentNetworkView = networkViewManager.getNetworkView(network);
+			final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+			if(views.size() != 0)
+				currentNetworkView = views.iterator().next();
 
 			// reset selected networks
 			selectedNetworks.clear();

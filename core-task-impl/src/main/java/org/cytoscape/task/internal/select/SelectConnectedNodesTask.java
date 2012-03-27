@@ -30,6 +30,7 @@
 package org.cytoscape.task.internal.select;
 
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,11 @@ public class SelectConnectedNodesTask extends AbstractSelectTask {
 
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
-		final CyNetworkView view = networkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
 		undoSupport.postEdit(
 			new SelectionEdit(eventHelper, "Select Nodes Connected by Selected Edges",
 			                  network, view, SelectionEdit.SelectionFilter.NODES_ONLY));

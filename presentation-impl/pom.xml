@@ -94,5 +94,11 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>presentation-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

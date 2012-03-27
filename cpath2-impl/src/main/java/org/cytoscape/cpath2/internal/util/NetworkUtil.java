@@ -35,6 +35,7 @@ package org.cytoscape.cpath2.internal.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.task.LoadNetworkFromUrlTaskFactory;
@@ -224,7 +225,10 @@ public class NetworkUtil extends Thread {
     private void postProcess(final CyNetwork cyNetwork, boolean doLayout) {
 
         // ref to view used below
-        CyNetworkView view = factory.getCyNetworkViewManager().getNetworkView(cyNetwork);
+    		final Collection<CyNetworkView> views = factory.getCyNetworkViewManager().getNetworkViews(cyNetwork);
+    		CyNetworkView view = null;
+    		if(views.size() != 0)
+    			view = views.iterator().next();
 
         // if do layout, do it
 // TODO: Port this?    

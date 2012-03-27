@@ -30,6 +30,8 @@
 package org.cytoscape.task.internal.select;  
 
 
+import java.util.Collection;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTask;
@@ -53,7 +55,11 @@ public abstract class AbstractSelectTask extends AbstractNetworkTask {
 		// This is necessary, otherwise, this does not update presentation!
 		eventHelper.flushPayloadEvents();
 		
-		final CyNetworkView view = networkViewManager.getNetworkView(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		CyNetworkView view = null;
+		if(views.size() != 0)
+			view = views.iterator().next();
+		
 		if (view != null)
 			view.updateView();
 	}

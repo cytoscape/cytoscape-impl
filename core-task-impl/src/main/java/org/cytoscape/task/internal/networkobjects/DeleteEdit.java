@@ -4,6 +4,7 @@ package org.cytoscape.task.internal.networkobjects;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -65,8 +66,12 @@ final class DeleteEdit extends AbstractCyEdit {
 
 		// save the positions of the nodes
 		xPos = new double[nodes.size()]; 
-		yPos = new double[nodes.size()]; 
-		CyNetworkView netView = netViewMgr.getNetworkView(net);
+		yPos = new double[nodes.size()];
+		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
+		CyNetworkView netView = null;
+		if(views.size() != 0)
+			netView = views.iterator().next();
+
 		if (netView != null) {
 			int i = 0;
 			for (CyNode n : nodes) {
@@ -79,20 +84,19 @@ final class DeleteEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		;
-
 		net.removeNodes(nodes);
 		net.removeEdges(edges);
 
-		CyNetworkView netView = netViewMgr.getNetworkView(net);
+		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
+		CyNetworkView netView = null;
+		if(views.size() != 0)
+			netView = views.iterator().next();
 		
 		// Manually call update presentation
 		netView.updateView();
 	}
 
 	public void undo() {
-		;
-
 		for (CyNode n : nodes)
 			net.addNode(n);
 		for (CyEdge e : edges)
@@ -100,7 +104,11 @@ final class DeleteEdit extends AbstractCyEdit {
 
 		eventHelper.flushPayloadEvents();
 
-		CyNetworkView netView = netViewMgr.getNetworkView(net);
+		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
+		CyNetworkView netView = null;
+		if(views.size() != 0)
+			netView = views.iterator().next();
+		
 		if (netView != null) {
 			int i = 0;
 			for (final CyNode node : nodes) {

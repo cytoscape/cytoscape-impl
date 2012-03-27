@@ -29,6 +29,7 @@
  */
 package org.cytoscape.task.internal.creation;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +89,10 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		// Create copied network model
 		final CyNetwork newNet = cloneNetwork(parentNetwork);
 		tm.setProgress(0.4);
-		final CyNetworkView origView = networkViewManager.getNetworkView(parentNetwork);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);
+		CyNetworkView origView = null;
+		if (views.size() != 0)
+			origView = views.iterator().next(); 
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
 

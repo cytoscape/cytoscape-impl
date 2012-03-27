@@ -32,6 +32,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
@@ -42,6 +44,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskMonitor;
 
 public class AbstractSelectTaskTester {
@@ -70,7 +73,9 @@ public class AbstractSelectTaskTester {
 	when(view.getModel()).thenReturn(net);
 
 	networkViewManager = mock(CyNetworkViewManager.class);
-	when(networkViewManager.getNetworkView(any(CyNetwork.class))).thenReturn(view);
+	Collection<CyNetworkView> views = new HashSet<CyNetworkView>();
+	views.add(view);
+	when(networkViewManager.getNetworkViews(any(CyNetwork.class))).thenReturn(views);
 
 	tm = mock(TaskMonitor.class);
 

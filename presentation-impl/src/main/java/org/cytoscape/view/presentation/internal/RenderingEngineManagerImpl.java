@@ -1,8 +1,11 @@
 package org.cytoscape.view.presentation.internal;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -16,7 +19,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 	
 	private static final Logger logger = LoggerFactory.getLogger(RenderingEngineManagerImpl.class);
 
-	private final Map<View<?>, RenderingEngine<?>> renderingEngineMap;
+	private final Map<View<?>, Collection<RenderingEngine<?>>> renderingEngineMap;
 	
 	private static final String FACTORY_ID_TAG = "id";
 	private static final String DEFAULT_FACTORY_ID = "ding";
@@ -31,7 +34,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 	 * listens to Presentation events and update its map based on them.
 	 */
 	public RenderingEngineManagerImpl() {
-		this.renderingEngineMap = new HashMap<View<?>, RenderingEngine<?>>();
+		this.renderingEngineMap = new HashMap<View<?>, Collection<RenderingEngine<?>>>();
 		this.factoryMap = new HashMap<String, RenderingEngineFactory<?>>();
 	}
 
@@ -39,27 +42,44 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 	 * This method never returns null.
 	 */
 	@Override
-	public RenderingEngine<?> getRenderingEngine(final View<?> viewModel) {
-		return renderingEngineMap.get(viewModel);
+	public Collection<RenderingEngine<?>> getRenderingEngines(final View<?> viewModel) {
+		if(renderingEngineMap.containsKey(viewModel) == false)
+			return Collections.emptySet();
+		else
+			return renderingEngineMap.get(viewModel);
 	}
 
 	@Override
 	public Collection<RenderingEngine<?>> getAllRenderingEngines() {
-		return renderingEngineMap.values();
+		final Set<RenderingEngine<?>> allEngines = new HashSet<RenderingEngine<?>>();
+		
+		for(Collection<RenderingEngine<?>> engines: renderingEngineMap.values())
+			allEngines.addAll(engines);
+		
+		return allEngines;
 	}
 	
 
 	@Override
 	public void addRenderingEngine(final RenderingEngine<?> renderingEngine) {
 		final View<?> viewModel = renderingEngine.getViewModel();
-		this.renderingEngineMap.put(viewModel, renderingEngine);
+		Collection<RenderingEngine<?>> currentVals = renderingEngineMap.get(viewModel);
+		
+		if(currentVals == null)
+			currentVals = new HashSet<RenderingEngine<?>>();
+		
+		currentVals.add(renderingEngine);
+		
+		this.renderingEngineMap.put(viewModel, currentVals);
 	}
 	
 
 	@Override
-	public void removeRenderingEngine(RenderingEngine<?> renderingEngine) {
+	public void removeRenderingEngine(final RenderingEngine<?> renderingEngine) {
 		final View<?> viewModel = renderingEngine.getViewModel();
-		this.renderingEngineMap.remove(viewModel);
+		final Collection<RenderingEngine<?>> currentEngines = renderingEngineMap.get(viewModel);
+		currentEngines.remove(renderingEngine);
+		this.renderingEngineMap.put(viewModel, currentEngines);
 	}
 	
 
