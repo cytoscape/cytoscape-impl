@@ -3,6 +3,8 @@ package org.cytoscape.ding.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -16,6 +18,8 @@ public class ViewTaskFactoryListener {
 	final Map<EdgeViewTaskFactory, Map> edgeViewTFs;
 	final Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
 	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTFs;
+	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContexMenuFactory;
+	final Map<CyEdgeViewContextMenuFactory, Map> cyEdgeViewContextMenuFactory;
 
 
 	public ViewTaskFactoryListener(){
@@ -24,6 +28,8 @@ public class ViewTaskFactoryListener {
 		edgeViewTFs = new HashMap<EdgeViewTaskFactory, Map>();
 		emptySpaceTFs = new HashMap<NetworkViewTaskFactory, Map>();
 		networkViewLocationTFs = new HashMap<NetworkViewLocationTaskFactory, Map>();
+		cyNodeViewContexMenuFactory = new HashMap<CyNodeViewContextMenuFactory, Map>();
+		cyEdgeViewContextMenuFactory = new HashMap<CyEdgeViewContextMenuFactory, Map>();
 
 	}
 
@@ -82,4 +88,30 @@ public class ViewTaskFactoryListener {
 			return;
 		networkViewLocationTFs.remove(nvltf);
 	}
+	
+	public void addCyNodeViewContextMenuFactory(CyNodeViewContextMenuFactory cnvcmf, Map props){
+		if(cnvcmf == null)
+			return;
+		cyNodeViewContexMenuFactory.put(cnvcmf, props);
+	}
+	
+	public void removeCyNodeViewContextMenuFactory(CyNodeViewContextMenuFactory cnvcmf, Map props){
+		if(cnvcmf == null)
+			return;
+		cyNodeViewContexMenuFactory.remove(cnvcmf);
+	}
+	
+	public void addCyEdgeViewContextMenuFactory(CyEdgeViewContextMenuFactory cevcmf, Map props){
+		if(cevcmf == null)
+			return;
+		cyEdgeViewContextMenuFactory.put(cevcmf, props);
+	}
+	
+	public void removeCyEdgeViewContextMenuFactory(CyEdgeViewContextMenuFactory cevcmf, Map props){
+		if(cevcmf == null)
+			return;
+		cyEdgeViewContextMenuFactory.remove(cevcmf);
+	}
+
+	
 }

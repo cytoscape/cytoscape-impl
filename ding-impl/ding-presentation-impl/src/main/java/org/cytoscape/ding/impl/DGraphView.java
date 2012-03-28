@@ -64,6 +64,8 @@ import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.JLayeredPane;
 
+import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
@@ -389,6 +391,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final Map<EdgeViewTaskFactory, Map> edgeViewTFs;
 	final Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
 	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTfs;
+	final Map<CyEdgeViewContextMenuFactory, Map> cyEdgeViewContextMenuFactory;
+	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContextMenuFactory;
 
 	final DialogTaskManager manager;
 	final SubmenuTaskManager menuTaskManager;
@@ -460,6 +464,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.edgeViewTFs = vtfl.edgeViewTFs;
 		this.emptySpaceTFs = vtfl.emptySpaceTFs; 
 		this.networkViewLocationTfs = vtfl.networkViewLocationTFs;
+		this.cyEdgeViewContextMenuFactory = vtfl.cyEdgeViewContextMenuFactory;
+		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
+		
 		this.manager = manager;
 		this.menuTaskManager = menuTaskManager;
 		this.cyEventHelper = cyEventHelper;

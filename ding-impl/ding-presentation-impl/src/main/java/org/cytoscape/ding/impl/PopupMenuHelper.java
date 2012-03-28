@@ -41,6 +41,8 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.model.CyEdge;
@@ -53,6 +55,8 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.TunableEdgeViewTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
@@ -106,7 +110,9 @@ class PopupMenuHelper {
 					TaskFactory provisioner = factoryProvisioner.createFor(evtf, ev, m_view);
 					createMenuItem(ev, menu, provisioner, context, tracker, m_view.edgeViewTFs.get(evtf) );
 				}
-
+				
+				for (CyEdgeViewContextMenuFactory edgeCMF: m_view.cyEdgeViewContextMenuFactory.keySet())
+					menu.add(edgeCMF.createMenuItem(m_view , ev).getMenuItem());
 				menu.show(invoker, x, y);
 
 			// execute the task directly if only one factory exists
@@ -140,6 +146,8 @@ class PopupMenuHelper {
 					createMenuItem(nv, menu, provisioner, context, tracker, m_view.nodeViewTFs.get( nvtf ));
 				}
 
+				for (CyNodeViewContextMenuFactory nodeVMF: m_view.cyNodeViewContextMenuFactory.keySet())
+					menu.add(nodeVMF.createMenuItem(m_view, nv).getMenuItem());
 				menu.show(invoker, x, y);
 
 			// execute the task directly if only one factory exists

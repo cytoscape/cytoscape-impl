@@ -3,6 +3,8 @@ package org.cytoscape.ding;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.dependency.CustomGraphicsSizeDependency;
@@ -165,7 +167,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,vtfListener,"addEdgeViewTaskFactory","removeEdgeViewTaskFactory",EdgeViewTaskFactory.class);
 		registerServiceListener(bc,vtfListener,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
 		registerServiceListener(bc,vtfListener,"addNetworkViewLocationTaskFactory","removeNetworkViewLocationTaskFactory",NetworkViewLocationTaskFactory.class);
-
+		registerServiceListener(bc,vtfListener,"addCyEdgeViewContextMenuFactory","removeCyEdgeViewContextMenuFactory",CyEdgeViewContextMenuFactory.class);
+		registerServiceListener(bc,vtfListener,"addCyNodeViewContextMenuFactory","removeCyNodeViewContextMenuFactory",CyNodeViewContextMenuFactory.class);
+		
 
 		registerServiceListener(bc,annotationFactoryManager,"addAnnotationFactory","removeAnnotationFactory",AnnotationFactory.class);
 
