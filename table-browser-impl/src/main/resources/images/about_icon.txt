@@ -8,3 +8,9 @@ License:Creative Commons Attribution (by)
 Icon Pack:Wireframe Mono
 Designer:Gentleface.com
 License:Creative Commons Attribution Non-commercial (by-nc)
+
+<table_map.png>
+Artist: Fatcow Web Hosting
+Iconset: Farm Fresh Icons (2000 icons)
+License: CC Attribution 3.0
+http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/table-relationship-icon.html

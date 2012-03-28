@@ -66,14 +66,15 @@ import org.cytoscape.browser.internal.util.ColumnResizer;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -108,6 +109,9 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JButton selectAllAttributesButton = null;
 	private JButton unselectAllAttributesButton = null;
 	
+	private JButton mapGlobalTableButton = null;
+	private final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService;
+	
 	private final JComboBox tableChooser;
 
 	private AttributeListModel attrListModel;
@@ -123,18 +127,24 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
 			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
-			final JComboBox tableChooser, final Class<? extends CyIdentifiable> objType, final CyApplicationManager appManager) {
+			final JComboBox tableChooser, final Class<? extends CyIdentifiable> objType,
+			final CyApplicationManager appManager,
+			final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+		
 		this(serviceRegistrar, compiler, deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser,
-				new JToggleButton(), objType, appManager);
+				new JToggleButton(), objType, appManager, mapGlobalTableTaskFactoryService);
 	}
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
 			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
-			final JComboBox tableChooser, final JToggleButton selectionModeButton, Class<? extends CyIdentifiable> objType, final CyApplicationManager appManager) {
+			final JComboBox tableChooser, final JToggleButton selectionModeButton,
+			Class<? extends CyIdentifiable> objType, final CyApplicationManager appManager,
+			final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		this.compiler = compiler;
 		this.selectionModeButton = selectionModeButton;
 		this.appManager = appManager;
-
+		this.mapGlobalTableTaskFactoryService = mapGlobalTableTaskFactoryService;
+		
 		this.tableChooser = tableChooser;
 		this.deleteTableTaskFactoryService = deleteTableTaskFactoryService;
 		this.guiTaskManagerServiceRef = guiTaskManagerServiceRef;
@@ -159,8 +169,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		
 		if(browserTableModel != null && objType != null) {
 			deleteTableButton.setEnabled(false);
+			mapGlobalTableButton.setEnabled(false);
 		} else {
 			deleteTableButton.setEnabled(browserTableModel != null);
+			mapGlobalTableButton.setEnabled(browserTableModel != null);
 		}
 		
 		formulaBuilderButton.setEnabled(browserTableModel != null);
@@ -475,6 +487,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								.addPreferredGap(ComponentPlacement.UNRELATED)
 								.addComponent(getFunctionBuilderButton())
 								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(getMapGlobalTableButton())
+								.addPreferredGap(ComponentPlacement.UNRELATED)
 								.addComponent(this.tableChooser)));
 			buttonBarLayout.setVerticalGroup(buttonBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 							.addComponent(selectionModeButton, javax.swing.GroupLayout.Alignment.CENTER,
@@ -505,6 +519,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
 								       27, Short.MAX_VALUE)
 							.addComponent(formulaBuilderButton,
+									javax.swing.GroupLayout.Alignment.CENTER,
+								       javax.swing.GroupLayout.DEFAULT_SIZE,
+								       27, Short.MAX_VALUE)
+							.addComponent(mapGlobalTableButton,
 									javax.swing.GroupLayout.Alignment.CENTER,
 								       javax.swing.GroupLayout.DEFAULT_SIZE,
 								       27, Short.MAX_VALUE)
@@ -812,8 +830,26 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 		return createNewAttributeButton;
 	}
+	
+	private JButton getMapGlobalTableButton() {
+		if (mapGlobalTableButton == null) {
+			mapGlobalTableButton = new JButton();
+			mapGlobalTableButton.setBorder(null);
+			mapGlobalTableButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+			mapGlobalTableButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_map.png")));
+			mapGlobalTableButton.setToolTipText("Map Global Table to Networks");
+			mapGlobalTableButton.setBorder(null);
 
+			mapGlobalTableButton.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					guiTaskManagerServiceRef.execute(mapGlobalTableTaskFactoryService.createTaskIterator());
+				}
+			});
+		}
+		mapGlobalTableButton.setEnabled(false);
 
+		return mapGlobalTableButton;
+	}
 
 	private void createNewAttribute(final String type, boolean isShared) {
 		
