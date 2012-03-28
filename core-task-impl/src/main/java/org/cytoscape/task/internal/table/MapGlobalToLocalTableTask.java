@@ -10,7 +10,6 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -25,10 +24,10 @@ import org.cytoscape.work.util.ListSingleSelection;
 public final class MapGlobalToLocalTableTask extends AbstractTask {
 
 	@Tunable(description = "Select a Global Table:")
-	public final ListSingleSelection<String> globalTables;
+	public ListSingleSelection<String> globalTables;
 
 	@Tunable(description = "Map selected Global Table to:")
-	public final ListSingleSelection<String> localTables;
+	public ListSingleSelection<String> localTables;
 
 	private final Map<String, CyTable> name2tableMap;
 
