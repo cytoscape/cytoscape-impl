@@ -41,6 +41,7 @@ import javax.swing.event.MenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.StringEnableSupport;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DynamicSubmenuListener;
 
 
@@ -49,9 +50,9 @@ public class NetworkViewMenuListener implements MenuListener {
 	private final MenuListener actualMenuListener;
 	private final StringEnableSupport menuEnableSupport; 
 
-	public NetworkViewMenuListener(DynamicSubmenuListener actualMenuListener, CyApplicationManager appMgr, String enableFor) {
+	public NetworkViewMenuListener(DynamicSubmenuListener actualMenuListener, CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager, String enableFor) {
 		this.actualMenuListener = actualMenuListener;
-		this.menuEnableSupport = new StringEnableSupport(actualMenuListener, enableFor, appMgr);
+		this.menuEnableSupport = new StringEnableSupport(actualMenuListener, enableFor, appMgr, networkViewManager);
 	}
 
 	public void menuSelected(MenuEvent m) {

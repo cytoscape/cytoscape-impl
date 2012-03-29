@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,14 +31,15 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
-package org.cytoscape.view.manual.internal.rotate; 
+package org.cytoscape.view.manual.internal.rotate;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.view.manual.internal.common.AbstractManualLayoutAction;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 /**
  * Rotate network action.
@@ -47,9 +47,10 @@ import org.cytoscape.view.manual.internal.common.AbstractManualLayoutAction;
 public class RotatePanelAction extends AbstractManualLayoutAction {
 
 	/**
- 	 * Rotate network action. Should be in menu slot 0.
+	 * Rotate network action. Should be in menu slot 0.
 	 */
-	public RotatePanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr) {
-		super(comp,swingApp, appMgr,1.0f);
+	public RotatePanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr,
+			final CyNetworkViewManager networkViewManager) {
+		super(comp, swingApp, appMgr, networkViewManager, 1.0f);
 	}
 }

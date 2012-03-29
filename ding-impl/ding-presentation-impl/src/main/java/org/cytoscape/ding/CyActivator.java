@@ -42,6 +42,7 @@ import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -60,6 +61,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		CyApplicationManager applicationManagerManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CustomGraphicsManager customGraphicsManagerServiceRef = getService(bc,CustomGraphicsManager.class);
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc,RenderingEngineManager.class);
@@ -75,6 +77,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
+		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,CyNetworkViewManager.class);
 		
 		CyNetworkFactory cyNetworkFactory = getService(bc,CyNetworkFactory.class);
 		
@@ -85,7 +88,7 @@ public class CyActivator extends AbstractCyActivator {
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 		
 		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(cyDataTableFactoryServiceRef,cyRootNetworkFactoryServiceRef,undoSupportServiceRef,spacialIndex2DFactoryServiceRef,dVisualLexicon,dialogTaskManager,submenuTaskManager,cyServiceRegistrarRef,cyNetworkTableManagerServiceRef,cyEventHelperServiceRef,renderingEngineManagerServiceRef, vtfListener,annotationFactoryManager);
-		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(dVisualLexicon,renderingEngineManagerServiceRef,applicationManagerManagerServiceRef);
+		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(cyServiceRegistrarServiceRef, dVisualLexicon,renderingEngineManagerServiceRef,applicationManagerManagerServiceRef);
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(cyNetworkManagerServiceRef);
 		
 		// Object Position Editor
@@ -111,14 +114,12 @@ public class CyActivator extends AbstractCyActivator {
 		Properties dingRenderingEngineFactoryProps = new Properties();
 		dingRenderingEngineFactoryProps.setProperty("serviceType","presentationFactory");
 		dingRenderingEngineFactoryProps.setProperty("id","ding");
-		registerService(bc,dingRenderingEngineFactory,RenderingEngineFactory.class, dingRenderingEngineFactoryProps);
-		registerService(bc,dingRenderingEngineFactory,UpdateNetworkPresentationEventListener.class, dingRenderingEngineFactoryProps);
+		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
 
 		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
 		dingNavigationRenderingEngineFactoryProps.setProperty("serviceType","presentationFactory");
 		dingNavigationRenderingEngineFactoryProps.setProperty("id","dingNavigation");
-		registerService(bc,dingNavigationRenderingEngineFactory,RenderingEngineFactory.class, dingNavigationRenderingEngineFactoryProps);
-		registerService(bc,dingNavigationRenderingEngineFactory,UpdateNetworkPresentationEventListener.class, dingNavigationRenderingEngineFactoryProps);
+		registerAllServices(bc,dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
 		addEdgeNodeViewTaskFactoryProps.setProperty("preferredAction","Edge");
@@ -173,7 +174,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc,annotationFactoryManager,"addAnnotationFactory","removeAnnotationFactory",AnnotationFactory.class);
 
-		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef, dialogTaskManager,
+		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef, cyNetworkViewManagerServiceRef, dialogTaskManager,
 				 cyPropertyServiceRef);
 		registerAllServices(bc,graphicsDetailAction, new Properties());
 	

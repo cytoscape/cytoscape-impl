@@ -241,7 +241,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	}
 
 	public void addTaskFactory(TaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
-		addFactory(factory, new TaskFactoryTunableAction(taskManager, factory, props, appManager));
+		addFactory(factory, new TaskFactoryTunableAction(taskManager, factory, props, appManager, networkViewManager));
 	}
 
 	public void removeTaskFactory(TaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
@@ -251,7 +251,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager, networkViewManager));
 	}
 
 	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
@@ -261,7 +261,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager, networkViewManager));
 	}
 
 	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
@@ -271,7 +271,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager, networkViewManager));
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
@@ -281,7 +281,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkViewTaskFactory(final NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager, networkViewManager));
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {

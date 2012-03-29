@@ -115,6 +115,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
@@ -139,6 +140,7 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) throws Exception {
 		
+		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 		                                                                             CyApplicationConfiguration.class);
@@ -197,7 +199,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyHelpBroker);
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  networkViewManager,
-		                                                                  dingNavigationPresentationFactoryServiceRef);
+		                                                                  dingNavigationPresentationFactoryServiceRef, renderingEngineManagerServiceRef);
 		NetworkPanel networkPanel = new NetworkPanel(cyApplicationManagerServiceRef,
 		                                             cyNetworkManagerServiceRef,
 		                                             cyNetworkViewManagerServiceRef,
@@ -219,7 +221,7 @@ public class CyActivator extends AbstractCyActivator {
 														   synchronousTaskManagerServiceRef,
 														   saveTaskFactoryServiceRef,
 														   sessStateIO);
-		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cytoscapePropertiesServiceRef);
+		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cytoscapePropertiesServiceRef);
 		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,
 		                                                         preferencesDialogFactory,
@@ -229,14 +231,14 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                  cyApplicationManagerServiceRef,
 		                                                                  submenuTaskManagerServiceRef,
 		                                                                  undoSupportServiceRef,
-		                                                                  cyEventHelperServiceRef);
+		                                                                  cyEventHelperServiceRef, cyNetworkViewManagerServiceRef);
 		CytoscapeMenuPopulator cytoscapeMenuPopulator = new CytoscapeMenuPopulator(cytoscapeDesktop,
 		                                                                           dialogTaskManagerServiceRef,
 		                                                                           panelTaskManagerServiceRef,
-		                                                                           cyApplicationManagerServiceRef,
+		                                                                           cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef,
 		                                                                           cyServiceRegistrarServiceRef);
 		SettingsAction settingsAction = new SettingsAction(cyLayoutsServiceRef, cytoscapeDesktop,
-		                                                   cyApplicationManagerServiceRef,
+		                                                   cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef,
 		                                                   panelTaskManagerServiceRef,
 		                                                   cytoscapePropertiesServiceRef);
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker,

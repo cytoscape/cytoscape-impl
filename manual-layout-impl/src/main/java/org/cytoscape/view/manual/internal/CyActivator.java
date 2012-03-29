@@ -13,6 +13,7 @@ import org.cytoscape.view.manual.internal.control.ControlPanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
 import org.cytoscape.view.manual.internal.control.ControlPanelAction;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 
@@ -35,13 +36,15 @@ public class CyActivator extends AbstractCyActivator {
 
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
+		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,CyNetworkViewManager.class);
+
 		
 		ControlPanel controlPanel = new ControlPanel(cyApplicationManagerServiceRef);
 		RotatePanel rotatePanel = new RotatePanel(cyApplicationManagerServiceRef);
 		ScalePanel scalePanel = new ScalePanel(cyApplicationManagerServiceRef);
-		ControlPanelAction controlPanelAction = new ControlPanelAction(controlPanel,cySwingApplicationServiceRef,cyApplicationManagerServiceRef);
-		RotatePanelAction rotatePanelAction = new RotatePanelAction(rotatePanel,cySwingApplicationServiceRef,cyApplicationManagerServiceRef);
-		ScalePanelAction scalePanelAction = new ScalePanelAction(scalePanel,cySwingApplicationServiceRef,cyApplicationManagerServiceRef);
+		ControlPanelAction controlPanelAction = new ControlPanelAction(controlPanel,cySwingApplicationServiceRef,cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
+		RotatePanelAction rotatePanelAction = new RotatePanelAction(rotatePanel,cySwingApplicationServiceRef,cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
+		ScalePanelAction scalePanelAction = new ScalePanelAction(scalePanel,cySwingApplicationServiceRef,cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
 		
 		registerAllServices(bc,controlPanelAction, new Properties());
 		registerAllServices(bc,scalePanelAction, new Properties());

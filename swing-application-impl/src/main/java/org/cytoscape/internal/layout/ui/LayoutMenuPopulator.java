@@ -56,6 +56,7 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DynamicSubmenuListener;
@@ -68,6 +69,7 @@ import org.slf4j.LoggerFactory;
 public class LayoutMenuPopulator {
 
 	private CyApplicationManager appMgr;
+	private final CyNetworkViewManager networkViewManager;
 	private SubmenuTaskManager tm;
 	private CySwingApplication swingApp;
 	private Map<CyLayoutAlgorithm,MenuListener> listenerMap = new HashMap<CyLayoutAlgorithm,MenuListener>();
@@ -78,8 +80,9 @@ public class LayoutMenuPopulator {
 
 	private static final Logger logger = LoggerFactory.getLogger(LayoutMenuPopulator.class);
 
-	public LayoutMenuPopulator(CySwingApplication swingApp, CyApplicationManager appMgr, SubmenuTaskManager tm, UndoSupport undo, CyEventHelper eventHelper) {
+	public LayoutMenuPopulator(CySwingApplication swingApp, CyApplicationManager appMgr, SubmenuTaskManager tm, UndoSupport undo, CyEventHelper eventHelper, final CyNetworkViewManager networkViewManager) {
 		this.appMgr = appMgr;
+		this.networkViewManager = networkViewManager;
 		this.tm = tm;
 		this.swingApp = swingApp;
 		this.undo = undo;
@@ -108,14 +111,14 @@ public class LayoutMenuPopulator {
 		submenu.setMenuTitle(menuName);
 
 		// now wrap it in a menulistener that sets the current network view for the layout
-		MenuListener ml = new NetworkViewMenuListener( submenu, appMgr, "networkAndView" );
+		MenuListener ml = new NetworkViewMenuListener( submenu, appMgr, networkViewManager, "networkAndView");
 
 		JMenu parentMenu = swingApp.getJMenu(prefMenu);
 		parentMenu.addMenuListener(ml);
 
 		if ( !parentMenuSet.contains(parentMenu) ) {
 			JMenu layoutMenu = swingApp.getJMenu("Layout");
-			layoutMenu.addMenuListener( new LayoutMenuEnabler(parentMenu,"networkAndView",appMgr) );
+			layoutMenu.addMenuListener( new LayoutMenuEnabler(parentMenu,"networkAndView",appMgr, networkViewManager) );
 			parentMenuSet.add(parentMenu);
 		}
 
@@ -154,8 +157,8 @@ public class LayoutMenuPopulator {
 
 	private class LayoutMenuEnabler implements MenuListener {
 		private final StringEnableSupport parentMenuSupport; 
-		LayoutMenuEnabler(JMenu parentMenu, String enableFor, CyApplicationManager appMgr) {
-			parentMenuSupport = new StringEnableSupport(parentMenu,enableFor,appMgr);
+		LayoutMenuEnabler(JMenu parentMenu, String enableFor, CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager) {
+			parentMenuSupport = new StringEnableSupport(parentMenu,enableFor,appMgr, networkViewManager);
 		}
 		public void menuSelected(MenuEvent m) {
 			parentMenuSupport.updateEnableState();

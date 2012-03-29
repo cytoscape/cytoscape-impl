@@ -7,6 +7,7 @@ import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -17,8 +18,6 @@ import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -28,13 +27,9 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 
-
-public class DingRenderingEngineFactory implements
-		RenderingEngineFactory<CyNetwork>,
-		UpdateNetworkPresentationEventListener
-{
+public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
+	
 	private static final Logger logger = LoggerFactory.getLogger(DingRenderingEngineFactory.class);
 
 	private final RenderingEngineManager renderingEngineManager;
@@ -145,23 +140,23 @@ public class DingRenderingEngineFactory implements
 
 		// Register engine to manager
 		this.renderingEngineManager.addRenderingEngine(dgv);
-
+		
 		return dgv;
 	}
 
-	/**
-	 * This method simply redraw the canvas, NOT updating the view model. To
-	 * apply and draw the new view model, you need to call this after apply.
-	 * 
-	 */
-	@Override
-	public void handleEvent(UpdateNetworkPresentationEvent nvce) {
-		DGraphView gv = vtfListener.viewMap.get(nvce.getSource());
-		logger.debug("NetworkViewChangedEvent listener got view update request: "
-				+ nvce.getSource().getSUID());
-		if (gv != null)
-			gv.updateView();
-	}
+//	/**
+//	 * This method simply redraw the canvas, NOT updating the view model. To
+//	 * apply and draw the new view model, you need to call this after apply.
+//	 * 
+//	 */
+//	@Override
+//	public void handleEvent(UpdateNetworkPresentationEvent nvce) {
+//		DGraphView gv = vtfListener.viewMap.get(nvce.getSource());
+//		logger.debug("NetworkViewChangedEvent listener got view update request: "
+//				+ nvce.getSource().getSUID());
+//		if (gv != null)
+//			gv.updateView();
+//	}
 
 	public DGraphView getGraphView(CyNetworkView cnv) {
 		return vtfListener.viewMap.get(cnv);

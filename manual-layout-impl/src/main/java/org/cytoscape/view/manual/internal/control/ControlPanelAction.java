@@ -37,6 +37,7 @@
 package org.cytoscape.view.manual.internal.control; 
 
 import org.cytoscape.view.manual.internal.common.AbstractManualLayoutAction;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -54,7 +55,7 @@ public class ControlPanelAction extends AbstractManualLayoutAction {
 	/**
  	 * Action for the Align and Distribute functionality. Should be in menu slot 2.
 	 */
-	public ControlPanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr) {
-		super(comp, swingApp, appMgr,1.2f);
+	public ControlPanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager) {
+		super(comp, swingApp, appMgr, networkViewManager, 1.2f);
 	}
 }

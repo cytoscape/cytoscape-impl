@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,14 +31,15 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
-package org.cytoscape.view.manual.internal.scale; 
+package org.cytoscape.view.manual.internal.scale;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.view.manual.internal.common.AbstractManualLayoutAction;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 /**
  * Scale network action.
@@ -54,7 +54,8 @@ public class ScalePanelAction extends AbstractManualLayoutAction {
 	/**
 	 * Scale network action. Should be in menu slot 1.
 	 */
-	public ScalePanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr) {
-		super(comp, swingApp, appMgr, 1.1f);
+	public ScalePanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr,
+			final CyNetworkViewManager networkViewManager) {
+		super(comp, swingApp, appMgr, networkViewManager, 1.1f);
 	}
 }

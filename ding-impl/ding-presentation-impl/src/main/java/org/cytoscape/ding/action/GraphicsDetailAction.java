@@ -12,6 +12,7 @@ import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.ding.impl.SwitchGraphicsDetailTaskFactory;
@@ -30,10 +31,10 @@ public class GraphicsDetailAction extends AbstractCyAction {
     private final TaskManager taskManagerServiceRef;
 
 
-	public GraphicsDetailAction(final CyApplicationManager applicationManager, final TaskManager taskManagerServiceRef, 
+	public GraphicsDetailAction(final CyApplicationManager applicationManager, final CyNetworkViewManager networkViewManager, final TaskManager taskManagerServiceRef, 
 			final CyProperty<Properties> defaultProps)
 	{
-		super(SHOW + " " + GraphicsDetails, applicationManager,"networkAndView");
+		super(SHOW + " " + GraphicsDetails, applicationManager,"networkAndView", networkViewManager);
 
 		setPreferredMenu("View");
 		setMenuGravity(5.0f);

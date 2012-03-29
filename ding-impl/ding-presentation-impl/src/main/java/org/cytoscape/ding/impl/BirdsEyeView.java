@@ -61,13 +61,15 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 /**
  * Swing component to display overview of the network.
  * 
  */
-public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork> {
+public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork>, UpdateNetworkPresentationEventListener {
 	
 	private final static long serialVersionUID = 1202416511863994L;
 	
@@ -84,7 +86,8 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 
 	private final double[] m_extents = new double[4];
 
-	private final DGraphView dgv;
+	// This is the view model of this presentation (rendering engine).  Shared with main view.
+	private final DGraphView viewModel;
 	
 	private final ContentChangeListener m_cLis;
 	private final ViewportChangeListener m_vLis;
@@ -106,19 +109,19 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	/**
 	 * Creates a new BirdsEyeView object.
 	 * 
-	 * @param dgv
+	 * @param viewModel
 	 *            The view to monitor
 	 * @param container
 	 *            The desktop area holding the view. This should be
 	 *            NetworkViewManager.getDesktopPane().
 	 */
-	public BirdsEyeView(final DGraphView dgv) {
+	public BirdsEyeView(final DGraphView viewModel) {
 		super();
 
-		if (dgv == null)
+		if (viewModel == null)
 			throw new NullPointerException("DGraphView is null.");
 
-		this.dgv = dgv;
+		this.viewModel = viewModel;
 
 		m_cLis = new InnerContentChangeListener();
 		m_vLis = new InnerViewportChangeListener();
@@ -128,20 +131,20 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		setPreferredSize(MIN_SIZE);
 		setMinimumSize(MIN_SIZE);
 
-		setView(dgv);
+		setView(viewModel);
 	}
 
 	
 	private void setView(final GraphView view) {
 
-		dgv.addContentChangeListener(m_cLis);
-		dgv.addViewportChangeListener(m_vLis);
+		viewModel.addContentChangeListener(m_cLis);
+		viewModel.addViewportChangeListener(m_vLis);
 		
 		updateBounds();
-		final Point2D pt = dgv.getCenter();
+		final Point2D pt = viewModel.getCenter();
 		m_viewXCenter = pt.getX();
 		m_viewYCenter = pt.getY();
-		m_viewScaleFactor = dgv.getZoom();
+		m_viewScaleFactor = viewModel.getZoom();
 		m_contentChanged = true;
 
 		repaint();
@@ -159,7 +162,7 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	}
 	
 	private Rectangle2D getViewableRect() {
-		final Rectangle r = dgv.getComponent().getBounds();
+		final Rectangle r = viewModel.getComponent().getBounds();
 		return new Rectangle2D.Double(r.x, r.y, r.width, r.height);
 	}
 
@@ -168,12 +171,12 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		final double[] origin = new double[2];
 		origin[0] = viewable.getX();
 		origin[1] = viewable.getY();
-		dgv.xformComponentToNodeCoords(origin);
+		viewModel.xformComponentToNodeCoords(origin);
 
 		final double[] destination = new double[2];
 		destination[0] = viewable.getX() + viewable.getWidth();
 		destination[1] = viewable.getY() + viewable.getHeight();
-		dgv.xformComponentToNodeCoords(destination);
+		viewModel.xformComponentToNodeCoords(destination);
 
 		return new Rectangle2D.Double(origin[0], origin[1],
 				destination[0] - origin[0], destination[1] - origin[1]);
@@ -209,7 +212,7 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		updateBounds();
 
 		if (m_contentChanged) {
-			if (dgv.getExtents(m_extents)) {				
+			if (viewModel.getExtents(m_extents)) {				
 				m_myXCenter = (m_extents[0] + m_extents[2]) / 2.0d;
 				m_myYCenter = (m_extents[1] + m_extents[3]) / 2.0d;
 				m_myScaleFactor = SCALE_FACTOR * Math.min(((double) getWidth())
@@ -221,8 +224,8 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 				m_myScaleFactor = 1.0d;
 			}
 
-			dgv.drawSnapshot(networkImage, dgv.getGraphLOD(),
-					dgv.getBackgroundPaint(), m_myXCenter, m_myYCenter,
+			viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(),
+					viewModel.getBackgroundPaint(), m_myXCenter, m_myYCenter,
 					m_myScaleFactor);
 			m_contentChanged = false;
 		}
@@ -316,9 +319,9 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 				m_lastXMousePos = currX;
 				m_lastYMousePos = currY;
 
-				final Point2D pt = dgv.getCenter();
-				dgv.setCenter(pt.getX() + deltaX, pt.getY() + deltaY);
-				dgv.updateView();
+				final Point2D pt = viewModel.getCenter();
+				viewModel.setCenter(pt.getX() + deltaX, pt.getY() + deltaY);
+				viewModel.updateView();
 			}
 		}
 	}
@@ -329,33 +332,28 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 
 	@Override
 	public View<CyNetwork> getViewModel() {
-		return dgv.getViewModel();
+		return viewModel.getViewModel();
 	}
 
 	@Override
 	public VisualLexicon getVisualLexicon() {
-		return dgv.getVisualLexicon();
+		return viewModel.getVisualLexicon();
 	}
 
 	@Override
 	public Properties getProperties() {
-		return dgv.getProperties();
+		return viewModel.getProperties();
 	}
 
-//	@Override
-//	public void setProperties(String key, String value) {
-//		dgv.setProperties(key, value);
-//		
-//	}
 	
 	@Override
 	public Printable createPrintable() {
-		return dgv.createPrintable();
+		return viewModel.createPrintable();
 	}
 
 	@Override
 	public <V> Icon createIcon(VisualProperty<V> vp, V value, int width, int height) {
-		return dgv.createIcon(vp, value, width, height);
+		return viewModel.createIcon(vp, value, width, height);
 	}
 
 
@@ -368,5 +366,12 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	@Override
 	public String getRenderingEngineID() {
 		return ENGINE_ID;
+	}
+
+
+	@Override
+	public void handleEvent(UpdateNetworkPresentationEvent e) {
+		//System.out.println("#### Got redraw event for BEV");
+		
 	}
 }

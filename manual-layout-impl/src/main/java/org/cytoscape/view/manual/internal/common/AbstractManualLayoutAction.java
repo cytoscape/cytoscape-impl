@@ -53,6 +53,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 /**
  * Base class for displaying cytopanel menu items. This class primarily
@@ -78,8 +79,8 @@ public abstract class AbstractManualLayoutAction
 	 *
 	 * @param title The title of the menu item. 
 	 */
-	public AbstractManualLayoutAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr, float menuGravity) {
-		super(comp.getTitle(), appMgr,"networkAndView");
+	public AbstractManualLayoutAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager, float menuGravity) {
+		super(comp.getTitle(), appMgr,"networkAndView", networkViewManager);
 		this.title = comp.getTitle();
 		this.swingApp = swingApp;
 		this.comp = comp;

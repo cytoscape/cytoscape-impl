@@ -11,7 +11,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTaskFactory implements MapGlobalToLocalTableTaskFactory{
+public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTaskFactory implements MapGlobalToLocalTableTaskFactory {
 	
 	private final CyTableManager tableManager;
 	private final CyNetworkManager networkManager;

@@ -47,6 +47,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
@@ -118,10 +119,10 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 											 final Object context,
 	                                         final PanelTaskManager manager,
 	                                         final Map<String, String> serviceProps, 
-	                                         final CyApplicationManager appMgr,
+	                                         final CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager,
 											 final CyServiceRegistrar registrar)
 	{
-		super(serviceProps, appMgr);
+		super(serviceProps, appMgr, networkViewManager);
 
 		this.factory = factory;
 		this.manager = manager;

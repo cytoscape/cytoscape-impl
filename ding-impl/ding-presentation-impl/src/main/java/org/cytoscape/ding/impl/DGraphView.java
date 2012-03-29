@@ -74,7 +74,6 @@ import org.cytoscape.ding.GraphViewObject;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.PrintLOD;
-import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
@@ -93,11 +92,11 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
@@ -131,6 +130,7 @@ import org.cytoscape.view.model.events.FitContentEvent;
 import org.cytoscape.view.model.events.FitContentEventListener;
 import org.cytoscape.view.model.events.FitSelectedEvent;
 import org.cytoscape.view.model.events.FitSelectedEventListener;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -1161,6 +1161,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,(double)imageHeight);
 		}
 		logger.debug("Repaint finished in " + (System.currentTimeMillis() - start) + " msec.");
+		
+		// Fire for updating other presentations.
+		cyEventHelper.fireEvent(new UpdateNetworkPresentationEvent(this));
 	}
 
 	/**

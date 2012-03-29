@@ -50,12 +50,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.KeyStroke;
-import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 
@@ -70,8 +70,8 @@ public class PrintAction extends AbstractCyAction {
 	/**
 	 * Creates a new PrintAction object.
 	 */
-	public PrintAction(CyApplicationManager appMgr, CyProperty<Properties> coreProp) {
-		super(MENU_LABEL, appMgr, "networkAndView" );
+	public PrintAction(CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager, CyProperty<Properties> coreProp) {
+		super(MENU_LABEL, appMgr, "networkAndView", networkViewManager);
 		this.appMgr = appMgr;
 
 		setPreferredMenu("File");
