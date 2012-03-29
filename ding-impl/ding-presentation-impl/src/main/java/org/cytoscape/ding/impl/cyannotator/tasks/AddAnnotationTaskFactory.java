@@ -20,7 +20,7 @@ public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView,
 			Point2D javaPt, Point2D xformPt) {
-		return new TaskIterator(new AddAnnotationTask(networkView, xformPt, annotationFactory));
+		return new TaskIterator(new AddAnnotationTask(networkView, javaPt, annotationFactory));
 
 	}
 
