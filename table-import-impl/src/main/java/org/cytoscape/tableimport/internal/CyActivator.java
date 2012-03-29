@@ -34,6 +34,7 @@ import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactory;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
 
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.application.swing.CyAction;
@@ -75,8 +76,11 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeServices.cyTableFactory = getService(bc,CyTableFactory.class);
 		CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
 		CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
+		CytoscapeServices.mapGlobalToLocalTableTaskFactory = getService(bc, MapGlobalToLocalTableTaskFactory.class);
+		
+		
 
-		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt", "tab", "net"}, new String[]{"text/csv","text/plain","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
+		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt", "tab", "net"}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter attrsTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter oboFilter = new BasicCyFileFilter(new String[]{"obo"}, new String[]{"text/obo"},"OBO Files",NETWORK,CytoscapeServices.streamUtil);
 		OBONetworkReaderFactory oboReaderFactory = new OBONetworkReaderFactory(oboFilter);

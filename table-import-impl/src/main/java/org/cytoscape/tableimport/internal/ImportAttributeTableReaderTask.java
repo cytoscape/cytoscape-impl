@@ -129,6 +129,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 				this.reader = new DefaultAttributeTableReader(null,amp,this.is); 
 				loadAnnotation(tm);
 			}
+		insertTasksAfterCurrentTask(CytoscapeServices.mapGlobalToLocalTableTaskFactory.createTaskIterator());
 	}
 
 

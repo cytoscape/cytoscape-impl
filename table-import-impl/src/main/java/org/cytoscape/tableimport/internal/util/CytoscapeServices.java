@@ -16,6 +16,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.io.util.StreamUtil;
@@ -41,4 +42,5 @@ public class  CytoscapeServices {
 	public static CyTableFactory cyTableFactory;
 	public static StreamUtil streamUtil;
 	public static CyEventHelper cyEventHelper;
+	public static MapGlobalToLocalTableTaskFactory mapGlobalToLocalTableTaskFactory;
 }
