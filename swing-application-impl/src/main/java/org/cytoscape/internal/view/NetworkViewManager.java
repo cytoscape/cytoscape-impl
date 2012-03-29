@@ -72,6 +72,7 @@ import org.cytoscape.view.model.events.NetworkViewChangedListener;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +118,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	private final CyNetworkViewManager networkViewManager;
 	private final CyApplicationManager applicationManager;
+	private final RenderingEngineManager renderingEngineManager;
 
 	/**
 	 * Creates a new NetworkViewManager object.
@@ -124,13 +126,15 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 * @param desktop
 	 *            DOCUMENT ME!
 	 */
-	public NetworkViewManager(CyApplicationManager appMgr, CyNetworkViewManager netViewMgr,
+	public NetworkViewManager(CyApplicationManager appMgr, CyNetworkViewManager netViewMgr,final RenderingEngineManager renderingEngineManager,
 			CyProperty<Properties> cyProps, CyHelpBroker help) {
 
 		if (appMgr == null)
 			throw new NullPointerException("CyApplicationManager is null.");
 		if (netViewMgr == null)
 			throw new NullPointerException("CyNetworkViewManager is null.");
+		
+		this.renderingEngineManager = renderingEngineManager;
 
 		this.factories = new HashMap<String, RenderingEngineFactory<CyNetwork>>();
 
@@ -373,6 +377,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		final long start = System.currentTimeMillis();
 		logger.debug("Rendering start: view model = " + view.getSUID());
 		final RenderingEngine<CyNetwork> renderingEngine = currentRenderingEngineFactory.createRenderingEngine(iframe, view);
+		renderingEngineManager.addRenderingEngine(renderingEngine);
+		
 		logger.debug("Rendering finished in " + (System.currentTimeMillis() - start) + " m sec.");
 		presentationMap.put(view, renderingEngine);
 

@@ -131,7 +131,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 120d);
 
 		innerPanel.setBackground(BACKGROUND_COLOR);
-		// Render it in this panel
+		// Render it in this panel.  It is not necessary to register this engine to manager.
 		final RenderingEngine<CyNetwork> renderingEngine = presentationFactory.createRenderingEngine(innerPanel, dummyview);
 		dummyview.fitContent();
 		

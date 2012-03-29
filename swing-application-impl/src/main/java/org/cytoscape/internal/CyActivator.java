@@ -194,7 +194,7 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeMenus cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
 		ToolBarEnableUpdater toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar);
 		NetworkViewManager networkViewManager = new NetworkViewManager(cyApplicationManagerServiceRef,
-		                                                               cyNetworkViewManagerServiceRef,
+		                                                               cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef,
 		                                                               cytoscapePropertiesServiceRef,
 		                                                               cyHelpBroker);
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,

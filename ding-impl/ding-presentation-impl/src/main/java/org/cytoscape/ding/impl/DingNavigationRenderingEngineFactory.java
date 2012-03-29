@@ -75,23 +75,11 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 
 		// Register this rendering engine as service.
 		this.registrar.registerAllServices(bev, new Properties());
-		
-		this.renderingEngineManager.addRenderingEngine(bev);
 
 		logger.debug("Bird's Eye View had been set to the component.  Network Model = " + view.getModel().getSUID());
 		return bev;
 	}
 
-	/**
-	 * Catch the events from view model layer.
-	 */
-//	@Override
-//	public void handleEvent(UpdateNetworkPresentationEvent nvce) {
-//		System.out.println("BEV got update view event: " + nvce.getSource());
-//		//DGraphView gv = viewMap.get(nvce.getSource());
-////		if (gv != null)
-////			gv.updateView();
-//	}
 
 	@Override
 	public VisualLexicon getVisualLexicon() {

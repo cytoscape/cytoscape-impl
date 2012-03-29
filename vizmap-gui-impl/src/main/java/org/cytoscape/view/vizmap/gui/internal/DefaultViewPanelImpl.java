@@ -56,6 +56,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
@@ -74,6 +75,8 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	// Space around view.
 	private static final int PADDING = 20;
 
+	private final RenderingEngineManager renderingEngineManager;
+	
 	// Dummy network and its view
 	private final RenderingEngine<CyNetwork> renderingEngine;
 	private final SelectedVisualStyleManager selectedManager;
@@ -92,8 +95,9 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	public DefaultViewPanelImpl(final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkViewFactory cyNetworkViewFactory,
 			final RenderingEngineFactory<CyNetwork> presentationFactory,
-			final SelectedVisualStyleManager selectedManager) {
+			final SelectedVisualStyleManager selectedManager, final RenderingEngineManager renderingEngineManager) {
 
+		this.renderingEngineManager = renderingEngineManager;
 		this.innerPanel = new JPanel();
 		this.innerPanel.setBorder(new EmptyBorder(PADDING, PADDING, PADDING, PADDING));
 
@@ -145,8 +149,10 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 
 		this.innerPanel.setBackground((Color) currentStyle.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
 		// Render it in this panel
-		renderingEngine = presentationFactory
-				.createRenderingEngine(innerPanel, dummyview);
+		renderingEngine = presentationFactory.createRenderingEngine(innerPanel, dummyview);
+		
+		// Register it to the manager.
+		//renderingEngineManager.addRenderingEngine(renderingEngine);
 		dummyview.fitContent();
 		
 		// Remove unnecessary mouse listeners.

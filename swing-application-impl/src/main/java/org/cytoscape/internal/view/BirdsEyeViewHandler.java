@@ -182,6 +182,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 		if(presentationPanel == null) {
 			presentationPanel = new JPanel();
 			final RenderingEngine<CyNetwork> bevEngine = bevFactory.createRenderingEngine(presentationPanel, newViewModel);
+			renderingEngineManager.addRenderingEngine(bevEngine);
 			presentationMap.put((CyNetworkView) newViewModel, presentationPanel);
 		}
 		

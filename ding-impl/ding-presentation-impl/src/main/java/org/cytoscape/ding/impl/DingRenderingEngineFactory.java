@@ -137,9 +137,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		registrar.registerAllServices(dgv, new Properties());
 		final AddDeleteHandler addDeleteHandler = new AddDeleteHandler(dgv);
 		registrar.registerAllServices(addDeleteHandler, new Properties());
-
-		// Register engine to manager
-		this.renderingEngineManager.addRenderingEngine(dgv);
 		
 		return dgv;
 	}
