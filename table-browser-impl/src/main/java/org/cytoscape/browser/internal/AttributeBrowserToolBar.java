@@ -74,6 +74,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.task.table.DeleteTableTaskFactory;
 import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -116,7 +117,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private AttributeListModel attrListModel;
 	private final EquationCompiler compiler;
-	private final TableTaskFactory deleteTableTaskFactoryService;
+	private final DeleteTableTaskFactory deleteTableTaskFactoryService;
 	private final DialogTaskManager guiTaskManagerServiceRef;
 	
 	private final JToggleButton selectionModeButton;
@@ -126,7 +127,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private final CyApplicationManager appManager;
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
+			final DeleteTableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
 			final JComboBox tableChooser, final Class<? extends CyIdentifiable> objType,
 			final CyApplicationManager appManager,
 			final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
@@ -136,7 +137,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final TableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
+			final DeleteTableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
 			final JComboBox tableChooser, final JToggleButton selectionModeButton,
 			Class<? extends CyIdentifiable> objType, final CyApplicationManager appManager,
 			final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
@@ -741,27 +742,21 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private void removeTable(final MouseEvent e) {
 				
 		final CyTable table = browserTableModel.getAttributes();
-				
-		if (table.getMutability() == CyTable.Mutability.MUTABLE){
+
+		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
 			String title = "Please confirm this action";
-			String msg = "Are yoy sure you want to delete this table?";
-		    int _confirmValue = JOptionPane.showConfirmDialog(this, msg, title, JOptionPane.YES_NO_OPTION, 
-		    		JOptionPane.QUESTION_MESSAGE);
-		    
+			String msg = "Are you sure you want to delete this table?";
+			int _confirmValue = JOptionPane.showConfirmDialog(this, msg, title, JOptionPane.YES_NO_OPTION,
+					JOptionPane.QUESTION_MESSAGE);
+
 			// if user selects yes delete the table
 			if (_confirmValue == JOptionPane.OK_OPTION)
-			{
 				guiTaskManagerServiceRef.execute(deleteTableTaskFactoryService.createTaskIterator(table));
-				
-				//this.tableManager.deleteTable(table.getSUID());
-			}						
-		}
-		else if (table.getMutability() == CyTable.Mutability.PERMANENTLY_IMMUTABLE){
+		} else if (table.getMutability() == CyTable.Mutability.PERMANENTLY_IMMUTABLE) {
 			String title = "Error";
 			String msg = "Can not delete this table, it is PERMANENTLY_IMMUTABLE";
 			JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
-		}
-		else if(table.getMutability() == CyTable.Mutability.IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES){
+		} else if (table.getMutability() == CyTable.Mutability.IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES) {
 			String title = "Error";
 			String msg = "Can not delete this table, it is IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES";
 			JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);

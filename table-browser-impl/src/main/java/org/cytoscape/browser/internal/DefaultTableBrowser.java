@@ -35,6 +35,7 @@ import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.task.table.DeleteTableTaskFactory;
 import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -58,7 +59,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	public DefaultTableBrowser(String tabTitle, Class<? extends CyIdentifiable> objType, CyTableManager tableManager,
 			CyNetworkTableManager networkTableManager, CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
-			OpenBrowser openBrowser, CyNetworkManager networkManager, TableTaskFactory deleteTableTaskFactoryService,
+			OpenBrowser openBrowser, CyNetworkManager networkManager, DeleteTableTaskFactory deleteTableTaskFactoryService,
 			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
 			CyApplicationManager applicationManager, final CyEventHelper eventHelper, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,

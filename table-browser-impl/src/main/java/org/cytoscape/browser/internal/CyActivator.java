@@ -20,6 +20,7 @@ import org.cytoscape.browser.internal.PopupMenuHelper;
 
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.task.table.DeleteTableTaskFactory;
 import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
 
 import org.osgi.framework.BundleContext;
@@ -41,7 +42,7 @@ public class CyActivator extends AbstractCyActivator {
 		EquationCompiler compilerServiceRef = getService(bc,EquationCompiler.class);
 		OpenBrowser openBrowserServiceRef = getService(bc,OpenBrowser.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
-		TableTaskFactory deleteTableTaskFactoryService = getService(bc,TableTaskFactory.class);
+		DeleteTableTaskFactory deleteTableTaskFactoryService = getService(bc, DeleteTableTaskFactory.class);
 		DialogTaskManager guiTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
