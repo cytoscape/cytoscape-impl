@@ -36,6 +36,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -69,7 +70,6 @@ import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -621,8 +621,16 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			ex.printStackTrace();
 		}
 
-		if (networkList.size() > 0)
+		if (networkList.size() > 0) {
 			appManager.setSelectedNetworks(networkList);
+			final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+			for(final CyNetwork network: networkList) {
+				final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+				if(views.size() !=0)
+					selectedViews.addAll(views);
+			}
+			appManager.setSelectedNetworkViews(selectedViews);
+		}
 	}
 
 	/**
