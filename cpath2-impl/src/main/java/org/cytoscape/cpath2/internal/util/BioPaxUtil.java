@@ -157,7 +157,7 @@ public final class BioPaxUtil {
 			if(model != null && BioPAXLevel.L2.equals(model.getLevel())) {
 				model = new OneTwoThree().filter(model);
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			log.warn("Import failed: " + e);
 		}
 		return model;
