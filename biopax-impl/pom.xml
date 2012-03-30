@@ -5,14 +5,18 @@
 		<artifactId>impl-parent</artifactId>
 		<version>3.0.0-alpha8-SNAPSHOT</version>
 	</parent>
+	
 	<properties>
 		<bundle.symbolicName>org.cytoscape.biopax-impl</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.biopax</bundle.namespace>
+		<paxtools.version>4.1.3-SNAPSHOT</paxtools.version>
 	</properties>
+	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>biopax-impl</artifactId>
 	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
 	<packaging>bundle</packaging>
+	
 	<dependencies>
         <dependency>
             <groupId>org.cytoscape</groupId>
@@ -50,17 +54,15 @@
         	<scope>provided</scope>
         </dependency>
         <dependency>
-	        <groupId>cytoscape-temp</groupId>
+	        <groupId>org.biopax.paxtools</groupId>
 	        <artifactId>paxtools-core</artifactId>
-	        <version>4.1.1</version>
-	        <scope>provided</scope>
+	        <version>${paxtools.version}</version>
         </dependency>
-		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>biopax-converter</artifactId>
-			<version>4.1.1</version>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+        	<groupId>org.biopax.paxtools</groupId>
+        	<artifactId>biopax-converter</artifactId>
+        	<version>${paxtools.version}</version>
+        </dependency>        
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -79,9 +81,19 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>!${bundle.namespace}.internal.*,${bundle.namespace}.*;version="${project.version}"</Export-Package>
-						<Private-Package>${bundle.namespace}.internal.*</Private-Package>
+						<Export-Package>
+							!${bundle.namespace}.internal.*,
+							!org.biopax.paxtools.*,
+							${bundle.namespace}.*;version="${project.version}"</Export-Package>
+						<Private-Package>
+							${bundle.namespace}.internal.*,
+							org.biopax.paxtools.*
+						</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.internal.CyActivator</Bundle-Activator>
+						<Embed-Dependency>
+							*;groupId=org.biopax.paxtools;scope=compile|runtime;type=!pom;inline=true,
+						</Embed-Dependency>
+						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>

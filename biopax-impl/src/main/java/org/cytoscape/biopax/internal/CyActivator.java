@@ -1,5 +1,7 @@
 package org.cytoscape.biopax.internal;
 
+import org.biopax.paxtools.io.SimpleIOHandler;
+import org.biopax.paxtools.model.Model;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -76,6 +78,16 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,(NetworkViewAboutToBeDestroyedListener)bioPaxViewTracker,NetworkViewAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,(SetCurrentNetworkViewListener)bioPaxViewTracker,SetCurrentNetworkViewListener.class, new Properties());
 		
+		
+		//quick sanity test
+		try {
+			Model model = (new SimpleIOHandler())
+				.convertFromOWL(this.getClass().getResourceAsStream("biopax3-short-metabolic-pathway.owl"));
+			System.out.println("Started biopax-impl!");
+		} catch (Throwable t) {
+			System.out.println("Failed test biopax-impl.");
+			t.printStackTrace();
+		}
 	}
 }
 
