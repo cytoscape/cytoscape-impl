@@ -44,7 +44,6 @@ import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
@@ -71,9 +70,9 @@ public class ExportAsBioPAXAction extends AbstractCyAction {
 	private final TaskManager taskManager;
 	
 	public ExportAsBioPAXAction(FileUtil fileUtil, CyApplicationManager applicationManager, 
-			CyFileFilter bioPaxFilter, TaskManager taskManager, final CyNetworkViewManager networkViewManager) 
+			CyFileFilter bioPaxFilter, TaskManager taskManager) 
 	{
-		super("BioPAX", applicationManager,"network", networkViewManager);
+		super("BioPAX", applicationManager,"network");
 		setPreferredMenu("File.Export.Network");
 		this.fileUtil = fileUtil;
 		this.applicationManager = applicationManager;

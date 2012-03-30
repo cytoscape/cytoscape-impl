@@ -53,11 +53,13 @@
 	        <groupId>cytoscape-temp</groupId>
 	        <artifactId>paxtools-core</artifactId>
 	        <version>4.1.1</version>
-	    </dependency>
+	        <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>biopax-converter</artifactId>
 			<version>4.1.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
