@@ -93,6 +93,7 @@ import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
+import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CyPropertyWriterManager;
@@ -244,6 +245,7 @@ public class CyActivator extends AbstractCyActivator {
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker,
 		                                                                              cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
+		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef);
 		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory();
 		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop, GRID);
 		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
@@ -306,6 +308,13 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class,
 		                helpContactHelpDeskTaskFactoryProps);
 
+		Properties helpReportABugTaskFactoryProps = new Properties();
+		helpReportABugTaskFactoryProps.setProperty("preferredMenu", "Help");
+		helpReportABugTaskFactoryProps.setProperty("title", "Report a Bug...");
+		registerService(bc, helpReportABugTaskFactory, TaskFactory.class,
+		                helpReportABugTaskFactoryProps);
+
+		
 		Properties helpAboutTaskFactoryProps = new Properties();
 		helpAboutTaskFactoryProps.setProperty("preferredMenu", "Help");
 		helpAboutTaskFactoryProps.setProperty("title", "About...");
