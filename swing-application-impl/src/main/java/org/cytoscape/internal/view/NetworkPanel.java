@@ -671,7 +671,15 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				if (row != -1) {
 					JTree tree = treeTable.getTree();
 					TreePath treePath = tree.getPathForRow(row);
-					Long networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork().getSUID();
+					
+					Long networkID = -1L;
+					try {
+						networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork().getSUID();						
+					}
+					catch (NullPointerException nullExp){
+						//The tree root does not represent a network, ignore it.
+						return;
+					}
 
 					CyNetwork cyNetwork = netmgr.getNetwork(networkID);
 
