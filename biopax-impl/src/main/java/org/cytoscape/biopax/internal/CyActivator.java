@@ -80,14 +80,14 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		//quick sanity test
-		try {
-			Model model = (new SimpleIOHandler())
-				.convertFromOWL(this.getClass().getResourceAsStream("biopax3-short-metabolic-pathway.owl"));
-			System.out.println("Started biopax-impl!");
-		} catch (Throwable t) {
-			System.out.println("Failed test biopax-impl.");
-			t.printStackTrace();
-		}
+//		try {
+//			Model model = (new SimpleIOHandler())
+//				.convertFromOWL(this.getClass().getResourceAsStream("biopax3-short-metabolic-pathway.owl"));
+//			System.out.println("Started biopax-impl!");
+//		} catch (Throwable t) {
+//			System.out.println("Failed test biopax-impl.");
+//			t.printStackTrace();
+//		}
 	}
 }
 

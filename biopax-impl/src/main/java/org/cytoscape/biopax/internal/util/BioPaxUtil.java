@@ -58,6 +58,7 @@ import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.cytoscape.biopax.internal.BioPaxMapper;
+import org.cytoscape.biopax.internal.StaxHack;
 import org.cytoscape.model.CyNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,19 +129,29 @@ public final class BioPaxUtil {
 	 * @throws FileNotFoundException 
 	 */
 	public static Model read(final InputStream in) throws FileNotFoundException {
-		Model model = null;
-		try {
-			SimpleIOHandler handler = new SimpleIOHandler();
-			handler.mergeDuplicates(true); // a workaround (illegal) BioPAX data having duplicated rdf:ID...
-			model =  handler.convertFromOWL(in);	
-			// immediately convert to BioPAX Level3 model
-			if(model != null && BioPAXLevel.L2.equals(model.getLevel())) {
-				model = new OneTwoThree().filter(model);
-			}
-		} catch (Throwable e) {
-			log.warn("Import failed: " + e);
+		Model model = convertFromOwl(in);
+		// immediately convert to BioPAX Level3 model
+		if(model != null && BioPAXLevel.L2.equals(model.getLevel())) {
+			model = new OneTwoThree().filter(model);
 		}
 		return model;
+	}
+	
+	private static Model convertFromOwl(final InputStream stream) {
+		final Model[] model = new Model[1];
+		final SimpleIOHandler handler = new SimpleIOHandler();
+		handler.mergeDuplicates(true); // a workaround (illegal) BioPAX data having duplicated rdf:ID...
+		StaxHack.runWithHack(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					model[0] =  handler.convertFromOWL(stream);	
+				} catch (Throwable e) {
+					log.warn("Import failed: " + e);
+				}
+			}
+		});
+		return model[0];
 	}
 
 	
@@ -555,14 +566,19 @@ public final class BioPaxUtil {
 	}
 	
 	
-	public static String toOwl(BioPAXElement bpe) {
-		StringWriter writer = new StringWriter();
-		try {
-			SimpleIOHandler simpleExporter = new SimpleIOHandler(BioPAXLevel.L3);
-			simpleExporter.writeObject(writer, bpe);
-		} catch (Exception e) {
-			log.error("Failed printing '" + bpe.getRDFId() + "' to OWL", e);
-		}
+	public static String toOwl(final BioPAXElement bpe) {
+		final StringWriter writer = new StringWriter();
+		final SimpleIOHandler simpleExporter = new SimpleIOHandler(BioPAXLevel.L3);
+		StaxHack.runWithHack(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					simpleExporter.writeObject(writer, bpe);
+				} catch (Exception e) {
+					log.error("Failed printing '" + bpe.getRDFId() + "' to OWL", e);
+				}
+			}
+		});
 		return writer.toString();
 	}
 	

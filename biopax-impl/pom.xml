@@ -62,7 +62,12 @@
         	<groupId>org.biopax.paxtools</groupId>
         	<artifactId>biopax-converter</artifactId>
         	<version>${paxtools.version}</version>
-        </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>cytoscape-temp</groupId>
+            <artifactId>woodstox-core-lgpl</artifactId>
+            <version>4.0.5</version>
+        </dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

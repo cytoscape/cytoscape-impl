@@ -197,7 +197,7 @@ public class BioPaxMapper {
 		// (converted to L3, processed) RDF/XML data
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			new SimpleIOHandler().convertToOWL(model, baos);
+			convertToOWL(model, baos);
 			AttributeUtil.set(network, network, CyNetwork.HIDDEN_ATTRS, 
 					BioPaxUtil.BIOPAX_DATA, baos.toString("UTF-8"), String.class);
 		} catch (Exception e) {
@@ -207,6 +207,14 @@ public class BioPaxMapper {
 		return network;
 	}
 
+	private void convertToOWL(final Model model, final ByteArrayOutputStream stream) {
+		StaxHack.runWithHack(new Runnable() {
+			@Override
+			public void run() {
+				new SimpleIOHandler().convertToOWL(model, stream);
+			}
+		});
+	}
 	
 	private void createMemberEdges(CyNetwork network) {
 		// for each PE,

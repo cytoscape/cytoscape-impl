@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import org.biopax.paxtools.model.level3.Named;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
 import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.StaxHack;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.cpath2.internal.util.BioPaxUtil;
 import org.cytoscape.cpath2.internal.util.SelectUtil;
@@ -427,7 +429,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			}
 			try {
 				final String xml = webApi.getRecordsByIds(ids, CPathResponseFormat.BIOPAX, new NullTaskMonitor());
-				Model model = (new SimpleIOHandler()).convertFromOWL(new ByteArrayInputStream(xml.getBytes()));
+				Model model = convertFromOwl(new ByteArrayInputStream(xml.getBytes()));
 				// convert L2 to L3 if required (L1 is converted to L2 always anyway - by the handler)
 				if(BioPAXLevel.L2.equals(model.getLevel())) { // 
 					model = (new OneTwoThree()).filter(model);
@@ -466,6 +468,17 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private Model convertFromOwl(final InputStream stream) {
+		final Model[] model = new Model[1];
+		StaxHack.runWithHack(new Runnable() {
+			@Override
+			public void run() {
+				model[0] = (new SimpleIOHandler()).convertFromOWL(stream);
+			}
+		});
+		return model[0];
 	}
 
 	private List<List<CyNode>> createBatchArray(CyNetwork cyNetwork) {
