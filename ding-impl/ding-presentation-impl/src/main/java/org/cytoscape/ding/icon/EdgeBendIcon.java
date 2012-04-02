@@ -11,7 +11,7 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 
-import org.cytoscape.ding.Bend;
+import org.cytoscape.view.presentation.property.values.Bend;
 
 public class EdgeBendIcon extends VisualPropertyIcon<Bend> {
 

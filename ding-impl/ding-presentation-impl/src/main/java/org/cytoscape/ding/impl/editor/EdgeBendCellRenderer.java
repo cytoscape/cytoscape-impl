@@ -7,9 +7,9 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
-import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
+import org.cytoscape.view.presentation.property.values.Bend;
 
 import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 

@@ -16,7 +16,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.DEdgeView;
@@ -32,6 +31,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {

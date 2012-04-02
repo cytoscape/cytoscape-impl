@@ -1,13 +1,11 @@
-
 package org.cytoscape.view.presentation.internal;
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.presentation.internal.RenderingEngineManagerImpl;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.osgi.framework.BundleContext;
-import org.cytoscape.service.util.AbstractCyActivator;
 import java.util.Properties;
+
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -15,17 +13,13 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-
-		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
-		
 		RenderingEngineManagerImpl renderingEngineManager = new RenderingEngineManagerImpl();
-		
+
 		Properties renderingEngineManagerProps = new Properties();
-		renderingEngineManagerProps.setProperty("service.type","manager");
-		registerService(bc,renderingEngineManager,RenderingEngineManager.class, renderingEngineManagerProps);
+		renderingEngineManagerProps.setProperty("service.type", "manager");
+		registerService(bc, renderingEngineManager, RenderingEngineManager.class, renderingEngineManagerProps);
 
-		registerServiceListener(bc,renderingEngineManager,"addRenderingEngineFactory","removeRenderingEngineFactory",RenderingEngineFactory.class);
-
+		registerServiceListener(bc, renderingEngineManager, "addRenderingEngineFactory",
+				"removeRenderingEngineFactory", RenderingEngineFactory.class);
 	}
 }
-

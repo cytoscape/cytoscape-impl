@@ -5,7 +5,6 @@ import java.awt.Font;
 
 import javax.swing.Icon;
 
-import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
@@ -15,6 +14,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.HandleImpl;
+import org.cytoscape.view.presentation.property.values.Bend;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

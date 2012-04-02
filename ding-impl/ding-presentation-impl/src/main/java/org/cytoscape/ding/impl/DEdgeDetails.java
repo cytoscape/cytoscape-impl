@@ -37,11 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.impl.visualproperty.EdgeBendVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -50,7 +48,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.util.intr.MinIntHeap;
+import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 class DEdgeDetails extends EdgeDetails {

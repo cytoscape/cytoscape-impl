@@ -37,12 +37,10 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
 
-import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.Handle;
 import org.cytoscape.ding.Label;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -54,6 +52,8 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 

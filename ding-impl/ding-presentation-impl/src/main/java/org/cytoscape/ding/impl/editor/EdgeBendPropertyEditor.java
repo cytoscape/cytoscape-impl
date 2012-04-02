@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.Bend;
+import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 import com.l2fprod.common.swing.ComponentFactory;

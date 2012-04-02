@@ -1,5 +1,6 @@
 package org.cytoscape.ding;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -47,6 +48,8 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -184,6 +187,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		BendFactory bendFactory = new BendFactoryImpl();
 		registerService(bc,bendFactory,BendFactory.class,new Properties());
+		
+		// Register the factory
+		dVisualLexicon.addBendFactory(bendFactory, new HashMap());
 
 	}
 }

@@ -1,6 +1,6 @@
 package org.cytoscape.ding.impl.editor;
 
-import org.cytoscape.ding.Bend;
+import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;

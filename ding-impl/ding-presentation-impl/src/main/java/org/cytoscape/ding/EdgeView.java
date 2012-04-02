@@ -5,6 +5,7 @@ import java.awt.Paint;
 import java.awt.Stroke;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.view.presentation.property.values.Bend;
 
 
 public interface EdgeView  extends GraphViewObject {

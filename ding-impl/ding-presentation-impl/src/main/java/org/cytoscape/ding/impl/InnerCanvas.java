@@ -48,10 +48,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
-import org.cytoscape.ding.Bend;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphViewChangeListener;
-import org.cytoscape.ding.Handle;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.events.GraphViewEdgesSelectedEvent;
@@ -71,6 +69,8 @@ import org.cytoscape.util.intr.IntEnumerator;
 import org.cytoscape.util.intr.IntHash;
 import org.cytoscape.util.intr.IntStack;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.work.undo.UndoSupport;
 
 /**

@@ -3,8 +3,8 @@ package org.cytoscape.ding.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.ding.Bend;
-import org.cytoscape.ding.Handle;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
 
 /**
  * Basic Implementation of edge bends.
