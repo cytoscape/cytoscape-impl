@@ -78,9 +78,12 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		if (cyTable.isPublic()) {
 			final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 			comboBoxModel.removeItem(cyTable);
-	
-			if (comboBoxModel.getSize() == 0)
+			
+			if (comboBoxModel.getSize() == 0) {
 				tableChooser.setEnabled(false);
+				// The last table is deleted, refresh the browser table (this is a special case)
+				this.DeleteTable(cyTable);
+			}
 		}
 	}
 	
