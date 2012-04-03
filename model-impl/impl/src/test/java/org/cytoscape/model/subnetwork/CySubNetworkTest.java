@@ -29,35 +29,28 @@
 package org.cytoscape.model.subnetwork;
 
 
-import org.cytoscape.model.TestCyNetworkFactory;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.events.AboutToRemoveNodesEvent;
-import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
-import org.cytoscape.model.events.RemovedNodesEvent;
-import org.cytoscape.model.events.RemovedEdgesEvent;
-import org.cytoscape.model.events.NetworkAddedEvent;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.internal.CyRootNetworkImpl;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.TestCyNetworkFactory;
+import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.AboutToRemoveNodesEvent;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.RemovedEdgesEvent;
+import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.internal.CySubNetworkImpl;
-import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
-import org.cytoscape.model.internal.CyTableFactoryImpl;
-import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.List;
-import java.util.ArrayList;
+import org.junit.Test;
 
 public class CySubNetworkTest extends AbstractCySubNetworkTest {
 
