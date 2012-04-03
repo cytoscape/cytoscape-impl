@@ -78,20 +78,34 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 	 * @param objectWithTunables    represents the objects annotated with tunables
 	 */
 	private boolean displayGUI(final JPanel optionPanel, Object objectWithTunables) {
-		TunableDialog tunableDialog = new TunableDialog(parent);
-		tunableDialog.setLocationRelativeTo(parent);
+		TunableDialog tunableDialog;
+		boolean result = false;
+		String userInput;
 		
-		tunableDialog.setTitle(getTitle(objectWithTunables));
-		tunableDialog.setModal(true);
-		tunableDialog.setAlwaysOnTop(true);
-
-		tunableDialog.addComponent(optionPanel);
-		tunableDialog.setVisible(true);
+		do 
+		{
+			tunableDialog = new TunableDialog(parent);
+			tunableDialog.setLocationRelativeTo(parent);
+			
+			tunableDialog.setTitle(getTitle(objectWithTunables));
+			tunableDialog.setModal(true);
+			tunableDialog.setAlwaysOnTop(true);
+	
+			tunableDialog.addComponent(optionPanel);
+			tunableDialog.setVisible(true);
 		
-		String userInput = tunableDialog.getUserInput();
+		
+		    userInput = tunableDialog.getUserInput();
+		    if (userInput.equalsIgnoreCase("OK"))
+		    {
+		    	result = super.validateAndWriteBack(objectWithTunables);	
+		    }
+		}
+		while(userInput.equalsIgnoreCase("OK") == true && result == false);
+		
 		
 		if (userInput.equalsIgnoreCase("OK")){
-			return super.validateAndWriteBack(objectWithTunables);			
+			return result;
 		} else { 
 			return false;			
 		}

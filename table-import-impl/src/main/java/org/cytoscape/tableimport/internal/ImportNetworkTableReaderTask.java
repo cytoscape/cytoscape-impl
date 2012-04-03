@@ -150,7 +150,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 		try{
 		if (ntmp.getSourceIndex() == -1){
 			if (ntmp.getTargetIndex() == -1){
-				errMsg.append("The network cannot be created without selecting the source and tatget columns!");
+				errMsg.append("The network cannot be created without selecting the source and target columns!");
 				return ValidationState.INVALID;
 			}else{
 				errMsg.append("No edges will be created in the network; the target column is not selected.\nDo you want to continue?");
