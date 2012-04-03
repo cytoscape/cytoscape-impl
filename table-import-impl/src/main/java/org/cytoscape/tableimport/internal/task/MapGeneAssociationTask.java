@@ -8,7 +8,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationReader;
 import org.cytoscape.tableimport.internal.reader.ontology.OBOReader;
 import org.cytoscape.work.AbstractTask;
@@ -22,9 +22,13 @@ public class MapGeneAssociationTask extends AbstractTask {
 
 	final CyNetworkManager networkManager;
 	private final CyTableReader tableReader;
+	private final CyTableManager tableManager;
 
-	MapGeneAssociationTask(final CyTableReader tableReader, final CyNetworkManager networkManager) {
+	MapGeneAssociationTask(final CyTableReader tableReader,
+						   final CyTableManager tableManager,
+						   final CyNetworkManager networkManager) {
 		this.tableReader = tableReader;
+		this.tableManager = tableManager;
 		this.networkManager = networkManager;
 	}
 
@@ -38,6 +42,7 @@ public class MapGeneAssociationTask extends AbstractTask {
 		if (tables == null || tables[0] == null)
 			throw new NullPointerException("Could not find table.");
 
+		tableManager.addTable(tables[0]);
 		mapping(taskMonitor, tables[0]);
 	}
 

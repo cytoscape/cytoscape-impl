@@ -10,10 +10,9 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.TableTestSupport;
@@ -26,7 +25,6 @@ import org.mockito.MockitoAnnotations;
 
 public class CSVCyReaderTest {
 	@Mock TaskMonitor taskMonitor;
-	@Mock CyTableManager tableManager;
 
 	private CyTableFactory tableFactory;
 
@@ -45,8 +43,7 @@ public class CSVCyReaderTest {
 	public void testReadSimple() throws Exception {
 		String data = "SUID\r\njava.lang.Long\r\ntest table,\"public\\,mutable\"\r\n5\r\n6";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory,
-						     null, tableManager);
+						     /* handleEquations = */ false, tableFactory, null);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		assertNotNull(tables);
@@ -67,8 +64,7 @@ public class CSVCyReaderTest {
 	public void testReadString() throws Exception {
 		String data = "SUID,name\r\njava.lang.Long,java.lang.String\r\ntest table,\"public\\,mutable\"\r\n1,Alice\r\n2,Bob\r\n3,Carol";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory,
-						     null, tableManager);
+						     /* handleEquations = */ false, tableFactory, null);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -80,8 +76,7 @@ public class CSVCyReaderTest {
 	public void testReadDouble() throws Exception {
 		String data = "SUID,weight\r\njava.lang.Long,java.lang.Double\r\ntest table,\"public\\,mutable\"\r\n0,0.56\r\n-5,-1.234";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory,
-						     null, tableManager);
+						     /* handleEquations = */ false, tableFactory, null);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -93,8 +88,7 @@ public class CSVCyReaderTest {
 	public void testReadBoolean() throws Exception {
 		String data = "SUID,hidden\r\njava.lang.Long,java.lang.Boolean\r\ntest table,\"public\\,mutable\"\r\n30,true\r\n40,false\r\n50,true";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory,
-						     null, tableManager);
+						     /* handleEquations = */ false, tableFactory, null);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -106,8 +100,7 @@ public class CSVCyReaderTest {
 	public void testReadList() throws Exception {
 		String data = "SUID,list\r\njava.lang.Long,java.util.List<java.lang.String>\r\ntest table,\"public\\,mutable\"\r\n1,\"a\rb\rc\"";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory,
-						     null, tableManager);
+						     /* handleEquations = */ false, tableFactory, null);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];

@@ -20,7 +20,7 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 	private static final Logger logger = LoggerFactory.getLogger(ImportOntologyAndAnnotationTask.class);
 	
 	private final InputStreamTaskFactory factory;
-	private final CyNetworkManager manager;
+	private final CyNetworkManager networkManager;
 	private final String ontologyDagName;
 	private final CyTableFactory tableFactory;
 	private final InputStream gaStream;
@@ -28,7 +28,7 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 	private final CyTableManager tableManager;
 	private final InputStream is;
 	
-	ImportOntologyAndAnnotationTask(final CyNetworkManager manager,
+	ImportOntologyAndAnnotationTask(final CyNetworkManager networkManager,
 	                                final InputStreamTaskFactory factory, final InputStream is,
 	                                final String ontologyDagName,
 	                                final CyTableFactory tableFactory,
@@ -36,7 +36,7 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 	                                final CyTableManager tableManager)
 	{
 		this.factory = factory;
-		this.manager = manager;
+		this.networkManager = networkManager;
 		this.ontologyDagName = ontologyDagName;
 		this.tableFactory = tableFactory;
 		
@@ -53,12 +53,11 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 		Task loadOBOTask = factory.createTaskIterator(is, ontologyDagName).next();
 		
 		final GeneAssociationReader gaReader =
-			new GeneAssociationReader(tableFactory, ontologyDagName, gaStream,
-			                          gaTableName, tableManager);
+			new GeneAssociationReader(tableFactory, ontologyDagName, gaStream, gaTableName, tableManager);
 		
-		insertTasksAfterCurrentTask(new MapGeneAssociationTask(gaReader, manager));
+		insertTasksAfterCurrentTask(new MapGeneAssociationTask(gaReader, tableManager, networkManager));
 		insertTasksAfterCurrentTask(gaReader);
-		insertTasksAfterCurrentTask(new RegisterOntologyTask((CyNetworkReader) loadOBOTask, manager, ontologyDagName));
+		insertTasksAfterCurrentTask(new RegisterOntologyTask((CyNetworkReader) loadOBOTask, networkManager, ontologyDagName));
 		insertTasksAfterCurrentTask(loadOBOTask);
 		
 	}

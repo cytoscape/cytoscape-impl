@@ -451,15 +451,19 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	private void mergeNetworkTables() throws UnsupportedEncodingException {
-		for (Entry<Long, CyNetwork> entry : networkLookup.entrySet()) {
-			CyNetwork network = entry.getValue();
-			Object oldId = cache.getOldId(network.getSUID());
-			Set<CyTableMetadataBuilder> builders = networkTableMap.get(oldId);
+		for (Entry<Long, Set<CyTableMetadataBuilder>> entry : networkTableMap.entrySet()) {
+			final Object oldId = entry.getKey();
+			final Set<CyTableMetadataBuilder> builders = entry.getValue();
+			final CyNetwork network = cache.getNetwork(oldId);
 
-			if (builders == null)
-				continue;
+			if (network == null)
+				throw new RuntimeException("Cannot merge network tables: Cannot find network " + oldId);
 
 			for (CyTableMetadataBuilder builder : builders) {
+				if ("VIEW".equals(builder.getNamespace())) {
+					continue; // TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
+				}
+				
 				builder.setNetwork(network);
 				mergeNetworkTable(network, builder);
 				CyTableMetadata metadata = builder.build();
@@ -476,14 +480,10 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder) {
 		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) builder.getType();
 		String namespace = builder.getNamespace();
-
-		if ("VIEW".equals(namespace)) {
-			return; // TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
-		}
-
 		Map<String, CyTable> tableMap = networkTableMgr.getTables(network, type);
 		CyTable targetTable = tableMap.get(namespace);
 		CyTable sourceTable = builder.getTable();
+		
 		mergeTables(sourceTable, targetTable, type);
 		builder.setCyTable(targetTable);
 	}

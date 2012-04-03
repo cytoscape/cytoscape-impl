@@ -262,12 +262,12 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 
 	private void restoreTables(CySession sess) {
-		// Register global tables
+		// Register all tables, if not already registered
 		for (CyTableMetadata metadata : sess.getTables()) {
-			CyNetwork network = metadata.getNetwork();
+			final CyTable tbl = metadata.getTable();
 			
-			if (network == null) {
-				tblMgr.addTable(metadata.getTable());
+			if (tblMgr.getTable(tbl.getSUID()) == null) {
+				tblMgr.addTable(tbl);
 			}
 		}
 	}
