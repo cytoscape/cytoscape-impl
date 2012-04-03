@@ -268,7 +268,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 
 				nodeIDMap.put(label, node);
 				gml_id2order.put(nodes.get(idx), idx);
-				node_root_index_pairs.get(idx).value = Integer.valueOf(node.getIndex());
+				node_root_index_pairs.get(idx).value = Long.valueOf(node.getIndex());
 			} else {
 				throw new RuntimeException("GML id " + nodes.get(idx) + " has a duplicated label: " + label);
 			}
@@ -310,7 +310,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				network.getRow(edge).set("interaction", label);
 				edge_names.add(idx, edge);
 
-				edge_root_index_pairs.get(idx).value = Integer.valueOf(edge.getIndex());
+				edge_root_index_pairs.get(idx).value = Long.valueOf(edge.getIndex());
 			} else {
 				throw new RuntimeException("Non-existant source/target node for edge with gml (source,target): " +
 										   sources.get(idx) + "," + targets.get(idx));
@@ -522,7 +522,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 */
 	@SuppressWarnings("unchecked")
 	private void layoutNode(CyNetworkView myView, List<KeyValue> list) {
-		Integer root_index = null;
+		Long root_index = null;
 		List<KeyValue> graphics_list = new ArrayList<KeyValue>();
 		String label = null;
 		@SuppressWarnings("unused")
@@ -535,7 +535,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 					return;
 				}
 
-				root_index = (Integer) keyVal.value;
+				root_index = (Long) keyVal.value;
 			} else if (keyVal.key.equals(GRAPHICS)) {
 				graphics_list.addAll((List<KeyValue>) keyVal.value);
 			} else if (keyVal.key.equals(LABEL)) {
@@ -546,7 +546,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			}
 		}
 
-		View<CyNode> view = myView.getNodeView(network.getNode(root_index.intValue()));
+		View<CyNode> view = myView.getNodeView(network.getNode(root_index.longValue()));
 
 		if (graphics_list != null && view != null) {
 			layoutNodeGraphics(myView, graphics_list, view);
@@ -601,7 +601,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 					return;
 				}
 
-				edgeView = myView.getEdgeView(network.getEdge(((Integer) keyVal.value).intValue()));
+				edgeView = myView.getEdgeView(network.getEdge(((Long) keyVal.value).longValue()));
 			} else if (keyVal.key.equals(GRAPHICS)) {
 				graphics_list = (List<KeyValue>) keyVal.value;
 			}

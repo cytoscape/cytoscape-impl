@@ -42,15 +42,21 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-import cern.colt.map.OpenIntDoubleHashMap;
+import java.util.HashMap;
+import java.util.Map;
+// import cern.colt.map.OpenIntDoubleHashMap;
+// import cern.colt.map.tlong.OpenLongDoubleHashMap;
 import cern.colt.map.PrimeFinder;
 
 /**
  * Class that represents the Layout of a given graph.
  */
 public class Layout {
-	OpenIntDoubleHashMap nodeXMap;
-	OpenIntDoubleHashMap nodeYMap;
+	// We don't have OpenLongDoubleHashMap, so construct a standard hashmap
+	// OpenLongDoubleHashMap nodeXMap;
+	// OpenLongDoubleHashMap nodeYMap;
+	Map<Long, Double> nodeXMap;
+	Map<Long, Double> nodeYMap;
 	CyNetwork gp;
 
 	/**
@@ -60,8 +66,8 @@ public class Layout {
 	 */
 	public Layout(CyNetwork gp) {
 		this.gp = gp;
-		nodeXMap = new OpenIntDoubleHashMap(PrimeFinder.nextPrime(gp.getNodeCount()));
-		nodeYMap = new OpenIntDoubleHashMap(PrimeFinder.nextPrime(gp.getNodeCount()));
+		nodeXMap = new HashMap<Long, Double>(PrimeFinder.nextPrime(gp.getNodeCount()));
+		nodeYMap = new HashMap<Long, Double>(PrimeFinder.nextPrime(gp.getNodeCount()));
 	}
 
 	/**
@@ -101,8 +107,12 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public boolean setX(int node, double x) {
-		return nodeXMap.put(node, x);
+	public boolean setX(long node, double x) {
+		if (nodeXMap.containsKey(node))
+			return false;
+
+		nodeXMap.put(node, x);
+		return true;
 	}
 
 	/**
@@ -113,8 +123,12 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public boolean setY(int node, double y) {
-		return nodeYMap.put(node, y);
+	public boolean setY(long node, double y) {
+		if (nodeYMap.containsKey(node))
+			return false;
+
+		nodeYMap.put(node, y);
+		return true;
 	}
 
 	/**
@@ -126,7 +140,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setX(CyNode node, double x) {
-		return nodeXMap.put(node.getIndex(), x);
+		return setX(node.getIndex(), x);
 	}
 
 	/**
@@ -138,7 +152,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setY(CyNode node, double y) {
-		return nodeYMap.put(node.getIndex(), y);
+		return setY(node.getIndex(), y);
 	}
 
 	/**
@@ -150,7 +164,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setX(View<CyNode> node, double x) {
-		return nodeXMap.put(node.getModel().getIndex(), x);
+		return setX(node.getModel().getIndex(), x);
 	}
 
 	/**
@@ -162,7 +176,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setY(View<CyNode> node, double y) {
-		return nodeYMap.put(node.getModel().getIndex(), y);
+		return setY(node.getModel().getIndex(), y);
 	}
 
 	// get
@@ -173,7 +187,7 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public double getX(int node) {
+	public double getX(long node) {
 		return nodeXMap.get(node);
 	}
 
@@ -184,7 +198,7 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public double getY(int node) {
+	public double getY(long node) {
 		return nodeYMap.get(node);
 	}
 

@@ -37,7 +37,7 @@ import org.cytoscape.model.CyEdge;
  */
 final class EdgePointer {
 	final CyEdge cyEdge;
-	final int index;
+	final long index;
 	final boolean directed;
 	final NodePointer source;
 	final NodePointer target;

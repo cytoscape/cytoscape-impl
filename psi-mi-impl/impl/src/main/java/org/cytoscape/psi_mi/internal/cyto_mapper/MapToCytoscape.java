@@ -208,8 +208,8 @@ public class MapToCytoscape implements Mapper {
 	 *
 	 * @return array of graph indices.
 	 */
-	public int[] getNodeIndices() {
-		int[] nodeIndices = new int[nodeList.size()];
+	public long[] getNodeIndices() {
+		long[] nodeIndices = new long[nodeList.size()];
 
 		for (int i = 0; i < nodeList.size(); i++) {
 			CyNode node = nodeList.get(i);
@@ -224,8 +224,8 @@ public class MapToCytoscape implements Mapper {
 	 *
 	 * @return array of graph indices.
 	 */
-	public int[] getEdgeIndices() {
-		int[] edgeIndices = new int[edgeList.size()];
+	public long[] getEdgeIndices() {
+		long[] edgeIndices = new long[edgeList.size()];
 
 		for (int i = 0; i < edgeList.size(); i++) {
 			CyEdge edge = edgeList.get(i);
@@ -463,12 +463,12 @@ public class MapToCytoscape implements Mapper {
 
 			mapEdgeAttributes(interaction, edge, network);
 
-			int edgeRootGraphIndex = edge.getIndex();
+			long edgeRootGraphIndex = edge.getIndex();
 			@SuppressWarnings("unchecked")
-			List<Integer> indexes = (List<Integer>) interaction.getAttribute(ROOT_GRAPH_INDEXES);
+			List<Long> indexes = (List<Long>) interaction.getAttribute(ROOT_GRAPH_INDEXES);
 
 			if (indexes == null) {
-				indexes = new ArrayList<Integer>();
+				indexes = new ArrayList<Long>();
 				interaction.addAttribute(ROOT_GRAPH_INDEXES, indexes);
 			}
 

@@ -11,9 +11,11 @@ import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 
 import cern.colt.list.IntArrayList;
-import cern.colt.map.OpenIntIntHashMap;
-import cern.colt.map.OpenIntObjectHashMap;
+import cern.colt.list.tlong.LongArrayList;
+import cern.colt.map.OpenLongObjectHashMap;
 import cern.colt.map.PrimeFinder;
+import cern.colt.map.tlong.OpenLongLongHashMap;
+import cern.colt.map.tlong.OpenLongIntHashMap;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 
@@ -24,9 +26,9 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	private LayoutPartition partition;
 
 	//Queue, First In First Out, use add() and get(0)/remove(0)
-	private IntArrayList q;
-	OpenIntObjectHashMap nodeIndexToDataMap;
-	OpenIntIntHashMap nodeIndexToLayoutIndex;
+	private LongArrayList q;
+	OpenLongObjectHashMap nodeIndexToDataMap;
+	OpenLongIntHashMap nodeIndexToLayoutIndex;
 	double globalX;
 	double globalY;
 	double squared_size;
@@ -38,15 +40,15 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 		super(name, context, context.singlePartition);
 		this.context = context;
 		network = networkView.getModel();
-		q = new IntArrayList();
+		q = new LongArrayList();
 	}
 	
 	public void layoutPartion(LayoutPartition partition) {
 		this.partition = partition;
 
 		int nodeCount = partition.nodeCount();
-		nodeIndexToDataMap = new OpenIntObjectHashMap(PrimeFinder.nextPrime(nodeCount));
-		nodeIndexToLayoutIndex = new OpenIntIntHashMap(PrimeFinder.nextPrime(nodeCount));
+		nodeIndexToDataMap = new OpenLongObjectHashMap(PrimeFinder.nextPrime(nodeCount));
+		nodeIndexToLayoutIndex = new OpenLongIntHashMap(PrimeFinder.nextPrime(nodeCount));
 		squared_size = network.getNodeCount() * context.sizeFactor;
 
 		epoch = 1;
@@ -68,14 +70,14 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	/**
 	 * @return the index of the closest NodeView to these coords.
 	 */
-	public int getClosestPosition(double x, double y) {
+	public long getClosestPosition(double x, double y) {
 		double minDistance = Double.MAX_VALUE;
-		int closest = 0;
+		long closest = 0;
 		Iterator nodeIter = partition.nodeIterator();
 
 		while (nodeIter.hasNext()) {
 			LayoutNode node = (LayoutNode) nodeIter.next();
-			int rootGraphIndex = node.getNode().getIndex();
+			long rootGraphIndex = node.getNode().getIndex();
 
 			nodeIndexToLayoutIndex.put(rootGraphIndex, node.getIndex());
 
@@ -104,12 +106,12 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 		globalY = 10 + (Math.random() * squared_size);
 
 		//Get closest vertex to random position
-		int winner = getClosestPosition(globalX, globalY);
+		long winner = getClosestPosition(globalX, globalY);
 
 		Iterator nodeIter = partition.nodeIterator();
 
 		while (nodeIter.hasNext()) {
-			int nodeIndex = ((LayoutNode) nodeIter.next()).getNode().getIndex();
+			long nodeIndex = ((LayoutNode) nodeIter.next()).getNode().getIndex();
 			ISOMVertexData ivd = getISOMVertexData(nodeIndex);
 			ivd.distance = 0;
 			ivd.visited = false;
@@ -137,7 +139,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	 *
 	 * @param v DOCUMENT ME!
 	 */
-	public void adjustVertex(int v) {
+	public void adjustVertex(long v) {
 		q.clear();
 
 		ISOMVertexData ivd = getISOMVertexData(v);
@@ -145,7 +147,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 		ivd.visited = true;
 		q.add(v);
 
-		int current;
+		long current;
 		List<LayoutNode> nodeList = partition.getNodeList();
 
 		while (!q.isEmpty()) {
@@ -171,7 +173,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 			partition.moveNodeToLocation(currentNode);
 
 			if (currData.distance < context.radius) {
-				int[] neighbors = neighborsArray(network, currentNode.getNode());
+				long[] neighbors = neighborsArray(network, currentNode.getNode());
 
 				for (int neighbor_index = 0; neighbor_index < neighbors.length; ++neighbor_index) {
 					ISOMVertexData childData = getISOMVertexData(neighbors[neighbor_index]);
@@ -195,7 +197,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public ISOMVertexData getISOMVertexData(int v) {
+	public ISOMVertexData getISOMVertexData(long v) {
 		ISOMVertexData vd = (ISOMVertexData) nodeIndexToDataMap.get(v);
 
 		if (vd == null) {
@@ -255,10 +257,10 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public int[] neighborsArray(CyNetwork network, CyNode node) {
+	public long[] neighborsArray(CyNetwork network, CyNode node) {
 		// Get a list of edges
 		List<CyNode> neighborList = network.getNeighborList(node, CyEdge.Type.ANY);
-		int [] neighbors = new int[neighborList.size()];
+		long [] neighbors = new long[neighborList.size()];
 		int offset = 0;
 		for (CyNode n: neighborList){
 			neighbors[offset++]=n.getIndex();

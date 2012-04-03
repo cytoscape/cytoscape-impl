@@ -46,7 +46,7 @@ public class ReadCache {
 	/* Map of new to old element IDs */
 	private Map<Long, Object> oldIdMap;
 	/* Map of old ID to node/edge indexes */
-	private Map<Object, Integer> indexMap;
+	private Map<Object, Long> indexMap;
 	
 	/* Maps of XML ID's to elements (the keys should be a Long if reading a Cy3 session file) */
 	private Map<Object, CyNetwork> networkByIdMap;
@@ -67,7 +67,7 @@ public class ReadCache {
 	
 	public void init() {
 		oldIdMap = new HashMap<Long, Object>();
-		indexMap = new HashMap<Object, Integer>();
+		indexMap = new HashMap<Object, Long>();
 		
 		nodeByIdMap = new HashMap<Object, CyNode>();
 		edgeByIdMap = new HashMap<Object, CyEdge>();
@@ -102,7 +102,7 @@ public class ReadCache {
 	 * @param element A CyNetwork, CyNetworkView, CyNode or CyEdge.
 	 */
 	public void cache(Object xgmmlId, CyIdentifiable element) {
-    	int index = -1;
+    	long index = -1;
     	
 		if (xgmmlId != null) {
 			if (element instanceof CyNode) {
@@ -166,7 +166,7 @@ public class ReadCache {
 		return null;
 	}
 	
-	public Integer getIndex(Object oldId) {
+	public Long getIndex(Object oldId) {
 		return indexMap.get(oldId);
 	}
 	

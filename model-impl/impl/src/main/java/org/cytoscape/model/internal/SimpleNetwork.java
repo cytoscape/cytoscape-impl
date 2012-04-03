@@ -49,13 +49,13 @@ class SimpleNetwork {
 	// Unique ID for this
 	private final Long suid;
 
-	// We use IntTHash here because we really don't want to
+	// We use LongTHash here because we really don't want to
 	// constantly convert the int node/edge index to an Interger 
 	// object necessary for a Map<Integer,NodePointer>. That
 	// allocates a bunch of otherwise unused Integer objects
 	// which also takes extra time.
-	private final IntTHash<NodePointer> nodePointers;
-	private final IntTHash<EdgePointer> edgePointers;
+	private final LongTHash<NodePointer> nodePointers;
+	private final LongTHash<EdgePointer> edgePointers;
 
 	private int nodeCount;
 	private int edgeCount;
@@ -67,8 +67,8 @@ class SimpleNetwork {
 		nodeCount = 0;
 		edgeCount = 0;
 		firstNode = null; 
-		nodePointers = new IntTHash<NodePointer>(NodePointer.class);
-		edgePointers = new IntTHash<EdgePointer>(EdgePointer.class);
+		nodePointers = new LongTHash<NodePointer>(NodePointer.class);
+		edgePointers = new LongTHash<EdgePointer>(EdgePointer.class);
 	}
 
 	public Long getSUID() {
@@ -83,7 +83,7 @@ class SimpleNetwork {
 		return edgeCount; 
 	}
 
-	public synchronized CyEdge getEdge(final int e) {
+	public synchronized CyEdge getEdge(final long e) {
 		final EdgePointer ep = edgePointers.get(e);
 		if ( ep != null )
 			return ep.cyEdge;
@@ -91,7 +91,7 @@ class SimpleNetwork {
 			return null;
 	}
 
-	public synchronized CyNode getNode(final int n) {
+	public synchronized CyNode getNode(final long n) {
 		final NodePointer np = nodePointers.get(n);
 		if ( np != null )
 			return np.cyNode;
@@ -154,7 +154,7 @@ class SimpleNetwork {
 		final Iterator<EdgePointer> it = edgesAdjacent(np, e);
 		while (it.hasNext()) {
 			final EdgePointer edge = it.next();
-			final int neighborIndex = np.index ^ edge.source.index ^ edge.target.index;
+			final long neighborIndex = np.index ^ edge.source.index ^ edge.target.index;
 			ret.add(getNode(neighborIndex));
 		}
 
@@ -169,8 +169,9 @@ class SimpleNetwork {
 		final List<CyEdge> ret = new ArrayList<CyEdge>(countEdges(np, e));
 		final Iterator<EdgePointer> it = edgesAdjacent(np, e);
 
-		while (it.hasNext()) 
+		while (it.hasNext()) {
 			ret.add(it.next().cyEdge);
+		}
 
 		return ret;
 	}
@@ -389,7 +390,7 @@ class SimpleNetwork {
 					while (edge == null)
 						edge = edgeLists[++edgeListIndex];
 
-					int returnIndex = -1;
+					long returnIndex = -1;
 
 					// look at outgoing edges
 					if (edgeListIndex == 0) {
@@ -458,8 +459,8 @@ class SimpleNetwork {
 		assert(node1!=null);
 
 		final Iterator<EdgePointer> theAdj;
-		final int nodeZero;
-		final int nodeOne;
+		final long nodeZero;
+		final long nodeOne;
 
 		// choose the smaller iterator
 		if (countEdges(node0, et) <= countEdges(node1, et)) {
@@ -475,7 +476,7 @@ class SimpleNetwork {
 		}
 
 		return new Iterator<EdgePointer>() {
-				private int nextIndex = -1;
+				private long nextIndex = -1;
 
 				private void ensureComputeNext() {
 					if (nextIndex != -1) {
@@ -508,7 +509,7 @@ class SimpleNetwork {
 				public EdgePointer next() {
 					ensureComputeNext();
 
-					final int returnIndex = nextIndex;
+					final long returnIndex = nextIndex;
 					nextIndex = -1;
 
 					return edgePointers.get(returnIndex);

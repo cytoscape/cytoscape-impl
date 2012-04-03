@@ -134,7 +134,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	private final DGraphView graphView;
 
 	// The FixedGraph index (non-negative)
-	private final int m_inx;
+	private final long m_inx;
 
 	// Selection flag.
 	private boolean m_selected;
@@ -194,7 +194,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	private final VisualLexicon lexicon;
 
 	
-	public DNodeView(final VisualLexicon lexicon, final DGraphView graphView, int inx, final CyNode model) {
+	public DNodeView(final VisualLexicon lexicon, final DGraphView graphView, long inx, final CyNode model) {
 		super(model);
 		
 		if (graphView == null)
@@ -226,7 +226,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	
 	@Override
-	public int getGraphPerspectiveIndex() {
+	public long getGraphPerspectiveIndex() {
 		return m_inx;
 	}
 

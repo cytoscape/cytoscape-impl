@@ -38,9 +38,12 @@ package org.cytoscape.spacial.internal.rtree;
 
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
-import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.IntObjHash;
-import org.cytoscape.util.intr.IntStack;
+// import org.cytoscape.util.intr.IntEnumerator;
+// import org.cytoscape.util.intr.IntObjHash;
+// import org.cytoscape.util.intr.IntStack;
+import org.cytoscape.util.intr.LongEnumerator;
+import org.cytoscape.util.intr.LongObjHash;
+import org.cytoscape.util.intr.LongStack;
 
 import java.util.Iterator;
 
@@ -59,13 +62,13 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	private final int m_maxBranches;
 	private final int m_minBranches;
 	private Node m_root;
-	private IntObjHash m_entryMap; // Keys are objKey, values are type Node,
+	private LongObjHash m_entryMap; // Keys are objKey, values are type Node,
 	private final Object m_deletedEntry = ""; // except when "deleted".
 	private int m_deletedEntries;
 	private int m_mapExpansionThreshold;
 
 	// These buffers are used during node splitting.
-	private final int[] m_objKeyBuff;
+	private final long[] m_objKeyBuff;
 	private final Node[] m_childrenBuff;
 	private final float[] m_xMinBuff;
 	private final float[] m_yMinBuff;
@@ -101,10 +104,10 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 		m_maxBranches = maxBranches;
 		m_minBranches = Math.max(2, (int) (((double) (m_maxBranches + 1)) * 0.4d));
 		m_root = new Node(m_maxBranches, true);
-		m_entryMap = new IntObjHash();
+		m_entryMap = new LongObjHash();
 		m_deletedEntries = 0;
-		m_mapExpansionThreshold = IntObjHash.maxCapacity(m_entryMap.size());
-		m_objKeyBuff = new int[m_maxBranches + 1];
+		m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size());
+		m_objKeyBuff = new long[m_maxBranches + 1];
 		m_childrenBuff = new Node[m_maxBranches + 1];
 		m_xMinBuff = new float[m_maxBranches + 1];
 		m_yMinBuff = new float[m_maxBranches + 1];
@@ -126,9 +129,9 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	 */
 	public final void empty() {
 		m_root = new Node(m_maxBranches, true);
-		m_entryMap = new IntObjHash();
+		m_entryMap = new LongObjHash();
 		m_deletedEntries = 0;
-		m_mapExpansionThreshold = IntObjHash.maxCapacity(m_entryMap.size());
+		m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size());
 	}
 
 	/**
@@ -169,7 +172,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	 *   if xMin is not less than or equal to xMax, or
 	 *   if yMin is not less than or equal to yMax.
 	 */
-	public final void insert(final int objKey, final float xMin, final float yMin,
+	public final void insert(final long objKey, final float xMin, final float yMin,
 	                         final float xMax, final float yMax) {
 		if (objKey < 0)
 			throw new IllegalArgumentException("objKey is negative");
@@ -195,27 +198,27 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 
 				if ((m_deletedEntries * 4) > m_entryMap.size()) { // Prune map.
 
-					final IntObjHash newEntryMap = new IntObjHash();
-					final IntEnumerator objKeys = m_entryMap.keys();
+					final LongObjHash newEntryMap = new LongObjHash();
+					final LongEnumerator objKeys = m_entryMap.keys();
 					final Iterator leafNodes = m_entryMap.values();
 
 					while (objKeys.numRemaining() > 0) {
 						final Object leafNode = leafNodes.next();
 
 						if (leafNode == m_deletedEntry) {
-							objKeys.nextInt();
+							objKeys.nextLong();
 
 							continue;
 						}
 
-						newEntryMap.put(objKeys.nextInt(), leafNode);
+						newEntryMap.put(objKeys.nextLong(), leafNode);
 					}
 
 					m_entryMap = newEntryMap;
 					m_deletedEntries = 0;
 				}
 
-				m_mapExpansionThreshold = IntObjHash.maxCapacity(m_entryMap.size() + 1);
+				m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size() + 1);
 			}
 		}
 
@@ -260,11 +263,11 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	 * maxBranches - 1 in both root and the returned node will contain the
 	 * overall MBR of that node.
 	 */
-	private final static Node insert(final Node root, final int objKey, final float xMin,
+	private final static Node insert(final Node root, final long objKey, final float xMin,
 	                                 final float yMin, final float xMax, final float yMax,
 	                                 final int maxBranches, final int minBranches,
-	                                 final IntObjHash entryMap, final float[] globalMBR,
-	                                 final int[] objKeyBuff, final Node[] childrenBuff,
+	                                 final LongObjHash entryMap, final float[] globalMBR,
+	                                 final long[] objKeyBuff, final Node[] childrenBuff,
 	                                 final float[] xMinBuff, final float[] yMinBuff,
 	                                 final float[] xMaxBuff, final float[] yMaxBuff,
 	                                 final float[] tempBuff1, final float[] tempBuff2) {
@@ -424,11 +427,11 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	 * corresponding node.  The node returned is also a leaf node.
 	 * No claim is made as to the resulting values in the buff arrays.
 	 */
-	private final static Node splitLeafNode(final Node fullLeafNode, final int newObjKey,
+	private final static Node splitLeafNode(final Node fullLeafNode, final long newObjKey,
 	                                        final float newXMin, final float newYMin,
 	                                        final float newXMax, final float newYMax,
 	                                        final int maxBranches, final int minBranches,
-	                                        final int[] objKeyBuff, final float[] xMinBuff,
+	                                        final long[] objKeyBuff, final float[] xMinBuff,
 	                                        final float[] yMinBuff, final float[] xMaxBuff,
 	                                        final float[] yMaxBuff, final float[] tempBuff1,
 	                                        final float[] tempBuff2) {
@@ -1218,7 +1221,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	 *   extentsArr is not null, and if extentsArr cannot be written
 	 *   to in the index range [offset, offset+3].
 	 */
-	public final boolean exists(final int objKey, final float[] extentsArr, final int offset) {
+	public final boolean exists(final long objKey, final float[] extentsArr, final int offset) {
 		if (objKey < 0)
 			return false;
 
@@ -1250,7 +1253,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	 * @return true if and only if objKey existed in this R-tree prior to this
 	 *   method invocation.
 	 */
-	public final boolean delete(final int objKey) {
+	public final boolean delete(final long objKey) {
 		if (objKey < 0)
 			return false;
 
@@ -1351,25 +1354,25 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 		m_entryMap.put(objKey, m_deletedEntry);
 
 		if (((++m_deletedEntries * 2) > m_entryMap.size()) && (m_deletedEntries > 5)) {
-			final IntObjHash newEntryMap = new IntObjHash();
-			final IntEnumerator objKeys = m_entryMap.keys();
+			final LongObjHash newEntryMap = new LongObjHash();
+			final LongEnumerator objKeys = m_entryMap.keys();
 			final Iterator leafNodes = m_entryMap.values();
 
 			while (objKeys.numRemaining() > 0) {
 				final Object leafNode = leafNodes.next();
 
 				if (leafNode == m_deletedEntry) {
-					objKeys.nextInt();
+					objKeys.nextLong();
 
 					continue;
 				}
 
-				newEntryMap.put(objKeys.nextInt(), leafNode);
+				newEntryMap.put(objKeys.nextLong(), leafNode);
 			}
 
 			m_entryMap = newEntryMap;
 			m_deletedEntries = 0;
-			m_mapExpansionThreshold = IntObjHash.maxCapacity(m_entryMap.size());
+			m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size());
 		}
 
 		return true;
@@ -1637,7 +1640,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 			} else { // Cannot trivially include node; must recurse.
 
 				if (isLeafNode(n)) {
-					final IntStack stack = new IntStack();
+					final LongStack stack = new LongStack();
 
 					for (int cntr = n.entryCount, i = reverse ? 0 : (n.entryCount - 1); cntr > 0;
 					     cntr--, i -= incr) {
@@ -1689,7 +1692,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 		private final float[] yMins;
 		private final float[] xMaxs;
 		private final float[] yMaxs;
-		private final int[] objKeys; // null if and only if internal node.
+		private final long[] objKeys; // null if and only if internal node.
 		private final InternalNodeData data;
 
 		private Node(final int maxBranches, final boolean leafNode) {
@@ -1699,7 +1702,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 			yMaxs = new float[maxBranches];
 
 			if (leafNode) {
-				objKeys = new int[maxBranches];
+				objKeys = new long[maxBranches];
 				data = null;
 			} else {
 				objKeys = null;
@@ -1725,7 +1728,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 		private final boolean reverse;
 		private final int inxIncr;
 		private Node currentLeafNode;
-		private IntStack currentStack;
+		private LongStack currentStack;
 		private int currentInx;
 		private int boundaryInx;
 
@@ -1743,7 +1746,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 			return count;
 		}
 
-		public final int nextExtents(final float[] extentsArr, final int offset) {
+		public final long nextExtents(final float[] extentsArr, final int offset) {
 			final Node leaf = currentLeafNode;
 			final int inx;
 
@@ -1754,7 +1757,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 				if (currentInx == boundaryInx)
 					computeNextLeafNode();
 			} else {
-				inx = currentStack.pop();
+				inx = (int)currentStack.pop();
 
 				if (currentStack.size() == 0)
 					computeNextLeafNode();
@@ -1769,8 +1772,8 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 			return leaf.objKeys[inx];
 		}
 
-		public final int nextInt() {
-			int returnThis = -1;
+		public final long nextLong() {
+			long returnThis = -1L;
 
 			if (currentStack == null) {
 				returnThis = currentLeafNode.objKeys[currentInx];
@@ -1780,7 +1783,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 					computeNextLeafNode();
 				}
 			} else {
-				returnThis = currentLeafNode.objKeys[currentStack.pop()];
+				returnThis = currentLeafNode.objKeys[(int)currentStack.pop()];
 
 				if (currentStack.size() == 0) {
 					computeNextLeafNode();
@@ -1807,7 +1810,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 
 				if (isLeafNode(next)) {
 					currentLeafNode = next;
-					currentStack = (IntStack) stackStack.pop(); // May be null.
+					currentStack = (LongStack) stackStack.pop(); // May be null.
 
 					if (currentStack == null) { // Otherwise these vars are ignored.
 

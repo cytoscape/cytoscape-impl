@@ -18,8 +18,8 @@ public class DummyNetwork implements CyNetwork {
 	public boolean containsNode(CyNode node) {return false;}
 	public boolean containsEdge(CyEdge edge) {return false;}
 	public boolean containsEdge(CyNode from, CyNode to) {return false;}
-	public CyNode getNode(int index) {return null;}
-	public CyEdge getEdge(int index) {return null;}
+	public CyNode getNode(long index) {return null;}
+	public CyEdge getEdge(long index) {return null;}
 	public List<CyNode> getNeighborList(CyNode node, CyEdge.Type edgeType) {return null;}
 	public List<CyEdge> getAdjacentEdgeList(CyNode node, CyEdge.Type edgeType) {return null;}
 	public Iterable<CyEdge> getAdjacentEdgeIterable(CyNode node, CyEdge.Type edgeType) {return null;}

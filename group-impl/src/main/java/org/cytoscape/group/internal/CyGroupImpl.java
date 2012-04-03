@@ -386,8 +386,6 @@ class CyGroupImpl implements CyGroup {
 		if (!networkSet.contains(net))
 			return; // We're not in that network
 
-		cyEventHelper.fireEvent(new GroupAboutToCollapseEvent(CyGroupImpl.this, net, true));
-
 		CySubNetwork subnet = (CySubNetwork) net;
 
 		// First collapse any children that are groups
@@ -399,7 +397,9 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 
-		// Collapse it.
+		// Now collapse ourselves
+		cyEventHelper.fireEvent(new GroupAboutToCollapseEvent(CyGroupImpl.this, net, true));
+
 		// Remove all of the nodes from the target network
 		subnet.removeNodes(getNodeList());
 
@@ -418,10 +418,13 @@ class CyGroupImpl implements CyGroup {
 		}
 
 		collapseSet.add(net);
-		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, true));
+
 		// Update attributes?
 		setGroupStateAttribute(net, true);
 		updateCountAttributes(net);
+
+		// OK, all done
+		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, true));
 	}
 
 	/**
@@ -463,9 +466,12 @@ class CyGroupImpl implements CyGroup {
 		}
 
 		collapseSet.remove(net);
-		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, false));
-		// Update attributes?
+
+		// Update attributes
 		setGroupStateAttribute(net, false);
+
+		// Finish up
+		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, false));
 	}
 
 	/**

@@ -37,7 +37,7 @@ import org.cytoscape.model.CyNode;
  */
 final class NodePointer {
 	final CyNode cyNode;
-	final int index;
+	final long index;
 
 	NodePointer nextNode; 
 	NodePointer prevNode;

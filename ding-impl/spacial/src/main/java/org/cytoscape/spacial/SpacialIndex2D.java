@@ -74,7 +74,7 @@ public interface SpacialIndex2D {
 	 *   extentsArr is not null, and if extentsArr cannot be written
 	 *   to in the index range [offset, offset+3].
 	 */
-	public boolean exists(int objKey, float[] extentsArr, int offset);
+	public boolean exists(long objKey, float[] extentsArr, int offset);
 
 	/**
 	 * Returns an enumeration of entries whose extents intersect the
@@ -153,7 +153,7 @@ public interface SpacialIndex2D {
 	 *   if xMin is not less than or equal to xMax, or
 	 *   if yMin is not less than or equal to yMax.
 	 */
-	public void insert(int objKey, float xMin, float yMin, float xMax, float yMax);
+	public void insert(long objKey, float xMin, float yMin, float xMax, float yMax);
 
 	/**
 	 * Deletes the specified data entry from this structure.
@@ -162,5 +162,5 @@ public interface SpacialIndex2D {
 	 * @return true if and only if objKey existed in this structure prior to this
 	 *   method invocation.
 	 */
-	public boolean delete(int objKey);
+	public boolean delete(long objKey);
 }

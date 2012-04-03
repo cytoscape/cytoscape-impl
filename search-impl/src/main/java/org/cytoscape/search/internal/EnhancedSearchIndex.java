@@ -99,9 +99,9 @@ public class EnhancedSearchIndex {
 	 * Make a Document object with an un-indexed identifier field and indexed
 	 * attribute fields
 	 */
-	private static Document createDocument(CyNetwork network, CyIdentifiable graphObject, String graphObjectType, int index) {
+	private static Document createDocument(CyNetwork network, CyIdentifiable graphObject, String graphObjectType, long index) {
 		Document doc = new Document();
-		String identifier = Integer.toString(index);
+		String identifier = Long.toString(index);
 		
 		doc.add(new Field(EnhancedSearch.INDEX_FIELD, identifier, Field.Store.YES, Field.Index.ANALYZED));
 		doc.add(new Field(EnhancedSearch.TYPE_FIELD, graphObjectType, Field.Store.YES, Field.Index.ANALYZED));

@@ -429,7 +429,7 @@ public class ReadDataManager {
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network!
-	        Integer index = cache.getIndex(oldId);
+	        Long index = cache.getIndex(oldId);
 	        
 	        if (index != null) {
 	        	node = this.getRootNetwork().getNode(index);
@@ -459,7 +459,7 @@ public class ReadDataManager {
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network and the edge already exists!
-	        Integer index = cache.getIndex(id);
+	        Long index = cache.getIndex(id);
 	        
 	        if (index != null) {
 	        	edge = this.getRootNetwork().getEdge(index);

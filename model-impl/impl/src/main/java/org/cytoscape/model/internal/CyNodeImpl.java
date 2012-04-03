@@ -39,13 +39,13 @@ import org.cytoscape.model.events.UnsetNetworkPointerEvent;
 
 
 class CyNodeImpl extends CyIdentifiableImpl implements CyNode {
-	final private int index;
+	// final private long index;
 	private CyNetwork nestedNet;
 	final private CyEventHelper eventHelper;
 
-	CyNodeImpl(long suid, int ind, final CyEventHelper eventHelper) {
+	CyNodeImpl(long suid, long ind, final CyEventHelper eventHelper) {
 		super(suid);
-		index = ind;
+		// index = ind;
 		nestedNet = null;
 		this.eventHelper = eventHelper;
 	}
@@ -54,8 +54,8 @@ class CyNodeImpl extends CyIdentifiableImpl implements CyNode {
 	 * @see org.cytoscape.model.CyNode#getIndex()
 	 */
 	@Override
-	public int getIndex() {
-		return index;
+	public long getIndex() {
+		return getSUID().longValue();
 	}
 
 	/**
@@ -89,6 +89,6 @@ class CyNodeImpl extends CyIdentifiableImpl implements CyNode {
 	
 	@Override
 	public String toString() {
-		return "Node suid: " + getSUID() + " index: " + index;
+		return "Node suid: " + getSUID() + " index: " + getIndex();
 	}
 }

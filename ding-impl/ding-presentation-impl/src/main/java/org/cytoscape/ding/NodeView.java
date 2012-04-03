@@ -18,7 +18,7 @@ public interface NodeView extends GraphViewObject {
 	/**
 	 * @return the index of this node in the perspective to which we are in a view on.
 	 */
-	int getGraphPerspectiveIndex();
+	long getGraphPerspectiveIndex();
 
 
 	/**

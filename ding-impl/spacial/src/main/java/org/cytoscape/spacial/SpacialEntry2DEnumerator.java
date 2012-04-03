@@ -36,7 +36,7 @@
 
 package org.cytoscape.spacial;
 
-import org.cytoscape.util.intr.IntEnumerator;
+import org.cytoscape.util.intr.LongEnumerator;
 
 
 /**
@@ -45,7 +45,7 @@ import org.cytoscape.util.intr.IntEnumerator;
  * is to efficiently provide minimum bounding rectangle information for each
  * entry returned.
  */
-public interface SpacialEntry2DEnumerator extends IntEnumerator {
+public interface SpacialEntry2DEnumerator extends LongEnumerator {
 	/**
 	 * Copies into the supplied array [starting at specified offset] the minimum
 	 * bounding rectangle of the next entry, and returns that next entry.
@@ -73,5 +73,5 @@ public interface SpacialEntry2DEnumerator extends IntEnumerator {
 	 * @exception ArrayIndexOutOfBoundsException if extentsArr cannot be
 	 *   written to in the index range [offset, offset+3].
 	 */
-	public int nextExtents(float[] extentsArr, int offset);
+	public long nextExtents(float[] extentsArr, int offset);
 }

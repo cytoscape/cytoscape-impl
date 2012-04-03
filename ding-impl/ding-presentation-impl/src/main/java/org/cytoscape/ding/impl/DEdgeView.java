@@ -75,7 +75,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	// Parent network view.  This view exists only in this network view.
 	final DGraphView m_view;
 	
-	final int m_inx; // Positive index of this edge view.
+	final long m_inx; // Positive index of this edge view.
 	boolean m_selected;
 	
 	private Integer transparency;
@@ -103,7 +103,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	 * @param inx
 	 * @param model
 	 */
-	DEdgeView(final VisualLexicon lexicon, final DGraphView view, final int inx, final CyEdge model) {
+	DEdgeView(final VisualLexicon lexicon, final DGraphView view, final long inx, final CyEdge model) {
 		super(model);
 
 		if ( view == null )
@@ -123,13 +123,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	}
 
 	@Override
-	public int getGraphPerspectiveIndex() {
+	public long getGraphPerspectiveIndex() {
 		return m_inx;
 	}
 
 
 	@Override
-	public int getRootGraphIndex() {
+	public long getRootGraphIndex() {
 		return m_inx;
 	}
 

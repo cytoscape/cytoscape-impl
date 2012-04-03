@@ -43,7 +43,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
-import org.cytoscape.util.intr.IntHash;
+import org.cytoscape.util.intr.LongHash;
 import java.util.List;
 
 
@@ -134,7 +134,7 @@ public final class GraphRenderer {
 	 */
 	public final static int renderGraph(final CyNetwork graph, final SpacialIndex2D nodePositions,
 	                                    final GraphLOD lod, final NodeDetails nodeDetails,
-	                                    final EdgeDetails edgeDetails, final IntHash nodeBuff,
+	                                    final EdgeDetails edgeDetails, final LongHash nodeBuff,
 	                                    final GraphGraphics grafx, final Paint bgPaint,
 	                                    final double xCenter, final double yCenter,
 	                                    final double scaleFactor) {
@@ -231,7 +231,7 @@ public final class GraphRenderer {
 				int runningEdgeCount = 0;
 
 				for (int i = 0; i < visibleNodeCount; i++) {
-					final int node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node = nodeHits.nextExtents(floatBuff1, 0);
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
@@ -239,8 +239,8 @@ public final class GraphRenderer {
 					final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge e : touchingEdges ) {
-						final int edge = e.getIndex(); 
-						final int otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex();
+						final long edge = e.getIndex(); 
+						final long otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex();
 
 						if (nodeBuff.get(otherNode) < 0)
 							runningEdgeCount++;
@@ -319,7 +319,7 @@ public final class GraphRenderer {
 				final int nodeHitCount = nodeHits.numRemaining();
 
 				for (int i = 0; i < nodeHitCount; i++) {
-					final int node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node = nodeHits.nextExtents(floatBuff1, 0);
 
 					// Casting to double and then back we could achieve better accuracy
 					// at the expense of performance.
@@ -329,7 +329,7 @@ public final class GraphRenderer {
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge edge : touchingEdges ) {
-						final int otherNode = node ^ edge.getSource().getIndex() ^ edge.getTarget().getIndex();
+						final long otherNode = node ^ edge.getSource().getIndex() ^ edge.getTarget().getIndex();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 							nodePositions.exists(otherNode, floatBuff2, 0);
@@ -346,12 +346,12 @@ public final class GraphRenderer {
 				}
 			} else { // High detail.
 				while (nodeHits.numRemaining() > 0) {
-					final int node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node = nodeHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
 					final byte nodeShape = nodeDetails.shape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
 					for ( CyEdge edge : touchingEdges ) {
-						final int otherNode = node ^ edge.getSource().getIndex()
+						final long otherNode = node ^ edge.getSource().getIndex()
 							^ edge.getTarget().getIndex();
 						final CyNode otherCyNode = graph.getNode(otherNode);
 
@@ -647,7 +647,7 @@ public final class GraphRenderer {
 				}
 			} else { // High detail.
 				while (nodeHits.numRemaining() > 0) {
-					final int node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node = nodeHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
 					
 					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, lodBits);
@@ -1045,7 +1045,7 @@ public final class GraphRenderer {
 	 * @param lodBits
 	 */
 	private static final void renderNodeHigh(final CyNetwork graph, final GraphGraphics grafx, 
-			final int node, final CyNode cyNode, final float[] floatBuff1, final double[] doubleBuff1, 
+			final long node, final CyNode cyNode, final float[] floatBuff1, final double[] doubleBuff1, 
 			final double[] doubleBuff2, final NodeDetails nodeDetails, final int lodBits) {
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
 						

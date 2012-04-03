@@ -203,7 +203,7 @@ public class GraphMLParser extends DefaultHandler {
 		currentEdgeTargetName = atts.getValue(TARGET.getTag());
 		final CyNode sourceNode = (CyNode) nodeid2CyNodeMap.get(currentEdgeSourceName);
 		final CyNode targetNode = (CyNode) nodeid2CyNodeMap.get(currentEdgeTargetName);
-		
+
 		if (networkStack.size() > 1) {
 			final CyNetwork rootNetwork = networkStack.get(0);
 			currentObject = rootNetwork.addEdge(sourceNode, targetNode, directed);

@@ -36,8 +36,8 @@
 
 package org.cytoscape.spacial.internal.rtree;
 
-import org.cytoscape.util.intr.IntBTree;
-import org.cytoscape.util.intr.IntEnumerator;
+import org.cytoscape.util.intr.LongBTree;
+import org.cytoscape.util.intr.LongEnumerator;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -63,7 +63,7 @@ public class BasicQuietRTreeTest {
 		for (int a = 0;; a++) { // BEGIN EMPTY TREE TESTS: We run our first tests when this tree empty.
 
 			float[] extentsArr = new float[4];
-			IntEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
+			LongEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
 			                                       Float.NEGATIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY, extentsArr, 0, false);
@@ -119,7 +119,7 @@ public class BasicQuietRTreeTest {
 			if (tree.size() != 3)
 				throw new IllegalStateException("tree's size() is not 3");
 
-			IntEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
+			LongEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
 			                                       Float.NEGATIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY, extentsArr, 0, false);
@@ -127,15 +127,15 @@ public class BasicQuietRTreeTest {
 			if (iter.numRemaining() != 3)
 				throw new IllegalStateException("expected query to generate 3 hits");
 
-			IntBTree cache = new IntBTree();
+			LongBTree cache = new LongBTree();
 
-			for (int i = 0; i < 3; i++)
+			for (long i = 0; i < 3; i++)
 				cache.insert(i);
 
 			int foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -159,7 +159,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -207,7 +207,7 @@ public class BasicQuietRTreeTest {
 			if (tree.size() != 4)
 				throw new IllegalStateException("tree's size() is not 4");
 
-			IntEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
+			LongEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
 			                                       Float.NEGATIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY, extentsArr, 0, false);
@@ -215,7 +215,7 @@ public class BasicQuietRTreeTest {
 			if (iter.numRemaining() != 4)
 				throw new IllegalStateException("expected query to generate 4 hits");
 
-			IntBTree cache = new IntBTree();
+			LongBTree cache = new LongBTree();
 
 			for (int i = 0; i < 4; i++)
 				cache.insert(i);
@@ -223,7 +223,7 @@ public class BasicQuietRTreeTest {
 			int foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -259,7 +259,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -283,7 +283,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -372,7 +372,7 @@ public class BasicQuietRTreeTest {
 			if (tree.size() != 10)
 				throw new IllegalStateException("tree's size() is not 10");
 
-			IntEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
+			LongEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
 			                                       Float.NEGATIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY, extentsArr, 0, false);
@@ -380,7 +380,7 @@ public class BasicQuietRTreeTest {
 			if (iter.numRemaining() != 10)
 				throw new IllegalStateException("expected query to generate 10 hits");
 
-			IntBTree cache = new IntBTree();
+			LongBTree cache = new LongBTree();
 
 			for (int i = 0; i < 10; i++)
 				cache.insert(i);
@@ -388,7 +388,7 @@ public class BasicQuietRTreeTest {
 			int foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -415,7 +415,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -440,7 +440,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -463,7 +463,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -566,7 +566,7 @@ public class BasicQuietRTreeTest {
 			if (tree.size() != 28)
 				throw new IllegalStateException("tree's size() is not 28");
 
-			IntEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
+			LongEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
 			                                       Float.NEGATIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY, extentsArr, 0, false);
@@ -574,7 +574,7 @@ public class BasicQuietRTreeTest {
 			if (iter.numRemaining() != 28)
 				throw new IllegalStateException("expected query to give 28 hits");
 
-			IntBTree cache = new IntBTree();
+			LongBTree cache = new LongBTree();
 
 			for (int i = 0; i < 28; i++)
 				cache.insert(i);
@@ -582,7 +582,7 @@ public class BasicQuietRTreeTest {
 			int foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -608,7 +608,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -635,7 +635,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -659,7 +659,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -697,7 +697,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -724,7 +724,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -749,7 +749,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -777,7 +777,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -812,7 +812,7 @@ public class BasicQuietRTreeTest {
 			foo = 0;
 
 			while (iter.numRemaining() > 0) {
-				cache.delete(iter.nextInt());
+				cache.delete(iter.nextLong());
 				foo++;
 			}
 
@@ -845,8 +845,8 @@ public class BasicQuietRTreeTest {
 			if (tree.size() != 28)
 				throw new IllegalStateException("expected 28 elements in tree");
 
-			final int[] allOrdered = new int[28];
-			IntEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
+			final long[] allOrdered = new long[28];
+			LongEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
 			                                       Float.NEGATIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY, null, 0, false);
@@ -855,7 +855,7 @@ public class BasicQuietRTreeTest {
 				throw new IllegalStateException("expected 28 elements in iteration");
 
 			for (int i = 0; i < 28; i++)
-				allOrdered[i] = iter.nextInt();
+				allOrdered[i] = iter.nextLong();
 
 			iter = tree.queryOverlap(0.0f, 0.0f, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
 			                         null, 0, false);
@@ -866,7 +866,7 @@ public class BasicQuietRTreeTest {
 			int prevInx = -1;
 
 			for (int i = 0; i < 20; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = -2;
 
 				for (int j = 0;; j++) {
@@ -895,7 +895,7 @@ public class BasicQuietRTreeTest {
 			prevInx = -1;
 
 			for (int i = 0; i < 7; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = -2;
 
 				for (int j = 0;; j++) {
@@ -924,7 +924,7 @@ public class BasicQuietRTreeTest {
 			prevInx = -1;
 
 			for (int i = 0; i < 14; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = -2;
 
 				for (int j = 0;; j++) {
@@ -953,7 +953,7 @@ public class BasicQuietRTreeTest {
 			prevInx = -1;
 
 			for (int i = 0; i < 13; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = -2;
 
 				for (int j = 0;; j++) {
@@ -980,8 +980,8 @@ public class BasicQuietRTreeTest {
 			if (tree.size() != 28)
 				throw new IllegalStateException("expected 28 elements in tree");
 
-			final int[] allOrdered = new int[28];
-			IntEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
+			final long[] allOrdered = new long[28];
+			LongEnumerator iter = tree.queryOverlap(Float.NEGATIVE_INFINITY,
 			                                       Float.NEGATIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY,
 			                                       Float.POSITIVE_INFINITY, null, 0, false);
@@ -990,7 +990,7 @@ public class BasicQuietRTreeTest {
 				throw new IllegalStateException("expected 28 elements in iteration");
 
 			for (int i = 0; i < 28; i++)
-				allOrdered[i] = iter.nextInt();
+				allOrdered[i] = iter.nextLong();
 
 			iter = tree.queryOverlap(0.0f, 0.0f, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
 			                         null, 0, true);
@@ -1001,7 +1001,7 @@ public class BasicQuietRTreeTest {
 			int prevInx = Integer.MAX_VALUE - 1;
 
 			for (int i = 0; i < 20; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = Integer.MAX_VALUE;
 
 				for (int j = 0;; j++) {
@@ -1030,7 +1030,7 @@ public class BasicQuietRTreeTest {
 			prevInx = Integer.MAX_VALUE - 1;
 
 			for (int i = 0; i < 7; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = Integer.MAX_VALUE;
 
 				for (int j = 0;; j++) {
@@ -1059,7 +1059,7 @@ public class BasicQuietRTreeTest {
 			prevInx = Integer.MAX_VALUE - 1;
 
 			for (int i = 0; i < 14; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = Integer.MAX_VALUE;
 
 				for (int j = 0;; j++) {
@@ -1088,7 +1088,7 @@ public class BasicQuietRTreeTest {
 			prevInx = Integer.MAX_VALUE - 1;
 
 			for (int i = 0; i < 13; i++) {
-				final int element = iter.nextInt();
+				final long element = iter.nextLong();
 				int foundInx = Integer.MAX_VALUE;
 
 				for (int j = 0;; j++) {

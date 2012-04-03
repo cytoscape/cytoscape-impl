@@ -46,8 +46,8 @@ import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.MinIntHeap;
+import org.cytoscape.util.intr.LongEnumerator;
+import org.cytoscape.util.intr.MinLongHeap;
 import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
@@ -812,7 +812,7 @@ class DEdgeDetails extends EdgeDetails {
 	
 	
 	// Used by bends
-	private final MinIntHeap m_heap = new MinIntHeap();
+	private final MinLongHeap m_heap = new MinLongHeap();
 	private final float[] m_extentsBuff = new float[4];
 	
 	@Override
@@ -825,8 +825,8 @@ class DEdgeDetails extends EdgeDetails {
 
 		final CyNetwork graph = m_view.m_drawPersp;
 		
-		final int srcNodeIndex = edgeView.getModel().getSource().getIndex();
-		final int trgNodeIndex = edgeView.getModel().getTarget().getIndex();
+		final long srcNodeIndex = edgeView.getModel().getSource().getIndex();
+		final long trgNodeIndex = edgeView.getModel().getTarget().getIndex();
 
 		// Calculate anchors necessary for self edges.
 		if (srcNodeIndex == trgNodeIndex) { 
@@ -845,7 +845,7 @@ class DEdgeDetails extends EdgeDetails {
 			for(final CyEdge selfEdge: selfEdgeList) {
 //			while (selfEdges.hasNext()) {
 //				final int e2 = selfEdges.nextInt();
-				final int e2 = selfEdge.getIndex();
+				final long e2 = selfEdge.getIndex();
 
 				if (e2 == edge.getIndex())
 					break;
@@ -881,8 +881,8 @@ class DEdgeDetails extends EdgeDetails {
 			// By consistently ordering the source and target nodes, dx and dy will always
 			// be calculated according to the same orientation. This allows the offset
 			// calculation to toggle the edges from side to side without any overlap.
-			final int tmpSrcIndex = Math.min( srcNodeIndex, trgNodeIndex ); 
-			final int tmpTrgIndex = Math.max( srcNodeIndex, trgNodeIndex ); 
+			final long tmpSrcIndex = Math.min( srcNodeIndex, trgNodeIndex ); 
+			final long tmpTrgIndex = Math.max( srcNodeIndex, trgNodeIndex ); 
 
 			// Sort the connecting edges.
 			final CyNode tmpSrc = graph.getNode(tmpSrcIndex);
@@ -898,9 +898,9 @@ class DEdgeDetails extends EdgeDetails {
 				m_heap.toss(conEdge.getIndex());
 			}
 
-			final IntEnumerator otherEdges = m_heap.orderedElements(false);
+			final LongEnumerator otherEdges = m_heap.orderedElements(false);
 
-			int otherEdge = otherEdges.nextInt();
+			long otherEdge = otherEdges.nextLong();
 
 			// If the first other edge is the same as this edge, 
 			// (i.e. we're at the end of the list?).
@@ -912,7 +912,7 @@ class DEdgeDetails extends EdgeDetails {
 
 			// Count the number of other edges.
 			while (true) {
-				if (edge.getIndex() == (otherEdge = otherEdges.nextInt()))
+				if (edge.getIndex() == (otherEdge = otherEdges.nextLong()))
 					break;
 
 				if (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0)

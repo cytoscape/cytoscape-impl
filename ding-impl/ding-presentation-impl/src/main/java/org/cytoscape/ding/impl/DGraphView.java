@@ -115,10 +115,10 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.util.intr.IntBTree;
-import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.IntHash;
-import org.cytoscape.util.intr.IntStack;
+import org.cytoscape.util.intr.LongBTree;
+import org.cytoscape.util.intr.LongEnumerator;
+import org.cytoscape.util.intr.LongHash;
+import org.cytoscape.util.intr.LongStack;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -314,17 +314,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * BTree of selected nodes.
 	 */
-	final IntBTree m_selectedNodes; // Positive.
+	final LongBTree m_selectedNodes; // Positive.
 
 	/**
 	 * BTree of selected edges.
 	 */
-	final IntBTree m_selectedEdges; // Positive.
+	final LongBTree m_selectedEdges; // Positive.
 
 	/**
 	 * BTree of selected anchors.
 	 */
-	final IntBTree m_selectedAnchors;
+	final LongBTree m_selectedAnchors;
 
 	/**
 	 * State variable for when nodes have moved.
@@ -353,7 +353,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * ???
 	 */
-	private final IntHash m_hash = new IntHash();
+	private final LongHash m_hash = new LongHash();
 
 	/**
 	 * Used for holding edge anchors.
@@ -500,9 +500,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		addViewportChangeListener(m_backgroundCanvas);
 		m_foregroundCanvas = new ArbitraryGraphicsCanvas(model, this, m_networkCanvas, Color.white, true, false);
 		addViewportChangeListener(m_foregroundCanvas);
-		m_selectedNodes = new IntBTree();
-		m_selectedEdges = new IntBTree();
-		m_selectedAnchors = new IntBTree();
+		m_selectedNodes = new LongBTree();
+		m_selectedEdges = new LongBTree();
+		m_selectedAnchors = new LongBTree();
 
 		logger.debug("Phase 2: Canvas created: time = "
 				+ (System.currentTimeMillis() - start));
@@ -562,7 +562,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Disables the ability to select nodes.
 	 */
 	public void disableNodeSelection() {
-		final int[] unselectedNodes;
+		final long[] unselectedNodes;
 
 		synchronized (m_lock) {
 			m_nodeSelection = false;
@@ -607,7 +607,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Disables the ability to select edges.
 	 */
 	public void disableEdgeSelection() {
-		final int[] unselectedEdges;
+		final long[] unselectedEdges;
 
 		synchronized (m_lock) {
 			m_edgeSelection = false;
@@ -643,17 +643,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *
 	 * @return An array of selected node indices.
 	 */
-	public int[] getSelectedNodeIndices() {
+	public long[] getSelectedNodeIndices() {
 		synchronized (m_lock) {
 			// all nodes from the btree
-			final IntEnumerator elms = m_selectedNodes.searchRange(
+			final LongEnumerator elms = m_selectedNodes.searchRange(
 					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final int[] returnThis = new int[elms.numRemaining()];
+			final long[] returnThis = new long[elms.numRemaining()];
 
 			for (int i = 0; i < returnThis.length; i++)
 				// GINY requires all node indices to be negative (why?),
 				// hence the bitwise complement here.
-				returnThis[i] = elms.nextInt();
+				returnThis[i] = elms.nextLong();
 
 			return returnThis;
 		}
@@ -667,13 +667,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public List<CyNode> getSelectedNodes() {
 		synchronized (m_lock) {
 			// all nodes from the btree
-			final IntEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 			final ArrayList<CyNode> returnThis = new ArrayList<CyNode>();
 
 			while (elms.numRemaining() > 0)
 				// GINY requires all node indices to be negative (why?),
 				// hence the bitwise complement here.
-				returnThis.add(model.getNode(elms.nextInt()));
+				returnThis.add(model.getNode(elms.nextLong()));
 
 			return returnThis;
 		}
@@ -684,13 +684,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *
 	 * @return An array of selected edge indices.
 	 */
-	public int[] getSelectedEdgeIndices() {
+	public long[] getSelectedEdgeIndices() {
 		synchronized (m_lock) {
-			final IntEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final int[] returnThis = new int[elms.numRemaining()];
+			final LongEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			final long[] returnThis = new long[elms.numRemaining()];
 
 			for (int i = 0; i < returnThis.length; i++)
-				returnThis[i] = elms.nextInt();
+				returnThis[i] = elms.nextLong();
 
 			return returnThis;
 		}
@@ -703,11 +703,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	public List<CyEdge> getSelectedEdges() {
 		synchronized (m_lock) {
-			final IntEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			final LongEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 			final ArrayList<CyEdge> returnThis = new ArrayList<CyEdge>();
 
 			while (elms.numRemaining() > 0)
-				returnThis.add(model.getEdge(elms.nextInt()));
+				returnThis.add(model.getEdge(elms.nextLong()));
 
 			return returnThis;
 		}
@@ -808,7 +808,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Should synchronize around m_lock.
 	 */
 	private DNodeView addNodeViewInternal(final CyNode node) {
-		final int nodeInx = node.getIndex();
+		final long nodeInx = node.getIndex();
 		final NodeView oldView = m_nodeViewMap.get(node);
 
 		if (oldView != null)
@@ -841,7 +841,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			throw new NullPointerException("edge is null");
 
 		synchronized (m_lock) {
-			final int edgeInx = edge.getIndex();
+			final long edgeInx = edge.getIndex();
 			final EdgeView oldView = m_edgeViewMap.get(edge);
 
 			if (oldView != null)
@@ -866,14 +866,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			// Only fire this event if either of the nodes is new. The node
 			// will be null if it already existed.
 			if ((sourceNode != null) || (targetNode != null)) {
-				int[] nodeInx;
+				long[] nodeInx;
 
 				if (sourceNode == null) {
-					nodeInx = new int[] { targetNode.getGraphPerspectiveIndex() };
+					nodeInx = new long[] { targetNode.getGraphPerspectiveIndex() };
 				} else if (targetNode == null) {
-					nodeInx = new int[] { sourceNode.getGraphPerspectiveIndex() };
+					nodeInx = new long[] { sourceNode.getGraphPerspectiveIndex() };
 				} else {
-					nodeInx = new int[] { sourceNode.getGraphPerspectiveIndex(),
+					nodeInx = new long[] { sourceNode.getGraphPerspectiveIndex(),
 							targetNode.getGraphPerspectiveIndex() };
 				}
 
@@ -921,7 +921,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *
 	 * @return The NodeView object that was removed.
 	 */
-	public NodeView removeNodeView(int nodeInx) {
+	public NodeView removeNodeView(long nodeInx) {
 		final List<CyEdge> hiddenEdgeInx;
 		final DNodeView returnThis;
 		final CyNode nnode;
@@ -1003,7 +1003,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *
 	 * @return The EdgeView that was removed.
 	 */
-	public EdgeView removeEdgeView(int edgeInx) {
+	public EdgeView removeEdgeView(long edgeInx) {
 		final DEdgeView returnThis;
 		final CyEdge edge; 
 
@@ -1211,7 +1211,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 	
 	@Override
-	public DNodeView getDNodeView(final int nodeInx) {
+	public DNodeView getDNodeView(final long nodeInx) {
 		synchronized (m_lock) {
 			return getDNodeView(model.getNode(nodeInx));
 		}
@@ -1279,7 +1279,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *
 	 * @return DOCUMENT ME!
 	 */
-	public List<EdgeView> getEdgeViewsList(int oneNodeInx, int otherNodeInx,
+	public List<EdgeView> getEdgeViewsList(long oneNodeInx, long otherNodeInx,
 			boolean includeUndirected) {
 		CyNode n1;
 		CyNode n2;
@@ -1295,7 +1295,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DEdgeView getDEdgeView(final int edgeInx) {
+	public DEdgeView getDEdgeView(final long edgeInx) {
 		synchronized (m_lock) {
 			return getDEdgeView(model.getEdge(edgeInx));
 		}
@@ -1359,7 +1359,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			return true;
 		} else if (obj instanceof DNodeView) {
 			List<CyEdge> edges;
-			int nodeInx;
+			long nodeInx;
 			CyNode nnode;
 
 			synchronized (m_lock) {
@@ -1407,14 +1407,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	final boolean isHidden(final DEdgeView edgeView) {
 		synchronized (m_lock) {
-			final int edgeIndex = edgeView.getRootGraphIndex();
+			final long edgeIndex = edgeView.getRootGraphIndex();
 			return m_drawPersp.containsEdge(m_drawPersp.getEdge(edgeIndex));
 		}
 	}
 
 	final boolean isHidden(final DNodeView nodeView) {
 		synchronized (m_lock) {
-			final int nodeIndex = nodeView.getGraphPerspectiveIndex();
+			final long nodeIndex = nodeView.getGraphPerspectiveIndex();
 			return m_drawPersp.containsNode(m_drawPersp.getNode(nodeIndex));
 		}
 	}
@@ -1432,7 +1432,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private boolean showGraphObjectInternal(Object obj,
 			boolean fireListenerEvents) {
 		if (obj instanceof DNodeView) {
-			int nodeInx;
+			long nodeInx;
 			final DNodeView nView = (DNodeView) obj;
 
 			synchronized (m_lock) {
@@ -1552,352 +1552,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return true;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param data
-	 *            DOCUMENT ME!
-	 */
-	public void setAllNodePropertyData(int nodeInx, Object[] data) {
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Object[] getAllNodePropertyData(int nodeInx) {
-		return null;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param data
-	 *            DOCUMENT ME!
-	 */
-	public void setAllEdgePropertyData(int edgeInx, Object[] data) {
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Object[] getAllEdgePropertyData(int edgeInx) {
-		return null;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Object getNodeObjectProperty(int nodeInx, int property) {
-		return null;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setNodeObjectProperty(int nodeInx, int property, Object value) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public Object getEdgeObjectProperty(int edgeInx, int property) {
-		return null;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setEdgeObjectProperty(int edgeInx, int property, Object value) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public double getNodeDoubleProperty(int nodeInx, int property) {
-		return 0.0d;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param val
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setNodeDoubleProperty(int nodeInx, int property, double val) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public double getEdgeDoubleProperty(int edgeInx, int property) {
-		return 0.0d;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param val
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setEdgeDoubleProperty(int edgeInx, int property, double val) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public float getNodeFloatProperty(int nodeInx, int property) {
-		return 0.0f;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setNodeFloatProperty(int nodeInx, int property, float value) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public float getEdgeFloatProperty(int edgeInx, int property) {
-		return 0.0f;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setEdgeFloatProperty(int edgeInx, int property, float value) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean getNodeBooleanProperty(int nodeInx, int property) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param val
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setNodeBooleanProperty(int nodeInx, int property, boolean val) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean getEdgeBooleanProperty(int edgeInx, int property) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param val
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setEdgeBooleanProperty(int edgeInx, int property, boolean val) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public int getNodeIntProperty(int nodeInx, int property) {
-		return 0;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param nodeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setNodeIntProperty(int nodeInx, int property, int value) {
-		return false;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public int getEdgeIntProperty(int edgeInx, int property) {
-		return 0;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param edgeInx
-	 *            DOCUMENT ME!
-	 * @param property
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public boolean setEdgeIntProperty(int edgeInx, int property, int value) {
-		return false;
-	}
-
 	// Auxiliary methods specific to this GraphView implementation:
 	
 	public void setCenter(double x, double y) {
@@ -1924,7 +1578,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		cyEventHelper.flushPayloadEvents();
 		
 		synchronized (m_lock) {
-			IntEnumerator selectedElms = m_selectedNodes.searchRange(
+			LongEnumerator selectedElms = m_selectedNodes.searchRange(
 					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 
 			// Only check for selected edges if we don't have selected nodes.
@@ -1939,11 +1593,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			float xMax = Float.NEGATIVE_INFINITY;
 			float yMax = Float.NEGATIVE_INFINITY;
 
-			int leftMost = 0;
-			int rightMost = 0;
+			long leftMost = 0;
+			long rightMost = 0;
 
 			while (selectedElms.numRemaining() > 0) {
-				final int node = selectedElms.nextInt();
+				final long node = selectedElms.nextLong();
 				m_spacial.exists(node, m_extentsBuff, 0);
 				if (m_extentsBuff[0] < xMin) {
 					xMin = m_extentsBuff[0];
@@ -1981,25 +1635,25 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * @return An IntEnumerator listing the nodes that are endpoints of the
+	 * @return An LongEnumerator listing the nodes that are endpoints of the
 	 *         currently selected edges.
 	 */
-	private IntEnumerator getSelectedEdgeNodes() {
+	private LongEnumerator getSelectedEdgeNodes() {
 		synchronized (m_lock) {
-			final IntEnumerator selectedEdges = m_selectedEdges.searchRange(Integer.MIN_VALUE,Integer.MAX_VALUE,false);
+			final LongEnumerator selectedEdges = m_selectedEdges.searchRange(Integer.MIN_VALUE,Integer.MAX_VALUE,false);
 
-			final IntHash nodeIds = new IntHash();
+			final LongHash nodeIds = new LongHash();
 
 			while (selectedEdges.numRemaining() > 0) {
-				final int edge = selectedEdges.nextInt();
+				final long edge = selectedEdges.nextLong();
 				CyEdge currEdge = model.getEdge(edge); 
 
 				CyNode source = currEdge.getSource();
-				int sourceId = source.getIndex();
+				long sourceId = source.getIndex();
 				nodeIds.put(sourceId);
 
 				CyNode target = currEdge.getTarget();
-				int targetId = target.getIndex();
+				long targetId = target.getIndex();
 				nodeIds.put(targetId);
 			}
 
@@ -2007,7 +1661,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	private int getLabelWidth(int node) {
+	private int getLabelWidth(long node) {
 		DNodeView x = ((DNodeView) getDNodeView(node));
 		if (x == null)
 			return 0;
@@ -2087,7 +1741,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	public void getNodesIntersectingRectangle(double xMinimum, double yMinimum, double xMaximum,
 	                                          double yMaximum, boolean treatNodeShapesAsRectangle,
-	                                          IntStack returnVal) {
+	                                          LongStack returnVal) {
 		synchronized (m_lock) {
 			final float xMin = (float) xMinimum;
 			final float yMin = (float) yMinimum;
@@ -2099,7 +1753,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			if (treatNodeShapesAsRectangle) {
 				for (int i = 0; i < totalHits; i++)
-					returnVal.push(under.nextInt());
+					returnVal.push(under.nextLong());
 			} else {
 				final double x = xMin;
 				final double y = yMin;
@@ -2107,7 +1761,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				final double h = ((double) yMax) - yMin;
 
 				for (int i = 0; i < totalHits; i++) {
-					final int node = under.nextExtents(m_extentsBuff, 0);
+					final long node = under.nextExtents(m_extentsBuff, 0);
 					final CyNode cyNode = model.getNode(node); 
 
 					// The only way that the node can miss the intersection
@@ -2152,7 +1806,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *            DOCUMENT ME!
 	 */
 	public void queryDrawnEdges(int xMin, int yMin, int xMax, int yMax,
-			IntStack returnVal) {
+			LongStack returnVal) {
 		synchronized (m_lock) {
 			m_networkCanvas.computeEdgesIntersecting(xMin, yMin, xMax, yMax,
 					returnVal);
@@ -2435,10 +2089,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		locn[0] = pt.getX();
 		locn[1] = pt.getY();
 
-		int chosenNode = 0;
+		long chosenNode = 0;
 		xformComponentToNodeCoords(locn);
 
-		final IntStack nodeStack = new IntStack();
+		final LongStack nodeStack = new LongStack();
 		getNodesIntersectingRectangle(
 				(float) locn[0],
 				(float) locn[1],
@@ -2465,10 +2119,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	public EdgeView getPickedEdgeView(Point2D pt) {
 		EdgeView ev = null;
-		final IntStack edgeStack = new IntStack();
+		final LongStack edgeStack = new LongStack();
 		queryDrawnEdges((int) pt.getX(), (int) pt.getY(), (int) pt.getX(), (int) pt.getY(), edgeStack);
 
-		int chosenEdge = 0;
+		long chosenEdge = 0;
 		chosenEdge = (edgeStack.size() > 0) ? edgeStack.peek() : -1;
 
 		if (chosenEdge >= 0) {
@@ -2629,17 +2283,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return nl;
 	}
 
-	static List<CyNode> makeNodeList(int[] nodeids, GraphView view) {
+	static List<CyNode> makeNodeList(long[] nodeids, GraphView view) {
 		List<CyNode> l = new ArrayList<CyNode>(nodeids.length);
-		for (int nid : nodeids)
+		for (long nid : nodeids)
 			l.add(((DNodeView)view.getDNodeView(nid)).getModel());
 
 		return l;
 	}
 
-	static List<CyEdge> makeEdgeList(int[] edgeids, GraphView view) {
+	static List<CyEdge> makeEdgeList(long[] edgeids, GraphView view) {
 		List<CyEdge> l = new ArrayList<CyEdge>(edgeids.length);
-		for (int nid : edgeids)
+		for (long nid : edgeids)
 			l.add(view.getDEdgeView(nid).getEdge());
 
 		return l;

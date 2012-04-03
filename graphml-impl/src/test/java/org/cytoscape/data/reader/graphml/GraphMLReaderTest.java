@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.internal.read.graphml.GraphMLReader;
@@ -88,10 +89,23 @@ public class GraphMLReaderTest {
 		assertEquals(6, network.getNodeCount());
 		assertEquals(7, network.getEdgeCount());
 
-		final CyNode node1 = network.getNode(0);
+		List<CyNode> nodeList = network.getNodeList();
+		final CyNode node1 = nodeList.get(0);
 		assertNotNull(node1);
 		
-		final CyEdge edge1 = network.getEdge(0);
+		List<CyEdge> edgeList = network.getEdgeList();
+		CyEdge edge1 = edgeList.get(0);
+		assertNotNull(edge1);
+
+		edge1 = null;
+
+		// find edge "e0"
+		for (CyEdge edge: edgeList) {
+			if (network.getRow(edge).get(CyNetwork.NAME, String.class).equals("n0 (-) n1")) {
+				edge1 = edge;
+				break;
+			}
+		}
 		assertNotNull(edge1);
 		
 		final CyColumn colorCol = network.getDefaultNodeTable().getColumn("color");

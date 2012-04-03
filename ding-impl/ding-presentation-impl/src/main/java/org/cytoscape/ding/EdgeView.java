@@ -22,12 +22,12 @@ public interface EdgeView  extends GraphViewObject {
 	/**
 	 * @return the index of this edge in the GraphPerspective
 	 */
-	public int getGraphPerspectiveIndex ();
+	public long getGraphPerspectiveIndex ();
 
 	/**
 	 * @return the index of this edge in the RootGraph
 	 */
-	public int getRootGraphIndex ();
+	public long getRootGraphIndex ();
 
 	/**
 	 * @return the Edge to which we are a view on

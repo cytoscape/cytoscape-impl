@@ -74,7 +74,7 @@ public interface GraphView {
 	 * @return an int array of the graph perspective indices of the selected
 	 *         nodes
 	 */
-	public int[] getSelectedNodeIndices();
+	public long[] getSelectedNodeIndices();
 
 	/**
 	 * @return a list of the selected NodeView
@@ -85,7 +85,7 @@ public interface GraphView {
 	 * @return an int array of the graph perspective indices of the selected
 	 *         edges
 	 */
-	public int[] getSelectedEdgeIndices();
+	public long[] getSelectedEdgeIndices();
 
 	/**
 	 * @return a list of the selected EdgeView
@@ -160,7 +160,7 @@ public interface GraphView {
 	 *      This method will destroy the object. It will be returned though, so
 	 *      that a reference can be kept for undo purposes.
 	 */
-	public NodeView removeNodeView(int node);
+	public NodeView removeNodeView(long node);
 
 	/**
 	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
@@ -190,7 +190,7 @@ public interface GraphView {
 	 *      This method will destroy the object. It will be returned though, so
 	 *      that a reference can be kept for undo purposes.
 	 */
-	public EdgeView removeEdgeView(int edge);
+	public EdgeView removeEdgeView(long edge);
 
 	/**
 	 * @return The Unique Identifier of this GraphView
@@ -253,7 +253,7 @@ public interface GraphView {
 	 *            the index of the node whose view is requested
 	 * @return The NodeView of the given Node
 	 */
-	public DNodeView getDNodeView(int index);
+	public DNodeView getDNodeView(long index);
 
 	/**
 	 * Return all of the EdgeViews in this GraphView
@@ -271,13 +271,13 @@ public interface GraphView {
 	/**
 	 * @return a List of indicies
 	 */
-	public java.util.List<EdgeView> getEdgeViewsList(int from_node_index, int to_node_index,
+	public java.util.List<EdgeView> getEdgeViewsList(long from_node_index, long to_node_index,
 			boolean include_undirected_edges);
 
 	/**
 	 * @return the EdgeView that corresponds to the given index
 	 */
-	public DEdgeView getDEdgeView(int edge_index);
+	public DEdgeView getDEdgeView(long edge_index);
 
 	/**
 	 * Return all of the EdgeViews in this GraphView
@@ -320,183 +320,6 @@ public interface GraphView {
 	 * Only to be used for homogenous groups!!!!
 	 */
 	public boolean showGraphObjects(List<? extends GraphViewObject> objects);
-
-	/**
-	 * Set All Data For a NOde <B>Big Bold Faced Warning</B> <BR>
-	 * Talk to rowan before using.
-	 */
-	public void setAllNodePropertyData(int node_index, Object[] data);
-
-	/*
-	 * <B>Big Bold Faced Warning</B> <BR> Talk to rowan before using.
-	 */
-	public Object[] getAllNodePropertyData(int node_index);
-
-	/**
-	 * Set All Data For an Edge <BR>
-	 * <B>Big Bold Faced Warning</B> <BR>
-	 * Talk to rowan before using.
-	 */
-	public void setAllEdgePropertyData(int edge_index, Object[] data);
-
-	/*
-	 * <B>Big Bold Faced Warning</B> <BR> Talk to rowan before using.
-	 */
-	public Object[] getAllEdgePropertyData(int edge_index);
-
-	// ----------------------------------------//
-	// Object Methods
-	// ----------------------------------------//
-
-	/**
-	 * Return the stored value for the node for the given property
-	 * 
-	 * @param node_index
-	 *            The Node Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 */
-	public Object getNodeObjectProperty(int node_index, int property);
-
-	/**
-	 * @param node_index
-	 *            The Node Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setNodeObjectProperty(int node_index, int property, Object value);
-
-	/**
-	 * Return the stored value for the edge for the given property
-	 * 
-	 * @param edge_index
-	 *            The Edge Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 */
-	public Object getEdgeObjectProperty(int edge_index, int property);
-
-	/**
-	 * @param edge_index
-	 *            The Edge Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setEdgeObjectProperty(int edge_index, int property, Object value);
-
-	// ----------------------------------------//
-	// Double Methods
-	// ----------------------------------------//
-
-	/**
-	 * @param node_index
-	 *            The Node Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 */
-	public double getNodeDoubleProperty(int node_index, int property);
-
-	/**
-	 * @param node_index
-	 *            The Node Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setNodeDoubleProperty(int node_index, int property, double value);
-
-	public double getEdgeDoubleProperty(int edge_index, int property);
-
-	/**
-	 * @param edge_index
-	 *            The Edge Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setEdgeDoubleProperty(int edge_index, int property, double value);
-
-	// ----------------------------------------//
-	// Float Methods
-	// ----------------------------------------//
-
-	public float getNodeFloatProperty(int node_index, int property);
-
-	/**
-	 * @param node_index
-	 *            The Node Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setNodeFloatProperty(int node_index, int property, float value);
-
-	public float getEdgeFloatProperty(int edge_index, int property);
-
-	/**
-	 * @param edge_index
-	 *            The Edge Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setEdgeFloatProperty(int edge_index, int property, float value);
-
-	public boolean getNodeBooleanProperty(int node_index, int property);
-
-	/**
-	 * @param node_index
-	 *            The Node Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setNodeBooleanProperty(int node_index, int property, boolean value);
-
-	public boolean getEdgeBooleanProperty(int edge_index, int property);
-
-	/**
-	 * @param edge_index
-	 *            The Edge Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setEdgeBooleanProperty(int edge_index, int property, boolean value);
-
-	public int getNodeIntProperty(int node_index, int property);
-
-	/**
-	 * @param node_index
-	 *            The Node Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setNodeIntProperty(int node_index, int property, int value);
-
-	public int getEdgeIntProperty(int edge_index, int property);
-
-	/**
-	 * @param edge_index
-	 *            The Edge Index to be queried
-	 * @param property
-	 *            the property to be accessed
-	 * @param value
-	 *            the new value for this property
-	 */
-	public boolean setEdgeIntProperty(int edge_index, int property, int value);
 
 	/**
 	 * Sets the Title of this View

@@ -36,8 +36,8 @@
 
 package org.cytoscape.spacial.internal.rtree;
 
-import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.MinIntHeap;
+import org.cytoscape.util.intr.LongEnumerator;
+import org.cytoscape.util.intr.MinLongHeap;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,13 +101,13 @@ public class RTreeQueryPerformance {
 				throw new IOException("premature end of input");
 		}
 
-		final MinIntHeap[] pointQueries;
+		final MinLongHeap[] pointQueries;
 		// Test 121 Point queries.
 		{
-			pointQueries = new MinIntHeap[121];
+			pointQueries = new MinLongHeap[121];
 
 			for (int i = 0; i < pointQueries.length; i++)
-				pointQueries[i] = new MinIntHeap();
+				pointQueries[i] = new MinLongHeap();
 
 			for (int i = 0; i < 3; i++) {
 				System.gc();
@@ -126,12 +126,12 @@ public class RTreeQueryPerformance {
 				for (int j = 0; j < 11; j++) {
 					currY += 0.1f;
 
-					final IntEnumerator iter = tree.queryOverlap(currX, currY, currX, currY, null,
+					final LongEnumerator iter = tree.queryOverlap(currX, currY, currX, currY, null,
 					                                             0, false);
-					final MinIntHeap heap = pointQueries[inx++];
+					final MinLongHeap heap = pointQueries[inx++];
 
 					while (iter.numRemaining() > 0)
-						heap.toss(iter.nextInt());
+						heap.toss(iter.nextLong());
 				}
 			}
 
@@ -139,13 +139,13 @@ public class RTreeQueryPerformance {
 			System.err.println("point queries took " + (millisEnd - millisBegin) + " milliseconds");
 		}
 
-		final MinIntHeap[] areaQueries;
+		final MinLongHeap[] areaQueries;
 		// Test 5 area queries - each area is 0.1 X 0.1.
 		{
-			areaQueries = new MinIntHeap[5];
+			areaQueries = new MinLongHeap[5];
 
 			for (int i = 0; i < areaQueries.length; i++)
-				areaQueries[i] = new MinIntHeap();
+				areaQueries[i] = new MinLongHeap();
 
 			for (int i = 0; i < 3; i++) {
 				System.gc();
@@ -155,15 +155,15 @@ public class RTreeQueryPerformance {
 			final long millisBegin = System.currentTimeMillis();
 
 			for (int i = 0; i < 5; i++) {
-				final IntEnumerator iter = tree.queryOverlap(((float) i) * 0.1f,
+				final LongEnumerator iter = tree.queryOverlap(((float) i) * 0.1f,
 				                                             ((float) i) * 0.1f,
 				                                             ((float) (i + 1)) * 0.1f,
 				                                             ((float) (i + 1)) * 0.1f, null, 0,
 				                                             false);
-				final MinIntHeap heap = areaQueries[i];
+				final MinLongHeap heap = areaQueries[i];
 
 				while (iter.numRemaining() > 0)
-					heap.toss(iter.nextInt());
+					heap.toss(iter.nextLong());
 			}
 
 			final long millisEnd = System.currentTimeMillis();
@@ -183,7 +183,7 @@ public class RTreeQueryPerformance {
 			final long millisBegin = System.currentTimeMillis();
 
 			for (int i = 0; i < 5; i++) {
-				final IntEnumerator iter = tree.queryOverlap(((float) i) * 0.1f,
+				final LongEnumerator iter = tree.queryOverlap(((float) i) * 0.1f,
 				                                             ((float) i) * 0.1f,
 				                                             ((float) (i + 6)) * 0.1f,
 				                                             ((float) (i + 6)) * 0.1f, null, 0,
@@ -196,7 +196,7 @@ public class RTreeQueryPerformance {
 		}
 
 		for (int i = 0; i < pointQueries.length; i++) {
-			final MinIntHeap heap = pointQueries[i];
+			final MinLongHeap heap = pointQueries[i];
 
 			while (heap.size() > 0)
 				System.out.print(" " + heap.deleteMin());
@@ -205,7 +205,7 @@ public class RTreeQueryPerformance {
 		}
 
 		for (int i = 0; i < areaQueries.length; i++) {
-			final MinIntHeap heap = areaQueries[i];
+			final MinLongHeap heap = areaQueries[i];
 
 			while (heap.size() > 0)
 				System.out.print(" " + heap.deleteMin());

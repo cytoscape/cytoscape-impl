@@ -65,9 +65,9 @@ import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.util.intr.IntEnumerator;
-import org.cytoscape.util.intr.IntHash;
-import org.cytoscape.util.intr.IntStack;
+import org.cytoscape.util.intr.LongEnumerator;
+import org.cytoscape.util.intr.LongHash;
+import org.cytoscape.util.intr.LongStack;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
@@ -92,12 +92,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	final Line2D.Float m_line = new Line2D.Float();
 	final GeneralPath m_path = new GeneralPath();
 	final GeneralPath m_path2 = new GeneralPath();
-	final IntStack m_stack = new IntStack();
-	final IntStack m_stack2 = new IntStack();
+	final LongStack m_stack = new LongStack();
+	final LongStack m_stack2 = new LongStack();
 	final Object m_lock;
 	DGraphView m_view;
 	final GraphLOD[] m_lod = new GraphLOD[1];
-	final IntHash m_hash;
+	final LongHash m_hash;
 	double m_xCenter;
 	double m_yCenter;
 	double m_scaleFactor;
@@ -134,7 +134,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_view = view;
 		m_undo = undo;
 		m_lod[0] = new GraphLOD(); // Default LOD.
-		m_hash = new IntHash();
+		m_hash = new LongHash();
 		m_backgroundColor = Color.white;
 		m_isVisible = true;
 		m_isOpaque = false;
@@ -341,7 +341,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public void keyTyped(KeyEvent k) { }
 
 
-	private int getChosenNode() {
+	private long getChosenNode() {
 		m_ptBuff[0] = m_lastXMousePos;
 		m_ptBuff[1] = m_lastYMousePos;
 		m_view.xformComponentToNodeCoords(m_ptBuff);
@@ -351,36 +351,36 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                                     (m_lastRenderDetail
 		                                     & GraphRenderer.LOD_HIGH_DETAIL) == 0,
 		                                     m_stack);
-		int chosenNode = (m_stack.size() > 0) ? m_stack.peek() : -1;
+		long chosenNode = (m_stack.size() > 0) ? m_stack.peek() : -1;
 		return chosenNode;
 	}
 
-	private int getChosenAnchor() {
+	private long getChosenAnchor() {
 		m_ptBuff[0] = m_lastXMousePos;
 		m_ptBuff[1] = m_lastYMousePos;
 		m_view.xformComponentToNodeCoords(m_ptBuff);
 
-		final IntEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0],
+		final LongEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0],
 		                                                          (float) m_ptBuff[1],
 		                                                          (float) m_ptBuff[0],
 		                                                          (float) m_ptBuff[1],
 		                                                          null, 0, false);
-		int chosenAnchor = (hits.numRemaining() > 0) ? hits.nextInt() : (-1);
+		long chosenAnchor = (hits.numRemaining() > 0) ? hits.nextLong() : (-1);
 		return chosenAnchor;
 	}
 	
-	private int getChosenEdge() {
+	private long getChosenEdge() {
 		computeEdgesIntersecting(m_lastXMousePos - 1, m_lastYMousePos - 1,
                 m_lastXMousePos + 1, m_lastYMousePos + 1, m_stack2);
-        int chosenEdge = (m_stack2.size() > 0) ? m_stack2.peek() : -1;
+        long chosenEdge = (m_stack2.size() > 0) ? m_stack2.peek() : -1;
         return chosenEdge;
 	}
 	
 	/**
 	 * @return an array of indices of unselected nodes
 	 */
-	private int[] getUnselectedNodes() {
-		int [] unselectedNodes;
+	private long[] getUnselectedNodes() {
+		long [] unselectedNodes;
 		if (m_view.m_nodeSelection) { // Unselect all selected nodes.
 			unselectedNodes = m_view.getSelectedNodeIndices();
 
@@ -390,13 +390,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			for (int i = 0; i < unselectedNodes.length; i++)
 				((DNodeView) m_view.getDNodeView(unselectedNodes[i])).unselectInternal();
 		} else
-			unselectedNodes = new int[0];
+			unselectedNodes = new long[0];
 		return unselectedNodes;
 
 	}
 	
-	private int[] getUnselectedEdges() {
-		int[] unselectedEdges;
+	private long[] getUnselectedEdges() {
+		long[] unselectedEdges;
 		if (m_view.m_edgeSelection) { // Unselect all selected edges.
 			unselectedEdges = m_view.getSelectedEdgeIndices();
 
@@ -406,11 +406,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			for (int i = 0; i < unselectedEdges.length; i++)
 				((DEdgeView) m_view.getDEdgeView(unselectedEdges[i])).unselectInternal();
 		} else
-			unselectedEdges = new int[0];
+			unselectedEdges = new long[0];
 		return unselectedEdges;
 	}
 	
-	private int toggleSelectedNode(int chosenNode, MouseEvent e) {
+	private int toggleSelectedNode(long chosenNode, MouseEvent e) {
 		int chosenNodeSelected = 0;
 		final boolean wasSelected = m_view.getDNodeView(chosenNode).isSelected();
 
@@ -428,10 +428,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	
-	private void toggleChosenAnchor (int chosenAnchor, MouseEvent e) {
+	private void toggleChosenAnchor (long chosenAnchor, MouseEvent e) {
 		if (e.isControlDown()) {
-			final int edge = chosenAnchor >>> 6;
-			final int anchorInx = chosenAnchor & 0x0000003f;
+			final long edge = chosenAnchor >>> 6;
+			final int anchorInx = (int)(chosenAnchor & 0x000000000000003f);
 			// Save remove handle
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Remove Edge Handle",m_undo);
 			m_view.getDEdgeView(edge).removeHandle(anchorInx);
@@ -454,7 +454,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_view.m_contentChanged = true;	
 	}
 	
-	private int toggleSelectedEdge(int chosenEdge, MouseEvent e) {
+	private int toggleSelectedEdge(long chosenEdge, MouseEvent e) {
 		int chosenEdgeSelected = 0;
 		
 		// Set Edge Bend.
@@ -486,11 +486,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_ptBuff[1] = m_lastYMousePos;
 				m_view.xformComponentToNodeCoords(m_ptBuff);
 
-				final IntEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0], (float) m_ptBuff[1],
+				final LongEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0], (float) m_ptBuff[1],
 						(float) m_ptBuff[0], (float) m_ptBuff[1], null, 0, false);
 
 				if (hits.numRemaining() > 0) {
-					final int hit = hits.nextInt();
+					final long hit = hits.nextLong();
 
 					if (m_view.m_selectedAnchors.count(hit) == 0)
 						m_view.m_selectedAnchors.insert(hit);
@@ -504,8 +504,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 
-	private int[] setSelectedNodes() {
-		int [] selectedNodes = null;
+	private long[] setSelectedNodes() {
+		long [] selectedNodes = null;
 		
 		m_ptBuff[0] = m_selectionRect.x;
 		m_ptBuff[1] = m_selectionRect.y;
@@ -527,21 +527,21 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                                     m_stack);
 		m_stack2.empty();
 
-		final IntEnumerator nodesXSect = m_stack.elements();
+		final LongEnumerator nodesXSect = m_stack.elements();
 
 		while (nodesXSect.numRemaining() > 0) {
-			final int nodeXSect = nodesXSect.nextInt();
+			final long nodeXSect = nodesXSect.nextLong();
 
 			if (m_view.m_selectedNodes.count(nodeXSect) == 0)
 				m_stack2.push(nodeXSect);
 		}
 
-		selectedNodes = new int[m_stack2.size()];
+		selectedNodes = new long[m_stack2.size()];
 
-		final IntEnumerator nodes = m_stack2.elements();
+		final LongEnumerator nodes = m_stack2.elements();
 
 		for (int i = 0; i < selectedNodes.length; i++)
-			selectedNodes[i] = nodes.nextInt();
+			selectedNodes[i] = nodes.nextLong();
 
 		for (int i = 0; i < selectedNodes.length; i++)
 			((DNodeView) m_view.getDNodeView(selectedNodes[i])) .selectInternal();
@@ -552,8 +552,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	
-	private int [] setSelectedEdges() {
-		int [] selectedEdges = null;
+	private long [] setSelectedEdges() {
+		long [] selectedEdges = null;
 		if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
 			m_ptBuff[0] = m_selectionRect.x;
 			m_ptBuff[1] = m_selectionRect.y;
@@ -567,7 +567,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 			final double xMax = m_ptBuff[0];
 			final double yMax = m_ptBuff[1];
-			final IntEnumerator hits = m_view.m_spacialA.queryOverlap((float) xMin,
+			final LongEnumerator hits = m_view.m_spacialA.queryOverlap((float) xMin,
 			                                                          (float) yMin,
 			                                                          (float) xMax,
 			                                                          (float) yMax,
@@ -579,7 +579,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_view.m_contentChanged = true;
 
 			while (hits.numRemaining() > 0) {
-				final int hit = hits.nextInt();
+				final long hit = hits.nextLong();
 
 				if (m_view.m_selectedAnchors.count(hit) == 0)
 					m_view.m_selectedAnchors.insert(hit);
@@ -592,21 +592,21 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                         m_stack2);
 		m_stack.empty();
 
-		final IntEnumerator edgesXSect = m_stack2.elements();
+		final LongEnumerator edgesXSect = m_stack2.elements();
 
 		while (edgesXSect.numRemaining() > 0) {
-			final int edgeXSect = edgesXSect.nextInt();
+			final long edgeXSect = edgesXSect.nextLong();
 
 			if (m_view.m_selectedEdges.count(edgeXSect) == 0)
 				m_stack.push(edgeXSect);
 		}
 
-		selectedEdges = new int[m_stack.size()];
+		selectedEdges = new long[m_stack.size()];
 
-		final IntEnumerator edges = m_stack.elements();
+		final LongEnumerator edges = m_stack.elements();
 
 		for (int i = 0; i < selectedEdges.length; i++)
-			selectedEdges[i] = edges.nextInt();
+			selectedEdges[i] = edges.nextLong();
 
 		for (int i = 0; i < selectedEdges.length; i++)
 			((DEdgeView) m_view.getDEdgeView(selectedEdges[i])).selectInternal(true);
@@ -643,7 +643,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	// The rectangle extents are in component coordinate space.
 	// IMPORTANT: Code that calls this method should be holding m_lock.
 	final void computeEdgesIntersecting(final int xMini, final int yMini, final int xMaxi,
-	                                    final int yMaxi, final IntStack stack) {
+	                                    final int yMaxi, final LongStack stack) {
 		m_ptBuff[0] = xMini;
 		m_ptBuff[1] = yMini;
 		m_view.xformComponentToNodeCoords(m_ptBuff);
@@ -656,13 +656,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		final double xMax = m_ptBuff[0];
 		final double yMax = m_ptBuff[1];
-		IntEnumerator edgeNodesEnum = m_hash.elements(); // Positive.
+		LongEnumerator edgeNodesEnum = m_hash.elements(); // Positive.
 		m_stack.empty();
 
 		final int edgeNodesCount = edgeNodesEnum.numRemaining();
 
 		for (int i = 0; i < edgeNodesCount; i++)
-			m_stack.push(edgeNodesEnum.nextInt());
+			m_stack.push(edgeNodesEnum.nextLong());
 
 		m_hash.empty();
 		edgeNodesEnum = m_stack.elements();
@@ -673,7 +673,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		if ((m_lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0) {
 			// We won't need to look up arrows and their sizes.
 			for (int i = 0; i < edgeNodesCount; i++) {
-				final int node = edgeNodesEnum.nextInt(); // Positive.
+				final long node = edgeNodesEnum.nextLong(); // Positive.
 				final CyNode nodeObj = graph.getNode(node);
 
 				if (!m_view.m_spacial.exists(node, m_view.m_extentsBuff, 0))
@@ -684,8 +684,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(nodeObj, CyEdge.Type.ANY);
 
 				for ( CyEdge e : touchingEdges ) {      
-					final int edge = e.getIndex(); 
-					final int otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex(); 
+					final long edge = e.getIndex(); 
+					final long otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex(); 
 
 					if (m_hash.get(otherNode) < 0) {
 						m_view.m_spacial.exists(otherNode, m_view.m_extentsBuff, 0);
@@ -703,7 +703,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 		} else { // Last render high detail.
 			for (int i = 0; i < edgeNodesCount; i++) {
-				final int node = edgeNodesEnum.nextInt(); // Positive.
+				final long node = edgeNodesEnum.nextLong(); // Positive.
 				final CyNode nodeObj = graph.getNode(node);
 
 				if (!m_view.m_spacial.exists(node, m_view.m_extentsBuff, 0))
@@ -715,7 +715,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				for ( CyEdge edge : touchingEdges ) {      
 //					final int edge = e.getIndex(); // Positive.
 					final double segThicknessDiv2 = m_view.m_edgeDetails.segmentThickness(edge) / 2.0d;
-					final int otherNode = node ^ edge.getSource().getIndex() ^ edge.getTarget().getIndex();
+					final long otherNode = node ^ edge.getSource().getIndex() ^ edge.getTarget().getIndex();
 					final CyNode otherNodeObj = graph.getNode(otherNode);
 
 					if (m_hash.get(otherNode) < 0) {
@@ -890,7 +890,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		if (m_view.m_nodeSelection) {
 			// move nodes
-			int[] selectedNodes = m_view.getSelectedNodeIndices();
+			long[] selectedNodes = m_view.getSelectedNodeIndices();
 
 			for (int i = 0; i < selectedNodes.length; i++) {
 				DNodeView nv = ((DNodeView) m_view.getDNodeView(selectedNodes[i]));
@@ -911,14 +911,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 
 			// move edge anchors
-			IntEnumerator anchorsToMove = m_view.m_selectedAnchors.searchRange(Integer.MIN_VALUE,
+			LongEnumerator anchorsToMove = m_view.m_selectedAnchors.searchRange(Integer.MIN_VALUE,
 			                                                                   Integer.MAX_VALUE,
 			                                                                   false);
 
 			while (anchorsToMove.numRemaining() > 0) {
-				final int edgeAndAnchor = anchorsToMove.nextInt();
-				final int edge = edgeAndAnchor >>> 6;
-				final int anchorInx = edgeAndAnchor & 0x0000003f;
+				final long edgeAndAnchor = anchorsToMove.nextLong();
+				final long edge = edgeAndAnchor >>> 6;
+				final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 				final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
 				//ev.getHandleInternal(anchorInx, m_floatBuff1);
 				
@@ -970,13 +970,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_lastXMousePos = e.getX();
 			m_lastYMousePos = e.getY();
 		
-			int[] unselectedNodes = null;
-			int[] unselectedEdges = null;
-			int chosenNode = -1;
-			int chosenEdge = -1;
-			int chosenAnchor = -1;
-			int chosenNodeSelected = 0;
-			int chosenEdgeSelected = 0;
+			long[] unselectedNodes = null;
+			long[] unselectedEdges = null;
+			long chosenNode = -1;
+			long chosenEdge = -1;
+			long chosenAnchor = -1;
+			long chosenNodeSelected = 0;
+			long chosenEdgeSelected = 0;
 	
 			synchronized (m_lock) {
 				if (m_view.m_nodeSelection) {
@@ -1144,8 +1144,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_currMouseButton = 0;
 	
 				if (m_selectionRect != null) {
-					int[] selectedNodes = null;
-					int[] selectedEdges = null;
+					long[] selectedNodes = null;
+					long[] selectedEdges = null;
 	
 					synchronized (m_lock) {
 						if (m_view.m_nodeSelection || m_view.m_edgeSelection) {
@@ -1159,7 +1159,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					m_selectionRect = null;
 
 					// Update visual property value (x/y)
-					for (int node : selectedNodes) {
+					for (long node : selectedNodes) {
 						final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
 						dNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
 						dNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
@@ -1261,7 +1261,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 	
 					// TODO: Optimize to not instantiate new array on every call.
-					final int[] selectedNodes = m_view.getSelectedNodeIndices();
+					final long[] selectedNodes = m_view.getSelectedNodeIndices();
 	
 					for (int i = 0; i < selectedNodes.length; i++) {
 						final NodeView dNodeView = m_view.getDNodeView(selectedNodes[i]);
@@ -1270,14 +1270,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						dNodeView.setOffset(oldXPos + deltaX, oldYPos + deltaY);
 					}
 	
-					final IntEnumerator anchorsToMove = m_view.m_selectedAnchors.searchRange(Integer.MIN_VALUE,
+					final LongEnumerator anchorsToMove = m_view.m_selectedAnchors.searchRange(Integer.MIN_VALUE,
 					                                                                         Integer.MAX_VALUE,
 					                                                                         false);
 	
 					while (anchorsToMove.numRemaining() > 0) {
-						final int edgeAndAnchor = anchorsToMove.nextInt();
-						final int edge = edgeAndAnchor >>> 6;
-						final int anchorInx = edgeAndAnchor & 0x0000003f;
+						final long edgeAndAnchor = anchorsToMove.nextLong();
+						final long edge = edgeAndAnchor >>> 6;
+						final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 						final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
 						
 						//ev.getHandleInternal(anchorInx, m_floatBuff1);

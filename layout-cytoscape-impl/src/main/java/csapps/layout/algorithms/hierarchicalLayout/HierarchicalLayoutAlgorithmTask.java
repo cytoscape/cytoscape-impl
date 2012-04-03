@@ -100,7 +100,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		}
 
 		// maps node's index (.getIndex()) to View<CyNode> of given node
-		HashMap<Integer, View<CyNode>> index2NodeView = new HashMap<Integer, View<CyNode>>(numNodes);
+		HashMap<Long, View<CyNode>> index2NodeView = new HashMap<Long, View<CyNode>>(numNodes);
 		
 		if (numSelectedNodes > 1) {
 			for (CyNode n: CyTableUtil.getNodesInState(network,"selected",true)){
@@ -124,8 +124,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		for (View<CyEdge> ev: networkView.getEdgeViews()){
 		    // FIXME: much better would be to query adjacent edges of selected nodes...
 		    
-			Integer edgeFrom = ev.getModel().getSource().getIndex();
-			Integer edgeTo = ev.getModel().getTarget().getIndex();
+			Long edgeFrom = ev.getModel().getSource().getIndex();
+			Long edgeTo = ev.getModel().getTarget().getIndex();
 
 			if ((edgeFrom == null) || (edgeTo == null)) {
 				// Must be from an unselected node
@@ -509,17 +509,18 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 		/* Map edges to edge views in order to map dummy nodes to edge bends properly */
 		for (View<CyEdge>ev: networkView.getEdgeViews()){
-			Integer edgeFrom = ev.getModel().getSource().getIndex();
-			Integer edgeTo = ev.getModel().getTarget().getIndex();
+			Long edgeFrom = ev.getModel().getSource().getIndex();
+			Long edgeTo = ev.getModel().getTarget().getIndex();
 
 			if ((edgeFrom == null) || (edgeTo == null)) {
 				// Must be from an unselected node
 				continue;
 			}
 
+			// DANGER: we're effectively casting Long to Integer here.  This needs to be rewritten!
 			if ((numSelectedNodes <= 1)
-			    || ((edgeFrom.intValue() < numSelectedNodes)
-			       && (edgeTo.intValue() < numSelectedNodes))) {
+			    || ((edgeFrom.longValue() < numSelectedNodes)
+			       && (edgeTo.longValue() < numSelectedNodes))) {
 				/* add edge to graph */
 				Edge theEdge = component[cI[edgeFrom.intValue()]].GetTheEdge(renumber[edgeFrom.intValue()],
 				                                                             renumber[edgeTo.intValue()]);
@@ -558,8 +559,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				View<CyEdge> ev = myEdges2EdgeViews[cI[node.graphIndex]].get(theEdge);
 
 				if (ev != null) {
-					int source = ev.getModel().getSource().getIndex();
-					int target = ev.getModel().getTarget().getIndex();
+					long source = ev.getModel().getSource().getIndex();
+					long target = ev.getModel().getTarget().getIndex();
 					double k = (getYPositionOf(index2NodeView, target) - getYPositionOf(index2NodeView, source)) / (
 							getXPositionOf(index2NodeView, target) - getXPositionOf(index2NodeView, source));
 
@@ -602,10 +603,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		taskMonitor.setProgress(1.0);
 		taskMonitor.setStatusMessage("hierarchical layout complete");
 	}
-	private double getXPositionOf(HashMap<Integer, View<CyNode>> index2NodeView, int nodeIndex){
+	private double getXPositionOf(HashMap<Long, View<CyNode>> index2NodeView, long nodeIndex){
 		return index2NodeView.get(nodeIndex).getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 	}
-	private double getYPositionOf(HashMap<Integer, View<CyNode>> index2NodeView, int nodeIndex){
+	private double getYPositionOf(HashMap<Long, View<CyNode>> index2NodeView, long nodeIndex){
 		return index2NodeView.get(nodeIndex).getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 	}
 
