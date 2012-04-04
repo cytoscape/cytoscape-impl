@@ -55,16 +55,21 @@ class NameSetListener implements RowsSetListener {
 	}
 
 	public void handleEvent(RowsSetEvent e) {
-		CyTable local = e.getSource();	
-		List<CyTable> sharedList = tables.get(local);
+		
+		final CyTable local = e.getSource();	
+		final List<CyTable> sharedList = tables.get(local);
+		
 		for ( CyTable shared : sharedList ) {
 			for ( RowSetRecord record : e.getPayloadCollection() ) {
 				// assume payload collection is for same column
 				if ( !record.getColumn().equals(CyNetwork.NAME) )
 					continue;
-				CyRow r = shared.getRow( record.getRow().get( CyIdentifiable.SUID, Long.class ) );
-				if ( r != null ) 
-					r.set(CyRootNetwork.SHARED_NAME, record.getValue());
+				final CyRow r = shared.getRow(record.getRow().get( CyIdentifiable.SUID, Long.class ));
+				if( r != null ) {
+					final Object name = record.getValue();
+					r.set(CyRootNetwork.SHARED_NAME, name);
+					
+				}
 			}
 		}
 	}

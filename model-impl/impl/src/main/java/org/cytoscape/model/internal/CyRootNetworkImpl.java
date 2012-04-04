@@ -42,6 +42,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
@@ -73,7 +74,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	private final CyTableFactory tableFactory;
 	private final boolean publicTables;
 	private final VirtualColumnAdder columnAdder;
-	private final NameSetListener nameSetListener; 
+//	private final NameSetListener nameSetListener; 
 	private final NetworkAddedListenerDelegator networkAddedListenerDelegator; 
 
 	private int nextNodeIndex;
@@ -102,8 +103,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		columnAdder = new VirtualColumnAdder();
 		serviceRegistrar.registerService(columnAdder, ColumnCreatedListener.class, new Properties());
-		nameSetListener = new NameSetListener();
-		serviceRegistrar.registerService(nameSetListener, RowsSetListener.class, new Properties());
+//		nameSetListener = new NameSetListener();
+//		serviceRegistrar.registerService(nameSetListener, RowsSetListener.class, new Properties());
 		networkAddedListenerDelegator = new NetworkAddedListenerDelegator();
 		serviceRegistrar.registerService(networkAddedListenerDelegator, NetworkAddedListener.class, new Properties());
 
@@ -114,6 +115,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
 	}
 
+	// Simply register all tables to the table manager
 	private void registerAllTables(Collection<CyTable> tables) {
 		for (final CyTable table : tables)
 			tableMgr.addTable(table);
@@ -126,7 +128,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		networkTableMgr.setTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS, edgeSharedTable);
 		
 		edgeSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
-				
+		//edgeSharedTable.addVirtualColumn(SHARED_NAME, NAME, getDefaultEdgeTable(), SUID, false);	
+		
 		final CyTable networkSharedTable = tableFactory.createTable(suid
 				+ " shared network", CyIdentifiable.SUID, Long.class, publicTables, false, InitialTableSize.SMALL);
 		networkTableMgr.setTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS, networkSharedTable);
@@ -151,7 +154,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		columnAdder.addInterestedTables(srcTable,tgtTable);
 
 		// Another listener tracks changes to the NAME column in local tables
-		nameSetListener.addInterestedTables(srcTable,tgtTable);
+		//nameSetListener.addInterestedTables(srcTable,tgtTable);
 	}
 
 	@Override

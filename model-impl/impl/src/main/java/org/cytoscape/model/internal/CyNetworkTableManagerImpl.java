@@ -68,8 +68,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 	}
 
 	@Override
-	public CyTable getTable(CyNetwork network,
-			Class<? extends CyIdentifiable> type, String namespace) {
+	public CyTable getTable(CyNetwork network, Class<? extends CyIdentifiable> type, String namespace) {
 		Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
 		if (network == null) {
 			throw new IllegalArgumentException("network cannot be null");
@@ -79,10 +78,10 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 		}
 		if (namespace == null)
 			throw new IllegalArgumentException("namespace cannot be null");
-		
+
 		if (byType == null)
 			return null;
-		
+
 		final Map<String, CyTable> reference = byType.get(type);
 		if (reference == null)
 			return null;

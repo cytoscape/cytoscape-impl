@@ -50,6 +50,7 @@ import org.cytoscape.model.events.RemovedEdgesEvent;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.mockito.cglib.core.Local;
 
 
 /**
@@ -86,11 +87,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		
 		initTables(this);
 
-//		netTableMgr.setTableMap(CyNetwork.class, this, netTables);
-//		netTableMgr.setTableMap(CyNode.class, this, nodeTables);
-//		netTableMgr.setTableMap(CyEdge.class, this, edgeTables);
-
-		fireAddedNodesAndEdgesEvents = false;
+		fireAddedNodesAndEdgesEvents = false;		
 	}
 
 	public CyRootNetwork getRootNetwork() {
@@ -126,9 +123,8 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 				throw new IllegalArgumentException("node is not contained in parent network!");
 
 			addNodeInternal(node);
-
-			// add node
-			copyDefaultAttrs(parent.getRow(node), this.getRow(node));
+			
+			copyTableData(node);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
@@ -177,8 +173,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			// add edge
 			addEdgeInternal(edge.getSource(),edge.getTarget(),edge.isDirected(),edge);
 
-			copyDefaultAttrs(parent.getRow(edge), this.getRow(edge));
-			copyDefaultEdgeAttrs(parent.getRow(edge), this.getRow(edge));
+			copyTableData(edge);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
@@ -187,14 +182,31 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		return true;
 	}
 
-	private void copyDefaultAttrs(final CyRow originalRow, final CyRow copyRow) {
-		copyRow.set(CyNetwork.NAME, originalRow.get(CyNetwork.NAME, String.class));
-		copyRow.set(CyNetwork.SELECTED, originalRow.get(CyNetwork.SELECTED, Boolean.class));
+	
+	private void copyTableData(final CyIdentifiable graphObject) {
+		final String name = parent.getRow(graphObject).get(NAME, String.class);
+		final CyRow sharedTableRow = parent.getRow(graphObject, CyRootNetwork.SHARED_ATTRS);
+		final CyRow defaultTableRow = parent.getRow(graphObject);
+		final CyRow targetRow = this.getRow(graphObject);
+		
+		// Step 1: Copy shared name as name of this new node
+		final String sharedName = sharedTableRow.get(CyRootNetwork.SHARED_NAME, String.class);
+		
+		if(sharedName != null)
+			targetRow.set(CyNetwork.NAME, sharedName);
+		else
+			targetRow.set(CyNetwork.NAME, name);
+		
+		// Step 2: Copy selection state
+		targetRow.set(CyNetwork.SELECTED, defaultTableRow.get(CyNetwork.SELECTED, Boolean.class));
+		
+		// Step 3: Copy Interaction if edge
+		if(graphObject instanceof CyEdge) {
+			final String interaction = defaultTableRow.get(CyEdge.INTERACTION, String.class);
+			targetRow.set(CyEdge.INTERACTION, interaction);
+		}
 	}
 
-	private void copyDefaultEdgeAttrs(final CyRow originalRow, final CyRow copyRow) {
-		copyRow.set(CyEdge.INTERACTION, originalRow.get(CyEdge.INTERACTION, String.class));
-	}
 
 	@Override
 	public boolean removeNodes(final Collection<CyNode> nodes) {
@@ -255,7 +267,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	private void updateSharedNames(CyTable src, CyTable tgt) {
 		for ( CyRow sr : src.getAllRows() ) {
 			CyRow tr = tgt.getRow( sr.get(CyIdentifiable.SUID,Long.class) );
-			tr.set( CyRootNetwork.SHARED_NAME, sr.get(CyNetwork.NAME,String.class) );
+			tr.set( CyRootNetwork.SHARED_NAME, sr.get(CyNetwork.NAME,String.class) );			
 		}
 	}
 
