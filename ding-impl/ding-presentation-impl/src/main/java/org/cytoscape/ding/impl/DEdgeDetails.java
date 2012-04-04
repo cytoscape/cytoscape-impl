@@ -141,8 +141,6 @@ class DEdgeDetails extends EdgeDetails {
 
 		m_colorsLowDetail = new HashMap<CyEdge,Object>();
 		m_selectedColorsLowDetail = new HashMap<CyEdge,Object>();
-
-		selected = new HashSet<CyEdge>();
 		
 		m_lineType = new HashMap<CyEdge, Integer>();
 		
