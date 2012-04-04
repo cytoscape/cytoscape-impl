@@ -1,13 +1,12 @@
 package org.cytoscape.editor.internal;
 
-import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
-
-import javax.swing.JOptionPane;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -30,7 +29,6 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 
 	private static final Logger logger = LoggerFactory.getLogger(AddNodeTask.class);
 	
-	
 	public AddNodeTask(final VisualMappingManager vmm, final CyRootNetworkManager rnm, final CyNetworkView view,
 			//final Transferable t,
 			final Point2D xformPt, final CyEventHelper eh) {
@@ -44,23 +42,19 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		/*
-		if ( !DropUtil.transferableMatches(t,"Node") ) {
-			logger.warn("Transferable object does not match expected type (Node) for task.");
-			return;
-		}
-
-	*/
-		CyNetwork net = view.getModel();
-		CyNode n = net.addNode();
+		final CyNetwork net = view.getModel();
+		final CyNode n = net.addNode();
 		
 		// set the name attribute for the new node
-		String nodeName = "";
-		nodeName = "Node_"+ new_node_index;		
+		final String nodeName = "Node "+ new_node_index;		
 		new_node_index++;
-
-		net.getRow(n).set(CyNetwork.NAME, nodeName);
-		rnm.getRootNetwork(net).getRow(n).set(CyNetwork.NAME, nodeName);
+		
+		final CyRootNetwork parentNetwork = rnm.getRootNetwork(net);
+		parentNetwork.getDefaultNodeTable().getRow(n.getSUID()).set(CyNetwork.NAME, nodeName);
+		parentNetwork.getSharedNodeTable().getRow(n.getSUID()).set(CyRootNetwork.SHARED_NAME, nodeName);
+		
+		final CyRow nodeRow = net.getRow(n);
+		nodeRow.set(CyNetwork.NAME, nodeName);
 		
 		eh.flushPayloadEvents();
 		View<CyNode> nv = view.getNodeView(n);
