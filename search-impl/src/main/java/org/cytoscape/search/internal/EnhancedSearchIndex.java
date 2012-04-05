@@ -75,13 +75,13 @@ public class EnhancedSearchIndex {
 			
 			this.taskMonitor.setProgress(0.1);
 			for (CyNode cyNode : nodeList) {
-				writer.addDocument(createDocument(network, cyNode, EnhancedSearch.NODE_TYPE, cyNode.getIndex()));
+				writer.addDocument(createDocument(network, cyNode, EnhancedSearch.NODE_TYPE, cyNode.getSUID()));
 			}
 			this.taskMonitor.setProgress(0.6);
 		
 			List<CyEdge> edgeList = network.getEdgeList();
 			for (CyEdge cyEdge : edgeList) {
-				writer.addDocument(createDocument(network, cyEdge, EnhancedSearch.EDGE_TYPE, cyEdge.getIndex()));
+				writer.addDocument(createDocument(network, cyEdge, EnhancedSearch.EDGE_TYPE, cyEdge.getSUID()));
 			}
 
 			// Optimize and close the writer to finish building the index

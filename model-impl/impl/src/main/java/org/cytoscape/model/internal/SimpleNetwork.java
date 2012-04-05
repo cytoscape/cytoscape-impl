@@ -222,7 +222,7 @@ class SimpleNetwork {
 				return node;
 
 			NodePointer n = new NodePointer(node);	
-			nodePointers.put(node.getIndex(),n);
+			nodePointers.put(node.getSUID(),n);
 			nodeCount++;
 			firstNode = n.insert(firstNode);
 		}
@@ -242,7 +242,7 @@ class SimpleNetwork {
 				// remove adjacent edges from network
 				removeEdgesInternal(getAdjacentEdgeList(n, CyEdge.Type.ANY));
 	
-				final NodePointer node = nodePointers.remove(n.getIndex());
+				final NodePointer node = nodePointers.remove(n.getSUID());
 				firstNode = node.remove(firstNode);
 	
 				nodeCount--;
@@ -274,7 +274,7 @@ class SimpleNetwork {
 
 			e = new EdgePointer(source, target, directed, edge); 
 
-			edgePointers.put(edge.getIndex(),e);
+			edgePointers.put(edge.getSUID(),e);
 
 			edgeCount++;
 		}
@@ -291,7 +291,7 @@ class SimpleNetwork {
 				if (!containsEdge(edge))
 					return false;
 	
-				final EdgePointer e = edgePointers.remove(edge.getIndex());
+				final EdgePointer e = edgePointers.remove(edge.getSUID());
 	
 				e.remove();
 	
@@ -309,7 +309,7 @@ class SimpleNetwork {
 		final NodePointer thisNode; 
 
 		synchronized (this) {
-			thisNode = nodePointers.get(node.getIndex());
+			thisNode = nodePointers.get(node.getSUID());
 		}
 
 		if ( thisNode == null )
@@ -325,7 +325,7 @@ class SimpleNetwork {
 		final EdgePointer thisEdge; 
 
 		synchronized (this) {
-			thisEdge = edgePointers.get(edge.getIndex());
+			thisEdge = edgePointers.get(edge.getSUID());
 		}
 
 		if ( thisEdge == null )
@@ -565,7 +565,7 @@ class SimpleNetwork {
 
 	private NodePointer getNodePointer(final CyNode node) {
 		assert(node != null);
-		return nodePointers.get(node.getIndex());
+		return nodePointers.get(node.getSUID());
 	}
 
 	

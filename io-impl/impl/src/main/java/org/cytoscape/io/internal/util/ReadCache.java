@@ -107,10 +107,10 @@ public class ReadCache {
 		if (xgmmlId != null) {
 			if (element instanceof CyNode) {
 				nodeByIdMap.put(xgmmlId, (CyNode) element);
-				index = ((CyNode) element).getIndex();
+				index = ((CyNode) element).getSUID();
 			} else if (element instanceof CyEdge) {
 				edgeByIdMap.put(xgmmlId, (CyEdge) element);
-				index = ((CyEdge) element).getIndex();
+				index = ((CyEdge) element).getSUID();
 			} else if (element instanceof CyNetwork) {
 				networkByIdMap.put(xgmmlId, (CyNetwork) element);
 			} else if (element instanceof CyNetworkView) {

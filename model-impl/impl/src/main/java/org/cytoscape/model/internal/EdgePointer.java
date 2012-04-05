@@ -52,7 +52,7 @@ final class EdgePointer {
 		target = t;
 		directed = dir;
 		cyEdge = edge;
-		index = edge.getIndex();
+		index = edge.getSUID();
 
 		nextOutEdge = null;
 		prevOutEdge = null;

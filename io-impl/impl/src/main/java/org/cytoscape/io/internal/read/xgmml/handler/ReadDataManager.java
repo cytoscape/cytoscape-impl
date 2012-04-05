@@ -473,8 +473,8 @@ public class ReadDataManager {
         	CyNetwork net = getCurrentNetwork();
         	// But first get the actual source/target instances from the current network,
         	// because both node instances have to belong to the same root or sub-network.
-        	CyNode actualSrc = net.getNode(source.getIndex());
-        	CyNode actualTgt = net.getNode(target.getIndex());
+        	CyNode actualSrc = net.getNode(source.getSUID());
+        	CyNode actualTgt = net.getNode(target.getSUID());
         	
         	if (getDocumentVersion() < 3.0 || !isSessionFormat()) {
         		if (actualSrc == null || actualTgt == null) {
@@ -488,10 +488,10 @@ public class ReadDataManager {
 	        		net = getRootNetwork();
 					
 	        		if (actualSrc == null)
-	        			actualSrc = net.getNode(source.getIndex());
+	        			actualSrc = net.getNode(source.getSUID());
 	        		
 	        		if (actualTgt == null)
-	        			actualTgt = net.getNode(target.getIndex());
+	        			actualTgt = net.getNode(target.getSUID());
         		}
         	}
         	

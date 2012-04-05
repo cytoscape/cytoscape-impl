@@ -46,7 +46,6 @@ import java.util.Map;
 class CyEdgeImpl extends CyIdentifiableImpl implements CyEdge {
 	final private CyNode source;
 	final private CyNode target;
-	// final private long index;
 	final private boolean directed;
 
 	CyEdgeImpl(long suid, CyNode src, CyNode tgt, boolean dir, long ind) {
@@ -54,16 +53,14 @@ class CyEdgeImpl extends CyIdentifiableImpl implements CyEdge {
 		source = src;
 		target = tgt;
 		directed = dir;
-		// index = ind;
 	}
 
 	/**
 	 * @see org.cytoscape.model.CyEdge#getIndex()
-	 */
-	@Override
 	public long getIndex() {
 		return getSUID().longValue();
 	}
+	 */
 
 	/**
 	 * @see org.cytoscape.model.CyEdge#getSource()
@@ -98,8 +95,6 @@ class CyEdgeImpl extends CyIdentifiableImpl implements CyEdge {
 		sb.append(target.toString());
 		sb.append("  directed: ");
 		sb.append(Boolean.toString(directed));
-		sb.append("  index: ");
-		sb.append(Long.toString(getIndex()));
 
 		return sb.toString();
 	}

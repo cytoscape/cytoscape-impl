@@ -239,8 +239,8 @@ public final class GraphRenderer {
 					final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge e : touchingEdges ) {
-						final long edge = e.getIndex(); 
-						final long otherNode = node ^ e.getSource().getIndex() ^ e.getTarget().getIndex();
+						final long edge = e.getSUID(); 
+						final long otherNode = node ^ e.getSource().getSUID() ^ e.getTarget().getSUID();
 
 						if (nodeBuff.get(otherNode) < 0)
 							runningEdgeCount++;
@@ -329,7 +329,7 @@ public final class GraphRenderer {
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge edge : touchingEdges ) {
-						final long otherNode = node ^ edge.getSource().getIndex() ^ edge.getTarget().getIndex();
+						final long otherNode = node ^ edge.getSource().getSUID() ^ edge.getTarget().getSUID();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 							nodePositions.exists(otherNode, floatBuff2, 0);
@@ -351,8 +351,8 @@ public final class GraphRenderer {
 					final byte nodeShape = nodeDetails.shape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
 					for ( CyEdge edge : touchingEdges ) {
-						final long otherNode = node ^ edge.getSource().getIndex()
-							^ edge.getTarget().getIndex();
+						final long otherNode = node ^ edge.getSource().getSUID()
+							^ edge.getTarget().getSUID();
 						final CyNode otherCyNode = graph.getNode(otherNode);
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
@@ -369,7 +369,7 @@ public final class GraphRenderer {
 							final byte trgShape;
 							final float[] srcExtents;
 							final float[] trgExtents;
-							if (node == edge.getSource().getIndex()) {
+							if (node == edge.getSource().getSUID()) {
 								srcShape = nodeShape;
 								trgShape = otherNodeShape;
 								srcExtents = floatBuff1;

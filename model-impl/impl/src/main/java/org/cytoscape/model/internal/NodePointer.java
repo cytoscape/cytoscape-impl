@@ -58,7 +58,7 @@ final class NodePointer {
 
 	NodePointer(final CyNode cyn) {
 		cyNode = cyn;
-		index = cyn.getIndex();
+		index = cyn.getSUID();
 
 		outDegree = 0;
 		inDegree = 0;

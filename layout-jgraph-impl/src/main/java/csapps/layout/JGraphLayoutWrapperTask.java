@@ -129,7 +129,7 @@ public class JGraphLayoutWrapperTask extends AbstractBasicLayoutTask{
 		    if (canceled) return;
 			View<CyNode> node_view = networkView.getNodeView(n);
 
-			DefaultGraphCell jcell = new DefaultGraphCell(n.getIndex());
+			DefaultGraphCell jcell = new DefaultGraphCell(n.getSUID());
 
 			// Set bounds
 			Rectangle2D bounds = new Rectangle2D.Double(

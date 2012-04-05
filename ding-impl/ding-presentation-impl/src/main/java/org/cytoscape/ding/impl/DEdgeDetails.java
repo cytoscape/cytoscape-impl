@@ -823,8 +823,8 @@ class DEdgeDetails extends EdgeDetails {
 
 		final CyNetwork graph = m_view.m_drawPersp;
 		
-		final long srcNodeIndex = edgeView.getModel().getSource().getIndex();
-		final long trgNodeIndex = edgeView.getModel().getTarget().getIndex();
+		final long srcNodeIndex = edgeView.getModel().getSource().getSUID();
+		final long trgNodeIndex = edgeView.getModel().getTarget().getSUID();
 
 		// Calculate anchors necessary for self edges.
 		if (srcNodeIndex == trgNodeIndex) { 
@@ -843,9 +843,9 @@ class DEdgeDetails extends EdgeDetails {
 			for(final CyEdge selfEdge: selfEdgeList) {
 //			while (selfEdges.hasNext()) {
 //				final int e2 = selfEdges.nextInt();
-				final long e2 = selfEdge.getIndex();
+				final long e2 = selfEdge.getSUID();
 
-				if (e2 == edge.getIndex())
+				if (e2 == edge.getSUID())
 					break;
 
 				if (((EdgeAnchors) m_view.getDEdgeView(e2)).numAnchors() == 0)
@@ -893,7 +893,7 @@ class DEdgeDetails extends EdgeDetails {
 			for(final CyEdge conEdge: conEdgeList) {
 //			while (conEdges.hasNext()) {
 //				m_heap.toss(conEdges.nextInt());
-				m_heap.toss(conEdge.getIndex());
+				m_heap.toss(conEdge.getSUID());
 			}
 
 			final LongEnumerator otherEdges = m_heap.orderedElements(false);
@@ -902,7 +902,7 @@ class DEdgeDetails extends EdgeDetails {
 
 			// If the first other edge is the same as this edge, 
 			// (i.e. we're at the end of the list?).
-			if (otherEdge == edge.getIndex())
+			if (otherEdge == edge.getSUID())
 				break;
 
 			// So we don't count the other edge twice?
@@ -910,7 +910,7 @@ class DEdgeDetails extends EdgeDetails {
 
 			// Count the number of other edges.
 			while (true) {
-				if (edge.getIndex() == (otherEdge = otherEdges.nextLong()))
+				if (edge.getSUID() == (otherEdge = otherEdges.nextLong()))
 					break;
 
 				if (((EdgeAnchors) m_view.getDEdgeView(otherEdge)).numAnchors() == 0)
@@ -1009,7 +1009,7 @@ class DEdgeDetails extends EdgeDetails {
 		if (lineType(edge) == DEdgeView.STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;
 
-		if (m_view.m_selectedAnchors.count((edge.getIndex() << 6) | anchorInx) > 0)
+		if (m_view.m_selectedAnchors.count((edge.getSUID() << 6) | anchorInx) > 0)
 			return m_view.getAnchorSelectedPaint();
 		else
 			return m_view.getAnchorUnselectedPaint();
