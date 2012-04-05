@@ -104,13 +104,13 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		
 		if (numSelectedNodes > 1) {
 			for (CyNode n: CyTableUtil.getNodesInState(network,"selected",true)){
-			    index2NodeView.put(n.getIndex(), networkView.getNodeView(n));
+			    index2NodeView.put(n.getSUID(), networkView.getNodeView(n));
 			}
 		} else {
 			for (View<CyNode> nv: networkView.getNodeViews()){
 			    if (cancelled)
 				return;
-			    index2NodeView.put(nv.getModel().getIndex(), nv);
+			    index2NodeView.put(nv.getModel().getSUID(), nv);
 			}
 
 		}
@@ -124,8 +124,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		for (View<CyEdge> ev: networkView.getEdgeViews()){
 		    // FIXME: much better would be to query adjacent edges of selected nodes...
 		    
-			Long edgeFrom = ev.getModel().getSource().getIndex();
-			Long edgeTo = ev.getModel().getTarget().getIndex();
+			Long edgeFrom = ev.getModel().getSource().getSUID();
+			Long edgeTo = ev.getModel().getTarget().getSUID();
 
 			if ((edgeFrom == null) || (edgeTo == null)) {
 				// Must be from an unselected node
@@ -509,8 +509,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 		/* Map edges to edge views in order to map dummy nodes to edge bends properly */
 		for (View<CyEdge>ev: networkView.getEdgeViews()){
-			Long edgeFrom = ev.getModel().getSource().getIndex();
-			Long edgeTo = ev.getModel().getTarget().getIndex();
+			Long edgeFrom = ev.getModel().getSource().getSUID();
+			Long edgeTo = ev.getModel().getTarget().getSUID();
 
 			if ((edgeFrom == null) || (edgeTo == null)) {
 				// Must be from an unselected node
@@ -559,8 +559,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				View<CyEdge> ev = myEdges2EdgeViews[cI[node.graphIndex]].get(theEdge);
 
 				if (ev != null) {
-					long source = ev.getModel().getSource().getIndex();
-					long target = ev.getModel().getTarget().getIndex();
+					long source = ev.getModel().getSource().getSUID();
+					long target = ev.getModel().getTarget().getSUID();
 					double k = (getYPositionOf(index2NodeView, target) - getYPositionOf(index2NodeView, source)) / (
 							getXPositionOf(index2NodeView, target) - getXPositionOf(index2NodeView, source));
 

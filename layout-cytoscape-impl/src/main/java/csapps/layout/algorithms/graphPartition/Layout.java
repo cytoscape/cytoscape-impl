@@ -107,7 +107,7 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public boolean setX(long node, double x) {
+	public boolean setX(Long node, double x) {
 		if (nodeXMap.containsKey(node))
 			return false;
 
@@ -123,7 +123,7 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public boolean setY(long node, double y) {
+	public boolean setY(Long node, double y) {
 		if (nodeYMap.containsKey(node))
 			return false;
 
@@ -140,7 +140,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setX(CyNode node, double x) {
-		return setX(node.getIndex(), x);
+		return setX(node.getSUID(), x);
 	}
 
 	/**
@@ -152,7 +152,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setY(CyNode node, double y) {
-		return setY(node.getIndex(), y);
+		return setY(node.getSUID(), y);
 	}
 
 	/**
@@ -164,7 +164,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setX(View<CyNode> node, double x) {
-		return setX(node.getModel().getIndex(), x);
+		return setX(node.getModel().getSUID(), x);
 	}
 
 	/**
@@ -176,7 +176,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public boolean setY(View<CyNode> node, double y) {
-		return setY(node.getModel().getIndex(), y);
+		return setY(node.getModel().getSUID(), y);
 	}
 
 	// get
@@ -187,7 +187,7 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public double getX(long node) {
+	public double getX(Long node) {
 		return nodeXMap.get(node);
 	}
 
@@ -198,7 +198,7 @@ public class Layout {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public double getY(long node) {
+	public double getY(Long node) {
 		return nodeYMap.get(node);
 	}
 
@@ -210,7 +210,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public double getX(CyNode node) {
-		return nodeXMap.get(node.getIndex());
+		return nodeXMap.get(node.getSUID());
 	}
 
 	/**
@@ -221,7 +221,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public double getY(CyNode node) {
-		return nodeYMap.get(node.getIndex());
+		return nodeYMap.get(node.getSUID());
 	}
 
 	/**
@@ -232,7 +232,7 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public double getX(View<CyNode> node) {
-		return nodeXMap.get(node.getModel().getIndex());
+		return nodeXMap.get(node.getModel().getSUID());
 	}
 
 	/**
@@ -243,6 +243,6 @@ public class Layout {
 	 * @return  DOCUMENT ME!
 	 */
 	public double getY(View<CyNode> node) {
-		return nodeYMap.get(node.getModel().getIndex());
+		return nodeYMap.get(node.getModel().getSUID());
 	}
 }

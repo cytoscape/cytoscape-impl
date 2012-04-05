@@ -151,8 +151,8 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 				// FIXME: this code was originally comparing node1.getIdentifier() to node2.getIdentifier()
 				// I'm not sure that comparing the indices of the nodes gets the same effect
 				// on the other hand, nodes don't have a human-readable uid in 3.0
-				Long a = Long.valueOf(node1.getIndex());
-				Long b = Long.valueOf(node2.getIndex());
+				Long a = node1.getSUID();
+				Long b = node2.getSUID();
 
 				return a.compareTo(b);
 			}

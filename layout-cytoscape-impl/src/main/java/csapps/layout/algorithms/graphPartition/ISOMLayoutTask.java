@@ -77,7 +77,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 
 		while (nodeIter.hasNext()) {
 			LayoutNode node = (LayoutNode) nodeIter.next();
-			long rootGraphIndex = node.getNode().getIndex();
+			long rootGraphIndex = node.getNode().getSUID();
 
 			nodeIndexToLayoutIndex.put(rootGraphIndex, node.getIndex());
 
@@ -111,7 +111,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 		Iterator nodeIter = partition.nodeIterator();
 
 		while (nodeIter.hasNext()) {
-			long nodeIndex = ((LayoutNode) nodeIter.next()).getNode().getIndex();
+			long nodeIndex = ((LayoutNode) nodeIter.next()).getNode().getSUID();
 			ISOMVertexData ivd = getISOMVertexData(nodeIndex);
 			ivd.distance = 0;
 			ivd.visited = false;
@@ -263,7 +263,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 		long [] neighbors = new long[neighborList.size()];
 		int offset = 0;
 		for (CyNode n: neighborList){
-			neighbors[offset++]=n.getIndex();
+			neighbors[offset++]=n.getSUID();
 		}
 		return neighbors;
 	}
