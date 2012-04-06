@@ -2517,31 +2517,31 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (value == null) 
 			return;
 		
-		final VisualProperty<?> vp;
-		final VisualLexiconNode treeNode = dingLexicon.getVisualLexiconNode(vpOriginal);
-		if (treeNode == null)
-			return;
-
-		if (treeNode.getChildren().size() != 0) {
-			// This is not leaf.
-			final Collection<VisualLexiconNode> children = treeNode.getChildren();
-			boolean shouldApply = false;
-			for (VisualLexiconNode node : children) {
-				if (node.isDepend()) {
-					shouldApply = true;
-					break;
-				}
-			}
-
-			if (shouldApply == false)
-				return;
-		}
-
-		if (treeNode.isDepend()) {
-			// Do not use this. Parent will be applied.
-			return;
-		} else
-			vp = vpOriginal;
+		final VisualProperty<?> vp = vpOriginal;
+//		final VisualLexiconNode treeNode = dingLexicon.getVisualLexiconNode(vpOriginal);
+//		if (treeNode == null)
+//			return;
+//
+//		if (treeNode.getChildren().size() != 0) {
+//			// This is not leaf.
+//			final Collection<VisualLexiconNode> children = treeNode.getChildren();
+//			boolean shouldApply = false;
+//			for (VisualLexiconNode node : children) {
+//				if (node.isDepend()) {
+//					shouldApply = true;
+//					break;
+//				}
+//			}
+//
+//			if (shouldApply == false)
+//				return;
+//		}
+//
+//		if (treeNode.isDepend()) {
+//			// Do not use this. Parent will be applied.
+//			return;
+//		} else
+//			vp = vpOriginal;
 		
 
 		if (vp == DVisualLexicon.NETWORK_NODE_SELECTION) {

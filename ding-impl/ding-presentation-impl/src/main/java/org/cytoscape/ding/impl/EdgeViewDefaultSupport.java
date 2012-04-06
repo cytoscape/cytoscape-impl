@@ -75,30 +75,30 @@ class EdgeViewDefaultSupport {
 
 	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vpOriginal, V value) {
 		
-		final VisualProperty<?> vp;
-		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
-		
-		if(treeNode == null)
-			return;
-		
-		if(treeNode.getChildren().size() != 0) {
-			final Collection<VisualLexiconNode> children = treeNode.getChildren();
-			boolean shouldApply = false;
-			for(VisualLexiconNode node: children) {
-				if(node.isDepend()) {
-					shouldApply = true;
-					break;
-				}
-			}
-			if(shouldApply == false)
-				return;
-		}
-		
-		if(treeNode.isDepend())
-			return;
-		else
-			vp = vpOriginal;
-		
+		final VisualProperty<?> vp = vpOriginal;
+//		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
+//		
+//		if(treeNode == null)
+//			return;
+//		
+//		if(treeNode.getChildren().size() != 0) {
+//			final Collection<VisualLexiconNode> children = treeNode.getChildren();
+//			boolean shouldApply = false;
+//			for(VisualLexiconNode node: children) {
+//				if(node.isDepend()) {
+//					shouldApply = true;
+//					break;
+//				}
+//			}
+//			if(shouldApply == false)
+//				return;
+//		}
+//		
+//		if(treeNode.isDepend())
+//			return;
+//		else
+//			vp = vpOriginal;
+//		
 		if(value == null)
 			value = (V) vp.getDefault();
 		

@@ -1139,32 +1139,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		
-		final VisualProperty<?> vp;
-		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
-		if (treeNode == null)
-			return;
-
-		if (treeNode.getChildren().size() != 0) {
-			// This is not leaf.
-			final Collection<VisualLexiconNode> children = treeNode.getChildren();
-			boolean shouldApply = false;
-			for (VisualLexiconNode node : children) {
-				if (node.isDepend()) {
-					shouldApply = true;
-					break;
-				}
-			}
-
-			if (shouldApply == false)
-				return;
-		}
-
-		if (treeNode.isDepend()) {
-			// Do not use this. Parent will be applied.
-			return;
-		} else
-			vp = vpOriginal;
-		
+		VisualProperty<?> vp = vpOriginal;
 		// Null means set value to VP's default.
 		if(value == null)
 			value = (V) vp.getDefault();
@@ -1270,7 +1245,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		// Check dependency. Sync size or not.
 		final VisualProperty<?> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
 		final VisualLexiconNode sizeTreeNode = lexicon.getVisualLexiconNode(cgSizeVP);
-		boolean sync = sizeTreeNode.isDepend();
+		//boolean sync = sizeTreeNode.isDepend();
 
 		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
 		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
@@ -1279,11 +1254,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			// Assume it's a Ding layer
 			CustomGraphic newCG = layer.getLayerObject();
 			CustomGraphic finalCG = newCG;
-			if (sync) {
-				// Size is locked to node size.
-				finalCG = syncSize(customGraphics, newCG, lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH)
-						.isDepend());
-			}
+			
+			//FIXME
+//			if (sync) {
+//				// Size is locked to node size.
+//				finalCG = syncSize(customGraphics, newCG, lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH)
+//						.isDepend());
+//			}
 			finalCG = moveCustomGraphicsToNewPosition(finalCG, positionValue);
 
 			addCustomGraphic(finalCG);

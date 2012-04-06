@@ -122,7 +122,6 @@ public class ContinuousMappingLegendPanel extends JPanel {
 			}
 		}
 
-		System.out.println(vp.getDisplayName() + " Got Legend: " + legend.toString());
 		legend.setBorder(new EmptyBorder(10, 10, 10, 10));
 		add(legend, BorderLayout.CENTER);
 		repaint();
