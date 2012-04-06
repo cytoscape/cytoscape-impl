@@ -3,8 +3,7 @@ package org.cytoscape.view.vizmap.gui.internal;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 
 import javax.swing.JTable;
@@ -15,7 +14,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.gui.VisualPropertyDependency;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,16 +27,13 @@ public class DependencyTable extends JTable {
 
 	private final DefaultTableModel model;
 
-	private final List<VisualPropertyDependency> depList;
+	private final Collection<VisualPropertyDependency<?>> depList;
 	private final CyApplicationManager appManager;
 
 	final CyEventHelper cyEventHelper;
 	
-	private final Map<VisualPropertyDependency, Boolean> depStateMap;
-
 	public DependencyTable(final CyApplicationManager appManager, final CyEventHelper cyEventHelper,
-			final DefaultTableModel model, final List<VisualPropertyDependency> depList,
-			Map<VisualPropertyDependency, Boolean> depStateMap) {
+			final DefaultTableModel model, final Collection<VisualPropertyDependency<?>> depList) {
 		if (appManager == null)
 			throw new NullPointerException();
 		if (cyEventHelper == null)
@@ -49,7 +45,6 @@ public class DependencyTable extends JTable {
 		this.cyEventHelper = cyEventHelper;
 		this.model = model;
 		this.depList = depList;
-		this.depStateMap = depStateMap;
 		this.setModel(model);
 
 		setAppearence();
@@ -82,13 +77,14 @@ public class DependencyTable extends JTable {
 		
 		final boolean isDepend = (Boolean) model.getValueAt(selected, 0);
 		
-		depStateMap.put(dep, isDepend);
-
+		// Enable/disable dependency
+		dep.setDependency(isDepend);
+		
 		final VisualLexicon lexicon = appManager.getCurrentRenderingEngine().getVisualLexicon();
 		final Set<VisualProperty<?>> group = dep.getVisualProperties();
 
-		for (final VisualProperty<?> vp : group)
-			lexicon.getVisualLexiconNode(vp).setDependency(isDepend);
+//		for (final VisualProperty<?> vp : group)
+//			lexicon.getVisualLexiconNode(vp).setDependency(isDepend);
 
 		// Update other GUI component
 		if (isDepend)

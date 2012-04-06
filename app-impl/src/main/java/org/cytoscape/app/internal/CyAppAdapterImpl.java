@@ -3,6 +3,8 @@ package org.cytoscape.app.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.app.AbstractCyApp;
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CyAction;
@@ -32,10 +34,8 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.app.AbstractCyApp;
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
@@ -54,7 +54,6 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
-import org.cytoscape.view.vizmap.gui.AbstractVisualPropertyDependency;
 import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.work.Task;
@@ -143,7 +142,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private AbstractGUITunableHandler abstractGUITunableHandler;
 	private AbstractLayoutAlgorithm abstractLayout;
 	private AbstractFunction abstractFunction;
-	private AbstractVisualPropertyDependency abstractVisualPropertyDependency;
 	private AbstractVisualPropertyEditor abstractVisualPropertyEditor;
 	private LexiconStateChangedEvent lexiconStateChangedEvent;
 	private NetworkImportWebServiceClient networkImportWebServiceClient;

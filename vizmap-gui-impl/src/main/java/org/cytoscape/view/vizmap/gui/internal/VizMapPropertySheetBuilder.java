@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.gui.internal;
 import java.awt.Color;
 import java.awt.Font;
 import java.beans.PropertyEditor;
+import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -282,15 +284,31 @@ public class VizMapPropertySheetBuilder {
 	
 				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
 				if (mapping == null) {
-					if(treeNode != null && treeNode.isDepend() == false && treeNode.getChildren().size() == 0)
+					if(treeNode.getChildren().size() == 0)
 						unusedVisualPropType.add(vp);
-					else if(treeNode.isDepend()) {
-						final VisualProperty<?> parentVP = treeNode.getParent().getVisualProperty();
+//					else if(treeNode.isDepend()) {
+//						final VisualProperty<?> parentVP = treeNode.getParent().getVisualProperty();
+//						if(unusedVisualPropType.contains(parentVP) == false)
+//							unusedVisualPropType.add(parentVP);
+//					}
+				}
+				
+				// Override dependency
+				final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
+				for(VisualPropertyDependency<?> dep: dependencies) {
+					if(dep.isDependencyEnabled()) {
+						final Set<?> vpGroup = dep.getVisualProperties();
+						VisualProperty<?> firstVP = (VisualProperty<?>) vpGroup.iterator().next();
+						final VisualLexiconNode node = lex.getVisualLexiconNode(firstVP);
+						final VisualProperty<?> parentVP = node.getParent().getVisualProperty();
 						if(unusedVisualPropType.contains(parentVP) == false)
 							unusedVisualPropType.add(parentVP);
+						// Remove group
+						for(Object toBeRemoved: vpGroup)
+							unusedVisualPropType.remove(toBeRemoved);
 					}
 				}
-	
+				
 				mapping = null;
 			}
 		}

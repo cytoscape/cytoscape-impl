@@ -2,15 +2,19 @@ package org.cytoscape.view.vizmap.internal;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,28 +61,35 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler {
 			final VisualProperty<?> vp) {
 
 		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
+		if (mapping == null)
+			return;
 
-		if (mapping != null) {
+		// Default of this style
+		final Object styleDefaultValue = style.getDefaultValue(vp);
+		// Default of this Visual Property
+		final Object vpDefault = vp.getDefault();
+		final CyNetwork net = networkView.getModel();
 
-			// Default of this style
-			final Object styleDefaultValue = style.getDefaultValue(vp);
-			// Default of this Visual Property
-			final Object vpDefault = vp.getDefault();
-			final CyNetwork net = networkView.getModel();
+		for (View<?> v : views) {
+			View<? extends CyIdentifiable> view = (View<? extends CyIdentifiable>) v;
+			mapping.apply(net.getRow(view.getModel()), view);
 
-			for (View<?> v : views) {
-				View<? extends CyIdentifiable> view = (View<? extends CyIdentifiable>) v;
-				mapping.apply(net.getRow(view.getModel()), view);
-
-				if (view.getVisualProperty(vp) == vpDefault)
-					view.setVisualProperty(vp, styleDefaultValue);
-			}
+			if (view.getVisualProperty(vp) == vpDefault)
+				view.setVisualProperty(vp, styleDefaultValue);
 		}
 	}
 
 	private void applyViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
-
+		final VisualLexicon lex = lexManager.getAllVisualLexicon().iterator().next();
+		final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
+		
 		for (VisualProperty<?> vp : vps) {
+			final VisualLexiconNode node = lex.getVisualLexiconNode(vp);
+			final Collection<VisualLexiconNode> children = node.getChildren();
+			
+			if(children.size() != 0)
+				continue;
+
 			Object defaultValue = style.getDefaultValue(vp);
 
 			if (defaultValue == null) {
@@ -87,6 +98,25 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler {
 			}
 
 			view.setViewDefault(vp, defaultValue);
+		}
+		
+		// Override dependency
+		for(final VisualPropertyDependency<?> dep: dependencies) {
+			if(dep.isDependencyEnabled()) {
+				final Set<?> vpSet = dep.getVisualProperties();
+				// Pick parent
+				VisualProperty<?> visualProperty = (VisualProperty<?>) vpSet.iterator().next();
+				final VisualLexiconNode node = lex.getVisualLexiconNode(visualProperty);
+				final VisualProperty<?> parentVP = node.getParent().getVisualProperty();
+				Object defaultValue = style.getDefaultValue(parentVP);
+				
+				if (defaultValue == null) {
+					((VisualStyleImpl)style).getStyleDefaults().put(visualProperty, visualProperty.getDefault());
+					defaultValue = style.getDefaultValue(visualProperty);
+				}
+				for(Object vp: vpSet)
+					view.setViewDefault((VisualProperty<?>)vp, defaultValue);
+			}
 		}
 	}
 }

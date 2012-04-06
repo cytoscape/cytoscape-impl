@@ -35,17 +35,22 @@
 package org.cytoscape.view.vizmap.internal;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
+import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,23 +66,23 @@ public class VisualStyleImpl implements VisualStyle {
 	private final Map<VisualProperty<?>, VisualMappingFunction<?, ?>> mappings;
 	private final Map<VisualProperty<?>, Object> styleDefaults;
 
-	private final VisualLexiconManager lexManager;
-	
 	private final Map<Class<? extends CyIdentifiable>, ApplyHandler> applyHandlersMap;
 
 	private String title;
 
+	private final Set<VisualPropertyDependency<?>> dependencies;
+
 	/**
 	 * 
-	 * @param title Title of the new Visual Style
+	 * @param title
+	 *            Title of the new Visual Style
 	 * @param lexManager
 	 */
-	public VisualStyleImpl(final String title, final VisualLexiconManager lexManager) {
+	public VisualStyleImpl(final String title, final VisualLexiconManager lexManager,
+			final CyServiceRegistrar serviceRegistrar) {
 
 		if (lexManager == null)
 			throw new NullPointerException("Lexicon Manager is missing.");
-
-		this.lexManager = lexManager;
 
 		if (title == null)
 			this.title = DEFAULT_TITLE;
@@ -86,17 +91,21 @@ public class VisualStyleImpl implements VisualStyle {
 
 		mappings = new HashMap<VisualProperty<?>, VisualMappingFunction<?, ?>>();
 		styleDefaults = new HashMap<VisualProperty<?>, Object>();
-		
+
 		// Init Apply handlers for node, egde and network.
 		this.applyHandlersMap = new HashMap<Class<? extends CyIdentifiable>, ApplyHandler>();
 		applyHandlersMap.put(CyNetwork.class, new ApplyToNetworkHandler(this, lexManager));
 		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager));
 		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager));
 
+		dependencies = new HashSet<VisualPropertyDependency<?>>();
+
+		// Listening to dependencies
+		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory",
+				VisualPropertyDependencyFactory.class);
 		logger.info("New Visual Style Created: Style Name = " + this.title);
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -148,92 +157,24 @@ public class VisualStyleImpl implements VisualStyle {
 			logger.warn("Tried to apply Visual Style to null view");
 			return;
 		}
-	
+
 		final long start = System.currentTimeMillis();
-		
+
 		ApplyHandler handler = null;
-		for(final Class<?> viewType: applyHandlersMap.keySet()) {
-			if(viewType.isAssignableFrom(view.getModel().getClass())) {
+		for (final Class<?> viewType : applyHandlersMap.keySet()) {
+			if (viewType.isAssignableFrom(view.getModel().getClass())) {
 				handler = this.applyHandlersMap.get(viewType);
 				break;
 			}
 		}
-		
-		if(handler==null)
+
+		if (handler == null)
 			throw new IllegalArgumentException("This view type is not supported: " + view.getClass());
-		
+
 		handler.apply(view);
-		
+
 		logger.info(title + ": Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
 	}
-	
-//	/**
-//	 * {@inheritDoc}
-//	 */
-//	@Override
-//	public void apply(final View<? extends CyIdentifiable> view) {
-//		if (view == null) {
-//			logger.warn("Tried to apply Visual Style to null view");
-//			return;
-//		}
-//		
-//		// First, apply default values
-//		for ( VisualProperty<?> vp : vps ) {
-//			Object defaultValue = getDefaultValue(vp);
-//
-//			if (defaultValue == null) {
-//				this.perVSDefaults.put(vp, vp.getDefault());
-//				defaultValue = getDefaultValue(vp);
-//			}
-//
-//			view.setViewDefault(vp,defaultValue);
-//		}
-//	}
-	
-	
-	private void applyImpl(final CyNetworkView networkView, final Collection<? extends View<?>> views,
-			final Collection<VisualProperty<?>> visualProperties) {
-		
-		for (VisualProperty<?> vp : visualProperties)
-					applyToView(networkView, views, vp);
-	}
-
-	private void applyToView(final CyNetworkView networkView, final Collection<? extends View<?>> views, final VisualProperty<?> vp) {
-
-		final VisualMappingFunction<?, ?> mapping = getVisualMappingFunction(vp);
-
-		if (mapping != null) {
-
-			// Default of this style
-			final Object styleDefaultValue = getDefaultValue(vp);
-			// Default of this Visual Property
-			final Object vpDefault = vp.getDefault();
-			final CyNetwork net = networkView.getModel();
-
-			for (View<?> v : views) {
-				View<? extends CyIdentifiable> view = (View<? extends CyIdentifiable>)v;
-				mapping.apply( net.getRow( view.getModel() ), view);
-				
-				if (view.getVisualProperty(vp) == vpDefault)
-					view.setVisualProperty(vp, styleDefaultValue);
-			}
-		} 
-	}
-
-	private void applyViewDefaults(final CyNetworkView view, final Collection<VisualProperty<?>> vps) {
-
-		for ( VisualProperty<?> vp : vps ) {
-			Object defaultValue = getDefaultValue(vp);
-
-			if (defaultValue == null) {
-				this.styleDefaults.put(vp, vp.getDefault());
-				defaultValue = getDefaultValue(vp);
-			}
-
-			view.setViewDefault(vp,defaultValue);
-		}
-	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -266,10 +207,43 @@ public class VisualStyleImpl implements VisualStyle {
 	public Collection<VisualMappingFunction<?, ?>> getAllVisualMappingFunctions() {
 		return mappings.values();
 	}
-	
-	
+
 	Map<VisualProperty<?>, Object> getStyleDefaults() {
 		return this.styleDefaults;
 	}
-	
+
+	@Override
+	public Set<VisualPropertyDependency<?>> getAllVisualPropertyDependencies() {
+		return Collections.unmodifiableSet(dependencies);
+	}
+
+	/**
+	 * Manually add dependency.
+	 */
+	@Override
+	public void addVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
+		dependencies.add(dependency);
+	}
+
+	@Override
+	public void removeVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
+		dependencies.remove(dependency);
+	}
+
+	/**
+	 * Register dependency service.
+	 * 
+	 * @param dependency
+	 * @param props
+	 */
+	public void registerDependencyFactory(VisualPropertyDependencyFactory<?> dependencyFactory, Map props) {
+		if (dependencyFactory != null)
+			addVisualPropertyDependency(dependencyFactory.createVisualPropertyDependency());
+	}
+
+	public void unregisterDependencyFactory(VisualPropertyDependencyFactory<?> dependencyFactory, Map props) {
+		// FIXME
+		// if(dependencyFactory != null)
+		// removeVisualPropertyDependency(dependency);
+	}
 }

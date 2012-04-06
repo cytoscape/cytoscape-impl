@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyNetworkFactory;
@@ -25,8 +26,6 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.view.vizmap.gui.VisualPropertyDependency;
-import org.cytoscape.view.vizmap.gui.dependency.NodeSizeDependency;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedCellAction;
@@ -59,7 +58,6 @@ import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
-import org.cytoscape.application.swing.CySwingApplication;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
@@ -114,10 +112,8 @@ public class CyActivator extends AbstractCyActivator {
 		IconManager iconManager = new IconManager();
 		VizMapperMenuManager menuManager = new VizMapperMenuManager(dialogTaskManagerServiceRef,propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
 		DefaultViewPanelImpl defaultViewPanel = new DefaultViewPanelImpl(cyNetworkFactoryServiceRef,graphViewFactoryServiceRef,presentationFactoryServiceRef,selectedVisualStyleManager, renderingEngineManagerServiceRef);
-		NodeSizeDependency nodeSizeDep = new NodeSizeDependency();
 		VizMapperUtil vizMapperUtil = new VizMapperUtil(vmmServiceRef);
-		VisualPropertyDependencyManagerImpl vpDependencyManager = new VisualPropertyDependencyManagerImpl();
-		DefaultViewEditorImpl defViewEditor = new DefaultViewEditorImpl(defaultViewPanel,editorManager,cyApplicationManagerServiceRef,vmmServiceRef,selectedVisualStyleManager,vizMapperUtil,vpDependencyManager,cyEventHelperServiceRef);
+		DefaultViewEditorImpl defViewEditor = new DefaultViewEditorImpl(defaultViewPanel,editorManager,cyApplicationManagerServiceRef,vmmServiceRef,selectedVisualStyleManager,vizMapperUtil,cyEventHelperServiceRef);
 		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,vmmServiceRef);
 		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(vmmServiceRef,selectedVisualStyleManager);
 		ImportDefaultVizmapTaskFactory importDefaultVizmapTaskFactory = new ImportDefaultVizmapTaskFactory(vizmapReaderManagerServiceRef,vmmServiceRef,cyApplicationConfigurationServiceRef, cyEventHelperServiceRef);
@@ -229,9 +225,7 @@ public class CyActivator extends AbstractCyActivator {
 		randomNumberGeneratorProps.setProperty("title","Random Numbers");
 		randomNumberGeneratorProps.setProperty("menu","context");
 		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
-		
-		registerAllServices(bc,nodeSizeDep, new Properties());
-		
+				
 		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, selectedVisualStyleManager, propertySheetPanel);
 		Properties editSelectedProps = new Properties();
 		editSelectedProps.setProperty("service.type","vizmapUI.contextMenu");
@@ -247,7 +241,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,editorManager,"addVisualPropertyEditor","removeVisualPropertyEditor",VisualPropertyEditor.class);
 		registerServiceListener(bc,menuManager,"addTaskFactory","removeTaskFactory",TaskFactory.class);
 		registerServiceListener(bc,menuManager,"addMappingGenerator","removeMappingGenerator",DiscreteMappingGenerator.class);
-		registerServiceListener(bc,vpDependencyManager,"addDependency","removeDependency",VisualPropertyDependency.class);
 		registerServiceListener(bc,editorManager,"addRenderingEngineFactory","removeRenderingEngineFactory",RenderingEngineFactory.class);
 		registerServiceListener(bc,bypassManager,"addBypass","removeBypass",RenderingEngineFactory.class);
 		

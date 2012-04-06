@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap;
 
 import static org.mockito.Mockito.mock;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
 import org.junit.After;
@@ -13,7 +14,8 @@ public class VisualStyleFactoryTest extends AbstractVisualStyleFactoryTest {
 	@Before
 	public void setUp() throws Exception {
 		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
-		factory = new VisualStyleFactoryImpl(lexManager);
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		factory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar);
 	}
 
 	@After

@@ -471,8 +471,8 @@ public class VisualStyleSerializer {
 		// FIXME: should not be global, but per Visual Style
 		if (key.contains("nodeSizeLocked")) {
 			boolean b = Boolean.parseBoolean(value);
-			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH).setDependency(b);
-			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_HEIGHT).setDependency(b);
+//			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH).setDependency(b);
+//			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_HEIGHT).setDependency(b);
 		}
 	}
 

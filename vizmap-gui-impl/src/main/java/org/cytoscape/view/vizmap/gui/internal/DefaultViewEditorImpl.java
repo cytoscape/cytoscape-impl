@@ -40,7 +40,6 @@ import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -58,9 +57,9 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -68,11 +67,10 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
-import org.cytoscape.view.vizmap.gui.VisualPropertyDependency;
-import org.cytoscape.view.vizmap.gui.VisualPropertyDependencyManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
@@ -100,8 +98,8 @@ import org.slf4j.LoggerFactory;
  * </p>
  * 
  */
-public class DefaultViewEditorImpl extends JDialog implements
-		DefaultViewEditor, SelectedVisualStyleSwitchedListener, LexiconStateChangedListener {
+public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor, SelectedVisualStyleSwitchedListener,
+		LexiconStateChangedListener {
 
 	private final static long serialVersionUID = 1202339876675416L;
 
@@ -120,43 +118,27 @@ public class DefaultViewEditorImpl extends JDialog implements
 	private final SelectedVisualStyleManager selectedManager;
 
 	private final VizMapperUtil util;
-	
-	private final DefaultViewPanelImpl mainView;
-	
-	private final VisualPropertyDependencyManager depManager;
-	private final CyEventHelper cyEventHelper;
-	
-	private DependencyTable depTable;
-	
-	private final Map<VisualStyle, Map<VisualPropertyDependency, Boolean>> depMap;
 
-	/**
-	 * Creates a new DefaultAppearenceBuilder object.
-	 * 
-	 * @param parent
-	 *            DOCUMENT ME!
-	 * @param modal
-	 *            DOCUMENT ME!
-	 */
-	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView,
-			final EditorManager editorFactory,
-			final CyApplicationManager cyApplicationManager,
-			final VisualMappingManager vmm,
-			final SelectedVisualStyleManager selectedManager,
-			final VizMapperUtil util, final VisualPropertyDependencyManager depManager, final CyEventHelper cyEventHelper) {
+	private final DefaultViewPanelImpl mainView;
+
+	private final CyEventHelper cyEventHelper;
+
+	private DependencyTable depTable;
+
+	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView, final EditorManager editorFactory,
+			final CyApplicationManager cyApplicationManager, final VisualMappingManager vmm,
+			final SelectedVisualStyleManager selectedManager, final VizMapperUtil util,
+			final CyEventHelper cyEventHelper) {
 		super();
-		
-		if(mainView == null)
+
+		if (mainView == null)
 			throw new NullPointerException("DefaultViewPanel is null.");
-		
-		if(vmm == null)
+
+		if (vmm == null)
 			throw new NullPointerException("Visual Mapping Manager is null.");
-		
-		this.depManager = depManager;
+
 		this.cyEventHelper = cyEventHelper;
-		
-		depMap = new HashMap<VisualStyle, Map<VisualPropertyDependency, Boolean>>();
-		
+
 		this.vmm = vmm;
 		this.util = util;
 		this.selectedManager = selectedManager;
@@ -191,13 +173,11 @@ public class DefaultViewEditorImpl extends JDialog implements
 		vpSets.put(CyNetwork.class, getNetworkLeafNodes(util.getVisualPropertySet(CyNetwork.class)));
 	}
 
-
 	private Set<VisualProperty<?>> getLeafNodes(final Collection<VisualProperty<?>> props) {
 
 		final Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
 
-		final Set<VisualProperty<?>> propSet = new TreeSet<VisualProperty<?>>(
-				new VisualPropertyComparator());
+		final Set<VisualProperty<?>> propSet = new TreeSet<VisualProperty<?>>(new VisualPropertyComparator());
 
 		for (VisualLexicon lexicon : lexSet) {
 			for (VisualProperty<?> vp : props) {
@@ -209,18 +189,15 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 	}
 
-
 	private Set<VisualProperty<?>> getNetworkLeafNodes(final Collection<VisualProperty<?>> props) {
 		final Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
 
-		final Set<VisualProperty<?>> propSet = new TreeSet<VisualProperty<?>>(
-				new VisualPropertyComparator());
+		final Set<VisualProperty<?>> propSet = new TreeSet<VisualProperty<?>>(new VisualPropertyComparator());
 
 		for (VisualLexicon lexicon : lexSet) {
 			for (VisualProperty<?> vp : props) {
 				if (lexicon.getVisualLexiconNode(vp).getChildren().size() == 0
-						&& lexicon.getVisualLexiconNode(vp).getParent()
-								.getVisualProperty() == BasicVisualLexicon.NETWORK)
+						&& lexicon.getVisualLexiconNode(vp).getParent().getVisualProperty() == BasicVisualLexicon.NETWORK)
 					propSet.add(vp);
 			}
 		}
@@ -228,11 +205,11 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 	}
 
-	
-	@Override public void showEditor(Component parent) {
+	@Override
+	public void showEditor(Component parent) {
 		updateVisualPropertyLists();
 		buildList();
-		
+
 		updateDependencyTable();
 
 		mainView.updateView();
@@ -240,62 +217,32 @@ public class DefaultViewEditorImpl extends JDialog implements
 		setLocationRelativeTo(parent);
 		setVisible(true);
 	}
-	
-	
+
 	private void updateDependencyTable() {
-		
+
 		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
-		Map<VisualPropertyDependency, Boolean> depStateMap = depMap.get(selectedStyle);
-		
-		final Collection<VisualPropertyDependency> depList = depManager.getDependencies();
+		final Set<VisualPropertyDependency<?>> dependencies = selectedStyle.getAllVisualPropertyDependencies();
 		final DependencyTableModel depTableModel = new DependencyTableModel();
-		
-		if (depStateMap == null) {
-			logger.info("!!VS NOT Found: " + selectedStyle.getTitle());
-			
-			depStateMap = new HashMap<VisualPropertyDependency, Boolean>();
-			
-			for (VisualPropertyDependency dep : depManager.getDependencies()) {
-				final Object[] newRow = new Object[2];
-				newRow[0] = false;
-				newRow[1] = dep.getDisplayName();
-				depTableModel.addRow(newRow);
-				
-				depStateMap.put(dep, false);
-			}
-		} else {
-			logger.info("***VS Found: " + selectedStyle.getTitle());
-			
-			for (VisualPropertyDependency dep : depStateMap.keySet()) {
-				final Object[] newRow = new Object[2];
-				newRow[0] = depStateMap.get(dep);
-				newRow[1] = dep.getDisplayName();
-				depTableModel.addRow(newRow);
-			}
+
+		for (VisualPropertyDependency<?> dep : dependencies) {
+			final Object[] newRow = new Object[2];
+			newRow[0] = dep.isDependencyEnabled();
+			newRow[1] = dep.getDisplayName();
+			depTableModel.addRow(newRow);
 		}
-		
-		depTable = new DependencyTable(cyApplicationManager, cyEventHelper, depTableModel,
-				(List<VisualPropertyDependency>) depList, depStateMap);
-		depMap.put(selectedStyle, depStateMap);
+
+		depTable = new DependencyTable(cyApplicationManager, cyEventHelper, depTableModel, dependencies);
 		dependencyScrollPane.setViewportView(depTable);
 		depTable.repaint();
 	}
 
-
-	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
-	 */
-
-	// <editor-fold defaultstate="collapsed" desc=" Generated Code ">
 	private void initComponents() {
 		jXPanel1 = new JXPanel();
 		jXTitledPanel1 = new org.jdesktop.swingx.JXTitledPanel();
 		defaultObjectTabbedPane = new javax.swing.JTabbedPane();
 		nodeScrollPane = new javax.swing.JScrollPane();
 		dependencyScrollPane = new javax.swing.JScrollPane();
-		
+
 		nodeList = new JXList();
 		edgeList = new JXList();
 		edgeScrollPane = new javax.swing.JScrollPane();
@@ -331,9 +278,8 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-
 		jXTitledPanel1.setTitle("Default Visual Properties");
-		
+
 		jXTitledPanel1.setTitleFont(new java.awt.Font("SansSerif", 1, 12));
 		jXTitledPanel1.setMinimumSize(new java.awt.Dimension(300, 27));
 		jXTitledPanel1.setPreferredSize(new java.awt.Dimension(300, 27));
@@ -347,26 +293,20 @@ public class DefaultViewEditorImpl extends JDialog implements
 		defaultObjectTabbedPane.addTab("Node", nodeScrollPane);
 		defaultObjectTabbedPane.addTab("Edge", edgeScrollPane);
 		defaultObjectTabbedPane.addTab("Network", globalScrollPane);
-		
+
 		defaultObjectTabbedPane.addTab("Dependency", dependencyScrollPane);
 
-		GroupLayout jXTitledPanel1Layout = new GroupLayout(
-				jXTitledPanel1.getContentContainer());
+		GroupLayout jXTitledPanel1Layout = new GroupLayout(jXTitledPanel1.getContentContainer());
 		jXTitledPanel1.getContentContainer().setLayout(jXTitledPanel1Layout);
-		jXTitledPanel1Layout.setHorizontalGroup(jXTitledPanel1Layout
-				.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(defaultObjectTabbedPane,
-						GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE));
-		jXTitledPanel1Layout.setVerticalGroup(jXTitledPanel1Layout
-				.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(defaultObjectTabbedPane,
-						GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE));
+		jXTitledPanel1Layout.setHorizontalGroup(jXTitledPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+				.addComponent(defaultObjectTabbedPane, GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE));
+		jXTitledPanel1Layout.setVerticalGroup(jXTitledPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+				.addComponent(defaultObjectTabbedPane, GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE));
 
 		applyButton.setText("Apply");
 		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				final CyNetworkView view = cyApplicationManager
-						.getCurrentNetworkView();
+				final CyNetworkView view = cyApplicationManager.getCurrentNetworkView();
 				if (view != null)
 					applyNewStyle(view);
 				dispose();
@@ -383,39 +323,24 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 		GroupLayout jXPanel1Layout = new GroupLayout(jXPanel1);
 		jXPanel1.setLayout(jXPanel1Layout);
-		jXPanel1Layout
-				.setHorizontalGroup(jXPanel1Layout
-						.createParallelGroup(GroupLayout.Alignment.LEADING)
+		jXPanel1Layout.setHorizontalGroup(jXPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
+				jXPanel1Layout
+						.createSequentialGroup()
+						.addContainerGap()
 						.addGroup(
 								jXPanel1Layout
-										.createSequentialGroup()
-										.addContainerGap()
+										.createParallelGroup(GroupLayout.Alignment.LEADING)
 										.addGroup(
-												jXPanel1Layout
-														.createParallelGroup(
-																GroupLayout.Alignment.LEADING)
-														.addGroup(
-																jXPanel1Layout
-																		.createSequentialGroup()
-																		.addPreferredGap(
-																				LayoutStyle.ComponentPlacement.RELATED)
-																		.addComponent(
-																				cancelButton)
-																		.addPreferredGap(
-																				LayoutStyle.ComponentPlacement.RELATED)
-																		.addComponent(
-																				applyButton))
-														.addComponent(
-																mainView,
-																GroupLayout.DEFAULT_SIZE,
-																GroupLayout.DEFAULT_SIZE,
-																Short.MAX_VALUE))
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(jXTitledPanel1,
-												GroupLayout.PREFERRED_SIZE,
-												198, Short.MAX_VALUE)
-										.addGap(12, 12, 12)));
+												jXPanel1Layout.createSequentialGroup()
+														.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+														.addComponent(cancelButton)
+														.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+														.addComponent(applyButton))
+										.addComponent(mainView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+												Short.MAX_VALUE))
+						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+						.addComponent(jXTitledPanel1, GroupLayout.PREFERRED_SIZE, 198, Short.MAX_VALUE)
+						.addGap(12, 12, 12)));
 		jXPanel1Layout
 				.setVerticalGroup(jXPanel1Layout
 						.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -448,22 +373,17 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addComponent(jXPanel1,
-				GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-				Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addComponent(jXPanel1,
-				GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-				Short.MAX_VALUE));
+		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(jXPanel1,
+				GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(jXPanel1,
+				GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
 		pack();
 	} // </editor-fold>
 
 	private <V> void listActionPerformed(MouseEvent e) {
 		final Object source = e.getSource();
 		final JList list;
-		
-		
+
 		if (source instanceof JList)
 			list = (JList) source;
 		else
@@ -475,8 +395,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 		final VisualProperty<V> vp = (VisualProperty<V>) list.getSelectedValue();
 
 		if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
-			final VisualStyle selectedStyle = selectedManager
-					.getCurrentVisualStyle();
+			final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
 			final V defaultVal = selectedStyle.getDefaultValue(vp);
 			try {
 				if (defaultVal != null)
@@ -486,9 +405,9 @@ public class DefaultViewEditorImpl extends JDialog implements
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			
+
 			if (newValue != null) {
-				// Got new value.  Apply to the dummy view.
+				// Got new value. Apply to the dummy view.
 				selectedStyle.setDefaultValue(vp, newValue);
 				mainView.updateView();
 				mainView.repaint();
@@ -500,7 +419,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 	private void applyNewStyle(final CyNetworkView view) {
 		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
-		
+
 		vmm.setVisualStyle(selectedStyle, view);
 		selectedStyle.apply(view);
 		view.updateView();
@@ -512,10 +431,10 @@ public class DefaultViewEditorImpl extends JDialog implements
 	private javax.swing.JScrollPane nodeScrollPane;
 	private javax.swing.JScrollPane edgeScrollPane;
 	private javax.swing.JScrollPane globalScrollPane;
-	
+
 	// New from 3.0
 	private javax.swing.JScrollPane dependencyScrollPane;
-	
+
 	private javax.swing.JTabbedPane defaultObjectTabbedPane;
 	private JXList nodeList;
 	private JXList edgeList;
@@ -525,7 +444,6 @@ public class DefaultViewEditorImpl extends JDialog implements
 	private org.jdesktop.swingx.JXTitledPanel jXTitledPanel1;
 
 	// End of variables declaration
-	
 
 	/**
 	 * Populate the list model based on current lexicon tree structure.
@@ -534,51 +452,60 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 		final VisualPropCellRenderer renderer = new VisualPropCellRenderer();
 		final RenderingEngine<CyNetwork> currentEngine = this.cyApplicationManager.getCurrentRenderingEngine();
-		if(currentEngine == null)
+		if (currentEngine == null)
 			return;
-		
+
 		final VisualLexicon lex = currentEngine.getVisualLexicon();
 		
+		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
+
 		for (Class<? extends CyIdentifiable> key : vpSets.keySet()) {
 			final DefaultListModel model = new DefaultListModel();
 			final JList list = listMap.get(key);
-			
+
 			list.setModel(model);
-			Set<VisualProperty<?>> vps = vpSets.get(key);
-			for(final VisualProperty<?> vp : vps) {
-				
+			final Set<VisualProperty<?>> vps = vpSets.get(key);
+			for (final VisualProperty<?> vp : vps) {
+
 				// Check supported or not.
-				if(VisualPropertyFilter.isCompatible(vp) == false)
+				if (VisualPropertyFilter.isCompatible(vp) == false)
 					continue;
-				
+
 				// Filter based on mode
 				if (PropertySheetUtil.isAdvancedMode() == false) {
 					if (PropertySheetUtil.isBasic(vp) == false)
 						continue;
 				}
-				
-				//Do not allow editing of the following two VP 
-				if (vp.getDisplayName().contains("Edge Target Arrow Selected Paint") ||
-						vp.getDisplayName().contains("Edge Source Arrow Selected Paint")){
+
+				// Do not allow editing of the following two VP
+				if (vp.getDisplayName().contains("Edge Target Arrow Selected Paint")
+						|| vp.getDisplayName().contains("Edge Source Arrow Selected Paint")) {
 					continue;
 				}
-				
+
 				// Filter based on dependency:
 				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
-				if(treeNode != null && treeNode.isDepend() == false)
+				if (treeNode != null)
 					model.addElement(vp);
-				else if(treeNode.isDepend()) {
-					final VisualProperty<?> parentVP = treeNode.getParent().getVisualProperty();
-					if(model.contains(parentVP) == false)
-						model.addElement(parentVP);
-				}
 				
+				// Override dependency
+				final Set<VisualPropertyDependency<?>> dependencies = selectedStyle.getAllVisualPropertyDependencies();
+				for (VisualPropertyDependency<?> dep : dependencies) {
+					if (dep.isDependencyEnabled()) {
+						Set<VisualProperty<?>> props = dep.getVisualProperties();
+						final VisualProperty<?> parentVP = dep.getParentVisualProperty();
+						if (model.contains(parentVP) == false)
+							model.addElement(parentVP);
+						
+						for (VisualProperty<?> prop : props)
+							model.removeElement(prop);
+					}
+				}
 			}
 			list.setCellRenderer(renderer);
 		}
 	}
 
-	
 	private final class VisualPropCellRenderer extends JLabel implements ListCellRenderer {
 
 		private static final long serialVersionUID = -1325179272895141114L;
@@ -589,7 +516,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 		private final Color SELECTED_FONT_COLOR = new Color(0, 150, 255, 150);
 
 		private final int ICON_GAP = 55;
-		
+
 		VisualPropCellRenderer() {
 			setOpaque(true);
 		}
@@ -611,14 +538,14 @@ public class DefaultViewEditorImpl extends JDialog implements
 				if (presentation != null) {
 					final Object defValue = selectedStyle.getDefaultValue(vp);
 					icon = presentation.createIcon(vp, selectedStyle.getDefaultValue(vp), ICON_WIDTH, ICON_HEIGHT);
-					
-					if(defValue != null)
+
+					if (defValue != null)
 						setToolTipText(defValue.toString());
 				}
 			}
-			
+
 			setText(vp.getDisplayName());
-			
+
 			setIcon(icon);
 			setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
 
@@ -641,7 +568,6 @@ public class DefaultViewEditorImpl extends JDialog implements
 		}
 	}
 
-	
 	@Override
 	public Component getDefaultView(final VisualStyle vs) {
 		mainView.updateView(vs);
@@ -655,8 +581,7 @@ public class DefaultViewEditorImpl extends JDialog implements
 
 	}
 
-	private static class VisualPropertyComparator implements
-			Comparator<VisualProperty<?>> {
+	private static class VisualPropertyComparator implements Comparator<VisualProperty<?>> {
 
 		@Override
 		public int compare(VisualProperty<?> vp1, VisualProperty<?> vp2) {
@@ -672,9 +597,9 @@ public class DefaultViewEditorImpl extends JDialog implements
 	public void handleEvent(LexiconStateChangedEvent e) {
 		logger.debug("Def editor got Lexicon update event.");
 		buildList();
-		
+
 		mainView.updateView();
 		mainView.repaint();
-		
+
 	}
 }
