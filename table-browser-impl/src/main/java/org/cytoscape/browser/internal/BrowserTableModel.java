@@ -279,9 +279,12 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		if (column != -1)
 			table.getColumnModel().getColumn(column).setHeaderValue(newColumnName);
 	}
-
+ 
 	@Override
 	public synchronized void handleEvent(RowsCreatedEvent e) {
+		if(!e.getSource().equals(this.dataTable))
+			return ;
+		
 		selectedRows = null;
 	
 		// add new rows to rowIndexToPrimaryKey array
@@ -298,7 +301,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	public void handleEvent(final RowsSetEvent e) {
 		if (e.getSource() != dataTable)
 			return;		
-		
+
 		if (regularViewMode) {
 			selectedRows = null;
 			boolean foundANonSelectedColumnName = false;
@@ -321,13 +324,14 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
 		} else {
 			table.clearSelection();
+			fireTableDataChanged();
 			SwingUtilities.invokeLater(new Runnable() {
 
 				@Override
 				public void run() {
 					try {
 						if(TableBrowserUtil.isGlobalTable(dataTable, networkTableManager) == false)
-							bulkUpdate(rows);						
+							bulkUpdate(rows);
 					}
 					catch (Exception e){
 						// do nothing, ignore this exception

@@ -69,7 +69,7 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 
 		for (int i = 0; i < nodes.size(); i++) {
 			CyNode n1 = nodes.get(i);
-			for (int j = i + 1; j < nodes.size(); j++) {
+			for (int j = i ; j < nodes.size(); j++) {
 				CyNode n2 = nodes.get(j);
 				edges.addAll(netx.getConnectingEdgeList(n1, n2, CyEdge.Type.ANY));
 			}

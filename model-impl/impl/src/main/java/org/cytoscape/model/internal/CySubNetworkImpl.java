@@ -188,7 +188,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		final CyRow sharedTableRow = parent.getRow(graphObject, CyRootNetwork.SHARED_ATTRS);
 		final CyRow defaultTableRow = parent.getRow(graphObject);
 		final CyRow targetRow = this.getRow(graphObject);
-		
+		if(graphObject instanceof CyNode) {
 		// Step 1: Copy shared name as name of this new node
 		final String sharedName = sharedTableRow.get(CyRootNetwork.SHARED_NAME, String.class);
 		
@@ -199,7 +199,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		
 		// Step 2: Copy selection state
 		targetRow.set(CyNetwork.SELECTED, defaultTableRow.get(CyNetwork.SELECTED, Boolean.class));
-		
+		}
 		// Step 3: Copy Interaction if edge
 		if(graphObject instanceof CyEdge) {
 			final String interaction = defaultTableRow.get(CyEdge.INTERACTION, String.class);

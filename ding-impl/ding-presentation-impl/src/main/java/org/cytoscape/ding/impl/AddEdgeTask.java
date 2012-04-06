@@ -2,8 +2,14 @@
 package org.cytoscape.ding.impl; 
 
 import java.awt.Point;
+
+import javax.swing.RootPaneContainer;
+
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -16,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class AddEdgeTask extends AbstractNodeViewTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(AddEdgeTask.class);
-
+	
 	public AddEdgeTask(View<CyNode> nv, CyNetworkView view){
 		super(nv,view);
 	}
@@ -35,10 +41,18 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 			sourceP.setLocation(coords[0], coords[1]);
 			AddEdgeStateMonitor.setSourcePoint(netView,sourceP);
 		} else {
+		
+			// set the name attribute for the new node
+			
 			CyNetwork net = netView.getModel();
 			CyNode targetNode = nodeView.getModel();
+		
+			CyEdge newEdge = net.addEdge(sourceNode,targetNode,true);
+			final String edgeName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class) +"_TO_"+net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);
 			
-			net.addEdge(sourceNode,targetNode,true);
+			CyRow edgeRow =  net.getRow(newEdge, CyNetwork.DEFAULT_ATTRS);
+			edgeRow.set(CyNetwork.NAME, edgeName);
+			
 			netView.updateView();
 			AddEdgeStateMonitor.setSourceNode(netView,null);
 		}

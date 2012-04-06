@@ -42,20 +42,21 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		final CyNetwork net = view.getModel();
+		final CyNetwork net = view.getModel();		
 		final CyNode n = net.addNode();
-		
+
 		// set the name attribute for the new node
 		final String nodeName = "Node "+ new_node_index;		
 		new_node_index++;
 		
+		
 		final CyRootNetwork parentNetwork = rnm.getRootNetwork(net);
-		parentNetwork.getDefaultNodeTable().getRow(n.getSUID()).set(CyNetwork.NAME, nodeName);
+		parentNetwork.getRow(n, CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, nodeName);
 		parentNetwork.getSharedNodeTable().getRow(n.getSUID()).set(CyRootNetwork.SHARED_NAME, nodeName);
 		
 		final CyRow nodeRow = net.getRow(n);
 		nodeRow.set(CyNetwork.NAME, nodeName);
-		
+
 		eh.flushPayloadEvents();
 		View<CyNode> nv = view.getNodeView(n);
 		nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,xformPt.getX());

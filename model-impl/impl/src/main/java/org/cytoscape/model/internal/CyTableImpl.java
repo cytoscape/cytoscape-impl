@@ -488,9 +488,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			row = rows.get(key);
 			if (row != null)
 				return row;
-
+			
+			
 			row = new InternalRow(key);
 			rows.put(key, row);
+
 		}
 
 		if (fireEvents)
