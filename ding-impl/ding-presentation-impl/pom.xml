@@ -67,8 +67,8 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>!${bundle.namespace}.impl.*,${bundle.namespace}.*;version="${project.version};-noimport:=true"</Export-Package>
-						<Private-Package>${bundle.namespace}.impl.*</Private-Package>
+						<Export-Package>!${bundle.namespace}.*,!org.cytoscape.graph.*,!org.cytoscape.util.intr.*,!org.cytoscape.spacial.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*,org.cytoscape.graph.*,org.cytoscape.util.intr.*,org.cytoscape.spacial.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 					</instructions>
 				</configuration>
@@ -80,11 +80,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>graph-render</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -175,6 +170,12 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
 			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math</artifactId>
+			<version>2.1</version>
 			<scope>test</scope>
 		</dependency>
 		

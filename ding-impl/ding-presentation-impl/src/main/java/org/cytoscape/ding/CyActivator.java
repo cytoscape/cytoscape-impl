@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.spacial.internal.rtree.RTreeFactory;
+import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
@@ -62,12 +64,39 @@ import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyApplicationConfiguration;
+
+import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
+import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
+import org.cytoscape.event.CyEventHelper;
+
+import org.cytoscape.application.swing.CyAction;
+
+import org.osgi.framework.BundleContext;
+
+import org.cytoscape.service.util.AbstractCyActivator;
+
+import java.util.Properties;
+
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();
 	}
 
 	public void start(BundleContext bc) {
+
+		startSpacial(bc); 
+		startCustomGraphicsMgr(bc);
+		startPresentationImpl(bc);
+	}
+
+
+	private void startPresentationImpl(BundleContext bc) {
 
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		CyApplicationManager applicationManagerManagerServiceRef = getService(bc, CyApplicationManager.class);
@@ -217,5 +246,32 @@ public class CyActivator extends AbstractCyActivator {
 
 		final CustomGraphicsSizeDependencyFactory customGraphicsSizeDependencyFactory = new CustomGraphicsSizeDependencyFactory(dVisualLexicon);
 		registerService(bc, customGraphicsSizeDependencyFactory, VisualPropertyDependencyFactory.class, new Properties());
+	}
+
+	private void startCustomGraphicsMgr(BundleContext bc) {
+
+		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
+		CyProperty coreCyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
+		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
+				CyApplicationConfiguration.class);
+		CyEventHelper eventHelperServiceRef = getService(bc, CyEventHelper.class);
+		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
+
+		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,
+				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef, vmmServiceRef, cyApplicationManagerServiceRef);
+		CustomGraphicsBrowser browser = new CustomGraphicsBrowser(customGraphicsManager);
+		registerAllServices(bc, browser, new Properties());
+
+		CustomGraphicsManagerAction customGraphicsManagerAction = new CustomGraphicsManagerAction(
+				customGraphicsManager, cyApplicationManagerServiceRef, browser);
+
+		registerAllServices(bc, customGraphicsManager, new Properties());
+		registerService(bc, customGraphicsManagerAction, CyAction.class, new Properties());
+	}
+
+	private void startSpacial(BundleContext bc) {
+		RTreeFactory rtreeFactory = new RTreeFactory();
+		registerService(bc,rtreeFactory,SpacialIndex2DFactory.class, new Properties());
 	}
 }

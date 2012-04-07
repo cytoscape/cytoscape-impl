@@ -14,11 +14,7 @@
 	<name>Ding Implementation Parent Pom</name>
 
 	<modules>
-		<module>util-intr</module>
-		<module>spacial</module>
-		<module>graph-render</module>
 		<module>ding-presentation-impl</module>
-		<module>ding-customgraphics-manager-impl</module>
 		<module>performance-debug</module>
 	</modules>
 
