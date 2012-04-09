@@ -46,15 +46,16 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.io.internal.util.vizmap.model.AttributeType;
+import org.cytoscape.io.internal.util.vizmap.model.Dependency;
 import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
 import org.cytoscape.io.internal.util.vizmap.model.Edge;
 import org.cytoscape.io.internal.util.vizmap.model.Network;
 import org.cytoscape.io.internal.util.vizmap.model.Node;
 import org.cytoscape.io.internal.util.vizmap.model.Vizmap;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
@@ -63,6 +64,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -83,6 +85,7 @@ public class VisualStyleSerializer {
 	private final VisualStyleFactory visualStyleFactory;
 	private final VisualMappingManager visualMappingManager;
 	private final RenderingEngineManager renderingEngineManager;
+	
 	private final VisualMappingFunctionFactory discreteMappingFactory;
 	private final VisualMappingFunctionFactory continuousMappingFactory;
 	private final VisualMappingFunctionFactory passthroughMappingFactory;
@@ -130,6 +133,9 @@ public class VisualStyleSerializer {
 				createVizmapProperties(vs, BasicVisualLexicon.NETWORK, vsModel.getNetwork().getVisualProperty());
 				createVizmapProperties(vs, BasicVisualLexicon.NODE, vsModel.getNode().getVisualProperty());
 				createVizmapProperties(vs, BasicVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
+				
+				// Create Dependencies
+				createDependency(vs, vsModel);
 			}
 		}
 
@@ -176,6 +182,9 @@ public class VisualStyleSerializer {
 				if (vsModel.getEdge() != null)
 					createVisualProperties(vs, CyEdge.class, vsModel.getEdge().getVisualProperty());
 
+				// Restore dependency
+				restoreDependency(vs, vsModel);
+				
 				// Do not add the modified default style to the list!
 				if (!vs.equals(defStyle)) 
 					styles.add(vs);
@@ -466,11 +475,72 @@ public class VisualStyleSerializer {
 			}
 		}
 	}
+	
+	private void createDependency(final VisualStyle visualStyle,
+			org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
+		// Create serializable Dependency
+		final Set<VisualPropertyDependency<?>> dependencies = visualStyle.getAllVisualPropertyDependencies();
 
-	private void setDependency(VisualLexicon lexicon, VisualStyle vs, String key, String value) {
-		// FIXME: should not be global, but per Visual Style
+		final List<Dependency> nodeDep = vsModel.getNode().getDependency();
+		final List<Dependency> edgeDep = vsModel.getEdge().getDependency();
+		final List<Dependency> networkDep = vsModel.getNetwork().getDependency();
+
+		Collection<VisualProperty<?>> nodeVisualProperties = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
+		Collection<VisualProperty<?>> edgeVisualProperties = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
+		Collection<VisualProperty<?>> networkVisualProperties = lexicon.getAllDescendants(BasicVisualLexicon.NETWORK);
+
+		for (VisualPropertyDependency<?> vpDep : dependencies) {
+			final Dependency newDependency = new Dependency();
+			newDependency.setName(vpDep.getDisplayName());
+			newDependency.setValue(vpDep.isDependencyEnabled());
+
+			final VisualProperty<?> parent = vpDep.getParentVisualProperty();
+			if (nodeVisualProperties.contains(parent))
+				nodeDep.add(newDependency);
+			else if (edgeVisualProperties.contains(parent))
+				edgeDep.add(newDependency);
+			else
+				networkDep.add(newDependency);
+		}
+	}
+	
+	private void restoreDependency(final VisualStyle visualStyle, org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
+		
+		final Node nodeSection = vsModel.getNode();
+		final Edge edgeSection = vsModel.getEdge();
+		final Network networkSection = vsModel.getNetwork();
+		
+		final Set<Dependency> dependencyStates = new HashSet<Dependency>();
+		
+		if(nodeSection != null)
+			dependencyStates.addAll(nodeSection.getDependency());
+		if(edgeSection != null)
+			dependencyStates.addAll(edgeSection.getDependency());
+		if(networkSection != null)
+			dependencyStates.addAll(networkSection.getDependency());
+		
+		final Set<VisualPropertyDependency<?>> availableDependencies = visualStyle.getAllVisualPropertyDependencies();
+		for(final Dependency dep: dependencyStates) {
+			final String newDependencyName = dep.getName();
+			final Boolean depEnabled = dep.isValue();
+			
+			for(final VisualPropertyDependency<?> vsDependency: availableDependencies) {
+				if(vsDependency.getDisplayName().equals(newDependencyName))
+					vsDependency.setDependency(depEnabled);
+			}		
+		}
+	}
+
+	
+	/**
+	 * For 2.x compatibility?
+	 * @param vs
+	 * @param key
+	 * @param value
+	 */
+	private void setDependency(final VisualStyle vs, final String key, final String value) {
 		if (key.contains("nodeSizeLocked")) {
-			boolean b = Boolean.parseBoolean(value);
+			boolean isDependencyEnabled = Boolean.parseBoolean(value);
 //			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH).setDependency(b);
 //			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_HEIGHT).setDependency(b);
 		}
