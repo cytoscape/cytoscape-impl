@@ -48,7 +48,7 @@ import java.io.ObjectOutputStream;
 /**
  *
  */
-public class BasicQuietRTreeTest {
+public class BasicQuietRTreeTestX {
 	/**
 	 *  DOCUMENT ME!
 	 *
