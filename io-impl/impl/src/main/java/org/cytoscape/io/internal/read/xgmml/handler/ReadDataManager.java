@@ -429,12 +429,10 @@ public class ReadDataManager {
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network!
-	        Long index = cache.getIndex(oldId);
+	        node = cache.getNode(oldId);
 	        
-	        if (index != null) {
-	        	node = this.getRootNetwork().getNode(index);
+	        if (node != null) {
 	        	((CySubNetwork) this.getCurrentNetwork()).addNode(node);
-	        	node = this.getCurrentNetwork().getNode(index); // in order to return the correct instance!
 	        }
         }
         
@@ -459,12 +457,10 @@ public class ReadDataManager {
         
         if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network and the edge already exists!
-	        Long index = cache.getIndex(id);
+	        edge = cache.getEdge(id);
 	        
-	        if (index != null) {
-	        	edge = this.getRootNetwork().getEdge(index);
+	        if (edge != null) {
 	        	((CySubNetwork) this.getCurrentNetwork()).addEdge(edge);
-	        	edge = this.getCurrentNetwork().getEdge(index); // in order to return the correct instance!
 	        }
         }
         
