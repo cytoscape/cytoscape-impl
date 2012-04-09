@@ -77,7 +77,7 @@ public class LongTHashTest {
 		ith.put(6L,"smithers");
 	}
 	
-	//@Test
+	@Test
 	public void testTicket849() {
 		LongTHash<String> hash = new LongTHash<String>(String.class);
 		hash.put(3476L, "A");	
@@ -89,5 +89,22 @@ public class LongTHashTest {
 		
 		hash.remove(3490L);
 		assertEquals("F", hash.get(3491L));
+	}
+
+	@Test
+	public void testForceResize() {
+		LongTHash<String> hash = new LongTHash<String>(String.class);
+		hash.put(0L, "A");	
+		hash.put(1L, "A");	
+		hash.put(2L, "A");	
+		hash.put(3L, "A");	
+		hash.put(4L, "A");	
+		hash.put(5L, "A");	
+		hash.put(6L, "A");	
+		hash.put(7L, "A");	
+		hash.put(8L, "A");	
+		hash.put(9L, "A");	
+		hash.put(10L, "A");	
+		hash.put(11L, "A");	
 	}
 }

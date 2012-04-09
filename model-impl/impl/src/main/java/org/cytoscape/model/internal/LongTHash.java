@@ -82,6 +82,10 @@ public final class LongTHash<T> {
 
 	private final Class<T> clazz;
 
+	private static final int REUSABLE = -1;
+	private static final int UNSET = -2;
+	private static final int FIRST_AVAILABLE = 0;
+
 	/**
 	 * Creates a new hashtable.
 	 */
@@ -93,10 +97,10 @@ public final class LongTHash<T> {
 		m_thresholdSize = (int) (THRESHOLD_FACTOR * (double) m_keys.length);
 
 		for (int i = 0; i < m_keys.length; i++)
-			m_keys[i] = -1;
+			m_keys[i] = UNSET;
 
-		m_prevKey = -1;
-		m_prevInx = -1;
+		m_prevKey = UNSET;
+		m_prevInx = UNSET;
 	}
 
 	/**
@@ -113,14 +117,18 @@ public final class LongTHash<T> {
 		if (key < 0)
 			throw new IllegalArgumentException("key is negative");
 
+		//System.err.println("put " + key + " -> " + value);
+
 		if (key != m_prevKey) {
-			calcPrevInx(key);
+			calcPrevInx(key,FIRST_AVAILABLE);
 			m_prevKey = key;
 		}
 
 		final Object returnVal = m_vals[m_prevInx];
+		//System.err.println("put m_prevInx:" + m_prevInx + " val: " + returnVal);
 
 		if (returnVal == null) {
+			//System.err.println(" entering null");
 			if (m_elements == m_thresholdSize) {
 				incrSize();
 
@@ -132,11 +140,19 @@ public final class LongTHash<T> {
 
 		m_vals[m_prevInx] = value;
 		if ( value == null )
-			m_keys[m_prevInx] = -1;
+			m_keys[m_prevInx] = REUSABLE;
 		else
 			m_keys[m_prevInx] = key;
 
+		//dump("put");
+
 		return clazz.cast(returnVal);
+	}
+
+	private void dump(String s) {
+		System.err.println(s + " m_prevInx: " + m_prevInx);
+		System.err.println(s + " m_keys: " + java.util.Arrays.toString(m_keys));
+		System.err.println(s + " m_vals: " + java.util.Arrays.toString(m_vals));
 	}
 
 	/**
@@ -149,19 +165,23 @@ public final class LongTHash<T> {
 	public final T get(final long key) {
 		if (key < 0)
 			return null;
+		//System.err.println("get " + key );
 
 		if (key != m_prevKey) {
-			calcPrevInx(key);
+			calcPrevInx(key,REUSABLE);
 			m_prevKey = key;
 		}
 
+		//dump("get");
 		return clazz.cast(m_vals[m_prevInx]);
 	}
 
 	public final T remove(final long key) {
+		//System.err.println("remove " + key );
 		Object ret = get(key);
 		put(key,null);
 		m_elements--;
+		//dump("remove");
 		return clazz.cast(ret);
 	}
 
@@ -170,14 +190,22 @@ public final class LongTHash<T> {
 		return m_elements;
 	}
 
-	private void calcPrevInx(long key) {
+	// The threshold value determines when to stop searching for an index.
+	// If threshold is set to 0, it will stop at the first unset entry (used
+	// for putting new values into the hash).  If the threshold is set to -1, 
+	// then it will search all available indices (used for getting values from
+	// the hash).
+	private void calcPrevInx(long key, int threshold) {
 		int incr = 0;
 
 		for (m_prevInx = (int)(key % (long)m_keys.length);
-		     (m_keys[m_prevInx] >= 0) && (m_keys[m_prevInx] != key);
-		     m_prevInx = (m_prevInx + incr) % m_keys.length)
-			if (incr == 0)
+		     (m_keys[m_prevInx] >= threshold) && (m_keys[m_prevInx] != key);
+		     m_prevInx = (m_prevInx + incr) % m_keys.length) {
+			//System.err.println("  m_prevInx: " + m_prevInx);
+			if (incr == 0) {
 				incr = 1 + (int)(key % ((long)m_keys.length - 1));
+			}
+		}
 	}
 
 	private final void incrSize() {
@@ -198,7 +226,7 @@ public final class LongTHash<T> {
 		final Object[] newVals = new Object[newSize];
 
 		for (int i = 0; i < newKeys.length; i++)
-			newKeys[i] = -1L;
+			newKeys[i] = UNSET;
 
 		m_thresholdSize = (int) (THRESHOLD_FACTOR * (double) newKeys.length);
 
@@ -211,7 +239,8 @@ public final class LongTHash<T> {
 
 			incr = 0;
 
-			for (newIndex = (int)(m_keys[oldIndex] % (long)newKeys.length); newKeys[newIndex] >= 0;
+			for (newIndex = (int)(m_keys[oldIndex] % (long)newKeys.length); 
+			     newKeys[newIndex] >= 0;
 			     newIndex = (newIndex + incr) % newKeys.length)
 				if (incr == 0)
 					incr = 1 + ((int)(m_keys[oldIndex] % (long)(newKeys.length - 1)));
@@ -222,7 +251,8 @@ public final class LongTHash<T> {
 
 		m_keys = newKeys;
 		m_vals = newVals;
-		m_prevKey = -1;
-		m_prevInx = -1;
+		m_prevKey = UNSET;
+		m_prevInx = UNSET;
+		//dump("incrSize");
 	}
 }
