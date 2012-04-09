@@ -32,7 +32,6 @@ package org.cytoscape.task.internal.session;
 import java.io.File;
 
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.write.CySessionWriter;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.work.AbstractTask;

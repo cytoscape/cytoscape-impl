@@ -33,7 +33,6 @@ import java.io.File;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.write.CySessionWriter;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
