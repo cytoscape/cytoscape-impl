@@ -14,19 +14,17 @@ public class AddNodeTaskFactory extends AbstractNetworkViewLocationTaskFactory{
 
 	private final CyEventHelper eh;
 	private final VisualMappingManager vmm;
-	final CyRootNetworkManager rnm;
 	
-	public AddNodeTaskFactory(CyEventHelper eh, VisualMappingManager vmm, CyRootNetworkManager rnm) {
+	public AddNodeTaskFactory(CyEventHelper eh, VisualMappingManager vmm) {
 		this.eh = eh;
 		this.vmm = vmm;
-		this.rnm = rnm;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView,
 			Point2D javaPt, Point2D xformPt) {
 		// TODO Auto-generated method stub
-		return new TaskIterator(new AddNodeTask(vmm, rnm, networkView, xformPt, eh));
+		return new TaskIterator(new AddNodeTask(vmm, networkView, xformPt, eh));
 	}
 	
 }

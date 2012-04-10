@@ -38,16 +38,13 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
-		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc,CyRootNetworkManager.class);
-		NewEmptyNetworkViewFactory newEmptyNetworkViewFactoryServiceRef = getService(bc,NewEmptyNetworkViewFactory.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		VisualMappingManager vmm = getService(bc,VisualMappingManager.class);
 
 
 		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
-		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, vmm, cyRootNetworkManagerServiceRef);
+		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, vmm);
 		NodeViewTaskFactory addNestedNetworkTaskFactory = new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef);
 			
 		Properties sifInterpreterTaskFactoryProps = new Properties();
