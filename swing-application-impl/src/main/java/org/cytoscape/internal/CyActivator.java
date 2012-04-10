@@ -54,6 +54,7 @@ import org.cytoscape.internal.commands.BasicArgHandlerFactory;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
@@ -149,6 +150,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                   RecentlyOpenedTracker.class);
 		CyProperty cytoscapePropertiesServiceRef = getService(bc, CyProperty.class,
 		                                                      "(cyPropertyName=cytoscape3.props)");
+		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,
 		                                                                 CyApplicationManager.class);
 		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
@@ -245,7 +247,7 @@ public class CyActivator extends AbstractCyActivator {
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker,
 		                                                                              cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
-		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef);
+		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef, cyVersionServiceRef);
 		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory();
 		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop, GRID);
 		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
