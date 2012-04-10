@@ -1,6 +1,8 @@
 
 package org.cytoscape.model.internal;
 
+import java.lang.Thread.State;
+
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -106,5 +108,25 @@ public class LongTHashTest {
 		hash.put(9L, "A");	
 		hash.put(10L, "A");	
 		hash.put(11L, "A");	
+	}
+	
+//	@Test
+	public void testTicket853() throws InterruptedException {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				int size = 6;
+				LongTHash<Integer> hash = new LongTHash<Integer>(Integer.class);
+				for (int i = 0; i < size; i++) {
+					hash.put((long) i, i);
+				}
+				for (int i = size; i < (size * 2); i++) {
+					hash.remove((long) i);
+				}
+			}
+		});
+		thread.start();
+		thread.join(2000);
+		assertEquals(State.TERMINATED, thread.getState());
 	}
 }
