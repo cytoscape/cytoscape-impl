@@ -4,6 +4,8 @@ import static org.cytoscape.biopax.internal.BioPaxMapper.BIOPAX_ENTITY_TYPE;
 
 import java.util.Iterator;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -66,17 +68,22 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	 */
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {	
-		CyNetworkView view = e.getNetworkView();
+		final CyNetworkView view = e.getNetworkView();
 		if(BioPaxUtil.isBioPAXNetwork(view.getModel())) {
-			bpContainer.showLegend();
-			bpPanel.resetText();
-			
-			// apply BioPAX visual style and set tool tips
-			setNodeToolTips(view);
-			VisualStyle bioPaxVisualStyle = bioPaxVisualStyleUtil.getBioPaxVisualStyle();
-			visualMappingManager.setVisualStyle(bioPaxVisualStyle, view);
-			bioPaxVisualStyle.apply(view);
-			view.updateView();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					bpContainer.showLegend();
+					bpPanel.resetText();
+					
+					// apply BioPAX visual style and set tool tips
+					setNodeToolTips(view);
+					VisualStyle bioPaxVisualStyle = bioPaxVisualStyleUtil.getBioPaxVisualStyle();
+					visualMappingManager.setVisualStyle(bioPaxVisualStyle, view);
+					bioPaxVisualStyle.apply(view);
+					view.updateView();
+				}
+			});
 		}
 	}
 
@@ -89,7 +96,12 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		
 		// update bpPanel accordingly
        	if (view != null && BioPaxUtil.isBioPAXNetwork(view.getModel())) {
-            bpPanel.resetText();
+       		SwingUtilities.invokeLater(new Runnable() {
+       			@Override
+       			public void run() {
+       	            bpPanel.resetText();
+       			}
+       		});
         }
 	}
 
@@ -107,7 +119,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		CyNetworkView view = cyApplicationManager.getCurrentNetworkView();
 		if(view == null) return;
 		
-		CyNetwork network = view.getModel();
+		final CyNetwork network = view.getModel();
 		if (BioPaxUtil.isBioPAXNetwork(network)) {
 
 			if (!network.getDefaultNodeTable().equals(e.getSource()))
@@ -123,10 +135,15 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 				}
 
 				if (selected != null) {
-					// Show the details
-					bpPanel.showDetails(network, selected);
-					// If legend is showing, show details
-					bpContainer.showDetails();
+					final CyNode node = selected;
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							// Show the details
+							bpPanel.showDetails(network, node);
+							// If legend is showing, show details
+							bpContainer.showDetails();
+						}
+					});
 				}
 			} finally {
 				// update custom nodes
