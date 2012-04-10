@@ -1,6 +1,7 @@
 package csapps.layout.algorithms.hierarchicalLayout;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -99,18 +100,26 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 			return;
 		}
 
-		// maps node's index (.getIndex()) to View<CyNode> of given node
-		HashMap<Long, View<CyNode>> index2NodeView = new HashMap<Long, View<CyNode>>(numNodes);
+		HashMap<Long, Integer> suid2Index = new HashMap<Long, Integer>(numNodes);
+		List<View<CyNode>> nodeViews = new ArrayList<View<CyNode>>(numNodes);
 		
 		if (numSelectedNodes > 1) {
+			int index = 0;
 			for (CyNode n: CyTableUtil.getNodesInState(network,"selected",true)){
-			    index2NodeView.put(n.getSUID(), networkView.getNodeView(n));
+				Long suid = n.getSUID();
+				nodeViews.add(networkView.getNodeView(n));
+				suid2Index.put(suid, index);
+				index++;
 			}
 		} else {
+			int index = 0;
 			for (View<CyNode> nv: networkView.getNodeViews()){
 			    if (cancelled)
 				return;
-			    index2NodeView.put(nv.getModel().getSUID(), nv);
+			    Long suid = nv.getModel().getSUID();
+			    nodeViews.add(nv);
+				suid2Index.put(suid, index);
+				index++;
 			}
 
 		}
@@ -124,8 +133,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		for (View<CyEdge> ev: networkView.getEdgeViews()){
 		    // FIXME: much better would be to query adjacent edges of selected nodes...
 		    
-			Long edgeFrom = ev.getModel().getSource().getSUID();
-			Long edgeTo = ev.getModel().getTarget().getSUID();
+			Integer edgeFrom = suid2Index.get(ev.getModel().getSource().getSUID());
+			Integer edgeTo = suid2Index.get(ev.getModel().getTarget().getSUID());
 
 			if ((edgeFrom == null) || (edgeTo == null)) {
 				// Must be from an unselected node
@@ -136,10 +145,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				return;
 
 			if ((numSelectedNodes <= 1)
-			    || ((edgeFrom.intValue() < numSelectedNodes)
-			       && (edgeTo.intValue() < numSelectedNodes))) {
+			    || ((edgeFrom < numSelectedNodes)
+			       && (edgeTo < numSelectedNodes))) {
 				/* add edge to graph */
-				Edge theEdge = new Edge(edgeFrom.intValue(), edgeTo.intValue());
+				Edge theEdge = new Edge(edgeFrom, edgeTo);
 				edges.add(theEdge);
 			}
 		}
@@ -272,10 +281,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 			reduced[x].setReduced(true);
 
 			int[] layerNew = new int[layerWithDummy.size()];
-			Iterator iter = layerWithDummy.iterator();
+			Iterator<Integer> iter = layerWithDummy.iterator();
 
 			for (int i = 0; i < layerNew.length; i++)
-				layerNew[i] = ((Integer) iter.next()).intValue();
+				layerNew[i] = iter.next();
 
 			layer[x] = layerNew;
 
@@ -362,7 +371,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 		for (x = 0; x < resize; x++) {
 			if (x < numLayoutNodes)
-				flowLayoutOrder[x] = new HierarchyFlowLayoutOrderNode(index2NodeView.get(x), cI[x],
+				flowLayoutOrder[x] = new HierarchyFlowLayoutOrderNode(nodeViews.get(x), cI[x],
 				                                                      reduced[cI[x]].getNodecount(),
 				                                                      layer[cI[x]][renumber[x]],
 				                                                      horizontalPosition[cI[x]][renumber[x]],
@@ -509,26 +518,25 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 
 		/* Map edges to edge views in order to map dummy nodes to edge bends properly */
 		for (View<CyEdge>ev: networkView.getEdgeViews()){
-			Long edgeFrom = ev.getModel().getSource().getSUID();
-			Long edgeTo = ev.getModel().getTarget().getSUID();
+			Integer edgeFrom = suid2Index.get(ev.getModel().getSource().getSUID());
+			Integer edgeTo = suid2Index.get(ev.getModel().getTarget().getSUID());
 
 			if ((edgeFrom == null) || (edgeTo == null)) {
 				// Must be from an unselected node
 				continue;
 			}
 
-			// DANGER: we're effectively casting Long to Integer here.  This needs to be rewritten!
 			if ((numSelectedNodes <= 1)
-			    || ((edgeFrom.longValue() < numSelectedNodes)
-			       && (edgeTo.longValue() < numSelectedNodes))) {
+			    || ((edgeFrom < numSelectedNodes)
+			       && (edgeTo < numSelectedNodes))) {
 				/* add edge to graph */
-				Edge theEdge = component[cI[edgeFrom.intValue()]].GetTheEdge(renumber[edgeFrom.intValue()],
-				                                                             renumber[edgeTo.intValue()]);
+				Edge theEdge = component[cI[edgeFrom]].GetTheEdge(renumber[edgeFrom],
+				                                                             renumber[edgeTo]);
 
-				if (myEdges2EdgeViews[cI[edgeFrom.intValue()]] == null)
-					myEdges2EdgeViews[cI[edgeFrom.intValue()]] = new HashMap<Edge, View<CyEdge>>();
+				if (myEdges2EdgeViews[cI[edgeFrom]] == null)
+					myEdges2EdgeViews[cI[edgeFrom]] = new HashMap<Edge, View<CyEdge>>();
 
-				myEdges2EdgeViews[cI[edgeFrom.intValue()]].put(theEdge, ev);
+				myEdges2EdgeViews[cI[edgeFrom]].put(theEdge, ev);
 			}
 		}
 
@@ -559,15 +567,16 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				View<CyEdge> ev = myEdges2EdgeViews[cI[node.graphIndex]].get(theEdge);
 
 				if (ev != null) {
-					long source = ev.getModel().getSource().getSUID();
-					long target = ev.getModel().getTarget().getSUID();
-					double k = (getYPositionOf(index2NodeView, target) - getYPositionOf(index2NodeView, source)) / (
-							getXPositionOf(index2NodeView, target) - getXPositionOf(index2NodeView, source));
+					View<CyNode> source = networkView.getNodeView(ev.getModel().getSource());
+					View<CyNode> target = networkView.getNodeView(ev.getModel().getTarget());
+					
+					double k = (getYPositionOf(target) - getYPositionOf(source)) / (
+							getXPositionOf(target) - getXPositionOf(source));
 
-					double xPos = getXPositionOf(index2NodeView, source);
+					double xPos = getXPositionOf(source);
 
 					if (k != 0)
-						xPos += ((node.yPos - getYPositionOf(index2NodeView, source)) / k);
+						xPos += ((node.yPos - getYPositionOf(source)) / k);
 
 					Point2D p2d = new Point2D.Double();
 					p2d.setLocation(xPos, node.yPos);
@@ -603,11 +612,11 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 		taskMonitor.setProgress(1.0);
 		taskMonitor.setStatusMessage("hierarchical layout complete");
 	}
-	private double getXPositionOf(HashMap<Long, View<CyNode>> index2NodeView, long nodeIndex){
-		return index2NodeView.get(nodeIndex).getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+	private double getXPositionOf(View<CyNode> nodeView){
+		return nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 	}
-	private double getYPositionOf(HashMap<Long, View<CyNode>> index2NodeView, long nodeIndex){
-		return index2NodeView.get(nodeIndex).getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+	private double getYPositionOf(View<CyNode> nodeView){
+		return nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 	}
 
 	/**
@@ -892,7 +901,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				}
 			}
 
-			if (((dx % (startInd - endInd)) == 0) && (dx != 0))
+			if (startInd - endInd != 0 && dx % (startInd - endInd) == 0 && (dx != 0))
 				if (!dirFirst) {
 					direct *= -1;
 					dirFirst = true;
