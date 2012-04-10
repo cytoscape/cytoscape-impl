@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 public class AddEdgeTask extends AbstractNodeViewTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(AddEdgeTask.class);
+	private static int numberofedges = 1;
 	
 	public AddEdgeTask(View<CyNode> nv, CyNetworkView view){
 		super(nv,view);
@@ -48,10 +49,14 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 			CyNode targetNode = nodeView.getModel();
 		
 			CyEdge newEdge = net.addEdge(sourceNode,targetNode,true);
-			final String edgeName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class) +"_TO_"+net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);
+			final String interaction = "interaction";
+			String edgeName =  net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class); 
+			edgeName+=" (" + interaction + ") ";
+			edgeName+= net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);
 			
 			CyRow edgeRow =  net.getRow(newEdge, CyNetwork.DEFAULT_ATTRS);
 			edgeRow.set(CyNetwork.NAME, edgeName);
+			edgeRow.set(CyEdge.INTERACTION, interaction);
 			
 			netView.updateView();
 			AddEdgeStateMonitor.setSourceNode(netView,null);

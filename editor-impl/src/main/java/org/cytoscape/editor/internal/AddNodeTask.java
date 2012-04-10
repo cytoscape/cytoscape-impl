@@ -49,11 +49,6 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 		final String nodeName = "Node "+ new_node_index;		
 		new_node_index++;
 		
-		
-		final CyRootNetwork parentNetwork = rnm.getRootNetwork(net);
-		parentNetwork.getRow(n, CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, nodeName);
-		parentNetwork.getSharedNodeTable().getRow(n.getSUID()).set(CyRootNetwork.SHARED_NAME, nodeName);
-		
 		final CyRow nodeRow = net.getRow(n);
 		nodeRow.set(CyNetwork.NAME, nodeName);
 

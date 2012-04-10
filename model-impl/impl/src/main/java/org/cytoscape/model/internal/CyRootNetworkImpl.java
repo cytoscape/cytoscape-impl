@@ -74,7 +74,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	private final CyTableFactory tableFactory;
 	private final boolean publicTables;
 	private final VirtualColumnAdder columnAdder;
-//	private final NameSetListener nameSetListener; 
+	private final NameSetListener nameSetListener; 
+	private final InteractionSetListener interactionSetListener;
 	private final NetworkAddedListenerDelegator networkAddedListenerDelegator; 
 
 	private int nextNodeIndex;
@@ -103,8 +104,10 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		columnAdder = new VirtualColumnAdder();
 		serviceRegistrar.registerService(columnAdder, ColumnCreatedListener.class, new Properties());
-//		nameSetListener = new NameSetListener();
-//		serviceRegistrar.registerService(nameSetListener, RowsSetListener.class, new Properties());
+		nameSetListener = new NameSetListener();
+		serviceRegistrar.registerService(nameSetListener, RowsSetListener.class, new Properties());
+		interactionSetListener = new InteractionSetListener();
+		serviceRegistrar.registerService(interactionSetListener, RowsSetListener.class, new Properties());
 		networkAddedListenerDelegator = new NetworkAddedListenerDelegator();
 		serviceRegistrar.registerService(networkAddedListenerDelegator, NetworkAddedListener.class, new Properties());
 
@@ -128,6 +131,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		networkTableMgr.setTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS, edgeSharedTable);
 		
 		edgeSharedTable.createColumn(CyRootNetwork.SHARED_NAME, String.class, true);
+		edgeSharedTable.createColumn(CyRootNetwork.SHARED_INTERACTION, String.class, true);
 		//edgeSharedTable.addVirtualColumn(SHARED_NAME, NAME, getDefaultEdgeTable(), SUID, false);	
 		
 		final CyTable networkSharedTable = tableFactory.createTable(suid
@@ -145,16 +149,17 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		getRow(this).set(CyNetwork.NAME, "");
 	}
 
-	private void linkDefaultTables(CyTable srcTable, CyTable tgtTable) {
+	private void linkDefaultTables(CyTable sharedTable, CyTable localTable) {
 		// Add all columns from source table as virtual columns in target table.
-		tgtTable.addVirtualColumns(srcTable, CyIdentifiable.SUID, true);
+		localTable.addVirtualColumns(sharedTable, CyIdentifiable.SUID, true);
 
 		// Now add a listener for column created events to add
 		// virtual columns to any subsequent source columns added.
-		columnAdder.addInterestedTables(srcTable,tgtTable);
+		columnAdder.addInterestedTables(sharedTable,localTable);
 
 		// Another listener tracks changes to the NAME column in local tables
-		//nameSetListener.addInterestedTables(srcTable,tgtTable);
+		nameSetListener.addInterestedTables(localTable, sharedTable);
+		
 	}
 
 	@Override
@@ -231,10 +236,12 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		CyTable networkTable = networkTableMgr.getTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS);
 		CyTable nodeTable = networkTableMgr.getTable(this, CyNode.class, CyRootNetwork.SHARED_ATTRS);
 		CyTable edgeTable = networkTableMgr.getTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS);
-
+		
 		linkDefaultTables(networkTable, sub.getDefaultNetworkTable());
 		linkDefaultTables(nodeTable, sub.getDefaultNodeTable());
 		linkDefaultTables(edgeTable, sub.getDefaultEdgeTable());
+		// Another listener tracks changes to the interaction column in local tables
+		interactionSetListener.addInterestedTables(sub.getDefaultEdgeTable(), edgeTable);
 
 		subNetworks.add(sub);
 		return sub;

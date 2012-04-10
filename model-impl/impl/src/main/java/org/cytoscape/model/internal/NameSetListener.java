@@ -46,44 +46,12 @@ import java.util.ArrayList;
  * in a local table, update the shared table with the
  * new name.
  */
-class NameSetListener implements RowsSetListener {
-
-	private final WeakMapList<CyTable,CyTable> tables; 
+class NameSetListener extends ColumnSetListener {
 
 	NameSetListener() {
-		tables = new WeakMapList<CyTable,CyTable>();
+		super(CyNetwork.NAME, CyRootNetwork.SHARED_NAME);
 	}
 
-	public void handleEvent(RowsSetEvent e) {
-		
-		final CyTable local = e.getSource();	
-		final List<CyTable> sharedList = tables.get(local);
-		
-		for ( CyTable shared : sharedList ) {
-			for ( RowSetRecord record : e.getPayloadCollection() ) {
-				// assume payload collection is for same column
-				if ( !record.getColumn().equals(CyNetwork.NAME) )
-					continue;
-				final CyRow r = shared.getRow(record.getRow().get( CyIdentifiable.SUID, Long.class ));
-				if( r != null ) {
-					final Object name = record.getValue();
-					r.set(CyRootNetwork.SHARED_NAME, name);
-					
-				}
-			}
-		}
-	}
-
-    public void addInterestedTables(CyTable local, CyTable shared) {
-		if ( shared == null )
-			throw new NullPointerException("source table is null");
-		if ( local == null )
-			throw new NullPointerException("target table is null");
-		if ( shared == local )
-			throw new IllegalArgumentException("source and target tables cannot be the same!");
-
-		tables.put(local,shared);
-    }
-
+	
 }
 

@@ -576,11 +576,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	private void setX(final Object key, final String columnName, final Object value) {
+		
 		if (columnName == null)
 			throw new NullPointerException("columnName must not be null!");
 		if (value == null)
 			throw new NullPointerException("value must not be null!");
-
+		
 		Object newValue;
 		Object newRawValue;
 
