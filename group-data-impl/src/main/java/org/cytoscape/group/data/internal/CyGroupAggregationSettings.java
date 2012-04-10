@@ -1,7 +1,10 @@
 
 package org.cytoscape.group.data.internal;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -13,6 +16,7 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.AttributeHandlingType;
+import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.data.internal.aggregators.*;
 
@@ -23,198 +27,223 @@ import java.util.List;
 import java.util.Map;
 
 public class CyGroupAggregationSettings {
-	Map<Class, Aggregator> allGroupDefaultMap;
-	Map<CyColumn, Aggregator> allGroupOverrideMap;
-	Map<CyGroup, GroupSpecificMaps> groupMap;
+	CyApplicationManager cyApplicationManager;
+	CyGroupAggregationManager cyAggManager;
+	CyGroupSettings settings;
+	CyNetwork currentNetwork = null;
+	Map<CyColumn, Aggregator> overrides;
 
 	/**********************************
 	 * Default aggregation attributes *
 	 *********************************/
 	// Default aggregations
 
-	@Tunable(description="Enable attribute aggregation", groups={"Attribute Aggregation Settings"})
+	@Tunable(description="Enable attribute aggregation", 
+	         groups={"Attribute Aggregation Settings"})
 	public boolean enableAttributeAggregation = false;
 
 	// Integer
 	@Tunable(description="Integer column aggregation default", 
-	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"}, params="displayState=collapsed",
+	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"}, 
+	         params="displayState=collapsed",
 	         dependsOn="enableAttributeAggregation=true")
-	public ListSingleSelection<AttributeHandlingType> integerDefault;
+	public ListSingleSelection<Aggregator> integerDefault;
 
 	// Long
 	@Tunable(description="Long column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true")
-	public ListSingleSelection<AttributeHandlingType> longDefault;
+	public ListSingleSelection<Aggregator> longDefault;
 
 	// Float
 	@Tunable(description="Float column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true")
-	public ListSingleSelection<AttributeHandlingType> floatDefault;
+	public ListSingleSelection<Aggregator> floatDefault;
 
 	// Double
 	@Tunable(description="Double column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true")
-	public ListSingleSelection<AttributeHandlingType> doubleDefault;
+	public ListSingleSelection<Aggregator> doubleDefault;
 
 	// List
 	@Tunable(description="List column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true")
-	public ListSingleSelection<AttributeHandlingType> listDefault;
+	public ListSingleSelection<Aggregator> listDefault;
 
 	// String
 	@Tunable(description="String column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true")
-	public ListSingleSelection<AttributeHandlingType> stringDefault;
+	public ListSingleSelection<Aggregator> stringDefault;
 
 	// Boolean
 	@Tunable(description="Boolean column aggregation default", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true")
-	public ListSingleSelection<AttributeHandlingType> booleanDefault;
+	public ListSingleSelection<Aggregator> booleanDefault;
 
+	/**********************************
+	 * Default aggregation overrides  *
+	 *********************************/
+	public ListSingleSelection<String> attrSelection = null;
 
-	public CyGroupAggregationSettings() {
-		allGroupDefaultMap = new HashMap<Class,Aggregator>();
-		allGroupOverrideMap = new HashMap<CyColumn,Aggregator>();
-		groupMap = new HashMap<CyGroup,GroupSpecificMaps>();
+	@Tunable(description="Attribute to override", 
+	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
+	         dependsOn="enableAttributeAggregation=true", 
+	         params="displayState=collapsed")
+	public ListSingleSelection<String> getAttrSelection() {
+		// Now, build the list of attributes -- we'll focus on 
+		// node attributes for now
+		List<String> attrList = new ArrayList<String>();
+		currentNetwork = cyApplicationManager.getCurrentNetwork();
+		if (currentNetwork != null) {
+			for (CyColumn column: currentNetwork.getDefaultNodeTable().getColumns()) {
+				if (column.getName().equals(CyNetwork.SUID)) continue;
+				attrList.add(column.getName());
+			}
+		} else {
+			attrList.add("No attributes available");
+		}
+		attrSelection = new ListSingleSelection<String>(attrList);
+		return attrSelection;
+	}
+	public void setAttrSelection(ListSingleSelection<String> input) {
+		// Ignore because ListSingleSelection is set in the handler and not here.
+	}
+
+	@Tunable(description="Attribute Type",
+	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
+	         dependsOn="enableAttributeAggregation=true",
+	         listenForChange="AttrSelection")
+  public String getAttrType() {
+		if (currentNetwork == null || attrSelection == null || 
+		    attrSelection.getSelectedValue() == null ||
+		    attrSelection.getSelectedValue().length() == 0) {
+			aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(NoneAggregator.class));
+			return "-- No Network --";
+		}
+
+		// Get the attribute from the selection
+		String columnName = attrSelection.getSelectedValue();
+		CyTable nodeTable = currentNetwork.getDefaultNodeTable();
+		CyColumn column = nodeTable.getColumn(columnName);
+		if (column == null) return "-- No Such Column -- ";
+
+		aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(column.getType()));
+		// Now, if we already have an override for this attribute, make sure that
+		// it's reflected in what the user sees
+		if (aggregationType.getSelectedValue() == null) {
+			Aggregator type = settings.getOverrideAggregation(column);
+			if (type != null) aggregationType.setSelectedValue(type);
+		}
+
+		// Get it's type
+		return column.getType().getSimpleName();
+	}
+	public void setAttrType(String t) {
+	}
+
+	private ListSingleSelection<Aggregator> aggregationType;
+	@Tunable(description="Aggregation Type",
+	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
+	         dependsOn="enableAttributeAggregation=true",
+	         listenForChange="AttrSelection")
+	public ListSingleSelection<Aggregator> getAggregationType() {   
+		return aggregationType;
+	}
+
+	public void setAggregationType(ListSingleSelection<Aggregator> input) {
+		if (aggregationType == null || aggregationType.getSelectedValue() == null) return;
+		
+		String columnName = attrSelection.getSelectedValue();
+		CyTable nodeTable = currentNetwork.getDefaultNodeTable();
+		CyColumn column = nodeTable.getColumn(columnName);
+		Aggregator agg = aggregationType.getSelectedValue();
+		overrides.put(column, agg);
+	}
+
+	public CyGroupAggregationSettings(CyApplicationManager appManager,
+		                                CyGroupAggregationManager cyAggManager,
+	                                  CyGroupSettings settings) {
+		this.cyApplicationManager = appManager;
+		this.cyAggManager = cyAggManager;
+		this.settings = settings;
+		this.overrides = new HashMap<CyColumn, Aggregator>();
+		this.enableAttributeAggregation = settings.getEnableAttributeAggregation();
 
 		initializeDefaults();
 	}
 
-	public boolean getEnableAttributeAggregation() {
+	public Map<CyColumn, Aggregator> getOverrideMap() {
+		return overrides;
+	}
+
+	public boolean getAttributeAggregationEnabled() {
 		return enableAttributeAggregation;
 	}
 
-	public void setEnableAttributeAggregation(boolean aggregate) {
-		this.enableAttributeAggregation = aggregate;
-	}
-
-	public Aggregator getAggregator(CyGroup group, CyColumn column) {
-		updateDefaults();
-		Class type = column.getType();
-		Map<Class, Aggregator> defaultMap = allGroupDefaultMap;
-		Map<CyColumn, Aggregator> overrideMap = allGroupOverrideMap;
-		if (groupMap.containsKey(group)) {
-			defaultMap = groupMap.get(group).getDefaults();
-			overrideMap = groupMap.get(group).getOverrides();
-		}
-		if (overrideMap.containsKey(column))
-			return overrideMap.get(column);
-		return defaultMap.get(column.getType());
-	}
-
-	public void setDefaultAggregation(CyGroup group, Class ovClass, Aggregator agg) {
-		if (!groupMap.containsKey(group)) {
-			groupMap.put(group, new GroupSpecificMaps());
-		}
-		groupMap.get(group).setDefault(ovClass, agg);
-	}
-
-	public void setDefaultAggregation(Class ovClass, Aggregator agg) {
-		allGroupDefaultMap.put(ovClass, agg);
-	}
-
-	public void setOverrideAggregation(CyGroup group, CyColumn column, Aggregator agg) {
-		if (!groupMap.containsKey(group)) {
-			groupMap.put(group, new GroupSpecificMaps());
-		}
-		groupMap.get(group).setOverride(column, agg);
-	}
-
-	public void setOverrideAggregation(CyColumn column, Aggregator agg) {
-		allGroupOverrideMap.put(column, agg);
-	}
-
-	public void groupAdded(CyGroup addedGroup) {
-		updateDefaults();
-		Map<Class,Aggregator> defMap = new HashMap<Class, Aggregator>();
-		for (Class cKey: allGroupDefaultMap.keySet())
-			defMap.put(cKey, allGroupDefaultMap.get(cKey));
-		Map<CyColumn,Aggregator> ovMap = new HashMap<CyColumn, Aggregator>();
-		for (CyColumn cKey: allGroupOverrideMap.keySet())
-			ovMap.put(cKey, allGroupOverrideMap.get(cKey));
-		groupMap.put(addedGroup, new GroupSpecificMaps(defMap, ovMap));
-	}
-
-	private void updateDefaults() {
-		// Update our defaults first
-		allGroupDefaultMap.put(Boolean.class, new BooleanAggregator(booleanDefault.getSelectedValue()));
-		allGroupDefaultMap.put(Integer.class, new IntegerAggregator(integerDefault.getSelectedValue()));
-		allGroupDefaultMap.put(Float.class, new FloatAggregator(floatDefault.getSelectedValue()));
-		allGroupDefaultMap.put(Long.class, new LongAggregator(longDefault.getSelectedValue()));
-		allGroupDefaultMap.put(Double.class, new DoubleAggregator(doubleDefault.getSelectedValue()));
-		allGroupDefaultMap.put(List.class, new ListAggregator(listDefault.getSelectedValue()));
-		allGroupDefaultMap.put(String.class, new StringAggregator(stringDefault.getSelectedValue()));
+	public Aggregator getDefaultAggregator(Class c) {
+		if (c.equals(Integer.class))
+			return integerDefault.getSelectedValue();
+		else if (c.equals(Long.class))
+			return longDefault.getSelectedValue();
+		else if (c.equals(Float.class))
+			return floatDefault.getSelectedValue();
+		else if (c.equals(Double.class))
+			return doubleDefault.getSelectedValue();
+		else if (c.equals(String.class))
+			return stringDefault.getSelectedValue();
+		else if (c.equals(List.class))
+			return listDefault.getSelectedValue();
+		else if (c.equals(Boolean.class))
+			return booleanDefault.getSelectedValue();
+		return null;
 	}
 
 	private void initializeDefaults() {
-		// Create the selection
-		integerDefault = 
-			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(IntegerAggregator.getSupportedTypes()));
-		longDefault = 
-			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(LongAggregator.getSupportedTypes()));
-		floatDefault = 
-			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(FloatAggregator.getSupportedTypes()));
-		doubleDefault = 
-			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(DoubleAggregator.getSupportedTypes()));
-		stringDefault = 
-			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(StringAggregator.getSupportedTypes()));
-		listDefault = 
-			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(ListAggregator.getSupportedTypes()));
-		booleanDefault = 
-			new ListSingleSelection<AttributeHandlingType>(Arrays.asList(BooleanAggregator.getSupportedTypes()));
+		IntegerAggregator.registerAggregators(cyAggManager);
+		LongAggregator.registerAggregators(cyAggManager);
+		FloatAggregator.registerAggregators(cyAggManager);
+		DoubleAggregator.registerAggregators(cyAggManager);
+		StringAggregator.registerAggregators(cyAggManager);
+		ListAggregator.registerAggregators(cyAggManager);
+		BooleanAggregator.registerAggregators(cyAggManager);
+		NoneAggregator.registerAggregators(cyAggManager);
 
-		integerDefault.setSelectedValue(AttributeHandlingType.AVG);
-		longDefault.setSelectedValue(AttributeHandlingType.NONE);
-		floatDefault.setSelectedValue(AttributeHandlingType.AVG);
-		doubleDefault.setSelectedValue(AttributeHandlingType.AVG);
-		stringDefault.setSelectedValue(AttributeHandlingType.CSV);
-		listDefault.setSelectedValue(AttributeHandlingType.UNIQUE);
-		booleanDefault.setSelectedValue(AttributeHandlingType.NONE);
-
-		// Initialize the defaults
-		allGroupDefaultMap.put(Integer.class, new IntegerAggregator(AttributeHandlingType.AVG));
-		allGroupDefaultMap.put(Long.class, new LongAggregator(AttributeHandlingType.NONE));
-		allGroupDefaultMap.put(Float.class, new FloatAggregator(AttributeHandlingType.AVG));
-		allGroupDefaultMap.put(Double.class, new DoubleAggregator(AttributeHandlingType.AVG));
-		allGroupDefaultMap.put(String.class, new StringAggregator(AttributeHandlingType.CSV));
-		allGroupDefaultMap.put(List.class, new ListAggregator(AttributeHandlingType.UNIQUE));
-		allGroupDefaultMap.put(Boolean.class, new BooleanAggregator(AttributeHandlingType.NONE));
+		// Create the selections
+		integerDefault = createDefaults(Integer.class, AttributeHandlingType.AVG);
+		longDefault = createDefaults(Long.class, AttributeHandlingType.NONE);
+		floatDefault = createDefaults(Float.class, AttributeHandlingType.AVG);
+		doubleDefault = createDefaults(Double.class, AttributeHandlingType.AVG);
+		stringDefault = createDefaults(String.class, AttributeHandlingType.CSV);
+		listDefault = createDefaults(List.class, AttributeHandlingType.UNIQUE);
+		booleanDefault = createDefaults(Boolean.class, AttributeHandlingType.NONE);
 	}
 
-	class GroupSpecificMaps {
-		Map<Class, Aggregator> defMap;
-		Map<CyColumn, Aggregator> ovMap;
+	private ListSingleSelection<Aggregator> createDefaults(Class c, 
+	                                                       AttributeHandlingType type) {
+			List<Aggregator> aggs = cyAggManager.getAggregators(c);
+			Aggregator def = null;
+			for (Aggregator a: aggs) {
+				if (a.toString().equals(type.toString())) {
+					def = a;
+					break;
+				}
+			}
+			ListSingleSelection<Aggregator> lss = new ListSingleSelection<Aggregator>(aggs);
 
-		GroupSpecificMaps () {
-			this.defMap = null;
-			this.ovMap = null;
-		}
-
-		GroupSpecificMaps (Map<Class, Aggregator> defMap, Map<CyColumn, Aggregator> ovMap) {
-			this.defMap = defMap;
-			this.ovMap = ovMap;
-		}
-
-		void setDefault(Class ovClass, Aggregator agg) {
-			if (defMap == null) defMap = new HashMap<Class, Aggregator>();
-
-			defMap.put(ovClass, agg);
-		}
-
-		void setOverride(CyColumn column, Aggregator agg) {
-			if (ovMap == null) ovMap = new HashMap<CyColumn, Aggregator>();
-
-			ovMap.put(column, agg);
-		}
-
-		Map<Class,Aggregator> getDefaults() {return defMap;}
-		Map<CyColumn,Aggregator> getOverrides() {return ovMap;}
+			if (def != null) {
+				// If we've never initialized our default aggregations, do so now
+				if (settings.getDefaultAggregation(def.getSupportedType()) == null) {
+					settings.setDefaultAggregation(def.getSupportedType(), def); 
+					lss.setSelectedValue(def);
+				} else {
+					lss.setSelectedValue(settings.getDefaultAggregation(def.getSupportedType()));
+				}
+			}
+			return lss;
 	}
-
 }

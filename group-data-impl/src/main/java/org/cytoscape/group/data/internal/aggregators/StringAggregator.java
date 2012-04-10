@@ -1,30 +1,41 @@
 package org.cytoscape.group.data.internal.aggregators;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 
-public class StringAggregator implements Aggregator {
+public class StringAggregator extends AbstractAggregator {
 		static AttributeHandlingType[] supportedTypes = {
 			AttributeHandlingType.NONE,
 			AttributeHandlingType.CSV,
 			AttributeHandlingType.TSV,
 			AttributeHandlingType.MCV
 		};
+		static boolean registered = false;
 
-		static public AttributeHandlingType[] getSupportedTypes() { return supportedTypes; }
-
-		AttributeHandlingType type;
+		static public void registerAggregators(CyGroupAggregationManager mgr) {
+			if (!registered) {
+				for (AttributeHandlingType t: supportedTypes) {
+					mgr.addAggregator(new StringAggregator(t));
+				}
+			}
+			registered = true;
+		}
 
 		public StringAggregator(AttributeHandlingType type) {
 			this.type = type;
 		}
+
+		public Class getSupportedType() {return String.class;}
 
 		public String aggregate(CyTable table, CyGroup group, CyColumn column) {
 			String aggregation = null;

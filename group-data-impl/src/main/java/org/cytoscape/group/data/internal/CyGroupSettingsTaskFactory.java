@@ -1,18 +1,30 @@
 package org.cytoscape.group.data.internal;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.group.data.CyGroupAggregationManager;
+import org.cytoscape.group.data.CyGroupSettings;
 
 class CyGroupSettingsTaskFactory extends AbstractTaskFactory {
-	CyGroupSettingsImpl settings;
+	CyGroupAggregationManager cyAggManager;
+	CyApplicationManager cyApplicationManager;
+	CyGroupSettings settings;
 
-	public CyGroupSettingsTaskFactory(CyGroupSettingsImpl settings) {
+	public CyGroupSettingsTaskFactory(CyGroupAggregationManager aggMgr, 
+	                                  CyApplicationManager appManager,
+	                                  CyGroupSettings settings) {
 		this.settings = settings;
+		this.cyAggManager = aggMgr;
+		this.cyApplicationManager = appManager;
 	}
 
-	public CyGroupSettingsImpl getSettings() { return settings; }
+	public CyGroupSettings getSettings() { return settings; }
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(settings);
+		CyGroupSettingsTask task = new CyGroupSettingsTask(cyAggManager, 
+		                                                   cyApplicationManager, 
+		                                                   settings, null);
+		return new TaskIterator(task);
 	}
 }

@@ -53,13 +53,15 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 
 	private final CyGroupManager cyGroupManager;
 	private final CyGroupSettings cyGroupSettings;
-	private static final Logger logger = LoggerFactory.getLogger(GroupDataCollapseHandler.class);
+	private static final Logger logger = 
+		LoggerFactory.getLogger(GroupDataCollapseHandler.class);
 
 	/**
 	 * 
 	 * @param cyEventHelper
 	 */
-	public GroupDataCollapseHandler(final CyGroupManager groupManager, final CyGroupSettingsImpl groupSettings) {
+	public GroupDataCollapseHandler(final CyGroupManager groupManager, 
+	                                final CyGroupSettingsImpl groupSettings) {
 		this.cyGroupManager = groupManager;
 		this.cyGroupSettings = groupSettings;
 	}
@@ -70,7 +72,7 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 		
 		if (e.collapsing()) {
 			// Are we aggregating
-			if (!cyGroupSettings.getEnableAttributeAggregation())
+			if (!cyGroupSettings.getEnableAttributeAggregation(group))
 				return;
 
 			// Yup -- all of our information is in the settings...

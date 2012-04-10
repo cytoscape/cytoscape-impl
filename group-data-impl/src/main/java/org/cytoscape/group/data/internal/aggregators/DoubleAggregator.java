@@ -6,12 +6,17 @@ import java.util.List;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.work.util.ListSingleSelection;
 
-public class DoubleAggregator implements Aggregator {
+import java.util.Arrays;
+import java.util.List;
+
+public class DoubleAggregator extends AbstractAggregator {
 		static AttributeHandlingType[] supportedTypes = {
 			AttributeHandlingType.NONE,
 			AttributeHandlingType.AVG,
@@ -20,14 +25,22 @@ public class DoubleAggregator implements Aggregator {
 			AttributeHandlingType.MEDIAN,
 			AttributeHandlingType.SUM
 		};
+		static boolean registered = false;
 
-		static public AttributeHandlingType[] getSupportedTypes() { return supportedTypes; }
-
-		AttributeHandlingType type;
+		static public void registerAggregators(CyGroupAggregationManager mgr) {
+			if (!registered) {
+				for (AttributeHandlingType t: supportedTypes) {
+					mgr.addAggregator(new DoubleAggregator(t));
+				}
+			}
+			registered = true;
+		}
 
 		public DoubleAggregator(AttributeHandlingType type) {
 			this.type = type;
 		}
+
+		public Class getSupportedType() { return Double.class; }
 
 		public Double aggregate(CyTable table, CyGroup group, CyColumn column) {
 			double aggregation = 0.0;

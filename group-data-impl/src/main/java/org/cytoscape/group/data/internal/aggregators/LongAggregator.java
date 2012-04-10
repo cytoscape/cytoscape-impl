@@ -6,12 +6,13 @@ import java.util.List;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 
-public class LongAggregator implements Aggregator {
+public class LongAggregator extends AbstractAggregator {
 		static AttributeHandlingType[] supportedTypes = {
 			AttributeHandlingType.NONE,
 			AttributeHandlingType.AVG,
@@ -20,14 +21,22 @@ public class LongAggregator implements Aggregator {
 			AttributeHandlingType.MEDIAN,
 			AttributeHandlingType.SUM
 		};
+		static boolean registered = false;
 
-		static public AttributeHandlingType[] getSupportedTypes() { return supportedTypes; }
-
-		AttributeHandlingType type;
+		static public void registerAggregators(CyGroupAggregationManager mgr) {
+			if (!registered) {
+				for (AttributeHandlingType t: supportedTypes) {
+					mgr.addAggregator(new LongAggregator(t));
+				}
+			}
+			registered = true;
+		}
 
 		public LongAggregator(AttributeHandlingType type) {
 			this.type = type;
 		}
+
+		public Class getSupportedType() {return Long.class;}
 
 		public Long aggregate(CyTable table, CyGroup group, CyColumn column) {
 			double aggregation = 0.0;

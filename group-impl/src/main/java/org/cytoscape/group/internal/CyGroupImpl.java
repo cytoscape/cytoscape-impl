@@ -67,7 +67,6 @@ class CyGroupImpl implements CyGroup {
 	final private CyGroupManager mgr;
 
 	private CyNode groupNode;
-	private CySubNetwork groupNet;
 	private Set<CyEdge> externalEdges;
 	private Set<CyEdge> metaEdges;
 	private CyRootNetwork rootNetwork = null;
@@ -136,7 +135,8 @@ class CyGroupImpl implements CyGroup {
 		}
 
 		// Create the subnetwork
-		groupNet = rootNetwork.addSubNetwork(nodes, edges);
+		CySubNetwork groupNet = rootNetwork.addSubNetwork(nodes, edges);
+		groupNode.setNetworkPointer(groupNet);
 
 		// Update our meta-edges
 		updateMetaEdges(true);
@@ -159,7 +159,7 @@ class CyGroupImpl implements CyGroup {
 	 */
 	@Override
 	public List<CyNode> getNodeList() {
-		return groupNet.getNodeList();
+		return getGroupNetwork().getNodeList();
 	}
 
 	/**
@@ -167,7 +167,7 @@ class CyGroupImpl implements CyGroup {
 	 */
 	@Override
 	public List<CyEdge> getInternalEdgeList() {
-		return groupNet.getEdgeList();
+		return getGroupNetwork().getEdgeList();
 	}
 
 	/**
@@ -182,8 +182,8 @@ class CyGroupImpl implements CyGroup {
 	 * @see org.cytoscape.group.CyGroup#getGroupNetwork()
 	 */
 	@Override
-	public CyNetwork getGroupNetwork() {
-		return groupNet;
+	public CySubNetwork getGroupNetwork() {
+		return (CySubNetwork)groupNode.getNetworkPointer();
 	}
 
 	/**
@@ -193,7 +193,7 @@ class CyGroupImpl implements CyGroup {
 	public synchronized void addNode(CyNode node) {
 		if (!rootNetwork.containsNode(node))
 			throwIllegalArgumentException("Can only add a node in the same network tree");
-		groupNet.addNode(node);
+		getGroupNetwork().addNode(node);
 
 		if (!batchUpdate) {
 			updateMetaEdges(false);
@@ -211,7 +211,7 @@ class CyGroupImpl implements CyGroup {
 	public synchronized void addInternalEdge(CyEdge edge) {
 		if (!rootNetwork.containsEdge(edge))
 			throwIllegalArgumentException("Can only add an edge in the same network tree");
-		groupNet.addEdge(edge);
+		getGroupNetwork().addEdge(edge);
 		if (!batchUpdate)
 			cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edge, GroupChangedEvent.ChangeType.INTERNAL_EDGE_ADDED));
 	}
@@ -245,7 +245,7 @@ class CyGroupImpl implements CyGroup {
 		}
 
 		for (CyEdge e: edgeSet) {
-			if (groupNet.containsNode(e.getSource()) && groupNet.containsNode(e.getTarget())) {
+			if (getGroupNetwork().containsNode(e.getSource()) && getGroupNetwork().containsNode(e.getTarget())) {
 				addInternalEdge(e);
 			} else {
 				addExternalEdge(e);
@@ -267,9 +267,9 @@ class CyGroupImpl implements CyGroup {
 		for (CyEdge edge: edges) {
 			CyNode source = edge.getSource();
 			CyNode target = edge.getTarget();
-			if(groupNet.containsNode(source) && groupNet.containsNode(target))
-				groupNet.addEdge(edge);
-			else if (groupNet.containsNode(source) || groupNet.containsNode(target))
+			if(getGroupNetwork().containsNode(source) && getGroupNetwork().containsNode(target))
+				getGroupNetwork().addEdge(edge);
+			else if (getGroupNetwork().containsNode(source) || getGroupNetwork().containsNode(target))
 				externalEdges.add(edge);
 			else
 				throwIllegalArgumentException("Attempted to add an edge that has no node in the group");
@@ -295,8 +295,8 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 		if (netEdges.size() > 0)
-			groupNet.removeEdges(netEdges);
-		groupNet.removeNodes(nodes);
+			getGroupNetwork().removeEdges(netEdges);
+		getGroupNetwork().removeNodes(nodes);
 		batchUpdate = false;
 		updateMetaEdges(false);
 		for (CyNetwork net: collapseSet) {
@@ -312,7 +312,7 @@ class CyGroupImpl implements CyGroup {
 	public synchronized void removeEdges(List<CyEdge> edges) {
 		List<CyEdge> netEdges = new ArrayList<CyEdge>();
 		for (CyEdge edge: edges) {
-			if (groupNet.containsEdge(edge))
+			if (getGroupNetwork().containsEdge(edge))
 				netEdges.add(edge);
 			else if (externalEdges.contains(edge))
 				externalEdges.remove(edge);
@@ -489,8 +489,8 @@ class CyGroupImpl implements CyGroup {
  	 */
 	public void destroyGroup() {
 		// Destroy the subNetwork
-		rootNetwork.removeSubNetwork(groupNet);
-		groupNet = null;
+		rootNetwork.removeSubNetwork(getGroupNetwork());
+		groupNode.setNetworkPointer(null);
 
 		// Release all of our external edges
 		externalEdges = null;
@@ -594,8 +594,8 @@ class CyGroupImpl implements CyGroup {
 	}
 
 	protected int getDescendents(CyNetwork net) {
-		int nDescendents = groupNet.getNodeCount();
-		for (CyNode node: groupNet.getNodeList()) {
+		int nDescendents = getGroupNetwork().getNodeCount();
+		for (CyNode node: getGroupNetwork().getNodeList()) {
 			CyGroup group = mgr.getGroup(node, net);
 			if (group != null)
 				nDescendents += ((CyGroupImpl)group).getDescendents(net);
@@ -612,10 +612,10 @@ class CyGroupImpl implements CyGroup {
 			CyNode target = edge.getTarget();
 			CyNode partner = null;
 			boolean directed = edge.isDirected();
-			if (groupNet.containsNode(target)) {
+			if (getGroupNetwork().containsNode(target)) {
 				source = groupNode;
 				partner = target;
-			} else if (groupNet.containsNode(source)) {
+			} else if (getGroupNetwork().containsNode(source)) {
 				target = groupNode;
 				partner = source;
 			} else {
@@ -691,14 +691,14 @@ class CyGroupImpl implements CyGroup {
 	private boolean isConnectingEdge(CyEdge edge) {
 		CyNode source = edge.getSource();
 		CyNode target = edge.getTarget();
-		if (groupNet.containsNode(source) || groupNet.containsNode(target))
+		if (getGroupNetwork().containsNode(source) || getGroupNetwork().containsNode(target))
 			return true;
 		return false;
 	}
 
 	private boolean isIncoming(CyEdge edge) {
 		CyNode source = edge.getSource();
-		if (source.equals(groupNode) || groupNet.containsNode(source))
+		if (source.equals(groupNode) || getGroupNetwork().containsNode(source))
 			return false;
 		return true;
 	}
@@ -706,7 +706,7 @@ class CyGroupImpl implements CyGroup {
 	private CyNode getPartner(CyEdge edge) {
 		CyNode source = edge.getSource();
 		CyNode target = edge.getTarget();
-		if (source.equals(groupNode) || groupNet.containsNode(source))
+		if (source.equals(groupNode) || getGroupNetwork().containsNode(source))
 			return target;
 		return source;
 	}
@@ -786,15 +786,15 @@ class CyGroupImpl implements CyGroup {
 			return;
 		}
 		CyRow groupRow = nodeTable.getRow(groupNode.getSUID());
-		groupRow.set(CHILDREN_ATTR, groupNet.getNodeCount());
+		groupRow.set(CHILDREN_ATTR, getGroupNetwork().getNodeCount());
 
 		CyColumn descendentsColumn = nodeTable.getColumn(DESCENDENTS_ATTR);
 		if (descendentsColumn == null) {
 			nodeTable.createColumn(DESCENDENTS_ATTR, Integer.class, true);
 		}
 
-		int nDescendents = groupNet.getNodeCount();
-		for (CyNode node: groupNet.getNodeList()) {
+		int nDescendents = getGroupNetwork().getNodeCount();
+		for (CyNode node: getGroupNetwork().getNodeList()) {
 			if (mgr.isGroup(node, rootNetwork)) {
 				Integer d = nodeTable.getRow(node.getSUID()).get(DESCENDENTS_ATTR, Integer.class);
 				if (d != null)

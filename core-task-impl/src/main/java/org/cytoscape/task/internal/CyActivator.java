@@ -920,6 +920,7 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		Properties groupNodesTaskFactoryProps = new Properties();
+		groupNodesTaskFactoryProps.setProperty("preferredMenu","Groups");
 		groupNodesTaskFactoryProps.setProperty("title","Group Nodes");
 		groupNodesTaskFactoryProps.setProperty("tooltip","Group Selected Nodes Together");
 		groupNodesTaskFactoryProps.setProperty("preferredAction", "NEW");
@@ -930,6 +931,7 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		Properties collapseGroupTaskFactoryProps = new Properties();
+		collapseGroupTaskFactoryProps.setProperty("preferredMenu","Groups");
 		collapseGroupTaskFactoryProps.setProperty("title","Collapse Group");
 		collapseGroupTaskFactoryProps.setProperty("tooltip","Collapse Grouped Nodes");
 		collapseGroupTaskFactoryProps.setProperty("preferredAction", "NEW");
@@ -938,6 +940,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
 
 		Properties expandGroupTaskFactoryProps = new Properties();
+		expandGroupTaskFactoryProps.setProperty("preferredMenu","Groups");
 		expandGroupTaskFactoryProps.setProperty("title","Expand Group");
 		expandGroupTaskFactoryProps.setProperty("tooltip","Expand Group");
 		expandGroupTaskFactoryProps.setProperty("preferredAction", "NEW");

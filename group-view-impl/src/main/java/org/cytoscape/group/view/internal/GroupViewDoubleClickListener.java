@@ -64,7 +64,24 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 	}
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		DoubleClickAction action = cyGroupSettings.getDoubleClickAction();
+		CyNode node = nodeView.getModel();
+		CyNetwork net = networkView.getModel();
+		CyGroup group = null;
+
+		// Get the double click action for this group
+		if (cyGroupManager.isGroup(node, net))
+			group = cyGroupManager.getGroup(node, net);
+		else {
+			List<CyGroup> groups = cyGroupManager.getGroupsForNode(node);
+			for (CyGroup g: groups) {
+				// Make sure we're in the right network
+				if (cyGroupManager.isGroup(g.getGroupNode(), net)) {
+					group = g;
+					break;
+				}
+			}
+		}
+		DoubleClickAction action = cyGroupSettings.getDoubleClickAction(group);
 
 		if (action == DoubleClickAction.ExpandContract) {
 			// Collapse/expand: if we double-click on a collapsed node, expand it.  

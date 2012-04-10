@@ -2,26 +2,39 @@ package org.cytoscape.group.data.internal.aggregators;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 
-public class BooleanAggregator implements Aggregator {
+import java.util.Arrays;
+import java.util.List;
+
+public class BooleanAggregator extends AbstractAggregator {
 		static AttributeHandlingType[] supportedTypes = {
 			AttributeHandlingType.NONE,
 			AttributeHandlingType.AND,
 			AttributeHandlingType.OR
 		};
+		static boolean registered = false;
 
-		static public AttributeHandlingType[] getSupportedTypes() { return supportedTypes; }
-
-		AttributeHandlingType type;
+		static public void registerAggregators(CyGroupAggregationManager mgr) {
+			if (!registered) {
+				for (AttributeHandlingType t: supportedTypes) {
+					mgr.addAggregator(new BooleanAggregator(t));
+				}
+			}
+			registered = true;
+		}
 
 		public BooleanAggregator(AttributeHandlingType type) {
 			this.type = type;
 		}
 
+		public Class getSupportedType() { return Boolean.class; }
+
+		@Override
 		public Boolean aggregate(CyTable table, CyGroup group, CyColumn column) {
 			if (type == AttributeHandlingType.NONE) return null;
 

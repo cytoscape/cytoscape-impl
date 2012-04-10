@@ -25,24 +25,34 @@ import java.util.List;
 import java.util.Map;
 
 public class CyGroupViewSettings {
+	CyGroupSettings settings = null;
 
-	@Tunable(description="Double-Click action", 
-	         groups={"User Action Settings"}/*, params="displayState=collapse"*/)
   public ListSingleSelection<DoubleClickAction> doubleClickAction = 
-		new ListSingleSelection<DoubleClickAction>(DoubleClickAction.None,DoubleClickAction.ExpandContract,
+		new ListSingleSelection<DoubleClickAction>(DoubleClickAction.None,
+		                                           DoubleClickAction.ExpandContract,
 		                                           DoubleClickAction.Select);
 
-	public CyGroupViewSettings() {
-		// Set some defaults
-		doubleClickAction.setSelectedValue(DoubleClickAction.ExpandContract);
+	// We need to use getters and setters so we can update
+	// our settings object
+	@Tunable(description="Double-Click action", 
+	         groups={"User Action Settings"}/*, params="displayState=collapse"*/)
+	public ListSingleSelection<DoubleClickAction> getDCAction() {
+		return doubleClickAction;
+	}
+	public void setDCAction(ListSingleSelection<DoubleClickAction> input) {
+	}
 
+	public CyGroupViewSettings(CyGroupSettings settings) {
+		this.settings = settings;
+
+		if (settings.getDoubleClickAction() == null) {
+			doubleClickAction.setSelectedValue(DoubleClickAction.ExpandContract);
+		} else {
+			doubleClickAction.setSelectedValue(settings.getDoubleClickAction());
+		}
 	}
 
 	public DoubleClickAction getDoubleClickAction() {
 		return doubleClickAction.getSelectedValue();
-	}
-
-	public void setDoubleClickAction(DoubleClickAction action) {
-		doubleClickAction.setSelectedValue(action);
 	}
 }
