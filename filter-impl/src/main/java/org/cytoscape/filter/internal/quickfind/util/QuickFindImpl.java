@@ -157,7 +157,7 @@ public class QuickFindImpl implements QuickFind {
 
 	@Override
 	public synchronized void removeNetwork(CyNetwork network) {
-		networkMap.remove(networkMap);
+		networkMap.remove(network);
 
 		// Notify all listeners of remove event
 		for (int i = 0; i < listenerList.size(); i++) {
