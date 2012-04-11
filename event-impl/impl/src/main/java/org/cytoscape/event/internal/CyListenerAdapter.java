@@ -31,12 +31,9 @@ package org.cytoscape.event.internal;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Arrays;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.WeakHashMap;
 
 import org.cytoscape.event.CyEvent;
 import org.osgi.framework.BundleContext;
@@ -52,9 +49,11 @@ public class CyListenerAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(CyListenerAdapter.class);
 	private static final ServiceComparator serviceComparator = new ServiceComparator(); 
 
+	private static final Object DUMMY = new Object();
+	
 	private final Map<Class<?>,ServiceTracker> serviceTrackers; 
 	private final BundleContext bc;
-	private final Set<Object> silencedSources;
+	private final Map<Object, Object> silencedSources;
 	private final StringBuilder traceString; 
 	private final boolean printEventTrace;
 	private int fireCount;
@@ -67,7 +66,7 @@ public class CyListenerAdapter {
 	public CyListenerAdapter(BundleContext bc) {
 		this.bc = bc;
 		serviceTrackers = new HashMap<Class<?>,ServiceTracker>();
-		silencedSources = new HashSet<Object>();
+		silencedSources = new WeakHashMap<Object, Object>();
 
 		// used only for printing a coherent event trace
 		fireCount = 0;
@@ -86,7 +85,7 @@ public class CyListenerAdapter {
 		if ( event == null )
 			return;
 
-		if ( silencedSources.contains( event.getSource() ) )
+		if ( silencedSources.containsKey( event.getSource() ) )
 			return;
 		
 		final Class<?> listenerClass = event.getListenerClass();
@@ -161,7 +160,7 @@ public class CyListenerAdapter {
 	}
 
 	void silenceEventSource(Object eventSource) {
-		silencedSources.add(eventSource);
+		silencedSources.put(eventSource, DUMMY);
     }
 							    
 	void unsilenceEventSource(Object eventSource) {

@@ -39,11 +39,10 @@ import org.cytoscape.event.CyPayloadEvent;
 import org.cytoscape.event.CyEventHelper;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,17 +54,19 @@ public class CyEventHelperImpl implements CyEventHelper {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyEventHelperImpl.class);
 
+	private static final Object DUMMY = new Object();
+
 	private final CyListenerAdapter normal;
 	private final Map<Object,Map<Class<?>,PayloadAccumulator<?,?,?>>> sourceAccMap;
 	private final ScheduledExecutorService payloadEventMonitor;
-	private final Set<Object> silencedSources;
+	private final Map<Object, Object> silencedSources;
 	private boolean havePayload;
-
+	
 	public CyEventHelperImpl(final CyListenerAdapter normal) {
 		this.normal = normal;
 		sourceAccMap = new LinkedHashMap<Object,Map<Class<?>,PayloadAccumulator<?,?,?>>>();
 		payloadEventMonitor = Executors.newSingleThreadScheduledExecutor();
-		silencedSources = new HashSet<Object>();
+		silencedSources = new WeakHashMap<Object, Object>();
 		havePayload = false;
 
 		// This thread just flushes any accumulated payload events.
@@ -95,7 +96,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 			return;
 		logger.info("silencing event source: " + eventSource.toString());
 		normal.silenceEventSource(eventSource);
-		silencedSources.add(eventSource);
+		silencedSources.put(eventSource, DUMMY);
 	}
 
 	@Override 
@@ -116,7 +117,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 			return;
 		}
 		
-		if ( silencedSources.contains(source))
+		if ( silencedSources.containsKey(source))
 			return;
 
 		synchronized (this) {
