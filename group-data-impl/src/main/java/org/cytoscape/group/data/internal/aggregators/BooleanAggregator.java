@@ -44,7 +44,9 @@ public class BooleanAggregator extends AbstractAggregator {
 
 			// Loop processing
 			for (CyNode node: group.getNodeList()) {
-				boolean value = table.getRow(node.getSUID()).get(column.getName(), Boolean.class).booleanValue();
+				Boolean v = table.getRow(node.getSUID()).get(column.getName(), Boolean.class);
+				if (v == null) continue;
+				boolean value = v.booleanValue();
 				if (first) {
 					aggregation = value;
 					first = false;

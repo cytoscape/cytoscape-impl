@@ -48,6 +48,8 @@ public class StringAggregator extends AbstractAggregator {
 			// Loop processing
 			for (CyNode node: group.getNodeList()) {
 				String value = table.getRow(node.getSUID()).get(column.getName(), String.class);
+				if (value == null) continue;
+
 				switch (type) {
 				case CSV:
 					if (aggregation == null)

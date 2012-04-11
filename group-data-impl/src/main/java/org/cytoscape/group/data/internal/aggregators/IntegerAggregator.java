@@ -40,6 +40,7 @@ public class IntegerAggregator extends AbstractAggregator {
 
 		public Integer aggregate(CyTable table, CyGroup group, CyColumn column) {
 			double aggregation = 0.0;
+			int count = 0;
 			List<Integer> valueList = null;
 
 			if (type == AttributeHandlingType.NONE) return null;
@@ -59,7 +60,9 @@ public class IntegerAggregator extends AbstractAggregator {
 
 			// Loop processing
 			for (CyNode node: group.getNodeList()) {
-				double value = table.getRow(node.getSUID()).get(column.getName(), Integer.class).doubleValue();
+				Integer v = table.getRow(node.getSUID()).get(column.getName(), Integer.class);
+				if (v == null) continue;
+				double value = v.doubleValue();
 				switch (type) {
 				case MAX:
 					if (aggregation < value) aggregation = value;
@@ -71,7 +74,7 @@ public class IntegerAggregator extends AbstractAggregator {
 					aggregation += value;
 					break;
 				case AVG:
-					aggregation += value/(double)group.getNodeList().size();
+					aggregation += value;
 					break;
 				case MEDIAN:
 					valueList.add((int)value);
@@ -88,6 +91,8 @@ public class IntegerAggregator extends AbstractAggregator {
 					aggregation = vArray[(vArray.length-1)/2];
 				else
 					aggregation = (vArray[(vArray.length/2)-1] + vArray[(vArray.length/2)]) / 2;
+			} else if (type == AttributeHandlingType.AVG) {
+				aggregation = aggregation/(double)count;
 			}
 
 			Integer v = new Integer((int)aggregation);
