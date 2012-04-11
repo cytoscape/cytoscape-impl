@@ -31,6 +31,9 @@
 package csapps.layout.algorithms.bioLayout;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.work.TaskIterator;
 
@@ -64,6 +67,18 @@ public class BioLayoutFRAlgorithm extends AbstractLayoutAlgorithm<BioLayoutFRCon
 
 	}
 
+	@Override
+	public Set<Class<?>> supportsEdgeAttributes() {
+		Set<Class<?>> ret = new HashSet<Class<?>>();
+		if (!supportWeights)
+			return ret;
+
+		ret.add( Integer.class );
+		ret.add( Double.class );
+
+		return ret;
+	}
+	
 	public TaskIterator createTaskIterator(BioLayoutFRContext context) {
 		return new TaskIterator(
 			new BioLayoutFRAlgorithmTask(getName(), context, supportWeights));

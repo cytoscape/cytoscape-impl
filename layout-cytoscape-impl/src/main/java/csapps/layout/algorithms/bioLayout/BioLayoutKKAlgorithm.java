@@ -31,6 +31,9 @@
  */
 package csapps.layout.algorithms.bioLayout;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.work.TaskIterator;
 
@@ -62,6 +65,18 @@ public class BioLayoutKKAlgorithm  extends AbstractLayoutAlgorithm<BioLayoutKKCo
 		      (supportEdgeWeights ?  "Edge-weighted Spring Embedded" : "Spring Embedded"),
 		      true);
 		supportWeights = supportEdgeWeights;
+	}
+	
+	@Override
+	public Set<Class<?>> supportsEdgeAttributes() {
+		Set<Class<?>> ret = new HashSet<Class<?>>();
+		if (!supportWeights)
+			return ret;
+
+		ret.add( Integer.class );
+		ret.add( Double.class );
+
+		return ret;
 	}
 
 	public TaskIterator createTaskIterator(BioLayoutKKContext context) {

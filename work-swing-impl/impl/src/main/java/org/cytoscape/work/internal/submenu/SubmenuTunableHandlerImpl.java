@@ -50,9 +50,6 @@ public class SubmenuTunableHandlerImpl extends AbstractTunableHandler implements
 
 		if ( menuTitles.size() <= 0 ) {
 			menuItem = new SubmenuItem(null,this,dtm,tf);		
-		} else if ( menuTitles.size() == 1 ) {
-			// assume the lone entry in the list is the title
-			menuItem = new SubmenuItem(menuTitles.get(0),this,dtm,tf);		
 		} else {
 			menuItem = new JMenu((String) null);
 			for ( String title : menuTitles )
