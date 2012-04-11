@@ -1033,11 +1033,16 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	TexturePaint getNestedNetworkTexturePaint() {
 		synchronized (graphView.m_lock) {
 			++nestedNetworkPaintingDepth;
+			
 			try {
-				if (nestedNetworkPaintingDepth > 1 || getModel().getNetworkPointer() == null
-						|| !nestedNetworkVisible)
+				if (nestedNetworkPaintingDepth > 1 || getModel().getNetworkPointer() == null || !nestedNetworkVisible)
 					return null;
 
+				final Boolean netImgVisible = getVisualProperty(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+				
+				if (!Boolean.TRUE.equals(netImgVisible))
+					return null;
+				
 				final double IMAGE_WIDTH = getWidth() * NESTED_IMAGE_SCALE_FACTOR;
 				final double IMAGE_HEIGHT = getHeight() * NESTED_IMAGE_SCALE_FACTOR;
 

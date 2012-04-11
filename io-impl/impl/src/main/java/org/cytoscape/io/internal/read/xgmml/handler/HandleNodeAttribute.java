@@ -29,6 +29,7 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -62,6 +63,9 @@ public class HandleNodeAttribute extends AbstractHandler {
 					final String netId = atts.getValue("value");
 					final CyNode node = manager.getCurrentNode();
 					manager.getCache().addNetworkPointer(node, netId);
+					// Also add this visual property, so the network pointer is displayed as a regular nested network.
+					manager.addGraphicsAttribute(node,
+							BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE.getIdString(), "true");
 				}
 			}
 
