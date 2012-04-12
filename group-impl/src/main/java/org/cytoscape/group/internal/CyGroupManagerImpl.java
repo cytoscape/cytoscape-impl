@@ -104,6 +104,17 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	}
 
 	@Override
+	public synchronized List<CyGroup> getGroupsForNode(CyNode node, CyNetwork network) {
+		List<CyGroup> returnList = new ArrayList<CyGroup>();
+		for (CyGroup group: groupSet) {
+			if (group.isInNetwork(network) &&
+			    group.getGroupNetwork().containsNode(node))
+				returnList.add(group);
+		}
+		return returnList;
+	}
+
+	@Override
 	public synchronized CyGroup getGroup(CyNode node, CyNetwork network) {
 		for (CyGroup group: groupSet) {
 			if (group.isInNetwork(network) && group.getGroupNode().equals(node))

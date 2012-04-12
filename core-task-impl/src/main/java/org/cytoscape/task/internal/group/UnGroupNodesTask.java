@@ -30,43 +30,37 @@
 package org.cytoscape.task.internal.group;
 
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-
-import org.cytoscape.view.model.CyNetworkView;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class GroupNodesTask extends AbstractTask {
+public class UnGroupNodesTask extends AbstractTask {
 	private CyNetwork net;
 	private CyGroupManager mgr;
-	private CyGroupFactory factory;
+	private	Set<CyGroup>groupSet = null;
 
-	public GroupNodesTask(CyNetworkView netView, CyGroupManager mgr, CyGroupFactory factory) {
-		if (netView == null)
-			throw new NullPointerException("network view is null");
-		this.net = netView.getModel();
+	public UnGroupNodesTask(CyNetwork net, Set<CyGroup>groups, CyGroupManager mgr) {
+		if (net == null)
+			throw new NullPointerException("network is null");
+		this.net = net;
 		this.mgr = mgr;
-		this.factory = factory;
+		this.groupSet = groups;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
 
-		// Get all of the selected nodes
-		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
-
-		// At some point, we'll want to seriously think about only adding 
-		// those edges that are also selected, but for now....
-		CyGroup group = factory.createGroup(net, selNodes, null, true);
-		// mgr.addGroup(group);
+		for (CyGroup group: groupSet) {
+			mgr.destroyGroup(group);
+			tm.setProgress(1.0d/(double)groupSet.size());
+		}
 		tm.setProgress(1.0d);
 	}
 }

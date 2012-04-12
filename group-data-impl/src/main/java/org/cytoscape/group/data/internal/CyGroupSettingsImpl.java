@@ -14,7 +14,6 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.group.data.CyGroupAggregationManager;
-import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.events.GroupAddedEvent;
 import org.cytoscape.group.events.GroupAddedListener;
 
@@ -25,7 +24,17 @@ import java.util.Map;
  * This class provides the context for both the global group settings and the
  * group-specific group settings.
  */
-public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener {
+public class CyGroupSettingsImpl implements GroupAddedListener {
+  public enum DoubleClickAction {
+    None("None"),
+    ExpandContract("Expand/Contract"),
+    Select("Select");
+
+    private final String name;
+    DoubleClickAction(String n) {this.name = n;}
+    public String toString() {return name;}
+ }
+
 	CyGroupManager cyGroupManager;
 	CyGroupAggregationManager cyAggManager;
 	CyApplicationManager cyApplicationManager;
@@ -65,24 +74,20 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 	 *                             View settings                               *
 	 **************************************************************************/
 
-	@Override
 	public DoubleClickAction getDoubleClickAction() {
 		return action;
 	}
 
-	@Override
 	public DoubleClickAction getDoubleClickAction(CyGroup group) {
 		if (groupActionMap.containsKey(group))
 			return groupActionMap.get(group);
 		return action;
 	}
 
-	@Override
 	public void setDoubleClickAction(DoubleClickAction action) {
 		this.action = action;
 	}
 
-	@Override
 	public void setDoubleClickAction(CyGroup group, DoubleClickAction action) {
 		if (group != null)
 			groupActionMap.put(group, action);
@@ -90,22 +95,18 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 			this.action = action;
 	}
 
-	@Override
 	public boolean getUseNestedNetworks() { return useNestedNetworks; }
 
-	@Override
   public boolean getUseNestedNetworks(CyGroup group) {
 		if (nestedNetworkMap.containsKey(group))
 			return nestedNetworkMap.get(group);
 		return useNestedNetworks;
 	}
 
-	@Override
   public void setUseNestedNetworks(boolean useNN) {
 		useNestedNetworks = useNN;
 	}
 
-	@Override
   public void setUseNestedNetworks(CyGroup group, boolean useNN) {
 		if (group != null)
 			nestedNetworkMap.put(group, useNN);
@@ -113,22 +114,18 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 			this.useNestedNetworks = useNN;
 	}
 
-	@Override
   public boolean getHideGroupNode() { return hideGroupNode; }
 
-	@Override
   public boolean getHideGroupNode(CyGroup group) {
 		if (hideGroupMap.containsKey(group))
 			return hideGroupMap.get(group);
 		return hideGroupNode;
 	}
 
-	@Override
   public void setHideGroupNode(boolean hideGroup) {
 		hideGroupNode = hideGroup;
 	}
 
-	@Override
   public void setHideGroupNode(CyGroup group, boolean hideGroup) {
 		if (group != null)
 			hideGroupMap.put(group, hideGroup);
@@ -136,22 +133,18 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 			this.hideGroupNode = hideGroup;
 	}
 
-	@Override
   public double getGroupNodeOpacity() { return groupNodeOpacity; }
 
-	@Override
   public double getGroupNodeOpacity(CyGroup group) {
 		if (opacityMap.containsKey(group))
 			return opacityMap.get(group);
 		return groupNodeOpacity;
 	}
 
-	@Override
   public void setGroupNodeOpacity(double opacity) {
 		groupNodeOpacity = opacity;
 	}
 
-	@Override
   public void setGroupNodeOpacity(CyGroup group, double opacity) {
 		if (group != null)
 			opacityMap.put(group, opacity);
@@ -165,24 +158,20 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 	 *                         Aggregation settings                            *
 	 **************************************************************************/
 
-	@Override
 	public boolean getEnableAttributeAggregation() {
 		return enableAttributeAggregation;
 	}
 
-	@Override
 	public boolean getEnableAttributeAggregation(CyGroup group) {
 		if (enableMap.containsKey(group))
 			return enableMap.get(group);
 		return enableAttributeAggregation;
 	}
 
-	@Override
 	public void setEnableAttributeAggregation(boolean aggregate) {
 		this.enableAttributeAggregation = aggregate;
 	}
 
-	@Override
 	public void setEnableAttributeAggregation(CyGroup group, 
 	                                          boolean aggregate) {
 		if (group != null)
@@ -191,7 +180,6 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 			this.enableAttributeAggregation = aggregate;
 	}
 
-	@Override
 	public Aggregator getAggregator(CyGroup group, CyColumn column) {
 		Class type = column.getType();
 		Map<Class, Aggregator> defaultMap = allGroupDefaultMap;
@@ -205,7 +193,6 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 		return defaultMap.get(column.getType());
 	}
 
-	@Override
 	public void setDefaultAggregation(CyGroup group, 
 	                                  Class ovClass, Aggregator agg) {
 		if (!groupMap.containsKey(group)) {
@@ -213,26 +200,22 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 		}
 		groupMap.get(group).setDefault(ovClass, agg);
 	}
-	@Override
 	public Aggregator getDefaultAggregation(CyGroup group, Class ovClass) {
 		if (groupMap.containsKey(group))
 			return groupMap.get(group).getDefault(ovClass);
 		return null;
 	}
 
-	@Override
 	public void setDefaultAggregation(Class ovClass, Aggregator agg) {
 		allGroupDefaultMap.put(ovClass, agg);
 	}
 
-	@Override
 	public Aggregator getDefaultAggregation(Class ovClass) {
 		if (allGroupDefaultMap.containsKey(ovClass))
 			return allGroupDefaultMap.get(ovClass);
 		return null;
 	}
 
-	@Override
 	public void setOverrideAggregation(CyGroup group, 
 	                                   CyColumn column, Aggregator agg) {
 		if (!groupMap.containsKey(group)) {
@@ -240,18 +223,15 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 		}
 		groupMap.get(group).setOverride(column, agg);
 	}
-	@Override
 	public Aggregator getOverrideAggregation(CyGroup group, CyColumn column) {
 		if (groupMap.containsKey(group))
 			return groupMap.get(group).getOverride(column);
 		return null;
 	}
 
-	@Override
 	public void setOverrideAggregation(CyColumn column, Aggregator agg) {
 		allGroupOverrideMap.put(column, agg);
 	}
-	@Override
 	public Aggregator getOverrideAggregation(CyColumn column) {
 		if (allGroupOverrideMap.containsKey(column))
 			return allGroupOverrideMap.get(column);

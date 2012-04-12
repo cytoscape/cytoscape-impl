@@ -17,7 +17,6 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.group.data.CyGroupAggregationManager;
-import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.data.internal.aggregators.*;
 
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ import java.util.Map;
 public class CyGroupAggregationSettings {
 	CyApplicationManager cyApplicationManager;
 	CyGroupAggregationManager cyAggManager;
-	CyGroupSettings settings;
+	CyGroupSettingsImpl settings;
 	CyNetwork currentNetwork = null;
 	Map<CyColumn, Aggregator> overrides;
 
@@ -167,7 +166,7 @@ public class CyGroupAggregationSettings {
 
 	public CyGroupAggregationSettings(CyApplicationManager appManager,
 		                                CyGroupAggregationManager cyAggManager,
-	                                  CyGroupSettings settings) {
+	                                  CyGroupSettingsImpl settings) {
 		this.cyApplicationManager = appManager;
 		this.cyAggManager = cyAggManager;
 		this.settings = settings;

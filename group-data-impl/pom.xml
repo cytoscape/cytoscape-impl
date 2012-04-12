@@ -14,7 +14,7 @@
   <groupId>org.cytoscape</groupId>
   <artifactId>group-data-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+	<name>${bundle.symbolicName}</name>
 
   <packaging>bundle</packaging>
 
@@ -29,7 +29,7 @@
           <instructions>
             <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
-                        <Export-Package>!${bundle.namespace}.*</Export-Package>
+                        <Export-Package>${bundle.namespace}.*</Export-Package>
                         <Private-Package>${bundle.namespace}.*</Private-Package>
                         <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
           </instructions>

@@ -33,8 +33,8 @@ import java.util.List;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.data.CyGroupSettings;
-import org.cytoscape.group.data.CyGroupSettings.DoubleClickAction;
+import org.cytoscape.group.data.internal.CyGroupSettingsImpl;
+import org.cytoscape.group.data.internal.CyGroupSettingsImpl.DoubleClickAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -52,13 +52,14 @@ import org.cytoscape.view.model.View;
 public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 {
 	CyGroupManager cyGroupManager;
-	CyGroupSettings cyGroupSettings;
+	CyGroupSettingsImpl cyGroupSettings;
 
 	/**
 	 * 
 	 * 
 	 */
-	public GroupViewDoubleClickListener(final CyGroupManager groupManager, final CyGroupSettings groupSettings) {
+	public GroupViewDoubleClickListener(final CyGroupManager groupManager, 
+	                                    final CyGroupSettingsImpl groupSettings) {
 		this.cyGroupManager = groupManager;
 		this.cyGroupSettings = groupSettings;
 	}

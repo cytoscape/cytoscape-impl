@@ -6,7 +6,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.data.CyGroupSettings;
+import org.cytoscape.group.data.internal.CyGroupSettingsImpl;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.CyNetworkManager;
@@ -32,7 +32,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManager = getService(bc,CyNetworkViewManager.class);
 		CyNetworkViewFactory cyNetworkViewFactory = getService(bc,CyNetworkViewFactory.class);
 		CyNetworkManager cyNetworkManager = getService(bc,CyNetworkManager.class);
-		CyGroupSettings groupSettings = getService(bc,CyGroupSettings.class);
+		CyGroupSettingsImpl groupSettings = getService(bc,CyGroupSettingsImpl.class);
 		VisualMappingManager styleManager = getService(bc, VisualMappingManager.class);
 
 		GroupViewCollapseHandler gvcHandler = 

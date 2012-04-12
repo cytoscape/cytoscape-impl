@@ -5,7 +5,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.CyGroupAggregationManager;
-import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.model.CyNetworkManager;
@@ -70,10 +69,10 @@ public class CyActivator extends AbstractCyActivator {
 		                NodeViewTaskFactory.class, settingsProps);
 
 		// Make the settings available to consumers
-		registerService(bc,cyGroupSettings, 
-		                CyGroupSettings.class, new Properties());
     registerService(bc,cyGroupSettings, 
 		                GroupAddedListener.class, new Properties());
+    registerService(bc,cyGroupSettings, 
+		                CyGroupSettingsImpl.class, new Properties());
 
 		GroupDataCollapseHandler gdcHandler =
       new GroupDataCollapseHandler(cyGroupManager, cyGroupSettings);

@@ -70,7 +70,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>group-data-api</artifactId>
+			<artifactId>group-data-impl</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>

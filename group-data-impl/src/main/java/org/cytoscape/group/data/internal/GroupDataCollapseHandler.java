@@ -31,7 +31,6 @@ package org.cytoscape.group.data.internal;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
@@ -52,7 +51,7 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 {
 
 	private final CyGroupManager cyGroupManager;
-	private final CyGroupSettings cyGroupSettings;
+	private final CyGroupSettingsImpl cyGroupSettings;
 	private static final Logger logger = 
 		LoggerFactory.getLogger(GroupDataCollapseHandler.class);
 

@@ -11,7 +11,6 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.CyGroupAggregationManager;
-import org.cytoscape.group.data.CyGroupSettings;
 
 import org.cytoscape.model.CyColumn;
 
@@ -20,7 +19,7 @@ import java.util.Map;
 public class CyGroupSettingsTask extends AbstractTask {
 	CyGroupAggregationManager cyAggManager;
 	CyApplicationManager cyApplicationManager;
-	CyGroupSettings settings;
+	CyGroupSettingsImpl settings;
 	CyGroup group = null;
 
 	@ContainsTunables
@@ -31,7 +30,7 @@ public class CyGroupSettingsTask extends AbstractTask {
 
 	public CyGroupSettingsTask(CyGroupAggregationManager aggMgr,
 	                           CyApplicationManager appManager,
-	                           CyGroupSettings settings,
+	                           CyGroupSettingsImpl settings,
 	                           CyGroup group) {
 		this.cyAggManager = aggMgr;
 		this.cyApplicationManager = appManager;

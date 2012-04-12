@@ -35,7 +35,7 @@ import java.util.List;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.data.CyGroupSettings;
+import org.cytoscape.group.data.internal.CyGroupSettingsImpl;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedEvent;
@@ -72,7 +72,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	private final CyNetworkViewManager cyNetworkViewManager;
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final VisualMappingManager cyStyleManager;
-	private final CyGroupSettings cyGroupSettings;
+	private final CyGroupSettingsImpl cyGroupSettings;
 	private static final Logger logger = LoggerFactory.getLogger(GroupViewCollapseHandler.class);
 	private static final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 	private static final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
@@ -87,7 +87,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	 * @param cyEventHelper
 	 */
 	public GroupViewCollapseHandler(final CyGroupManager groupManager,
-	                                final CyGroupSettings groupSettings,
+	                                final CyGroupSettingsImpl groupSettings,
 	                                final CyNetworkManager netManager,
 	                                final CyNetworkViewManager viewManager,
 	                                final CyNetworkViewFactory viewFactory,

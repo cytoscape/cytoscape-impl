@@ -13,8 +13,7 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.AttributeHandlingType;
-import org.cytoscape.group.data.CyGroupSettings;
-import org.cytoscape.group.data.CyGroupSettings.DoubleClickAction;
+import org.cytoscape.group.data.internal.CyGroupSettingsImpl.DoubleClickAction;
 import org.cytoscape.group.data.internal.aggregators.*;
 import org.cytoscape.group.events.GroupAddedEvent;
 import org.cytoscape.group.events.GroupAddedListener;
@@ -26,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CyGroupViewSettings {
-	CyGroupSettings settings = null;
+	CyGroupSettingsImpl settings = null;
 
   public ListSingleSelection<DoubleClickAction> doubleClickAction = 
 		new ListSingleSelection<DoubleClickAction>(DoubleClickAction.None,
@@ -55,7 +54,7 @@ public class CyGroupViewSettings {
 	         groups={"Group View Settings"})
 	public BoundedDouble groupNodeOpacity = new BoundedDouble(0.0, 100.0, 100.0, false, false);
 
-	public CyGroupViewSettings(CyGroupSettings settings) {
+	public CyGroupViewSettings(CyGroupSettingsImpl settings) {
 		this.settings = settings;
 
 		if (settings.getDoubleClickAction() == null) {
