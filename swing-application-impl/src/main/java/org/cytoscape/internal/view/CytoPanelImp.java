@@ -36,6 +36,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Insets;
@@ -84,7 +85,9 @@ import org.slf4j.LoggerFactory;
  * @author Ethan Cerami, Benjamin Gross
  */
 public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
+	
 	private final static long serialVersionUID = 1202339868245830L;
+	
 	private final static Logger logger = LoggerFactory.getLogger(CytoPanelImp.class);
 
 	/**
@@ -154,6 +157,11 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * The dock icon.
 	 */
 	private ImageIcon dockIcon;
+	
+	/**
+	 * The close icon.
+	 */
+	private ImageIcon closeIcon;
 
 	/**
 	 * The label which contains the tab title - not sure if its needed.
@@ -164,6 +172,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * The float/dock button.
 	 */
 	private JButton floatButton;
+	
+	private JButton closeButton;
 
 	/**
 	 * The float/dock button.
@@ -173,19 +183,18 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	/**
 	 * Color of the dock/float button panel.
 	 */
-	private Color FLOAT_PANEL_COLOR = new Color(204, 204, 204);
+	private Color FLOAT_PANEL_COLOR = new Color(224, 224, 224);
 
 	/* the following constants should probably move into common constants class */
 
-	/**
-	 * The float button tool tip.
-	 */
+	//The float button tool tip.
 	private static final String TOOL_TIP_FLOAT = "Float Window";
 
-	/**
-	 * The dock button tool tip.
-	 */
+	// The dock button tool tip.
 	private static final String TOOL_TIP_DOCK = "Dock Window";
+	
+	// The dock button tool tip.
+	private static final String TOOL_TIP_CLOSE = "Close Window";
 
 	/**
 	 * Location of our icons.
@@ -193,14 +202,12 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private static final String RESOURCE_DIR = "/images/";
 
 	/**
-	 * The float icon gif filename.
+	 * Icons for window
 	 */
+	
 	private static final String FLOAT_GIF = "float.gif";
-
-	/**
-	 * The dock icon gif filename.
-	 */
 	private static final String DOCK_GIF = "pin.gif";
+	private static final String CLOSE_PNG = "ximian/stock_close-16.png";
 
 	private final CyEventHelper cyEventHelper;
 
@@ -211,7 +218,9 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * @param tabPlacement      Tab placement of this CytoPanel.
 	 * @param cytoPanelState    The starting CytoPanel state.
 	 */
-	public CytoPanelImp(final CytoPanelName compassDirection, final int tabPlacement, final CytoPanelState cytoPanelState, final CyEventHelper eh) {
+	public CytoPanelImp(final CytoPanelName compassDirection, final int tabPlacement,
+			final CytoPanelState cytoPanelState, final CyEventHelper eh) {
+		
 		this.cyEventHelper = eh;
 		// setup our tabbed pane
 		tabbedPane = new JTabbedPane(tabPlacement);
@@ -456,10 +465,12 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		// icon strings
 		String floatIconStr = new String(RESOURCE_DIR + FLOAT_GIF);
 		String dockIconStr = new String(RESOURCE_DIR + DOCK_GIF);
+		String closeIconStr = new String(RESOURCE_DIR + CLOSE_PNG);
 
 		// create our icon objects
 		floatIcon = new ImageIcon(getClass().getResource(floatIconStr));
 		dockIcon = new ImageIcon(getClass().getResource(dockIconStr));
+		closeIcon = new ImageIcon(getClass().getResource(closeIconStr));
 	}
 
 	/**
@@ -559,29 +570,32 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	/**
 	 * Constructs this CytoPanel.
 	 */
-	void constructPanel() {
+	private void constructPanel() {
 		// init our components
 		initLabel();
 		initButton();
 
 		// add label and button components to yet another panel, 
 		// so we can layout properly
-		JPanel floatDockPanel = new JPanel(new BorderLayout());
-
+		final JPanel floatDockPanel = new JPanel(new BorderLayout());
+		final JPanel closeAndFloatPanel = new JPanel(new FlowLayout());
+		
+		closeAndFloatPanel.setBackground(FLOAT_PANEL_COLOR);
+		
 		// set float dock panel attributes
+		closeAndFloatPanel.add(floatButton);
+		closeAndFloatPanel.add(closeButton);
 		floatDockPanel.add(floatLabel, BorderLayout.WEST);
-		floatDockPanel.add(floatButton, BorderLayout.EAST);
-		floatDockPanel.setBorder(new EmptyBorder(2, 2, 2, 6));
+		floatDockPanel.add(closeAndFloatPanel, BorderLayout.EAST);
+		
 		floatDockPanel.setBackground(FLOAT_PANEL_COLOR);
 
-		// set preferred size - we can use float or dock icon diminsions - they are the same
-		FontMetrics fm = floatLabel.getFontMetrics(floatLabel.getFont());
-		floatDockPanel.setMinimumSize(new Dimension((int) ((fm.stringWidth(getTitle())
-		                                                   + floatIcon.getIconWidth()) * FLOAT_PANEL_SCALE_FACTOR),
-		                                            floatIcon.getIconHeight()));
-		floatDockPanel.setPreferredSize(new Dimension((int) ((fm.stringWidth(getTitle())
-		                                                     + floatIcon.getIconWidth()) * FLOAT_PANEL_SCALE_FACTOR),
-		                                              floatIcon.getIconHeight() + 2));
+		// set preferred size - we can use float or dock icon dimensions - they are the same
+		final FontMetrics fm = floatLabel.getFontMetrics(floatLabel.getFont());
+		floatDockPanel.setMinimumSize(new Dimension((fm.stringWidth(getTitle()) + floatIcon.getIconWidth())
+				* FLOAT_PANEL_SCALE_FACTOR, floatIcon.getIconHeight()));
+		floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + floatIcon.getIconWidth())
+				* FLOAT_PANEL_SCALE_FACTOR, floatIcon.getIconHeight() + 10));
 
 		// use the border layout for this CytoPanel
 		setLayout(new BorderLayout());
@@ -621,11 +635,17 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * Initializes the button.
 	 */
 	private void initButton() {
-		//  Create Float / Dock Button
+		// Create Float / Dock Button
 		floatButton = new JButton();
 		floatButton.setIcon(floatIcon);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
 		floatButton.setRolloverEnabled(true);
+		
+		// Create close button
+		closeButton = new JButton();
+		closeButton.setIcon(closeIcon);
+		closeButton.setToolTipText(TOOL_TIP_CLOSE);
+		closeButton.setRolloverEnabled(true);
 
 		//  Set 0 Margin All-Around and setBorderPainted to false
 		//  so that button appears as small as possible
@@ -634,33 +654,58 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		floatButton.setBorderPainted(false);
 		floatButton.setSelected(false);
 		floatButton.setBackground(FLOAT_PANEL_COLOR);
+		
+		closeButton.setMargin(new Insets(0, 0, 0, 0));
+		closeButton.setBorder(new EmptyBorder(1, 1, 1, 1));
+		closeButton.setBorderPainted(false);
+		closeButton.setSelected(false);
+		closeButton.setBackground(FLOAT_PANEL_COLOR);
 
-		//  When User Hovers Over Button, highlight it with a gray box
+		// When User Hovers Over Button, highlight it with a gray box
 		floatButton.addMouseListener(new MouseAdapter() {
-				public void mouseEntered(MouseEvent e) {
-					floatButton.setBorder(new LineBorder(Color.GRAY, 1));
-					floatButton.setBorderPainted(true);
-					floatButton.setBackground(Color.LIGHT_GRAY);
-				}
-
-				public void mouseExited(MouseEvent e) {
-					floatButton.setBorder(new EmptyBorder(1, 1, 1, 1));
-					floatButton.setBorderPainted(false);
-					floatButton.setBackground(FLOAT_PANEL_COLOR);
-				}
-			});
+			public void mouseEntered(MouseEvent e) {
+				floatButton.setBorder(new LineBorder(Color.GRAY, 1));
+				floatButton.setBorderPainted(true);
+				floatButton.setBackground(Color.LIGHT_GRAY);
+			}
+			public void mouseExited(MouseEvent e) {
+				floatButton.setBorder(new EmptyBorder(1, 1, 1, 1));
+				floatButton.setBorderPainted(false);
+				floatButton.setBackground(FLOAT_PANEL_COLOR);
+			}
+		});
 
 		floatButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if (isFloating()) {
-						DockCytoPanel();
-					} else {
-						FloatCytoPanel();
-					}
+			public void actionPerformed(ActionEvent e) {
+				if (isFloating())
+					DockCytoPanel();
+				else
+					FloatCytoPanel();
+				
+				notifyListeners(NOTIFICATION_STATE_CHANGE);
+			}
+		});
+		
+		// When User Hovers Over Button, highlight it with a gray box
+		closeButton.addMouseListener(new MouseAdapter() {
+			public void mouseEntered(MouseEvent e) {
+				closeButton.setBorder(new LineBorder(Color.GRAY, 1));
+				closeButton.setBorderPainted(true);
+				closeButton.setBackground(Color.LIGHT_GRAY);
+			}
+			public void mouseExited(MouseEvent e) {
+				closeButton.setBorder(new EmptyBorder(1, 1, 1, 1));
+				closeButton.setBorderPainted(false);
+				closeButton.setBackground(FLOAT_PANEL_COLOR);
+			}
+		});
 
-					notifyListeners(NOTIFICATION_STATE_CHANGE);
-				}
-			});
+		closeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setState(CytoPanelState.HIDE);
+				notifyListeners(NOTIFICATION_STATE_CHANGE);
+			}
+		});
 	}
 
 	/**
@@ -775,13 +820,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	}
 
 	/**
-	 * Are we hidden ?
-	 */
-	private boolean isHidden() {
-		return (cytoPanelState == CytoPanelState.HIDE);
-	}
-
-	/**
 	 * Adds the listener to the floating window.
 	 */
 	private void addWindowListener() {
@@ -825,43 +863,27 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * @param notificationType What type of notification to perform.
 	 */
 	private void notifyListeners(int notificationType) {
-
 			// determine what event to fire
 			switch (notificationType) {
 				case NOTIFICATION_STATE_CHANGE:
-					cyEventHelper.fireEvent(new CytoPanelStateChangedEvent(this,this,cytoPanelState));
-
+					cyEventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, cytoPanelState));
 					break;
 
 				case NOTIFICATION_COMPONENT_SELECTED:
-
 					int selectedIndex = tabbedPane.getSelectedIndex();
 					cyEventHelper.fireEvent(new CytoPanelComponentSelectedEvent(this,this,selectedIndex));
-					//cytoPanelListener.onComponentSelected(selectedIndex);
-
 					break;
 
 				case NOTIFICATION_COMPONENT_ADDED:
-					//cytoPanelListener.onComponentAdded(getCytoPanelComponentCount());
-
 					break;
 
 				case NOTIFICATION_COMPONENT_REMOVED:
-					//cytoPanelListener.onComponentRemoved(getCytoPanelComponentCount());
-
 					break;
 			}
 	}
 
-	/**
-	 * Returns the int indicating the location within the layout.
-	 *
-	 * @return The CytpPanelName enum value indicating the location within the layout.
-	 */
-	public CytoPanelName getCompassDirection() {
-		return compassDirection;
-	}
-
+	
+	@Override
 	public Component getThisComponent() {
 		return this;
 	}
