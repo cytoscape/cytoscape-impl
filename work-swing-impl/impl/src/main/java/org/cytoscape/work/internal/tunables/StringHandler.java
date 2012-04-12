@@ -9,6 +9,7 @@ import java.lang.reflect.*;
 import javax.swing.*;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 
@@ -55,6 +56,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 
 		//set Gui
 		textField = new JFormattedTextField(s);
+		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout());
 		final JLabel label = new JLabel(getDescription());
 		label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));

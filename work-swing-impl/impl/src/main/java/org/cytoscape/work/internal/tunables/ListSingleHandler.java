@@ -25,7 +25,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD, 12);
 	private static final Font COMBOBOX_FONT = new Font("SansSerif", Font.PLAIN, 12);
 	private static final Dimension DEF_LABEL_SIZE = new Dimension(300, 25);
-	private static final Dimension DEF_COMBOBOX_SIZE = new Dimension(300, 25);
+	private static final Dimension DEF_COMBOBOX_SIZE = new Dimension(200, 25);
 	
 	private JComboBox combobox;
 

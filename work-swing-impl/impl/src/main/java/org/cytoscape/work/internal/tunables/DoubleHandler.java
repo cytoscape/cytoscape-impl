@@ -3,6 +3,7 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +18,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 
@@ -60,12 +62,12 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 
 		//set Gui
 		textField = new JFormattedTextField(d.toString());
+		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		textField.addActionListener(this);
-
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
 			panel.add(textField, BorderLayout.SOUTH);

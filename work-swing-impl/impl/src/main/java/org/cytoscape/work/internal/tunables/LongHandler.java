@@ -12,6 +12,7 @@ import java.text.DecimalFormat;
 import javax.swing.*;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 
@@ -47,6 +48,7 @@ public class LongHandler extends AbstractGUITunableHandler implements ActionList
 	private void init() {
 		//setup GUI
 		textField = new JFormattedTextField(new DecimalFormat());
+		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		textField.setValue(getLong());
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());

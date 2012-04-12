@@ -12,6 +12,7 @@ import java.text.DecimalFormat;
 import javax.swing.*;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 
@@ -51,6 +52,7 @@ public class FloatHandler extends AbstractGUITunableHandler implements ActionLis
 		//setup GUI
 		textField = new JFormattedTextField(new DecimalFormat());
 		textField.setValue(f);
+		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN, 12));

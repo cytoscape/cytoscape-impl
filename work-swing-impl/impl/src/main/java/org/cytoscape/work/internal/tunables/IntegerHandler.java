@@ -3,6 +3,7 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 
@@ -61,7 +63,9 @@ public class IntegerHandler extends AbstractGUITunableHandler implements ActionL
 		panel = new JPanel(new BorderLayout());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
-		textField = new JFormattedTextField(i.toString());
+		textField = new JFormattedTextField();
+		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
+		textField.setValue(i.toString());
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		textField.addActionListener(this);
 
