@@ -99,7 +99,7 @@ public class TextIndexComboBox extends JComboBox {
 		init();
 
 		//  Populate menu with first X items
-//		doc.populatePullDownMenu("");
+		doc.populatePullDownMenu("");
 	}
 
 	/**
@@ -117,7 +117,9 @@ public class TextIndexComboBox extends JComboBox {
 		}
 
 		//  Populate menu with first X items
-//		doc.populatePullDownMenu("");
+		// This can be a potential performance hit depending on the number of calls and networks.
+		// currently this runs in a separate thread when handling current network changed event.
+		doc.populatePullDownMenu("");
 	}
 
 	/**

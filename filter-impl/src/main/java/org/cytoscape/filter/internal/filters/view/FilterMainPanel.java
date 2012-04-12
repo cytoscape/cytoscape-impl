@@ -88,6 +88,8 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -102,17 +104,19 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.DropDownMenuButton;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskManager;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class FilterMainPanel extends JPanel implements ActionListener,
 						       ItemListener, SetCurrentNetworkListener, NetworkAddedListener,
-						       NetworkAboutToBeDestroyedListener, SessionLoadedListener, RowsSetListener,
+						       NetworkAboutToBeDestroyedListener, SessionLoadedListener, RowsSetListener,ColumnNameChangedListener,
 						       RowsCreatedListener, FiltersChangedListener {
 	
 	// String constants used for separator entries in the attribute combobox
 	private static final String filtersSeparator = "-- Filters --";
 	private static final String attributesSeperator = "-- Attributes --";
+	private static final Logger logger = LoggerFactory.getLogger(FilterMainPanel.class);
 	
 	private final QuickFind quickFind;
 
@@ -252,10 +256,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					return;
 				}
 				
-				// If FilterPanel is not selected, do nothing
+				//TODO The current panel check is incorrect.
+				
+				// If FilterPanel is not selected, do nothing ==> ****** ERR this is incorrect *******
 				if (cmbFilters.getSelectedItem() == null) {
 					return;
 				}
+				
+				handleAttributesChanged();
 							
 				//Refresh indices for UI widgets after network switch			
 				CompositeFilter selectedFilter = (CompositeFilter) cmbFilters.getSelectedItem();
@@ -1383,5 +1391,12 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 			return rv;
 		}
+	}
+
+	@Override
+	public void handleEvent(ColumnNameChangedEvent e) {
+
+		handleAttributesChanged();
+		logger.warn("A column name has been updated. The filter may not be applied on some of the added widgets");
 	}
 }
