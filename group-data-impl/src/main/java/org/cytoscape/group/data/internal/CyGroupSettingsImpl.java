@@ -35,8 +35,14 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 	Map<CyGroup, GroupSpecificMaps> groupMap;
 	Map<CyGroup, DoubleClickAction> groupActionMap;
 	Map<CyGroup, Boolean> enableMap;
+	Map<CyGroup, Boolean> nestedNetworkMap;
+	Map<CyGroup, Boolean> hideGroupMap;
+	Map<CyGroup, Double> opacityMap;
 	DoubleClickAction action = DoubleClickAction.ExpandContract;
 	boolean enableAttributeAggregation = false;
+	boolean useNestedNetworks = false;
+	boolean hideGroupNode = true;
+	double groupNodeOpacity = 100.0;
 
 	public CyGroupSettingsImpl(CyGroupManager mgr, 
 	                           CyGroupAggregationManager aggMgr,
@@ -50,7 +56,114 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 		groupMap = new HashMap<CyGroup,GroupSpecificMaps>();
 		groupActionMap = new HashMap<CyGroup, DoubleClickAction>();
 		enableMap = new HashMap<CyGroup, Boolean>();
+		nestedNetworkMap = new HashMap<CyGroup, Boolean>();
+		hideGroupMap = new HashMap<CyGroup, Boolean>();
+		opacityMap = new HashMap<CyGroup, Double>();
 	}
+
+	/***************************************************************************
+	 *                             View settings                               *
+	 **************************************************************************/
+
+	@Override
+	public DoubleClickAction getDoubleClickAction() {
+		return action;
+	}
+
+	@Override
+	public DoubleClickAction getDoubleClickAction(CyGroup group) {
+		if (groupActionMap.containsKey(group))
+			return groupActionMap.get(group);
+		return action;
+	}
+
+	@Override
+	public void setDoubleClickAction(DoubleClickAction action) {
+		this.action = action;
+	}
+
+	@Override
+	public void setDoubleClickAction(CyGroup group, DoubleClickAction action) {
+		if (group != null)
+			groupActionMap.put(group, action);
+		else
+			this.action = action;
+	}
+
+	@Override
+	public boolean getUseNestedNetworks() { return useNestedNetworks; }
+
+	@Override
+  public boolean getUseNestedNetworks(CyGroup group) {
+		if (nestedNetworkMap.containsKey(group))
+			return nestedNetworkMap.get(group);
+		return useNestedNetworks;
+	}
+
+	@Override
+  public void setUseNestedNetworks(boolean useNN) {
+		useNestedNetworks = useNN;
+	}
+
+	@Override
+  public void setUseNestedNetworks(CyGroup group, boolean useNN) {
+		if (group != null)
+			nestedNetworkMap.put(group, useNN);
+		else
+			this.useNestedNetworks = useNN;
+	}
+
+	@Override
+  public boolean getHideGroupNode() { return hideGroupNode; }
+
+	@Override
+  public boolean getHideGroupNode(CyGroup group) {
+		if (hideGroupMap.containsKey(group))
+			return hideGroupMap.get(group);
+		return hideGroupNode;
+	}
+
+	@Override
+  public void setHideGroupNode(boolean hideGroup) {
+		hideGroupNode = hideGroup;
+	}
+
+	@Override
+  public void setHideGroupNode(CyGroup group, boolean hideGroup) {
+		if (group != null)
+			hideGroupMap.put(group, hideGroup);
+		else
+			this.hideGroupNode = hideGroup;
+	}
+
+	@Override
+  public double getGroupNodeOpacity() { return groupNodeOpacity; }
+
+	@Override
+  public double getGroupNodeOpacity(CyGroup group) {
+		if (opacityMap.containsKey(group))
+			return opacityMap.get(group);
+		return groupNodeOpacity;
+	}
+
+	@Override
+  public void setGroupNodeOpacity(double opacity) {
+		groupNodeOpacity = opacity;
+	}
+
+	@Override
+  public void setGroupNodeOpacity(CyGroup group, double opacity) {
+		if (group != null)
+			opacityMap.put(group, opacity);
+		else
+			groupNodeOpacity = opacity;
+	}
+
+
+
+	/***************************************************************************
+	 *                         Aggregation settings                            *
+	 **************************************************************************/
 
 	@Override
 	public boolean getEnableAttributeAggregation() {
@@ -76,31 +189,6 @@ public class CyGroupSettingsImpl implements CyGroupSettings, GroupAddedListener 
 			enableMap.put(group, aggregate);
 		else
 			this.enableAttributeAggregation = aggregate;
-	}
-
-	@Override
-	public DoubleClickAction getDoubleClickAction() {
-		return action;
-	}
-
-	@Override
-	public DoubleClickAction getDoubleClickAction(CyGroup group) {
-		if (groupActionMap.containsKey(group))
-			return groupActionMap.get(group);
-		return action;
-	}
-
-	@Override
-	public void setDoubleClickAction(DoubleClickAction action) {
-		this.action = action;
-	}
-
-	@Override
-	public void setDoubleClickAction(CyGroup group, DoubleClickAction action) {
-		if (group != null)
-			groupActionMap.put(group, action);
-		else
-			this.action = action;
 	}
 
 	@Override

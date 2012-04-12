@@ -11,6 +11,7 @@ import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
@@ -29,12 +30,15 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		CyGroupManager cyGroupManager = getService(bc,CyGroupManager.class);
 		CyNetworkViewManager cyNetworkViewManager = getService(bc,CyNetworkViewManager.class);
+		CyNetworkViewFactory cyNetworkViewFactory = getService(bc,CyNetworkViewFactory.class);
 		CyNetworkManager cyNetworkManager = getService(bc,CyNetworkManager.class);
 		CyGroupSettings groupSettings = getService(bc,CyGroupSettings.class);
 		VisualMappingManager styleManager = getService(bc, VisualMappingManager.class);
 
 		GroupViewCollapseHandler gvcHandler = 
-			new GroupViewCollapseHandler(cyGroupManager, cyNetworkViewManager, styleManager);
+			new GroupViewCollapseHandler(cyGroupManager, groupSettings, cyNetworkManager,
+			                             cyNetworkViewManager, cyNetworkViewFactory,
+			                             styleManager);
 
 		registerService(bc,gvcHandler,GroupAboutToCollapseListener.class, new Properties());
 		registerService(bc,gvcHandler,GroupCollapsedListener.class, new Properties());

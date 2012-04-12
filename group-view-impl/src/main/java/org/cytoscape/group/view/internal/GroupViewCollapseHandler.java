@@ -35,18 +35,21 @@ import java.util.List;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.data.CyGroupSettings;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupCollapsedListener;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -65,8 +68,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 {
 
 	private final CyGroupManager cyGroupManager;
+	private final CyNetworkManager cyNetworkManager;
 	private final CyNetworkViewManager cyNetworkViewManager;
+	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final VisualMappingManager cyStyleManager;
+	private final CyGroupSettings cyGroupSettings;
 	private static final Logger logger = LoggerFactory.getLogger(GroupViewCollapseHandler.class);
 	private static final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 	private static final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
@@ -81,11 +87,17 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	 * @param cyEventHelper
 	 */
 	public GroupViewCollapseHandler(final CyGroupManager groupManager,
+	                                final CyGroupSettings groupSettings,
+	                                final CyNetworkManager netManager,
 	                                final CyNetworkViewManager viewManager,
+	                                final CyNetworkViewFactory viewFactory,
 	                                final VisualMappingManager styleManager) {
 		this.cyGroupManager = groupManager;
+		this.cyGroupSettings = groupSettings;
+		this.cyNetworkManager = netManager;
 		this.cyNetworkViewManager = viewManager;
 		this.cyStyleManager = styleManager;
+		this.cyNetworkViewFactory = viewFactory;
 	}
 
 	public void handleEvent(GroupAboutToCollapseEvent e) {
@@ -138,13 +150,32 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			Dimension d = getLocation(rootNetwork, group.getGroupNode());
 			// Move it.
 			moveNode(view, group.getGroupNode(), d);
+
+			if (cyGroupSettings.getUseNestedNetworks(group)) {
+				// Now, if we're displaying the nested network, create it....
+
+				/* This isn't working, yet...
+				CyNetwork nn = group.getGroupNetwork();
+				cyNetworkManager.addNetwork(nn);
+				CyNetworkView nnView = cyNetworkViewFactory.createNetworkView(nn);
+				cyNetworkViewManager.addNetworkView(nnView);
+				// Move the nodes around
+				moveNodes(group, nnView, d);
+				// Apply our visual style
+				viewStyle.apply(nnView);
+				nnView.updateView();
+				*/
+			}
+
+			// Handle opacity
+			double opacity = cyGroupSettings.getGroupNodeOpacity(group);
+
 		} else {
 			// Get the location of the group node before it went away
 			Dimension center = getLocation(rootNetwork, group.getGroupNode());
-			// Now, get the offsets for each of the member nodes and move them
-			for (CyNode node: group.getNodeList()) {
-				Dimension location = getOffsetLocation(rootNetwork, node, center);
-				moveNode(view, node, location);
+			moveNodes(group, view, center);
+			// If we're asked to, show the group node
+			if (!cyGroupSettings.getHideGroupNode(group)) {
 			}
 		}
 		viewStyle.apply(view);
@@ -163,6 +194,14 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			
 		}
 		return getDim(xCenter, yCenter);
+	}
+
+	private void moveNodes(CyGroup group, CyNetworkView view, Dimension center) {
+		CyRootNetwork rootNetwork = group.getRootNetwork();
+		for (CyNode node: group.getNodeList()) {
+			Dimension location = getOffsetLocation(rootNetwork, node, center);
+			moveNode(view, node, location);
+		}
 	}
 
 	private Dimension calculateOffset(Dimension center, CyNetworkView view, CyNode node) {
