@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.AbstractCyWriterTest;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.task.internal.export.AbstractCyWriterTest;
 import org.cytoscape.task.internal.export.ViewWriter;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;

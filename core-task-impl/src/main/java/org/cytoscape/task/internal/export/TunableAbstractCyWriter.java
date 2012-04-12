@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.AbstractCyWriter;
 import org.cytoscape.io.write.CyWriterManager;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.work.Tunable;
