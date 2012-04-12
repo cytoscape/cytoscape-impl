@@ -109,7 +109,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	private static final Logger logger = LoggerFactory.getLogger(VizMapperMainPanel.class);
 
 	// Title for the tab.
-	private static final String TAB_TITLE = "VizMapper\u2122";
+	private static final String TAB_TITLE = "VizMapper";
 
 	private final DefaultViewMouseListener defaultViewMouseListener;
 
