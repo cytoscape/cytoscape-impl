@@ -20,12 +20,12 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory {
 	}
 	
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, CyNetwork network) {
+	public CyWriter createWriter(OutputStream outputStream, CyNetwork network) {
 		return new ExportAsBioPAXTask(fileName, outputStream, network);
 	}
 
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, CyNetworkView view) {
+	public CyWriter createWriter(OutputStream outputStream, CyNetworkView view) {
 		return new ExportAsBioPAXTask(fileName, outputStream, view.getModel());
 	}
 

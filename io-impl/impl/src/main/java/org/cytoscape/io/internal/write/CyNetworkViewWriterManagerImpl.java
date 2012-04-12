@@ -28,7 +28,7 @@ public class CyNetworkViewWriterManagerImpl extends AbstractWriterManager<CyNetw
 		if (factory == null) {
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
 		}
-		return factory.getWriterTask(os,view);
+		return factory.createWriter(os,view);
 	}
 
 	@Override
@@ -43,6 +43,6 @@ public class CyNetworkViewWriterManagerImpl extends AbstractWriterManager<CyNetw
 		if (factory == null) {
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
 		}
-		return factory.getWriterTask(os,network);
+		return factory.createWriter(os,network);
 	}
 }

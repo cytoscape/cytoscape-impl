@@ -13,7 +13,7 @@ public class PropertiesWriterFactoryImpl extends AbstractCyWriterFactory impleme
 	}
 	
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, Object props) {
+	public CyWriter createWriter(OutputStream outputStream, Object props) {
 		return new PropertiesWriterImpl(outputStream, props);
 	}
 }

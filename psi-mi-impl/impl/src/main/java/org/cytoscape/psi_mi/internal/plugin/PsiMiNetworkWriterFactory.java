@@ -19,12 +19,12 @@ public class PsiMiNetworkWriterFactory implements CyNetworkViewWriterFactory {
 	}
 	
 	@Override
-	public CyWriter getWriterTask(OutputStream os, CyNetwork network) {
+	public CyWriter createWriter(OutputStream os, CyNetwork network) {
 		return new PsiMiWriter(os, network, version);
 	}
 
 	@Override
-	public CyWriter getWriterTask(OutputStream os, CyNetworkView view) {
+	public CyWriter createWriter(OutputStream os, CyNetworkView view) {
 		return new PsiMiWriter(os, view.getModel(), version);
 	}
 

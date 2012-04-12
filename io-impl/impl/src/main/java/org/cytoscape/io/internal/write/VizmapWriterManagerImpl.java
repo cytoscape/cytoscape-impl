@@ -64,6 +64,6 @@ public class VizmapWriterManagerImpl extends AbstractWriterManager<VizmapWriterF
         if (vf == null)
             throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
         
-        return vf.getWriterTask(os,styles);
+        return vf.createWriter(os,styles);
 	}
 }

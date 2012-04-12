@@ -15,7 +15,7 @@ public class PSWriterFactory extends AbstractCyWriterFactory implements Presenta
  	}
 
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, RenderingEngine re) {
+	public CyWriter createWriter(OutputStream outputStream, RenderingEngine re) {
 		if ( re == null )
 			throw new NullPointerException("RenderingEngine is null");
 		

@@ -28,12 +28,12 @@ public class XGMMLNetworkViewWriterFactory extends AbstractCyWriterFactory imple
 	}
 
 	@Override
-    public CyWriter getWriterTask(OutputStream outputStream, CyNetworkView view) {
+    public CyWriter createWriter(OutputStream outputStream, CyNetworkView view) {
 		return new XGMMLWriter(outputStream, renderingEngineMgr, view, unrecognizedVisualPropertyMgr, networkMgr);
     }
 
 	@Override
-    public CyWriter getWriterTask(OutputStream outputStream, CyNetwork network) {
+    public CyWriter createWriter(OutputStream outputStream, CyNetwork network) {
 		return new XGMMLWriter(outputStream, renderingEngineMgr, network, unrecognizedVisualPropertyMgr, networkMgr);
     }
 }

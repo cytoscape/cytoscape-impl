@@ -29,7 +29,7 @@ public class SessionWriterManagerImpl extends
 		if (factory == null) {
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
 		}
-		return factory.getWriterTask(os,session);
+		return factory.createWriter(os,session);
 	}
 
 }

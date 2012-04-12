@@ -22,7 +22,7 @@ public class CSVTableWriterFactory extends AbstractCyWriterFactory implements Cy
 	}
 	
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, CyTable table) {
+	public CyWriter createWriter(OutputStream outputStream, CyTable table) {
 		return new CSVCyWriter(outputStream, table, writeSchema, handleEquations);
 	}
 }

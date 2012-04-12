@@ -15,12 +15,12 @@ public class SifNetworkWriterFactory extends AbstractCyWriterFactory implements 
 	}
 	
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, CyNetworkView view) {
+	public CyWriter createWriter(OutputStream outputStream, CyNetworkView view) {
 		return new SifWriter(outputStream, view.getModel());
 	}
 
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, CyNetwork network) {
+	public CyWriter createWriter(OutputStream outputStream, CyNetwork network) {
 		return new SifWriter(outputStream, network);
 	}
 }

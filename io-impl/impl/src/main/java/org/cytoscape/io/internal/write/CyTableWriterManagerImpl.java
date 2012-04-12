@@ -31,6 +31,6 @@ public class CyTableWriterManagerImpl extends AbstractWriterManager<CyTableWrite
 		CyTableWriterFactory tf = getMatchingFactory(filter);
 		if ( tf == null )
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
-		return tf.getWriterTask(os,table);
+		return tf.createWriter(os,table);
 	}
 }

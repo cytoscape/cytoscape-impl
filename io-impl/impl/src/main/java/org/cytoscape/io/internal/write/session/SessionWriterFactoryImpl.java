@@ -56,7 +56,7 @@ public class SessionWriterFactoryImpl extends AbstractCyWriterFactory implements
 	}
 	
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, CySession session) {
+	public CyWriter createWriter(OutputStream outputStream, CySession session) {
 		return new SessionWriterImpl(outputStream, session, networkViewWriterMgr, rootNetworkManager,
 		                             propertyWriterMgr, tableWriterMgr, vizmapWriterMgr, xgmmlFilter,
 		                             bookmarksFilter, propertiesFilter, tableFilter, vizmapFilter);

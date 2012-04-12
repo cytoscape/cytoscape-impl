@@ -27,7 +27,7 @@ public final class PropertyWriterManagerImpl extends AbstractWriterManager<CyPro
 		CyPropertyWriterFactory tf = getMatchingFactory(filter);
 		if (tf == null)
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
-		return tf.getWriterTask(os,property);
+		return tf.createWriter(os,property);
 	}
 }
 

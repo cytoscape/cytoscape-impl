@@ -13,7 +13,7 @@ public class CysessionWriterFactoryImpl extends AbstractCyWriterFactory implemen
 	}
 	
 	@Override
-	public CyWriter getWriterTask(OutputStream outputStream, Object props) {
+	public CyWriter createWriter(OutputStream outputStream, Object props) {
 		return new CysessionWriterImpl(outputStream, props);
 	}
 }
