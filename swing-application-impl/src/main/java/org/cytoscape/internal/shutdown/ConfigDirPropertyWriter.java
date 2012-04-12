@@ -20,31 +20,18 @@ import java.io.FileOutputStream;
 
 public class ConfigDirPropertyWriter implements CyShutdownListener {
 	private final DialogTaskManager taskManager;
-	private final CyPropertyWriterManager propertyWriterManager;
 	private final Map<CyProperty, Map> configDirProperties;
 	private final CyApplicationConfiguration config;
 	private static final Logger logger = LoggerFactory.getLogger(ConfigDirPropertyWriter.class);
 
-	public ConfigDirPropertyWriter(final DialogTaskManager taskManager,
-				final CyPropertyWriterManager propertyWriterManager, final CyApplicationConfiguration config)
+	public ConfigDirPropertyWriter(final DialogTaskManager taskManager, final CyApplicationConfiguration config)
 	{
 		this.taskManager = taskManager;
-		this.propertyWriterManager = propertyWriterManager;
 		this.config = config;
 		configDirProperties = new HashMap<CyProperty, Map>();
 	}
 
 	public void handleEvent(final CyShutdownEvent event) {
-		
-		CyFileFilter matchingFileFilter = null;
-		for (final CyFileFilter fileFilter : propertyWriterManager.getAvailableWriterFilters()) {
-			if (fileFilter.getExtensions().contains("props")) {
-				matchingFileFilter = fileFilter;
-				break;
-			}
-		}
-		if (matchingFileFilter == null)
-			throw new IllegalStateException("could not find a properties CyFileFilter!");
 		
 		for (final Map.Entry<CyProperty, Map> keyAndValue : configDirProperties.entrySet()) {
 			final String propertyName = (String)keyAndValue.getValue().get("cyPropertyName");
@@ -56,17 +43,6 @@ public class ConfigDirPropertyWriter implements CyShutdownListener {
 			
 			final File outputFile = new File(config.getConfigurationDirectoryLocation(), propertyFileName);
 			
-			//final PropertyWriterFactory taskFactory =
-			//	new PropertyWriterFactory(propertyWriterManager, keyAndValue.getKey(),
-			//				  matchingFileFilter, outputFile);
-
-			//taskFactory.createTaskIterator().next().run(arg0)
-			//taskManager.execute(taskFactory);
-
-			
-			// write properties file
-			// This is a work-around, because there are bugs in propertiesWriter 
-			// (1) can not close outputStream (2) Execute System.exit() before propsWriterTask 
 			Properties props = (Properties) keyAndValue.getKey().getProperties();
 
 			try {

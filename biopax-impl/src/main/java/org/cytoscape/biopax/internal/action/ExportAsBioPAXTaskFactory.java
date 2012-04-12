@@ -11,7 +11,6 @@ import org.cytoscape.view.model.CyNetworkView;
 public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory {
 
 	private final CyFileFilter filter;
-	private CyNetwork network;
 	private OutputStream outputStream;
 	private final String fileName;
 
@@ -21,13 +20,13 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory {
 	}
 	
 	@Override
-	public CyWriter getWriterTask() {
+	public CyWriter getWriterTask(OutputStream outputStream, CyNetwork network) {
 		return new ExportAsBioPAXTask(fileName, outputStream, network);
 	}
 
 	@Override
-	public void setOutputStream(OutputStream outputStream) {
-		this.outputStream = outputStream;
+	public CyWriter getWriterTask(OutputStream outputStream, CyNetworkView view) {
+		return new ExportAsBioPAXTask(fileName, outputStream, view.getModel());
 	}
 
 	@Override
@@ -35,14 +34,4 @@ public class ExportAsBioPAXTaskFactory implements CyNetworkViewWriterFactory {
 		return filter;
 	}
 	
-	@Override
-	public void setNetwork(CyNetwork network) {
-		this.network = network;
-	}
-
-	@Override
-	public void setNetworkView(CyNetworkView view) {
-		this.network = view.getModel();
-	}
-
 }

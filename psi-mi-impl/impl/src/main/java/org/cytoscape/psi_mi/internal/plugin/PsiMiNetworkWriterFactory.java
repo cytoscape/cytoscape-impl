@@ -13,37 +13,23 @@ public class PsiMiNetworkWriterFactory implements CyNetworkViewWriterFactory {
 	private final SchemaVersion version;
 	private final CyFileFilter filter;
 
-	private OutputStream os;
-	private CyNetwork network;
-	
 	public PsiMiNetworkWriterFactory(SchemaVersion version, CyFileFilter filter) {
 		this.version = version;
 		this.filter = filter;
 	}
 	
 	@Override
-	public void setOutputStream(OutputStream os) {
-		this.os = os;
+	public CyWriter getWriterTask(OutputStream os, CyNetwork network) {
+		return new PsiMiWriter(os, network, version);
 	}
 
 	@Override
-	public CyWriter getWriterTask() {
-		return new PsiMiWriter(os, network, version);
+	public CyWriter getWriterTask(OutputStream os, CyNetworkView view) {
+		return new PsiMiWriter(os, view.getModel(), version);
 	}
 
 	@Override
 	public CyFileFilter getFileFilter() {
 		return filter;
 	}
-
-	@Override
-	public void setNetwork(CyNetwork network) {
-		this.network = network;
-	}
-	
-	@Override
-	public void setNetworkView(CyNetworkView view) {
-		this.network = view.getModel();
-	}
-
 }

@@ -5,6 +5,7 @@ import java.io.File;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.view.model.CyNetworkView;
@@ -15,7 +16,7 @@ import org.cytoscape.work.Tunable;
 /**
  * A utility Task implementation specifically for writing a {@link org.cytoscape.view.model.CyNetworkView}.
  */
-public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetworkViewWriterManager> {
+public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetworkViewWriterFactory,CyNetworkViewWriterManager> {
 	// the view to be written
 	private final CyNetworkView view;
 

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.AbstractCyWriter;
 import org.cytoscape.io.write.CyWriterManager;
+import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -20,7 +21,7 @@ import org.cytoscape.work.util.ListSingleSelection;
  * is meant to be extended for specific file types such that the appropriate
  * {@link org.cytoscape.io.write.CyWriter} can be identified.
  */
-public abstract class TunableAbstractCyWriter<T extends CyWriterManager> extends AbstractCyWriter<T> implements
+public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extends CyWriterManager<S>> extends AbstractCyWriter<S,T> implements
 		TunableValidator {
 
 	/**

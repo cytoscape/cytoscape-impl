@@ -42,37 +42,22 @@ import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
 
-public class VizmapWriterFactoryImpl implements VizmapWriterFactory {
+public class VizmapWriterFactoryImpl extends AbstractCyWriterFactory implements VizmapWriterFactory {
 
-	private final CyFileFilter fileFilter;
 	private final VisualStyleSerializer visualStyleSerializer;
     private OutputStream outputStream;
 
     protected Set<VisualStyle> visualStyles;
 
     public VizmapWriterFactoryImpl(CyFileFilter fileFilter, VisualStyleSerializer visualStyleSerializer) {
-        this.fileFilter = fileFilter;
+        super(fileFilter);
         this.visualStyleSerializer = visualStyleSerializer;
     }
 
     @Override
-    public CyWriter getWriterTask() {
+    public CyWriter getWriterTask(OutputStream outputStream, Set<VisualStyle> styles) {
         return new VizmapWriterImpl(outputStream, visualStyleSerializer, visualStyles);
     }
-
-    @Override
-    public void setOutputStream(OutputStream os) {
-        this.outputStream = os;
-    }
-
-    @Override
-    public CyFileFilter getFileFilter() {
-        return fileFilter;
-    }
-
-	@Override
-	public void setVisualStyles(Set<VisualStyle> styles) {
-		this.visualStyles = styles;
-	}
 }

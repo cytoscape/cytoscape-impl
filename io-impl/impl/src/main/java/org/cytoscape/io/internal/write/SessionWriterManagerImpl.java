@@ -25,12 +25,11 @@ public class SessionWriterManagerImpl extends
 
 	@Override
 	public CyWriter getWriter(CySession session, CyFileFilter filter, OutputStream os) throws Exception {
-		CySessionWriterFactory factory = getMatchingFactory(filter, os);
+		CySessionWriterFactory factory = getMatchingFactory(filter);
 		if (factory == null) {
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
 		}
-		factory.setSession(session);
-		return factory.getWriterTask();
+		return factory.getWriterTask(os,session);
 	}
 
 }

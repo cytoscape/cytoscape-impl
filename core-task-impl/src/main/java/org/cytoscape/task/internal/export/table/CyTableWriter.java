@@ -5,6 +5,7 @@ import java.io.File;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyTableWriterManager;
+import org.cytoscape.io.write.CyTableWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
@@ -14,7 +15,7 @@ import org.cytoscape.work.Tunable;
 /**
  * A utility Task implementation specifically for writing {@link org.cytoscape.model.CyTable} objects.
  */
-public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterManager> {
+public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFactory,CyTableWriterManager> {
 
 	private final CyTable table;
 

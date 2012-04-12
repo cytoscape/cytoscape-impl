@@ -26,10 +26,9 @@ public class PresentationWriterManagerImpl extends AbstractWriterManager<Present
 	}
 
 	public CyWriter getWriter(View<?> view, RenderingEngine<?> re, CyFileFilter filter, OutputStream os) throws Exception {
-		PresentationWriterFactory tf = getMatchingFactory(filter,os);
+		PresentationWriterFactory tf = getMatchingFactory(filter);
 		if ( tf == null )
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
-		tf.setRenderingEngine(re);
-		return tf.getWriterTask();
+		return tf.getWriterTask(os,re);
 	}
 }

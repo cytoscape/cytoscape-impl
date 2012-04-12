@@ -59,13 +59,11 @@ public class VizmapWriterManagerImpl extends AbstractWriterManager<VizmapWriterF
 
 	@Override
 	public CyWriter getWriter(Set<VisualStyle> styles, CyFileFilter filter, OutputStream os) throws Exception {
-		VizmapWriterFactory vf = getMatchingFactory(filter, os);
+		VizmapWriterFactory vf = getMatchingFactory(filter);
 
         if (vf == null)
             throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
         
-        vf.setVisualStyles(styles);
-
-        return vf.getWriterTask();
+        return vf.getWriterTask(os,styles);
 	}
 }

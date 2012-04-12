@@ -24,12 +24,11 @@ public class CyNetworkViewWriterManagerImpl extends AbstractWriterManager<CyNetw
 
 	@Override
 	public CyWriter getWriter(CyNetworkView view, CyFileFilter filter, OutputStream os) throws Exception {
-		CyNetworkViewWriterFactory factory = getMatchingFactory(filter, os);
+		CyNetworkViewWriterFactory factory = getMatchingFactory(filter);
 		if (factory == null) {
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
 		}
-		factory.setNetworkView(view);
-		return factory.getWriterTask();
+		return factory.getWriterTask(os,view);
 	}
 
 	@Override
@@ -40,11 +39,10 @@ public class CyNetworkViewWriterManagerImpl extends AbstractWriterManager<CyNetw
 
 	@Override
 	public CyWriter getWriter(CyNetwork network, CyFileFilter filter, OutputStream os) throws Exception {
-		CyNetworkViewWriterFactory factory = getMatchingFactory(filter, os);
+		CyNetworkViewWriterFactory factory = getMatchingFactory(filter);
 		if (factory == null) {
 			throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
 		}
-		factory.setNetwork(network);
-		return factory.getWriterTask();
+		return factory.getWriterTask(os,network);
 	}
 }

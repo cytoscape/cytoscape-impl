@@ -11,10 +11,10 @@ import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CySession;
+import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
 
-public class SessionWriterFactoryImpl implements CySessionWriterFactory {
+public class SessionWriterFactoryImpl extends AbstractCyWriterFactory implements CySessionWriterFactory {
 	
-	private final CyFileFilter thisFilter;
 	private final CyFileFilter xgmmlFilter;
 	private final CyFileFilter bookmarksFilter;
 	private final CyFileFilter propertiesFilter;
@@ -42,7 +42,7 @@ public class SessionWriterFactoryImpl implements CySessionWriterFactory {
 	                                final CyPropertyWriterManager propertyWriterMgr,
 	                                final CyTableWriterManager tableWriterMgr,
 	                                final VizmapWriterManager vizmapWriterMgr) {
-		this.thisFilter = thisFilter;
+		super(thisFilter);
 		this.xgmmlFilter = xgmmlFilter;
 		this.bookmarksFilter = bookmarksFilter;
 		this.propertiesFilter = propertiesFilter;
@@ -56,24 +56,10 @@ public class SessionWriterFactoryImpl implements CySessionWriterFactory {
 	}
 	
 	@Override
-	public CyWriter getWriterTask() {
+	public CyWriter getWriterTask(OutputStream outputStream, CySession session) {
 		return new SessionWriterImpl(outputStream, session, networkViewWriterMgr, rootNetworkManager,
 		                             propertyWriterMgr, tableWriterMgr, vizmapWriterMgr, xgmmlFilter,
 		                             bookmarksFilter, propertiesFilter, tableFilter, vizmapFilter);
 	}
 
-	@Override
-	public void setOutputStream(OutputStream outputStream) {
-		this.outputStream = outputStream;
-	}
-
-	@Override
-	public CyFileFilter getFileFilter() {
-		return thisFilter;
-	}
-
-	@Override
-	public void setSession(CySession session) {
-		this.session = session;
-	}
 }

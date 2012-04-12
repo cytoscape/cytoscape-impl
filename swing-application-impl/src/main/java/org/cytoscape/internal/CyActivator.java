@@ -156,8 +156,6 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
 		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc,
 		                                                                   CySessionReaderManager.class);
-		CyPropertyWriterManager propertyWriterManagerRef = getService(bc,
-		                                                              CyPropertyWriterManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,
 		                                                                 CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
@@ -183,7 +181,6 @@ public class CyActivator extends AbstractCyActivator {
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
 		RedoAction redoAction = new RedoAction(undoSupportServiceRef);
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(dialogTaskManagerServiceRef,
-		                                                                              propertyWriterManagerRef,
 		                                                                              cyApplicationConfigurationServiceRef);
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
 		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyEventHelperServiceRef);

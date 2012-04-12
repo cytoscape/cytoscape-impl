@@ -1,7 +1,6 @@
 package org.cytoscape.io.internal.write;
 
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWriterManager {
+public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWriterManager<T> {
 	protected final DataCategory category; 
 	protected final Map<CyFileFilter,T> factories;
 	private static final Logger logger = LoggerFactory.getLogger( AbstractWriterManager.class ); 
@@ -43,12 +42,11 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 		factories.remove(factory.getFileFilter());
 	}
 
-	public T getMatchingFactory(CyFileFilter filter, OutputStream stream) {
+	public T getMatchingFactory(CyFileFilter filter) {
 		for (T factory : factories.values()) {
 			CyFileFilter cff = factory.getFileFilter();
 			if ( filter.equals(cff) ) {
 				logger.debug("found factory for file filter: " + filter.toString());
-				factory.setOutputStream(stream);
 				return factory;
 			}
 		}

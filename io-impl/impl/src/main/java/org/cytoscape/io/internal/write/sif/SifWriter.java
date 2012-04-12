@@ -9,7 +9,6 @@ import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 
 public class SifWriter implements CyWriter {
@@ -21,9 +20,9 @@ public class SifWriter implements CyWriter {
 	private OutputStream outputStream;
 	private CyNetwork network;
 
-	public SifWriter(OutputStream outputStream, CyNetworkView view) {
+	public SifWriter(OutputStream outputStream, CyNetwork network) {
 		this.outputStream = outputStream;
-		this.network = view.getModel();
+		this.network = network; 
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.io.write.PresentationWriterFactory;
 
 import java.io.File;
 
@@ -16,7 +17,7 @@ import java.io.File;
  * A utility Task implementation that will write the specified View to the
  * the specified image file using the specified RenderingEngine.
  */
-public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriterManager> {
+public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriterFactory,PresentationWriterManager> {
 	private final View<?> view;
 	private final RenderingEngine<?> re;
 
