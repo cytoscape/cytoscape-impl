@@ -35,13 +35,12 @@
 package org.cytoscape.view.vizmap.internal;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -92,7 +91,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 		this.lexManager = lexManager;
 
 		visualStyles = new HashSet<VisualStyle>();
-		network2VisualStyleMap = new HashMap<CyNetworkView, VisualStyle>();
+		network2VisualStyleMap = new WeakHashMap<CyNetworkView, VisualStyle>();
 
 		this.defaultStyle = buildGlobalDefaultStyle(factory);
 		this.visualStyles.add(defaultStyle);

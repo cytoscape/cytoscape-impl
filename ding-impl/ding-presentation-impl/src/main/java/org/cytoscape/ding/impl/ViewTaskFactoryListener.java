@@ -1,7 +1,9 @@
 package org.cytoscape.ding.impl;
 
+import java.lang.ref.Reference;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
@@ -13,7 +15,7 @@ import org.cytoscape.view.model.CyNetworkView;
 
 public class ViewTaskFactoryListener {
 
-	final Map<CyNetworkView, DGraphView> viewMap;
+	final Map<CyNetworkView, Reference<DGraphView>> viewMap;
 	final Map<NodeViewTaskFactory, Map> nodeViewTFs;
 	final Map<EdgeViewTaskFactory, Map> edgeViewTFs;
 	final Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
@@ -23,7 +25,7 @@ public class ViewTaskFactoryListener {
 
 
 	public ViewTaskFactoryListener(){
-		viewMap = new HashMap<CyNetworkView, DGraphView>();
+		viewMap = new WeakHashMap<CyNetworkView, Reference<DGraphView>>();
 		nodeViewTFs = new HashMap<NodeViewTaskFactory, Map>();
 		edgeViewTFs = new HashMap<EdgeViewTaskFactory, Map>();
 		emptySpaceTFs = new HashMap<NetworkViewTaskFactory, Map>();

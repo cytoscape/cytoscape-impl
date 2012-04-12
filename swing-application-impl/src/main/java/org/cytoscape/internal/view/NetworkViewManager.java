@@ -59,7 +59,6 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -322,6 +321,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				RenderingEngine<CyNetwork> removed = this.presentationMap.remove(view);
 				logger.debug("#### Removing rendering engine: " + removed);
 				removed = null;
+				iFrameMap.remove(frame);
+				presentationContainerMap.remove(view);
 				frame.dispose();
 			}
 		} catch (Exception e) {

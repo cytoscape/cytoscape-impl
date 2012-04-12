@@ -2,6 +2,8 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.BorderLayout;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Properties;
 
 import javax.swing.JComponent;
@@ -117,7 +119,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());
-			vtfListener.viewMap.put(targetView, dgv);
+			vtfListener.viewMap.put(targetView, new WeakReference<DGraphView>(dgv));
 
 			if (presentationContainer instanceof JInternalFrame) {
 				final JInternalFrame inFrame = (JInternalFrame) presentationContainer;
@@ -156,7 +158,11 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 //	}
 
 	public DGraphView getGraphView(CyNetworkView cnv) {
-		return vtfListener.viewMap.get(cnv);
+		Reference<DGraphView> reference = vtfListener.viewMap.get(cnv);
+		if (reference == null) {
+			return null;
+		}
+		return reference.get();
 	}
 	
 	

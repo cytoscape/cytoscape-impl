@@ -9,13 +9,15 @@ import java.util.Set;
 
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RenderingEngineManagerImpl implements RenderingEngineManager {
+public class RenderingEngineManagerImpl implements RenderingEngineManager, NetworkViewAboutToBeDestroyedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(RenderingEngineManagerImpl.class);
 
@@ -79,7 +81,6 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 		final View<?> viewModel = renderingEngine.getViewModel();
 		final Collection<RenderingEngine<?>> currentEngines = renderingEngineMap.get(viewModel);
 		currentEngines.remove(renderingEngine);
-		this.renderingEngineMap.put(viewModel, currentEngines);
 	}
 	
 
@@ -127,4 +128,8 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager {
 
 	}
 
+	@Override
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+		renderingEngineMap.remove(e.getNetworkView());
+	}
 }

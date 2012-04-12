@@ -118,6 +118,10 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		boolean changed = false;
 
 		synchronized (this) {
+			List<CyNetwork> removals = new LinkedList<CyNetwork>();
+			removals.add(toBeDestroyed);
+			selectedNetworks.removeAll(removals);
+			
 			if (toBeDestroyed == currentNetwork) {
 				changed = true;
 				currentNetwork = null;
@@ -159,6 +163,10 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		boolean changed = false;
 
 		synchronized (this) {
+			List<CyNetworkView> removals = new LinkedList<CyNetworkView>();
+			removals.add(toBeDestroyed);
+			selectedNetworkViews.removeAll(removals);
+
 			if (toBeDestroyed == currentNetworkView) {
 				changed = true;
 				currentNetworkView = null;
