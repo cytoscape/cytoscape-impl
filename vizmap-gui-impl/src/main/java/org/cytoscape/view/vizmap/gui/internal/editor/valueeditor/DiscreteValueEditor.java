@@ -61,7 +61,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.VisualPropertyValue;
+import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.jdesktop.swingx.border.DropShadowBorder;
 
