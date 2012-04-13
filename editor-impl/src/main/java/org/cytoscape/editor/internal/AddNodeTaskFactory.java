@@ -4,7 +4,6 @@ package org.cytoscape.editor.internal;
 import java.awt.geom.Point2D;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.AbstractNetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -26,7 +25,4 @@ public class AddNodeTaskFactory extends AbstractNetworkViewLocationTaskFactory{
 		// TODO Auto-generated method stub
 		return new TaskIterator(new AddNodeTask(vmm, networkView, xformPt, eh));
 	}
-	
 }
-
-

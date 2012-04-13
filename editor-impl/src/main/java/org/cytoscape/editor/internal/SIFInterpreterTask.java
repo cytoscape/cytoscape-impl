@@ -1,18 +1,18 @@
 
 package org.cytoscape.editor.internal;
 
-import org.cytoscape.task.AbstractNetworkViewTask;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SIFInterpreterTask extends AbstractNetworkViewTask {
 	private CyNetwork network;

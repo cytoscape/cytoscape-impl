@@ -17,16 +17,12 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class AddNestedNetworkTask extends AbstractNodeViewTask {
 
 	private final VisualMappingManager vmMgr;
 	
-	private static final Logger logger = LoggerFactory.getLogger(AddNestedNetworkTask.class);
-
 	@Tunable(description="Network")
 	public ListSingleSelection<CyNetwork> nestedNetwork;
 
