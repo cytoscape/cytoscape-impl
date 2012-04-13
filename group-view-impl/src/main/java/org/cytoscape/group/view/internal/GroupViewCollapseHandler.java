@@ -150,6 +150,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			Dimension d = getLocation(rootNetwork, group.getGroupNode());
 			// Move it.
 			moveNode(view, group.getGroupNode(), d);
+			View<CyNode> nView = view.getNodeView(group.getGroupNode());
 
 			if (cyGroupSettings.getUseNestedNetworks(group)) {
 				// Now, if we're displaying the nested network, create it....
@@ -165,8 +166,14 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				viewStyle.apply(nnView);
 				nnView.updateView();
 				*/
-			}
 
+				// Allow the nested network image to be displayed
+				nView.clearValueLock(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+			} else {
+				// Make sure the nested network image is not displayed
+				nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, Boolean.FALSE);
+			}
+			
 			// Handle opacity
 			double opacity = cyGroupSettings.getGroupNodeOpacity(group);
 
@@ -178,7 +185,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			if (!cyGroupSettings.getHideGroupNode(group)) {
 			}
 		}
+		
 		viewStyle.apply(view);
+		view.updateView();
 	}
 
 	private Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {
