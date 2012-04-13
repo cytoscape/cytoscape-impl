@@ -54,14 +54,12 @@ import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.xml.soap.Text;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.jdesktop.swingx.border.DropShadowBorder;
 

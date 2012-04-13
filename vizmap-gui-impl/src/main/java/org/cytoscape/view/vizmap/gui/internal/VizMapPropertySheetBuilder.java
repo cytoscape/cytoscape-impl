@@ -35,6 +35,7 @@ import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPr
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyFilter;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
+import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

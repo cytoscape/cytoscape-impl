@@ -78,6 +78,7 @@ import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedEvent;
 import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedListener;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyFilter;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
+import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.jdesktop.swingx.JXList;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.border.DropShadowBorder;
