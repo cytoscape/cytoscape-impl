@@ -14,7 +14,7 @@
 	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>biopax-impl</artifactId>
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+	<name>Cytoscape BioPAX Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 	
 	<dependencies>

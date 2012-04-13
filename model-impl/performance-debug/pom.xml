@@ -16,7 +16,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>model-impl-performance-debug</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+    <name>Cytoscape Model Impl Performance Debug (${project.artifactId})</name>
 
 	<packaging>jar</packaging>
 

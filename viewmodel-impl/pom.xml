@@ -9,7 +9,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>viewmodel-impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<name>viewmodel-impl-parent</name>
+    <name>Cytoscape View Model Impl Parent (${project.artifactId})</name>
 
 	<modules>
 		<module>impl</module>

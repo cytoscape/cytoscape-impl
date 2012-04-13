@@ -15,7 +15,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>linkout-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+	<name>Cytoscape Linkout Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

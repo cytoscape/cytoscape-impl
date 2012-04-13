@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>scripting-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+    <name>Cytoscape Scripting Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

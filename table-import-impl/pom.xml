@@ -15,7 +15,7 @@
 		<bundle.namespace>org.cytoscape.tableimport.internal</bundle.namespace>
 	</properties>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+    <name>Cytoscape Table Import Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

@@ -17,7 +17,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>webservice-biomart-client-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+    <name>Cytoscape Biomart Webservice Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

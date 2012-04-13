@@ -18,7 +18,7 @@
 	</properties>
 
 	<packaging>bundle</packaging>
-	<name>GraphML Reader and Writer for Cytoscape 3</name>
+	<name>Cytoscape GraphML Impl (${project.artifactId})</name>
 	<url>https://github.com/kozo2/graphmlreader</url>
 
 	<repositories>

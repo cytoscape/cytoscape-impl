@@ -16,7 +16,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>log-swing-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+	<name>Cytoscape Log Swing Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

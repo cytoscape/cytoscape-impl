@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>work-swing-impl-it</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+    <name>Cytoscape Work Swing Impl IT (${project.artifactId})</name>
 
 	<packaging>jar</packaging>
 

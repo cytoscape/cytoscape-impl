@@ -17,7 +17,7 @@
 	<artifactId>layout-jgraph-impl</artifactId>
 	<version>3.0.0-alpha8-SNAPSHOT</version>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+    <name>Cytoscape JGraph Layout Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

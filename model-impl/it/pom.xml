@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>model-impl-it</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+    <name>Cytoscape Model Impl IT (${project.artifactId})</name>
 
 	<packaging>jar</packaging>
 

@@ -8,7 +8,7 @@
 
 	<artifactId>network-analyzer-impl</artifactId>
 	<packaging>bundle</packaging>
-	<name>NetworkAnalyzer</name>
+    <name>Cytoscape NetworkAnalyzer Impl (${project.artifactId})</name>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.network-analyzer-impl</bundle.symbolicName>

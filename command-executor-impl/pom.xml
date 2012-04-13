@@ -15,7 +15,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>command-executor-impl</artifactId>
 
-	<name>Command Executor</name>
+	<name>Cytoscape Command Executor Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

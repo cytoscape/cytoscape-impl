@@ -16,7 +16,7 @@
   <groupId>org.cytoscape</groupId>
   <artifactId>layout-impl</artifactId>
 
-  <name>${bundle.symbolicName}</name>
+  <name>Cytoscape Layout Impl (${project.artifactId})</name>
 
 
   <packaging>bundle</packaging>

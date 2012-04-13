@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>io-impl-performance</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+	<name>Cytoscape IO Impl Performance (${project.artifactId})</name>
 
 	<packaging>jar</packaging>
 

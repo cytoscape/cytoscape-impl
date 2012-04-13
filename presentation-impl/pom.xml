@@ -16,7 +16,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>presentation-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+    <name>Cytoscape Presentation Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

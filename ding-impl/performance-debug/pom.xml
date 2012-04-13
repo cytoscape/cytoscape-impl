@@ -16,7 +16,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>ding-impl-performance-debug</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+	<name>Cytoscape Ding View/Presentation Impl Performance (${project.artifactId})</name>
 
 	<packaging>jar</packaging>
 

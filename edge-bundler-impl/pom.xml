@@ -13,7 +13,7 @@
 	</properties>
 
 	<artifactId>edge-bundler-impl</artifactId>
-	<name>${bundle.symbolicName}</name>
+	<name>Cytoscape Edge Bundler Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
   

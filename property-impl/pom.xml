@@ -16,7 +16,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>property-impl</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+    <name>Cytoscape Property Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

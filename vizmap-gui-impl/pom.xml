@@ -16,7 +16,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>vizmap-gui-impl</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+    <name>Cytoscape VizMap GUI Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

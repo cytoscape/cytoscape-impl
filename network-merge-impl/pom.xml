@@ -9,7 +9,7 @@
   <artifactId>network-merge-impl</artifactId>
   <packaging>bundle</packaging>
 
-  <name>CyMerge</name>
+  <name>Cytoscape Merge Impl (${project.artifactId})</name>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.network-merge-impl</bundle.symbolicName>

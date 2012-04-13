@@ -16,7 +16,7 @@
   <groupId>org.cytoscape</groupId>
   <artifactId>layout-prefuse-impl</artifactId>
 
-  <name>${bundle.symbolicName} [${bundle.namespace}]</name>
+  <name>Cytoscape Prefuse Layout Impl (${project.artifactId})</name>
 
   <packaging>bundle</packaging>
 

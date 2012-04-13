@@ -8,7 +8,7 @@
 
 	<artifactId>psi-mi-impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<name>psi-mi-impl-parent</name>
+    <name>Cytoscape PSI-MI Impl Parent (${project.artifactId})</name>
 
 	<modules>
 		<module>impl</module>

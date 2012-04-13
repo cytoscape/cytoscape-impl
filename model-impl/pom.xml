@@ -8,7 +8,7 @@
 
 	<artifactId>model-impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<name>model-impl-parent</name>
+    <name>Cytoscape Model Impl Parent (${project.artifactId})</name>
 
 	<modules>
 		<module>impl</module>

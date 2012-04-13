@@ -8,7 +8,7 @@
 
   <artifactId>manual-layout-impl</artifactId>
   <packaging>bundle</packaging>
-  <name>Manual Layout</name>
+  <name>Cytoscape Manual Layout Impl (${project.artifactId})</name>
 
   <properties>
     <bundle.symbolicName>org.cytoscape.manual-layout-impl</bundle.symbolicName>

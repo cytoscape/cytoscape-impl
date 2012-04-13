@@ -16,7 +16,7 @@
 		<bundle.namespace>org.cytoscape.search.internal</bundle.namespace>
 	</properties>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+    <name>Cytoscape Search Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

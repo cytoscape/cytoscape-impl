@@ -13,9 +13,8 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>psi-mi-impl-performance</artifactId>
-
-	<name>${bundle.symbolicName}</name>
+	<artifactId>psi-mi-impl-performance</artifactId>	
+    <name>Cytoscape PSI-MI Impl Performance (${project.artifactId})</name>
 
 	<packaging>jar</packaging>
 

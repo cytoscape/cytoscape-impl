@@ -14,7 +14,7 @@
   <groupId>org.cytoscape</groupId>
   <artifactId>group-view-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+   <name>Cytoscape Group View Impl (${project.artifactId})</name>
 
   <packaging>bundle</packaging>
 

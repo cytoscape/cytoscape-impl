@@ -11,7 +11,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>ding-impl</artifactId>
 	<packaging>pom</packaging>
-	<name>Ding Implementation Parent Pom</name>
+	<name>Cytoscape Ding Impl Parent (${project.artifactId})</name>
 
 	<modules>
 		<module>ding-presentation-impl</module>

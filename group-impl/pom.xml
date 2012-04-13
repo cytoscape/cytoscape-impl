@@ -15,7 +15,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>group-impl</artifactId>
 
-	<name>${bundle.symbolicName} [${bundle.namespace}]</name>
+    <name>Cytoscape Groups Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

@@ -9,7 +9,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>event-impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<name>event-impl-parent</name>
+	<name>Cytoscape Event Impl Parent (${project.artifactId})</name>
 
 	<modules>
 		<module>impl</module>

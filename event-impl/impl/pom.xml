@@ -16,7 +16,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>event-impl</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+	<name>Cytoscape Event Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

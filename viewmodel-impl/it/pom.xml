@@ -16,7 +16,7 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>viewmodel-impl-it</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+    <name>Cytoscape View Model Impl IT (${project.artifactId})</name>
 
 	<packaging>jar</packaging>
 

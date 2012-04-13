@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>core-task-impl</artifactId>
 
-	<name>${bundle.symbolicName}</name>
+	<name>Cytoscape Core Task Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 
