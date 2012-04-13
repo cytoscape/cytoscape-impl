@@ -60,6 +60,8 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.InputMap;
+import javax.swing.KeyStroke;
 
 class TaskDialog extends JDialog {
 
@@ -255,7 +257,7 @@ class TaskDialog extends JDialog {
 
 	void initComponents() {
 		//Set the button that has focus as default button. Thereby, enter key will activate that button.
-		UIManager.put("Button.defaultButtonFollowsFocus", Boolean.TRUE);
+		//UIManager.put("Button.defaultButtonFollowsFocus", Boolean.TRUE);
 		initTextArea(descriptionLabel);
 		initTextArea(descriptionLabel2);
 		initTextArea(statusLabel);
@@ -271,6 +273,11 @@ class TaskDialog extends JDialog {
 				cancel();
 			}
 		});
+		
+		//Patch to make sure key enter is working on the focus button for any OS
+		InputMap im = (InputMap)UIManager.get("Button.focusInputMap");
+	    im.put( KeyStroke.getKeyStroke( "ENTER" ), "pressed" );
+	    im.put( KeyStroke.getKeyStroke( "released ENTER" ), "released" );
 
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
