@@ -1,26 +1,31 @@
 package org.cytoscape.editor.internal;
 
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 
 public class DeleteNestedNetworkTaskFactory extends AbstractNodeViewTaskFactory {
 	final CyNetworkManager netMgr;
-	final SelectedVisualStyleManager svsmMgr;
+	final VisualMappingManager vmMgr;
+	final CyGroupManager grMgr;
 
-	public DeleteNestedNetworkTaskFactory(final CyNetworkManager netMgr, final SelectedVisualStyleManager svsmMgr) {
+	public DeleteNestedNetworkTaskFactory(final CyNetworkManager netMgr,
+										  final VisualMappingManager vmMgr,
+										  final CyGroupManager grMgr) {
 		this.netMgr = netMgr;
-		this.svsmMgr = svsmMgr;
+		this.vmMgr = vmMgr;
+		this.grMgr = grMgr;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(new DeleteNestedNetworkTask(nodeView, networkView, netMgr, svsmMgr));
+		return new TaskIterator(new DeleteNestedNetworkTask(nodeView, networkView, netMgr, vmMgr));
 	}
 
 	@Override
@@ -32,8 +37,9 @@ public class DeleteNestedNetworkTaskFactory extends AbstractNodeViewTaskFactory 
 		// Nodes with unregistered network pointers should be ignored because they are probably being used as something
 		// else other than regular nested networks (e.g. groups).
 		final CyNode node  = nodeView.getModel();
-		final CyNetwork netPointer = node.getNetworkPointer();
+		final CyNetwork np = node.getNetworkPointer();
+		final CyNetwork network = networkView.getModel();
 		
-		return netPointer != null && netMgr.networkExists(netPointer.getSUID());
+		return np != null && netMgr.networkExists(np.getSUID()) && !grMgr.isGroup(node, network);
 	}
 }

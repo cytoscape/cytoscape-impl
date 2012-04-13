@@ -2,15 +2,17 @@ package org.cytoscape.editor.internal;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -21,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 public class AddNestedNetworkTask extends AbstractNodeViewTask {
 
-	private final SelectedVisualStyleManager svsmMgr;
+	private final VisualMappingManager vmMgr;
 	
 	private static final Logger logger = LoggerFactory.getLogger(AddNestedNetworkTask.class);
 
@@ -36,24 +38,26 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 	public AddNestedNetworkTask(final View<CyNode> nv,
 								final CyNetworkView view,
 								final CyNetworkManager mgr,
-								final SelectedVisualStyleManager svsmMgr) {
+								final VisualMappingManager vmMgr,
+								final CyGroupManager grMgr) {
 		super(nv,view);
-		this.svsmMgr = svsmMgr;
+		this.vmMgr = vmMgr;
 		
-		nestedNetwork = new ListSingleSelection<CyNetwork>(new ArrayList<CyNetwork>(mgr.getNetworkSet()));
+		final List<CyNetwork> networks = new ArrayList<CyNetwork>(mgr.getNetworkSet());
+		nestedNetwork = new ListSingleSelection<CyNetwork>(networks);
 		final CyNetwork netPointer = nodeView.getModel().getNetworkPointer();
 		
-		if (netPointer != null)
+		if (netPointer != null && networks.contains(netPointer))
 			nestedNetwork.setSelectedValue(netPointer);
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		final CyNode n = nodeView.getModel();
-		n.setNetworkPointer(nestedNetwork.getSelectedValue());
+		final CyNode node = nodeView.getModel();
+		node.setNetworkPointer(nestedNetwork.getSelectedValue());
 		
-		nodeView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, Boolean.TRUE);
-		svsmMgr.getCurrentVisualStyle().apply(netView);
+		final VisualStyle style = vmMgr.getVisualStyle(netView);
+		style.apply(netView);
 		netView.updateView();
 	}
 }

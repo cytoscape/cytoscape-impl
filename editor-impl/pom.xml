@@ -97,7 +97,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>vizmap-gui-api</artifactId>
+			<artifactId>group-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

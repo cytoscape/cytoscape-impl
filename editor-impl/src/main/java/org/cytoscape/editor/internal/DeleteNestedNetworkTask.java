@@ -6,8 +6,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,16 +15,16 @@ import org.slf4j.LoggerFactory;
 
 public class DeleteNestedNetworkTask extends AbstractNodeViewTask {
 
-	private final SelectedVisualStyleManager svsmMgr;
+	private final VisualMappingManager vmMgr;
 	
 	private static final Logger logger = LoggerFactory.getLogger(DeleteNestedNetworkTask.class);
 	
 	public DeleteNestedNetworkTask(final View<CyNode> nv,
 								   final CyNetworkView view,
 								   final CyNetworkManager mgr,
-								   final SelectedVisualStyleManager svsmMgr) {
+								   final VisualMappingManager vmMgr) {
 		super(nv,view);
-		this.svsmMgr = svsmMgr;
+		this.vmMgr = vmMgr;
 	}
 
 	@Override
@@ -32,8 +32,8 @@ public class DeleteNestedNetworkTask extends AbstractNodeViewTask {
 		final CyNode n = nodeView.getModel();
 		n.setNetworkPointer(null);
 		
-		nodeView.clearValueLock(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
-		svsmMgr.getCurrentVisualStyle().apply(netView);
+		final VisualStyle style = vmMgr.getVisualStyle(netView);
+		style.apply(netView);
 		netView.updateView();
 	}
 }

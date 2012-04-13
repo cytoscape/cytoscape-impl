@@ -5,13 +5,13 @@ package org.cytoscape.editor.internal;
 import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.osgi.framework.BundleContext;
 
 
@@ -24,13 +24,13 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
-		VisualMappingManager vmm = getService(bc,VisualMappingManager.class);
-		SelectedVisualStyleManager selectedVisualStyleManagerServiceRef = getService(bc,SelectedVisualStyleManager.class);
+		VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
+		CyGroupManager cyGroupManagerServiceRef = getService(bc,CyGroupManager.class);
 
 		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
-		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, vmm);
-		NodeViewTaskFactory addNestedNetworkTaskFactory = new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef, selectedVisualStyleManagerServiceRef);
-		NodeViewTaskFactory deleteNestedNetworkTaskFactory = new DeleteNestedNetworkTaskFactory(cyNetworkManagerServiceRef, selectedVisualStyleManagerServiceRef);
+		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
+		NodeViewTaskFactory addNestedNetworkTaskFactory = new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
+		NodeViewTaskFactory deleteNestedNetworkTaskFactory = new DeleteNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
 			
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty("enableFor", "networkAndView");
