@@ -43,8 +43,6 @@ public class WebServiceImportDialog<T> extends JDialog {
 	private static final Icon DEF_ICON = new ImageIcon(
 			WebServiceImportDialog.class.getResource("/images/stock_internet-32.png"));
 
-//	private static final Icon NETWORK_IMPORT_ICON = new ImageIcon(
-//			WebServiceImportDialog.class.getResource("/images/networkImportIcon.png"));
 	private static final String NO_CLIENT = "No Service Client";
 
 	private JButton cancelButton;

@@ -47,9 +47,4 @@ public class NCBITableImportClient extends AbstractWebServiceClient implements T
 			                            networkManager, applicationManager, tableManager,
 										cyRootNetworkFactory));
 	}
-
-	@Override
-	public Set<CyTable> getTables() {
-		return null;
-	}
 }

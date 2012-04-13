@@ -14,7 +14,6 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>webservice-biomart-client-impl</artifactId>
 
     <name>Cytoscape Biomart Webservice Impl (${project.artifactId})</name>

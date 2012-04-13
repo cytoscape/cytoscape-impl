@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implements NetworkImportWebServiceClient,
-		SearchWebServiceClient<Set<String>> {
+		SearchWebServiceClient {
 
 	private static final Logger logger = LoggerFactory.getLogger(PSICQUICWebServiceClient.class);
 
@@ -43,7 +43,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private RegistryManager regManager;
 	private final CyNetworkManager networkManager;
 
-	private final TaskManager tManager;
+	private final TaskManager<?, ?> tManager;
 
 	private ImportNetworkFromPSICQUICTask networkTask;
 	private final NetworkTaskFactory createViewTaskFactory;
@@ -53,7 +53,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private final OpenBrowser openBrowser;
 
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
-			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager, final TaskManager tManager,
+			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager, final TaskManager<?, ?> tManager,
 			final NetworkTaskFactory createViewTaskFactory, final OpenBrowser openBrowser) {
 		super(uri, displayName, description);
 
@@ -124,16 +124,6 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		}
 	}
 
-	public Set<CyNetwork> getNetworks() {
-		if (networkTask != null)
-			return networkTask.getNetworks();
-		else
-			return new HashSet<CyNetwork>();
-	}
-
-	public Set<String> getSearchResult() {
-		return null;
-	}
 
 	private static final class InitRegistryManagerTask implements Callable<RegistryManager> {
 		@Override

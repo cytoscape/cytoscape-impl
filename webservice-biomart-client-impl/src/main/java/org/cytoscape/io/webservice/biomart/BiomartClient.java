@@ -35,7 +35,6 @@ import javax.naming.ConfigurationException;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.io.webservice.biomart.task.ImportTableTask;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
@@ -53,7 +52,8 @@ import org.osgi.framework.ServiceException;
  * Biomart Web Service Client.
  * 
  */
-public class BiomartClient extends AbstractWebServiceGUIClient implements TableImportWebServiceClient {
+public class BiomartClient extends AbstractWebServiceGUIClient {
+	
 	private final CyTableFactory tableFactory;
 	private final BiomartRestClient restClient;
 	private ImportTableTask importTask;
@@ -95,14 +95,6 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 		return this.restClient;
 	}
 
-	@Override
-	public Set<CyTable> getTables() {
-		// Return empty task if not executed yet.
-		if (importTask == null)
-			return new HashSet<CyTable>();
-		else
-			return importTask.getCyTables();
-	}
 
 	@Override
 	public TaskIterator createTaskIterator(Object query) {

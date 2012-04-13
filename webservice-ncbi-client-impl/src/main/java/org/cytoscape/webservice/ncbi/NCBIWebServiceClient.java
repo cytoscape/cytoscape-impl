@@ -1,6 +1,5 @@
 package org.cytoscape.webservice.ncbi;
 
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,10 +14,8 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.webservice.ncbi.task.ImportNetworkFromGeneTask;
 import org.cytoscape.work.TaskIterator;
 
-
-public class NCBIWebServiceClient extends AbstractWebServiceClient
-	implements NetworkImportWebServiceClient, SearchWebServiceClient<Set<String>>
-{
+public class NCBIWebServiceClient extends AbstractWebServiceClient implements NetworkImportWebServiceClient,
+		SearchWebServiceClient {
 	private final CyNetworkFactory networkFactory;
 	private final CyTableFactory tableFactory;
 	private final CyNetworkManager manager;
@@ -26,17 +23,15 @@ public class NCBIWebServiceClient extends AbstractWebServiceClient
 
 	private ImportNetworkFromGeneTask networkTask;
 
-	public NCBIWebServiceClient(final String uri, final String displayName,
-	                            final String description, final CyNetworkFactory networkFactory,
-	                            final CyTableFactory tableFactory, 
-	                            final CyNetworkManager manager, final CyTableManager tableManager)
-	{
+	public NCBIWebServiceClient(final String uri, final String displayName, final String description,
+			final CyNetworkFactory networkFactory, final CyTableFactory tableFactory, final CyNetworkManager manager,
+			final CyTableManager tableManager) {
 		super(uri, displayName, description);
 
 		this.networkFactory = networkFactory;
-		this.manager        = manager;
-		this.tableFactory   = tableFactory;
-		this.tableManager   = tableManager;
+		this.manager = manager;
+		this.tableFactory = tableFactory;
+		this.tableManager = tableManager;
 	}
 
 	@Override
@@ -44,27 +39,9 @@ public class NCBIWebServiceClient extends AbstractWebServiceClient
 		if (query == null)
 			throw new NullPointerException("Query object is null.");
 		else {
-			networkTask = new ImportNetworkFromGeneTask(query.toString(),
-			                                            networkFactory, tableFactory,
-			                                            manager, tableManager);
+			networkTask = new ImportNetworkFromGeneTask(query.toString(), networkFactory, tableFactory, manager,
+					tableManager);
 			return new TaskIterator(networkTask);
 		}
-	}
-
-	@Override
-	public Set<CyNetwork> getNetworks() {
-		final Set<CyNetwork> result = new HashSet<CyNetwork>();
-		if (networkTask != null) {
-			final CyNetwork network = networkTask.getNetwork();
-			if (network != null)
-				result.add(network);
-		}
-		return result;
-	}
-
-	@Override
-	public Set<String> getSearchResult() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

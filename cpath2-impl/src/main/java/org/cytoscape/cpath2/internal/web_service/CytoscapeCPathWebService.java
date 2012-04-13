@@ -28,7 +28,7 @@ import org.cytoscape.work.Tunable;
  * CPath Web Service, integrated into the Cytoscape Web Services Framework.
  */
 public class CytoscapeCPathWebService extends AbstractWebServiceGUIClient 
-	implements NetworkImportWebServiceClient, SearchWebServiceClient<Object> 
+	implements NetworkImportWebServiceClient, SearchWebServiceClient 
 {
     // Display name of this client.
     private static final String DISPLAY_NAME = CPathProperties.getInstance().getCPathServerName() +
@@ -75,17 +75,6 @@ public class CytoscapeCPathWebService extends AbstractWebServiceGUIClient
     	return mainPanel;
     }
     
-    @Override
-    public Set<CyNetwork> getNetworks() {
-    	// TODO Auto-generated method stub
-    	return null;
-    }
-    
-    @Override
-    public Object getSearchResult() {
-    	// TODO Auto-generated method stub
-    	return null;
-    }
     
     @Override
     public TaskIterator createTaskIterator(Object query) {

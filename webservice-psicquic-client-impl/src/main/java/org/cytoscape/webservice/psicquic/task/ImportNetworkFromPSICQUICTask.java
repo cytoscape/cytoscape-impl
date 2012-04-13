@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -113,15 +114,9 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			networks.add(network);
 		}		
 
-		if (!canceled) {
-			int retValue = JOptionPane.showConfirmDialog(null, "Do you want to create views?");
-			if (retValue == JOptionPane.YES_OPTION) {
-				// Create View
-				for (final CyNetwork network : networks) {
-					insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(network));
-				}
-			}
-		}
+		if (!canceled)
+			for (final CyNetwork network : networks)
+				insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(network));
 	}
 	
 	@Override
