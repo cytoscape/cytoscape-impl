@@ -1,27 +1,26 @@
 package org.cytoscape.internal.select;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.model.CyRow;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import java.util.Collection;
-import java.util.Iterator;
-import org.cytoscape.application.CyApplicationManager;
 
 
 public class RowsSetViewUpdater implements RowsSetListener {
@@ -51,80 +50,70 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	@SuppressWarnings("unchecked")
 	public void handleEvent(final RowsSetEvent e) {
 
-		SwingUtilities.invokeLater( new Runnable() {
-		public void run() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
 
-		boolean refreshView = false;
-		CyNetwork network = am.getCurrentNetwork();		
-		if ( network == null )
-			return;
-		
-		final Collection<CyNetworkView> views = vm.getNetworkViews(network);
-		CyNetworkView networkView = null;
-		if(views.size() != 0)
-			networkView = views.iterator().next();
-		
-		if ( networkView == null )
-			return;
+				boolean refreshView = false;
+				final CyNetwork network = am.getCurrentNetwork();
+				if (network == null)
+					return;
 
-		VisualStyle vs = vmm.getVisualStyle(networkView);
+				final Collection<CyNetworkView> views = vm.getNetworkViews(network);
+				CyNetworkView networkView = null;
+				if (views.size() != 0)
+					networkView = views.iterator().next();
 
-		VisualProperty<?> vp = null;
-		
-		for (RowSetRecord record : e.getPayloadCollection()) {
+				if (networkView == null)
+					return;
 
-			String columnName = record.getColumn();
+				final VisualStyle vs = vmm.getVisualStyle(networkView);
+				
+				for (final RowSetRecord record : e.getPayloadCollection()) {
+					final String columnName = record.getColumn();
+					final View<?> v = rowViewMap.get(record.getRow());
 
-			View<?> v = rowViewMap.get(record.getRow());
-			
-			if (v == null){
-				return;
-			}
-			
-			if (v.getModel() instanceof CyNode){
-				CyNode node = (CyNode) v.getModel();
-				if (network.containsNode(node)){
-					vp = getVPfromVS(vs, columnName);
+					if (v == null)
+						continue;
+
+					VisualProperty<?> vp = null;
+					if (v.getModel() instanceof CyNode) {
+						final CyNode node = (CyNode) v.getModel();
+						if (network.containsNode(node))
+							vp = getVPfromVS(vs, columnName);
+					} else if (v.getModel() instanceof CyEdge) {
+						final CyEdge edge = (CyEdge) v.getModel();
+
+						if (network.containsEdge(edge))
+							vp = getVPfromVS(vs, columnName);
+					}
+
+					if (vp != null) {
+						targetFunction.apply(record.getRow(), (View<? extends CyIdentifiable>) v);
+						refreshView = true;
+					}
 				}
-			}
-			else if (v.getModel() instanceof CyEdge){
-				CyEdge edge = (CyEdge) v.getModel();
-								
-				if (network.containsEdge(edge)){
-					vp = getVPfromVS(vs, columnName);
-				}
-			}
 
-			if (vp != null) {
-				// FIXME: why this is necessary?
-				//v.setVisualProperty(vp, record.getValue());
-				//refreshView = true;
+				if (refreshView)
+					networkView.updateView();
 			}
-		}
-
-		if (refreshView)
-			networkView.updateView();
-
-		}});
+		});
 	}
 	
+	private VisualMappingFunction<?, ?> targetFunction;
 	
 	// Check if the columnName is the name of mapping attribute in visualStyle,
 	// If yes, return the VisualProperty associated with this columnName
 	private VisualProperty<?> getVPfromVS(VisualStyle vs, String columnName){
 		VisualProperty<?> vp = null;
-		Collection<VisualMappingFunction<?,?>> vmfs = vs.getAllVisualMappingFunctions();
+		final Collection<VisualMappingFunction<?,?>> vmfs = vs.getAllVisualMappingFunctions();
 		
-		Iterator<VisualMappingFunction<?,?>> it = vmfs.iterator();
-		while (it.hasNext()){
-			VisualMappingFunction<?,?> f = it.next();
-
+		for(final VisualMappingFunction<?,?> f: vmfs) {
 			if (f.getMappingColumnName().equalsIgnoreCase(columnName)){
 				vp = f.getVisualProperty();
+				targetFunction = f;
 				break;
 			}
-		}					
-
+		}
 		return vp;
 	}
 }
