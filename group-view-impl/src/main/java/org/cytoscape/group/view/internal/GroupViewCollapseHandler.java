@@ -154,8 +154,6 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 			if (cyGroupSettings.getUseNestedNetworks(group)) {
 				// Now, if we're displaying the nested network, create it....
-
-				/* This isn't working, yet...
 				CyNetwork nn = group.getGroupNetwork();
 				cyNetworkManager.addNetwork(nn);
 				CyNetworkView nnView = cyNetworkViewFactory.createNetworkView(nn);
@@ -165,7 +163,6 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				// Apply our visual style
 				viewStyle.apply(nnView);
 				nnView.updateView();
-				*/
 
 				// Allow the nested network image to be displayed
 				nView.clearValueLock(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
