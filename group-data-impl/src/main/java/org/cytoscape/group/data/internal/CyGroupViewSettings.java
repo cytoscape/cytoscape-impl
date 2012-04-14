@@ -50,9 +50,11 @@ public class CyGroupViewSettings {
 	         groups={"Group View Settings"})
 	public boolean hideGroupNode = true;
 
+/*
 	@Tunable(description="Opacity of the group node", params="slider=true",
 	         groups={"Group View Settings"})
 	public BoundedDouble groupNodeOpacity = new BoundedDouble(0.0, 100.0, 100.0, false, false);
+*/
 
 	public CyGroupViewSettings(CyGroupSettingsImpl settings) {
 		this.settings = settings;
@@ -76,7 +78,9 @@ public class CyGroupViewSettings {
 		return hideGroupNode;
 	}
 
+/*
 	public double getGroupNodeOpacity() {
 		return groupNodeOpacity.getValue();
 	}
+*/
 }

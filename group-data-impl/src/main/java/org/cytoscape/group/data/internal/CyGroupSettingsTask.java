@@ -50,7 +50,7 @@ public class CyGroupSettingsTask extends AbstractTask {
 		settings.setDoubleClickAction(group, viewSettings.getDoubleClickAction());
 		settings.setUseNestedNetworks(group, viewSettings.getUseNestedNetworks());
 		settings.setHideGroupNode(group, viewSettings.getHideGroupNode());
-		settings.setGroupNodeOpacity(group, viewSettings.getGroupNodeOpacity());
+		// settings.setGroupNodeOpacity(group, viewSettings.getGroupNodeOpacity());
 
 		// Update aggregation settings (more complicated)
 		boolean enabled = aggregationSettings.getAttributeAggregationEnabled();

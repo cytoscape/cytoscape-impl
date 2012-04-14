@@ -63,6 +63,7 @@ public class IntegerAggregator extends AbstractAggregator {
 				Integer v = table.getRow(node.getSUID()).get(column.getName(), Integer.class);
 				if (v == null) continue;
 				double value = v.doubleValue();
+				count++;
 				switch (type) {
 				case MAX:
 					if (aggregation < value) aggregation = value;
@@ -93,6 +94,7 @@ public class IntegerAggregator extends AbstractAggregator {
 					aggregation = (vArray[(vArray.length/2)-1] + vArray[(vArray.length/2)]) / 2;
 			} else if (type == AttributeHandlingType.AVG) {
 				aggregation = aggregation/(double)count;
+				System.out.println("Integer average aggregation = "+aggregation);
 			}
 
 			Integer v = new Integer((int)aggregation);
