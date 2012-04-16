@@ -35,7 +35,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		Properties sbmlNetworkViewTaskFactoryProps = new Properties();
-		sbmlNetworkViewTaskFactoryProps.setProperty("serviceType","sbmlNetworkViewTaskFactory");
 		sbmlNetworkViewTaskFactoryProps.setProperty("readerDescription","SBML file reader");
 		sbmlNetworkViewTaskFactoryProps.setProperty("readerId","sbmlNetworkViewReader");
 		registerService(bc,sbmlNetworkViewTaskFactory,InputStreamTaskFactory.class, sbmlNetworkViewTaskFactoryProps);

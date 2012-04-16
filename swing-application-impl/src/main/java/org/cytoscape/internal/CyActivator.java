@@ -111,6 +111,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.task.session.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -212,7 +213,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         cyServiceRegistrarServiceRef,
 		                                                         dialogTaskManagerServiceRef);
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
-		TaskFactory saveTaskFactoryServiceRef = getService(bc, TaskFactory.class, "(task.id=saveSession)");
+		SaveSessionAsTaskFactory saveTaskFactoryServiceRef = getService(bc, SaveSessionAsTaskFactory.class);
 		SessionStateIO sessStateIO = new SessionStateIO();
 		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
 														   cyNetworkManagerServiceRef,
@@ -220,7 +221,7 @@ public class CyActivator extends AbstractCyActivator {
 														   networkViewManager,
 														   synchronousTaskManagerServiceRef,
 														   saveTaskFactoryServiceRef,
-														   sessStateIO);
+														   sessStateIO, cySessionManagerServiceRef);
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cytoscapePropertiesServiceRef);
 		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,

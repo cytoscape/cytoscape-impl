@@ -75,8 +75,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
-		VisualLexicon dingVisualLexiconServiceRef = getService(bc,VisualLexicon.class,"(id=ding)");
-		RenderingEngineFactory dingRenderingEngineFactoryServiceRef = getService(bc,RenderingEngineFactory.class,"(id=ding)");
 		VisualMappingManager vmmServiceRef = getService(bc,VisualMappingManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
@@ -85,7 +83,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewFactory graphViewFactoryServiceRef = getService(bc,CyNetworkViewFactory.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
-		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		VizmapReaderManager vizmapReaderManagerServiceRef = getService(bc,VizmapReaderManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
@@ -95,7 +92,6 @@ public class CyActivator extends AbstractCyActivator {
 		SelectedVisualStyleManagerImpl selectedVisualStyleManager = new SelectedVisualStyleManagerImpl(vmmServiceRef);
 		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef,selectedVisualStyleManager);
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl(editorManager);
-		DefaultVisualStyleBuilder defaultVisualStyleBuilder = new DefaultVisualStyleBuilder(visualStyleFactoryServiceRef,passthroughMappingFactoryRef);
 		PropertySheetPanel propertySheetPanel = new PropertySheetPanel();
 		
 		CyColorChooser colorEditor = new CyColorChooser();

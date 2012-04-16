@@ -9,6 +9,8 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import java.util.Properties;
 import org.osgi.framework.BundleContext;
 
+import static org.cytoscape.work.ServiceProperties.*;
+
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -24,25 +26,25 @@ public class CyActivator extends AbstractCyActivator {
 		
 		EdgeBundlerTaskFactory edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 0);
 		Properties edgeBundlerTaskFactoryProps = new Properties();
-		edgeBundlerTaskFactoryProps.setProperty("preferredMenu","Layout.Bundle Edges");
-		edgeBundlerTaskFactoryProps.setProperty("menuGravity","11.0");
-		edgeBundlerTaskFactoryProps.setProperty("title","All Nodes and Edges");
+		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
+		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"11.0");
+		edgeBundlerTaskFactoryProps.setProperty(TITLE,"All Nodes and Edges");
 		registerService(bc,edgeBundlerTaskFactory,NetworkViewTaskFactory.class, edgeBundlerTaskFactoryProps);
 		
 		
 		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 1);
 		edgeBundlerTaskFactoryProps = new Properties();
-		edgeBundlerTaskFactoryProps.setProperty("preferredMenu","Layout.Bundle Edges");
-		edgeBundlerTaskFactoryProps.setProperty("menuGravity","12.0");
-		edgeBundlerTaskFactoryProps.setProperty("title","Selected Nodes Only");
+		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
+		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"12.0");
+		edgeBundlerTaskFactoryProps.setProperty(TITLE,"Selected Nodes Only");
 		registerService(bc,edgeBundlerTaskFactory,NetworkViewTaskFactory.class, edgeBundlerTaskFactoryProps);
 		
 		
 		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 2);
 		edgeBundlerTaskFactoryProps = new Properties();
-		edgeBundlerTaskFactoryProps.setProperty("preferredMenu","Layout.Bundle Edges");
-		edgeBundlerTaskFactoryProps.setProperty("menuGravity","13.0");
-		edgeBundlerTaskFactoryProps.setProperty("title","Selected Edges Only");
+		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
+		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"13.0");
+		edgeBundlerTaskFactoryProps.setProperty(TITLE,"Selected Edges Only");
 		registerService(bc,edgeBundlerTaskFactory,NetworkViewTaskFactory.class, edgeBundlerTaskFactoryProps);
 	}
 }

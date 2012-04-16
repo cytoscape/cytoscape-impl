@@ -34,7 +34,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Properties linkoutPropsProps = new Properties();
 		linkoutPropsProps.setProperty("cyPropertyName","linkout");
-		linkoutPropsProps.setProperty("serviceType","property");
 		registerService(bc,linkoutProps,CyProperty.class, linkoutPropsProps);
 	}
 }

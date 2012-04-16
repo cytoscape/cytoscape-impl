@@ -1,18 +1,18 @@
 package org.cytoscape.ding;
 
-import java.awt.Paint;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
-import org.cytoscape.spacial.internal.rtree.RTreeFactory;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
+import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.dependency.CustomGraphicsSizeDependencyFactory;
 import org.cytoscape.ding.dependency.EdgeColorDependencyFactory;
 import org.cytoscape.ding.dependency.NodeSizeDependencyFactory;
@@ -43,6 +43,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
+import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -50,12 +51,10 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.vizmap.VisualPropertyDependency;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
@@ -64,24 +63,8 @@ import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.CyApplicationConfiguration;
+import static org.cytoscape.work.ServiceProperties.*;
 
-import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
-import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
-import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
-import org.cytoscape.event.CyEventHelper;
-
-import org.cytoscape.application.swing.CyAction;
-
-import org.osgi.framework.BundleContext;
-
-import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -109,7 +92,6 @@ public class CyActivator extends AbstractCyActivator {
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
 		SubmenuTaskManager submenuTaskManager = getService(bc, SubmenuTaskManager.class);
 		CyServiceRegistrar cyServiceRegistrarRef = getService(bc, CyServiceRegistrar.class);
-		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 		CyProperty cyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
@@ -158,53 +140,49 @@ public class CyActivator extends AbstractCyActivator {
 		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
 
 		Properties dingRenderingEngineFactoryProps = new Properties();
-		dingRenderingEngineFactoryProps.setProperty("serviceType", "presentationFactory");
-		dingRenderingEngineFactoryProps.setProperty("id", "ding");
+		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
 		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
 
 		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
-		dingNavigationRenderingEngineFactoryProps.setProperty("serviceType", "presentationFactory");
-		dingNavigationRenderingEngineFactoryProps.setProperty("id", "dingNavigation");
+		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");
 		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
 		addEdgeNodeViewTaskFactoryProps.setProperty("preferredAction", "Edge");
-		addEdgeNodeViewTaskFactoryProps.setProperty("title", "Add Edge");
+		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Add Edge");
 		registerService(bc, addEdgeNodeViewTaskFactory, NodeViewTaskFactory.class, addEdgeNodeViewTaskFactoryProps);
 
 		Properties dVisualLexiconProps = new Properties();
-		dVisualLexiconProps.setProperty("serviceType", "visualLexicon");
-		dVisualLexiconProps.setProperty("id", "ding");
+		dVisualLexiconProps.setProperty(ID, "ding");
 		registerService(bc, dVisualLexicon, VisualLexicon.class, dVisualLexiconProps);
 
 		final Properties positionEditorProp = new Properties();
-		positionEditorProp.setProperty("id", "objectPositionValueEditor");
+		positionEditorProp.setProperty(ID, "objectPositionValueEditor");
 		registerService(bc, objectPositionValueEditor, ValueEditor.class, positionEditorProp);
 
 		final Properties objectPositionEditorProp = new Properties();
-		objectPositionEditorProp.setProperty("id", "objectPositionEditor");
+		objectPositionEditorProp.setProperty(ID, "objectPositionEditor");
 		registerService(bc, objectPositionEditor, VisualPropertyEditor.class, objectPositionEditorProp);
 
 		registerAllServices(bc, edgeBendValueEditor, new Properties());
 		registerService(bc, edgeBendEditor, VisualPropertyEditor.class, new Properties());
 
 		Properties dingNetworkViewFactoryServiceProps = new Properties();
-		dingNetworkViewFactoryServiceProps.setProperty("service.type", "factory");
 		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
 		Properties addImageTaskFactoryProps = new Properties();
 		addImageTaskFactoryProps.setProperty("preferredAction", "NEW");
-		addImageTaskFactoryProps.setProperty("title", "Add Image");
+		addImageTaskFactoryProps.setProperty(TITLE, "Add Image");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
 		Properties addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty("preferredAction", "NEW");
-		addShapeTaskFactoryProps.setProperty("title", "Add Shape");
+		addShapeTaskFactoryProps.setProperty(TITLE, "Add Shape");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
 
 		Properties addTextTaskFactoryProps = new Properties();
 		addTextTaskFactoryProps.setProperty("preferredAction", "NEW");
-		addTextTaskFactoryProps.setProperty("title", "Add Text");
+		addTextTaskFactoryProps.setProperty(TITLE, "Add Text");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
 		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",

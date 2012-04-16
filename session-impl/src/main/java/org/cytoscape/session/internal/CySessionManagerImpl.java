@@ -313,8 +313,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		for (CyProperty<?> cyProps : sess.getProperties()) {
 			final Properties serviceProps = new Properties();
 			serviceProps.setProperty("cyPropertyName", cyProps.getName());
-			serviceProps.setProperty("serviceType", "property");
-	        
 			registrar.registerAllServices(cyProps, serviceProps);
 		}
 	}

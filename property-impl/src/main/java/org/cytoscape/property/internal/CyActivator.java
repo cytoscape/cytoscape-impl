@@ -23,17 +23,14 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Properties bookmarksReaderProps = new Properties();
 		bookmarksReaderProps.setProperty("cyPropertyName","bookmarks");
-		bookmarksReaderProps.setProperty("serviceType","property");
 		registerService(bc,bookmarksReader,CyProperty.class, bookmarksReaderProps);
 
 		Properties bookmarksUtilProps = new Properties();
-		bookmarksUtilProps.setProperty("serviceType","property.util");
 		registerService(bc,bookmarksUtil,BookmarksUtil.class, bookmarksUtilProps);
 
 		PropsReader cyApplicationCoreProperty = new PropsReader(SimpleCyProperty.CORE_PROPRERTY_NAME,"cytoscape3.props");
         Properties cyApplicationCorePropertyProps = new Properties();
         cyApplicationCorePropertyProps.setProperty("cyPropertyName","cytoscape3.props");
-        cyApplicationCorePropertyProps.setProperty("serviceType","property");
         registerAllServices(bc,cyApplicationCoreProperty, cyApplicationCorePropertyProps);
 	}
 }

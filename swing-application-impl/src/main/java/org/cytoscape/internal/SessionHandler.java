@@ -60,10 +60,12 @@ import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.NetworkViewManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.task.session.SaveSessionAsTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
@@ -80,8 +82,9 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private final CyApplicationManager appManager;
 	private final NetworkViewManager netViewMgr;
 	private final SynchronousTaskManager<?> syncTaskMgr;
-	private final TaskFactory saveTaskFactory;
+	private final SaveSessionAsTaskFactory saveTaskFactory;
 	private final SessionStateIO sessionStateIO;
+	private final CySessionManager sessionManager;
 	
 	private final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<String, CytoPanelName>();
 	
@@ -92,8 +95,8 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 						  final CyApplicationManager appManager,
 						  final NetworkViewManager netViewMgr,
 						  final SynchronousTaskManager<?> syncTaskMgr,
-						  final TaskFactory saveTaskFactory,
-						  final SessionStateIO sessionStateIO) {
+						  final SaveSessionAsTaskFactory saveTaskFactory,
+						  final SessionStateIO sessionStateIO, final CySessionManager sessionManager) {
 		this.desktop = desktop;
 		this.netMgr = netMgr;
 		this.appManager = appManager;
@@ -101,6 +104,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		this.syncTaskMgr = syncTaskMgr;
 		this.saveTaskFactory = saveTaskFactory;
 		this.sessionStateIO = sessionStateIO;
+		this.sessionManager = sessionManager;
 		
 		CYTOPANEL_NAMES.put("CytoPanel1", CytoPanelName.WEST);
 		CYTOPANEL_NAMES.put("CytoPanel2", CytoPanelName.SOUTH);
@@ -125,7 +129,8 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		if (n == JOptionPane.NO_OPTION) {
 			return;
 		} else if (n == JOptionPane.YES_OPTION) {
-			syncTaskMgr.execute(saveTaskFactory.createTaskIterator());
+			final String sessionFileName = sessionManager.getCurrentSessionFileName();
+			syncTaskMgr.execute(saveTaskFactory.createTaskIterator(new File(sessionFileName)));
 			return;
 		} else {
 			e.abortShutdown("User canceled the shutdown request.");

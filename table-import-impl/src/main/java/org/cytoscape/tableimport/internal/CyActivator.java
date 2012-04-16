@@ -94,32 +94,27 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		Properties importAttributeTableReaderFactory_xlsProps = new Properties();
-		importAttributeTableReaderFactory_xlsProps.setProperty("serviceType","importAttributeTableTaskFactory");
 		importAttributeTableReaderFactory_xlsProps.setProperty("readerDescription","Attribute Table file reader");
 		importAttributeTableReaderFactory_xlsProps.setProperty("readerId","attributeTableReader");
 		registerService(bc,importAttributeTableReaderFactory_xls,InputStreamTaskFactory.class, importAttributeTableReaderFactory_xlsProps);
 
 		Properties importAttributeTableReaderFactory_txtProps = new Properties();
-		importAttributeTableReaderFactory_txtProps.setProperty("serviceType","importAttributeTableTaskFactory");
 		importAttributeTableReaderFactory_txtProps.setProperty("readerDescription","Attribute Table file reader");
 		importAttributeTableReaderFactory_txtProps.setProperty("readerId","attributeTableReader_txt");
 		registerService(bc,importAttributeTableReaderFactory_txt,InputStreamTaskFactory.class, importAttributeTableReaderFactory_txtProps);
 
 		Properties oboReaderFactoryProps = new Properties();
-		oboReaderFactoryProps.setProperty("serviceType","oboReaderFactory");
 		oboReaderFactoryProps.setProperty("readerDescription","Open Biomedical Ontology (OBO) file reader");
 		oboReaderFactoryProps.setProperty("readerId","oboReader");
 		registerService(bc,oboReaderFactory,InputStreamTaskFactory.class, oboReaderFactoryProps);
 		registerService(bc,ontologyAction,CyAction.class, new Properties());
 
 		Properties importNetworkTableReaderFactory_txtProps = new Properties();
-		importNetworkTableReaderFactory_txtProps.setProperty("serviceType","importNetworkTableTaskFactory");
 		importNetworkTableReaderFactory_txtProps.setProperty("readerDescription","Network Table file reader");
 		importNetworkTableReaderFactory_txtProps.setProperty("readerId","networkTableReader_txt");
 		registerService(bc,importNetworkTableReaderFactory_txt,InputStreamTaskFactory.class, importNetworkTableReaderFactory_txtProps);
 
 		Properties importNetworkTableReaderFactory_xlsProps = new Properties();
-		importNetworkTableReaderFactory_xlsProps.setProperty("serviceType","importNetworkTableTaskFactory");
 		importNetworkTableReaderFactory_xlsProps.setProperty("readerDescription","Network Table file reader");
 		importNetworkTableReaderFactory_xlsProps.setProperty("readerId","networkTableReader_xls");
 		registerService(bc,importNetworkTableReaderFactory_xls,InputStreamTaskFactory.class, importNetworkTableReaderFactory_xlsProps);
