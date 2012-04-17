@@ -692,7 +692,12 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	// Interface org.cytoscape.graph.render.immed.EdgeAnchors:
 	@Override
 	public int numAnchors() {
-		final Bend bend = m_view.m_edgeDetails.bend(model);
+		final Bend bend; 
+		if(isValueLocked(DVisualLexicon.EDGE_BEND))
+			bend = this.getVisualProperty(DVisualLexicon.EDGE_BEND);
+		else
+			bend = m_view.m_edgeDetails.bend(model);
+		
 		final int numHandles = bend.getAllHandles().size();
 		
 		if (numHandles == 0)
@@ -709,8 +714,12 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	 */
 	@Override
 	public void getAnchor(int anchorIndex, float[] anchorArr, int offset) {
-		final Bend bend = m_view.m_edgeDetails.bend(model);
-
+		final Bend bend; 
+		if(isValueLocked(DVisualLexicon.EDGE_BEND))
+			bend = this.getVisualProperty(DVisualLexicon.EDGE_BEND);
+		else
+			bend = m_view.m_edgeDetails.bend(model);
+		
 		final Handle handle;
 		if (m_view.m_edgeDetails.lineType(model) == EdgeView.CURVED_LINES)
 			handle = bend.getAllHandles().get(anchorIndex);
@@ -798,34 +807,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vpOriginal, V value) {
 		
 		final VisualProperty<?> vp = vpOriginal;
-//		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
-//		
-//		// TODO: This should not happen.  Maybe this should throw an exception?
-//		if(treeNode == null)
-//			return;
-//		
-//		if(treeNode.getChildren().size() != 0) {
-//			// This is not leaf.
-//			final Collection<VisualLexiconNode> children = treeNode.getChildren();
-//			boolean shouldApply = false;
-//			for(VisualLexiconNode node: children) {
-//				if(node.isDepend()) {
-//					shouldApply = true;
-//					break;
-//				}
-//			}
-//			
-//			if(shouldApply == false)
-//				return;
-//		}
-//		
-//		if(treeNode.isDepend()) {
-//			// Do not use this.  Parent will be applied.
-//			return;
-//		} else {
-//			vp = vpOriginal;
-//		}
-//		
+
 		if(value == null)
 			value = (V) vp.getDefault();
 		

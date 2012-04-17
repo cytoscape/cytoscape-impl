@@ -805,9 +805,7 @@ class DEdgeDetails extends EdgeDetails {
 	public void setEdgeBendDefault(final Bend bend) {
 		this.m_edgeBendDefault = bend;
 	}
-	
-	
-	
+
 	
 	// Used by bends
 	private final MinLongHeap m_heap = new MinLongHeap();

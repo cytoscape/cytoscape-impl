@@ -938,7 +938,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					ev.moveHandleInternal(anchorInx, m_floatBuff1[0] + move, m_floatBuff1[1]);
 				}
 			}
-
 			repaint();
 		}
 	}
