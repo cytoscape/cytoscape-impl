@@ -52,7 +52,6 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.task.TunableEdgeViewTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.view.model.CyNetworkView;
@@ -104,9 +103,6 @@ class PopupMenuHelper {
 
 				for ( EdgeViewTaskFactory evtf : usableTFs ) {
 					Object context = null;
-					if (evtf instanceof TunableEdgeViewTaskFactory<?>) {
-						context = ((TunableEdgeViewTaskFactory) evtf).createTunableContext(ev, m_view);
-					}
 					TaskFactory provisioner = factoryProvisioner.createFor(evtf, ev, m_view);
 					createMenuItem(ev, menu, provisioner, context, tracker, m_view.edgeViewTFs.get(evtf) );
 				}
@@ -139,9 +135,6 @@ class PopupMenuHelper {
 
 				for ( NodeViewTaskFactory nvtf : usableTFs ) {
 					Object context = null;
-					if (nvtf instanceof TunableEdgeViewTaskFactory<?>) {
-						context = ((TunableEdgeViewTaskFactory) nvtf).createTunableContext(nv, m_view);
-					}
 					TaskFactory provisioner = factoryProvisioner.createFor(nvtf, nv, m_view);
 					createMenuItem(nv, menu, provisioner, context, tracker, m_view.nodeViewTFs.get( nvtf ));
 				}
