@@ -17,6 +17,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyFilter;
+import org.cytoscape.work.ServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +25,6 @@ public final class BypassManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(BypassManager.class);
 
-	// TODO: this should be a public string or enum managed in swing app.
-	private static final String MENU_KEY = "preferredMenu";
 	private static final String PARENT_MENU_ITEM = "Visual Bypass";
 
 	private final CyServiceRegistrar registrar;
@@ -69,7 +68,7 @@ public final class BypassManager {
 			if (child.getChildren().size() == 0) {
 				// Leaf
 				final Properties vpProp = new Properties();
-				vpProp.put(MENU_KEY, newMenu);
+				vpProp.put(ServiceProperties.PREFERRED_MENU, newMenu);
 				vpProp.put("useCheckBoxMenuItem", "true");
 				vpProp.put("targetVP", vp.getIdString());
 
