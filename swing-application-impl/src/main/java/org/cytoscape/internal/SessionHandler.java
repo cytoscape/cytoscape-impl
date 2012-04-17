@@ -44,7 +44,6 @@ import java.util.Map;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CytoPanel;
@@ -68,7 +67,6 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.session.SaveSessionAsTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +77,6 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	
 	private final CytoscapeDesktop desktop;
 	private final CyNetworkManager netMgr;
-	private final CyApplicationManager appManager;
 	private final NetworkViewManager netViewMgr;
 	private final SynchronousTaskManager<?> syncTaskMgr;
 	private final SaveSessionAsTaskFactory saveTaskFactory;
@@ -92,14 +89,12 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	
 	public SessionHandler(final CytoscapeDesktop desktop,
 						  final CyNetworkManager netMgr,
-						  final CyApplicationManager appManager,
 						  final NetworkViewManager netViewMgr,
 						  final SynchronousTaskManager<?> syncTaskMgr,
 						  final SaveSessionAsTaskFactory saveTaskFactory,
 						  final SessionStateIO sessionStateIO, final CySessionManager sessionManager) {
 		this.desktop = desktop;
 		this.netMgr = netMgr;
-		this.appManager = appManager;
 		this.netViewMgr = netViewMgr;
 		this.syncTaskMgr = syncTaskMgr;
 		this.saveTaskFactory = saveTaskFactory;
@@ -235,7 +230,6 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private void setNetworkFrameLocations(final NetworkFrames frames, final CySession sess) {
 		if (frames != null) {
 			final List<NetworkFrame> framesList = frames.getNetworkFrame();
-			CyNetworkView currentNetView = null;
 			
 			for (NetworkFrame nf : framesList) {
 				final String oldIdStr = nf.getNetworkViewID(); // ID in the original session--it's probably different now
@@ -262,20 +256,10 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 							iframe.setLocation(x, y);
 						}
 					}
-					
-					// The first frame should be the current one
-					if (currentNetView == null) {
-						currentNetView = view;
-					}
 				} else {
 					logger.warn("Cannot restore network frame's position: Network View not found for former ID \""
 							+ oldIdStr + "\".");
 				}
-			}
-			
-			// Restore the current network view
-			if (currentNetView != null) {
-				appManager.setCurrentNetworkView(currentNetView);
 			}
 		}
 	}

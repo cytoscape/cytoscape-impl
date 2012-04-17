@@ -30,16 +30,14 @@ package org.cytoscape.model.internal;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
 
@@ -128,7 +126,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.HIDDEN_ATTRS, hiddenTable);
 		// Add default network columns.
 		defTable.createColumn(CyNetwork.NAME, String.class, true);
-		
+		defTable.createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
 	}
 
 	private void createNodeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num) {

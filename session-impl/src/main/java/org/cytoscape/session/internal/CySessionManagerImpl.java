@@ -44,14 +44,15 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -84,6 +85,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private CySession currentSession;
 
 	private final CyEventHelper cyEventHelper;
+	private final CyApplicationManager appMgr;
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tblMgr;
 	private final CyNetworkTableManager netTblMgr;
@@ -99,6 +101,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private static final Logger logger = LoggerFactory.getLogger(CySessionManagerImpl.class);
 
 	public CySessionManagerImpl(final CyEventHelper cyEventHelper,
+								final CyApplicationManager appMgr,
 								final CyNetworkManager netMgr,
 								final CyTableManager tblMgr,
 								final CyNetworkTableManager netTblMgr,
@@ -108,6 +111,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 								final CyServiceRegistrar registrar,
 								final UndoSupport undo) {
 		this.cyEventHelper = cyEventHelper;
+		this.appMgr = appMgr;
 		this.netMgr = netMgr;
 		this.tblMgr = tblMgr;
 		this.netTblMgr = netTblMgr;
@@ -234,7 +238,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	@Override
 	public void setCurrentSession(CySession sess, final String fileName) {
-		
 		boolean emptySession = sess == null;
 
 		// Always remove the current session first
@@ -242,17 +245,31 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 		if (emptySession) {
 			logger.debug("Creating empty session...");
-			Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-			Set<CyProperty<?>> props = getAllProperties();
+			final Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
+			final Set<CyProperty<?>> props = getAllProperties();
 
 			sess = new CySession.Builder().properties(props).visualStyles(styles).build();
 		} else {
 			logger.debug("Restoring the session...");
+
+			// Save the selected networks first, so the selection state can be restored later.
+			final List<CyNetwork> selectedNetworks = new ArrayList<CyNetwork>();
+			final Set<CyNetwork> networks = sess.getNetworks();
+
+			for (CyNetwork n : networks) {
+				final Boolean selected = n.getDefaultNetworkTable().getRow(n.getSUID())
+						.get(CyNetwork.SELECTED, Boolean.class);
+				
+				if (Boolean.TRUE.equals(selected))
+					selectedNetworks.add(n);
+			}
+			
 			restoreProperties(sess);
 			restoreNetworks(sess);
 			restoreNetworkViews(sess);
 			restoreTables(sess);
 			restoreVisualStyles(sess);
+			restoreNetworkSelection(sess, selectedNetworks);
 		}
 		
 		currentSession = sess;
@@ -261,17 +278,20 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		cyEventHelper.fireEvent(new SessionLoadedEvent(this, currentSession, getCurrentSessionFileName()));
 	}
 
-	private void restoreTables(CySession sess) {
-		// Register all tables, if not already registered
-		for (CyTableMetadata metadata : sess.getTables()) {
-			final CyTable tbl = metadata.getTable();
-			
-			if (tblMgr.getTable(tbl.getSUID()) == null) {
-				tblMgr.addTable(tbl);
-			}
-		}
-	}
 
+	/**
+	 * Update current session session object when session is saved.
+	 */
+	@Override
+	public void handleEvent(SessionSavedEvent e) {
+		
+		if(currentSession != e.getSavedSession())
+			currentSession = e.getSavedSession();
+		
+		if(currentFileName != e.getSavedFileName())
+			currentFileName = e.getSavedFileName();
+	}
+	
 	@Override
 	public String getCurrentSessionFileName() {
 		return currentFileName;
@@ -338,6 +358,17 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 
+	private void restoreTables(CySession sess) {
+		// Register all tables, if not already registered
+		for (CyTableMetadata metadata : sess.getTables()) {
+			final CyTable tbl = metadata.getTable();
+			
+			if (tblMgr.getTable(tbl.getSUID()) == null) {
+				tblMgr.addTable(tbl);
+			}
+		}
+	}
+	
 	private void restoreVisualStyles(final CySession sess) {
 		logger.debug("Restoring visual styles...");
 		// Register visual styles 
@@ -367,6 +398,23 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				}
 			}
 		}
+	}
+	
+	private void restoreNetworkSelection(final CySession sess, final List<CyNetwork> selectedNets) {
+		// If the current view/network was not set, set the first selected network as current
+		if (!selectedNets.isEmpty()) {
+			appMgr.setCurrentNetwork(selectedNets.get(0));
+		} else {
+			final Set<CyNetwork> allNets = sess.getNetworks();
+			
+			if (!allNets.isEmpty())
+				appMgr.setCurrentNetwork(allNets.iterator().next());
+		}
+			
+		
+		// The selected networks must be set after setting the current one!
+		if (!selectedNets.isEmpty())
+			appMgr.setSelectedNetworks(selectedNets);
 	}
 
 	private void disposeCurrentSession(boolean removeVisualStyles) {
@@ -419,18 +467,5 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		// Clear undo stack
 		undo.reset();
-	}
-
-	/**
-	 * Update current session session object when session is saved.
-	 */
-	@Override
-	public void handleEvent(SessionSavedEvent e) {
-		
-		if(currentSession != e.getSavedSession())
-			currentSession = e.getSavedSession();
-		
-		if(currentFileName != e.getSavedFileName())
-			currentFileName = e.getSavedFileName();
 	}
 }

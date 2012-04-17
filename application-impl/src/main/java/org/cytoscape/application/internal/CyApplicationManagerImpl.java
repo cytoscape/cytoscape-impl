@@ -29,23 +29,29 @@
  */
 package org.cytoscape.application.internal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
-
 import org.cytoscape.event.CyEventHelper;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
-
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -53,15 +59,8 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -77,7 +76,6 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	private final CyNetworkManager networkManager;
 	private final CyNetworkViewManager networkViewManager;
 	private final List<CyNetworkView> selectedNetworkViews;
-	private final List<CyNetwork> selectedNetworks;
 
 	// Trackers for current network object
 	private CyNetwork currentNetwork;
@@ -93,8 +91,6 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		this.networkViewManager = networkViewManager;
 
 		selectedNetworkViews = new LinkedList<CyNetworkView>();
-		selectedNetworks = new LinkedList<CyNetwork>();
-
 		currentNetwork = null;
 		currentNetworkView = null;
 		this.currentRenderer = null;
@@ -102,13 +98,13 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void handleEvent(final NetworkViewAddedEvent event) {
-		if ( !event.getNetworkView().equals( currentNetworkView ) )
+		if (!event.getNetworkView().equals( currentNetworkView ))
 			setCurrentNetworkView( event.getNetworkView() );
 	}
 
 	@Override
 	public void handleEvent(final NetworkAddedEvent event) {
-		if ( !event.getNetwork().equals( currentNetwork ) )
+		if (!event.getNetwork().equals( currentNetwork ))
 			setCurrentNetwork( event.getNetwork() );
 	}
 
@@ -118,10 +114,6 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		boolean changed = false;
 
 		synchronized (this) {
-			List<CyNetwork> removals = new LinkedList<CyNetwork>();
-			removals.add(toBeDestroyed);
-			selectedNetworks.removeAll(removals);
-			
 			if (toBeDestroyed == currentNetwork) {
 				changed = true;
 				currentNetwork = null;
@@ -163,10 +155,6 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		boolean changed = false;
 
 		synchronized (this) {
-			List<CyNetworkView> removals = new LinkedList<CyNetworkView>();
-			removals.add(toBeDestroyed);
-			selectedNetworkViews.removeAll(removals);
-
 			if (toBeDestroyed == currentNetworkView) {
 				changed = true;
 				currentNetworkView = null;
@@ -221,18 +209,16 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			logger.info("Set current network called.  Current network ID = " + networkId);
 			currentNetwork = network; 
 			final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-			if(views.size() != 0)
+			
+			if (views.size() != 0)
 				currentNetworkView = views.iterator().next();
 
 			// reset selected networks
-			selectedNetworks.clear();
-			selectedNetworks.add(currentNetwork);
+			selectNetworks(Arrays.asList(new CyNetwork[]{ currentNetwork }));
 		}
 
-		logger.debug("Current network is set.  Firing SetCurrentNetworkEvent: Network ID = "
-		             + networkId);
-		
 		if (changed) {
+			logger.debug("Current network is set. Firing SetCurrentNetworkEvent: Network ID = " + networkId);
 			cyEventHelper.fireEvent(new SetCurrentNetworkEvent(this, currentNetwork));
 		}
 	}
@@ -267,10 +253,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			selectedNetworkViews.add(currentNetworkView);
 		}
 
-		logger.debug("Current network view is set.  Firing SetCurrentNetworkViewEvent: View ID = "
-		             + view.getSUID());
-		
 		if (changed) {
+			logger.debug("Current network view is set. Firing SetCurrentNetworkViewEvent: View ID = " + view.getSUID());
 			cyEventHelper.fireEvent(new SetCurrentNetworkViewEvent(this, currentNetworkView));
 		}
 	}
@@ -302,26 +286,31 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public synchronized List<CyNetwork> getSelectedNetworks() {
-		return new ArrayList<CyNetwork>(selectedNetworks);
+		final Set<CyNetwork> allNetworks = networkManager.getNetworkSet();
+		final List<CyNetwork> selectedNetworks = new ArrayList<CyNetwork>();
+		
+		for (final CyNetwork n : allNetworks) {
+			final CyRow row = n.getRow(n);
+			
+			if (row.get(CyNetwork.SELECTED, Boolean.class, false))
+				selectedNetworks.add(n);
+		}
+		
+		return selectedNetworks;
 	}
 
 	@Override
 	public void setSelectedNetworks(final List<CyNetwork> networks) {
-		if (networks == null)
-			return;
-
+		final Set<CyNetwork> selectedNetworks;
+		
 		synchronized (this) {
-			selectedNetworks.clear();
-			selectedNetworks.addAll(networks);
-
-			CyNetwork cn = currentNetwork;
-
-			if (!selectedNetworks.contains(cn))
-				selectedNetworks.add(cn);
+			selectedNetworks = selectNetworks(networks);
+			
+			if (currentNetwork != null)
+				selectedNetworks.add(currentNetwork);
 		}
 
-		cyEventHelper.fireEvent(new SetSelectedNetworksEvent(this,
-		                                                     new ArrayList<CyNetwork>(selectedNetworks)));
+		cyEventHelper.fireEvent(new SetSelectedNetworksEvent(this, new ArrayList<CyNetwork>(selectedNetworks)));
 	}
 
 	@Override
@@ -332,7 +321,6 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	@Override
 	public void setCurrentRenderingEngine(RenderingEngine<CyNetwork> engine) {
 		this.currentRenderer = engine;
-
 		cyEventHelper.fireEvent(new SetCurrentRenderingEngineEvent(this, this.currentRenderer));
 	}
 
@@ -344,5 +332,21 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	@Override
 	public void setCurrentTable(CyTable table) {
 		currentTable = table;
+	}
+	
+	private Set<CyNetwork> selectNetworks(final Collection<CyNetwork> networks) {
+		final Set<CyNetwork> selectedNetworks = new HashSet<CyNetwork>();
+		final Set<CyNetwork> allNetworks = networkManager.getNetworkSet();
+		
+		for (final CyNetwork n : allNetworks) {
+			final boolean selected = networks != null && networks.contains(n);
+			final CyRow row = n.getRow(n);
+			row.set(CyNetwork.SELECTED, selected);
+			
+			if (selected)
+				selectedNetworks.add(n);
+		}
+
+		return selectedNetworks;
 	}
 }

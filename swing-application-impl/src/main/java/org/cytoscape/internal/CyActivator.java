@@ -47,10 +47,6 @@ import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
 
 import java.util.Properties;
 
-import org.cytoscape.internal.actions.CommandListAction;
-import org.cytoscape.internal.commands.ArgRecorder;
-import org.cytoscape.internal.commands.ArgHandlerFactory;
-import org.cytoscape.internal.commands.BasicArgHandlerFactory;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
@@ -62,11 +58,15 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
+import org.cytoscape.internal.actions.CommandListAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
+import org.cytoscape.internal.commands.ArgHandlerFactory;
+import org.cytoscape.internal.commands.ArgRecorder;
+import org.cytoscape.internal.commands.BasicArgHandlerFactory;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
 import org.cytoscape.internal.io.SessionStateIO;
@@ -97,7 +97,6 @@ import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
@@ -217,11 +216,11 @@ public class CyActivator extends AbstractCyActivator {
 		SessionStateIO sessStateIO = new SessionStateIO();
 		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
 														   cyNetworkManagerServiceRef,
-														   cyApplicationManagerServiceRef,
 														   networkViewManager,
 														   synchronousTaskManagerServiceRef,
 														   saveTaskFactoryServiceRef,
-														   sessStateIO, cySessionManagerServiceRef);
+														   sessStateIO,
+														   cySessionManagerServiceRef);
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cytoscapePropertiesServiceRef);
 		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,
