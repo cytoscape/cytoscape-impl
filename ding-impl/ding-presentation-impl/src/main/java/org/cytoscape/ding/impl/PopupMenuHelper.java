@@ -103,8 +103,8 @@ class PopupMenuHelper {
 
 				for ( EdgeViewTaskFactory evtf : usableTFs ) {
 					Object context = null;
-					TaskFactory provisioner = factoryProvisioner.createFor(evtf, ev, m_view);
-					createMenuItem(ev, menu, provisioner, context, tracker, m_view.edgeViewTFs.get(evtf) );
+					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, ev, m_view);
+					addMenuItem(ev, menu, provisioner, context, tracker, m_view.edgeViewTFs.get(evtf) );
 				}
 				
 				for (CyEdgeViewContextMenuFactory edgeCMF: m_view.cyEdgeViewContextMenuFactory.keySet())
@@ -135,8 +135,8 @@ class PopupMenuHelper {
 
 				for ( NodeViewTaskFactory nvtf : usableTFs ) {
 					Object context = null;
-					TaskFactory provisioner = factoryProvisioner.createFor(nvtf, nv, m_view);
-					createMenuItem(nv, menu, provisioner, context, tracker, m_view.nodeViewTFs.get( nvtf ));
+					NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, nv, m_view);
+					addMenuItem(nv, menu, provisioner, context, tracker, m_view.nodeViewTFs.get( nvtf ));
 				}
 
 				for (CyNodeViewContextMenuFactory nodeVMF: m_view.cyNodeViewContextMenuFactory.keySet())
@@ -162,14 +162,14 @@ class PopupMenuHelper {
 		
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
 		for ( NetworkViewTaskFactory nvtf : usableTFs ) {
-			TaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
-			createMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
+			NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
+			addMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
 		}
 		
 		Collection<NetworkViewLocationTaskFactory> usableTFs2 = getPreferredActions(m_view.networkViewLocationTfs,action);
 		for ( NetworkViewLocationTaskFactory nvltf : usableTFs2 ) {
-			TaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
-			createMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
+			NamedTaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
+			addMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
 		}
 		
 		menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));
@@ -180,7 +180,7 @@ class PopupMenuHelper {
 	 * "title" and "preferredMenu" keywords, depending on which are present
 	 * in the service properties.
 	 */
-	private void createMenuItem(View<?> view, JPopupMenu popup, TaskFactory tf, Object tunableContext,
+	private void addMenuItem(View<?> view, JPopupMenu popup, NamedTaskFactory tf, Object tunableContext,
 	                            JMenuTracker tracker, Map props) {
 
 		String title = (String)(props.get("title"));
@@ -234,7 +234,7 @@ class PopupMenuHelper {
 
 		// no title and no preferred menu
 		if ( title == null && pref == null ) {
-			title = "Unidentified Task: " + Integer.toString(tf.hashCode());
+			title = "Unidentified Task: " + tf.getName();
 			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
 
 		// title, but no preferred menu
