@@ -367,18 +367,19 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final Class<?> columnType = model.getColumn(column).getType();
 
 		if (columnType == List.class) {
-			final ValidatedObjectAndEditString value =
-				(ValidatedObjectAndEditString)model.getValueAt(row, column);
+			final ValidatedObjectAndEditString value = (ValidatedObjectAndEditString) model.getValueAt(row, column);
 
-			final List list = (List)value.getValidatedObject();
-			if (list != null) {
-				cellMenu = new JPopupMenu();
-				final Object[] listItems = list.toArray();
-
-				if (listItems.length != 0) {
-					final String idField =
-						model.getAttributes().getPrimaryKey().getName();
-					getCellContentView(List.class, listItems, idField, e);
+			if (value != null) {
+				final List<?> list = (List<?>) value.getValidatedObject();
+				
+				if (list != null) {
+					cellMenu = new JPopupMenu();
+					final Object[] listItems = list.toArray();
+	
+					if (listItems.length != 0) {
+						final String idField = model.getAttributes().getPrimaryKey().getName();
+						getCellContentView(List.class, listItems, idField, e);
+					}
 				}
 			}
 		}

@@ -31,12 +31,10 @@ package org.cytoscape.browser.internal;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -56,9 +54,9 @@ public class HyperLinkOut extends JMenu {
 	 * @param value  DOCUMENT ME!
 	 * @param menuStructure  DOCUMENT ME!
 	 */
-	public HyperLinkOut(String value, final Map<String, Map<String, String>> menuStructure,
-			    final OpenBrowser openBrowser)
-	{
+	public HyperLinkOut(String value,
+						final Map<String, Map<String, String>> menuStructure,
+						final OpenBrowser openBrowser)	{
 		this.value = value;
 		this.structure = menuStructure;
 		this.openBrowser = openBrowser;
@@ -94,23 +92,21 @@ public class HyperLinkOut extends JMenu {
 	}
 
 	private void buildLinks() {
-		String fullName;
-
-		JMenu cat;
-
+		if (structure == null)
+			return;
+		
 		for (final String category : structure.keySet()) {
-			cat = new JMenu(category);
-
+			JMenu cat = new JMenu(category);
 			Map<String, String> children = structure.get(category);
 
 			for (final String name : children.keySet()) {
 				JMenuItem dbLink = new JMenuItem(name);
 				dbLink.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							final String url =
-								structure.get(category).get(name).replace("%ID%", value);
+					public void actionPerformed(ActionEvent e) {
+						final String url = structure.get(category).get(name).replace("%ID%", value);
 						openBrowser.openURL(url);
-					}});
+					}
+				});
 				cat.add(dbLink);
 			}
 
