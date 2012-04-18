@@ -168,7 +168,9 @@ public final class LongTHash<T> {
 		//System.err.println("get " + key );
 
 		if (key != m_prevKey) {
-			calcPrevInx(key,REUSABLE);
+			if (!calcPrevInx(key,REUSABLE)) {
+				return null;
+			}
 			m_prevKey = key;
 		}
 
@@ -179,6 +181,10 @@ public final class LongTHash<T> {
 	public final T remove(final long key) {
 		//System.err.println("remove " + key );
 		Object ret = get(key);
+		if (ret == null) {
+			return null;
+		}
+		
 		put(key,null);
 		m_elements--;
 		//dump("remove");
@@ -195,17 +201,23 @@ public final class LongTHash<T> {
 	// for putting new values into the hash).  If the threshold is set to -1, 
 	// then it will search all available indices (used for getting values from
 	// the hash).
-	private void calcPrevInx(long key, int threshold) {
+	private boolean calcPrevInx(long key, int threshold) {
 		int incr = 0;
 
+		int initialIndex = m_prevInx;
+		
 		for (m_prevInx = (int)(key % (long)m_keys.length);
 		     (m_keys[m_prevInx] >= threshold) && (m_keys[m_prevInx] != key);
 		     m_prevInx = (m_prevInx + incr) % m_keys.length) {
+			if (initialIndex == m_prevInx) {
+				return false;
+			}
 			//System.err.println("  m_prevInx: " + m_prevInx);
 			if (incr == 0) {
 				incr = 1 + (int)(key % ((long)m_keys.length - 1));
 			}
 		}
+		return true;
 	}
 
 	private final void incrSize() {

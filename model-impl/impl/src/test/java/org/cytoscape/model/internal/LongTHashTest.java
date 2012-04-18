@@ -110,7 +110,7 @@ public class LongTHashTest {
 		hash.put(11L, "A");	
 	}
 	
-//	@Test
+	@Test
 	public void testTicket853() throws InterruptedException {
 		Thread thread = new Thread(new Runnable() {
 			@Override
