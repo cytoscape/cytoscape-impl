@@ -29,7 +29,6 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.tableimport.internal.util.OntologyUtil;
-import org.cytoscape.task.MapNetworkAttrTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -265,10 +264,6 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 		tableManager.addTable(table);
 
-		// Map terms to existing networks
-		// if (netMgr.getNetworkSet().size() > 0)
-		// super.insertTasksAfterCurrentTask(new
-		// MapNetworkAttrTask(CyNode.class, table, netMgr, appMgr));
 	}
 
 	private void createColumns() {

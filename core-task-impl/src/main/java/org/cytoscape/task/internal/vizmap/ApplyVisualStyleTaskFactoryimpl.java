@@ -29,9 +29,12 @@ public class ApplyVisualStyleTaskFactoryimpl extends AbstractNetworkViewTaskFact
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(final CyNetworkView networkView,
-			ListSingleSelection<VisualStyle> styles) {
+	public TaskIterator createTaskIterator(final CyNetworkView networkView, VisualStyle style) {
 		final Map<String, Object> m = new HashMap<String, Object>();
+
+		ListSingleSelection<VisualStyle> styles = new ListSingleSelection<VisualStyle>(style);
+		styles.setSelectedValue(style);
+
 		m.put("styles", styles);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(networkView), m);

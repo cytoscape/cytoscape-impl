@@ -31,10 +31,17 @@ public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTaskFact
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(
-			ListSingleSelection<String> globalTables,
-			ListSingleSelection<String> localTables) {
+	public TaskIterator createTaskIterator(String globalTable,
+	                                       String localTable) {
+
 		final Map<String, Object> m = new HashMap<String, Object>();
+
+		ListSingleSelection<String> globalTables = new ListSingleSelection<String>(globalTable);
+		globalTables.setSelectedValue(globalTable);
+
+		ListSingleSelection<String> localTables = new ListSingleSelection<String>(localTable);
+		localTables.setSelectedValue(localTable);
+
 		m.put("globalTables", globalTables);
 		m.put("localTables", localTables);
 
