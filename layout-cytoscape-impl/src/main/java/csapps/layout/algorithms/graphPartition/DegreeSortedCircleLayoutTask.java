@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -13,6 +14,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 
 public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
@@ -22,8 +25,8 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public DegreeSortedCircleLayoutTask(final String name, DegreeSortedCircleContext context) {
-		super(name, context, context.singlePartition);
+	public DegreeSortedCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, DegreeSortedCircleContext context) {
+		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 
 		this.network = networkView.getModel();
 	}

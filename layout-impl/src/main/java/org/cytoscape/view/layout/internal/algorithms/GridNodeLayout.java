@@ -30,8 +30,13 @@
 package org.cytoscape.view.layout.internal.algorithms;
 
 
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -44,15 +49,16 @@ public class GridNodeLayout extends AbstractLayoutAlgorithm<GridNodeLayoutContex
 	 * Creates a new GridNodeLayout object.
 	 */
 	public GridNodeLayout() {
-		super(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME,"Grid Layout", true);
+		super(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME,"Grid Layout");
 	}
 
-	public TaskIterator createTaskIterator(GridNodeLayoutContext context) {
-		return new TaskIterator(new GridNodeLayoutTask(getName(), context));
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, GridNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
+		return new TaskIterator(new GridNodeLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
 	}
 	
 	@Override
 	public GridNodeLayoutContext createLayoutContext() {
-		return new GridNodeLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new GridNodeLayoutContext();
 	}
 }

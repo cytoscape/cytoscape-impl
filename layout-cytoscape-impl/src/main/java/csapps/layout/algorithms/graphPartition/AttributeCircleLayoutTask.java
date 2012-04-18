@@ -5,11 +5,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 
 public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
@@ -18,8 +22,8 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public AttributeCircleLayoutTask(final String name, final AttributeCircleLayoutContext context) {
-		super(name, context, context.singlePartition);
+	public AttributeCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final AttributeCircleLayoutContext context) {
+		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 		this.context = context;
 	}
 

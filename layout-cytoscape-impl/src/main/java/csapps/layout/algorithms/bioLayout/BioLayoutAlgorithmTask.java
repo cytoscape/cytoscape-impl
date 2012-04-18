@@ -32,33 +32,23 @@
 package csapps.layout.algorithms.bioLayout;
 
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.view.layout.LayoutPartition;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 
-/**
- * Superclass for the two bioLayout algorithms (KK and FR).
- *
- * @author <a href="mailto:scooter@cgl.ucsf.edu">Scooter Morris</a>
- * @version 0.9
- */
 public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 
 	/**
 	 * A small value used to avoid division by zero
 	 */
 	protected double EPSILON = 0.0000001;
-
-	/**
-	 * Value to set for doing unweighted layouts
-	 */
-	public static final String UNWEIGHTEDATTRIBUTE = "(unweighted)";
 
 	/**
 	 * Enables/disables debugging messages
@@ -74,50 +64,11 @@ public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask
 	/**
 	 * This is the constructor for the bioLayout algorithm.
 	 */
-	public BioLayoutAlgorithmTask(final String name, final BioLayoutContext context,
-				  final boolean singlePartition) {
-		super(name, context, singlePartition);
+	public BioLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final boolean singlePartition) {
+		super(name, singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 		
 		if (edgeWeighter == null)
 			edgeWeighter = new EdgeWeighter();
-	}
-
-	/**
-	 * Tells Cytoscape whether we support selected nodes only or not
-	 *
-	 * @return  true - we do support selected only
-	 */
-	public boolean supportsSelectedOnly() { return true; }
-
-
-	/**
-	 * Tells Cytoscape whether we support edge attribute based layouts
-	 *
-	 * @return  null if supportWeights is false, otherwise return the attribute
-	 *          types that can be used for weights.
-	 */
-	public Set<Class<?>> supportsEdgeAttributes() {
-		Set<Class<?>> ret = new HashSet<Class<?>>();
-		if (!supportWeights)
-			return ret;
-
-		ret.add(Integer.class);
-		ret.add(Double.class);
-
-		return ret;
-	}
-
-	/**
-	 * Returns "(unweighted)", which is the "attribute" we
-	 * use to tell the algorithm not to use weights
-	 *
-	 * @returns List of our "special" weights
-	 */
-	public List<String> getInitialAttributeList() {
-		ArrayList<String> list = new ArrayList<String>();
-		list.add(UNWEIGHTEDATTRIBUTE);
-
-		return list;
 	}
 
 	/**

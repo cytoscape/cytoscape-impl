@@ -1,12 +1,10 @@
 package org.cytoscape.prefuse.layouts.internal;
 
-import java.util.Set;
-
-import org.cytoscape.view.layout.AbstractEdgeWeightedLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class ForceDirectedLayoutContext extends AbstractEdgeWeightedLayoutAlgorithmContext implements TunableValidator {
+public class ForceDirectedLayoutContext extends AbstractLayoutContext implements TunableValidator {
 	@Tunable(description="Number of Iterations")
 	public int numIterations = 100;
 	@Tunable(description="Default Spring Coefficient")
@@ -17,10 +15,6 @@ public class ForceDirectedLayoutContext extends AbstractEdgeWeightedLayoutAlgori
 	public double defaultNodeMass = 3.0;
 	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
-
-	public ForceDirectedLayoutContext(boolean supportsSelectedOnly, Set<Class<?>> supportedNodeAttributes, Set<Class<?>> supportedEdgeAttributes) {
-		super(supportsSelectedOnly, supportedNodeAttributes, supportedEdgeAttributes);
-	}
 
 	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {

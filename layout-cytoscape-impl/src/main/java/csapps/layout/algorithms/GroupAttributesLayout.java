@@ -36,11 +36,15 @@
 
 package csapps.layout.algorithms;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -60,15 +64,15 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm<GroupAttribut
 	 * Creates a new GroupAttributesLayout object.
 	 */
 	public GroupAttributesLayout() {
-		super("attributes-layout", "Group Attributes Layout", true);
+		super("attributes-layout", "Group Attributes Layout");
 	}
 
-	public TaskIterator createTaskIterator(GroupAttributesLayoutContext context) {
-		return new TaskIterator(new GroupAttributesLayoutTask(getName(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, GroupAttributesLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
+		return new TaskIterator(new GroupAttributesLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
 	}
 	
 	@Override
-	public Set<Class<?>> supportsNodeAttributes() {
+	public Set<Class<?>> getSupportedNodeAttributeTypes() {
 		Set<Class<?>> ret = new HashSet<Class<?>>();
 
 		ret.add(Integer.class);
@@ -80,12 +84,7 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm<GroupAttribut
 	}
 	
 	@Override
-	public List<String> getInitialAttributeList() {
-		return null;
-	}
-
-	@Override
 	public GroupAttributesLayoutContext createLayoutContext() {
-		return new GroupAttributesLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new GroupAttributesLayoutContext();
 	}
 }

@@ -38,7 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -53,8 +56,7 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCirc
 	public AttributeCircleLayout(final boolean supportNodeAttributes)
 	{
 		super((supportNodeAttributes ? "attribute-circle": "circle"), 
-		      (supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"),
-		      true);
+		      (supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"));
 		this.supportNodeAttributes = supportNodeAttributes;
 	}
 
@@ -66,8 +68,8 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCirc
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(AttributeCircleLayoutContext context) {
-		return new TaskIterator(new AttributeCircleLayoutTask(getName(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, AttributeCircleLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
+		return new TaskIterator(new AttributeCircleLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
 	}
 
 	// Required methods for AbstactLayout
@@ -76,7 +78,7 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCirc
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public Set<Class<?>> supportsNodeAttributes() {
+	public Set<Class<?>> getSupportedNodeAttributeTypes() {
 		Set<Class<?>> ret = new HashSet<Class<?>>();
 		if (!supportNodeAttributes)
 			return ret;
@@ -106,6 +108,6 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCirc
 	
 	@Override
 	public AttributeCircleLayoutContext createLayoutContext() {
-		return new AttributeCircleLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new AttributeCircleLayoutContext();
 	}
 }

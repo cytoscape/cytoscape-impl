@@ -1,10 +1,14 @@
 package csapps.layout;
 
 
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableValidator;
 import org.jgraph.plugins.layouts.AnnealingLayoutAlgorithm;
 import org.jgraph.plugins.layouts.CircleGraphLayout;
 import org.jgraph.plugins.layouts.GEMLayoutAlgorithm;
@@ -17,7 +21,7 @@ import org.jgraph.plugins.layouts.SugiyamaLayoutAlgorithm;
 import org.jgraph.plugins.layouts.TreeLayoutAlgorithm;
 
 
-public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutAlgorithmContext> {
+public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutContext> {
 	public static final int ANNEALING = 0;
 	public static final int MOEN = 1;
 	public static final int CIRCLE_GRAPH = 2;
@@ -36,7 +40,7 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutA
 	 */
 	public JGraphLayoutWrapper(int layout_type) {
 		// names here will be overridden by provided methods
-		super("jgraph", "jgraph", true);
+		super("jgraph", "jgraph");
 		
 		this.layout_type = layout_type;
 
@@ -85,9 +89,8 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutA
 		layoutSettings = layout.createSettings();
 	}
 
-	public TaskIterator createTaskIterator(AbstractLayoutAlgorithmContext context) {
-		return new TaskIterator(new JGraphLayoutWrapperTask(getName(), context,
-				layout, layoutSettings));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, AbstractLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
+		return new TaskIterator(new JGraphLayoutWrapperTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context, layout, layoutSettings));
 	}
 
 	/**
@@ -161,7 +164,7 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutA
 	}
 	
 	@Override
-	public AbstractLayoutAlgorithmContext createLayoutContext() {
-		return new AbstractLayoutAlgorithmContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+	public AbstractLayoutContext createLayoutContext() {
+		return new AbstractLayoutContext();
 	}
 }

@@ -2,6 +2,7 @@ package org.cytoscape.psi_mi.internal.plugin;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReader;
@@ -84,9 +85,8 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 
 		final CyLayoutAlgorithm layout = layouts.getLayout(pref);
 		CyLayoutContext context = layout.createLayoutContext();
-		context.setNetworkView(view);
 		// Force to run this task here to avoid concurrency problem.
-		TaskIterator itr = layout.createTaskIterator(context);
+		TaskIterator itr = layout.createTaskIterator(view, context, Collections.emptySet());
 		Task nextTask = itr.next();
 		try {
 			nextTask.run(parentTaskMonitor);

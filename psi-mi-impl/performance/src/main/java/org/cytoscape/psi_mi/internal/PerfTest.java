@@ -21,6 +21,7 @@ import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReader;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.CyLayoutContext;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -47,7 +48,7 @@ public class PerfTest {
 
 	public PerfTest() {
         layout = mock(CyLayoutAlgorithm.class);
-        when(layout.createTaskIterator(Mockito.any(CyLayoutContext.class))).thenReturn(new TaskIterator(new SimpleTask()));
+		when(layout.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(CyLayoutContext.class), Mockito.anySet())).thenReturn(new TaskIterator(new SimpleTask()));
 
         layouts = mock(CyLayoutAlgorithmManager.class);
         when(layouts.getLayout(anyString())).thenReturn(layout);

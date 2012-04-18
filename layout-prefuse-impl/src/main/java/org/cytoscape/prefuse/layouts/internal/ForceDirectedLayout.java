@@ -1,7 +1,15 @@
 package org.cytoscape.prefuse.layouts.internal;
 
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 import prefuse.util.force.EulerIntegrator;
@@ -10,7 +18,14 @@ import prefuse.util.force.RungeKuttaIntegrator;
 
 
 public class ForceDirectedLayout extends AbstractLayoutAlgorithm<ForceDirectedLayoutContext> {
+	/**
+	 * Value to set for doing unweighted layouts
+	 */
+	public static final String UNWEIGHTEDATTRIBUTE = "(unweighted)";
+
 	private Integrators integrator = Integrators.RUNGEKUTTA;
+
+	private boolean supportWeights;
 	
 	public enum Integrators {
 		RUNGEKUTTA ("Runge-Kutta"),
@@ -32,16 +47,37 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm<ForceDirectedLa
 	 * Creates a new GridNodeLayout object.
 	 */
 	public ForceDirectedLayout() {
-		super("force-directed", "Force Directed Layout", true);
+		super("force-directed", "Force Directed Layout");
 	}
 
-	public TaskIterator createTaskIterator(ForceDirectedLayoutContext context) {
-		return new TaskIterator(
-			new ForceDirectedLayoutTask(getName(), context, integrator));
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, ForceDirectedLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
+		return new TaskIterator(new ForceDirectedLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context, integrator));
 	}
 	
 	@Override
 	public ForceDirectedLayoutContext createLayoutContext() {
-		return new ForceDirectedLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new ForceDirectedLayoutContext();
+	}
+	
+	public Set<Class<?>> getSupportedEdgeAttributeTypes() {
+		Set<Class<?>> ret = new HashSet<Class<?>>();
+		if (!supportWeights)
+			return ret;
+
+		ret.add( Integer.class );
+		ret.add( Double.class );
+
+		return ret;
+	}
+
+	public List<String> getInitialAttributeList() {
+		List<String> list = new ArrayList<String>();
+		if (!supportWeights)
+			return list;
+		
+		list.add(UNWEIGHTEDATTRIBUTE);
+
+		return list;
 	}
 }

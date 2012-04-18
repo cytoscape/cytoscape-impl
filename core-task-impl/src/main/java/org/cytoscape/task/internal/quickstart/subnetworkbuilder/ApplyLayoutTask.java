@@ -1,8 +1,14 @@
 package org.cytoscape.task.internal.quickstart.subnetworkbuilder;
 
+import java.util.Collections;
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.CyLayoutContext;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -19,13 +25,13 @@ public class ApplyLayoutTask extends AbstractTask {
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
-//	final CyLayoutAlgorithm layout = layouts.getLayout(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
 	final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 	taskMonitor.setProgress(0.1);
 	CyLayoutContext context = layout.createLayoutContext();
-	context.setNetworkView(util.appManager.getCurrentNetworkView());
 	taskMonitor.setProgress(0.2);
-	insertTasksAfterCurrentTask(layout.createTaskIterator(context));
+	CyNetworkView view = util.appManager.getCurrentNetworkView();
+	Set<View<CyNode>> nodes = Collections.emptySet();
+	insertTasksAfterCurrentTask(layout.createTaskIterator(view, context, nodes));
 	
 	taskMonitor.setProgress(1.0);
     }

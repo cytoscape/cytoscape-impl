@@ -36,6 +36,7 @@
 */
 package org.cytoscape.internal.layout.ui;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -50,13 +51,16 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.StringEnableSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DynamicSubmenuListener;
@@ -90,7 +94,7 @@ public class LayoutMenuPopulator {
 		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
 	}
 
-	public <T extends AbstractLayoutAlgorithmContext> void addLayout(CyLayoutAlgorithm<T> layout, Map props) {
+	public <T extends AbstractLayoutContext> void addLayout(CyLayoutAlgorithm<T> layout, Map props) {
 		String prefMenu = getPreferredMenu(props); 
 
 		String menuName = (String)props.get("title");
@@ -129,16 +133,28 @@ public class LayoutMenuPopulator {
 		return new NetworkViewTaskFactory() {
 			@Override
 			public boolean isReady(CyNetworkView networkView) {
-				tunableContext.setNetworkView(networkView);
-				return layout.isReady(tunableContext);
+				return layout.isReady(networkView, tunableContext, getAffectedNodes(tunableContext, networkView));
 			}
 			
 			@Override
 			public TaskIterator createTaskIterator(CyNetworkView networkView) {
-				tunableContext.setNetworkView(networkView);
-				return layout.createTaskIterator(tunableContext);
+				return layout.createTaskIterator(networkView, tunableContext, getAffectedNodes(tunableContext, networkView));
 			}
 		};
+	}
+	
+	static Set<View<CyNode>> getAffectedNodes(CyLayoutContext context, CyNetworkView networkView) {
+		if (context.useOnlySelectedNodes()) {
+			CyNetwork network = networkView.getModel();
+			Set<View<CyNode>> views = new HashSet<View<CyNode>>();
+			for (View<CyNode> view : networkView.getNodeViews()) {
+				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class)) {
+					views.add(view);
+				}
+			}
+			return views;
+		}
+		return Collections.emptySet();
 	}
 	
 	public void removeLayout(CyLayoutAlgorithm layout, Map props) {

@@ -7,19 +7,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.view.layout.AbstractBasicLayoutTask;
+import org.cytoscape.view.layout.AbstractLayoutTask;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
 
 
-public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
+public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 	private HashMap<Integer, HierarchyFlowLayoutOrderNode> nodes2HFLON = new HashMap<Integer, HierarchyFlowLayoutOrderNode>();
 	private TaskMonitor taskMonitor;
@@ -29,8 +31,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public HierarchicalLayoutAlgorithmTask(final String name, HierarchicalLayoutContext context) {
-		super(name, context);
+	public HierarchicalLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, HierarchicalLayoutContext context) {
+		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 		this.context = context;
 	}
 
@@ -86,42 +88,22 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 			return;
 
 		/* construct node list with selected nodes first */
-		List selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-		int numSelectedNodes = selectedNodes.size();
-
-		if (!selectedOnly)
-			numSelectedNodes = 0;
-
-		final int numNodes = networkView.getNodeViews().size();
-		final int numLayoutNodes = (numSelectedNodes < 1) ? numNodes : numSelectedNodes;
+		int numLayoutNodes = nodesToLayOut.size();
 
 		if (numLayoutNodes == 1) {
 			// We were asked to do a hierchical layout of a single node -- done!
 			return;
 		}
 
-		HashMap<Long, Integer> suid2Index = new HashMap<Long, Integer>(numNodes);
-		List<View<CyNode>> nodeViews = new ArrayList<View<CyNode>>(numNodes);
+		HashMap<Long, Integer> suid2Index = new HashMap<Long, Integer>(numLayoutNodes);
+		List<View<CyNode>> nodeViews = new ArrayList<View<CyNode>>(nodesToLayOut);
 		
-		if (numSelectedNodes > 1) {
-			int index = 0;
-			for (CyNode n: CyTableUtil.getNodesInState(network,"selected",true)){
-				Long suid = n.getSUID();
-				nodeViews.add(networkView.getNodeView(n));
-				suid2Index.put(suid, index);
-				index++;
-			}
-		} else {
-			int index = 0;
-			for (View<CyNode> nv: networkView.getNodeViews()){
-			    if (cancelled)
-				return;
-			    Long suid = nv.getModel().getSUID();
-			    nodeViews.add(nv);
-				suid2Index.put(suid, index);
-				index++;
-			}
-
+		int index = 0;
+		for (View<CyNode> view : nodeViews) {
+			CyNode node = view.getModel();
+			Long suid = node.getSUID();
+			suid2Index.put(suid, index);
+			index++;
 		}
 
 		if (cancelled)
@@ -144,9 +126,9 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 			if (cancelled)
 				return;
 
-			if ((numSelectedNodes <= 1)
-			    || ((edgeFrom < numSelectedNodes)
-			       && (edgeTo < numSelectedNodes))) {
+			if ((numLayoutNodes <= 1)
+			    || ((edgeFrom < numLayoutNodes)
+			       && (edgeTo < numLayoutNodes))) {
 				/* add edge to graph */
 				Edge theEdge = new Edge(edgeFrom, edgeTo);
 				edges.add(theEdge);
@@ -526,9 +508,9 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractBasicLayoutTask {
 				continue;
 			}
 
-			if ((numSelectedNodes <= 1)
-			    || ((edgeFrom < numSelectedNodes)
-			       && (edgeTo < numSelectedNodes))) {
+			if ((numLayoutNodes <= 1)
+			    || ((edgeFrom < numLayoutNodes)
+			       && (edgeTo < numLayoutNodes))) {
 				/* add edge to graph */
 				Edge theEdge = component[cI[edgeFrom]].GetTheEdge(renumber[edgeFrom],
 				                                                             renumber[edgeTo]);

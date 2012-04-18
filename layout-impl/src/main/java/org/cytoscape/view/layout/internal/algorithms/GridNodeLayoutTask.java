@@ -30,11 +30,11 @@
 package org.cytoscape.view.layout.internal.algorithms;
 
 
+import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.layout.AbstractBasicLayoutTask;
+import org.cytoscape.view.layout.AbstractLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -46,16 +46,15 @@ import org.cytoscape.work.TaskMonitor;
  * The GridNodeLayout provides a very simple layout, suitable as
  * the default layout for Cytoscape data readers.
  */
-public class GridNodeLayoutTask extends AbstractBasicLayoutTask {
+public class GridNodeLayoutTask extends AbstractLayoutTask {
 	private final double nodeVerticalSpacing;
 	private final double nodeHorizontalSpacing;
 
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public GridNodeLayoutTask(final String name, final GridNodeLayoutContext context)
-	{
-		super(name, context);
+	public GridNodeLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final GridNodeLayoutContext context) {
+		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 
 		this.nodeVerticalSpacing = context.nodeVerticalSpacing;
 		this.nodeHorizontalSpacing = context.nodeHorizontalSpacing;
@@ -71,50 +70,36 @@ public class GridNodeLayoutTask extends AbstractBasicLayoutTask {
 		double currY = 0.0d;
 		double initialX = 0.0d;
 		double initialY = 0.0d;
-		int columns;
-		final CyNetwork network = networkView.getModel();
 
 		final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 		final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
 
-		// Selected only?
-		if (selectedOnly) {
-			// Yes, our size and starting points need to be different
-			int nodeCount = network.getNodeCount() - staticNodes.size();
-			columns = (int) Math.sqrt(nodeCount);
-			// Calculate our starting point as the geographical center of the
-			// selected nodes.
-			for ( View<CyNode> nView : networkView.getNodeViews() ) {
-				if (!isLocked(nView)) {
-					initialX += (nView.getVisualProperty(xLoc) / nodeCount);
-					//initialX += (xColumn.getValue(nView) / nodeCount);
-					initialY += (nView.getVisualProperty(yLoc) / nodeCount);
-					//initialY += (yColumn.getValue(nView) / nodeCount);
-				}
-			}
-
-			// initialX and initialY reflect the center of our grid, so we
-			// need to offset by distance*columns/2 in each direction
-			initialX = initialX - ((nodeHorizontalSpacing * (columns - 1)) / 2);
-			initialY = initialY - ((nodeVerticalSpacing * (columns - 1)) / 2);
-			currX = initialX;
-			currY = initialY;
-		} else {
-			columns = (int) Math.sqrt(network.getNodeCount());
+		// Yes, our size and starting points need to be different
+		int nodeCount = nodesToLayOut.size();
+		int columns = (int) Math.sqrt(nodeCount);
+		// Calculate our starting point as the geographical center of the
+		// selected nodes.
+		for ( View<CyNode> nView : nodesToLayOut ) {
+			initialX += (nView.getVisualProperty(xLoc) / nodeCount);
+			initialY += (nView.getVisualProperty(yLoc) / nodeCount);
 		}
+
+		// initialX and initialY reflect the center of our grid, so we
+		// need to offset by distance*columns/2 in each direction
+		initialX = initialX - ((nodeHorizontalSpacing * (columns - 1)) / 2);
+		initialY = initialY - ((nodeVerticalSpacing * (columns - 1)) / 2);
+		currX = initialX;
+		currY = initialY;
 
 		int count = 0;
 		
 		// Set visual property.
-		for (final View<CyNode> nView : networkView.getNodeViews() ) {
+		for (final View<CyNode> nView : nodesToLayOut ) {
 			// FIXME
 //			edgeList = network.getAdjacentEdgeList(nView.getModel(),CyEdge.Type.ANY);
 //			for (CyEdge edge: edgeList) {
 //				networkView.getCyEdgeView(edge).clearBends();
 //			}
-
-			if (isLocked(nView))
-				continue;
 
 			// approach 1			
 			nView.setVisualProperty(xLoc,currX);

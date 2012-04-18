@@ -55,7 +55,7 @@ public class AbstractNetworkReaderTest {
 		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
 		CyLayoutContext context = mock(CyLayoutContext.class);
 		when(def.createLayoutContext()).thenReturn(context);
-		when(def.createTaskIterator(Mockito.any(CyLayoutContext.class))).thenReturn(new TaskIterator(new SimpleTask()));
+		when(def.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(CyLayoutContext.class), Mockito.anySet())).thenReturn(new TaskIterator(new SimpleTask()));
 
 		layouts = mock(CyLayoutAlgorithmManager.class);
 		when(layouts.getDefaultLayout()).thenReturn(def);

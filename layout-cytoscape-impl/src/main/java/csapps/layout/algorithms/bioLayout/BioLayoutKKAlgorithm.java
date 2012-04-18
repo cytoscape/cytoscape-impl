@@ -31,10 +31,11 @@
  */
 package csapps.layout.algorithms.bioLayout;
 
-import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -57,35 +58,20 @@ import org.cytoscape.work.TaskIterator;
  * @author <a href="mailto:scooter@cgl.ucsf.edu">Scooter Morris</a>
  * @version 0.9
  */
-public class BioLayoutKKAlgorithm  extends AbstractLayoutAlgorithm<BioLayoutKKContext> {
-	private final boolean supportWeights; 
-
+public class BioLayoutKKAlgorithm  extends BioLayoutAlgorithm<BioLayoutKKContext> {
 	public BioLayoutKKAlgorithm(boolean supportEdgeWeights) {
 		super((supportEdgeWeights ?  "kamada-kawai" : "kamada-kawai-noweight"),
 		      (supportEdgeWeights ?  "Edge-weighted Spring Embedded" : "Spring Embedded"),
-		      true);
-		supportWeights = supportEdgeWeights;
+		      supportEdgeWeights);
 	}
 	
-	@Override
-	public Set<Class<?>> supportsEdgeAttributes() {
-		Set<Class<?>> ret = new HashSet<Class<?>>();
-		if (!supportWeights)
-			return ret;
-
-		ret.add( Integer.class );
-		ret.add( Double.class );
-
-		return ret;
-	}
-
-	public TaskIterator createTaskIterator(BioLayoutKKContext context) {
+	public TaskIterator createTaskIterator(CyNetworkView networkView, BioLayoutKKContext context, Set<View<CyNode>> nodesToLayOut) {
 		return new TaskIterator(
-			new BioLayoutKKAlgorithmTask(getName(), context, supportWeights));
+			new BioLayoutKKAlgorithmTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context, supportWeights));
 	}
 	
 	@Override
 	public BioLayoutKKContext createLayoutContext() {
-		return new BioLayoutKKContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new BioLayoutKKContext();
 	}
 }

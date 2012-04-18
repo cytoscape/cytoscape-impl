@@ -40,7 +40,12 @@
 package csapps.layout.algorithms.hierarchicalLayout;
 
 
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -72,15 +77,15 @@ public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm<Hierarc
 	 * Creates a new HierarchicalLayoutAlgorithm object.
 	 */
 	public HierarchicalLayoutAlgorithm() {
-		super("hierarchical", "Hierarchical Layout",true);		
+		super("hierarchical", "Hierarchical Layout");		
 	}
 
-	public TaskIterator createTaskIterator(HierarchicalLayoutContext context) {
-		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(getName(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, HierarchicalLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
+		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
 	}
 	
 	@Override
 	public HierarchicalLayoutContext createLayoutContext() {
-		return new HierarchicalLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new HierarchicalLayoutContext();
 	}
 }

@@ -1,17 +1,10 @@
 package csapps.layout.algorithms;
 
-import java.util.Set;
-
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
 
-public class StackedNodeLayoutContext extends AbstractLayoutAlgorithmContext implements TunableValidator {
-
-	public StackedNodeLayoutContext(boolean supportsSelectedOnly, Set<Class<?>> supportedNodeAttributes, Set<Class<?>> supportedEdgeAttributes) {
-		super(supportsSelectedOnly, supportedNodeAttributes, supportedEdgeAttributes);
-	}
+public class StackedNodeLayoutContext extends AbstractLayoutContext implements TunableValidator {
 
 	@Tunable(description="x_position")
 	public double x_position = 10.0;

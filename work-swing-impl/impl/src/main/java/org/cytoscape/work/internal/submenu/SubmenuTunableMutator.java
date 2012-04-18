@@ -30,7 +30,7 @@ public class SubmenuTunableMutator extends AbstractTunableInterceptor<SubmenuTun
 
 	public JMenuItem buildConfiguration(Object objectWithTunables) {
 		TaskFactory tf = taskFactoriesByContext.get(objectWithTunables);
-		if (tf == null || ! tf.isReady()) {
+		if (tf == null) {
 			return null;
 		}
 

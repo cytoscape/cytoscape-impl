@@ -4,6 +4,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,8 +13,9 @@ import javax.swing.JPanel;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.layout.AbstractBasicLayoutTask;
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
+import org.cytoscape.view.layout.AbstractLayoutTask;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
@@ -31,7 +33,7 @@ import org.jgraph.graph.VertexView;
 import org.jgraph.plugins.layouts.JGraphLayoutAlgorithm;
 import org.jgraph.plugins.layouts.JGraphLayoutSettings;
 
-public class JGraphLayoutWrapperTask extends AbstractBasicLayoutTask{
+public class JGraphLayoutWrapperTask extends AbstractLayoutTask{
 	
 	private JGraphLayoutAlgorithm layout = null;
 	private JGraphLayoutSettings layoutSettings = null;
@@ -42,9 +44,9 @@ public class JGraphLayoutWrapperTask extends AbstractBasicLayoutTask{
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public JGraphLayoutWrapperTask(final String name, AbstractLayoutAlgorithmContext context, JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings)
+	public JGraphLayoutWrapperTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, AbstractLayoutContext context, JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings)
 	{
-		super(name, context);
+		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 
 		this.layoutSettings = layoutSettings;
 		this.layout = layout;
@@ -122,13 +124,12 @@ public class JGraphLayoutWrapperTask extends AbstractBasicLayoutTask{
 		// update progress bar
 		currentProgress = 20;
 		taskMonitor.setProgress(currentProgress/100.0);
-		percentProgressPerIter = 20 / (double) (networkView.getNodeViews().size());
+		percentProgressPerIter = 20 / (double) (nodesToLayOut.size());
 
 		// create Vertices
-		for (CyNode n: network.getNodeList()){
+		for (View<CyNode> node_view : nodesToLayOut){
 		    if (canceled) return;
-			View<CyNode> node_view = networkView.getNodeView(n);
-
+		    CyNode n = node_view.getModel();
 			DefaultGraphCell jcell = new DefaultGraphCell(n.getSUID());
 
 			// Set bounds

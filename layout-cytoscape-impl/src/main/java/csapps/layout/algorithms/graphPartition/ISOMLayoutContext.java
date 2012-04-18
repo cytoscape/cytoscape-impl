@@ -1,12 +1,10 @@
 package csapps.layout.algorithms.graphPartition;
 
-import java.util.Set;
-
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class ISOMLayoutContext extends AbstractLayoutAlgorithmContext implements TunableValidator {
+public class ISOMLayoutContext extends AbstractLayoutContext implements TunableValidator {
 	@Tunable(description="Number of iterations")
 	public int maxEpoch = 5000;
 	@Tunable(description="Radius constant")
@@ -25,10 +23,6 @@ public class ISOMLayoutContext extends AbstractLayoutAlgorithmContext implements
 	public double coolingFactor = 2;
 	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
-
-	public ISOMLayoutContext(boolean supportsSelectedOnly, Set<Class<?>> supportedNodeAttributes, Set<Class<?>> supportedEdgeAttributes) {
-		super(supportsSelectedOnly, supportedNodeAttributes, supportedEdgeAttributes);
-	}
 
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {

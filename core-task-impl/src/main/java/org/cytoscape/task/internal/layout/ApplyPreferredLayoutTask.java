@@ -29,15 +29,19 @@ package org.cytoscape.task.internal.layout;
 
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
 
 
 public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
@@ -86,8 +90,8 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 		if (layout != null) {
 			tm.setProgress(0.6);
 			CyLayoutContext context = layout.createLayoutContext();
-			context.setNetworkView(view);
-			insertTasksAfterCurrentTask(layout.createTaskIterator(context));
+			Set<View<CyNode>> nodes = Collections.emptySet();
+			insertTasksAfterCurrentTask(layout.createTaskIterator(view, context, nodes));
 		} else {
 			throw new IllegalArgumentException("Couldn't find layout algorithm: " + pref);
 		}

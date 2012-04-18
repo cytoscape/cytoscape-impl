@@ -28,19 +28,23 @@
 package org.cytoscape.prefuse.layouts.internal; 
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
+import org.cytoscape.view.layout.WeightTypes;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 
 import prefuse.util.force.DragForce;
 import prefuse.util.force.ForceItem;
@@ -54,6 +58,21 @@ import prefuse.util.force.SpringForce;
  * See {@link http://prefuse.org} for more detail.
  */
 public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
+
+	private static final String groupName = "Edge Weight Settings";
+
+	/** A tunable for determining how to interpret weight values. */	
+	@Tunable(description="How to interpret weight values",groups=groupName)
+	public ListSingleSelection<WeightTypes> weightChoices;
+
+	/** A tunable for determining the minimum edge weight to consider. */
+	@Tunable(description="The minimum edge weight to consider",groups=groupName)
+	public double minWeight = 0;	
+
+	/** A tunable for determining the maximum edge weight to consider. */
+	@Tunable(description="The maximum edge weight to consider",groups=groupName)
+	public double maxWeight = Double.MAX_VALUE;	
+
 	private ForceSimulator m_fsim;
 
 //	public int numIterations;
@@ -62,11 +81,6 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 //	public double defaultNodeMass;
 	private ForceDirectedLayout.Integrators integrator;
 	
-	/**
-	 * Value to set for doing unweighted layouts
-	 */
-	public static final String UNWEIGHTEDATTRIBUTE = "(unweighted)";
-
 	private boolean supportWeights = true;
 	private Map<LayoutNode,ForceItem> forceItems;
 
@@ -75,9 +89,11 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public ForceDirectedLayoutTask(final String name, final ForceDirectedLayoutContext context,
+	public ForceDirectedLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final ForceDirectedLayoutContext context,
 				       final ForceDirectedLayout.Integrators integrator) {
-		super(name, context, context.singlePartition);
+		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+
+		weightChoices = new ListSingleSelection<WeightTypes>( WeightTypes.values() );	
 
 		this.context = context;
 		this.integrator = integrator;
@@ -91,7 +107,6 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		m_fsim.addForce(new DragForce());
 
 		forceItems = new HashMap<LayoutNode,ForceItem>();
-
 	}
 	
 	public String getName() {
@@ -101,10 +116,6 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	public String toString() {
 		return "Force-Directed Layout";
 	}
-
-	protected void initialize_local() {
-	}
-
 
 	public void layoutPartion(LayoutPartition part) {
 		LayoutPoint initialLocation = null;
@@ -147,8 +158,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		}
 
 		// Figure out our starting point
-		if (selectedOnly)
-			initialLocation = part.getAverageLocation();
+		initialLocation = part.getAverageLocation();
 
 		// perform layout
 		long timestep = 1000L;
@@ -170,17 +180,15 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		}
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
-		if (selectedOnly) {
-			double xDelta = 0.0;
-			double yDelta = 0.0;
-			final LayoutPoint finalLocation = part.getAverageLocation();
-			xDelta = finalLocation.getX() - initialLocation.getX();
-			yDelta = finalLocation.getY() - initialLocation.getY();
-			for (LayoutNode v: part.getNodeList()) {
-				if (!v.isLocked()) {
-					v.decrement(xDelta, yDelta);
-					part.moveNodeToLocation(v);
-				}
+		double xDelta = 0.0;
+		double yDelta = 0.0;
+		final LayoutPoint finalLocation = part.getAverageLocation();
+		xDelta = finalLocation.getX() - initialLocation.getX();
+		yDelta = finalLocation.getY() - initialLocation.getY();
+		for (LayoutNode v: part.getNodeList()) {
+			if (!v.isLocked()) {
+				v.decrement(xDelta, yDelta);
+				part.moveNodeToLocation(v);
 			}
 		}
 	}
@@ -219,30 +227,4 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	protected float getSpringCoefficient(LayoutEdge e) {
 		return (float)context.defaultSpringCoefficient;
 	}
-
-	/**
-	 * Return information about our algorithm
-	 */
-	public boolean supportsSelectedOnly() {
-		return true;
-	}
-
-	public Set<Class<?>> supportsEdgeAttributes() {
-		Set<Class<?>> ret = new HashSet<Class<?>>();
-		if (!supportWeights)
-			return ret;
-
-		ret.add( Integer.class );
-		ret.add( Double.class );
-
-		return ret;
-	}
-
-	public List getInitialAttributeList() {
-		ArrayList list = new ArrayList();
-		list.add(UNWEIGHTEDATTRIBUTE);
-
-		return list;
-	}
-
 }

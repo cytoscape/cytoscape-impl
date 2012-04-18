@@ -1,7 +1,5 @@
 package csapps.layout.algorithms.bioLayout;
 
-import java.util.Set;
-
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
@@ -25,10 +23,6 @@ public class BioLayoutKKContext extends BioLayoutContext implements TunableValid
 	public int m_layoutPass = 2;
 	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
-
-	public BioLayoutKKContext(boolean supportsSelectedOnly, Set<Class<?>> supportedNodeAttributes, Set<Class<?>> supportedEdgeAttributes) {
-		super(supportsSelectedOnly, supportedNodeAttributes, supportedEdgeAttributes);
-	}
 
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {

@@ -28,7 +28,12 @@
 package csapps.layout.algorithms;
 
 
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -41,15 +46,15 @@ public class StackedNodeLayout extends AbstractLayoutAlgorithm<StackedNodeLayout
 	 * @param nodes  DOCUMENT ME!
 	 */
 	public StackedNodeLayout() {
-		super("stacked-node-layout", "Stacked Node Layout", true);
+		super("stacked-node-layout", "Stacked Node Layout");
 	}
 
-	public TaskIterator createTaskIterator(StackedNodeLayoutContext context) {
-		return new TaskIterator(new StackedNodeLayoutTask(getName(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, StackedNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
+		return new TaskIterator(new StackedNodeLayoutTask(getName(), networkView, context, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList()));
 	}
 	
 	@Override
 	public StackedNodeLayoutContext createLayoutContext() {
-		return new StackedNodeLayoutContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new StackedNodeLayoutContext();
 	}
 }

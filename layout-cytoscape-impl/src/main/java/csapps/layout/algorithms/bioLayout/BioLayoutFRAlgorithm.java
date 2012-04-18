@@ -31,10 +31,11 @@
 package csapps.layout.algorithms.bioLayout;
 
 
-import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -53,39 +54,21 @@ import org.cytoscape.work.TaskIterator;
  * @author <a href="mailto:scooter@cgl.ucsf.edu">Scooter Morris</a>
  * @version 0.9
  */
-public class BioLayoutFRAlgorithm extends AbstractLayoutAlgorithm<BioLayoutFRContext> {
-	final boolean supportWeights; 
-	
+public class BioLayoutFRAlgorithm extends BioLayoutAlgorithm<BioLayoutFRContext> {
 	/**
 	 * This is the constructor for the bioLayout algorithm.
 	 */
 	public BioLayoutFRAlgorithm(boolean supportEdgeWeights) {
-		
-		super("fruchterman-rheingold", (supportEdgeWeights ?  "Edge-weighted Force directed (BioLayout)" : "Force directed (BioLayout)"), true);
-
-		supportWeights = supportEdgeWeights;
-
+		super("fruchterman-rheingold", (supportEdgeWeights ?  "Edge-weighted Force directed (BioLayout)" : "Force directed (BioLayout)"), supportEdgeWeights);
 	}
 
-	@Override
-	public Set<Class<?>> supportsEdgeAttributes() {
-		Set<Class<?>> ret = new HashSet<Class<?>>();
-		if (!supportWeights)
-			return ret;
-
-		ret.add( Integer.class );
-		ret.add( Double.class );
-
-		return ret;
-	}
-	
-	public TaskIterator createTaskIterator(BioLayoutFRContext context) {
+	public TaskIterator createTaskIterator(CyNetworkView networkView, BioLayoutFRContext context, Set<View<CyNode>> nodesToLayOut) {
 		return new TaskIterator(
-			new BioLayoutFRAlgorithmTask(getName(), context, supportWeights));
+			new BioLayoutFRAlgorithmTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context, supportWeights));
 	}
 	
 	@Override
 	public BioLayoutFRContext createLayoutContext() {
-		return new BioLayoutFRContext(supportsSelectedOnly(), supportsNodeAttributes(), supportsEdgeAttributes());
+		return new BioLayoutFRContext();
 	}
 }

@@ -5,18 +5,23 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.layout.AbstractBasicLayoutTask;
+import org.cytoscape.view.layout.AbstractLayoutTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
+public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	
 	private static Logger logger = LoggerFactory.getLogger(GroupAttributesLayoutTask.class);
 
@@ -25,20 +30,26 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 
 	private GroupAttributesLayoutContext context;
 	
-	public GroupAttributesLayoutTask(final String name, GroupAttributesLayoutContext context) {
-		super(name, context);
+	public GroupAttributesLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, GroupAttributesLayoutContext context) {
+		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 		
 		this.context = context;
-		if (context.attributeName == null)
-			throw new NullPointerException("Attribute is null.  This is required for this layout.");
 	}
 
+	@Override
+	@Tunable(description = "Weight using")
+	public ListSingleSelection<String> getWeightingOptions() {
+		return super.getWeightingOptions();
+	}
 
 	@Override
 	final protected void doLayout(final TaskMonitor taskMonitor) {
 		this.taskMonitor = taskMonitor;
 		this.network = networkView.getModel();
-		
+
+		if (layoutAttribute == null || layoutAttribute.equals("(none)"))
+			throw new NullPointerException("Attribute is null.  This is required for this layout.");
+
 		construct(); 
 	}
 
@@ -65,7 +76,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 	*/
 	private void construct() {
 		
-		if (context.attributeName == null){
+		if (layoutAttribute == null){
 			logger.warn("Attribute name is not defined.");
 			return;
 		}
@@ -73,7 +84,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 		taskMonitor.setStatusMessage("Initializing");
 
 		CyTable dataTable = network.getDefaultNodeTable();
-		Class<?> klass = dataTable.getColumn(context.attributeName).getType();
+		Class<?> klass = dataTable.getColumn(layoutAttribute).getType();
 		
 		if (Comparable.class.isAssignableFrom(klass)){
 			Class<Comparable>kasted = (Class<Comparable>) klass;
@@ -123,7 +134,7 @@ public class GroupAttributesLayoutTask extends AbstractBasicLayoutTask {
 		
 		for (CyNode node:network.getNodeList()){
 			// TODO: support namespace
-			T key = network.getRow(node).get(context.attributeName, klass);
+			T key = network.getRow(node).get(layoutAttribute, klass);
 
 			if (key == null) {
 				if (invalidNodes != null)

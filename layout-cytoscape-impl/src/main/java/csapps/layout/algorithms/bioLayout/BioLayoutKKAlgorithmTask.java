@@ -6,11 +6,15 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 import csapps.layout.Profile;
 
@@ -95,8 +99,8 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * @param supportEdgeWeights a boolean to indicate whether we should
 	 *                                                  behave as if we support weights
 	 */
-	public BioLayoutKKAlgorithmTask(final String name, final BioLayoutKKContext context, final boolean supportWeights) {
-		super(name, context, context.singlePartition);
+	public BioLayoutKKAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final BioLayoutKKContext context, final boolean supportWeights) {
+		super(name, networkView, nodesToLayOut, supportedEdgeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes, context.singlePartition);
 		this.context = context;
 		this.supportWeights = supportWeights;
 		this.m_layoutPass = context.m_layoutPass;
@@ -313,9 +317,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 		m_nodeDistanceSpringStrengths = new double[m_nodeCount][m_nodeCount];
 
 		// Figure out our starting point
-		if (selectedOnly) {
-			initialLocation = partition.getAverageLocation();
-		}
+		initialLocation = partition.getAverageLocation();
 
 		// Randomize our points, if any points lie
 		// outside of our bounds
@@ -435,17 +437,15 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
-		if (selectedOnly) {
-			double xDelta = 0.0;
-			double yDelta = 0.0;
-			final LayoutPoint finalLocation = partition.getAverageLocation();
-			xDelta = finalLocation.getX() - initialLocation.getX();
-			yDelta = finalLocation.getY() - initialLocation.getY();
-			for (LayoutNode v: partition.getNodeList()) {
-				if (!v.isLocked()) {
-					v.decrement(xDelta, yDelta);
-					partition.moveNodeToLocation(v);
-				}
+		double xDelta = 0.0;
+		double yDelta = 0.0;
+		final LayoutPoint finalLocation = partition.getAverageLocation();
+		xDelta = finalLocation.getX() - initialLocation.getX();
+		yDelta = finalLocation.getY() - initialLocation.getY();
+		for (LayoutNode v: partition.getNodeList()) {
+			if (!v.isLocked()) {
+				v.decrement(xDelta, yDelta);
+				partition.moveNodeToLocation(v);
 			}
 		}
 	}

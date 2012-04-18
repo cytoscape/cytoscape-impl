@@ -1,12 +1,10 @@
 package csapps.layout.algorithms.hierarchicalLayout;
 
-import java.util.Set;
-
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class HierarchicalLayoutContext extends AbstractLayoutAlgorithmContext implements TunableValidator {
+public class HierarchicalLayoutContext extends AbstractLayoutContext implements TunableValidator {
 	@Tunable(description="Horizontal spacing between nodes")
 	public int nodeHorizontalSpacing = 64;
 	@Tunable(description="Vertical spacing between nodes")
@@ -23,10 +21,6 @@ public class HierarchicalLayoutContext extends AbstractLayoutAlgorithmContext im
 	public int rightMargin = 7000;
 	@Tunable(description="layout selected nodes only")
 	public boolean selected_only = false;
-
-	public HierarchicalLayoutContext(boolean supportsSelectedOnly, Set<Class<?>> supportedNodeAttributes, Set<Class<?>> supportedEdgeAttributes) {
-		super(supportsSelectedOnly, supportedNodeAttributes, supportedEdgeAttributes);
-	}
 
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {

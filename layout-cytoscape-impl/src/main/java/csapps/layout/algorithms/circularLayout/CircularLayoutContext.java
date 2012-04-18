@@ -1,12 +1,10 @@
 package csapps.layout.algorithms.circularLayout;
 
-import java.util.Set;
-
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class CircularLayoutContext extends AbstractLayoutAlgorithmContext implements TunableValidator {
+public class CircularLayoutContext extends AbstractLayoutContext implements TunableValidator {
 	
 	//TODO: these are not used in current implementations.
 	
@@ -22,10 +20,6 @@ public class CircularLayoutContext extends AbstractLayoutAlgorithmContext implem
 	public int rightMargin = 1000;
     @Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
-
-	public CircularLayoutContext(boolean supportsSelectedOnly, Set<Class<?>> supportedNodeAttributes, Set<Class<?>> supportedEdgeAttributes) {
-		super(supportsSelectedOnly, supportedNodeAttributes, supportedEdgeAttributes);
-	}
 
 	@Override //TODO how to validate these values?
 	public ValidationState getValidationState(final Appendable errMsg) {

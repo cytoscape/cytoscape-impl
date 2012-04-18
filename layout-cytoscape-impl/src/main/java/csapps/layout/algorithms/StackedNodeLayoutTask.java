@@ -1,50 +1,36 @@
 package csapps.layout.algorithms;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.view.layout.AbstractBasicLayoutTask;
+import org.cytoscape.view.layout.AbstractLayoutTask;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
-public class StackedNodeLayoutTask extends AbstractBasicLayoutTask {
+public class StackedNodeLayoutTask extends AbstractLayoutTask {
 
 	private StackedNodeLayoutContext context;
 	
-	public StackedNodeLayoutTask(final String name, final StackedNodeLayoutContext context) {
-		super(name, context);
+	public StackedNodeLayoutTask(final String name, CyNetworkView networkView, final StackedNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes) {
+		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
 		this.context = context;
 	}
 
 	final protected void doLayout(final TaskMonitor taskMonitor) {
-
-		List<CyNode> nodes;
-		if (selectedOnly){
-			nodes = CyTableUtil.getNodesInState(networkView.getModel(),"selected",true);
-		}
-		else {
-			// select all nodes from the view
-			nodes = networkView.getModel().getNodeList();			
-		}
-		construct(nodes);
+		construct(nodesToLayOut);
 	}
 	
 	/**
 	 *  DOCUMENT ME!
 	 * @param nodes 
 	 */
-	public void construct(List<CyNode> nodes) {
+	public void construct(Set<View<CyNode>> nodes) {
 		double yPosition = context.y_start_position;
 		
-		Iterator it = nodes.iterator();
-
-		while (it.hasNext()) {
-			CyNode node = (CyNode) it.next();
-			View<CyNode> nodeView = networkView.getNodeView(node);
-			
+		for (View<CyNode> nodeView : nodes) {
 			nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, context.x_position);
 			nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPosition);
 			

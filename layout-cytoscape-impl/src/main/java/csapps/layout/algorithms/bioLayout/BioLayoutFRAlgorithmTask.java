@@ -2,11 +2,16 @@ package csapps.layout.algorithms.bioLayout;
 
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 
 public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
@@ -59,8 +64,8 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	Profile updateProfile;
 	 */
 
-	public BioLayoutFRAlgorithmTask(final String name, final BioLayoutFRContext context, final boolean supportWeights) {		
-		super(name, context, context.singlePartition);
+	public BioLayoutFRAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final BioLayoutFRContext context, final boolean supportWeights) {		
+		super(name, networkView, nodesToLayOut, supportedEdgeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes, context.singlePartition);
 		this.context = context;
 
 		this.supportWeights =supportWeights;
@@ -136,8 +141,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		}
 
 		// Figure out our starting point
-		if (selectedOnly)
-			initialLocation = partition.getAverageLocation();
+		initialLocation = partition.getAverageLocation();
 
 		// Randomize our points, if any points lie
 		// outside of our bounds
@@ -202,18 +206,16 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
-		if (selectedOnly) {
-			double xDelta = 0.0;
-			double yDelta = 0.0;
-			final LayoutPoint finalLocation = partition.getAverageLocation();
-			xDelta = finalLocation.getX() - initialLocation.getX();
-			yDelta = finalLocation.getY() - initialLocation.getY();
+		double xDelta = 0.0;
+		double yDelta = 0.0;
+		final LayoutPoint finalLocation = partition.getAverageLocation();
+		xDelta = finalLocation.getX() - initialLocation.getX();
+		yDelta = finalLocation.getY() - initialLocation.getY();
 
-			for (LayoutNode v: partition.getNodeList()) {
-				if (!v.isLocked()) {
-					v.decrement(xDelta, yDelta);
-					partition.moveNodeToLocation(v);
-				}
+		for (LayoutNode v: partition.getNodeList()) {
+			if (!v.isLocked()) {
+				v.decrement(xDelta, yDelta);
+				partition.moveNodeToLocation(v);
 			}
 		}
 
@@ -286,11 +288,11 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Translate back to the middle (or to the starting point,
 		// if we're dealing with a selected group
-		if (!selectedOnly) {
-			for (LayoutNode v: partition.getNodeList()) {
-				v.decrement(xAverage - (width / 2), yAverage - (height / 2));
-			}
-		}
+//		if (!selectedOnly) {
+//			for (LayoutNode v: partition.getNodeList()) {
+//				v.decrement(xAverage - (width / 2), yAverage - (height / 2));
+//			}
+//		}
 
 		// updateProfile.checkpoint();
 
@@ -540,7 +542,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		                                                                    - partition.getMinY());
 		double node_area = partition.getWidth() * partition.getHeight();
 
-		if (selectedOnly || (current_area > node_area)) {
+		if (current_area > node_area) {
 			this.width = (partition.getMaxX() - partition.getMinX()) * spreadFactor;
 			this.height = (partition.getMaxY() - partition.getMinY()) * spreadFactor;
 			// make it square

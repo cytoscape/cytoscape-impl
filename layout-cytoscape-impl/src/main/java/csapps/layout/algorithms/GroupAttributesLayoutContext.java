@@ -1,11 +1,9 @@
 package csapps.layout.algorithms;
 
-import java.util.Set;
-
-import org.cytoscape.view.layout.AbstractLayoutAlgorithmContext;
+import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 
-public class GroupAttributesLayoutContext extends AbstractLayoutAlgorithmContext {
+public class GroupAttributesLayoutContext extends AbstractLayoutContext {
 	/*
 	  Layout parameters:
 	    - spacingx: Horizontal spacing (on the x-axis) between two partitions in a row.
@@ -25,27 +23,4 @@ public class GroupAttributesLayoutContext extends AbstractLayoutAlgorithmContext
 	public double minrad = 100.0;
 	@Tunable(description="Scale of the radius of the partition")
 	public double radmult = 50.0;
-	
-	//@Tunable(description="The attribute to use for the layout")
-	public String attributeName;
-	//@Tunable(description="The namespace of the attribute to use for the layout")
-	public String attributeNamespace;
-	
-	public GroupAttributesLayoutContext(boolean supportsSelectedOnly, Set<Class<?>> supportedNodeAttributes, Set<Class<?>> supportedEdgeAttributes) {
-		super(supportsSelectedOnly, supportedNodeAttributes, supportedEdgeAttributes);
-	}
-
-	@Override
-	public void setLayoutAttribute(String value) {
-		if (value.equals("(none)"))
-			this.attributeName = null;
-		else
-			this.attributeName = value;
-	}
-	
-	//TODO
-	public boolean tunablesAreValid(final Appendable errMsg) {
-		return true;
-	}
-
 }
