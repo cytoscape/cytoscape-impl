@@ -8,12 +8,11 @@ import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.session.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.SubmenuTaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -26,7 +25,7 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc, RecentlyOpenedTracker.class);
 		OpenSessionTaskFactory openSessionTaskFactory = getService(bc, OpenSessionTaskFactory.class);
-		SubmenuTaskManager submenuTaskManagerServiceRef = getService(bc, SubmenuTaskManager.class);
+		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
 		LoadNetworkURLTaskFactory importNetworkTF = getService(bc, LoadNetworkURLTaskFactory.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
@@ -38,7 +37,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(bc, cytoscapeDesktop,
 				openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory,
-				submenuTaskManagerServiceRef, importNetworkFileTF, importNetworkTF,
+				dialogTaskManagerServiceRef, importNetworkFileTF, importNetworkTF,
 				cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef);
 		
 		registerAllServices(bc, welcomeScreenAction, new Properties());

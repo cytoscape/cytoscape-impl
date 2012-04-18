@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -34,16 +33,11 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.datasource.DataSource;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.DataCategory;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
@@ -53,43 +47,27 @@ import org.slf4j.LoggerFactory;
 public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = -8750909701276867389L;
-
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
-
 	private static final String LAYOUT_ALGORITHM = "force-directed";
-	private static final String VIEW_THRESHOLD = "viewThreshold";
-	private static final int DEF_VIEW_THRESHOLD = 3000;
-
 	private static final String ICON_OPEN = "images/Icons/net_file_import_small.png";
 	private static final String ICON_DATABASE = "images/Icons/net_db_import_small.png";
 
 	private JLabel loadNetwork;
 	private JLabel fromDB;
 	private JLabel fromWebService;
-
 	private JComboBox networkList;
 	private JCheckBox layout;
-
-	private final TaskManager guiTaskManager;
-
 	private Window parent;
 
+	private final DialogTaskManager guiTaskManager;
 	private final BundleContext bc;
-
 	private final LoadNetworkURLTaskFactory importNetworkFromURLTF;
 	private final TaskFactory importNetworkFileTF;
-
-
 	private final DataSourceManager dsManager;
 	private final Map<String, String> dataSourceMap;
-
-	private final int viewThreshold;
-
-	private boolean firstSelection = false;
-	
 	private final CyProperty<Properties> props;
 
-	CreateNewNetworkPanel(Window parent, final BundleContext bc, final TaskManager guiTaskManager,
+	CreateNewNetworkPanel(Window parent, final BundleContext bc, final DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
 			final CyApplicationConfiguration config,
 			final DataSourceManager dsManager, final CyProperty<Properties> props) {
@@ -101,7 +79,6 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
-		this.viewThreshold = getViewThreshold(props.getProperties());
 
 		this.dataSourceMap = new HashMap<String, String>();
 		this.networkList = new JComboBox();
@@ -214,18 +191,6 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, LAYOUT_ALGORITHM);
 				
 		guiTaskManager.execute( importNetworkFromURLTF.loadCyNetworks(url) );
-	}
-
-	private int getViewThreshold(final Properties props) {
-		final String vts = props.getProperty(VIEW_THRESHOLD);
-		int threshold;
-		try {
-			threshold = Integer.parseInt(vts);
-		} catch (Exception e) {
-			threshold = DEF_VIEW_THRESHOLD;
-		}
-
-		return threshold;
 	}
 
 

@@ -20,12 +20,9 @@ import org.cytoscape.util.swing.OpenBrowser;
 
 public class HelpPanel extends JPanel {
 	
+	private static final long serialVersionUID = -1685752658901305871L;
 	private static final Font LABEL_FONT = new Font("SansSerif", Font.PLAIN, 12);
 	private static final Color LABEL_COLOR = new Color(0x40, 0x40, 0x40);
-
-	private static final Color SELECTED_COLOR = new Color(0x63, 0xB8, 0xFF);
-	private static final Font SELECTED_FONT = new Font("SansSerif", Font.BOLD, 12);
-
 	
 	private JLabel about;
 	private JLabel manual;

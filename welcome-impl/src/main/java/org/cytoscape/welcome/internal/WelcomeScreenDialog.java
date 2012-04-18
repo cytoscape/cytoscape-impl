@@ -25,12 +25,11 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.session.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 public class WelcomeScreenDialog extends JDialog {
@@ -56,7 +55,7 @@ public class WelcomeScreenDialog extends JDialog {
 	private final RecentlyOpenedTracker fileTracker;
 	private final OpenSessionTaskFactory openSessionTaskFactory;
 
-	private final TaskManager guiTaskManager;
+	private final DialogTaskManager guiTaskManager;
 
 	private final CyApplicationConfiguration config;
 	private final LoadNetworkURLTaskFactory loadNetworkTF;
@@ -72,7 +71,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, 
 	                           RecentlyOpenedTracker fileTracker, final OpenSessionTaskFactory openSessionTaskFactory, 
-							   TaskManager guiTaskManager, final CyApplicationConfiguration config,
+							   DialogTaskManager guiTaskManager, final CyApplicationConfiguration config,
 	                           final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory importNetworkTF, 
 	                           final DataSourceManager dsManager, final CyProperty<Properties> cyProps, 
 							   final boolean hide) {

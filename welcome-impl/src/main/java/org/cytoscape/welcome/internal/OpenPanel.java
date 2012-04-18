@@ -20,18 +20,15 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.cytoscape.application.swing.CySwingApplication;
+
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.session.CySession;
+
 import org.cytoscape.task.session.OpenSessionTaskFactory;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 public class OpenPanel extends JPanel {
 
+	private static final long serialVersionUID = 591882944100485039L;
 	private static final Font FILE_NAME_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
 	private static final String ICON_LOCATION = "/images/Icons/open_session.png";
 	private BufferedImage openIconImg;
@@ -42,12 +39,12 @@ public class OpenPanel extends JPanel {
 	private JLabel open;
 
 	private final RecentlyOpenedTracker fileTracker;
-	private final TaskManager taskManager;
+	private final DialogTaskManager taskManager;
 	private final OpenSessionTaskFactory openSessionTaskFactory;
 
 	Window parent;
 
-	OpenPanel(Window parent, final RecentlyOpenedTracker fileTracker, final TaskManager taskManager,
+	OpenPanel(Window parent, final RecentlyOpenedTracker fileTracker, final DialogTaskManager taskManager,
 			final OpenSessionTaskFactory openSessionTaskFactory) {
 		this.fileTracker = fileTracker;
 		this.parent = parent;

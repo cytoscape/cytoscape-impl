@@ -5,18 +5,16 @@ import java.util.Properties;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.session.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 public class WelcomeScreenAction extends AbstractCyAction {
@@ -31,7 +29,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	private final OpenBrowser openBrowser;
 	private final RecentlyOpenedTracker fileTracker;
-	private final TaskManager guiTaskManager;
+	private final DialogTaskManager guiTaskManager;
 	private final LoadNetworkURLTaskFactory importNetworksTaskFactory;
 	private final CyApplicationConfiguration config;
 	private final DataSourceManager dsManager;
@@ -48,7 +46,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, 
 			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, 
-			final OpenSessionTaskFactory openSessionTaskFactory, TaskManager guiTaskManager,
+			final OpenSessionTaskFactory openSessionTaskFactory, DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory importNetworksTaskFactory, 
 			final CyApplicationConfiguration config, final DataSourceManager dsManager, 
 			final CyProperty<Properties> cyProps) {

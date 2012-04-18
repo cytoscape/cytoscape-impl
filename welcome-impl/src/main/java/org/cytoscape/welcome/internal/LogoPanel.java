@@ -12,6 +12,7 @@ import javax.swing.SwingConstants;
 
 public class LogoPanel extends JPanel {
 	
+	private static final long serialVersionUID = -1450934154838736314L;
 	private static final String IMAGE_LOCATION = "images/logo.png";
 	private BufferedImage bgImage;
 	
