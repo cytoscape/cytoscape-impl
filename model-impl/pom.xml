@@ -17,6 +17,7 @@
 		<module>performance</module> 
 		 -->
 		<module>performance-debug</module> 
+		<module>table-performance-debug</module> 
 	</modules>
 
 
