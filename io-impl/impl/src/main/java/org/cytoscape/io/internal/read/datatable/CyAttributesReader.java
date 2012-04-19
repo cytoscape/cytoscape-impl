@@ -22,7 +22,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.MapNetworkAttrTask;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -69,6 +69,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tableManager;
 	private final CyRootNetworkManager rootNetFact;
+	private final MapNetworkAttrTaskFactory mapNetworkAttrTf;
 
 	@Tunable(description = "Map table to:")
 	public ListSingleSelection<TableType> dataTypeOptions;
@@ -82,7 +83,8 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 
 	public CyAttributesReader(final InputStream inputStream, final CyTableFactory tableFactory,
 				  final CyApplicationManager appMgr, final CyNetworkManager netMgr,
-				  final CyTableManager tableManager, final CyRootNetworkManager rootNetFact)
+				  final CyTableManager tableManager, final CyRootNetworkManager rootNetFact, 
+				  final MapNetworkAttrTaskFactory mapNetworkAttrTf)
 	{
 		lineNum = 0;
 		doDecoding = Boolean.valueOf(System.getProperty(DECODE_PROPERTY, "true"));
@@ -93,6 +95,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 		this.inputStream = inputStream;
 		this.tableManager = tableManager;
 		this.rootNetFact = rootNetFact;
+		this.mapNetworkAttrTf = mapNetworkAttrTf;
 
 		final List<TableType> options = new ArrayList<TableType>();
 		if (netMgr.getNetworkSet().size() > 0 ) {
@@ -128,7 +131,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 		Class<? extends CyIdentifiable> type = getMappingClass();
 
 		if (netMgr.getNetworkSet().size() > 0 && type != null)
-			super.insertTasksAfterCurrentTask(new MapNetworkAttrTask(type, table, netMgr, appMgr,rootNetFact));
+			super.insertTasksAfterCurrentTask(mapNetworkAttrTf.createTaskIterator(type, table, CyNetwork.NAME));
 		tm.setProgress(1.0);
 	}
 

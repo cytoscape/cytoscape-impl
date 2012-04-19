@@ -95,6 +95,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -134,6 +135,7 @@ public class CyActivator extends AbstractCyActivator {
 		EquationCompiler equationCompilerServiceRef = getService(bc,EquationCompiler.class);
 		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc,CyRootNetworkManager.class);
 		CyGroupFactory cyGroupFactoryServiceRef = getService(bc,CyGroupFactory.class);
+		MapNetworkAttrTaskFactory mapNetworkAttrTFServiceRef = getService(bc,MapNetworkAttrTaskFactory.class);
 		
 		StreamUtilImpl streamUtil = new StreamUtilImpl(cyPropertyServiceRef);
 		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix (.pvals) File", DataCategory.TABLE, streamUtil);
@@ -176,7 +178,7 @@ public class CyActivator extends AbstractCyActivator {
 		CalculatorConverterFactory calculatorConverterFactory = new CalculatorConverterFactory();
 		ReadUtils readUtil = new ReadUtils(streamUtil);
 		ExpressionReaderFactory expressionReaderFactory = new ExpressionReaderFactory(expressionFilter,cyTableFactoryServiceRef,cyTableManagerServiceRef);
-		CyAttributesReaderFactory attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter,cyTableFactoryServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyRootNetworkManagerServiceRef);
+		CyAttributesReaderFactory attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter,cyTableFactoryServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyRootNetworkManagerServiceRef,mapNetworkAttrTFServiceRef);
 		SIFNetworkReaderFactory sifNetworkViewReaderFactory = new SIFNetworkReaderFactory(sifFilter,cyLayoutsServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyEventHelperRef);
 		UnrecognizedVisualPropertyManager unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(cyTableFactoryServiceRef,cyTableManagerServiceRef);
 		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);

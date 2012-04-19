@@ -28,8 +28,6 @@
 package org.cytoscape.io.webservice.biomart;
 
 
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.naming.ConfigurationException;
 
@@ -40,10 +38,10 @@ import org.cytoscape.io.webservice.biomart.task.ImportTableTask;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
 import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.ServiceException;
 
@@ -57,11 +55,9 @@ public class BiomartClient extends AbstractWebServiceGUIClient {
 	private final CyTableFactory tableFactory;
 	private final BiomartRestClient restClient;
 	private ImportTableTask importTask;
-	private final CyNetworkManager networkManager;
-	private final CyApplicationManager applicationManager;
 	private final CySwingApplication app;
 	private final CyTableManager tableManager;
-	private final CyRootNetworkManager cyRootNetworkFactory;
+	private final MapNetworkAttrTaskFactory mapNetworkAttrTF;
 
 	/**
 	 * Creates a new Biomart Client object.
@@ -71,20 +67,17 @@ public class BiomartClient extends AbstractWebServiceGUIClient {
 	 */
 	public BiomartClient(final String displayName, final String description,
 	                     final BiomartRestClient restClient, final CyTableFactory tableFactory,
-	                     final CyNetworkManager networkManager,
-	                     final CyApplicationManager applicationManager,
 	                     final CySwingApplication app, final CyTableManager tableManager,
-						 final CyRootNetworkManager cyRootNetworkFactory, final BiomartAttrMappingPanel gui)
+						 final BiomartAttrMappingPanel gui,
+						 final MapNetworkAttrTaskFactory mapNetworkAttrTF)
 	{
 		super(restClient.getBaseURL(), displayName, description);
 
 		this.tableFactory         = tableFactory;
 		this.restClient           = restClient;
-		this.networkManager       = networkManager;
-		this.applicationManager   = applicationManager;
 		this.app                  = app;
 		this.tableManager         = tableManager;
-		this.cyRootNetworkFactory = cyRootNetworkFactory;
+		this.mapNetworkAttrTF     = mapNetworkAttrTF;
 		
 		this.gui = gui;
 
@@ -102,9 +95,8 @@ public class BiomartClient extends AbstractWebServiceGUIClient {
 			throw new IllegalStateException(
 					"Could not build query because Query Builder GUI is null.");
 
-		importTask = new ImportTableTask(restClient, (BiomartQuery) query, tableFactory, networkManager,
-		                                 applicationManager, app.getJFrame(), tableManager,
-										 cyRootNetworkFactory);
+		importTask = new ImportTableTask(restClient, (BiomartQuery) query, tableFactory,
+		                                 app.getJFrame(), tableManager,mapNetworkAttrTF);
 
 		return new TaskIterator(importTask);
 	}

@@ -10,6 +10,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -17,21 +18,25 @@ public class CyAttributesReaderFactory extends AbstractTableReaderFactory {
 	private final CyApplicationManager appMgr;
 	private final CyNetworkManager netMgr;
 	private final CyRootNetworkManager rootNetFact;
+	private final MapNetworkAttrTaskFactory mapNetworkAttrTF;
 
 	public CyAttributesReaderFactory(final CyFileFilter filter, final CyTableFactory factory,
 					 final CyApplicationManager appMgr,
 					 final CyNetworkManager netMgr,
 					 final CyTableManager tableManager,
-					 final CyRootNetworkManager rootNetFact)
+					 final CyRootNetworkManager rootNetFact,
+					 final MapNetworkAttrTaskFactory mapNetworkAttrTF)
 	{
 		super(filter, factory, tableManager);
 		this.appMgr = appMgr;
 		this.netMgr = netMgr;
 		this.rootNetFact = rootNetFact;
+		this.mapNetworkAttrTF = mapNetworkAttrTF;
 	}
 
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new CyAttributesReader(inputStream, tableFactory, appMgr,
-		                                               netMgr, tableManager,rootNetFact));
+		                                               netMgr, tableManager,rootNetFact,
+		                                               mapNetworkAttrTF));
 	}
 }

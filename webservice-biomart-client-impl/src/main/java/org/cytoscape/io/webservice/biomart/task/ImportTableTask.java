@@ -12,18 +12,18 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyApplicationManager;
+
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.MapNetworkAttrTask;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -39,27 +39,23 @@ public class ImportTableTask extends AbstractTask {
 
 	private Set<CyTable> tables;
 
-	private final CyNetworkManager networkManager;
-	private final CyApplicationManager applicationManager;
+
 	private final Window parent;
 	private final CyTableManager tableManager;
-	private final CyRootNetworkManager cyRootNetworkFactory;
+	private final MapNetworkAttrTaskFactory mapNetworkAttrTF;
 
 	public ImportTableTask(final BiomartRestClient client, final BiomartQuery query,
 			       final CyTableFactory tableFactory,
-			       final CyNetworkManager networkManager,
-			       final CyApplicationManager applicationManager, final Window parent,
+			       final Window parent,
 			       final CyTableManager tableManager,
-				   final CyRootNetworkManager cyRootNetworkFactory)
+				   final MapNetworkAttrTaskFactory mapNetworkAttrTF)
 	{
 		this.client               = client;
 		this.query                = query;
 		this.tableFactory         = tableFactory;
 		this.parent               = parent;
-		this.networkManager       = networkManager;
-		this.applicationManager   = applicationManager;
 		this.tableManager         = tableManager;
-		this.cyRootNetworkFactory = cyRootNetworkFactory;
+		this.mapNetworkAttrTF     = mapNetworkAttrTF;
 
 		this.tables = new HashSet<CyTable>();
 	}
@@ -85,11 +81,12 @@ public class ImportTableTask extends AbstractTask {
 
 		tables.add(newTable);
 
-		final MapNetworkAttrTask localMappingTask = new MapNetworkAttrTask(
-				CyNode.class, newTable, networkManager, applicationManager,
-				cyRootNetworkFactory);
+		final TaskIterator ti = mapNetworkAttrTF.createTaskIterator(
+				CyNode.class, newTable, CyNetwork.NAME);
+		this.insertTasksAfterCurrentTask(ti);
+		
 		final ShowResultTask messageTask = new ShowResultTask();
-		this.insertTasksAfterCurrentTask(localMappingTask, messageTask);
+		this.insertTasksAfterCurrentTask(messageTask);
 	}
 
 	private CyTable createGlobalTable(BufferedReader reader, String key) throws IOException {

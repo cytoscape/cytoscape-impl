@@ -109,6 +109,7 @@ import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
+import org.cytoscape.task.internal.table.MapNetworkAttrTaskFactoryImpl;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.vizmap.ApplyVisualStyleTaskFactoryimpl;
@@ -142,6 +143,7 @@ import org.cytoscape.task.session.SaveSessionAsTaskFactory;
 import org.cytoscape.task.table.DeleteColumnTaskFactory;
 import org.cytoscape.task.table.DeleteTableTaskFactory;
 import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
 import org.cytoscape.task.table.RenameColumnTaskFactory;
 import org.cytoscape.task.title.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.vizmap.ApplyVisualStyleTaskFactory;
@@ -957,5 +959,10 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupTaskFactoryProps.setProperty(COMMAND, "ungroup");
 		unGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
 		registerService(bc,unGroupNodesTaskFactory,NodeViewTaskFactory.class, unGroupTaskFactoryProps);
+		
+		MapNetworkAttrTaskFactoryImpl mapNetworkAttrTaskFactory = new MapNetworkAttrTaskFactoryImpl(cyNetworkManagerServiceRef, cyApplicationManagerServiceRef,
+				  cyRootNetworkFactoryServiceRef,tunableSetterServiceRef);
+		Properties mapNetworkAttrTaskFactoryProps = new Properties();
+		registerService(bc,mapNetworkAttrTaskFactory,MapNetworkAttrTaskFactory.class,mapNetworkAttrTaskFactoryProps);
 	}
 }
