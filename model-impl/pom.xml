@@ -126,6 +126,11 @@
 			<artifactId>guava-osgi</artifactId>
 			<version>9.0.0</version>
 		</dependency>
+         <dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>parallelcolt</artifactId>
+			<version>0.9.4</version>
+		</dependency>
 	</dependencies>
 </project>
 

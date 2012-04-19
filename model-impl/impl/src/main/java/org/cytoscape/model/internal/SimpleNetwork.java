@@ -36,6 +36,8 @@ import java.util.List;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+	
+import cern.colt.map.tobject.OpenLongObjectHashMap;
 
 
 /**
@@ -49,13 +51,13 @@ class SimpleNetwork {
 	// Unique ID for this
 	private final Long suid;
 
-	// We use LongTHash here because we really don't want to
+	// We use OpenLongObjectHashMap here because we really don't want to
 	// constantly convert the int node/edge index to an Interger 
 	// object necessary for a Map<Integer,NodePointer>. That
 	// allocates a bunch of otherwise unused Integer objects
 	// which also takes extra time.
-	private final LongTHash<NodePointer> nodePointers;
-	private final LongTHash<EdgePointer> edgePointers;
+	private final OpenLongObjectHashMap nodePointers;
+	private final OpenLongObjectHashMap edgePointers;
 
 	private int nodeCount;
 	private int edgeCount;
@@ -67,8 +69,8 @@ class SimpleNetwork {
 		nodeCount = 0;
 		edgeCount = 0;
 		firstNode = null; 
-		nodePointers = new LongTHash<NodePointer>(NodePointer.class);
-		edgePointers = new LongTHash<EdgePointer>(EdgePointer.class);
+		nodePointers = new OpenLongObjectHashMap();
+		edgePointers = new OpenLongObjectHashMap();
 	}
 
 	public Long getSUID() {
@@ -84,7 +86,7 @@ class SimpleNetwork {
 	}
 
 	public synchronized CyEdge getEdge(final long e) {
-		final EdgePointer ep = edgePointers.get(e);
+		final EdgePointer ep = (EdgePointer)edgePointers.get(e);
 		if ( ep != null )
 			return ep.cyEdge;
 		else
@@ -92,7 +94,7 @@ class SimpleNetwork {
 	}
 
 	public synchronized CyNode getNode(final long n) {
-		final NodePointer np = nodePointers.get(n);
+		final NodePointer np = (NodePointer)nodePointers.get(n);
 		if ( np != null )
 			return np.cyNode;
 		else
@@ -242,7 +244,8 @@ class SimpleNetwork {
 				// remove adjacent edges from network
 				removeEdgesInternal(getAdjacentEdgeList(n, CyEdge.Type.ANY));
 	
-				final NodePointer node = nodePointers.remove(n.getSUID());
+				final NodePointer node = (NodePointer)nodePointers.get(n.getSUID());
+				nodePointers.removeKey(n.getSUID());
 				firstNode = node.remove(firstNode);
 	
 				nodeCount--;
@@ -291,7 +294,8 @@ class SimpleNetwork {
 				if (!containsEdge(edge))
 					return false;
 	
-				final EdgePointer e = edgePointers.remove(edge.getSUID());
+				final EdgePointer e = (EdgePointer)edgePointers.get(edge.getSUID());
+				edgePointers.removeKey(edge.getSUID());
 	
 				e.remove();
 	
@@ -309,7 +313,7 @@ class SimpleNetwork {
 		final NodePointer thisNode; 
 
 		synchronized (this) {
-			thisNode = nodePointers.get(node.getSUID());
+			thisNode = (NodePointer)nodePointers.get(node.getSUID());
 		}
 
 		if ( thisNode == null )
@@ -325,7 +329,7 @@ class SimpleNetwork {
 		final EdgePointer thisEdge; 
 
 		synchronized (this) {
-			thisEdge = edgePointers.get(edge.getSUID());
+			thisEdge = (EdgePointer)edgePointers.get(edge.getSUID());
 		}
 
 		if ( thisEdge == null )
@@ -448,7 +452,7 @@ class SimpleNetwork {
 					}
 
 					numRemaining--;
-					return edgePointers.get(returnIndex);
+					return (EdgePointer)edgePointers.get(returnIndex);
 				}
 			};
 	}
@@ -512,7 +516,7 @@ class SimpleNetwork {
 					final long returnIndex = nextIndex;
 					nextIndex = -1;
 
-					return edgePointers.get(returnIndex);
+					return (EdgePointer)edgePointers.get(returnIndex);
 				}
 			};
 	}
@@ -565,7 +569,7 @@ class SimpleNetwork {
 
 	private NodePointer getNodePointer(final CyNode node) {
 		assert(node != null);
-		return nodePointers.get(node.getSUID());
+		return (NodePointer)nodePointers.get(node.getSUID());
 	}
 
 	
