@@ -17,7 +17,7 @@ import org.cytoscape.io.read.CyPropertyReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
