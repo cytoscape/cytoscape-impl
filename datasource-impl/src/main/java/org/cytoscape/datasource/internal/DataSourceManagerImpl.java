@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.datasource.DataSource;
-import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.datasource.DataSource;
+import org.cytoscape.io.datasource.DataSourceManager;
 
 public final class DataSourceManagerImpl implements DataSourceManager {
 	

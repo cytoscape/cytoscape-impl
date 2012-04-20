@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.datasource.DefaultDataSource;
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.datasource.DefaultDataSource;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -33,17 +33,17 @@ public class BookmarkDataSourceBuilder {
 	private final Bookmarks bookMarks;
 	private final BookmarksUtil bookmarksUtil;
 
-	private final Set<org.cytoscape.datasource.DataSource> datasourceSet;
+	private final Set<org.cytoscape.io.datasource.DataSource> datasourceSet;
 
 	public BookmarkDataSourceBuilder(final CyProperty<Bookmarks> bookmarkServiceRef, final BookmarksUtil bookmarksUtil) {
 		bookMarks = bookmarkServiceRef.getProperties();
 
 		this.bookmarksUtil = bookmarksUtil;
-		datasourceSet = new HashSet<org.cytoscape.datasource.DataSource>();
+		datasourceSet = new HashSet<org.cytoscape.io.datasource.DataSource>();
 		buildDataSource();
 	}
 
-	public Set<org.cytoscape.datasource.DataSource> getDataSources() {
+	public Set<org.cytoscape.io.datasource.DataSource> getDataSources() {
 		return this.datasourceSet;
 	}
 
@@ -72,7 +72,7 @@ public class BookmarkDataSourceBuilder {
 						continue;
 					}
 
-					final org.cytoscape.datasource.DataSource dataSource = new DefaultDataSource(name, provider,
+					final org.cytoscape.io.datasource.DataSource dataSource = new DefaultDataSource(name, provider,
 							description, dataType, url);
 					datasourceSet.add(dataSource);
 				}

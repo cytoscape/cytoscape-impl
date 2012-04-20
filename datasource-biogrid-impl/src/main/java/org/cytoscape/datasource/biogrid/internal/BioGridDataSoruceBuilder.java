@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
-import org.cytoscape.datasource.DataSource;
+import org.cytoscape.io.datasource.DataSource;
 import org.osgi.framework.BundleContext;
 
 public class BioGridDataSoruceBuilder {

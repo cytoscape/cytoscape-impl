@@ -17,9 +17,9 @@ import java.util.zip.ZipInputStream;
 
 import javax.swing.filechooser.FileSystemView;
 
-import org.cytoscape.datasource.DataSource;
-import org.cytoscape.datasource.DefaultDataSource;
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.datasource.DataSource;
+import org.cytoscape.io.datasource.DefaultDataSource;
 
 public class BiogridDataLoader {
 
