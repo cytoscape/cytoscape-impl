@@ -3,7 +3,7 @@ package org.cytoscape.datasource.internal;
 import java.util.Properties;
 import java.util.Set;
 
-import org.cytoscape.datasource.internal.bookmarks.BookmarkDataSourceBuilder;
+import org.cytoscape.io.datasource.internal.bookmarks.BookmarkDataSourceBuilder;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.property.CyProperty;
