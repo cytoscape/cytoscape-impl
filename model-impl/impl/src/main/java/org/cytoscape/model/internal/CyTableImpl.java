@@ -66,11 +66,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	private Set<String> currentlyActiveAttributes;
 	private Map<String, Map<Object, Object>> attributes; // Maps column names to (key,value) pairs, where "key" is the primary key.
-
 	private Map<String, SetMultimap<Object,Object>> reverse;
 	private Map<Object, CyRow> rows; // Maps the primary key to CyRow.
-
 	private Map<String, CyColumn> types;
+	// Caches the normalized names, in order to prevent creating new strings (e.g. name.toLowerCase())
+	// every time a column or value is retrieved.
+	private Map<String/*name*/, String/*normalized name*/> normalizedColumnNames; 
 
 	// This is not unique and might be changed by user.
 	private String title;
@@ -90,7 +91,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private final Interpreter interpreter;
 	private final int defaultInitSize;
 
-	String lastInternalError = null;
+	String lastInternalError;
 
 	private Map<String, VirtualColumn> virtualColumnMap;
 	private int virtualColumnReferenceCount;
@@ -101,11 +102,15 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	/**
 	 * Creates a new CyTableImpl object.
 	 */
-	public CyTableImpl(final String title, final String primaryKey, Class<?> primaryKeyType,
-			   final boolean pub, final boolean isMutable, SavePolicy savePolicy,
-	                   final CyEventHelper eventHelper, final Interpreter interpreter,
-					   final int defaultInitSize)
-	{
+	public CyTableImpl(	final String title,
+						final String primaryKey,
+						Class<?> primaryKeyType,
+						final boolean pub,
+						final boolean isMutable,
+						SavePolicy savePolicy,
+						final CyEventHelper eventHelper,
+						final Interpreter interpreter,
+						final int defaultInitSize) {
 		this.title = title;
 		this.primaryKey = primaryKey;
 		this.pub = pub;
@@ -122,18 +127,20 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		reverse =  new HashMap<String, SetMultimap<Object,Object>>();
 		rows = new HashMap<Object, CyRow>(defaultInitSize, 0.5f);
 		types = new HashMap<String, CyColumn>();
-
+		normalizedColumnNames = new HashMap<String, String>();
+		
 		VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, true);
-		// Create the primary key column.  Do this explicitly
-		// so that we don't fire an event.
-		types.put(primaryKey, new CyColumnImpl(this, primaryKey, primaryKeyType,
-						       /* listElementType = */ null,
-						       virtualInfo,
-						       /* isPrimaryKey = */ true,
-						       /* isImmutable = */ true, 
-							   null));
-		attributes.put(primaryKey, new HashMap<Object, Object>());
-		reverse.put(primaryKey, HashMultimap.create());
+		final String normalizedPKName = normalizeColumnName(primaryKey);
+		
+		// Create the primary key column.  Do this explicitly so that we don't fire an event.
+		types.put(normalizedPKName, new CyColumnImpl(this, primaryKey, primaryKeyType,
+						                             /* listElementType = */ null,
+						                             virtualInfo,
+						                             /* isPrimaryKey = */ true,
+						                             /* isImmutable = */ true,
+						                             null));
+		attributes.put(normalizedPKName, new HashMap<Object, Object>());
+		reverse.put(normalizedPKName, HashMultimap.create());
 
 		virtualColumnMap = new HashMap<String, VirtualColumn>();
 		virtualColumnReferenceCount = 0;
@@ -163,6 +170,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		final Map<String, CyColumn> tempTypes = types;
 		types = other.types;
 		other.types = tempTypes;
+		
+		final Map<String, String> tempNormalizedColNames = normalizedColumnNames;
+		normalizedColumnNames = other.normalizedColumnNames;
+		other.normalizedColumnNames = tempNormalizedColNames;
 
 		final String tempTitle = title;
 		title = other.title;
@@ -231,25 +242,14 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			types.remove(oldColumnName);
 		}
 
-		eventHelper.fireEvent(new ColumnNameChangedEvent(this, oldColumnName,
-									    newColumnName));
+		eventHelper.fireEvent(new ColumnNameChangedEvent(this, oldColumnName, newColumnName));
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public Long getSUID() {
 		return suid;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public boolean isPublic() {
 		return pub;
@@ -265,32 +265,16 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return Mutability.IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	synchronized public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param title
-	 *            DOCUMENT ME!
-	 */
 	@Override
 	synchronized public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	synchronized public Collection<CyColumn> getColumns() {
 		return types.values();
@@ -298,12 +282,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	synchronized public CyColumn getColumn(final String columnName) {
-		return types.get(columnName);
+		return types.get(normalizeColumnName(columnName));
 	}
 
 	@Override
 	public CyColumn getPrimaryKey() {
-		return types.get(primaryKey);
+		return types.get(normalizeColumnName(primaryKey));
 	}
 
 	@Override
@@ -317,25 +301,25 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (columnName == null)
 				throw new NullPointerException("\"columnName\" must not be null!");
 
-			final CyColumn column = types.get(columnName);
+			final String normalizedColName = normalizeColumnName(columnName);
+			final CyColumn column = types.get(normalizedColName);
 			if (column == null)
 				return;
 
 			if (column.isImmutable())
-				throw new IllegalArgumentException("cannot delete immutable column \""
-								   + columnName + "\"!");
+				throw new IllegalArgumentException("cannot delete immutable column \"" + columnName + "\"!");
 				
-			final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
-			if (attributes.containsKey(columnName) || virtColumn != null) {
+			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+			if (attributes.containsKey(normalizedColName) || virtColumn != null) {
 				if (virtColumn != null) {
-					final CyColumn cyColumn = types.get(columnName);
-					virtualColumnMap.remove(columnName);
-					types.remove(columnName);
+					final CyColumn cyColumn = types.get(normalizedColName);
+					virtualColumnMap.remove(normalizedColName);
+					types.remove(normalizedColName);
 					--((CyTableImpl)cyColumn.getVirtualColumnInfo().getSourceTable()).virtualColumnReferenceCount;
 				} else {
-					attributes.remove(columnName);
-					reverse.remove(columnName);
-					types.remove(columnName);
+					attributes.remove(normalizedColName);
+					reverse.remove(normalizedColName);
+					types.remove(normalizedColName);
 				}
 			}
 		}
@@ -345,25 +329,22 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	@Override
-	public <T> void createColumn(final String columnName, final Class<? extends T> type,
-				     final boolean isImmutable) 
-	{
+	public <T> void createColumn(final String columnName, final Class<? extends T> type, final boolean isImmutable) {
 		createColumn(columnName,type,isImmutable,null);
 	}
 
 	@Override
 	public <T> void createColumn(final String columnName, final Class<? extends T> type,
-				     final boolean isImmutable, final T defaultValue)
-	{
+				     final boolean isImmutable, final T defaultValue) {
 		synchronized(this) {
 			if (columnName == null)
 				throw new NullPointerException("attribute name is null");
 			
-			for(String curColumnName : types.keySet())
-				if (curColumnName.equalsIgnoreCase(columnName))
-					throw new IllegalArgumentException("attribute already exists for name: '"
-						   + curColumnName + "' with type: "
-						   + types.get(curColumnName).getType());
+			final String normalizedColName = normalizeColumnName(columnName);
+			
+			if (types.containsKey(normalizedColName))
+				throw new IllegalArgumentException("attribute already exists for name: '" + columnName
+						+ "' with type: " + types.get(normalizedColName).getType());
 			
 			if (type == null)
 				throw new NullPointerException("type is null");
@@ -376,41 +357,40 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			checkClass(type);
 
 			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, isImmutable);
-			types.put(columnName, new CyColumnImpl(this, columnName, type,
-							       /* listElementType = */ null,
-							       virtualInfo ,
-							       /* isPrimaryKey = */ false,
-							       isImmutable,
-								   defaultValue));
-			attributes.put(columnName, new HashMap<Object, Object>(defaultInitSize));
-			reverse.put(columnName, HashMultimap.create());
-		
+			types.put(normalizedColName, new CyColumnImpl(this, columnName, type,
+							                              /* listElementType = */ null,
+							                              virtualInfo ,
+							                              /* isPrimaryKey = */ false,
+							                              isImmutable,
+							                              defaultValue));
+			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
+			reverse.put(normalizedColName, HashMultimap.create());
 		}
+		
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
 	}
 	
 
 	@Override
 	public <T> void createListColumn(final String columnName, final Class<T> listElementType,
-					 final boolean isImmutable)
-	{
+					 final boolean isImmutable) {
 		createListColumn(columnName,listElementType,isImmutable,null);
 	}
 
 
 	@Override
 	public <T> void createListColumn(final String columnName, final Class<T> listElementType,
-					 final boolean isImmutable, final List<T> defaultValue)
-	{
+					 final boolean isImmutable, final List<T> defaultValue) {
 		synchronized(this) {
 			if (columnName == null)
 				throw new NullPointerException("attribute name is null");
 
-			for(String curColumnName : types.keySet())
-				if (curColumnName.equalsIgnoreCase(columnName))
-					throw new IllegalArgumentException("attribute already exists for name: '"
-						   + curColumnName + "' with type: "
-						   + types.get(curColumnName).getType());
+			final String normalizedColName = normalizeColumnName(columnName);
+			
+			if (types.containsKey(normalizedColName))
+				throw new IllegalArgumentException("attribute already exists for name: '"
+					   + columnName + "' with type: "
+					   + types.get(normalizedColName).getType());
 			
 			if (listElementType == null)
 				throw new NullPointerException("listElementType is null");
@@ -423,14 +403,14 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			checkClass(listElementType);
 
 			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, isImmutable);
-			types.put(columnName, new CyColumnImpl(this, columnName, List.class,
+			types.put(normalizedColName, new CyColumnImpl(this, columnName, List.class,
 							       listElementType,
 							       virtualInfo,
 							       /* isPrimaryKey = */ false,
 							       isImmutable,
 								   defaultValue));
-			attributes.put(columnName, new HashMap<Object, Object>(defaultInitSize));
-			reverse.put(columnName, HashMultimap.create());
+			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
+			reverse.put(normalizedColName, HashMultimap.create());
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
@@ -443,21 +423,22 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (type == null)
 			throw new NullPointerException("column type is null!");
 
-		if (columnName.equals(primaryKey)) {
+		if (columnName.equalsIgnoreCase(primaryKey)) {
 			final List primaryKeys = new ArrayList(rows.size());
 			for (final Object primaryKey : rows.keySet())
 				primaryKeys.add(primaryKey);
 			return primaryKeys;
 		}
 
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+		final String normalizedColName = normalizeColumnName(columnName);
+		
+		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 		if (virtColumn != null)
 			return virtColumn.getColumnValues();
 
-		Map<Object, Object> vals = attributes.get(columnName);
+		Map<Object, Object> vals = attributes.get(normalizedColName);
 		if (vals == null)
-			throw new IllegalArgumentException("attribute \"" + columnName
-							   + "\" does not exist!");
+			throw new IllegalArgumentException("attribute \"" + columnName + "\" does not exist!");
 
 		List l = new ArrayList(vals.size());
 		for (final Object suid : vals.keySet()) {
@@ -523,10 +504,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (suid == null)
 			throw new NullPointerException("key is null");
 
-		if (!types.get(primaryKey).getType().isAssignableFrom(suid.getClass()))
+		if (!types.get(normalizeColumnName(primaryKey)).getType().isAssignableFrom(suid.getClass()))
 			throw new IllegalArgumentException("key of type " + suid.getClass()
 							   + " and not the expected: "
-							   + types.get(primaryKey).getType().getName());
+							   + types.get(normalizeColumnName(primaryKey)).getType().getName());
 	}
 
 	@Override
@@ -536,11 +517,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	synchronized public Collection<CyRow> getMatchingRows(final String columnName, final Object value) {
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+		final String normalizedColName = normalizeColumnName(columnName);
+		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+		
 		if (virtColumn != null)
 			return virtColumn.getMatchingRows(value);
 
-		if (columnName.equals(primaryKey)) {
+		if (normalizedColName.equals(normalizeColumnName(primaryKey))) {
 			final ArrayList<CyRow> matchingRows = new ArrayList<CyRow>(1);
 			final CyRow matchingRow = rows.get(value);
 			if (matchingRow != null)
@@ -548,7 +531,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return matchingRows;
 		}
 
-		final SetMultimap<Object,Object> valueToKeysMap = reverse.get(columnName);
+		final SetMultimap<Object,Object> valueToKeysMap = reverse.get(normalizedColName);
 
 		final Set<Object> keys = valueToKeysMap.get(value);
 		if (keys == null)
@@ -563,11 +546,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	synchronized public int countMatchingRows(final String columnName, final Object value) {
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+		final String normalizedColName = normalizeColumnName(columnName);
+		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+		
 		if (virtColumn != null)
 			return virtColumn.countMatchingRows(value);
 
-		final SetMultimap<Object,Object> valueToKeysMap = reverse.get(columnName);
+		final SetMultimap<Object,Object> valueToKeysMap = reverse.get(normalizedColName);
 
 		if ( valueToKeysMap == null )
 			return 0;
@@ -576,7 +561,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	private void setX(final Object key, final String columnName, final Object value) {
-		
 		if (columnName == null)
 			throw new NullPointerException("columnName must not be null!");
 		if (value == null)
@@ -586,11 +570,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		Object newRawValue;
 
 		synchronized(this) {
-			if (types.get(columnName) == null)
-				throw new IllegalArgumentException("attribute: '" + columnName
-								   + "' does not yet exist!");
+			final String normalizedColName = normalizeColumnName(columnName);
+			
+			if (types.get(normalizedColName) == null)
+				throw new IllegalArgumentException("attribute: '" + columnName + "' does not yet exist!");
 
-			final Class<?> columnType = types.get(columnName).getType();
+			final Class<?> columnType = types.get(normalizedColName).getType();
 			if (columnType == List.class) {
 				setListX(key, columnName, value);
 				return;
@@ -599,18 +584,17 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (!(value instanceof Equation))
 				checkType(value);
 
-			final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 			if (virtColumn != null) {
 				virtColumn.setValue(key, value);
 				newValue = virtColumn.getValue(key);
 				newRawValue = virtColumn.getRawValue(key);
 			} else {
-				Map<Object, Object> keyToValueMap = attributes.get(columnName);
+				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 
 				if (!columnType.isAssignableFrom(value.getClass())
 				    && !EqnSupport.scalarEquationIsCompatible(value, columnType))
-					throw new IllegalArgumentException("value is not of type: "
-									   + columnType);
+					throw new IllegalArgumentException("value is not of type: " + columnType);
 
 				if (value instanceof Equation) {
 					newRawValue = value;
@@ -624,8 +608,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 									   errorMsg, this);
 					lastInternalError = errorMsg.toString();
 					if (newValue == null)
-						logger.warn("attempted premature evaluation evaluation for "
-							    + equation);
+						logger.warn("attempted premature evaluation evaluation for " + equation);
 				} else {
 					// TODO this is an implicit addRow - not sure if we want to refactor this or not
 					newRawValue = newValue = columnType.cast(value);
@@ -644,9 +627,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	private void addToReverseMap(final String columnName, final Object key,
-				     final Object oldValue, final Object newValue)
-	{
-		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(columnName);
+				     final Object oldValue, final Object newValue) {
+		final String normalizedColName = normalizeColumnName(columnName);
+		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(normalizedColName);
 		valueTokeysMap.remove(oldValue,key);
 		valueTokeysMap.put(newValue,key);
 	}
@@ -655,26 +638,30 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		Object newValue;
 
 		synchronized(this) {
+			final String normalizedColName = normalizeColumnName(columnName);
+			
 			if (value instanceof List) {
 				final List list = (List)value;
 				if (!list.isEmpty())
 					checkType(list.get(0));
-			} else if (!(value instanceof Equation))
+			} else if (!(value instanceof Equation)) {
 				throw new IllegalArgumentException("value is a " + value.getClass().getName()
 								   + " and not a List for column '"
 								   + columnName + "'!");
-			else if (!EqnSupport.listEquationIsCompatible((Equation)value,
-								      types.get(columnName).getListElementType()))
+			} else if (!EqnSupport.listEquationIsCompatible((Equation)value,
+					          types.get(normalizedColName).getListElementType())) {
 				throw new IllegalArgumentException(
 								   "value is not a List equation of a compatible type for column '"
 								   + columnName + "'!");
+			}
 
-			final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+			
 			if (virtColumn != null) {
 				virtColumn.setValue(key, value);
 				newValue = virtColumn.getListValue(key);
 			} else {
-				Map<Object, Object> keyToValueMap = attributes.get(columnName);
+				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 
 				// TODO this is an implicit addRow - not sure if we want to refactor this or not
 				final Object oldValue = keyToValueMap.get(key);
@@ -700,14 +687,15 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	synchronized private void unSetX(final Object key, final String columnName) {
 		synchronized(this) {
-			final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+			final String normalizedColName = normalizeColumnName(columnName);
+			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+			
 			if (virtColumn != null)
 				virtColumn.setValue(key, null);
 			else {
-				final Map<Object, Object> keyToValueMap = attributes.get(columnName);
-				if (!types.containsKey(columnName) || keyToValueMap == null)
-					throw new IllegalArgumentException("attribute: '" + columnName
-									   + "' does not yet exist!");
+				final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+				if (!types.containsKey(normalizedColName) || keyToValueMap == null)
+					throw new IllegalArgumentException("attribute: '" + columnName + "' does not yet exist!");
 
 				final Object value = keyToValueMap.get(key);
 				if (value == null)
@@ -726,22 +714,26 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	private void removeFromReverseMap(final String columnName, final Object key, final Object value) {
-		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(columnName);
+		final String normalizedColName = normalizeColumnName(columnName);
+		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(normalizedColName);
 		valueTokeysMap.remove(key,value);
 	}
 
 	synchronized Object getValueOrEquation(final Object key, final String columnName) {
-		return getValueOrEquation(key,columnName,virtualColumnMap.get(columnName));
+		final String normalizedColName = normalizeColumnName(columnName);
+		return getValueOrEquation(key, columnName, virtualColumnMap.get(normalizedColName));
 	}
 
 	private synchronized Object getValueOrEquation(final Object key, final String columnName, final VirtualColumn virtColumn) {
-		if (columnName.equals(primaryKey))
+		final String normalizedColName = normalizeColumnName(columnName);
+		
+		if (primaryKey.equalsIgnoreCase(normalizedColName))
 			return key;
 
 		if (virtColumn != null)
 			return virtColumn.getRawValue(key);
 
-		Map<Object, Object> keyToValueMap = attributes.get(columnName);
+		Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 		if (keyToValueMap == null)
 			return null;
 
@@ -766,7 +758,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	private Object getValue(Object key, String columnName, Class<?> type) {
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+		final String normalizedColName = normalizeColumnName(columnName);
+		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 		if (virtColumn != null)
 			return virtColumn.getValue(key);
 
@@ -791,7 +784,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	private <T> T getDefaultValue(final String columnName, final T defaultValue) {
 		if ( defaultValue == null ) {
-			final CyColumn column = types.get(columnName);
+			final CyColumn column = this.getColumn(columnName);
 			if ( column == null )
 				return null;
 			else
@@ -803,9 +796,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 
 	synchronized private <T> List<T> getListX(final Object key, final String columnName,
-							   final Class<? extends T> listElementType, final List<T> defaultValue)
-	{
-		CyColumn type = types.get(columnName);
+							   final Class<? extends T> listElementType, final List<T> defaultValue) {
+		final String normalizedColName = normalizeColumnName(columnName);
+		CyColumn type = types.get(normalizedColName);
+		
 		if (type == null) {
 			logger.warn("'" + columnName + "' does not yet exist!");
 			return defaultValue;
@@ -827,7 +821,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		lastInternalError = null;
 
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 		if (virtColumn != null)
 			return (List<T>)virtColumn.getListValue(key);
 
@@ -848,11 +842,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	synchronized private <T> boolean isSetX(final Object key, final String columnName) {
-		final VirtualColumn virtColumn = virtualColumnMap.get(columnName);
+		final String normalizedColName = normalizeColumnName(columnName);
+		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+		
 		if (virtColumn != null)
 			return virtColumn.getRawValue(key) != null;
 		else {
-			final Map<Object, Object> keyToValueMap = attributes.get(columnName);
+			final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 			if (keyToValueMap == null) {
 				return false;
 			}
@@ -888,8 +884,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	public final String addVirtualColumn(final String virtualColumnName, final String sourceColumnName,
-					     final CyTable sourceTable, final String targetJoinKeyName, final boolean isImmutable)
-	{
+					     final CyTable sourceTable, final String targetJoinKeyName, final boolean isImmutable) {
 		if (virtualColumnName == null)
 			throw new NullPointerException("\"virtualColumn\" argument must never be null!");
 		if (sourceColumnName == null)
@@ -902,7 +897,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		String targetName = "failed to create column"; 
 
 		synchronized(this) {
-			final CyColumn sourceColumn = sourceTable.getColumn(sourceColumnName);
+			final CyColumn sourceColumn = sourceTable.getColumn(normalizeColumnName(sourceColumnName));
 			if (sourceColumn == null)
 				throw new IllegalArgumentException("\""+sourceColumnName+"\" is not a column in source table!");
 
@@ -922,10 +917,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			                                               sourceColumn.getListElementType(), virtualInfo,
 			                                               /* isPrimaryKey = */ false, isImmutable, null);
 			targetName = getUniqueColumnName(virtualColumnName);
-			types.put(targetName, targetColumn);
-			virtualColumnMap.put(targetName, new VirtualColumn(sourceTable, sourceColumnName, this,
-			                                                   sourceTable.getPrimaryKey().getName(), 
-			                                                   targetJoinKeyName));
+			final String normalizedTargetName = normalizeColumnName(targetName);
+			types.put(normalizedTargetName, targetColumn);
+			virtualColumnMap.put(normalizedTargetName, new VirtualColumn(sourceTable, sourceColumnName, this,
+			                                                             sourceTable.getPrimaryKey().getName(), 
+			                                                             targetJoinKeyName));
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName));
@@ -933,7 +929,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	private String getUniqueColumnName(final String preferredName) {
-		if (!types.containsKey(preferredName))
+		if (getColumn(preferredName) == null)
 			return preferredName;
 
 		String newUniqueName;
@@ -941,7 +937,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		do {
 			++i;
 			newUniqueName = preferredName + "-" + i;
-		} while (types.containsKey(newUniqueName));
+		} while (getColumn(newUniqueName) != null);
 
 		return newUniqueName;
 	}
@@ -962,10 +958,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	@Override
-	synchronized public final void addVirtualColumns(final CyTable sourceTable,
-							 final String targetJoinKeyName,
-							 final boolean isImmutable)
-	{
+	synchronized public final void addVirtualColumns(final CyTable sourceTable, final String targetJoinKeyName,
+			final boolean isImmutable) {
 		if (sourceTable == null)
 			throw new NullPointerException("\"sourceTable\" argument must never be null!");
 		if (targetJoinKeyName == null)
@@ -986,7 +980,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		for (final CyColumn column : columns) {
 			final String columnName = column.getName();
 			// skip the primary key
-			if (columnName.equals(sourceJoinKey.getName()))
+			if (columnName.equalsIgnoreCase(sourceJoinKey.getName()))
 				continue;
 
 			addVirtualColumn(columnName, columnName, sourceTable, targetJoinKeyName, isImmutable);
@@ -1007,6 +1001,19 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	public void handleEvent(final TableAddedEvent e) {
 		if (e.getTable() == this)
 			fireEvents = true;
+	}
+	
+	/**
+	 * Normalizes the column names to be case insensitive.
+	 */
+	private String normalizeColumnName(String initialName) {
+		String name = normalizedColumnNames.get(initialName);
+		if (name == null) {
+			name = initialName.toLowerCase();
+			// cache the normalized name, to avoid creating new strings in future accesses.
+			normalizedColumnNames.put(initialName, name);
+		}
+		return name;
 	}
 	
 	private final class InternalRow implements CyRow {
