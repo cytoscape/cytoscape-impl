@@ -7,7 +7,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;

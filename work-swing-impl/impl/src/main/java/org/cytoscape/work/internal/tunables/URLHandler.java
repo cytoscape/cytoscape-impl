@@ -16,9 +16,9 @@ import javax.swing.JSeparator;
 import javax.swing.LayoutStyle;
 import javax.swing.ToolTipManager;
 
-import org.cytoscape.datasource.DataSource;
-import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.datasource.DataSource;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.slf4j.Logger;

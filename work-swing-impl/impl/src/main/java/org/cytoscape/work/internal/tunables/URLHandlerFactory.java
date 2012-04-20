@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 
-import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 

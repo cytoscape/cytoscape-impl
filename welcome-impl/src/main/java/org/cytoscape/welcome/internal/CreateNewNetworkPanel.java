@@ -30,9 +30,9 @@ import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.datasource.DataSource;
-import org.cytoscape.datasource.DataSourceManager;
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.datasource.DataSource;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;

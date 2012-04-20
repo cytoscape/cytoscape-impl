@@ -6,7 +6,7 @@ package org.cytoscape.work.internal;
 
 import java.util.Properties;
 
-import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.service.util.AbstractCyActivator;

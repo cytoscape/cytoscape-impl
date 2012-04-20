@@ -22,7 +22,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.datasource.DataSourceManager;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
