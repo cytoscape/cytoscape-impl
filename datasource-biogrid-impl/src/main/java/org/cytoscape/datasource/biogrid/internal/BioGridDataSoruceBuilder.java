@@ -20,7 +20,7 @@ public class BioGridDataSoruceBuilder {
 		Set<DataSource> dsSet = task.getDataSources();
 		
 		for(final DataSource ds: dsSet) {
-			bc.registerService("org.cytoscape.datasource.DataSource", ds, new Properties());
+			bc.registerService("org.cytoscape.io.datasource.DataSource", ds, new Properties());
 		}
 	}
 }
