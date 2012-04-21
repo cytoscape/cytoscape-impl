@@ -14,8 +14,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<bundle.symbolicName>org.cytoscape.datasource-impl</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.datasource.internal</bundle.namespace>
+		<bundle.symbolicName>org.cytoscape.io.datasource-impl</bundle.symbolicName>
+		<bundle.namespace>org.cytoscape.io.datasource.internal</bundle.namespace>
 	</properties>
 
 	<packaging>bundle</packaging>
