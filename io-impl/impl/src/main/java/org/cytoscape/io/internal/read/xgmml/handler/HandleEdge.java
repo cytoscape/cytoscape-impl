@@ -27,7 +27,7 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
-import org.cytoscape.group.CyGroup;
+import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -44,7 +44,6 @@ public class HandleEdge extends AbstractHandler {
 		// Get the label, id, source and target
 		Object id = null;
 		String href = atts.getValue(ReadDataManager.XLINK, "href");
-		boolean duplicate = false;
 		
 		if (href == null) {
 			// Create the edge:
@@ -82,7 +81,7 @@ public class HandleEdge extends AbstractHandler {
 				// This is the correct way to read the edge-directionality of non-cytoscape xgmml files as well.
 				directed = manager.currentNetworkIsDirected;
 			} else { // parse directedness flag
-				directed = !"0".equals(isDirected);
+				directed = ObjectTypeMap.fromXGMMLBoolean(isDirected);
 			}
 	
 			CyNode sourceNode = null;
@@ -107,10 +106,9 @@ public class HandleEdge extends AbstractHandler {
 				// We need to do this because of groups that are exported from Cytoscape 2.x.
 				// The problem is that internal edges are duplicated in the document when the group is expanded,
 				// but we don't want to create them twice.
-				boolean checkDuplicate = manager.hasGroups() && manager.getDocumentVersion() > 0.0
+				boolean checkDuplicate = manager.getCache().hasNetworkPointers() && manager.getDocumentVersion() > 0.0
 						&& manager.getDocumentVersion() < 3.0;
 				CyEdge edge = checkDuplicate ? manager.getCache().getEdge(id) : null;
-				duplicate = edge != null;
 				
 				if (edge == null) {
 					edge = manager.createEdge(sourceNode, targetNode, id, label, directed);
@@ -146,14 +144,6 @@ public class HandleEdge extends AbstractHandler {
 			// Save the reference so it can be added to the network after the whole graph is parsed.
 			manager.addElementLink(href, CyEdge.class);
 			id = XGMMLParseUtil.getIdFromXLink(href);
-		}
-
-		// Is this edge part of a group?
-		final CyGroup group = manager.getCurrentGroup();
-		
-		if (group != null && !duplicate) {
-			// There is a group node, so this edge must be an internal or external group edge.
-			manager.addInnerEdge(group, id);
 		}
 		
 		return current;

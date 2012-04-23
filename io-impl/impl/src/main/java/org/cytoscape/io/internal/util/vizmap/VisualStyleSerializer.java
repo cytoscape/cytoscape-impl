@@ -279,8 +279,16 @@ public class VisualStyleSerializer {
 				vpModelList.add(vpModel);
 
 				if (defValue != null) {
-					String sValue = vp.toSerializableString(defValue);
-					if (sValue != null) vpModel.setDefault(sValue);
+					String sValue = null;
+					
+					try {
+						sValue = vp.toSerializableString(defValue);
+					} catch (UnsupportedOperationException uoe) {
+						// Just ignore
+					}
+					
+					if (sValue != null)
+						vpModel.setDefault(sValue);
 				}
 
 				if (mapping instanceof PassthroughMapping<?, ?>) {

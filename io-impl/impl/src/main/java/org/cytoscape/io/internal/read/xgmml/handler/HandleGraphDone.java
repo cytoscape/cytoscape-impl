@@ -27,19 +27,13 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -112,7 +106,6 @@ public class HandleGraphDone extends AbstractHandler {
 		
 		resolveEquations();
 		resolveNetworkPointers();
-		resolveGroups();
 		
 		return ParseState.NONE;
 	}
@@ -145,61 +138,6 @@ public class HandleGraphDone extends AbstractHandler {
 			// If reading a session file, network pointers should be processed after all XGMML files are parsed,
 			// because some network references might not have been created yet.
 			manager.getCache().createNetworkPointers();
-		}
-	}
-	
-	private void resolveGroups() {
-		// Now that we all the nodes and edges, handle the groups.
-		final Set<CyGroup> groups = manager.getCache().getGroups();
-		
-		if (groups != null) {
-			for (final CyGroup gr : groups) {
-				final Set<Object> innerNodeIdxSet = manager.getInnerNodes().get(gr);
-				final List<CyNode> innerNodes = new ArrayList<CyNode>();
-				
-				for (Object oldId : innerNodeIdxSet) {
-					CyNode node = manager.getCache().getNode(oldId);
-					
-					if (node != null) {
-						innerNodes.add(node);
-						gr.addNode(node);
-					}
-				}
-				
-				final Set<Object> innerEdgesIdxSet = manager.getInnerEdges().get(gr);
-				final CyNode grNode = gr.getGroupNode();
-				
-				for (Object oldId : innerEdgesIdxSet) {
-					final CyEdge edge = manager.getCache().getEdge(oldId);
-					
-					if (edge != null) {
-						if (edge.getSource().equals(grNode) || edge.getTarget().equals(grNode)) {
-							// TODO: handle meta-edge
-						} else {
-							if (innerNodes.contains(edge.getSource()) && innerNodes.contains(edge.getTarget())) {
-								// It's an internal edge
-								gr.addInternalEdge(edge);
-							} else {
-								// It has to be an external edge
-								gr.addExternalEdge(edge);
-							}
-						}
-					}
-				}
-				
-				// Collapse the group, if necessary
-				for (final CyNetwork net : gr.getNetworkSet()) {
-					if (net instanceof CyRootNetwork) continue;
-					
-					final CyRow row = net.getRow(grNode, CyNetwork.HIDDEN_ATTRS);
-					final int state = row.get("__groupState", Integer.class, 0);
-					
-					if (state == 2)
-						gr.collapse(net);
-					else // In order to delete the provided group node, if expanded:
-						net.removeNodes(Arrays.asList(new CyNode[]{grNode})); // TODO: this should not be necessary
-				}
-			}
 		}
 	}
 }

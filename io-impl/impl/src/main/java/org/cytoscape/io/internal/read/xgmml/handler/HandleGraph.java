@@ -27,6 +27,7 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
+import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -61,6 +62,12 @@ public class HandleGraph extends AbstractHandler {
 		return current;
 	}
 	
+	protected boolean isPrivate(Attributes atts) {
+		String s = atts.getValue("cy:private");
+
+		return ObjectTypeMap.fromXGMMLBoolean(s);
+	}
+	
 	private ParseState handleCy2ModelAndView(String tag, Attributes atts, ParseState current) throws SAXException {
 		final CyRootNetwork parent = manager.getParentNetwork();
 		final CyNetwork currentNet;
@@ -82,7 +89,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 		
 		final String id = getLabel(atts); // This is the network ID in 2.x
-		addCurrentNetwork(id, currentNet, atts, true);
+		addCurrentNetwork(id, currentNet, atts, false);
 		
 		return current;
 	}
@@ -104,7 +111,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 		
 		final Object id = getId(atts);
-		addCurrentNetwork(id, currentNet, atts, true);
+		addCurrentNetwork(id, currentNet, atts, false);
 		
 		return current;
 	}
@@ -123,7 +130,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 
 		final Object id = getId(atts);
-		addCurrentNetwork(id, currentNet, atts, true);
+		addCurrentNetwork(id, currentNet, atts, false);
 
 		return current;
 	}
@@ -132,10 +139,10 @@ public class HandleGraph extends AbstractHandler {
 	 * @param oldId The original Id of the graph element. If null, one will be created.
 	 * @param net Can be null if just adding an XLink to an existing network
 	 * @param atts The attributes of the graph tag
-	 * @param isPublic Should be true for networks that must be registered later.
+	 * @param isPrivate Should be false for networks that must be registered later.
 	 * @return The string identifier of the network
 	 */
-	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts, boolean isPublic) {
+	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts, boolean isPrivate) {
 		if (oldId == null)
 			oldId = String.format("_graph%s_%s", manager.graphCount, net.getSUID());
 		
@@ -143,10 +150,7 @@ public class HandleGraph extends AbstractHandler {
 		manager.getNetworkIDStack().push(oldId);
 		
 		if (net != null) {
-			manager.getCache().cache(oldId, net);
-			
-			if (isPublic && !(net instanceof CyRootNetwork))
-				manager.addNetwork(net);
+			manager.addNetwork(oldId, net, isPrivate);
 			
 			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0)
 				setNetworkName(net, atts);

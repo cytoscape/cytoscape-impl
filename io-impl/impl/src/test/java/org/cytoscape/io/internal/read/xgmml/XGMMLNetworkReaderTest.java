@@ -1,26 +1,19 @@
 package org.cytoscape.io.internal.read.xgmml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Set;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.GroupTestSupport;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -71,17 +64,16 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		NetworkViewTestSupport networkViewTestSupport = new NetworkViewTestSupport();
 		networkViewFactory = networkViewTestSupport.getNetworkViewFactory();
 		
-		GroupTestSupport groupTestSupport = new GroupTestSupport();
-		CyGroupFactory groupFactory = groupTestSupport.getGroupFactory();
-		
 		readCache = new ReadCache();
-		readDataMgr = new ReadDataManager(readCache, mock(EquationCompiler.class), networkFactory, rootNetworkMgr, groupFactory);
+		readDataMgr = new ReadDataManager(readCache, mock(EquationCompiler.class), networkFactory, rootNetworkMgr);
 		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr);
 		handlerFactory.init();
 		parser = new XGMMLParser(handlerFactory, readDataMgr);
 
 		CyTableManager tableMgr= mock(CyTableManager.class);
 		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);
+		
+		SessionUtil.setReadingSessionFile(false);
 	}
 
 	@Test
@@ -116,46 +108,58 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	}
 	
 	@Test
-	public void testParseExpandedGroup() throws Exception {
+	public void testParseExpandedGroupFrom2x() throws Exception {
 		CyNetworkView[] views = getViews("group_2x_expanded.xgmml");
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
-		CyNetwork net = checkSingleNetwork(views, 3, 2);
+		CyNetwork net = checkSingleNetwork(views, 4, 2);
 		
-		// Test CyGroup
-		Set<CyGroup> groups = reader.getGroups();
-		assertEquals(1, groups.size());
+		// Test 2.x group parsed as network pointer
+		CyNode gn = null;
 		
-		CyGroup gr = groups.toArray(new CyGroup[1])[0];
-		assertFalse(gr.isCollapsed(net));
-		assertEquals(2, gr.getNodeList().size());
-//		assertEquals(1, gr.getInternalEdgeList().size()); // TODO: fix it
-		assertEquals(1, gr.getExternalEdgeList().size());
+		for (CyNode n : net.getNodeList()) {
+			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState"))
+				gn = n;
+			else // This test has no regular nested networks!
+				assertNull(n.getNetworkPointer());
+		}
 		
-		// Check if the nested graph's attribute was imported to the group network
-		CyRow grNetrow = gr.getGroupNetwork().getRow(gr.getGroupNetwork());
+		assertNotNull("The group node cannot be found", gn);
+		CyNetwork np = gn.getNetworkPointer();
+		assertNotNull(np);
+		assertEquals(2, np.getNodeCount());
+		assertEquals(1, np.getEdgeCount());
+		
+		// Check if the nested graph's attribute was imported to the network pointer
+		CyRow grNetrow = np.getRow(np);
 		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
 	}
 	
 	@Test
-	public void testParseCollapsedGroup() throws Exception {
+	public void testParseCollapsedGroupFrom2x() throws Exception {
 		CyNetworkView[] views = getViews("group_2x_collapsed.xgmml");
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
 		
-		// Test CyGroup
-		Set<CyGroup> groups = reader.getGroups();
-		assertEquals(1, groups.size());
+		// Test 2.x group parsed as network pointer
+		CyNode gn = null;
 		
-		CyGroup gr = groups.toArray(new CyGroup[1])[0];
-		assertTrue(gr.isCollapsed(net));
-		assertEquals(2, gr.getNodeList().size());
-		assertEquals(1, gr.getInternalEdgeList().size());
-		assertEquals(1, gr.getExternalEdgeList().size());
+		for (CyNode n : net.getNodeList()) {
+			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState"))
+				gn = n;
+			else // This test has no regular nested networks!
+				assertNull(n.getNetworkPointer());
+		}
 		
-		// Check if the nested graph's attribute was imported to the group network
-		CyRow grNetrow = gr.getGroupNetwork().getRow(gr.getGroupNetwork());
+		assertNotNull("The group node cannot be found", gn);
+		CyNetwork np = gn.getNetworkPointer();
+		assertNotNull(np);
+		assertEquals(2, np.getNodeCount());
+		assertEquals(1, np.getEdgeCount());
+		
+		// Check if the nested graph's attribute was imported to the network pointer
+		CyRow grNetrow = np.getRow(np);
 		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
 	}
 

@@ -28,15 +28,13 @@
 package org.cytoscape.io.internal.util;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +57,6 @@ public class ReadCache {
 	private Map<CyNetwork, Set<Long>> edgeLinkMap;
 	
 	private Map<CyNode, Object/*network's id*/> networkPointerMap;
-	private Set<CyGroup> groups;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReadCache.class);
 	
@@ -76,7 +73,6 @@ public class ReadCache {
 		nodeLinkMap = new HashMap<CyNetwork, Set<Long>>();
 		edgeLinkMap = new HashMap<CyNetwork, Set<Long>>();
 		networkPointerMap = new HashMap<CyNode, Object>();
-		groups = new HashSet<CyGroup>();
 	}
 	
 	public void dispose() {
@@ -90,7 +86,6 @@ public class ReadCache {
 		nodeLinkMap = null;
 		edgeLinkMap = null;
 		networkPointerMap = null;
-		groups = null;
 	}
 	
 	/**
@@ -114,13 +109,6 @@ public class ReadCache {
 		}
     }
 	
-	public void cache(CyGroup group) {
-		if (group == null)
-			throw new NullPointerException("Cannot parse group: null.");
-		
-		groups.add(group);
-	}
-	
 	/**
 	 * Probably only necessary when parsing 2.x session files.
 	 * @param name
@@ -138,6 +126,10 @@ public class ReadCache {
 			throw new NullPointerException("Cannot parse network pointer: network id is null.");
 		
 		networkPointerMap.put(node, networkId);
+	}
+	
+	public boolean hasNetworkPointers() {
+		return !networkPointerMap.isEmpty();
 	}
 	
 	public Object getOldId(Long suid) {
@@ -204,10 +196,6 @@ public class ReadCache {
 
 	public Map<Object, CyNode> getNodeByNameMap() {
 		return nodeByNameMap;
-	}
-	
-	public Set<CyGroup> getGroups() {
-		return groups;
 	}
 	
 	public void createNetworkPointers() {

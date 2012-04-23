@@ -108,10 +108,12 @@ public class SessionUtil {
 	}
 	
 	public static String getNetworkFileName(CyNetwork network) throws UnsupportedEncodingException {
-		String name = escape(network.getRow(network).get(CyNetwork.NAME, String.class));
+		String name = network.getRow(network).get(CyNetwork.NAME, String.class);
 		
 		if (name == null || name.isEmpty())
-			name = Long.toString(network.getSUID());
+			name = network.getSUID().toString();
+		
+		name = escape(name);
 		
 		return name;
 	}

@@ -27,7 +27,6 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
-import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -61,19 +60,6 @@ public class HandleNode extends AbstractHandler {
 					manager.getRootNetwork().getRow(node).set(CyNetwork.NAME, label);
 				}
 			}
-			
-			// Does it have a network pointer?
-			final String netPointerStr =  atts.getValue("cy:networkPointer");
-			
-			if (netPointerStr != null) {
-				try {
-					final Long netPointerId = Long.valueOf(netPointerStr.trim());
-					// The actual pointer will be created later!
-					manager.getCache().addNetworkPointer(node, netPointerId);
-				} catch (NumberFormatException nfe) {
-					logger.error("The node's network pointer will not be created. The network ID is invalid: " + netPointerStr);
-				}
-			}
 		} else {
 			// Try to get the node from the internal cache
 			id = XGMMLParseUtil.getIdFromXLink(href);
@@ -91,14 +77,6 @@ public class HandleNode extends AbstractHandler {
 				// So just save the reference so it can be added to the network after the whole graph is parsed.
 				manager.addElementLink(href, CyNode.class);
 			}
-		}
-		
-		// Is this node part of a group?
-		final CyGroup group = manager.getCurrentGroup();
-		
-		if (group != null) {
-			// There is a group, so this node must belong to it.
-			manager.addInnerNode(group, id);
 		}
 		
 		return current;

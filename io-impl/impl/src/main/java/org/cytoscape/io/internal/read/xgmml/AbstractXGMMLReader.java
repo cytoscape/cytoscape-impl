@@ -124,7 +124,7 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 	}
 	
 	protected void complete(TaskMonitor tm) {
-		Set<CyNetwork> netSet = readDataMgr.getNetworks();
+		Set<CyNetwork> netSet = readDataMgr.getPublicNetworks();
 		this.cyNetworks = netSet.toArray(new CyNetwork[netSet.size()]);
 	}
 	

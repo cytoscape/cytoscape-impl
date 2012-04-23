@@ -28,11 +28,8 @@
 package org.cytoscape.io.internal.read.xgmml;
 
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
@@ -60,7 +57,6 @@ public class XGMMLNetworkReader extends AbstractXGMMLReader {
 
 	private final CyRootNetworkManager cyRootNetworkManager;
 	private CyRootNetwork parent;
-	private Set<CyGroup> groups;
 
 	public XGMMLNetworkReader(final InputStream inputStream,
 							  final CyNetworkViewFactory cyNetworkViewFactory,
@@ -80,22 +76,12 @@ public class XGMMLNetworkReader extends AbstractXGMMLReader {
 		this.parent = n != null ? cyRootNetworkManager.getRootNetwork(n) : null;
 	}
 	
-	public Set<CyGroup> getGroups() {
-		return groups;
-	}
-	
 	@Override
 	protected void init(TaskMonitor tm) {
 		super.init(tm);
 		
 		readDataMgr.setViewFormat(false);
 		readDataMgr.setParentNetwork(parent);
-	}
-	
-	@Override
-	protected void complete(TaskMonitor tm) {
-		groups = new HashSet<CyGroup>(readDataMgr.getCache().getGroups());
-		super.complete(tm);
 	}
 	
 	@Override
