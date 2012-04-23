@@ -84,10 +84,6 @@ import org.cytoscape.task.internal.loadnetwork.LoadNetworkURLTaskFactoryImpl;
 import org.cytoscape.task.internal.loadvizmap.LoadVizmapFileTaskFactoryImpl;
 import org.cytoscape.task.internal.networkobjects.DeleteSelectedNodesAndEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.proxysettings.ProxySettingsTaskFactoryImpl;
-import org.cytoscape.task.internal.quickstart.ImportTaskUtil;
-import org.cytoscape.task.internal.quickstart.datasource.BioGridPreprocessor;
-import org.cytoscape.task.internal.quickstart.datasource.InteractionFilePreprocessor;
-import org.cytoscape.task.internal.quickstart.subnetworkbuilder.SubnetworkBuilderUtil;
 import org.cytoscape.task.internal.select.DeselectAllEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllTaskFactoryImpl;
@@ -212,7 +208,7 @@ public class CyActivator extends AbstractCyActivator {
 		LoadNetworkFileTaskFactoryImpl loadNetworkFileTaskFactory = new LoadNetworkFileTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef, tunableSetterServiceRef);
 		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef, synchronousTaskManagerServiceRef, tunableSetterServiceRef);
 
-		DeleteSelectedNodesAndEdgesTaskFactoryImpl deleteSelectedNodesAndEdgesTaskFactory = new DeleteSelectedNodesAndEdgesTaskFactoryImpl(undoSupportServiceRef,cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyEventHelperRef);
+		DeleteSelectedNodesAndEdgesTaskFactoryImpl deleteSelectedNodesAndEdgesTaskFactory = new DeleteSelectedNodesAndEdgesTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyEventHelperRef);
 		SelectAllTaskFactoryImpl selectAllTaskFactory = new SelectAllTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		SelectAllEdgesTaskFactoryImpl selectAllEdgesTaskFactory = new SelectAllEdgesTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		SelectAllNodesTaskFactoryImpl selectAllNodesTaskFactory = new SelectAllNodesTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
@@ -265,11 +261,8 @@ public class CyActivator extends AbstractCyActivator {
 		CopyValueToEntireColumnTaskFactoryImpl copyValueToEntireColumnTaskFactory = new CopyValueToEntireColumnTaskFactoryImpl(undoSupportServiceRef);
 		DeleteTableTaskFactoryImpl deleteTableTaskFactory = new DeleteTableTaskFactoryImpl(cyTableManagerServiceRef);
 		ExportVizmapTaskFactoryImpl exportVizmapTaskFactory = new ExportVizmapTaskFactoryImpl(vizmapWriterManagerServiceRef,visualMappingManagerServiceRef, tunableSetterServiceRef);
-		SubnetworkBuilderUtil subnetworkBuilderUtil = new SubnetworkBuilderUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyEventHelperRef,cyApplicationManagerServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,visualMappingManagerServiceRef,visualStyleFactoryServiceRef,cyLayoutsServiceRef,undoSupportServiceRef);
-		ImportTaskUtil importTaskUtil = new ImportTaskUtil(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef,cyDataTableReaderManagerServiceRef,cyApplicationManagerServiceRef);
 
-		BioGridPreprocessor bioGridPreprocessor = new BioGridPreprocessor(cyPropertyServiceRef,cyApplicationConfigurationServiceRef);
-		ConnectSelectedNodesTaskFactoryImpl connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef);
+		ConnectSelectedNodesTaskFactoryImpl connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef,cyEventHelperRef);
 		
 		MapGlobalToLocalTableTaskFactoryImpl mapGlobal = new MapGlobalToLocalTableTaskFactoryImpl(cyTableManagerServiceRef, cyNetworkManagerServiceRef, tunableSetterServiceRef);
 		
@@ -888,8 +881,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,deleteTableTaskFactory,TableTaskFactory.class, new Properties());
 		registerService(bc,deleteTableTaskFactory,DeleteTableTaskFactory.class, new Properties());
 
-		registerAllServices(bc,bioGridPreprocessor, new Properties());
-
 		Properties connectSelectedNodesTaskFactoryProps = new Properties();
 		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		connectSelectedNodesTaskFactoryProps.setProperty(ENABLE_FOR,"network");
@@ -899,10 +890,6 @@ public class CyActivator extends AbstractCyActivator {
 		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,connectSelectedNodesTaskFactory,TaskFactory.class, connectSelectedNodesTaskFactoryProps);
 		registerService(bc,connectSelectedNodesTaskFactory,ConnectSelectedNodesTaskFactory.class, connectSelectedNodesTaskFactoryProps);
-
-		registerServiceListener(bc,importTaskUtil,"addProcessor","removeProcessor",InteractionFilePreprocessor.class);
-		registerServiceListener(bc,subnetworkBuilderUtil,"addProcessor","removeProcessor",InteractionFilePreprocessor.class);
-		registerServiceListener(bc,subnetworkBuilderUtil,"addFactory","removeFactory",VisualMappingFunctionFactory.class);
 
 		GroupNodesTaskFactoryImpl groupNodesTaskFactory = 
 			new GroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory);

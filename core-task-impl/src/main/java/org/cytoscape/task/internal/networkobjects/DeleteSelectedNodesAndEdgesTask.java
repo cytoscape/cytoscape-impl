@@ -39,7 +39,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
@@ -48,18 +48,19 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 	private final UndoSupport undoSupport;
-	private final CyApplicationManager applicationManager;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager visualMappingManager;
+	private final CyNetwork network;
 
-	public DeleteSelectedNodesAndEdgesTask(
-		final UndoSupport undoSupport, final CyApplicationManager applicationManager,
-		final CyNetworkViewManager networkViewManager,
-		final VisualMappingManager visualMappingManager, final CyEventHelper eventHelper)
+	public DeleteSelectedNodesAndEdgesTask(final CyNetwork network,
+	                                       final UndoSupport undoSupport, 
+	                                       final CyNetworkViewManager networkViewManager,
+	                                       final VisualMappingManager visualMappingManager, 
+	                                       final CyEventHelper eventHelper)
 	{
+		this.network              = network;
 		this.undoSupport          = undoSupport;
-		this.applicationManager   = applicationManager;
 		this.networkViewManager   = networkViewManager;
 		this.visualMappingManager = visualMappingManager;
 		this.eventHelper          = eventHelper;
@@ -67,15 +68,13 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		taskMonitor.setProgress(0.0);
-		CyNetworkView myView = applicationManager.getCurrentNetworkView();
 
-		if (myView == null){
+		if (network == null)
 			return;
-		}
+
+		taskMonitor.setProgress(0.0);
 		
 		// Delete from the base network so that our changes can be undone:
-		final CySubNetwork network = (CySubNetwork) myView.getModel();
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, "selected", true);
 		taskMonitor.setProgress(0.1);
 		final Set<CyEdge> selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
@@ -87,16 +86,13 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 		taskMonitor.setProgress(0.3);
 		
 		undoSupport.postEdit(
-			new DeleteEdit(network, selectedNodes, selectedEdges,
+			new DeleteEdit((CySubNetwork)network, selectedNodes, selectedEdges,
 				       networkViewManager, visualMappingManager, eventHelper));
 
 		// Delete the actual nodes and edges:
 		network.removeNodes(selectedNodes);
-		taskMonitor.setProgress(0.5);
-		network.removeEdges(selectedEdges);
 		taskMonitor.setProgress(0.7);
-		myView.updateView();
-		
+		network.removeEdges(selectedEdges);
 		taskMonitor.setProgress(1.0);
 	}
 }
