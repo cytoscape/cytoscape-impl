@@ -68,7 +68,7 @@ public class XGMMLWriterTest {
 	@Before
 	public void init(){
 		this.netViewTestSupport = new NetworkViewTestSupport();
-		this.netMgr = netViewTestSupport.getNetworkManager();
+		this.netMgr = mock(CyNetworkManager.class); 
 		this.netFactory = netViewTestSupport.getNetworkFactory();
 		this.rootNetMgr = netViewTestSupport.getRootNetworkFactory();
 		
