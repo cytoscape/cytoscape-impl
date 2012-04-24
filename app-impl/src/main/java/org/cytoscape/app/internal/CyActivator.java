@@ -50,6 +50,54 @@ import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.TableCellTaskFactory;
+import org.cytoscape.task.creation.CloneNetworkTaskFactory;
+import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
+import org.cytoscape.task.creation.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.creation.NewNetworkSelectedNodesOnlyTaskFactory;
+import org.cytoscape.task.destruction.DestroyNetworkTaskFactory;
+import org.cytoscape.task.destruction.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
+import org.cytoscape.task.export.graphics.ExportNetworkImageTaskFactory;
+import org.cytoscape.task.export.network.ExportNetworkViewTaskFactory;
+import org.cytoscape.task.export.table.ExportCurrentTableTaskFactory;
+import org.cytoscape.task.export.vizmap.ExportVizmapTaskFactory;
+import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
+import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
+import org.cytoscape.task.hide.HideSelectedTaskFactory;
+import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
+import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
+import org.cytoscape.task.hide.UnHideAllTaskFactory;
+import org.cytoscape.task.layout.ApplyPreferredLayoutTaskFactory;
+import org.cytoscape.task.loadnetwork.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
+import org.cytoscape.task.loadvizmap.LoadVizmapFileTaskFactory;
+import org.cytoscape.task.networkobjects.DeleteSelectedNodesAndEdgesTaskFactory;
+import org.cytoscape.task.select.DeselectAllEdgesTaskFactory;
+import org.cytoscape.task.select.DeselectAllNodesTaskFactory;
+import org.cytoscape.task.select.DeselectAllTaskFactory;
+import org.cytoscape.task.select.InvertSelectedEdgesTaskFactory;
+import org.cytoscape.task.select.InvertSelectedNodesTaskFactory;
+import org.cytoscape.task.select.SelectAdjacentEdgesTaskFactory;
+import org.cytoscape.task.select.SelectAllEdgesTaskFactory;
+import org.cytoscape.task.select.SelectAllNodesTaskFactory;
+import org.cytoscape.task.select.SelectAllTaskFactory;
+import org.cytoscape.task.select.SelectConnectedNodesTaskFactory;
+import org.cytoscape.task.select.SelectFirstNeighborsNodeViewTaskFactory;
+import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
+import org.cytoscape.task.select.SelectFromFileListTaskFactory;
+import org.cytoscape.task.session.NewSessionTaskFactory;
+import org.cytoscape.task.session.OpenSessionTaskFactory;
+import org.cytoscape.task.session.SaveSessionAsTaskFactory;
+import org.cytoscape.task.table.DeleteColumnTaskFactory;
+import org.cytoscape.task.table.DeleteTableTaskFactory;
+import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.table.RenameColumnTaskFactory;
+import org.cytoscape.task.title.EditNetworkTitleTaskFactory;
+import org.cytoscape.task.vizmap.ApplyVisualStyleTaskFactory;
 
 import java.util.Properties;
 
@@ -103,7 +151,134 @@ public class CyActivator extends AbstractCyActivator {
 
 		DataSourceManager dataSourceManager = getService(bc, DataSourceManager.class);
 		
-		CyAppAdapterImpl cyAppAdapter = new CyAppAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutAlgorithmManagerRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,cytoscapeVersionService, dialogTaskManagerRef,panelTaskManagerRef,submenuTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef, vmfFactoryC, vmfFactoryD, vmfFactoryP, visualMappingManagerRef,visualStyleFactoryRef, dataSourceManager);
+		// Start of core-task services
+		
+		 LoadVizmapFileTaskFactory loadVizmapFileTaskFactory = getService(bc,LoadVizmapFileTaskFactory.class);
+		 LoadNetworkFileTaskFactory loadNetworkFileTaskFactory = getService(bc,LoadNetworkFileTaskFactory.class);
+		 LoadNetworkURLTaskFactory loadNetworkURLTaskFactory = getService(bc,LoadNetworkURLTaskFactory.class);
+		 DeleteSelectedNodesAndEdgesTaskFactory deleteSelectedNodesAndEdgesTaskFactory = getService(bc,DeleteSelectedNodesAndEdgesTaskFactory.class);
+		 SelectAllTaskFactory selectAllTaskFactory = getService(bc,SelectAllTaskFactory.class);
+
+		 SelectAllEdgesTaskFactory selectAllEdgesTaskFactory = getService(bc,SelectAllEdgesTaskFactory.class);
+		 SelectAllNodesTaskFactory selectAllNodesTaskFactory = getService(bc,SelectAllNodesTaskFactory.class);
+		 SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory = getService(bc,SelectAdjacentEdgesTaskFactory.class);
+		 SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory = getService(bc,SelectConnectedNodesTaskFactory.class);
+		
+		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory = getService(bc,SelectFirstNeighborsTaskFactory.class);
+		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge = getService(bc,SelectFirstNeighborsTaskFactory.class);
+		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge = getService(bc,SelectFirstNeighborsTaskFactory.class);
+		
+		 DeselectAllTaskFactory deselectAllTaskFactory = getService(bc,DeselectAllTaskFactory.class);
+		 DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory = getService(bc,DeselectAllEdgesTaskFactory.class);
+		 DeselectAllNodesTaskFactory deselectAllNodesTaskFactory = getService(bc,DeselectAllNodesTaskFactory.class);
+		 InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory = getService(bc,InvertSelectedEdgesTaskFactory.class);
+		 InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory = getService(bc,InvertSelectedNodesTaskFactory.class);
+		 SelectFromFileListTaskFactory selectFromFileListTaskFactory = getService(bc,SelectFromFileListTaskFactory.class);
+		
+		 SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory = getService(bc,SelectFirstNeighborsNodeViewTaskFactory.class);
+		
+		 HideSelectedTaskFactory hideSelectedTaskFactory = getService(bc,HideSelectedTaskFactory.class);
+		 HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory = getService(bc,HideSelectedNodesTaskFactory.class);
+		 HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory = getService(bc,HideSelectedEdgesTaskFactory.class);
+		 UnHideAllTaskFactory unHideAllTaskFactory = getService(bc,UnHideAllTaskFactory.class);
+		 UnHideAllNodesTaskFactory unHideAllNodesTaskFactory = getService(bc,UnHideAllNodesTaskFactory.class);
+		 UnHideAllEdgesTaskFactory unHideAllEdgesTaskFactory = getService(bc,UnHideAllEdgesTaskFactory.class);
+
+		 NewEmptyNetworkViewFactory newEmptyNetworkTaskFactory = getService(bc,NewEmptyNetworkViewFactory.class);
+
+		 CloneNetworkTaskFactory cloneNetworkTaskFactory = getService(bc,CloneNetworkTaskFactory.class);
+		 NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactory = getService(bc,NewNetworkSelectedNodesAndEdgesTaskFatory.class);
+		 NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory = getService(bc,NewNetworkSelectedNodesOnlyTaskFactory.class);
+		 DestroyNetworkTaskFactory destroyNetworkTaskFactory = getService(bc,DestroyNetworkTaskFactory.class);
+		 DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory = getService(bc,DestroyNetworkViewTaskFactory.class);
+		 NetworkViewTaskFactory zoomInTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
+		 NetworkViewTaskFactory zoomOutTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
+		 NetworkViewTaskFactory fitSelectedTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
+		 NetworkViewTaskFactory fitContentTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
+
+		 NewSessionTaskFactory newSessionTaskFactory = getService(bc,NewSessionTaskFactory.class);
+		 OpenSessionTaskFactory openSessionTaskFactory = getService(bc,OpenSessionTaskFactory.class);
+		 TaskFactory saveSessionTaskFactory = getService(bc,TaskFactory.class); //??
+		 SaveSessionAsTaskFactory saveSessionAsTaskFactory = getService(bc,SaveSessionAsTaskFactory.class);
+		 TaskFactory proxySettingsTaskFactory = getService(bc,TaskFactory.class); //??
+		 EditNetworkTitleTaskFactory editNetworkTitleTaskFactory = getService(bc,EditNetworkTitleTaskFactory.class);
+		 CreateNetworkViewTaskFactory createNetworkViewTaskFactory = getService(bc,CreateNetworkViewTaskFactory.class);
+		 ExportNetworkImageTaskFactory exportNetworkImageTaskFactory = getService(bc,ExportNetworkImageTaskFactory.class);
+		 ExportNetworkViewTaskFactory exportNetworkViewTaskFactory = getService(bc,ExportNetworkViewTaskFactory.class);
+		 ExportCurrentTableTaskFactory exportCurrentTableTaskFactory = getService(bc,ExportCurrentTableTaskFactory.class);
+		 ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc,ApplyPreferredLayoutTaskFactory.class);
+		 DeleteColumnTaskFactory deleteColumnTaskFactory = getService(bc,DeleteColumnTaskFactory.class);
+		 RenameColumnTaskFactory renameColumnTaskFactory = getService(bc,RenameColumnTaskFactory.class);
+		 TableCellTaskFactory copyValueToEntireColumnTaskFactory = getService(bc,TableCellTaskFactory.class); //??
+		 DeleteTableTaskFactory deleteTableTaskFactory = getService(bc,DeleteTableTaskFactory.class);
+		 ExportVizmapTaskFactory exportVizmapTaskFactory = getService(bc,ExportVizmapTaskFactory.class);
+		
+		 ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = getService(bc,ConnectSelectedNodesTaskFactory.class);
+		 MapGlobalToLocalTableTaskFactory mapGlobal = getService(bc,MapGlobalToLocalTableTaskFactory.class);
+		 ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory = getService(bc,ApplyVisualStyleTaskFactory.class);
+		 MapNetworkAttrTaskFactory mapNetworkAttrTaskFactory = getService(bc,MapNetworkAttrTaskFactory.class);
+
+		// End of core-task services
+		 
+		
+		CyAppAdapterImpl cyAppAdapter = new CyAppAdapterImpl(cyApplicationManagerRef,cyEventHelperRef,cyLayoutAlgorithmManagerRef,cyNetworkFactoryRef,cyNetworkManagerRef,cyNetworkViewFactoryRef,cyNetworkViewManagerRef,cyNetworkViewReaderManagerRef,cyNetworkViewWriterManagerRef,cyPropertyRef,cyPropertyReaderManagerRef,cyPropertyWriterManagerRef,cyRootNetworkFactoryRef,cyServiceRegistrarRef,cySessionManagerRef,cySessionReaderManagerRef,cySessionWriterManagerRef,cySwingApplicationRef,cyTableFactoryRef,cyTableManagerRef,cyTableReaderManagerRef,cytoscapeVersionService, dialogTaskManagerRef,panelTaskManagerRef,submenuTaskManagerRef,presentationWriterManagerRef,renderingEngineManagerRef,taskManagerRef,undoSupportRef, vmfFactoryC, vmfFactoryD, vmfFactoryP, visualMappingManagerRef,visualStyleFactoryRef, dataSourceManager,
+				loadVizmapFileTaskFactory,
+				loadNetworkFileTaskFactory,
+				loadNetworkURLTaskFactory,
+				deleteSelectedNodesAndEdgesTaskFactory,
+				selectAllTaskFactory,
+				selectAllEdgesTaskFactory,
+				selectAllNodesTaskFactory,
+				 selectAdjacentEdgesTaskFactory,
+				 selectConnectedNodesTaskFactory,
+				 selectFirstNeighborsTaskFactory,
+				 selectFirstNeighborsTaskFactoryInEdge,
+				 selectFirstNeighborsTaskFactoryOutEdge,
+				 deselectAllTaskFactory,
+				 deselectAllEdgesTaskFactory,
+				 deselectAllNodesTaskFactory,
+				 invertSelectedEdgesTaskFactory,
+				 invertSelectedNodesTaskFactory,
+				 selectFromFileListTaskFactory,
+				 selectFirstNeighborsNodeViewTaskFactory,
+				 hideSelectedTaskFactory,
+				 hideSelectedNodesTaskFactory,
+				 hideSelectedEdgesTaskFactory,
+				 unHideAllTaskFactory,
+				 unHideAllNodesTaskFactory,
+				 unHideAllEdgesTaskFactory,
+				 newEmptyNetworkTaskFactory,
+				 cloneNetworkTaskFactory,
+				 newNetworkSelectedNodesEdgesTaskFactory,
+				 newNetworkSelectedNodesOnlyTaskFactory,
+				 destroyNetworkTaskFactory,
+				 destroyNetworkViewTaskFactory,
+				 zoomInTaskFactory,
+				 zoomOutTaskFactory,
+				 fitSelectedTaskFactory,
+				 fitContentTaskFactory,
+				 newSessionTaskFactory,
+				 openSessionTaskFactory,
+				 saveSessionTaskFactory,
+				 saveSessionAsTaskFactory,
+				 proxySettingsTaskFactory,
+				 editNetworkTitleTaskFactory,
+				 createNetworkViewTaskFactory,
+				 exportNetworkImageTaskFactory,
+				 exportNetworkViewTaskFactory,
+				 exportCurrentTableTaskFactory,
+				 applyPreferredLayoutTaskFactory,
+				 deleteColumnTaskFactory,
+				 renameColumnTaskFactory,
+				 copyValueToEntireColumnTaskFactory,
+				 deleteTableTaskFactory,
+				 exportVizmapTaskFactory,
+				 connectSelectedNodesTaskFactory,
+				 mapGlobal,
+				 applyVisualStyleTaskFactory,
+				 mapNetworkAttrTaskFactory
+				);
+		
 		AppLoaderTaskFactory appLoaderTaskFactory = new AppLoaderTaskFactory(cyAppAdapter);
 		AppManagerAction appManagerAction = new AppManagerAction(
 				cySwingApplicationRef,

@@ -41,7 +41,55 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.creation.CloneNetworkTaskFactory;
+import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
+import org.cytoscape.task.creation.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.creation.NewNetworkSelectedNodesOnlyTaskFactory;
+import org.cytoscape.task.destruction.DestroyNetworkTaskFactory;
+import org.cytoscape.task.destruction.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
+import org.cytoscape.task.export.graphics.ExportNetworkImageTaskFactory;
+import org.cytoscape.task.export.network.ExportNetworkViewTaskFactory;
+import org.cytoscape.task.export.table.ExportCurrentTableTaskFactory;
+import org.cytoscape.task.export.vizmap.ExportVizmapTaskFactory;
+import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
+import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
+import org.cytoscape.task.hide.HideSelectedTaskFactory;
+import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
+import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
+import org.cytoscape.task.hide.UnHideAllTaskFactory;
+import org.cytoscape.task.layout.ApplyPreferredLayoutTaskFactory;
+import org.cytoscape.task.loaddatatable.LoadAttributesFileTaskFactory;
+import org.cytoscape.task.loaddatatable.LoadAttributesURLTaskFactory;
+import org.cytoscape.task.loadnetwork.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
+import org.cytoscape.task.loadvizmap.LoadVizmapFileTaskFactory;
+import org.cytoscape.task.networkobjects.DeleteSelectedNodesAndEdgesTaskFactory;
+import org.cytoscape.task.select.DeselectAllEdgesTaskFactory;
+import org.cytoscape.task.select.DeselectAllNodesTaskFactory;
+import org.cytoscape.task.select.DeselectAllTaskFactory;
+import org.cytoscape.task.select.InvertSelectedEdgesTaskFactory;
+import org.cytoscape.task.select.InvertSelectedNodesTaskFactory;
+import org.cytoscape.task.select.SelectAdjacentEdgesTaskFactory;
+import org.cytoscape.task.select.SelectAllEdgesTaskFactory;
+import org.cytoscape.task.select.SelectAllNodesTaskFactory;
+import org.cytoscape.task.select.SelectAllTaskFactory;
+import org.cytoscape.task.select.SelectConnectedNodesTaskFactory;
+import org.cytoscape.task.select.SelectFirstNeighborsNodeViewTaskFactory;
+import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
+import org.cytoscape.task.select.SelectFromFileListTaskFactory;
+import org.cytoscape.task.session.NewSessionTaskFactory;
+import org.cytoscape.task.session.OpenSessionTaskFactory;
+import org.cytoscape.task.session.SaveSessionAsTaskFactory;
+import org.cytoscape.task.table.DeleteColumnTaskFactory;
+import org.cytoscape.task.table.DeleteTableTaskFactory;
+import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.table.RenameColumnTaskFactory;
+import org.cytoscape.task.title.EditNetworkTitleTaskFactory;
+import org.cytoscape.task.vizmap.ApplyVisualStyleTaskFactory;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -64,6 +112,11 @@ import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
+import org.cytoscape.task.creation.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.task.TableCellTaskFactory;
 
 
 /**
@@ -113,7 +166,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private final VisualStyleFactory visualStyleFactory;
 	private final DataSourceManager dataSourceManager;
 
-
 	//
 	// The following fields are not actually used, but are here
 	// to trick BND into importing the packages that contain
@@ -152,6 +204,73 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory;
 
+/// from core-task api
+	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;
+	private LoadNetworkFileTaskFactory loadNetworkFileTaskFactory;
+	private LoadNetworkURLTaskFactory loadNetworkURLTaskFactory;
+	private DeleteSelectedNodesAndEdgesTaskFactory deleteSelectedNodesAndEdgesTaskFactory;
+	private SelectAllTaskFactory selectAllTaskFactory;
+
+	private SelectAllEdgesTaskFactory selectAllEdgesTaskFactory;
+	private SelectAllNodesTaskFactory selectAllNodesTaskFactory;
+	private SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory;
+	private SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory;
+	
+	private SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory;
+	private SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge;
+	private SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge;
+	
+	private DeselectAllTaskFactory deselectAllTaskFactory;
+	private DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory;
+	private DeselectAllNodesTaskFactory deselectAllNodesTaskFactory;
+	private InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory;
+	private InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory;
+	private SelectFromFileListTaskFactory selectFromFileListTaskFactory;
+	
+	private SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory;
+	
+	private HideSelectedTaskFactory hideSelectedTaskFactory;
+	private HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory;
+	private HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory;
+	private UnHideAllTaskFactory unHideAllTaskFactory;
+	private UnHideAllNodesTaskFactory unHideAllNodesTaskFactory;
+	private UnHideAllEdgesTaskFactory unHideAllEdgesTaskFactory;
+
+	private NewEmptyNetworkViewFactory newEmptyNetworkTaskFactory;
+
+	private CloneNetworkTaskFactory cloneNetworkTaskFactory;
+	private NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactory;
+	private NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory;
+	private DestroyNetworkTaskFactory destroyNetworkTaskFactory;
+	private DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory;
+	private NetworkViewTaskFactory zoomInTaskFactory; //???
+	private NetworkViewTaskFactory zoomOutTaskFactory; //???
+	private NetworkViewTaskFactory fitSelectedTaskFactory; //???
+	private NetworkViewTaskFactory fitContentTaskFactory; //???
+
+	private NewSessionTaskFactory newSessionTaskFactory;
+	private OpenSessionTaskFactory openSessionTaskFactory;
+	private TaskFactory saveSessionTaskFactory; //??
+	private SaveSessionAsTaskFactory saveSessionAsTaskFactory;
+	private TaskFactory proxySettingsTaskFactory; //??
+	private EditNetworkTitleTaskFactory editNetworkTitleTaskFactory;
+	private CreateNetworkViewTaskFactory createNetworkViewTaskFactory;
+	private ExportNetworkImageTaskFactory exportNetworkImageTaskFactory;
+	private ExportNetworkViewTaskFactory exportNetworkViewTaskFactory;
+	private ExportCurrentTableTaskFactory exportCurrentTableTaskFactory;
+	private ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory;
+	private DeleteColumnTaskFactory deleteColumnTaskFactory;
+	private RenameColumnTaskFactory renameColumnTaskFactory;
+	private TableCellTaskFactory copyValueToEntireColumnTaskFactory; //??
+	private DeleteTableTaskFactory deleteTableTaskFactory;
+	private ExportVizmapTaskFactory exportVizmapTaskFactory;
+	
+	private ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory;
+	private MapGlobalToLocalTableTaskFactory mapGlobal;
+	private ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory;
+	private MapNetworkAttrTaskFactory mapNetworkAttrTaskFactory;
+
+	
 	//
 	// Since this is implementation code, there shouldn't be a
 	// a problem adding new arguments as needed.  Therefore, to
@@ -192,7 +311,79 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	                     final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory,
 	                     final VisualMappingManager visualMappingManager,
 	                     final VisualStyleFactory visualStyleFactory,
-	                     final DataSourceManager dataSourceManager
+	                     final DataSourceManager dataSourceManager,
+	                     
+	                     // new from core-task-api
+	                     
+	                 	final LoadVizmapFileTaskFactory loadVizmapFileTaskFactory,
+	                	final LoadNetworkFileTaskFactory loadNetworkFileTaskFactory,
+	                	final LoadNetworkURLTaskFactory loadNetworkURLTaskFactory,
+	                	final DeleteSelectedNodesAndEdgesTaskFactory deleteSelectedNodesAndEdgesTaskFactory,
+	                	final SelectAllTaskFactory selectAllTaskFactory,
+
+	                	final SelectAllEdgesTaskFactory selectAllEdgesTaskFactory,
+	                	final SelectAllNodesTaskFactory selectAllNodesTaskFactory,
+	                	final SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory,
+	                	final SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory,
+	                	
+	                	final SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory,
+	                	final SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge,
+	                	final SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge,
+	                	
+	                	final DeselectAllTaskFactory deselectAllTaskFactory,
+	                	final DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory,
+	                	final DeselectAllNodesTaskFactory deselectAllNodesTaskFactory,
+	                	final InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory,
+	                	final InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory,
+	                	final SelectFromFileListTaskFactory selectFromFileListTaskFactory,
+	                	
+	                	final SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory,
+	                	
+	                	final HideSelectedTaskFactory hideSelectedTaskFactory,
+	                	final HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory,
+	                	final HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory,
+	                	final UnHideAllTaskFactory unHideAllTaskFactory,
+	                	final UnHideAllNodesTaskFactory unHideAllNodesTaskFactory,
+	                	final UnHideAllEdgesTaskFactory unHideAllEdgesTaskFactory,
+
+	                	final NewEmptyNetworkViewFactory newEmptyNetworkTaskFactory,
+
+	                	final CloneNetworkTaskFactory cloneNetworkTaskFactory,
+	                	final NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactory,
+	                	final NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory,
+	                	final DestroyNetworkTaskFactory destroyNetworkTaskFactory,
+	                	final DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory,
+	                	final NetworkViewTaskFactory zoomInTaskFactory, //???
+	                	final NetworkViewTaskFactory zoomOutTaskFactory, //???
+	                	final NetworkViewTaskFactory fitSelectedTaskFactory, //???
+	                	final NetworkViewTaskFactory fitContentTaskFactory, //???
+
+	                	final NewSessionTaskFactory newSessionTaskFactory,
+	                	final OpenSessionTaskFactory openSessionTaskFactory,
+	                	final TaskFactory saveSessionTaskFactory, //??
+	                	final SaveSessionAsTaskFactory saveSessionAsTaskFactory,
+	                	final TaskFactory proxySettingsTaskFactory, //??
+	                	final EditNetworkTitleTaskFactory editNetworkTitleTaskFactory,
+	                	final CreateNetworkViewTaskFactory createNetworkViewTaskFactory,
+	                	final ExportNetworkImageTaskFactory exportNetworkImageTaskFactory,
+	                	final ExportNetworkViewTaskFactory exportNetworkViewTaskFactory,
+	                	final ExportCurrentTableTaskFactory exportCurrentTableTaskFactory,
+	                	final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory,
+	                	final DeleteColumnTaskFactory deleteColumnTaskFactory,
+	                	final RenameColumnTaskFactory renameColumnTaskFactory,
+	                	final TableCellTaskFactory copyValueToEntireColumnTaskFactory, //??
+	                	final DeleteTableTaskFactory deleteTableTaskFactory,
+	                	final ExportVizmapTaskFactory exportVizmapTaskFactory,
+	                	//final SubnetworkBuilderUtil subnetworkBuilderUtil,
+	                	//final ImportTaskUtil importTaskUtil,
+
+	                	//final BioGridPreprocessor bioGridPreprocessor,
+	                	final ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory,
+	                	
+	                	final MapGlobalToLocalTableTaskFactory mapGlobal,
+	                	
+	                	final ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory,
+	                	final MapNetworkAttrTaskFactory mapNetworkAttrTaskFactory
 					    )
 	{
 		this.cyApplicationManager = cyApplicationManager;
@@ -231,6 +422,63 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 		this.visualMappingManager = visualMappingManager;
 		this.visualStyleFactory = visualStyleFactory;
 		this.dataSourceManager = dataSourceManager;
+		
+		//
+		this.loadVizmapFileTaskFactory = loadVizmapFileTaskFactory;
+		this.loadNetworkFileTaskFactory = loadNetworkFileTaskFactory;
+		this.loadNetworkURLTaskFactory = loadNetworkURLTaskFactory;
+		this.deleteSelectedNodesAndEdgesTaskFactory = deleteSelectedNodesAndEdgesTaskFactory;
+		this.selectAllTaskFactory = selectAllTaskFactory;
+		this.selectAllEdgesTaskFactory = selectAllEdgesTaskFactory;
+		this.selectAllNodesTaskFactory = selectAllNodesTaskFactory;
+		this.selectAdjacentEdgesTaskFactory = selectAdjacentEdgesTaskFactory;
+		this.selectConnectedNodesTaskFactory = selectConnectedNodesTaskFactory;
+		this.selectFirstNeighborsTaskFactory = selectFirstNeighborsTaskFactory;
+		this.selectFirstNeighborsTaskFactoryInEdge = selectFirstNeighborsTaskFactoryInEdge;
+		this.selectFirstNeighborsTaskFactoryOutEdge = selectFirstNeighborsTaskFactoryOutEdge;
+		this.deselectAllTaskFactory = deselectAllTaskFactory;
+		this.deselectAllEdgesTaskFactory = deselectAllEdgesTaskFactory;
+		this.deselectAllNodesTaskFactory = deselectAllNodesTaskFactory;
+		this.invertSelectedEdgesTaskFactory = invertSelectedEdgesTaskFactory;
+		this.invertSelectedNodesTaskFactory = invertSelectedNodesTaskFactory;
+		this.selectFromFileListTaskFactory = selectFromFileListTaskFactory;
+		this.selectFirstNeighborsNodeViewTaskFactory = selectFirstNeighborsNodeViewTaskFactory;
+		this.hideSelectedTaskFactory = hideSelectedTaskFactory;
+		this.hideSelectedNodesTaskFactory = hideSelectedNodesTaskFactory;
+		this.hideSelectedEdgesTaskFactory = hideSelectedEdgesTaskFactory;
+		this.unHideAllTaskFactory = unHideAllTaskFactory;
+		this.unHideAllNodesTaskFactory = unHideAllNodesTaskFactory;
+		this.unHideAllEdgesTaskFactory = unHideAllEdgesTaskFactory;
+		this.newEmptyNetworkTaskFactory = newEmptyNetworkTaskFactory;
+		this.cloneNetworkTaskFactory = cloneNetworkTaskFactory;
+		this.newNetworkSelectedNodesEdgesTaskFactory = newNetworkSelectedNodesEdgesTaskFactory;
+		this.newNetworkSelectedNodesOnlyTaskFactory = newNetworkSelectedNodesOnlyTaskFactory;
+		this.destroyNetworkTaskFactory = destroyNetworkTaskFactory;
+		this.destroyNetworkViewTaskFactory = destroyNetworkViewTaskFactory;
+		this.zoomInTaskFactory = zoomInTaskFactory;
+		this.zoomOutTaskFactory = zoomOutTaskFactory;
+		this.fitSelectedTaskFactory = fitSelectedTaskFactory;
+		this.fitContentTaskFactory = fitContentTaskFactory;
+		this.newSessionTaskFactory = newSessionTaskFactory;
+		this.openSessionTaskFactory = openSessionTaskFactory;
+		this.saveSessionTaskFactory = saveSessionTaskFactory;
+		this.saveSessionAsTaskFactory = saveSessionAsTaskFactory;
+		this.proxySettingsTaskFactory = proxySettingsTaskFactory;
+		this.editNetworkTitleTaskFactory = editNetworkTitleTaskFactory;
+		this.createNetworkViewTaskFactory = createNetworkViewTaskFactory;
+		this.exportNetworkImageTaskFactory = exportNetworkImageTaskFactory;
+		this.exportNetworkViewTaskFactory = exportNetworkViewTaskFactory;
+		this.exportCurrentTableTaskFactory = exportCurrentTableTaskFactory;
+		this.applyPreferredLayoutTaskFactory = applyPreferredLayoutTaskFactory;
+		this.deleteColumnTaskFactory = deleteColumnTaskFactory;
+		this.renameColumnTaskFactory = renameColumnTaskFactory;
+		this.copyValueToEntireColumnTaskFactory = copyValueToEntireColumnTaskFactory;
+		this.deleteTableTaskFactory = deleteTableTaskFactory;
+		this.exportVizmapTaskFactory = exportVizmapTaskFactory;
+		this.connectSelectedNodesTaskFactory = connectSelectedNodesTaskFactory;
+		this.mapGlobal = mapGlobal;
+		this.applyVisualStyleTaskFactory = applyVisualStyleTaskFactory;
+		this.mapNetworkAttrTaskFactory = mapNetworkAttrTaskFactory;
 	}
 
 	//
@@ -272,4 +520,70 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	public VisualMappingManager getVisualMappingManager() { return visualMappingManager; }
 	public VisualStyleFactory getVisualStyleFactory() { return visualStyleFactory; }
 	@Override public DataSourceManager getDataSourceManager() { return dataSourceManager; }
+	
+	////////////////// core-task services //////////////////////
+	
+	@Override public ApplyVisualStyleTaskFactory get_ApplyVisualStyleTaskFactory(){ return this.applyVisualStyleTaskFactory;}
+	@Override public MapGlobalToLocalTableTaskFactory get_MapGlobalToLocalTableTaskFactory(){ return this.mapGlobal; }
+	@Override public LoadNetworkFileTaskFactory get_LoadNetworkFileTaskFactory(){ return this.loadNetworkFileTaskFactory; }
+	@Override public LoadNetworkURLTaskFactory get_LoadNetworkURLTaskFactory(){ return this.loadNetworkURLTaskFactory;	}
+	@Override public LoadVizmapFileTaskFactory get_LoadVizmapFileTaskFactory(){ return this.loadVizmapFileTaskFactory; }
+	@Override public LoadAttributesFileTaskFactory get_LoadAttributesFileTaskFactory(){ return null; }
+	@Override public LoadAttributesURLTaskFactory get_LoadAttributesURLTaskFactory(){ return null; }
+	@Override public DeleteSelectedNodesAndEdgesTaskFactory get_DeleteSelectedNodesAndEdgesTaskFactory(){ return null; }
+	@Override public SelectAllTaskFactory get_SelectAllTaskFactory(){ return this.selectAllTaskFactory;	}
+	@Override public SelectAllEdgesTaskFactory get_SelectAllEdgesTaskFactory(){ return this.selectAllEdgesTaskFactory;	}
+	@Override public SelectAllNodesTaskFactory get_SelectAllNodesTaskFactory(){	return this.selectAllNodesTaskFactory; }
+	@Override public SelectAdjacentEdgesTaskFactory get_SelectAdjacentEdgesTaskFactory(){ return this.selectAdjacentEdgesTaskFactory;}
+	@Override public SelectConnectedNodesTaskFactory get_SelectConnectedNodesTaskFactory(){ return this.selectConnectedNodesTaskFactory; }
+	@Override public SelectFirstNeighborsTaskFactory get_SelectFirstNeighborsTaskFactory(){ return this.selectFirstNeighborsTaskFactory; }
+	@Override public SelectFirstNeighborsTaskFactory get_SelectFirstNeighborsTaskFactoryInEdge(){ return this.selectFirstNeighborsTaskFactoryInEdge; }
+	@Override public SelectFirstNeighborsTaskFactory get_SelectFirstNeighborsTaskFactoryOutEdge(){ return this.selectFirstNeighborsTaskFactoryOutEdge;}
+	@Override public DeselectAllTaskFactory get_DeselectAllTaskFactory(){ return this.deselectAllTaskFactory; }
+	@Override public DeselectAllEdgesTaskFactory get_DeselectAllEdgesTaskFactory(){ return this.deselectAllEdgesTaskFactory; }
+	@Override public DeselectAllNodesTaskFactory get_DeselectAllNodesTaskFactory(){ return this.deselectAllNodesTaskFactory; }
+	@Override public InvertSelectedEdgesTaskFactory get_InvertSelectedEdgesTaskFactory(){ return this.invertSelectedEdgesTaskFactory; }
+	@Override public InvertSelectedNodesTaskFactory get_InvertSelectedNodesTaskFactory(){ return this.invertSelectedNodesTaskFactory;}
+	@Override public SelectFromFileListTaskFactory get_SelectFromFileListTaskFactory(){ return this.selectFromFileListTaskFactory; }
+	@Override public SelectFirstNeighborsNodeViewTaskFactory get_SelectFirstNeighborsNodeViewTaskFactory(){ return this.selectFirstNeighborsNodeViewTaskFactory; }
+	@Override public HideSelectedTaskFactory get_HideSelectedTaskFactory(){ return this.hideSelectedTaskFactory; }
+	@Override public HideSelectedNodesTaskFactory get_HideSelectedNodesTaskFactory(){ return this.hideSelectedNodesTaskFactory;	}
+	@Override public HideSelectedEdgesTaskFactory get_HideSelectedEdgesTaskFactory(){ return this.hideSelectedEdgesTaskFactory; }
+	@Override public UnHideAllTaskFactory get_UnHideAllTaskFactory(){ return this.unHideAllTaskFactory; }
+	@Override public UnHideAllNodesTaskFactory get_UnHideAllNodesTaskFactory(){ return this.unHideAllNodesTaskFactory;}
+	@Override public UnHideAllEdgesTaskFactory get_UnHideAllEdgesTaskFactory(){ return this.unHideAllEdgesTaskFactory;	}
+	@Override public NewEmptyNetworkViewFactory get_NewEmptyNetworkViewFactory(){ return this.newEmptyNetworkViewFactory; }
+	@Override public NewNetworkSelectedNodesAndEdgesTaskFatory get_NewNetworkSelectedNodesAndEdgesTaskFatory(){ return this.newNetworkSelectedNodesEdgesTaskFactory; }
+	@Override public NewNetworkSelectedNodesOnlyTaskFactory get_NewNetworkSelectedNodesOnlyTaskFactory(){ return this.newNetworkSelectedNodesOnlyTaskFactory; }
+	@Override public CloneNetworkTaskFactory get_CloneNetworkTaskFactory(){ return this.cloneNetworkTaskFactory; }
+	@Override public DestroyNetworkTaskFactory get_DestroyNetworkTaskFactory(){ return this.destroyNetworkTaskFactory;	}
+	@Override public DestroyNetworkViewTaskFactory get_DestroyNetworkViewTaskFactory(){ return this.destroyNetworkViewTaskFactory; }
+	@Override public NetworkViewTaskFactory get_ZoomInTaskFactory(){ return this.zoomInTaskFactory; }
+	@Override public NetworkViewTaskFactory get_ZoomOutTaskFactory(){ return this.zoomOutTaskFactory; }
+	@Override public NetworkViewTaskFactory get_FitSelectedTaskFactory(){ return this.fitSelectedTaskFactory;	}
+	@Override public NetworkViewTaskFactory get_fitContentTaskFactory(){ return this.fitContentTaskFactory; }
+	@Override public EditNetworkTitleTaskFactory get_EditNetworkTitleTaskFactory(){	return this.editNetworkTitleTaskFactory; }
+	@Override public CreateNetworkViewTaskFactory get_CreateNetworkViewTaskFactory(){ return this.createNetworkViewTaskFactory;	}
+	@Override public ExportNetworkImageTaskFactory get_ExportNetworkImageTaskFactory(){	return this.exportNetworkImageTaskFactory;}
+	@Override public ExportNetworkViewTaskFactory get_ExportNetworkViewTaskFactory(){ return this.exportNetworkViewTaskFactory;	}
+	@Override public ExportCurrentTableTaskFactory get_ExportCurrentTableTaskFactory(){	return this.exportCurrentTableTaskFactory; }
+	@Override public ExportVizmapTaskFactory get_ExportVizmapTaskFactory(){	return this.exportVizmapTaskFactory; }
+	@Override public NewSessionTaskFactory get_NewSessionTaskFactory(){	return this.newSessionTaskFactory;}
+	@Override public OpenSessionTaskFactory get_OpenSessionTaskFactory(){ return this.openSessionTaskFactory;}
+//	@Override public SaveSessionTaskFactory get_saveSessionTaskFactory();
+	@Override public SaveSessionAsTaskFactory get_SaveSessionAsTaskFactory(){ return this.saveSessionAsTaskFactory;	}
+	@Override public ApplyPreferredLayoutTaskFactory get_ApplyPreferredLayoutTaskFactory(){	return this.applyPreferredLayoutTaskFactory; }
+	@Override public DeleteColumnTaskFactory get_DeleteColumnTaskFactory(){ return this.deleteColumnTaskFactory;}
+	@Override public RenameColumnTaskFactory get_RenameColumnTaskFactory(){	return this.renameColumnTaskFactory;}
+	@Override public DeleteTableTaskFactory get_DeleteTableTaskFactory(){ return this.deleteTableTaskFactory;}
+	@Override public ConnectSelectedNodesTaskFactory get_ConnectSelectedNodesTaskFactory(){	return this.connectSelectedNodesTaskFactory; }
+
+//	GroupNodesTaskFactory get_GroupNodesTaskFactory();
+//	UnGroupTaskFactory get_UnGroupTaskFactory();
+//	CollapseGroupTaskFactory get_CollapseGroupTaskFactory();
+//	ExpandGroupTaskFactory get_ExpandGroupTaskFactory();
+//	UnGroupNodesTaskFactory get_UnGroupNodesTaskFactory();
+
+	@Override public MapNetworkAttrTaskFactory get_MapNetworkAttrTaskFactory(){	return this.mapNetworkAttrTaskFactory;}
+
 }
