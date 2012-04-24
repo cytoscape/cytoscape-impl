@@ -34,8 +34,6 @@
  */
 package org.cytoscape.view.vizmap.gui.internal.editor;
 
-import java.beans.PropertyEditor;
-
 import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -64,8 +62,7 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 	}
 
 	@Override
-	public TableCellRenderer getContinuousTableCellRenderer(PropertyEditor continuousMappingEditor) {
-		// TODO Auto-generated method stub
+	public TableCellRenderer getContinuousTableCellRenderer(ContinuousMappingEditor<? extends Number, T> continuousMappingEditor) {
 		return new NumberContinuousCellRenderer((ContinuousMappingEditor<?, ?>) continuousMappingEditor);
 	}
 

@@ -316,4 +316,5 @@ public class EditorManagerImpl implements EditorManager {
 		
 		return null;
 	}
+
 }

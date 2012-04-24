@@ -53,6 +53,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
@@ -230,7 +231,7 @@ public class VizMapPropertyBuilder {
 				throw new NullPointerException("Continuous Mapping cell editor is null.");
 			else {
 				// Renderer for Continuous mapping icon cell
-				final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer(continuousCellEditor);
+				final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer((ContinuousMappingEditor<? extends Number, V>) continuousCellEditor);
 				rendReg.registerRenderer(graphicalView, continuousRenderer);
 				continuousCellEditor.setValue(visualMapping);
 				cellEditorFactory.registerEditor(graphicalView, continuousCellEditor);
