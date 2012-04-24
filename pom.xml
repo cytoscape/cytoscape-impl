@@ -128,11 +128,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
-				<artifactId>group-data-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
-			</dependency>
-			<dependency>
-				<groupId>org.cytoscape</groupId>
 				<artifactId>model-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
