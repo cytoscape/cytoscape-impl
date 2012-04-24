@@ -30,6 +30,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.creation.CloneNetworkTaskFactory;
 import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
@@ -43,6 +44,7 @@ import org.cytoscape.task.export.graphics.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.export.network.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.export.table.ExportCurrentTableTaskFactory;
 import org.cytoscape.task.export.vizmap.ExportVizmapTaskFactory;
+import org.cytoscape.task.group.GroupNodesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedTaskFactory;
@@ -189,7 +191,12 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(ConnectSelectedNodesTaskFactory.class),
 			mock(MapGlobalToLocalTableTaskFactory.class),
 			mock(ApplyVisualStyleTaskFactory.class),
-			mock(MapNetworkAttrTaskFactory.class)
+			mock(MapNetworkAttrTaskFactory.class),
+			mock(GroupNodesTaskFactory.class),
+			mock(NetworkViewTaskFactory.class),
+			mock(NodeViewTaskFactory.class),
+			mock(NodeViewTaskFactory.class),
+			mock(NodeViewTaskFactory.class)			
 		    );
 	}	
 }

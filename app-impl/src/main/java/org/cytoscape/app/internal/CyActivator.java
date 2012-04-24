@@ -51,6 +51,7 @@ import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.creation.CloneNetworkTaskFactory;
 import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
@@ -64,6 +65,7 @@ import org.cytoscape.task.export.graphics.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.export.network.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.export.table.ExportCurrentTableTaskFactory;
 import org.cytoscape.task.export.vizmap.ExportVizmapTaskFactory;
+import org.cytoscape.task.group.GroupNodesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedTaskFactory;
@@ -218,6 +220,13 @@ public class CyActivator extends AbstractCyActivator {
 		 ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory = getService(bc,ApplyVisualStyleTaskFactory.class);
 		 MapNetworkAttrTaskFactory mapNetworkAttrTaskFactory = getService(bc,MapNetworkAttrTaskFactory.class);
 
+		 
+     	GroupNodesTaskFactory groupNodesTaskFactory = getService(bc,GroupNodesTaskFactory.class);
+     	NetworkViewTaskFactory unGroupTaskFactory= getService(bc,NetworkViewTaskFactory.class);
+     	NodeViewTaskFactory collapseGroupTaskFactory= getService(bc,NodeViewTaskFactory.class);
+     	NodeViewTaskFactory expandGroupTaskFactory= getService(bc,NodeViewTaskFactory.class);
+     	NodeViewTaskFactory unGroupNodesTaskFactory= getService(bc,NodeViewTaskFactory.class);
+
 		// End of core-task services
 		 
 		
@@ -276,7 +285,12 @@ public class CyActivator extends AbstractCyActivator {
 				 connectSelectedNodesTaskFactory,
 				 mapGlobal,
 				 applyVisualStyleTaskFactory,
-				 mapNetworkAttrTaskFactory
+				 mapNetworkAttrTaskFactory,				 
+             	 groupNodesTaskFactory,
+             	 unGroupTaskFactory,
+             	 collapseGroupTaskFactory,
+             	 expandGroupTaskFactory,	
+             	 unGroupNodesTaskFactory
 				);
 		
 		AppLoaderTaskFactory appLoaderTaskFactory = new AppLoaderTaskFactory(cyAppAdapter);
