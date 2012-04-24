@@ -370,7 +370,7 @@ public class CyActivator extends AbstractCyActivator {
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(ACCELERATOR,"DELETE");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND,"delete-selected-nodes-and-edges");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,TaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
+		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,NetworkTaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
 		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,DeleteSelectedNodesAndEdgesTaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
 
 		Properties selectAllTaskFactoryProps = new Properties();
@@ -888,7 +888,7 @@ public class CyActivator extends AbstractCyActivator {
 		connectSelectedNodesTaskFactoryProps.setProperty(TITLE,"Connect Selected Nodes");
 		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND,"connect-selected-nodes");
 		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		registerService(bc,connectSelectedNodesTaskFactory,TaskFactory.class, connectSelectedNodesTaskFactoryProps);
+		registerService(bc,connectSelectedNodesTaskFactory,NetworkTaskFactory.class, connectSelectedNodesTaskFactoryProps);
 		registerService(bc,connectSelectedNodesTaskFactory,ConnectSelectedNodesTaskFactory.class, connectSelectedNodesTaskFactoryProps);
 
 		GroupNodesTaskFactoryImpl groupNodesTaskFactory = 
