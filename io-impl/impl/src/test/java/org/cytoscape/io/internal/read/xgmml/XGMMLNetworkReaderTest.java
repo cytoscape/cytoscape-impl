@@ -116,12 +116,15 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		
 		// Test 2.x group parsed as network pointer
 		CyNode gn = null;
+		int npCount = 0;
 		
 		for (CyNode n : net.getNodeList()) {
-			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState"))
+			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState")) {
 				gn = n;
-			else // This test has no regular nested networks!
+				if (++npCount > 1) fail("There should be only one group node!");
+			} else { // The other nodes have no network pointer!
 				assertNull(n.getNetworkPointer());
+			}
 		}
 		
 		assertNotNull("The group node cannot be found", gn);
@@ -144,12 +147,15 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		
 		// Test 2.x group parsed as network pointer
 		CyNode gn = null;
+		int npCount = 0;
 		
 		for (CyNode n : net.getNodeList()) {
-			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState"))
+			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState")) {
 				gn = n;
-			else // This test has no regular nested networks!
+				if (++npCount > 1) fail("There should be only one group node!");
+			} else { // The other nodes have no network pointer!
 				assertNull(n.getNetworkPointer());
+			}
 		}
 		
 		assertNotNull("The group node cannot be found", gn);

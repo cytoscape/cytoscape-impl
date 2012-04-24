@@ -123,6 +123,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 
     private final OutputStream outputStream;
     private final CyNetwork network;
+    private final CyRootNetwork rootNetwork;
     private Set<CySubNetwork> subNetworks;
     private CyNetworkView networkView;
     private String visualStyleName;
@@ -166,11 +167,11 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
 		
 		if (network instanceof CyRootNetwork) {
-			CyRootNetwork rootNetwork = (CyRootNetwork) network;
-			this.network = rootNetwork;
+			this.network = this.rootNetwork = (CyRootNetwork) network;
 			this.subNetworks = getRegisteredSubNetworks(rootNetwork);
 		} else {
 			this.network = network;
+			this.rootNetwork = rootNetworkMgr.getRootNetwork(network);
 			this.subNetworks = new HashSet<CySubNetwork>();
 		}
 		
@@ -256,6 +257,8 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         	if (networkView != null) {
         		writeAttributePair("cy:networkId", network.getSUID());
         		writeAttributePair("cy:visualStyle", visualStyleName);
+        	} else {
+        		writeAttributePair("cy:private", ObjectTypeMap.toXGMMLBoolean(!isRegistered(network)));
         	}
         } else {
         	// Only if exporting to standard XGMML
@@ -353,40 +356,63 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	private void writeSubGraph(final CyNetwork net) throws IOException {
 		if (writtenNetMap.containsKey(net)) {
 			// This sub-network has already been written
-			writeSubGraphReference("#" + net.getSUID());
+			writeSubGraphReference(net);
 		} else {
-			// Write it for the first time
-			writtenNetMap.put(net, net);
+			// Check if this network is from the same root network as the base network
+			final CyRootNetwork otherRoot = rootNetworkMgr.getRootNetwork(net);
+			boolean sameRoot = rootNetwork.equals(otherRoot);
 			
-			writeElement("<att>\n");
-			depth++;
-			writeElement("<graph");
-			// Always write the network ID
-			writeAttributePair("id", net.getSUID());
-			// Save the label to make it more human readable
-			writeAttributePair("label", getLabel(net, net));
-			write(">\n");
-			depth++;
-	
-			writeAttributes(net.getRow(net));
-			
-			for (CyNode childNode : net.getNodeList())
-				writeNode(net, childNode);
-			for (CyEdge childEdge : net.getEdgeList())
-				writeEdge(net, childEdge);
-	
-			depth--;
-			writeElement("</graph>\n");
-			depth--;
-			writeElement("</att>\n");
+			if (sameRoot) {
+				// Write it for the first time
+				writtenNetMap.put(net, net);
+				
+				writeElement("<att>\n");
+				depth++;
+				writeElement("<graph");
+				// Always write the network ID
+				writeAttributePair("id", net.getSUID());
+				// Save the label to make it more human readable
+				writeAttributePair("label", getLabel(net, net));
+				// Unregistered networks are saved as "private"
+				writeAttributePair("cy:private", ObjectTypeMap.toXGMMLBoolean(!isRegistered(net)));
+				write(">\n");
+				depth++;
+		
+				writeAttributes(net.getRow(net));
+				
+				for (CyNode childNode : net.getNodeList())
+					writeNode(net, childNode);
+				for (CyEdge childEdge : net.getEdgeList())
+					writeEdge(net, childEdge);
+		
+				depth--;
+				writeElement("</graph>\n");
+				depth--;
+				writeElement("</att>\n");
+			} else if (sessionFormat) {
+				// This network belongs to another XGMML file, but that's ok because this XGMML is part of a CYS file,
+				// which means that both files will be saved.
+				writeSubGraphReference(net);
+			}
 		}
 	}
 	
-	private void writeSubGraphReference(final String netId) throws IOException {
+	private void writeSubGraphReference(CyNetwork net) throws IOException {
+		String href = "#" + net.getSUID();
+		final CyRootNetwork otherRoot = rootNetworkMgr.getRootNetwork(net);
+		final boolean sameRoot = rootNetwork.equals(otherRoot);
+		
+		if (!sameRoot) {
+			// This network belongs to another XGMML file,
+			// so add the other root-network's file name to the XLink URI
+			final String fileName = SessionUtil.getXGMMLFilename(otherRoot);
+			href = fileName + href;
+		}
+		
 		writeElement("<att>\n");
 		depth++;
 		writeElement("<graph");
-		writeAttributePair("xlink:href", netId);
+		writeAttributePair("xlink:href", href);
 		write("/>\n");
 		depth--;
 		writeElement("</att>\n");
@@ -464,24 +490,14 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 				writeAttributes(net.getRow(node));
 				
 				// Write node's sub-graph:
-				if (sessionFormat) {
-					if (netPointer != null) {
-						// Write the network pointer as a sub-graph reference (XLink)...
-						CyRootNetwork netPointerRoot = rootNetworkMgr.getRootNetwork(netPointer);
-						
-						// This sub-network has already been written or belongs to another XGMML file...
-						String linkId = "#" + netPointer.getSUID();
-						boolean sameRoot = netPointerRoot.equals(rootNetworkMgr.getRootNetwork(net));
-						
-						if (!sameRoot) {
-							// This XGMML file will be saved as part of a CYS file,
-							// and the sub-network does NOT belong to the same root-network
-							// ...So add the other root-network's file name to the XLink URI
-							final String fileName = SessionUtil.getXGMMLFilename(netPointerRoot);
-							linkId = fileName + linkId;
-						}
-						
-						writeSubGraphReference(linkId);
+				if (netPointer != null) {
+					if (sessionFormat && this.subNetworks.contains(netPointer)) {
+						// Because this network is registered (is also a child network), just write the reference.
+						// The content will be saved later, under the root graph
+						// (it's important to save the child network graphs in the correct order).
+						writeSubGraphReference(netPointer);
+					} else {
+						writeSubGraph(netPointer);
 					}
 				}
 				
@@ -992,20 +1008,24 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     }
     
     /**
-     * @param rootNetwork
+     * @param rootNet
      * @return A set with all the sub-networks that are registered in the network manager.
      */
-    private Set<CySubNetwork> getRegisteredSubNetworks(CyRootNetwork rootNetwork) {
-		List<CySubNetwork> subNetList = rootNetwork.getSubNetworkList();
+    private Set<CySubNetwork> getRegisteredSubNetworks(CyRootNetwork rootNet) {
+		List<CySubNetwork> subNetList = rootNet.getSubNetworkList();
 		Set<CySubNetwork> registeredSubNetSet = new LinkedHashSet<CySubNetwork>();
 		
-		registeredSubNetSet.add(rootNetwork.getBaseNetwork()); // The base network must be the first one!
+		registeredSubNetSet.add(rootNet.getBaseNetwork()); // The base network must be the first one!
 		
 		for (CySubNetwork sn : subNetList) {
-			if (networkMgr.networkExists(sn.getSUID()))
+			if (isRegistered(sn))
 				registeredSubNetSet.add(sn);
 		}
 		
 		return registeredSubNetSet;
 	}
+    
+    private boolean isRegistered(CyNetwork net) {
+    	return networkMgr.networkExists(net.getSUID());
+    }
 }

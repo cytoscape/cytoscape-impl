@@ -30,6 +30,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -68,7 +69,7 @@ public class XGMMLWriterTest {
 	@Before
 	public void init(){
 		this.netViewTestSupport = new NetworkViewTestSupport();
-		this.netMgr = mock(CyNetworkManager.class); 
+		this.netMgr = mock(CyNetworkManager.class);
 		this.netFactory = netViewTestSupport.getNetworkFactory();
 		this.rootNetMgr = netViewTestSupport.getRootNetworkFactory();
 		
@@ -87,6 +88,67 @@ public class XGMMLWriterTest {
 	}
 	
 	// Session Network Format:
+	
+	@Test
+	public void testRootNetworkGraph() throws UnsupportedEncodingException {
+		write(rootNet, true);
+		assertEquals("0", evalString("/x:graph/@cy:view"));
+		assertEquals(""+XGMMLWriter.VERSION, evalString("/x:graph/@cy:documentVersion"));
+		// Making sure that the root graph also has the private attribute
+		assertEquals("1", evalString("/x:graph/@cy:private"));
+	}
+	
+	@Test
+	public void testBaseNetworkGraph() throws UnsupportedEncodingException {
+		setRegistered(rootNet, false);
+		write(rootNet, true);
+		assertEquals(2, evalNumber("count(//x:graph)")); // Only the graph elements for the root and the base network
+		assertEquals(""+net.getSUID(), evalString("/x:graph/x:att/x:graph/@id"));
+		assertEquals("0", evalString("/x:graph/x:att/x:graph/@cy:private")); // Should be public
+	}
+	
+	@Test
+	public void testRegisteredSubNetworkSavedAsPublic() throws UnsupportedEncodingException {
+		CySubNetwork sn = rootNet.addSubNetwork();
+		setRegistered(sn, true);
+		write(rootNet, true);
+		assertEquals("0", evalString("/x:graph/x:att/x:graph[@id="+sn.getSUID()+"]/@cy:private"));
+	}
+	
+	@Test
+	public void testUnregisteredSubNetworksNotSaved() throws UnsupportedEncodingException {
+		CySubNetwork sn = rootNet.addSubNetwork();
+		setRegistered(sn, false);
+		write(rootNet, true);
+		assertTrue(evalBoolean("count(//x:graph[@id="+sn.getSUID()+"]) = 0"));
+	}
+	
+	@Test
+	public void testUnregisteredNetworkSavedIfNetworkPointer() throws UnsupportedEncodingException {
+		// Create a subnetwork from the same root
+		CySubNetwork sn = rootNet.addSubNetwork();
+		setRegistered(sn, false);
+		// Set it as network pointer
+		CyNode n = net.getNodeList().get(0);
+		n.setNetworkPointer(sn);
+		write(rootNet, true);
+		// Test
+		assertEquals(""+sn.getSUID(), getElementId("//x:node[@id="+n.getSUID()+"]/x:att/x:graph")); // It is saved as a nested node graph
+		assertEquals("1", evalString("/x:graph//x:att/x:graph[@id="+sn.getSUID()+"]/@cy:private")); // But it must be private!
+	}
+	
+	@Test
+	public void testRegisteredNetworkPointerSavedUnderRootGraph() throws UnsupportedEncodingException {
+		CySubNetwork sn = rootNet.addSubNetwork();
+		setRegistered(sn, true);
+		CyNode n = net.getNodeList().get(0);
+		n.setNetworkPointer(sn);
+		write(rootNet, true);
+		// The subnetwork is saved under the root graph, because it is registered
+		assertEquals(0, evalNumber("count(/x:graph/x:att/x:graph[@id="+n.getSUID()+"])"));
+		// The nested node graph (network pointer) is an XLink to that graph
+		assertEquals("#"+sn.getSUID(), evalString("//x:node[@id="+n.getSUID()+"]/x:att/x:graph/@xlink:href"));
+	}
 	
 	@Test
 	public void testNumberOfNodeElements() {
@@ -158,9 +220,23 @@ public class XGMMLWriterTest {
 	}
 	
 	@Test
+	public void testNestedGraphReferenceHasNoChildren(){
+		// Add a couple of network pointers
+		CyNetwork subNet = rootNet.addSubNetwork();
+		net.getNodeList().get(0).setNetworkPointer(subNet);
+		net.getNodeList().get(1).setNetworkPointer(subNet);
+		write(rootNet, true);
+		// Test: nested XLink-graphs must have no children
+		assertEquals(2, evalNumber("count(//x:node/x:att/x:graph)"));
+		assertTrue(evalBoolean("count(//x:node/x:att/x:graph[@xlink:href]) >= 1")); // There should be at least one node graph with XLink...
+		assertEquals(0, evalNumber("count(//x:node/x:att/x:graph[@xlink:href]/*)")); // ... and it should have no children, because it's an XLink
+	}
+	
+	@Test
 	public void testNetworkPointerFromSameRootNetwork(){
 		// Create a subnetwork from the same root
-		CyNetwork subNet = rootNet.addSubNetwork();
+		CySubNetwork subNet = rootNet.addSubNetwork();
+		setRegistered(subNet, true); // To force all nested node graphs to be written as XLinks!
 		// Set it as network pointer to 2 nodes
 		CyNode n1 = net.getNodeList().get(0);
 		CyNode n2 = net.getNodeList().get(1);
@@ -169,33 +245,21 @@ public class XGMMLWriterTest {
 		write(rootNet, true);
 		// Test
 		assertEquals(2, evalNumber("count(/x:graph//x:node/x:att/x:graph)"));
-		assertEquals("#"+subNet.getSUID(), evalString("//x:node[@id="+n1.getSUID()+"]/x:att/x:graph/@xlink:href"));
-		assertEquals("#"+subNet.getSUID(), evalString("//x:node[@id="+n2.getSUID()+"]/x:att/x:graph/@xlink:href"));
+		assertEquals(""+subNet.getSUID(), getElementId("//x:node[@id="+n1.getSUID()+"]/x:att/x:graph"));
+		assertEquals(""+subNet.getSUID(), getElementId("//x:node[@id="+n2.getSUID()+"]/x:att/x:graph"));
 	}
 	
 	@Test
 	public void testNetworkPointerFromAnotherRootNetwork() throws UnsupportedEncodingException {
 		// Create a subnetwork from another root network
 		CyNetwork subNet = netFactory.createNetwork();
-		// Set it as network pointer to 2 nodes
+		// Set it as network pointer
 		CyNode n = net.getNodeList().get(0);
 		n.setNetworkPointer(subNet);
 		write(rootNet, true); // session format only!
 		// Test
 		String filename = SessionUtil.getXGMMLFilename(rootNetMgr.getRootNetwork(subNet)); // It's the name of the other root network file
 		assertEquals(filename+"#"+subNet.getSUID(), evalString("//x:node[@id="+n.getSUID()+"]/x:att/x:graph/@xlink:href"));
-	}
-	
-	@Test
-	public void testNestedGraphReferenceHasNoChildren(){
-		// Add a couple of network pointers
-		CyNetwork subNet = rootNet.addSubNetwork();
-		net.getNodeList().get(0).setNetworkPointer(subNet);
-		net.getNodeList().get(1).setNetworkPointer(subNet);
-		write(rootNet, true);
-		// Test: nested XLink-graphs must have no children
-		assertEquals(2, evalNumber("count(//x:node/x:att/x:graph[@xlink:href])"));
-		assertEquals(0, evalNumber("count(//x:node/x:att/x:graph[@xlink:href]/*)"));
 	}
 	
 	// Session Network View Format:
@@ -213,7 +277,28 @@ public class XGMMLWriterTest {
 		// TODO
 	}
 	
+	// Standard XGMML export:
+	
+	@Test
+	public void testRootGraph() throws UnsupportedEncodingException {
+		write(net, false);
+		assertEquals(1, evalNumber("count(//x:graph)")); // no nested graph elements
+		assertEquals(""+net.getSUID(), evalString("/x:graph/@id"));
+		assertEquals(""+XGMMLWriter.VERSION, evalString("/x:graph/@cy:documentVersion"));
+	}
+	
 	// PRIVATE Methods:
+	
+	private String getElementId(String elementPath) {
+		String id = evalString(elementPath + "/@id"); // Try the id attribute first
+		
+		if (id == null || id.isEmpty()) { // It could be an XLink...
+			id = evalString(elementPath + "/@xlink:href");
+			id = id.replace('#', ' ').trim();
+		}
+		
+		return id;
+	}
 	
 	private NodeList evalNodeList(String expression) {
 		return (NodeList) eval(expression, XPathConstants.NODESET);
@@ -298,5 +383,14 @@ public class XGMMLWriterTest {
 		dirEdge = net.addEdge(allNodes.get(1), allNodes.get(2), true);
 		
 		rootNet = rootNetMgr.getRootNetwork(net);
+		
+		// Root network is UNregistered by default
+		setRegistered(rootNet, false);
+		// Base network is registered by default
+		setRegistered(net, true);
+	}
+	
+	private void setRegistered(CyNetwork net, boolean registered) {
+		when(this.netMgr.networkExists(net.getSUID())).thenReturn(registered);
 	}
 }
