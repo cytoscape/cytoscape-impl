@@ -16,7 +16,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>webservice-psicquic-client-impl</artifactId>
 
-    <name>Cytoscape PSIQUIC Webservice Impl (${project.artifactId})</name>
+	<name>Cytoscape PSIQUIC Webservice Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 
@@ -112,7 +112,13 @@
 			<artifactId>equations-api</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>webservice-api</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>
