@@ -40,7 +40,10 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.events.GroupAboutToBeRemovedEvent;
 import org.cytoscape.group.events.GroupAddedToNetworkEvent;
-import org.cytoscape.group.events.GroupChangedEvent;
+import org.cytoscape.group.events.GroupNodesAddedEvent;
+import org.cytoscape.group.events.GroupNodesRemovedEvent;
+import org.cytoscape.group.events.GroupEdgesAddedEvent;
+import org.cytoscape.group.events.GroupEdgesRemovedEvent;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 
@@ -200,7 +203,7 @@ class CyGroupImpl implements CyGroup {
 			for (CyNetwork net: collapseSet) {
 				updateCountAttributes(net);
 			}
-			cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, node, GroupChangedEvent.ChangeType.NODE_ADDED));
+			cyEventHelper.fireEvent(new GroupNodesAddedEvent(CyGroupImpl.this, node));
 		}
 	}
 
@@ -213,7 +216,7 @@ class CyGroupImpl implements CyGroup {
 			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		getGroupNetwork().addEdge(edge);
 		if (!batchUpdate)
-			cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edge, GroupChangedEvent.ChangeType.INTERNAL_EDGE_ADDED));
+			cyEventHelper.fireEvent(new GroupEdgesAddedEvent(CyGroupImpl.this, edge));
 	}
 
 	/**
@@ -226,7 +229,7 @@ class CyGroupImpl implements CyGroup {
 		if (!externalEdges.contains(edge))
 			externalEdges.add(edge);
 		if (!batchUpdate)
-			cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edge, GroupChangedEvent.ChangeType.EXTERNAL_EDGE_ADDED));
+			cyEventHelper.fireEvent(new GroupEdgesAddedEvent(CyGroupImpl.this, edge));
 	}
 
 	/**
@@ -256,7 +259,7 @@ class CyGroupImpl implements CyGroup {
 			updateCountAttributes(net);
 		}
 		batchUpdate = false;
-		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, nodes, GroupChangedEvent.ChangeType.NODES_ADDED));
+		cyEventHelper.fireEvent(new GroupNodesAddedEvent(CyGroupImpl.this, nodes));
 	}
 
 	/**
@@ -274,7 +277,7 @@ class CyGroupImpl implements CyGroup {
 			else
 				throwIllegalArgumentException("Attempted to add an edge that has no node in the group");
 		}
-		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edges, GroupChangedEvent.ChangeType.EDGES_ADDED));
+		cyEventHelper.fireEvent(new GroupEdgesAddedEvent(CyGroupImpl.this, edges));
 	}
 
 	/**
@@ -302,7 +305,7 @@ class CyGroupImpl implements CyGroup {
 		for (CyNetwork net: collapseSet) {
 			updateCountAttributes(net);
 		}
-		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, nodes, GroupChangedEvent.ChangeType.NODES_REMOVED));
+		cyEventHelper.fireEvent(new GroupNodesRemovedEvent(CyGroupImpl.this, nodes));
 	}
 
 	/**
@@ -319,7 +322,7 @@ class CyGroupImpl implements CyGroup {
 			else if (metaEdges.contains(edge))
 				metaEdges.remove(edge);
 		}
-		cyEventHelper.fireEvent(new GroupChangedEvent(CyGroupImpl.this, edges, GroupChangedEvent.ChangeType.EDGES_REMOVED));
+		cyEventHelper.fireEvent(new GroupEdgesRemovedEvent(CyGroupImpl.this, edges));
 	}
 
 	/**
