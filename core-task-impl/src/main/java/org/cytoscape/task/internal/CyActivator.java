@@ -114,8 +114,8 @@ import org.cytoscape.task.internal.zoom.FitSelectedTaskFactory;
 import org.cytoscape.task.internal.zoom.ZoomInTaskFactory;
 import org.cytoscape.task.internal.zoom.ZoomOutTaskFactory;
 import org.cytoscape.task.layout.ApplyPreferredLayoutTaskFactory;
-import org.cytoscape.task.loaddatatable.LoadAttributesFileTaskFactory;
-import org.cytoscape.task.loaddatatable.LoadAttributesURLTaskFactory;
+import org.cytoscape.task.loaddatatable.LoadTableFileTaskFactory;
+import org.cytoscape.task.loaddatatable.LoadTableURLTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.loadvizmap.LoadVizmapFileTaskFactory;
@@ -340,7 +340,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsFileTaskFactoryProps.setProperty(COMMAND,"load-file");
 		loadAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,loadAttrsFileTaskFactory,TaskFactory.class, loadAttrsFileTaskFactoryProps);
-		registerService(bc,loadAttrsFileTaskFactory,LoadAttributesFileTaskFactory.class, loadAttrsFileTaskFactoryProps);
+		registerService(bc,loadAttrsFileTaskFactory,LoadTableFileTaskFactory.class, loadAttrsFileTaskFactoryProps);
 
 
 		Properties loadAttrsURLTaskFactoryProps = new Properties();
@@ -354,7 +354,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsURLTaskFactoryProps.setProperty(COMMAND,"load-url");
 		loadAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,loadAttrsURLTaskFactory,TaskFactory.class, loadAttrsURLTaskFactoryProps);
-		registerService(bc,loadAttrsURLTaskFactory,LoadAttributesURLTaskFactory.class, loadAttrsURLTaskFactoryProps);
+		registerService(bc,loadAttrsURLTaskFactory,LoadTableURLTaskFactory.class, loadAttrsURLTaskFactoryProps);
 
 		Properties proxySettingsTaskFactoryProps = new Properties();
 		proxySettingsTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit.Preferences");

@@ -62,8 +62,8 @@ import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllTaskFactory;
 import org.cytoscape.task.layout.ApplyPreferredLayoutTaskFactory;
-import org.cytoscape.task.loaddatatable.LoadAttributesFileTaskFactory;
-import org.cytoscape.task.loaddatatable.LoadAttributesURLTaskFactory;
+import org.cytoscape.task.loaddatatable.LoadTableFileTaskFactory;
+import org.cytoscape.task.loaddatatable.LoadTableURLTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.loadvizmap.LoadVizmapFileTaskFactory;
@@ -277,8 +277,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private NodeViewTaskFactory expandGroupTaskFactory;
 	private NodeViewTaskFactory unGroupNodesTaskFactory;
 
-	private LoadAttributesFileTaskFactory loadAttributesFileTaskFactory;
-	private LoadAttributesURLTaskFactory loadAttributesURLTaskFactory;
+	private LoadTableFileTaskFactory loadAttributesFileTaskFactory;
+	private LoadTableURLTaskFactory loadAttributesURLTaskFactory;
 	
 	//
 	// Since this is implementation code, there shouldn't be a
@@ -547,8 +547,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	@Override public LoadNetworkFileTaskFactory get_LoadNetworkFileTaskFactory(){ return this.loadNetworkFileTaskFactory; }
 	@Override public LoadNetworkURLTaskFactory get_LoadNetworkURLTaskFactory(){ return this.loadNetworkURLTaskFactory;	}
 	@Override public LoadVizmapFileTaskFactory get_LoadVizmapFileTaskFactory(){ return this.loadVizmapFileTaskFactory; }
-	@Override public LoadAttributesFileTaskFactory get_LoadAttributesFileTaskFactory(){ return this.loadAttributesFileTaskFactory; }
-	@Override public LoadAttributesURLTaskFactory get_LoadAttributesURLTaskFactory(){ return this.loadAttributesURLTaskFactory; }
+	@Override public LoadTableFileTaskFactory get_LoadTableFileTaskFactory(){ return this.loadAttributesFileTaskFactory; }
+	@Override public LoadTableURLTaskFactory get_LoadTableURLTaskFactory(){ return this.loadAttributesURLTaskFactory; }
 	@Override public TaskFactory get_ProxySettingsTaskFactory(){return this.proxySettingsTaskFactory;}
 	@Override public DeleteSelectedNodesAndEdgesTaskFactory get_DeleteSelectedNodesAndEdgesTaskFactory(){ return this.deleteSelectedNodesAndEdgesTaskFactory; }
 	@Override public SelectAllTaskFactory get_SelectAllTaskFactory(){ return this.selectAllTaskFactory;	}
