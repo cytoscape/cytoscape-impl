@@ -3,11 +3,11 @@
 viewThreshold=100000
 defaultVisualStyle=default
 canonicalizeNames=true
-render.coarseDetailThreshold=2000
-render.nodeBorderThreshold=200
-render.nodeLabelThreshold=100
-render.edgeArrowThreshold=300
-render.edgeLabelThreshold=120
+render.coarseDetailThreshold=4000
+render.nodeBorderThreshold=400
+render.nodeLabelThreshold=200
+render.edgeArrowThreshold=600
+render.edgeLabelThreshold=200
 maximizeViewOnCreate=false
 proxy.server=
 proxy.server.port=
