@@ -56,6 +56,7 @@ public class PreferenceValueDialog extends JDialog implements ActionListener {
 	JButton okButton = null;
 	JButton cancelButton = null;
 	PreferenceTableModel tableModel = null;
+	boolean itemChanged = false;
 
 	/**
 	 * Creates a new PreferenceValueDialog object.
@@ -117,6 +118,7 @@ public class PreferenceValueDialog extends JDialog implements ActionListener {
 			JButton btn = (JButton) src;
 			if (btn == this.okButton){
 				this.tableModel.setProperty(preferenceName, value.getText());
+				this.itemChanged = true;
 				this.dispose();	
 			}
 			else if (btn == this.cancelButton){

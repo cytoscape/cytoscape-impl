@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -71,6 +72,9 @@ import javax.swing.table.TableModel;
 import org.cytoscape.application.swing.events.PreferencesUpdatedEvent;
 import org.cytoscape.event.CyEventHelper;
 
+import org.cytoscape.model.CyTable.SavePolicy;
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -91,24 +95,27 @@ import javax.swing.table.DefaultTableColumnModel;
 public class PreferencesDialogImpl extends JDialog implements ItemListener, ActionListener, ListSelectionListener {
 	private final static long serialVersionUID = 1202339873396288L;
 	private static final Logger logger = LoggerFactory.getLogger(PreferencesDialogImpl.class);
-
-	//private Properties props;
-	//private CyProperty<Bookmarks>  bookmarks;
-	//private BookmarksUtil bkUtil;
+	private final CyEventHelper  eventHelper;
 	
-	private HashMap<String, Properties> propMap = new HashMap<String,Properties>();
+	private Map<String, Properties> propMap = new HashMap<String,Properties>();
+	private Map<String, CyProperty> cyPropMap;
+	private Map<String, Boolean> itemChangedMap = new HashMap<String, Boolean>();
+
 	/**
 	 * Creates a new PreferencesDialog object.
 	 *
 	 * @param owner  DOCUMENT ME!
 	 */
 	public PreferencesDialogImpl(Frame owner, CyEventHelper eh, 
-			HashMap<String, Properties> propMap, HashMap<String, Bookmarks> bookmarkMap, BookmarksUtil bkUtil) {
+			Map<String, Properties> propMap, Map<String, CyProperty> cyPropMap) {
 		super(owner);
 		
 		this.propMap = propMap;
-		//this.bookmarks = bookmarks;
-		//this.bkUtil = bkUtil;
+		this.cyPropMap = cyPropMap;
+		this.eventHelper = eh;
+		
+		for(String key: propMap.keySet())
+			itemChangedMap.put(key, false);
 		
 		try {
 			initGUI();
@@ -139,6 +146,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	
 	public void itemStateChanged(ItemEvent e) {	
 		updateTable();
+		
 	}
 
 
@@ -199,9 +207,18 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	// Handle action event from the buttons
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
+		String selectedPropertyName = this.cmbPropCategories.getSelectedItem().toString();
+
 		if (obj instanceof JButton){
 			JButton btn = (JButton) obj;
 			if (btn == this.closeButton){
+				for(String key: itemChangedMap.keySet()){
+					if (itemChangedMap.get(key)){
+						PropertyUpdatedEvent event = new PropertyUpdatedEvent(this.cyPropMap.get(key));
+						eventHelper.fireEvent(event );
+						itemChangedMap.put(key, false);
+					}
+				}
 				this.dispose();
 			}
 			else if (btn == this.deletePropBtn){			
@@ -210,6 +227,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 					String name = new String((String) (this.prefsTable.getModel().getValueAt(selectedIndices[i], 0)));
 					PreferenceTableModel m = (PreferenceTableModel)this.prefsTable.getModel();
 					m.deleteProperty(name);
+					itemChangedMap.put(selectedPropertyName, true);
 				}
 			}
 			else if (btn == this.modifyPropBtn){				
@@ -221,6 +239,8 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 					PreferenceTableModel m = (PreferenceTableModel)this.prefsTable.getModel();
 					PreferenceValueDialog pd = new PreferenceValueDialog(this, name,  value, m,
 						                                                     "Modify value...");
+					if (pd.itemChanged)
+						itemChangedMap.put(selectedPropertyName, true);
 				}
 			}
 			else if (btn == this.addPropBtn){
@@ -238,6 +258,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 						PreferenceTableModel m = (PreferenceTableModel)this.prefsTable.getModel();
 						
 						m.addProperty(vals);
+						itemChangedMap.put(selectedPropertyName, true);
 					}
 				}
 			}

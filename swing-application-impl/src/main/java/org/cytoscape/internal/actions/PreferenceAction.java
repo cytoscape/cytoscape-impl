@@ -43,6 +43,7 @@
 package org.cytoscape.internal.actions;
 
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -50,6 +51,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.internal.dialogs.PreferencesDialogImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
 import java.awt.event.ActionEvent;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -66,8 +68,9 @@ public class PreferenceAction extends AbstractCyAction {
 	private PreferencesDialogFactoryImpl pdf;
 	private BookmarksUtil bkUtil;
 	private PreferencesDialogImpl preferencesDialog = null;
-	private HashMap<String, Properties> propMap = new HashMap<String,Properties>();
-	private HashMap<String, Bookmarks> bookmarkMap = new HashMap<String,Bookmarks>();
+	private Map<String, Properties> propMap = new HashMap<String,Properties>();
+	private Map<String, Bookmarks> bookmarkMap = new HashMap<String,Bookmarks>();
+	private  Map<String, CyProperty> cyPropMap = new HashMap<String, CyProperty>();
 	
 	public PreferenceAction(CySwingApplication desktop, PreferencesDialogFactoryImpl pdf,
 			BookmarksUtil bkUtil) {
@@ -83,7 +86,7 @@ public class PreferenceAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		preferencesDialog = pdf.getPreferencesDialog(desktop.getJFrame(), propMap, bookmarkMap, bkUtil); 
+		preferencesDialog = pdf.getPreferencesDialog(desktop.getJFrame(), propMap, cyPropMap); 
 		preferencesDialog.setVisible(true);
 	} 
 	
@@ -93,6 +96,7 @@ public class PreferenceAction extends AbstractCyAction {
 		
 		if (obj instanceof Properties){		
 			propMap.put(propertyName, (Properties)obj);
+			cyPropMap.put(propertyName, p);
 		} else if (obj instanceof Bookmarks){
 			bookmarkMap.put(propertyName, (Bookmarks)obj);
 		} else {

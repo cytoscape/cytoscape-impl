@@ -38,6 +38,7 @@ package org.cytoscape.internal.dialogs;
 
 import java.awt.Frame;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
@@ -55,9 +56,8 @@ public class PreferencesDialogFactoryImpl {
 		this.eh = eh;
 	}
 
-	public PreferencesDialogImpl getPreferencesDialog(Frame parent, HashMap<String, Properties> propMap, 
-			HashMap<String, Bookmarks> bookmarkMap, BookmarksUtil bkUtil) {
-		return new PreferencesDialogImpl(parent,eh, propMap, bookmarkMap, bkUtil);	
+	public PreferencesDialogImpl getPreferencesDialog(Frame parent, Map<String, Properties> propMap,  Map<String, CyProperty> cyPropMap) {
+		return new PreferencesDialogImpl(parent,eh, propMap, cyPropMap);	
 	}
 	
 	
