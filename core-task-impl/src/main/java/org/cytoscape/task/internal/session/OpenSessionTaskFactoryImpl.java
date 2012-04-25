@@ -38,7 +38,7 @@ import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.session.OpenSessionTaskFactory;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;

@@ -8,7 +8,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.AbstractTableTaskFactory;
-import org.cytoscape.task.export.ExportCurrentTableTaskFactory;
+import org.cytoscape.task.write.ExportCurrentTableTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.util.ListSingleSelection;

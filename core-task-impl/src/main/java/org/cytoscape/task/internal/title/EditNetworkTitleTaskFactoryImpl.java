@@ -37,7 +37,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.task.title.EditNetworkTitleTaskFactory;
+import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;

@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.session.NewSessionTaskFactory;
+import org.cytoscape.task.creation.NewSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;

@@ -32,8 +32,8 @@ package org.cytoscape.task.internal.export.graphics;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.export.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.internal.export.ViewWriter;
+import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 

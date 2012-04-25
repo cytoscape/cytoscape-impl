@@ -37,7 +37,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.session.SaveSessionAsTaskFactory;
+import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;

@@ -23,7 +23,7 @@ import javax.swing.border.LineBorder;
 
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 
-import org.cytoscape.task.session.OpenSessionTaskFactory;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 public class OpenPanel extends JPanel {

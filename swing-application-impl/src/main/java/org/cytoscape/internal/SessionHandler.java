@@ -64,7 +64,7 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.task.session.SaveSessionAsTaskFactory;
+import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.slf4j.Logger;

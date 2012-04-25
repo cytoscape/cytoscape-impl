@@ -110,7 +110,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.task.session.SaveSessionAsTaskFactory;
+import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;

@@ -33,7 +33,7 @@ import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
-import org.cytoscape.task.table.RenameColumnTaskFactory;
+import org.cytoscape.task.edit.RenameColumnTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
