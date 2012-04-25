@@ -21,7 +21,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -42,13 +42,13 @@ public class ImportTableTask extends AbstractTask {
 
 	private final Window parent;
 	private final CyTableManager tableManager;
-	private final MapNetworkAttrTaskFactory mapNetworkAttrTF;
+	private final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF;
 
 	public ImportTableTask(final BiomartRestClient client, final BiomartQuery query,
 			       final CyTableFactory tableFactory,
 			       final Window parent,
 			       final CyTableManager tableManager,
-				   final MapNetworkAttrTaskFactory mapNetworkAttrTF)
+				   final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF)
 	{
 		this.client               = client;
 		this.query                = query;

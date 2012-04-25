@@ -20,7 +20,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 
 import java.util.Properties;
 
@@ -39,7 +39,7 @@ public class CyActivator extends AbstractCyActivator {
 		DialogTaskManager taskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc,CyTableFactory.class);
-		MapNetworkAttrTaskFactory mapNetworkAttrTFServiceRef = getService(bc,MapNetworkAttrTaskFactory.class);
+		MapTableToNetworkTablesTaskFactory mapNetworkAttrTFServiceRef = getService(bc,MapTableToNetworkTablesTaskFactory.class);
 		
 		NCBIWebServiceClient ncbiClient = new NCBIWebServiceClient("http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl","NCBI Network Import Client","REST version of NCBI Web Service Client.",cyNetworkFactoryServiceRef,cyDataTableFactoryServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef);
 		NCBITableImportClient ncbiTableImportClient = new NCBITableImportClient("http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl","NCBI Table Import Client","REST version of NCBI Web Service Client for importing tables.",cyDataTableFactoryServiceRef,cyTableManagerServiceRef,mapNetworkAttrTFServiceRef);

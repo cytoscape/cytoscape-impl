@@ -57,7 +57,7 @@ import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
@@ -267,7 +267,7 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory;
 	private MapGlobalToLocalTableTaskFactory mapGlobal;
 	private ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory;
-	private MapNetworkAttrTaskFactory mapNetworkAttrTaskFactory;
+	private MapTableToNetworkTablesTaskFactory mapNetworkAttrTaskFactory;
 
 	private GroupNodesTaskFactory groupNodesTaskFactory;
 	private NetworkViewTaskFactory unGroupTaskFactory;
@@ -387,7 +387,7 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	                	final MapGlobalToLocalTableTaskFactory mapGlobal,
 	                	
 	                	final ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory,
-	                	final MapNetworkAttrTaskFactory mapNetworkAttrTaskFactory,
+	                	final MapTableToNetworkTablesTaskFactory mapNetworkAttrTaskFactory,
 	                	
 	                	final GroupNodesTaskFactory groupNodesTaskFactory,
 	                	final NetworkViewTaskFactory unGroupTaskFactory,
@@ -601,5 +601,5 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	@Override public NodeViewTaskFactory get_CollapseGroupTaskFactory(){return this.collapseGroupTaskFactory;}
 	@Override public NodeViewTaskFactory get_ExpandGroupTaskFactory(){return this.expandGroupTaskFactory;}
 	@Override public NodeViewTaskFactory get_UnGroupNodesTaskFactory(){return this.unGroupNodesTaskFactory;}
-	@Override public MapNetworkAttrTaskFactory get_MapNetworkAttrTaskFactory(){	return this.mapNetworkAttrTaskFactory;}
+	@Override public MapTableToNetworkTablesTaskFactory get_MapTableToNetworkTablesTaskFactory(){	return this.mapNetworkAttrTaskFactory;}
 }

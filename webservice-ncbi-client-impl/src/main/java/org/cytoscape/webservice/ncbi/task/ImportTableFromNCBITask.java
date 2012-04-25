@@ -8,7 +8,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.webservice.ncbi.rest.EntrezRestClient;
 import org.cytoscape.webservice.ncbi.ui.AnnotationCategory;
 import org.cytoscape.work.AbstractTask;
@@ -25,12 +25,12 @@ public class ImportTableFromNCBITask extends AbstractTask {
 	private final Set<String> idList;
 	private final Set<AnnotationCategory> category;
 	private final CyTableManager tableManager;
-	private final MapNetworkAttrTaskFactory mapNetworkAttrTF;
+	private final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF;
 
 	public ImportTableFromNCBITask(final CyTableFactory tableFactory, final Set<String> idList,
 	                               final Set<AnnotationCategory> category,
 	                               final CyTableManager tableManager,
-								   final MapNetworkAttrTaskFactory mapNetworkAttrTF)
+								   final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF)
 	{
 		this.tableFactory       = tableFactory;
 		this.idList             = idList;

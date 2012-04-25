@@ -5,7 +5,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
@@ -13,7 +13,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import java.util.Map;
 import java.util.HashMap;
 
-public class MapNetworkAttrTaskFactoryImpl extends AbstractTaskFactory implements MapNetworkAttrTaskFactory {
+public class MapNetworkAttrTaskFactoryImpl extends AbstractTaskFactory implements MapTableToNetworkTablesTaskFactory {
 	
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;

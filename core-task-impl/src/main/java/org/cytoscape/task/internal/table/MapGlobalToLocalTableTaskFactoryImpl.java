@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -31,16 +32,16 @@ public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTaskFact
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(String globalTable,
-	                                       String localTable) {
+	public TaskIterator createTaskIterator(CyTable globalTable,
+	                                       CyTable localTable) {
 
 		final Map<String, Object> m = new HashMap<String, Object>();
 
-		ListSingleSelection<String> globalTables = new ListSingleSelection<String>(globalTable);
-		globalTables.setSelectedValue(globalTable);
+		ListSingleSelection<String> globalTables = new ListSingleSelection<String>(globalTable.getTitle());
+		globalTables.setSelectedValue(globalTable.getTitle());
 
-		ListSingleSelection<String> localTables = new ListSingleSelection<String>(localTable);
-		localTables.setSelectedValue(localTable);
+		ListSingleSelection<String> localTables = new ListSingleSelection<String>(localTable.getTitle());
+		localTables.setSelectedValue(localTable.getTitle());
 
 		m.put("globalTables", globalTables);
 		m.put("localTables", localTables);

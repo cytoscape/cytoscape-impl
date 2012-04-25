@@ -47,7 +47,7 @@ import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
@@ -191,7 +191,7 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(ConnectSelectedNodesTaskFactory.class),
 			mock(MapGlobalToLocalTableTaskFactory.class),
 			mock(ApplyVisualStyleTaskFactory.class),
-			mock(MapNetworkAttrTaskFactory.class),
+			mock(MapTableToNetworkTablesTaskFactory.class),
 			mock(GroupNodesTaskFactory.class),
 			mock(NetworkViewTaskFactory.class),
 			mock(NodeViewTaskFactory.class),

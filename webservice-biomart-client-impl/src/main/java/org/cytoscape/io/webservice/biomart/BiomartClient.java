@@ -41,7 +41,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.ServiceException;
 
@@ -57,7 +57,7 @@ public class BiomartClient extends AbstractWebServiceGUIClient {
 	private ImportTableTask importTask;
 	private final CySwingApplication app;
 	private final CyTableManager tableManager;
-	private final MapNetworkAttrTaskFactory mapNetworkAttrTF;
+	private final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF;
 
 	/**
 	 * Creates a new Biomart Client object.
@@ -69,7 +69,7 @@ public class BiomartClient extends AbstractWebServiceGUIClient {
 	                     final BiomartRestClient restClient, final CyTableFactory tableFactory,
 	                     final CySwingApplication app, final CyTableManager tableManager,
 						 final BiomartAttrMappingPanel gui,
-						 final MapNetworkAttrTaskFactory mapNetworkAttrTF)
+						 final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF)
 	{
 		super(restClient.getBaseURL(), displayName, description);
 

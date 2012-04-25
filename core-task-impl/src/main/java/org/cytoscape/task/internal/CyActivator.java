@@ -51,7 +51,7 @@ import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
-import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
@@ -950,6 +950,6 @@ public class CyActivator extends AbstractCyActivator {
 		MapNetworkAttrTaskFactoryImpl mapNetworkAttrTaskFactory = new MapNetworkAttrTaskFactoryImpl(cyNetworkManagerServiceRef, cyApplicationManagerServiceRef,
 				  cyRootNetworkFactoryServiceRef,tunableSetterServiceRef);
 		Properties mapNetworkAttrTaskFactoryProps = new Properties();
-		registerService(bc,mapNetworkAttrTaskFactory,MapNetworkAttrTaskFactory.class,mapNetworkAttrTaskFactoryProps);
+		registerService(bc,mapNetworkAttrTaskFactory,MapTableToNetworkTablesTaskFactory.class,mapNetworkAttrTaskFactoryProps);
 	}
 }
