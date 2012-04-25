@@ -37,13 +37,15 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final CyEventHelper eventHelper;
 	private ViewTaskFactoryListener vtfListener;
 	private final AnnotationFactoryManager annMgr;
+	
+	private final DingGraphLOD dingGraphLOD;
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkManager,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
 			DialogTaskManager dialogTaskManager, SubmenuTaskManager menuTaskManager,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
 			ViewTaskFactoryListener vtfListener,
-			AnnotationFactoryManager annMgr) {
+			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD) {
 
 		this.dataTableFactory = dataTableFactory;
 		this.rootNetworkManager = rootNetworkManager;
@@ -57,6 +59,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.vtfListener = vtfListener;
 		this.annMgr = annMgr;
 		this.menuTaskManager = menuTaskManager;
+		this.dingGraphLOD = dingGraphLOD;
 	}
 
 	@Override
@@ -71,7 +74,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				vtfListener, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
+				vtfListener, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
 
 		registrar.registerAllServices(dgv, new Properties());
 

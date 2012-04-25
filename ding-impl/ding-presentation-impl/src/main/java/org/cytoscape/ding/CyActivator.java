@@ -18,6 +18,8 @@ import org.cytoscape.ding.dependency.EdgeColorDependencyFactory;
 import org.cytoscape.ding.dependency.NodeSizeDependencyFactory;
 import org.cytoscape.ding.impl.AddEdgeNodeViewTaskFactoryImpl;
 import org.cytoscape.ding.impl.BendFactoryImpl;
+import org.cytoscape.ding.impl.DingGraphLOD;
+import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;
@@ -40,6 +42,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
@@ -106,11 +109,17 @@ public class CyActivator extends AbstractCyActivator {
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 
+
+		DingGraphLOD dingGraphLOD = new DingGraphLOD(cyPropertyServiceRef, applicationManagerManagerServiceRef);
+		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class, new Properties());
+		
+		DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
+		
 		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager, submenuTaskManager,
 				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
-				renderingEngineManagerServiceRef, vtfListener, annotationFactoryManager);
+				renderingEngineManagerServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
 				cyServiceRegistrarServiceRef, dVisualLexicon, renderingEngineManagerServiceRef,
 				applicationManagerManagerServiceRef);
@@ -124,7 +133,7 @@ public class CyActivator extends AbstractCyActivator {
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,
 				cyRootNetworkFactoryServiceRef, undoSupportServiceRef, spacialIndex2DFactoryServiceRef, dVisualLexicon,
 				dialogTaskManager, submenuTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
-				cyEventHelperServiceRef, vtfListener, annotationFactoryManager);
+				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD);
 
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,
@@ -139,6 +148,7 @@ public class CyActivator extends AbstractCyActivator {
 		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
 		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
 
+		
 		Properties dingRenderingEngineFactoryProps = new Properties();
 		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
 		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
@@ -202,7 +212,7 @@ public class CyActivator extends AbstractCyActivator {
 				AnnotationFactory.class);
 
 		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef,
-				cyNetworkViewManagerServiceRef, dialogTaskManager, cyPropertyServiceRef);
+				cyNetworkViewManagerServiceRef, dialogTaskManager, cyPropertyServiceRef, dingGraphLOD, dingGraphLODAll);
 		registerAllServices(bc, graphicsDetailAction, new Properties());
 
 		HandleFactory handleFactory = new HandleFactoryImpl();

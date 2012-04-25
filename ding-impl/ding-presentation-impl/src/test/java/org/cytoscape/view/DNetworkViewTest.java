@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -60,6 +61,9 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 	@Mock
 	private AnnotationFactoryManager annMgr;
 	
+	@Mock
+	private DingGraphLOD dingGRaphLOD;
+	
 	private final TableTestSupport tableSupport = new TableTestSupport();
 	private final NetworkTestSupport netSupport = new NetworkTestSupport();
 
@@ -77,7 +81,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
 				dropEmptySpaceTFs, */
-				manager, submenuTaskManager, eventHelper, tableMgr,annMgr);
+				manager, submenuTaskManager, eventHelper, tableMgr,annMgr, dingGRaphLOD);
 	}
 	
 	@Override

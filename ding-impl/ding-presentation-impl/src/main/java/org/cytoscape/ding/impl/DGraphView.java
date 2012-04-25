@@ -406,7 +406,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final EdgeViewDefaultSupport m_edgeViewDefaultSupport;
 	private final CyAnnotator cyAnnotator;
 
-	
 	/**
 	 * Create presentation from View Model
 	 * 
@@ -419,10 +418,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
 			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
-			AnnotationFactoryManager annMgr) {
+			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, 
-				vtfl, manager, menuTaskManager, eventHelper, tableMgr, annMgr);
+				vtfl, manager, menuTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
 	}
 
 	
@@ -452,7 +451,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
 			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
-			AnnotationFactoryManager annMgr) {
+			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD) {
 		super(model);
 		this.props = new Properties();
 		
@@ -523,6 +522,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		cyAnnotator = new CyAnnotator(this,annMgr);
 		logger.debug("Phase 4: Everything created: time = " + (System.currentTimeMillis() - start));
+		setGraphLOD(dingGraphLOD);
 	}
 
 	

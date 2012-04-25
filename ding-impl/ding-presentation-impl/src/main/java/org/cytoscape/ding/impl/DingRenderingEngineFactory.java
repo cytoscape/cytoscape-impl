@@ -50,6 +50,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	
 	private ViewTaskFactoryListener vtfListener;
 	
+	private DingGraphLOD dingGraphLOD;
 	
 	public DingRenderingEngineFactory(CyTableFactory dataTableFactory,
 			CyRootNetworkManager rootNetworkManager, UndoSupport undo,
@@ -61,7 +62,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			CyEventHelper eventHelper,
 			RenderingEngineManager renderingEngineManager,
 			ViewTaskFactoryListener vtfListener,
-			AnnotationFactoryManager annMgr) {
+			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD) {
 		
 		this.dataTableFactory = dataTableFactory;
 		this.rootNetworkManager = rootNetworkManager;
@@ -77,6 +78,8 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		this.annMgr = annMgr;
 
 		this.vtfListener = vtfListener;
+		
+		this.dingGraphLOD = dingGraphLOD;
 	}
 
 	/**
@@ -115,7 +118,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			else
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
-					vtfListener,dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr);
+					vtfListener,dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());

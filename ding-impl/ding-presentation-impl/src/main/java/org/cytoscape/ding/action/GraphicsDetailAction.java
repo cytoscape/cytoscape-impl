@@ -8,14 +8,15 @@ import javax.swing.event.MenuEvent;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.ding.impl.SwitchGraphicsDetailTaskFactory;
 
 public class GraphicsDetailAction extends AbstractCyAction {
 
@@ -29,10 +30,12 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	private final CyProperty<Properties> defaultProps;
     private final CyApplicationManager applicationManager;
     private final TaskManager taskManagerServiceRef;
-
+    
+    private final DingGraphLOD dingGraphLOD;
+    private final DingGraphLODAll dingGraphLODAll;
 
 	public GraphicsDetailAction(final CyApplicationManager applicationManager, final CyNetworkViewManager networkViewManager, final TaskManager taskManagerServiceRef, 
-			final CyProperty<Properties> defaultProps)
+			final CyProperty<Properties> defaultProps, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll)
 	{
 		super(SHOW + " " + GraphicsDetails, applicationManager,"networkAndView", networkViewManager);
 
@@ -42,6 +45,8 @@ public class GraphicsDetailAction extends AbstractCyAction {
 		this.applicationManager = applicationManager;
 		this.defaultProps = defaultProps;
 		this.taskManagerServiceRef = taskManagerServiceRef;
+		this.dingGraphLOD = dingGraphLOD;
+		this.dingGraphLODAll = dingGraphLODAll;
 	}
 
 	/**
@@ -51,8 +56,21 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	 */
 	public void actionPerformed(ActionEvent ev) {
 		
-		SwitchGraphicsDetailTaskFactory tf = new SwitchGraphicsDetailTaskFactory(applicationManager, defaultProps);
-		taskManagerServiceRef.execute(tf.createTaskIterator());		
+		final RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
+
+		if(engine instanceof DGraphView == false)
+			return;
+
+		final GraphLOD lod = ((DGraphView) engine).getGraphLOD();
+
+		if (lod instanceof DingGraphLODAll){
+			((DGraphView) engine).setGraphLOD(dingGraphLOD);
+		}
+		else{
+			((DGraphView) engine).setGraphLOD(dingGraphLODAll);
+
+		}
+		((CyNetworkView) engine.getViewModel()).updateView();
 	} 
 
 	/**
