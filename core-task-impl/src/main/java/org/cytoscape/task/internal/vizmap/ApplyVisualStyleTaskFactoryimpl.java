@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.visualization.ApplyVisualStyleTaskFactory;
+import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;

@@ -31,7 +31,7 @@ package org.cytoscape.task.internal.table;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.AbstractTableTaskFactory;
-import org.cytoscape.task.destruction.DeleteTableTaskFactory;
+import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 

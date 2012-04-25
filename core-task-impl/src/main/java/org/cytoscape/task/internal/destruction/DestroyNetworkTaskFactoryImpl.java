@@ -35,7 +35,7 @@ import java.util.Collection;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
-import org.cytoscape.task.destruction.DestroyNetworkTaskFactory;
+import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 

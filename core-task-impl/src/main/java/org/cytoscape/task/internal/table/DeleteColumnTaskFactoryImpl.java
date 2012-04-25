@@ -30,7 +30,7 @@ package org.cytoscape.task.internal.table;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
-import org.cytoscape.task.destruction.DeleteColumnTaskFactory;
+import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 

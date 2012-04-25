@@ -32,7 +32,7 @@ package org.cytoscape.task.internal.networkobjects;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.task.destruction.DeleteSelectedNodesAndEdgesTaskFactory;
+import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.model.CyNetwork;

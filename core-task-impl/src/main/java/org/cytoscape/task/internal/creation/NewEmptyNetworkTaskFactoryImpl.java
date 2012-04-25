@@ -33,7 +33,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.creation.NewEmptyNetworkViewFactory;
+import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;

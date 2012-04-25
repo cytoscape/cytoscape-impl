@@ -15,7 +15,7 @@ import org.cytoscape.network.merge.internal.util.AttributeMerger;
 import org.cytoscape.network.merge.internal.util.AttributeValueMatcher;
 import org.cytoscape.network.merge.internal.util.DefaultAttributeMerger;
 import org.cytoscape.network.merge.internal.util.DefaultAttributeValueMatcher;
-import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 

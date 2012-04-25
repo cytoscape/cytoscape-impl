@@ -6,7 +6,7 @@ import java.util.Properties;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.visualization.ApplyPreferredLayoutTaskFactory;
+import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;

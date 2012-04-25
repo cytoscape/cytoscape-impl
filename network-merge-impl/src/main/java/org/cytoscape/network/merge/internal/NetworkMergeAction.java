@@ -44,7 +44,7 @@ import org.cytoscape.network.merge.internal.ui.NetworkMergeFrame;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 
 import java.awt.event.ActionEvent;
 

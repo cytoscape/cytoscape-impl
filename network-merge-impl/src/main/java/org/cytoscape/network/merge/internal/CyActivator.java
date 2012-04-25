@@ -11,7 +11,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.network.merge.internal.NetworkMergeAction;
 
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 
 
 import org.osgi.framework.BundleContext;

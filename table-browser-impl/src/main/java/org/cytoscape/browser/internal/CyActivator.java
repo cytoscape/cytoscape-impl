@@ -20,7 +20,7 @@ import org.cytoscape.browser.internal.PopupMenuHelper;
 
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
-import org.cytoscape.task.destruction.DeleteTableTaskFactory;
+import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 
 import org.osgi.framework.BundleContext;

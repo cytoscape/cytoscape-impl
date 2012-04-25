@@ -98,7 +98,7 @@ import org.cytoscape.network.merge.internal.task.NetworkMergeTask;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.task.creation.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 
 /**
  *
