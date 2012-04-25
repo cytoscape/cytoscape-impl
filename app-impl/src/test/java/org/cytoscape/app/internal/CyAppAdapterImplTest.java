@@ -74,9 +74,10 @@ import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
 import org.cytoscape.task.select.SelectFromFileListTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.ExportCurrentTableTaskFactory;
+import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -181,7 +182,8 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(CreateNetworkViewTaskFactory.class),
 			mock(ExportNetworkImageTaskFactory.class),
 			mock(ExportNetworkViewTaskFactory.class),
-			mock(ExportCurrentTableTaskFactory.class),
+			mock(ExportSelectedTableTaskFactory.class),
+			mock(ExportTableTaskFactory.class),
 			mock(ApplyPreferredLayoutTaskFactory.class),
 			mock(DeleteColumnTaskFactory.class),
 			mock(RenameColumnTaskFactory.class),

@@ -37,19 +37,19 @@ public class SelectExportTableTask extends AbstractTask {
 		this.writerManager = writerManager;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 
-		populateTableNetowrkMap();
-		
+		populateNetworkTableMap();
+		populateSelectTable();
+	}
+
+	private void populateSelectTable() {
 		final List<String> options = new ArrayList<String>();
-		Set<CyTable> tableSet = this.cyTableManagerServiceRef.getAllTables(false);
 		
-		Iterator<CyTable> it = tableSet.iterator();
-		while (it.hasNext()){
-			CyTable tbl = it.next();
+		for ( CyTable tbl : cyTableManagerServiceRef.getAllTables(false)) {
 
 			CyNetwork net = this.tableNetworkMap.get(tbl);
 			
 			String title = tbl.getTitle();
-			if (net != null){
+			if (net != null) {
 				title = net.getRow(net).get("name", String.class)+" -- "+title;
 			}
 			
@@ -62,12 +62,9 @@ public class SelectExportTableTask extends AbstractTask {
 	}
 	
 	
-	private void populateTableNetowrkMap() {
+	private void populateNetworkTableMap() {
 		
-		Iterator<CyNetwork> it = this.cyNetworkManagerServiceRef.getNetworkSet().iterator();
-		
-		while (it.hasNext()){
-			CyNetwork net = it.next();
+		for (CyNetwork net: cyNetworkManagerServiceRef.getNetworkSet()) {
 			this.tableNetworkMap.put(net.getDefaultNetworkTable(), net);
 			this.tableNetworkMap.put(net.getDefaultNodeTable(), net);
 			this.tableNetworkMap.put(net.getDefaultEdgeTable(), net);

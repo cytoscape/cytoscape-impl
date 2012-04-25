@@ -13,14 +13,14 @@ import org.cytoscape.work.util.ListSingleSelection;
 import java.util.Map;
 import java.util.HashMap;
 
-public class MapNetworkAttrTaskFactoryImpl extends AbstractTaskFactory implements MapTableToNetworkTablesTaskFactory {
+public class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTaskFactory implements MapTableToNetworkTablesTaskFactory {
 	
 	private final CyNetworkManager networkManager;
 	private final CyApplicationManager applicationManager;
 	private final CyRootNetworkManager rootNetworkManager;
 	private final TunableSetter tunableSetter;
 
-	public MapNetworkAttrTaskFactoryImpl(final CyNetworkManager networkManager,
+	public MapTableToNetworkTablesTaskFactoryImpl(final CyNetworkManager networkManager,
             final CyApplicationManager applicationManager,
 			  final CyRootNetworkManager rootNetworkManager,
 			  final TunableSetter tunableSetter)

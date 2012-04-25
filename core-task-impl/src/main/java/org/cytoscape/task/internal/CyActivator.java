@@ -69,7 +69,8 @@ import org.cytoscape.task.internal.destruction.DestroyNetworkViewTaskFactoryImpl
 import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryImpl;
-import org.cytoscape.task.internal.export.table.ExportCurrentTableTaskFactoryImpl;
+import org.cytoscape.task.internal.export.table.ExportSelectedTableTaskFactoryImpl;
+import org.cytoscape.task.internal.export.table.ExportTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.vizmap.ExportVizmapTaskFactoryImpl;
 import org.cytoscape.task.internal.group.GroupNodeContextTaskFactoryImpl;
 import org.cytoscape.task.internal.group.GroupNodesTaskFactoryImpl;
@@ -109,7 +110,7 @@ import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
-import org.cytoscape.task.internal.table.MapNetworkAttrTaskFactoryImpl;
+import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.vizmap.ApplyVisualStyleTaskFactoryimpl;
@@ -138,9 +139,10 @@ import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
 import org.cytoscape.task.select.SelectFromFileListTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.ExportCurrentTableTaskFactory;
+import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -254,7 +256,7 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNetworkViewTaskFactoryImpl createNetworkViewTaskFactory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,cyLayoutsServiceRef,cyEventHelperRef);
 		ExportNetworkImageTaskFactoryImpl exportNetworkImageTaskFactory = new ExportNetworkImageTaskFactoryImpl(viewWriterManagerServiceRef,cyApplicationManagerServiceRef);
 		ExportNetworkViewTaskFactoryImpl exportNetworkViewTaskFactory = new ExportNetworkViewTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
-		ExportCurrentTableTaskFactoryImpl exportCurrentTableTaskFactory = new ExportCurrentTableTaskFactoryImpl(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef, tunableSetterServiceRef);
+		ExportSelectedTableTaskFactoryImpl exportCurrentTableTaskFactory = new ExportSelectedTableTaskFactoryImpl(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef);
 		ApplyPreferredLayoutTaskFactoryImpl applyPreferredLayoutTaskFactory = new ApplyPreferredLayoutTaskFactoryImpl(undoSupportServiceRef,cyEventHelperRef,cyLayoutsServiceRef,cyPropertyServiceRef);
 		DeleteColumnTaskFactoryImpl deleteColumnTaskFactory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef);
 		RenameColumnTaskFactoryImpl renameColumnTaskFactory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef);
@@ -785,7 +787,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportCurrentTableTaskFactoryProps.setProperty(COMMAND,"export-table");
 		exportCurrentTableTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,exportCurrentTableTaskFactory,TableTaskFactory.class, exportCurrentTableTaskFactoryProps);
-		registerService(bc,exportCurrentTableTaskFactory,ExportCurrentTableTaskFactory.class, exportCurrentTableTaskFactoryProps);
+		registerService(bc,exportCurrentTableTaskFactory,ExportSelectedTableTaskFactory.class, exportCurrentTableTaskFactoryProps);
 
 		Properties exportVizmapTaskFactoryProps = new Properties();
 		exportVizmapTaskFactoryProps.setProperty(ENABLE_FOR,"vizmap");
@@ -947,9 +949,13 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
 		registerService(bc,unGroupNodesTaskFactory,NodeViewTaskFactory.class, unGroupTaskFactoryProps);
 		
-		MapNetworkAttrTaskFactoryImpl mapNetworkAttrTaskFactory = new MapNetworkAttrTaskFactoryImpl(cyNetworkManagerServiceRef, cyApplicationManagerServiceRef,
+		MapTableToNetworkTablesTaskFactoryImpl mapNetworkAttrTaskFactory = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, cyApplicationManagerServiceRef,
 				  cyRootNetworkFactoryServiceRef,tunableSetterServiceRef);
 		Properties mapNetworkAttrTaskFactoryProps = new Properties();
 		registerService(bc,mapNetworkAttrTaskFactory,MapTableToNetworkTablesTaskFactory.class,mapNetworkAttrTaskFactoryProps);
+		
+		ExportTableTaskFactoryImpl exportTableTaskFactory = new ExportTableTaskFactoryImpl(cyTableWriterManagerRef,tunableSetterServiceRef);
+		Properties exportTableTaskFactoryProps = new Properties();
+		registerService(bc,exportTableTaskFactory,ExportTableTaskFactory.class,exportTableTaskFactoryProps);
 	}
 }

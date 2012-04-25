@@ -86,7 +86,8 @@ import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
 import org.cytoscape.task.select.SelectFromFileListTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.ExportCurrentTableTaskFactory;
+import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
+import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
@@ -256,7 +257,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private CreateNetworkViewTaskFactory createNetworkViewTaskFactory;
 	private ExportNetworkImageTaskFactory exportNetworkImageTaskFactory;
 	private ExportNetworkViewTaskFactory exportNetworkViewTaskFactory;
-	private ExportCurrentTableTaskFactory exportCurrentTableTaskFactory;
+	private ExportSelectedTableTaskFactory exportSelectedTableTaskFactory;
+	private ExportTableTaskFactory exportTableTaskFactory;
 	private ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory;
 	private DeleteColumnTaskFactory deleteColumnTaskFactory;
 	private RenameColumnTaskFactory renameColumnTaskFactory;
@@ -374,7 +376,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	                	final CreateNetworkViewTaskFactory createNetworkViewTaskFactory,
 	                	final ExportNetworkImageTaskFactory exportNetworkImageTaskFactory,
 	                	final ExportNetworkViewTaskFactory exportNetworkViewTaskFactory,
-	                	final ExportCurrentTableTaskFactory exportCurrentTableTaskFactory,
+	                	final ExportSelectedTableTaskFactory exportSelectedTableTaskFactory,
+	                	final ExportTableTaskFactory exportTableTaskFactory,
 	                	final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory,
 	                	final DeleteColumnTaskFactory deleteColumnTaskFactory,
 	                	final RenameColumnTaskFactory renameColumnTaskFactory,
@@ -478,7 +481,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 		this.createNetworkViewTaskFactory = createNetworkViewTaskFactory;
 		this.exportNetworkImageTaskFactory = exportNetworkImageTaskFactory;
 		this.exportNetworkViewTaskFactory = exportNetworkViewTaskFactory;
-		this.exportCurrentTableTaskFactory = exportCurrentTableTaskFactory;
+		this.exportSelectedTableTaskFactory = exportSelectedTableTaskFactory;
+		this.exportTableTaskFactory = exportTableTaskFactory;
 		this.applyPreferredLayoutTaskFactory = applyPreferredLayoutTaskFactory;
 		this.deleteColumnTaskFactory = deleteColumnTaskFactory;
 		this.renameColumnTaskFactory = renameColumnTaskFactory;
@@ -584,7 +588,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	@Override public CreateNetworkViewTaskFactory get_CreateNetworkViewTaskFactory(){ return this.createNetworkViewTaskFactory;	}
 	@Override public ExportNetworkImageTaskFactory get_ExportNetworkImageTaskFactory(){	return this.exportNetworkImageTaskFactory;}
 	@Override public ExportNetworkViewTaskFactory get_ExportNetworkViewTaskFactory(){ return this.exportNetworkViewTaskFactory;	}
-	@Override public ExportCurrentTableTaskFactory get_ExportCurrentTableTaskFactory(){	return this.exportCurrentTableTaskFactory; }
+	@Override public ExportSelectedTableTaskFactory get_ExportSelectedTableTaskFactory(){	return this.exportSelectedTableTaskFactory; }
+	@Override public ExportTableTaskFactory get_ExportTableTaskFactory(){	return this.exportTableTaskFactory; }
 	@Override public ExportVizmapTaskFactory get_ExportVizmapTaskFactory(){	return this.exportVizmapTaskFactory; }
 	@Override public NewSessionTaskFactory get_NewSessionTaskFactory(){	return this.newSessionTaskFactory;}
 	@Override public OpenSessionTaskFactory get_OpenSessionTaskFactory(){ return this.openSessionTaskFactory;}

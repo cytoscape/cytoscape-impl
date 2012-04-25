@@ -95,7 +95,8 @@ import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
 import org.cytoscape.task.select.SelectFromFileListTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.ExportCurrentTableTaskFactory;
+import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
+import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
@@ -207,7 +208,8 @@ public class CyActivator extends AbstractCyActivator {
 		 CreateNetworkViewTaskFactory createNetworkViewTaskFactory = getService(bc,CreateNetworkViewTaskFactory.class);
 		 ExportNetworkImageTaskFactory exportNetworkImageTaskFactory = getService(bc,ExportNetworkImageTaskFactory.class);
 		 ExportNetworkViewTaskFactory exportNetworkViewTaskFactory = getService(bc,ExportNetworkViewTaskFactory.class);
-		 ExportCurrentTableTaskFactory exportCurrentTableTaskFactory = getService(bc,ExportCurrentTableTaskFactory.class);
+		 ExportSelectedTableTaskFactory exportSelectedTableTaskFactory = getService(bc,ExportSelectedTableTaskFactory.class);
+		 ExportTableTaskFactory exportTableTaskFactory = getService(bc,ExportTableTaskFactory.class);
 		 ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc,ApplyPreferredLayoutTaskFactory.class);
 		 DeleteColumnTaskFactory deleteColumnTaskFactory = getService(bc,DeleteColumnTaskFactory.class);
 		 RenameColumnTaskFactory renameColumnTaskFactory = getService(bc,RenameColumnTaskFactory.class);
@@ -274,7 +276,8 @@ public class CyActivator extends AbstractCyActivator {
 				 createNetworkViewTaskFactory,
 				 exportNetworkImageTaskFactory,
 				 exportNetworkViewTaskFactory,
-				 exportCurrentTableTaskFactory,
+				 exportSelectedTableTaskFactory,
+				 exportTableTaskFactory,
 				 applyPreferredLayoutTaskFactory,
 				 deleteColumnTaskFactory,
 				 renameColumnTaskFactory,
