@@ -9,6 +9,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
@@ -34,7 +35,7 @@ public class NetworkTestSupport {
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		
 		// Mock objects.
-		final CyNetworkManager networkManager = mock(CyNetworkManager.class);
+		final CyNetworkManager networkManager = new CyNetworkManagerImpl(eventHelper);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		
 		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager); 

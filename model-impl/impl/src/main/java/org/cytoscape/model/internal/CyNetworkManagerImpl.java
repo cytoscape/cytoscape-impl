@@ -101,9 +101,6 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 	    if (!networkMap.containsKey(networkId))
 		throw new IllegalArgumentException("network is not recognized by this NetworkManager");
 
-	    CyTable nodeTable = network.getDefaultNodeTable();
-	    CyTable edgeTable = network.getDefaultEdgeTable();
-
 		for (CyNode n : network.getNodeList())
 		    network.getRow(n).set(CyNetwork.SELECTED, false);
 		for (CyEdge e : network.getEdgeList())

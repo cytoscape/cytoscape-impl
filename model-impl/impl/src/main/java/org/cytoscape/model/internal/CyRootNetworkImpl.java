@@ -34,17 +34,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
 import org.cytoscape.model.SUIDFactory;
@@ -152,7 +150,6 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		
 		getRow(this).set(CyNetwork.NAME, "");
 		
-				
 	}
 
 	private void linkDefaultTables(CyTable sharedTable, CyTable localTable) {

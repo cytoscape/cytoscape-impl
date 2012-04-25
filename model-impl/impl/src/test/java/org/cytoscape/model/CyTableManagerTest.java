@@ -39,6 +39,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable.SavePolicy;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
@@ -50,22 +51,34 @@ import static org.mockito.Mockito.*;
 
 
 public class CyTableManagerTest extends AbstractCyTableManagerTest {
-	CyTableManagerImpl mgrImpl;
-	CyNetworkTableManagerImpl networkTableMgr;
+	
+	private CyEventHelper eventHelper = new DummyCyEventHelper();
+	
 
 	@Before
 	public void setUp() {
-		super.setUp();
-		CyEventHelper eh = new DummyCyEventHelper();
 		networkTableMgr = new CyNetworkTableManagerImpl();
-		mgrImpl = new CyTableManagerImpl(eh, networkTableMgr, null);
-		mgr = mgrImpl;
+		networkManager = new CyNetworkManagerImpl(eventHelper);
+		mgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager);
+		
+		assertNotNull(mgr);
+		assertEquals(0, mgr.getAllTables(true).size());
+
 		final Interpreter interpreter = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		goodNetwork =
-			new CyRootNetworkImpl(eh, mgrImpl, networkTableMgr,
-			               new CyTableFactoryImpl(eh, interpreter, serviceRegistrar),
-			               serviceRegistrar, true).getBaseNetwork();
+		
+		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, interpreter, serviceRegistrar);
+		goodNetwork = new CyRootNetworkImpl(eventHelper, (CyTableManagerImpl) mgr, networkTableMgr, tableFactory, serviceRegistrar, true)
+				.getBaseNetwork();
+		networkManager.addNetwork(goodNetwork);
+		
+		globalTable = tableFactory.createTable("test table", CyIdentifiable.SUID, Long.class, true, true);
+		
+		assertNotNull(globalTable);
+		assertNotNull(goodNetwork);
+
+		assertEquals(9, mgr.getAllTables(true).size());
+		assertEquals(1, networkManager.getNetworkSet().size());
 	}
 
 	@After
@@ -73,6 +86,7 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		mgr = null;
 		goodNetwork = null;
 	}
+
  
 	@Test
 	public void immutableTableTest() {
@@ -88,12 +102,11 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 
 	@Test
 	public void tableWithVirtColumnDeletionTest() {
-		CyEventHelper eventHelper = new DummyCyEventHelper();
 		final Interpreter interpreter = new InterpreterImpl();
 		CyTable table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-						eventHelper, interpreter,1000);
+				eventHelper, interpreter, 1000);
 		CyTable table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-						 eventHelper, interpreter,1000);
+				eventHelper, interpreter, 1000);
 
 		table.createColumn("x", Long.class, false);
 		CyColumn column = table.getColumn("x");
@@ -101,7 +114,7 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		table2.createListColumn("b", Boolean.class, false);
 		table.addVirtualColumn("b1", "b", table2, "x", true);
 
-		mgrImpl.addTable(table2);
+		mgr.addTable(table2);
 		boolean caughtException = false;
 		try {
 			mgr.deleteTable(table2.getSUID());

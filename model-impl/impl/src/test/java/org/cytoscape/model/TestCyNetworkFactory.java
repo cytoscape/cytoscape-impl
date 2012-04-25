@@ -36,6 +36,7 @@ import static org.mockito.Mockito.mock;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
@@ -63,7 +64,7 @@ public class TestCyNetworkFactory {
 
 	public static CyRootNetwork getPublicRootInstance(DummyCyEventHelper deh) {	
 		final CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
-		final CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
+		final CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, new CyNetworkManagerImpl(deh));
 		
 		final Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
@@ -75,7 +76,7 @@ public class TestCyNetworkFactory {
 	public static CyRootNetwork getPrivateRootInstance() {	
 		DummyCyEventHelper deh = new DummyCyEventHelper();
 		CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
-		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, null);
+		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, new CyNetworkManagerImpl(deh));
 		Interpreter interp = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		CyRootNetworkImpl ar =

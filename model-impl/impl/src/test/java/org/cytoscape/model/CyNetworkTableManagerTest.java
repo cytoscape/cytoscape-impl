@@ -67,11 +67,11 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 		super.setUp();
 		
 		final Interpreter interpreter = new InterpreterImpl();
+		this.mgr = new CyNetworkTableManagerImpl();
 		this.networkManager = new CyNetworkManagerImpl(eh);
 		this.tableManager = new CyTableManagerImpl(eh, mgr, networkManager);
 		this.tableFactory = new CyTableFactoryImpl(eh, interpreter, serviceRegistrar);
 		
-		this.mgr = new CyNetworkTableManagerImpl();
 		this.networkFactory = new CyNetworkFactoryImpl(eh, tableManager, mgr, tableFactory, serviceRegistrar);
 
 		goodNetwork = networkFactory.createNetwork();

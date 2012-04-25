@@ -47,6 +47,8 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableDeletedEvent;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,23 +58,33 @@ import org.slf4j.LoggerFactory;
  * This class will be provided as a service through Spring/OSGi.
  */
 public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener {
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyTableManagerImpl.class);
+	
+	@SuppressWarnings("unchecked")
+	private static final Class<? extends CyIdentifiable>[] COMPATIBLE_TYPES = new Class[] { CyNetwork.class,
+			CyNode.class, CyEdge.class };
+
 	private final CyEventHelper eventHelper;
 	private final CyNetworkTableManager networkTableManager;
 	private final CyNetworkManager networkManager;
 	
 	private final Map<Long, CyTable> tables;
 
-	/**
-	 * Creates a new CyTableManagerImpl object.
-	 *
-	 * @param eventHelper  DOCUMENT ME!
-	 */
-	public CyTableManagerImpl(final CyEventHelper eventHelper, CyNetworkTableManager networkTableManager, CyNetworkManager networkManager) {
+
+	public CyTableManagerImpl(final CyEventHelper eventHelper, final CyNetworkTableManager networkTableManager,
+			final CyNetworkManager networkManager) {
+		if(eventHelper == null)
+			throw new IllegalArgumentException("eventHelper is null.");
+		if(networkTableManager == null)
+			throw new IllegalArgumentException("networkTableManager is null.");
+		if(networkManager == null)
+			throw new IllegalArgumentException("networkManager is null.");
+		
 		this.eventHelper = eventHelper;
 		this.networkTableManager = networkTableManager;
 		this.networkManager = networkManager;
-		
+
 		tables = new HashMap<Long, CyTable>();
 	}
 
@@ -153,9 +165,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	}
 
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param suid DOCUMENT ME!
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void deleteTable(long suid) {
@@ -167,22 +177,59 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		// Collect set of tables to dispose
 		CyNetwork network = e.getNetwork();
 		Set<CyTable> tablesToDispose = new HashSet<CyTable>();
-		for (Class<? extends CyIdentifiable> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
+		for (Class<? extends CyIdentifiable> type : COMPATIBLE_TYPES)
 			tablesToDispose.addAll(networkTableManager.getTables(network, type).values());
-		}
 		
 		// Exclude tables that are being referenced by other networks
 		for (CyNetwork otherNetwork : networkManager.getNetworkSet()) {
-			if (otherNetwork.getSUID() == network.getSUID()) {
+			if (otherNetwork.getSUID() == network.getSUID())
 				continue;
-			}
-			for (Class<? extends CyIdentifiable> type : new Class[] { CyNetwork.class, CyNode.class, CyEdge.class }) {
+			
+			for (Class<? extends CyIdentifiable> type : COMPATIBLE_TYPES)
 				tablesToDispose.removeAll(networkTableManager.getTables(otherNetwork, type).values());
-			}
 		}
 		
-		for (CyTable table : tablesToDispose) {
+		for (CyTable table : tablesToDispose)
 			deleteTableInternal(table.getSUID(), true);
+	}
+
+
+	@Override
+	public Set<CyTable> getGlobalTables() {
+		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
+		final Set<CyTable> globalTables = new HashSet<CyTable>();
+		final Set<CyNetwork> networks = networkTableManager.getNetworkSet();
+
+		for (final CyNetwork network : networks) {
+			for (final Class<? extends CyIdentifiable> type : COMPATIBLE_TYPES) {
+				final Map<String, CyTable> objTables = networkTableManager.getTables(network,type);
+				nonGlobalTables.addAll(objTables.values());
+			}
 		}
+		for(final CyTable table: tables.values())
+			if(nonGlobalTables.contains(table) == false)
+				globalTables.add(table);
+		
+		return globalTables;
+	}
+
+
+	@Override
+	public Set<CyTable> getLocalTables(final Class<? extends CyIdentifiable> type) {
+		final Set<CyTable> localTables = new HashSet<CyTable>();
+
+		final Set<CyNetwork> networks = networkManager.getNetworkSet();
+
+		for (final CyNetwork network : networks) {
+			final Map<String, CyTable> objTables = networkTableManager.getTables(network, type);
+			if (network instanceof CySubNetwork) {
+				final CyTable shared = networkTableManager.getTable(((CySubNetwork) network).getRootNetwork(), type,
+						CyRootNetwork.SHARED_ATTRS);
+				localTables.add(shared);
+			}
+			localTables.addAll(objTables.values());
+		}
+
+		return localTables;
 	}
 }
