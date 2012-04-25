@@ -16,8 +16,10 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.task.table.MapNetworkAttrTaskFactory.MappingType;
-import static org.cytoscape.task.table.MapNetworkAttrTaskFactory.MappingType.*;
+import org.cytoscape.task.edit.MapNetworkAttrTaskFactory.MappingType;
+
+import static org.cytoscape.task.edit.MapNetworkAttrTaskFactory.MappingType.*;
+
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;

@@ -34,7 +34,7 @@ import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactory;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.application.swing.CyAction;

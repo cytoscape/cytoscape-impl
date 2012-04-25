@@ -11,7 +11,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 

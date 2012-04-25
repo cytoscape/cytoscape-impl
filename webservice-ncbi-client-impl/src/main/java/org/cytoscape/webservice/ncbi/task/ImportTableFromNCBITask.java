@@ -8,7 +8,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
 import org.cytoscape.webservice.ncbi.rest.EntrezRestClient;
 import org.cytoscape.webservice.ncbi.ui.AnnotationCategory;
 import org.cytoscape.work.AbstractTask;

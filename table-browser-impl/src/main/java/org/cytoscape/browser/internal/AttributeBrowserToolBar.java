@@ -75,7 +75,7 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.destruction.DeleteTableTaskFactory;
-import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
 import org.cytoscape.work.swing.DialogTaskManager;
 

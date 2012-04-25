@@ -5,7 +5,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;

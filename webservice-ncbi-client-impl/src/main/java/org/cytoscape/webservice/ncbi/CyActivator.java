@@ -20,7 +20,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
 
 import java.util.Properties;
 

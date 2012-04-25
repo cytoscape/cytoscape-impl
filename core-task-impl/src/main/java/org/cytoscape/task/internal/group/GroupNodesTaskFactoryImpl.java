@@ -32,7 +32,7 @@ package org.cytoscape.task.internal.group;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.group.GroupNodesTaskFactory;
+import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 

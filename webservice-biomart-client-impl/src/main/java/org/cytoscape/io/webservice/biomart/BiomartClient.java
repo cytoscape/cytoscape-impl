@@ -41,7 +41,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.ServiceException;
 

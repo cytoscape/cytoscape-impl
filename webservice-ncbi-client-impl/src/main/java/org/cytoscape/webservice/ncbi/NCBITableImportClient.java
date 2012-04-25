@@ -6,7 +6,7 @@ import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.table.MapNetworkAttrTaskFactory;
+import org.cytoscape.task.edit.MapNetworkAttrTaskFactory;
 import org.cytoscape.webservice.ncbi.task.ImportTableFromNCBITask;
 import org.cytoscape.work.TaskIterator;
 

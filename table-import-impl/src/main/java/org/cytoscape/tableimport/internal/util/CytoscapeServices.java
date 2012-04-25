@@ -16,7 +16,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.io.util.StreamUtil;

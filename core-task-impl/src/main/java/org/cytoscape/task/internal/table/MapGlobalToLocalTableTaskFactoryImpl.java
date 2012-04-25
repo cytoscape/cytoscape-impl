@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.table.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
