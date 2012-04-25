@@ -166,9 +166,9 @@ public class CyActivator extends AbstractCyActivator {
 		 SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory = getService(bc,SelectAdjacentEdgesTaskFactory.class);
 		 SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory = getService(bc,SelectConnectedNodesTaskFactory.class);
 		
-		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory = getService(bc,SelectFirstNeighborsTaskFactory.class);
-		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge = getService(bc,SelectFirstNeighborsTaskFactory.class);
-		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge = getService(bc,SelectFirstNeighborsTaskFactory.class);
+		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory = getService(bc,SelectFirstNeighborsTaskFactory.class,"(title=Undirected)");
+		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge = getService(bc,SelectFirstNeighborsTaskFactory.class,"(title=Directed: Incoming)");
+		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge = getService(bc,SelectFirstNeighborsTaskFactory.class,"(title=Directed: Outgoing)");
 		
 		 DeselectAllTaskFactory deselectAllTaskFactory = getService(bc,DeselectAllTaskFactory.class);
 		 DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory = getService(bc,DeselectAllEdgesTaskFactory.class);
@@ -193,16 +193,16 @@ public class CyActivator extends AbstractCyActivator {
 		 NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory = getService(bc,NewNetworkSelectedNodesOnlyTaskFactory.class);
 		 DestroyNetworkTaskFactory destroyNetworkTaskFactory = getService(bc,DestroyNetworkTaskFactory.class);
 		 DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory = getService(bc,DestroyNetworkViewTaskFactory.class);
-		 NetworkViewTaskFactory zoomInTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
-		 NetworkViewTaskFactory zoomOutTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
-		 NetworkViewTaskFactory fitSelectedTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
-		 NetworkViewTaskFactory fitContentTaskFactory = getService(bc,NetworkViewTaskFactory.class); //???
+		 NetworkViewTaskFactory zoomInTaskFactory = getService(bc,NetworkViewTaskFactory.class, "(title=Zoom In)");
+		 NetworkViewTaskFactory zoomOutTaskFactory = getService(bc,NetworkViewTaskFactory.class, "(title=Zoom Out)");
+		 NetworkViewTaskFactory fitSelectedTaskFactory = getService(bc,NetworkViewTaskFactory.class,"(title=Fit Selected)");
+		 NetworkViewTaskFactory fitContentTaskFactory = getService(bc,NetworkViewTaskFactory.class,"(title=Fit Content)");
 
 		 NewSessionTaskFactory newSessionTaskFactory = getService(bc,NewSessionTaskFactory.class);
 		 OpenSessionTaskFactory openSessionTaskFactory = getService(bc,OpenSessionTaskFactory.class);
-		 TaskFactory saveSessionTaskFactory = getService(bc,TaskFactory.class); //??
-		 SaveSessionAsTaskFactory saveSessionAsTaskFactory = getService(bc,SaveSessionAsTaskFactory.class);
-		 TaskFactory proxySettingsTaskFactory = getService(bc,TaskFactory.class); //??
+		 TaskFactory saveSessionTaskFactory = getService(bc,TaskFactory.class, "(command=save-session)");
+		 SaveSessionAsTaskFactory saveSessionAsTaskFactory = getService(bc,SaveSessionAsTaskFactory.class, "command=save-session-as");
+		 TaskFactory proxySettingsTaskFactory = getService(bc,TaskFactory.class, "(title=Proxy Settings...)");
 		 EditNetworkTitleTaskFactory editNetworkTitleTaskFactory = getService(bc,EditNetworkTitleTaskFactory.class);
 		 CreateNetworkViewTaskFactory createNetworkViewTaskFactory = getService(bc,CreateNetworkViewTaskFactory.class);
 		 ExportNetworkImageTaskFactory exportNetworkImageTaskFactory = getService(bc,ExportNetworkImageTaskFactory.class);
@@ -211,7 +211,7 @@ public class CyActivator extends AbstractCyActivator {
 		 ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc,ApplyPreferredLayoutTaskFactory.class);
 		 DeleteColumnTaskFactory deleteColumnTaskFactory = getService(bc,DeleteColumnTaskFactory.class);
 		 RenameColumnTaskFactory renameColumnTaskFactory = getService(bc,RenameColumnTaskFactory.class);
-		 TableCellTaskFactory copyValueToEntireColumnTaskFactory = getService(bc,TableCellTaskFactory.class); //??
+		 TableCellTaskFactory copyValueToEntireColumnTaskFactory = getService(bc,TableCellTaskFactory.class,"(title=Copy to entire column)");
 		 DeleteTableTaskFactory deleteTableTaskFactory = getService(bc,DeleteTableTaskFactory.class);
 		 ExportVizmapTaskFactory exportVizmapTaskFactory = getService(bc,ExportVizmapTaskFactory.class);
 		
@@ -220,12 +220,11 @@ public class CyActivator extends AbstractCyActivator {
 		 ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory = getService(bc,ApplyVisualStyleTaskFactory.class);
 		 MapNetworkAttrTaskFactory mapNetworkAttrTaskFactory = getService(bc,MapNetworkAttrTaskFactory.class);
 
-		 
-     	GroupNodesTaskFactory groupNodesTaskFactory = getService(bc,GroupNodesTaskFactory.class);
-     	NetworkViewTaskFactory unGroupTaskFactory= getService(bc,NetworkViewTaskFactory.class);
-     	NodeViewTaskFactory collapseGroupTaskFactory= getService(bc,NodeViewTaskFactory.class);
-     	NodeViewTaskFactory expandGroupTaskFactory= getService(bc,NodeViewTaskFactory.class);
-     	NodeViewTaskFactory unGroupNodesTaskFactory= getService(bc,NodeViewTaskFactory.class);
+     	 GroupNodesTaskFactory groupNodesTaskFactory = getService(bc,GroupNodesTaskFactory.class,"title=Group Nodes");
+     	 NetworkViewTaskFactory unGroupTaskFactory= getService(bc,NetworkViewTaskFactory.class,"title=Ungroup Nodes");
+     	 NodeViewTaskFactory collapseGroupTaskFactory= getService(bc,NodeViewTaskFactory.class,"title=Collapse Group");
+     	 NodeViewTaskFactory expandGroupTaskFactory= getService(bc,NodeViewTaskFactory.class,"title=Expand Group");
+     	 NodeViewTaskFactory unGroupNodesTaskFactory= getService(bc,NodeViewTaskFactory.class,"title=Ungroup Nodes");
 
 		// End of core-task services
 		 
