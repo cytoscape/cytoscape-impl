@@ -786,7 +786,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportCurrentTableTaskFactoryProps.setProperty(TOOLTIP,"Export Table to File");
 		exportCurrentTableTaskFactoryProps.setProperty(COMMAND,"export-table");
 		exportCurrentTableTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		registerService(bc,exportCurrentTableTaskFactory,TableTaskFactory.class, exportCurrentTableTaskFactoryProps);
+		registerService(bc,exportCurrentTableTaskFactory, TaskFactory.class, exportCurrentTableTaskFactoryProps);
 		registerService(bc,exportCurrentTableTaskFactory,ExportSelectedTableTaskFactory.class, exportCurrentTableTaskFactoryProps);
 
 		Properties exportVizmapTaskFactoryProps = new Properties();

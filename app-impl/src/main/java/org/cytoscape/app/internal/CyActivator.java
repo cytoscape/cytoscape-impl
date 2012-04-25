@@ -202,7 +202,7 @@ public class CyActivator extends AbstractCyActivator {
 		 NewSessionTaskFactory newSessionTaskFactory = getService(bc,NewSessionTaskFactory.class);
 		 OpenSessionTaskFactory openSessionTaskFactory = getService(bc,OpenSessionTaskFactory.class);
 		 TaskFactory saveSessionTaskFactory = getService(bc,TaskFactory.class, "(command=save-session)");
-		 SaveSessionAsTaskFactory saveSessionAsTaskFactory = getService(bc,SaveSessionAsTaskFactory.class, "command=save-session-as");
+		 SaveSessionAsTaskFactory saveSessionAsTaskFactory = getService(bc,SaveSessionAsTaskFactory.class, "(command=save-session-as)");
 		 TaskFactory proxySettingsTaskFactory = getService(bc,TaskFactory.class, "(title=Proxy Settings...)");
 		 EditNetworkTitleTaskFactory editNetworkTitleTaskFactory = getService(bc,EditNetworkTitleTaskFactory.class);
 		 CreateNetworkViewTaskFactory createNetworkViewTaskFactory = getService(bc,CreateNetworkViewTaskFactory.class);
@@ -222,11 +222,11 @@ public class CyActivator extends AbstractCyActivator {
 		 ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory = getService(bc,ApplyVisualStyleTaskFactory.class);
 		 MapTableToNetworkTablesTaskFactory mapNetworkAttrTaskFactory = getService(bc,MapTableToNetworkTablesTaskFactory.class);
 
-     	 GroupNodesTaskFactory groupNodesTaskFactory = getService(bc,GroupNodesTaskFactory.class,"title=Group Nodes");
-     	 NetworkViewTaskFactory unGroupTaskFactory= getService(bc,NetworkViewTaskFactory.class,"title=Ungroup Nodes");
-     	 NodeViewTaskFactory collapseGroupTaskFactory= getService(bc,NodeViewTaskFactory.class,"title=Collapse Group");
-     	 NodeViewTaskFactory expandGroupTaskFactory= getService(bc,NodeViewTaskFactory.class,"title=Expand Group");
-     	 NodeViewTaskFactory unGroupNodesTaskFactory= getService(bc,NodeViewTaskFactory.class,"title=Ungroup Nodes");
+     	 GroupNodesTaskFactory groupNodesTaskFactory = getService(bc,GroupNodesTaskFactory.class,"(title=Group Nodes)");
+     	 NetworkViewTaskFactory unGroupTaskFactory= getService(bc,NetworkViewTaskFactory.class,"(title=Ungroup Nodes)");
+     	 NodeViewTaskFactory collapseGroupTaskFactory= getService(bc,NodeViewTaskFactory.class,"(title=Collapse Group)");
+     	 NodeViewTaskFactory expandGroupTaskFactory= getService(bc,NodeViewTaskFactory.class,"(title=Expand Group)");
+     	 NodeViewTaskFactory unGroupNodesTaskFactory= getService(bc,NodeViewTaskFactory.class,"(title=Ungroup Nodes)");
 
 		// End of core-task services
 		 
