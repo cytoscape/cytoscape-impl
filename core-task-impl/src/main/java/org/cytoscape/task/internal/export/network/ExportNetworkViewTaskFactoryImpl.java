@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.export.network.ExportNetworkViewTaskFactory;
+import org.cytoscape.task.export.ExportNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.task.loaddatatable.LoadTableFileTaskFactory;
+import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.io.write.VizmapWriterManager;
-import org.cytoscape.task.export.vizmap.ExportVizmapTaskFactory;
+import org.cytoscape.task.export.ExportVizmapTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;

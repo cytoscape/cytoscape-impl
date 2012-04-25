@@ -39,7 +39,7 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.loadnetwork.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
