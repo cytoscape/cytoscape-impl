@@ -395,21 +395,4 @@ public final class TableBrowserUtil {
 		}
 	}
 	
-	public static boolean isGlobalTable(final CyTable table, final CyNetworkTableManager networkTableManager) {
-		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
-		final Set<CyNetwork> networks = networkTableManager.getNetworkSet();
-
-		for (CyNetwork network : networks) {
-			for (Class<?> type : OBJECT_TYPES) {
-				final Map<String, CyTable> objTables = networkTableManager.getTables(network,
-						(Class<? extends CyIdentifiable>) type);
-				nonGlobalTables.addAll(objTables.values());
-			}
-		}
-
-		if (nonGlobalTables.contains(table))
-			return false;
-		else
-			return true;
-	}
 }

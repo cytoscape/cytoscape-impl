@@ -18,11 +18,11 @@ import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -45,7 +45,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private final CyTable dataTable;
 	private final EquationCompiler compiler;
 	
-	private final CyNetworkTableManager networkTableManager;
+	private final CyTableManager tableManager;
 
 	// If this is FALSE then we show all rows
 	private boolean regularViewMode;
@@ -58,12 +58,13 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private int maxRowIndex;
 
 
-	public BrowserTableModel(final BrowserTable table, final CyTable dataTable, final EquationCompiler compiler, final CyNetworkTableManager networkTableManager) {
+	public BrowserTableModel(final BrowserTable table, final CyTable dataTable, final EquationCompiler compiler,
+			final CyTableManager tableManager) {
 		this.table = table;
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		this.regularViewMode = false; 
-		this.networkTableManager = networkTableManager;
+		this.tableManager = tableManager;
 		
 		initAttrNamesAndVisibilities();
 
@@ -330,7 +331,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				@Override
 				public void run() {
 					try {
-						if(TableBrowserUtil.isGlobalTable(dataTable, networkTableManager) == false)
+						if(tableManager.getGlobalTables().contains(dataTable) == false)
 							bulkUpdate(rows);
 					}
 					catch (Exception e){

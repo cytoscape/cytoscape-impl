@@ -47,13 +47,10 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 			locals.add(network.getDefaultEdgeTable().getTitle());
 			locals.add(network.getDefaultNetworkTable().getTitle());
 		}
-
-		final Set<CyTable> allTables = tableManager.getAllTables(false);
-		for (final CyTable table : allTables) {
-			name2tableMap.put(table.getTitle(), table);
-			if (locals.contains(table.getTitle()) == false)
-				globals.add(table.getTitle());
-		}
+		
+		final Set<CyTable> globalTableSet = tableManager.getGlobalTables();
+		for (final CyTable table : globalTableSet)
+			globals.add(table.getTitle());
 
 		if (globals.size() == 0)
 			throw new IllegalStateException("No Global Table in current session!");
@@ -63,7 +60,6 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 
 		this.localTables.setSelectedValue(locals.get(0));
 		this.globalTables.setSelectedValue(globals.get(0));
-
 	}
 
 	@Override

@@ -56,10 +56,9 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
@@ -95,18 +94,18 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	private final CyApplicationManager applicationManager;
 	private final CyEventHelper eventHelper;
-	private final CyNetworkTableManager networkTableManager;
+	private final CyTableManager tableManager;
 
 	public BrowserTable(final OpenBrowser openBrowser, final EquationCompiler compiler,
 			final PopupMenuHelper popupMenuHelper, final CyApplicationManager applicationManager,
-			final CyEventHelper eventHelper, final CyNetworkTableManager networkTableManager) {
+			final CyEventHelper eventHelper, final CyTableManager tableManager) {
 		this.openBrowser     = openBrowser;
 		this.compiler        = compiler;
 		this.popupMenuHelper = popupMenuHelper;
 		this.updateColumnComparators = false;
 		this.applicationManager = applicationManager;
 		this.eventHelper = eventHelper;
-		this.networkTableManager = networkTableManager;
+		this.tableManager = tableManager;
 
 		initHeader();
 		setCellSelectionEnabled(true);
@@ -251,7 +250,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 
 		// Clear selection for non-global table
-		if (TableBrowserUtil.isGlobalTable(table, networkTableManager) == false) {
+		if (tableManager.getGlobalTables().contains(table) == false) {
 			List<CyRow> allRows = btModel.getDataTable().getAllRows();
 			for (CyRow row : allRows) {
 				final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);

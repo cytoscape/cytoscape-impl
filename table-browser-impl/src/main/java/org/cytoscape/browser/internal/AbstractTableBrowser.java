@@ -49,7 +49,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
-	protected final CyNetworkTableManager networkTableManager;
+	protected final CyTableManager tableManager;
 	protected final CyServiceRegistrar serviceRegistrar;
 	private final EquationCompiler compiler;
 	
@@ -75,7 +75,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			final CyNetworkManager networkManager, final TableTaskFactory deleteTableTaskFactoryService,
 			final DialogTaskManager guiTaskManagerServiceRef, final PopupMenuHelper popupMenuHelper,
 			final CyApplicationManager applicationManager, final CyEventHelper eventHelper) {
-		this.networkTableManager = networkTableManager;
+		this.tableManager = tableManager;
 		this.serviceRegistrar = serviceRegistrar;
 		this.compiler = compiler;
 		this.tabTitle = tabTitle;
@@ -180,9 +180,9 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		
 		if (btm == null) {
 			final BrowserTable browserTable = new BrowserTable(openBrowser, compiler, popupMenuHelper,
-					applicationManager, eventHelper, networkTableManager);
+					applicationManager, eventHelper, tableManager);
 			
-			btm = new BrowserTableModel(browserTable, currentTable, compiler, networkTableManager);
+			btm = new BrowserTableModel(browserTable, currentTable, compiler, tableManager);
 			browserTableModels.put(currentTable, btm);
 		}
 		

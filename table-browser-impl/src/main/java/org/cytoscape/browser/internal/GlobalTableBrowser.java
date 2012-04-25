@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.TableChooser.GlobalTableComboBoxModel;
-import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
@@ -97,7 +96,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		final CyTable newTable = e.getTable();
 
 		if (newTable.isPublic()) {
-			if (TableBrowserUtil.isGlobalTable(newTable, networkTableManager)) {
+			if (tableManager.getGlobalTables().contains(newTable)) {
 				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 				comboBoxModel.addAndSetSelectedItem(newTable);
 			}
