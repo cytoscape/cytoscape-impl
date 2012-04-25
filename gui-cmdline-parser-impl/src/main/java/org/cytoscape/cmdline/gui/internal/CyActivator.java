@@ -6,10 +6,10 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.loadnetwork.LoadNetworkFileTaskFactory;
-import org.cytoscape.task.loadnetwork.LoadNetworkURLTaskFactory;
-import org.cytoscape.task.loadvizmap.LoadVizmapFileTaskFactory;
-import org.cytoscape.task.session.OpenSessionTaskFactory;
+import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.TaskManager;
 
 import java.util.Properties; 
