@@ -137,9 +137,19 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 
-		// Create the subnetwork
-		CySubNetwork groupNet = rootNetwork.addSubNetwork(nodes, edges);
-		groupNode.setNetworkPointer(groupNet);
+		CySubNetwork np = (CySubNetwork)groupNode.getNetworkPointer();
+		// If we already have a network pointer and we didn't get
+		// nodes or edges, and the network pointer points to the same
+		// root network, then it may have been provided by the session loader
+		if (np != null && nodeProvided && 
+		    edges.size() == 0 && nodes.size() == 0 &&
+		    np.getRootNetwork().equals(this.rootNetwork)) {
+			CySubNetwork groupNet = np;
+		} else {
+			// Create the subnetwork
+			CySubNetwork groupNet = rootNetwork.addSubNetwork(nodes, edges);
+			groupNode.setNetworkPointer(groupNet);
+		}
 
 		// Update our meta-edges
 		updateMetaEdges(true);
@@ -192,8 +202,7 @@ class CyGroupImpl implements CyGroup {
 	/**
 	 * @see org.cytoscape.group.CyGroup#addNode()
 	 */
-	@Override
-	public synchronized void addNode(CyNode node) {
+	private synchronized void addNode(CyNode node) {
 		if (!rootNetwork.containsNode(node))
 			throwIllegalArgumentException("Can only add a node in the same network tree");
 		getGroupNetwork().addNode(node);
@@ -210,8 +219,7 @@ class CyGroupImpl implements CyGroup {
 	/**
 	 * @see org.cytoscape.group.CyGroup#addInternalEdge()
 	 */
-	@Override
-	public synchronized void addInternalEdge(CyEdge edge) {
+	private synchronized void addInternalEdge(CyEdge edge) {
 		if (!rootNetwork.containsEdge(edge))
 			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		getGroupNetwork().addEdge(edge);
@@ -222,8 +230,7 @@ class CyGroupImpl implements CyGroup {
 	/**
 	 * @see org.cytoscape.group.CyGroup#addExternalEdge()
 	 */
-	@Override
-	public synchronized void addExternalEdge(CyEdge edge) {
+	protected synchronized void addExternalEdge(CyEdge edge) {
 		if (!rootNetwork.containsEdge(edge))
 			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		if (!externalEdges.contains(edge))
@@ -638,7 +645,7 @@ class CyGroupImpl implements CyGroup {
 			metaEdges.add(newEdge);
 		}
 
-		for (CyEdge edge: newEdges) { metaPartner.addExternalEdge(edge); }
+		for (CyEdge edge: newEdges) { ((CyGroupImpl)metaPartner).addExternalEdge(edge); }
 	}
 
 	private CyEdge createMetaEdge(CyEdge edge, CyNode node, CyNode groupNode) {

@@ -79,7 +79,8 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CyGroup createGroup(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, boolean register) {
+	public CyGroup createGroup(CyNetwork network, List<CyNode> nodes, 
+	                           List<CyEdge> edges, boolean register) {
 		return createGroup(network, null, nodes, edges, register);
 	}
 
@@ -87,8 +88,20 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CyGroup createGroup(CyNetwork network, CyNode node, List<CyNode> nodes, List<CyEdge> edges, boolean register) {
+	public CyGroup createGroup(CyNetwork network, CyNode node, 
+	                           List<CyNode> nodes, List<CyEdge> edges, boolean register) {
 		CyGroup group = new CyGroupImpl(help, mgr, network, node, nodes, edges);
+		if (register)
+			mgr.addGroup(group);
+		return group;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public CyGroup createGroup(CyNetwork network, CyNode node, boolean register) {
+		CyGroup group = new CyGroupImpl(help, mgr, network, node, null, null);
 		if (register)
 			mgr.addGroup(group);
 		return group;
