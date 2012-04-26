@@ -67,11 +67,10 @@ public class CyNumberPropertyEditor<T extends Number> extends NumberPropertyEdit
 
 		((JTextField) editor).addFocusListener(new FocusListener() {
 			public void focusGained(FocusEvent e) {
-
-				logger.debug("Number Editor got val: " + currentValue);
-
-				final Item item = (Item) panel.getSelectedItem();
-				selected = item.getProperty().getDisplayName();
+				if (panel != null) {
+					final Item item = (Item) panel.getSelectedItem();
+					selected = item.getProperty().getDisplayName();
+				}
 				setCurrentValue();
 			}
 

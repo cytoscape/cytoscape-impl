@@ -62,6 +62,8 @@ public class CyStringPropertyEditor extends StringPropertyEditor {
 				Method getM = null;
 				Object val = null;
 
+				//System.out.println("* String E Called!");
+				
 				try {
 					getM = e.getOppositeComponent().getClass().getMethod("getSelectedRow", new Class[] {});
 				} catch (SecurityException e1) {

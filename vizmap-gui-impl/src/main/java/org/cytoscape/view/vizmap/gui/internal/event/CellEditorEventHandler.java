@@ -69,40 +69,32 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
  */
 public class CellEditorEventHandler implements VizMapEventHandler {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(CellEditorEventHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(CellEditorEventHandler.class);
 
-	private final SelectedVisualStyleManager manager;
-	
-	// Keeps current discrete mappings. NOT PERMANENT
-	private final Map<String, Map<Object, Object>> discMapBuffer;
-
+	private final SelectedVisualStyleManager selectedStyleManager;
 	private final CyNetworkTableManager tableMgr;
 
 	protected final VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
 	protected final PropertySheetPanel propertySheetPanel;
 	protected final CyApplicationManager applicationManager;
-	
+
 	private final AttributeSetManager attrManager;
-	
+
 	private final VizMapperUtil util;
-	
 
 	/**
 	 * Creates a new CellEditorEventHandler object.
 	 */
 	public CellEditorEventHandler(final SelectedVisualStyleManager manager,
-			final PropertySheetPanel propertySheetPanel,
-			final CyNetworkTableManager tableMgr,
-			final CyApplicationManager applicationManager,
-			final VizMapPropertySheetBuilder vizMapPropertySheetBuilder, final AttributeSetManager attrManager, final VizMapperUtil util) {
-		
-		discMapBuffer = new HashMap<String, Map<Object, Object>>();
+			final PropertySheetPanel propertySheetPanel, final CyNetworkTableManager tableMgr,
+			final CyApplicationManager applicationManager, final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
+			final AttributeSetManager attrManager, final VizMapperUtil util) {
+
 		this.propertySheetPanel = propertySheetPanel;
 		this.tableMgr = tableMgr;
 		this.applicationManager = applicationManager;
 		this.vizMapPropertySheetBuilder = vizMapPropertySheetBuilder;
-		this.manager = manager;
+		this.selectedStyleManager = manager;
 		this.attrManager = attrManager;
 		this.util = util;
 	}
@@ -151,8 +143,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 		// Extract selected Property object in the table.
 		final Item selectedItem = (Item) propertySheetPanel.getTable().getValueAt(selected, 0);
-		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem
-				.getProperty();
+		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();
 
 		logger.debug("#### Got new PROP: Name = " + prop.getDisplayName());
 		logger.debug("#### Got new PROP: new Value = " + newVal);
@@ -162,11 +153,9 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		// Case 1: Attribute type changed.
 		if (prop.getCellType().equals(CellType.VISUAL_PROPERTY_TYPE)) {
 			if (e.getNewValue() == null)
-				throw new NullPointerException(
-						"New controlling attr name is null.");
+				throw new NullPointerException("New controlling attr name is null.");
 
-			VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) prop
-					.getInternalValue();
+			VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) prop.getInternalValue();
 
 			if (factory == null) {
 				logger.debug("## Factory is still null.");
@@ -175,8 +164,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 					final VizMapperProperty<?, ?, ?> child = (VizMapperProperty<?, ?, ?>) children[i];
 					if (child.getCellType().equals(CellType.MAPPING_TYPE)
 							&& child.getValue() instanceof VisualMappingFunctionFactory) {
-						factory = (VisualMappingFunctionFactory) child
-								.getValue();
+						factory = (VisualMappingFunctionFactory) child.getValue();
 						break;
 					}
 				}
@@ -184,10 +172,8 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 					return;
 			}
 
-			final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e
-					.getSource();
-			switchControllingAttr(factory, editor, prop, e.getNewValue()
-					.toString());
+			final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
+			switchControllingAttr(factory, editor, prop, e.getNewValue().toString());
 		}
 
 		// 2. Switch mapping type
@@ -197,8 +183,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 				return;
 
 			// Parent is always root.
-			VizMapperProperty<?, ?, ?> parent = (VizMapperProperty<?, ?, ?>) prop
-					.getParentProperty();
+			VizMapperProperty<?, ?, ?> parent = (VizMapperProperty<?, ?, ?>) prop.getParentProperty();
 			type = (VisualProperty<?>) parent.getKey();
 			Object controllingAttrName = parent.getValue();
 
@@ -207,7 +192,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 			logger.debug("New Type = " + type.getDisplayName());
 			logger.debug("New Attr Name = " + controllingAttrName);
-			
+
 			switchMappingType(prop, type, (VisualMappingFunctionFactory) e.getNewValue(),
 					controllingAttrName.toString());
 		} else if (prop.getParentProperty() != null) {
@@ -216,43 +201,38 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			logger.debug("Cell edit event: old val = " + prop.getValue());
 			logger.debug("Cell edit event: new val = " + newVal);
 			logger.debug("Cell edit event: associated mapping = " + prop.getInternalValue());
-			
+
 			final VisualMappingFunction<?, ?> mapping = (VisualMappingFunction<?, ?>) prop.getInternalValue();
-			
-			if(mapping == null)
+
+			if (mapping == null)
 				return;
-			
-			if(mapping instanceof DiscreteMapping) {
-				DiscreteMapping<Object, Object> discMap =  (DiscreteMapping<Object, Object>) mapping;
+
+			if (mapping instanceof DiscreteMapping) {
+				DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
 				discMap.putMapValue(prop.getKey(), newVal);
 			}
-			
-			manager.getCurrentVisualStyle().apply(applicationManager.getCurrentNetworkView());
+
+			selectedStyleManager.getCurrentVisualStyle().apply(applicationManager.getCurrentNetworkView());
 			applicationManager.getCurrentNetworkView().updateView();
 		}
 	}
 
-	private <K, V> void switchControllingAttr(
-			final VisualMappingFunctionFactory factory,
-			final AttributeComboBoxPropertyEditor editor,
-			VizMapperProperty<K, V, ?> prop, final String ctrAttrName)
-	{
-		final VisualStyle currentStyle = manager.getCurrentVisualStyle();
+	private <K, V> void switchControllingAttr(final VisualMappingFunctionFactory factory,
+			final AttributeComboBoxPropertyEditor editor, VizMapperProperty<K, V, ?> prop, final String ctrAttrName) {
+		final VisualStyle currentStyle = selectedStyleManager.getCurrentVisualStyle();
 
 		final VisualProperty<V> vp = (VisualProperty<V>) prop.getKey();
-		VisualMappingFunction<K, V> mapping = (VisualMappingFunction<K, V>) currentStyle
-				.getVisualMappingFunction(vp);
-
-		logger.debug("!!!!!!! Got Mapping: " + mapping);
+		VisualMappingFunction<K, V> mapping = (VisualMappingFunction<K, V>) currentStyle.getVisualMappingFunction(vp);
 
 		/*
 		 * Ignore if not compatible.
 		 */
 		@SuppressWarnings("unchecked")
 		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) editor.getTargetObjectType();
-		final CyTable attrForTest = tableMgr.getTable(applicationManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
+		final CyTable attrForTest = tableMgr.getTable(applicationManager.getCurrentNetwork(), type,
+				CyNetwork.DEFAULT_ATTRS);
 
-		final Class<K> dataType = (Class<K>)attrForTest.getColumn(ctrAttrName).getType();
+		final Class<K> dataType = (Class<K>) attrForTest.getColumn(ctrAttrName).getType();
 
 		if (mapping == null) {
 			// Need to create new one
@@ -261,26 +241,22 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			if (factory == null)
 				return;
 
-			mapping = factory.createVisualMappingFunction(ctrAttrName,
-					dataType,attrForTest, vp);
+			mapping = factory.createVisualMappingFunction(ctrAttrName, dataType, attrForTest, vp);
 			currentStyle.addVisualMappingFunction(mapping);
 		}
 
 		// If same, do nothing.
 		if (ctrAttrName.equals(mapping.getMappingColumnName())) {
-			logger.debug("Same controlling attr.  Do nothing for: "
-					+ ctrAttrName);
+			logger.debug("Same controlling attr.  Do nothing for: " + ctrAttrName);
 			return;
 		}
 
 		VisualMappingFunction<K, V> newMapping = null;
 		if (mapping instanceof PassthroughMapping) {
 			// Create new Passthrough mapping and register to current style.
-			newMapping = factory.createVisualMappingFunction(ctrAttrName,
-					dataType, attrForTest, vp);
+			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, attrForTest, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
-			logger.debug("Changed to new Map from "
-					+ mapping.getMappingColumnName() + " to "
+			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
 					+ newMapping.getMappingColumnName());
 		} else if (mapping instanceof ContinuousMapping) {
 			if ((dataType == Double.class) || (dataType == Integer.class)) {
@@ -303,14 +279,13 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		propertySheetPanel.removeProperty(prop);
 
 		// Create new one.
-		logger.warn("Creating new prop sheet objects for "
-				+ newMapping.getMappingColumnName() + ", "
+		logger.warn("Creating new prop sheet objects for " + newMapping.getMappingColumnName() + ", "
 				+ vp.getDisplayName());
 
-		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyIdentifiable>) vp.getTargetDataType());
-		VizMapperProperty<VisualProperty<V>, String, ?> newRootProp = vizMapPropertySheetBuilder
-				.getPropertyBuilder().buildProperty(newMapping,
-						category.getDisplayName(), propertySheetPanel, factory);
+		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyIdentifiable>) vp
+				.getTargetDataType());
+		VizMapperProperty<VisualProperty<V>, String, ?> newRootProp = vizMapPropertySheetBuilder.getPropertyBuilder()
+				.buildProperty(newMapping, category.getDisplayName(), propertySheetPanel, factory);
 
 		vizMapPropertySheetBuilder.removeProperty(prop, currentStyle);
 
@@ -333,22 +308,22 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			final VisualMappingFunctionFactory factory, final String controllingAttrName) {
 
 		// This is the currently selected Visual Style.
-		final VisualStyle style = manager.getCurrentVisualStyle();
-		
+		final VisualStyle style = selectedStyleManager.getCurrentVisualStyle();
+
 		final VisualProperty<Visualizable> startVP = util.getCategory((Class<? extends CyIdentifiable>) vp.getTargetDataType());
 		final VisualMappingFunction<?, ?> currentMapping = style.getVisualMappingFunction(vp);
-		
+
 		logger.debug("Current Mapping for " + vp.getDisplayName() + " is: " + currentMapping);
-		
+
 		final VisualMappingFunction<?, ?> newMapping;
 		logger.debug("!! New factory Category: " + factory.getMappingFunctionType());
 		logger.debug("!! Current Mapping type: " + currentMapping);
-		
-		if(currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType()) {
-			
+
+		if (currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType()) {
+
 			// Mapping does not exist. Need to create new one.
 			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(),
-					(Class<? extends CyIdentifiable>) vp.getTargetDataType());
+					vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
 			if (factory.getMappingFunctionType() == ContinuousMapping.class) {
@@ -359,8 +334,8 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 					return;
 				}
 			}
-			
-			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, null,vp);
+
+			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, null, vp);
 			style.addVisualMappingFunction(newMapping);
 		} else
 			newMapping = currentMapping;
@@ -386,7 +361,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		propList.add(newRootProp);
 
 		parent = null;
-		final VisualStyle currentStyle = manager.getCurrentVisualStyle();
+		final VisualStyle currentStyle = selectedStyleManager.getCurrentVisualStyle();
 		currentStyle.apply(applicationManager.getCurrentNetworkView());
 		applicationManager.getCurrentNetworkView().updateView();
 

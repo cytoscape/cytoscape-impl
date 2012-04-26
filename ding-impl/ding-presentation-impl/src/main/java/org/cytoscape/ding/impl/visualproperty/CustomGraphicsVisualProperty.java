@@ -5,12 +5,13 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 
 public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCustomGraphics> {
 
 	public CustomGraphicsVisualProperty(final CyCustomGraphics<CustomGraphic> defaultValue,
-			final CustomGraphicsRange customGraphicsRange, String id, String displayName, Class<?> targetObjectDataType) {
+			final CustomGraphicsRange customGraphicsRange, String id, String displayName, Class<? extends CyIdentifiable> targetObjectDataType) {
 		super(defaultValue, customGraphicsRange, id, displayName, targetObjectDataType);
 	}
 

@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl.visualproperty;
 
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.impl.ObjectPositionImpl;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.Range;
@@ -18,7 +19,7 @@ public class ObjectPositionVisualProperty extends AbstractVisualProperty<ObjectP
 
 	public ObjectPositionVisualProperty(ObjectPosition defaultValue,
 			String id, String displayName,
-			Class<?> targetObjectDataType) {
+			Class<? extends CyIdentifiable> targetObjectDataType) {
 		super(defaultValue, OBJECT_POSITION_RANGE, id, displayName, targetObjectDataType);
 	}
 
