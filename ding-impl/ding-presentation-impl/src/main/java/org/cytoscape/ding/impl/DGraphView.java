@@ -1366,6 +1366,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				final DNodeView nView = (DNodeView) obj;
 				nodeInx = nView.getGraphPerspectiveIndex();
 				nnode = model.getNode(nodeInx);
+				
+				// If the node is already hidden, don't do anything.
+				if (m_drawPersp.getNode(nodeInx) == null) {
+					return false;
+				}
+				
 				edges = m_drawPersp.getAdjacentEdgeList(nnode, CyEdge.Type.ANY);
 
 				if (edges != null) {
