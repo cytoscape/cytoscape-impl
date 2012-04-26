@@ -201,7 +201,8 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 			
 			// If there is no global filters, load a default one
 			if (is == null) {
-				String fileName = File.separator + FilterUtil.DEFAULT_FILE_NAME;
+				// note: "/" works for both Mac and Windows, File.separator does not work on Windows
+				String fileName = "/" + FilterUtil.DEFAULT_FILE_NAME;
 				
 				try {
 					is = getClass().getResourceAsStream(fileName);
