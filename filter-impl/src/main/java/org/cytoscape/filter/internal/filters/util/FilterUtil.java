@@ -112,6 +112,8 @@ public class FilterUtil {
 	
 	
 	public static boolean hasSuchAttribute(CyNetwork network, String pAttribute, int pType) {
+		if (network == null)
+			return false;
 		if (pType == QuickFind.INDEX_NODES) {
 			List<CyNode> nodes = network.getNodeList();
 			if (nodes.size() == 0) {

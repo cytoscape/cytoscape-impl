@@ -3,6 +3,7 @@ package org.cytoscape.filter.internal.gui;
 import java.awt.Component;
 
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -39,9 +40,14 @@ public class FilterCytoPanelComponent implements CytoPanelComponent, CytoPanelCo
 	}
 
 	@Override
-	public void handleEvent(CytoPanelComponentSelectedEvent e) {
+	public void handleEvent(final CytoPanelComponentSelectedEvent e) {
+		SwingUtilities.invokeLater( new Runnable() {
+			
+		@Override
+		public void run(){
 		if (e.getCytoPanel().getSelectedComponent() == panel) {
 			panel.handlePanelSelected();
 		}
+		}});
 	}
 }

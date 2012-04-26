@@ -90,10 +90,10 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.NetworkDestroyedEvent;
+import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
@@ -109,8 +109,8 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class FilterMainPanel extends JPanel implements ActionListener,
-						       ItemListener, SetCurrentNetworkListener, NetworkAddedListener,
-						       NetworkAboutToBeDestroyedListener, SessionLoadedListener, RowsSetListener,ColumnNameChangedListener,
+						       ItemListener, SetCurrentNetworkListener, NetworkAddedListener,NetworkDestroyedListener,
+						       SessionLoadedListener, RowsSetListener,ColumnNameChangedListener,
 						       RowsCreatedListener, FiltersChangedListener {
 	
 	// String constants used for separator entries in the attribute combobox
@@ -202,116 +202,160 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		addEventListeners();
 	
-		//btnApplyFilter.setVisible(false);
+		btnApplyFilter.setVisible(false);
 		
 		//Update the status of interactionMenuItems if this panel become visible
 		MyComponentAdapter cmpAdpt = new MyComponentAdapter();
 		addComponentListener(cmpAdpt);
+		
+		this.setEnabled(false);
 	}
 
 	@Override
+	public void handleEvent(ColumnNameChangedEvent e) {
+
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+
+				handleAttributesChanged();
+				logger.warn("A column name has been updated. The filter may not be applied on some of the added widgets");
+			}
+		});
+	}	
+	@Override
 	public void handleEvent(FiltersChangedEvent event) {
-		updateCMBFilters();
-		refreshAttributeCMB();
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				updateCMBFilters();
+				refreshAttributeCMB();
+			}});
 	}
 	
 	@Override
-	public void handleEvent(RowsSetEvent e) {
-		// Handle selection events
-		if (this.applicationManager.getCurrentNetwork() == null){
-			return;
-		}
-		
-		boolean isSelection = true;
-		for (RowSetRecord change : e.getPayloadCollection()) {
-			if (!change.getColumn().equals(CyNetwork.SELECTED)) {
-				isSelection = false;
-				break;
+	public void handleEvent(final RowsSetEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				// Handle selection events
+				if (applicationManager.getCurrentNetwork() == null){
+					return;
+				}
+
+				boolean isSelection = true;
+				for (RowSetRecord change : e.getPayloadCollection()) {
+					if (!change.getColumn().equals(CyNetwork.SELECTED)) {
+						isSelection = false;
+						break;
+					}
+				}
+				if (isSelection) {
+					updateFeedbackTableModel();
+					return;
+				}
+
+				handleAttributesChanged();	
+				updateFeedbackTableModel();
 			}
-		}
-		if (isSelection) {
-			updateFeedbackTableModel();
-			return;
-		}
-		
-		handleAttributesChanged();	
-		updateFeedbackTableModel();
+		});
 	}
 	
 	@Override
 	public void handleEvent(RowsCreatedEvent e) {
-		handleAttributesChanged();
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				handleAttributesChanged();
+			}});
+
 	}
 	
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		updateFeedbackTableModel();
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				updateFeedbackTableModel();
+			}});
+
 	}
 	
 	public void handleNetworkFocused(final CyNetwork net) {
+		if (net == null) {
+			return;
+		}
+		handleAttributesChanged();
+
+		//Refresh indices for UI widgets after network switch			
+		CompositeFilter selectedFilter = (CompositeFilter) cmbFilters.getSelectedItem();
+		selectedFilter.setNetwork(net);
+		FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
+
+		if (theSettingPanel != null) {
+			theSettingPanel.refreshIndicesForWidgets();
+			updateFeedbackTableModel();
+		}
+
+	}
+
+	@Override
+	public void handleEvent(final SetCurrentNetworkEvent e) {
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				if (net == null) {
-					return;
-				}
-				
-				//TODO The current panel check is incorrect.
-				
-				// If FilterPanel is not selected, do nothing ==> ****** ERR this is incorrect *******
-				if (cmbFilters.getSelectedItem() == null) {
-					return;
-				}
-				
-				handleAttributesChanged();
-							
-				//Refresh indices for UI widgets after network switch			
-				CompositeFilter selectedFilter = (CompositeFilter) cmbFilters.getSelectedItem();
-				selectedFilter.setNetwork(net);
-				FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
-				
-				if (theSettingPanel != null) {
-					theSettingPanel.refreshIndicesForWidgets();
-					updateFeedbackTableModel();
-				}
-			}
-		});
+				enableForNetwork();
+				handleNetworkFocused(e.getNetwork());
+				refreshAttributeCMB();
+			}});
 	}
 
+	
 	@Override
-	public void handleEvent(SetCurrentNetworkEvent e) {
-		handleNetworkFocused(e.getNetwork());
-	}
+	public void handleEvent(final NetworkDestroyedEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				enableForNetwork();
+				updateFeedbackTableModel();
+				CyNetwork n = applicationManager.getCurrentNetwork();
 
-	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-		CyNetwork network = e.getNetwork();
-		if (!networkManager.networkExists(network.getSUID())) {
-			return;
-		}
-		
-		enableForNetwork();
-		updateFeedbackTableModel();
+				if ( n == null ) {
+					setEnabled(false);
+					updateCMBFilters();
+					refreshAttributeCMB();
+					initCMBFilters();
+				}
+			}});
 	}
-
+	
+	
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
-		CyNetwork network = e.getNetwork();
-		if (!networkManager.networkExists(network.getSUID())) {
-			return;
-		}
-
-		enableForNetwork();
-		updateFeedbackTableModel();
+		final CyNetwork network = e.getNetwork();
 		
-		updateIndex();
-	}
-
-
-	public void updateFeedbackTableModel(){		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				if (!isEnabled()){
+					setEnabled(true);
+					initCMBFilters();
+				}
+				
+				updateIndex(network);
+			}
+		});
+
+	}
+
+
+	private void updateFeedbackTableModel(){
 				String netName = null;
 				String nodeCount = null;
 				String edgeCount = null;
@@ -326,26 +370,28 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				tblFeedBack.getModel().setValueAt(netName, 0, 0);
 				tblFeedBack.getModel().setValueAt(nodeCount, 0, 1);
 				tblFeedBack.getModel().setValueAt(edgeCount, 0, 2);				
-		}});
 	}
 	
 	/**
 	 * Enable select/deselect buttons if the current network exists and is not null.
 	 */
-	public void enableForNetwork() {
+	private void enableForNetwork() {
 		CyNetwork n = applicationManager.getCurrentNetwork();
 
 		if ( n == null ) {
 			this.btnSelectAll.setEnabled(false);
 			this.btnDeSelect.setEnabled(false);
+			btnApplyFilter.setVisible(false);
 		} else {
 			this.btnSelectAll.setEnabled(true);
 			this.btnDeSelect.setEnabled(true);	
+			btnApplyFilter.setVisible(true);
 		}
 	}
 	
 	public void handlePanelSelected() {
-		updateIndex();
+		
+		updateIndex(applicationManager.getCurrentNetwork());
 	}
 	
 	public void refreshFilterSelectCMB() {
@@ -362,19 +408,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 	
 	private void handleAttributesChanged() {
-		SwingUtilities.invokeLater(new Runnable() {
-				@Override
-					public void run() {
-					refreshAttributeCMB();
-					replaceFilterSettingPanel((CompositeFilter)cmbFilters.getSelectedItem());
-				
-					FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(cmbFilters.getSelectedItem());
-					if (theSettingPanel != null) {
-						theSettingPanel.refreshIndicesForWidgets();
-					}
-					updateFeedbackTableModel();
-				}
-			});
+		refreshAttributeCMB();
+		replaceFilterSettingPanel((CompositeFilter)cmbFilters.getSelectedItem());
+
+		FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(cmbFilters.getSelectedItem());
+		if (theSettingPanel != null) {
+			theSettingPanel.refreshIndicesForWidgets();
+		}
+		updateFeedbackTableModel();
 	}
 	
 	private void refreshAttributeCMB() {
@@ -545,9 +586,10 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		replaceFilterSettingPanel((CompositeFilter)cmbFilters.getSelectedItem());
 	}
 
-	private void updateIndex() {
-		final CyNetwork curNetwork = applicationManager.getCurrentNetwork();
-		
+	private void updateIndex(CyNetwork curNetwork) {
+
+		//final CyNetwork curNetwork = applicationManager.getCurrentNetwork();
+
 		// Update only when current network is available.
 		if (curNetwork == null)
 			return;
@@ -555,6 +597,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		FilterIndexingTaskFactory taskFactory = new FilterIndexingTaskFactory(quickFind, curNetwork);
 		taskManager.execute(taskFactory.createTaskIterator());
 		updateCMBAttributes();
+
 	}
 	
 	private void updateCMBFilters() {
@@ -815,7 +858,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		// Set customized renderer for attributes/filter combobox
 		cmbAttributes.setRenderer(new AttributeFilterRenderer());
 		
-		initCMBFilters();
+		
+		//initCMBFilters();
 	}// </editor-fold>
 
 	// Variables declaration - do not modify
@@ -910,6 +954,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+
 		Object _actionObject = e.getSource();
 
 		// handle Button events
@@ -1393,10 +1438,5 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 	}
 
-	@Override
-	public void handleEvent(ColumnNameChangedEvent e) {
 
-		handleAttributesChanged();
-		logger.warn("A column name has been updated. The filter may not be applied on some of the added widgets");
-	}
 }
