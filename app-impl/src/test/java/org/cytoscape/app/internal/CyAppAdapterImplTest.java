@@ -29,9 +29,6 @@ import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.create.CloneNetworkTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
@@ -43,12 +40,16 @@ import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.edit.CollapseGroupTaskFactory;
 import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
+import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
+import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
+import org.cytoscape.task.edit.UnGroupTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedTaskFactory;
@@ -169,15 +170,9 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(NewNetworkSelectedNodesOnlyTaskFactory.class),
 			mock(DestroyNetworkTaskFactory.class),
 			mock(DestroyNetworkViewTaskFactory.class),
-			mock(NetworkViewTaskFactory.class),
-			mock(NetworkViewTaskFactory.class),
-			mock(NetworkViewTaskFactory.class),
-			mock(NetworkViewTaskFactory.class),
 			mock(NewSessionTaskFactory.class),
 			mock(OpenSessionTaskFactory.class),
-			mock(TaskFactory.class),
 			mock(SaveSessionAsTaskFactory.class),
-			mock(TaskFactory.class),
 			mock(EditNetworkTitleTaskFactory.class),
 			mock(CreateNetworkViewTaskFactory.class),
 			mock(ExportNetworkImageTaskFactory.class),
@@ -187,7 +182,6 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(ApplyPreferredLayoutTaskFactory.class),
 			mock(DeleteColumnTaskFactory.class),
 			mock(RenameColumnTaskFactory.class),
-			mock(TableCellTaskFactory.class),
 			mock(DeleteTableTaskFactory.class),
 			mock(ExportVizmapTaskFactory.class),
 			mock(ConnectSelectedNodesTaskFactory.class),
@@ -195,10 +189,10 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(ApplyVisualStyleTaskFactory.class),
 			mock(MapTableToNetworkTablesTaskFactory.class),
 			mock(GroupNodesTaskFactory.class),
-			mock(NetworkViewTaskFactory.class),
-			mock(NodeViewTaskFactory.class),
-			mock(NodeViewTaskFactory.class),
-			mock(NodeViewTaskFactory.class)			
+			mock(UnGroupTaskFactory.class),
+			mock(CollapseGroupTaskFactory.class),
+			mock(ExpandGroupTaskFactory.class),
+			mock(UnGroupNodesTaskFactory.class)			
 		    );
 	}	
 }
