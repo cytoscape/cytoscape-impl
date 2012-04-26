@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 
 import org.apache.poi.ss.usermodel.Workbook;
@@ -128,7 +129,9 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 				this.reader = new DefaultAttributeTableReader(null,amp,this.is); 
 				loadAnnotation(tm);
 			}
-		insertTasksAfterCurrentTask(CytoscapeServices.mapGlobalToLocalTableTaskFactory.createTaskIterator());
+		//Only do the mapping if there is some network open
+		if (CytoscapeServices.cyNetworkManager.getNetworkSet().size() > 0)
+			insertTasksAfterCurrentTask(CytoscapeServices.mapGlobalToLocalTableTaskFactory.createTaskIterator());
 	}
 
 
