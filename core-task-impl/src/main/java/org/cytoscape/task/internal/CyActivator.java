@@ -663,6 +663,7 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift w");
 		destroyNetworkTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Network");
+		destroyNetworkTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"3.2");
 		destroyNetworkTaskFactoryProps.setProperty(COMMAND,"destroy-network");
 		destroyNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
@@ -675,6 +676,7 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkViewTaskFactoryProps.setProperty(ACCELERATOR,"cmd w");
 		destroyNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
 		destroyNetworkViewTaskFactoryProps.setProperty(TITLE,"Destroy View");
+		destroyNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND,"destroy-view");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
@@ -734,6 +736,7 @@ public class CyActivator extends AbstractCyActivator {
 		editNetworkTitleTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		editNetworkTitleTaskFactoryProps.setProperty(MENU_GRAVITY,"5.5");
 		editNetworkTitleTaskFactoryProps.setProperty(TITLE,"Rename Network...");
+		editNetworkTitleTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		editNetworkTitleTaskFactoryProps.setProperty(COMMAND,"rename");
 		editNetworkTitleTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,editNetworkTitleTaskFactory,NetworkTaskFactory.class, editNetworkTitleTaskFactoryProps);
@@ -746,6 +749,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		createNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create View");
+		createNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		createNetworkViewTaskFactoryProps.setProperty(COMMAND,"create-view");
 		createNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,createNetworkViewTaskFactory,NetworkTaskFactory.class, createNetworkViewTaskFactoryProps);

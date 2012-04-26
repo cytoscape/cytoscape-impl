@@ -132,6 +132,8 @@ import org.osgi.framework.BundleContext;
  *
  */
 public class CyActivator extends AbstractCyActivator {
+	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
+
 	/**
 	 * Creates a new CyActivator object.
 	 */
@@ -390,15 +392,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, networkViewManager, "addPresentationFactory",
 		                        "removePresentationFactory", RenderingEngineFactory.class);
 		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",
-		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class, "(scope=limited)");
+		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, networkPanel, "addNetworkTaskFactory",
-		                        "removeNetworkTaskFactory", NetworkTaskFactory.class, "(scope=limited)");
+		                        "removeNetworkTaskFactory", NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, networkPanel, "addNetworkViewCollectionTaskFactory",
 		                        "removeNetworkViewCollectionTaskFactory",
-		                        NetworkViewCollectionTaskFactory.class, "(scope=limited)");
+		                        NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, networkPanel, "addNetworkCollectionTaskFactory",
 		                        "removeNetworkCollectionTaskFactory",
-		                        NetworkCollectionTaskFactory.class, "(scope=limited)");
+		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty",
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
