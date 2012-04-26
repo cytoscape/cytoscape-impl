@@ -1190,6 +1190,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setHeight(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
+		}  else if (vp == BasicVisualLexicon.NODE_LABEL_WIDTH) {
+			setLabelWidth(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_X_LOCATION) {
 			setXPosition(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_Y_LOCATION) {

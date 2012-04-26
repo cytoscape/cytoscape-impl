@@ -109,6 +109,9 @@ class NodeViewDefaultSupport {
 			}
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
+		} else if (vp == DVisualLexicon.NODE_LABEL_WIDTH) {
+			double newSize = ((Number) value).doubleValue();
+			setLabelWidth(newSize);
 		}
 	}
 

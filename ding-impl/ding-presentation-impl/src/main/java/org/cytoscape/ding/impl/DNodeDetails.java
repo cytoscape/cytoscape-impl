@@ -828,13 +828,8 @@ class DNodeDetails extends NodeDetails {
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param node DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	
+	@Override
 	public double labelWidth(CyNode node) {
 		final Double o = m_labelWidths.get(node);
 
