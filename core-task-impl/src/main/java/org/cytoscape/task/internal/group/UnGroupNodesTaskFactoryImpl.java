@@ -39,14 +39,15 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
+import org.cytoscape.task.edit.UnGroupTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class UnGroupNodesTaskFactoryImpl implements NodeViewTaskFactory,
-                                                    NetworkViewTaskFactory {
+public class UnGroupNodesTaskFactoryImpl implements NodeViewTaskFactory, UnGroupTaskFactory, UnGroupNodesTaskFactory {
+	
 	private CyGroupManager mgr;
 
 	public UnGroupNodesTaskFactoryImpl(CyGroupManager mgr) {

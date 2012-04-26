@@ -35,11 +35,15 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.task.edit.CollapseGroupTaskFactory;
+import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory {
+public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory implements CollapseGroupTaskFactory,
+		ExpandGroupTaskFactory {
+	
 	private CyGroupManager mgr;
 	private boolean collapse;
 
