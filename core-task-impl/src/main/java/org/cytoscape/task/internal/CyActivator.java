@@ -47,12 +47,16 @@ import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.edit.CollapseGroupTaskFactory;
 import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
+import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
+import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
+import org.cytoscape.task.edit.UnGroupTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
 import org.cytoscape.task.hide.HideSelectedTaskFactory;
@@ -897,7 +901,7 @@ public class CyActivator extends AbstractCyActivator {
 			new GroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory);
 		Properties groupNodesTaskFactoryProps = new Properties();
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
-		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Nodes");
+		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
 		groupNodesTaskFactoryProps.setProperty(TOOLTIP,"Group Selected Nodes Together");
 		groupNodesTaskFactoryProps.setProperty("preferredAction", "NEW");
 		groupNodesTaskFactoryProps.setProperty(COMMAND, "group-selected-nodes");
@@ -909,12 +913,13 @@ public class CyActivator extends AbstractCyActivator {
 			new UnGroupNodesTaskFactoryImpl(cyGroupManager);
 		Properties unGroupNodesTaskFactoryProps = new Properties();
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
-		unGroupNodesTaskFactoryProps.setProperty(TITLE,"Ungroup Nodes");
-		unGroupNodesTaskFactoryProps.setProperty(TOOLTIP,"Un group Selected Nodes");
+		unGroupNodesTaskFactoryProps.setProperty(TITLE,"Ungroup Selected Nodes");
+		unGroupNodesTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Selected Nodes");
 		unGroupNodesTaskFactoryProps.setProperty("preferredAction", "NEW");
 		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup-selected-nodes");
 		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
 		registerService(bc,unGroupTaskFactory,NetworkViewTaskFactory.class, unGroupNodesTaskFactoryProps);
+		registerService(bc,unGroupTaskFactory,UnGroupTaskFactory.class, unGroupNodesTaskFactoryProps);
 
 		GroupNodeContextTaskFactoryImpl collapseGroupTaskFactory = 
 			new GroupNodeContextTaskFactoryImpl(cyGroupManager, true);
@@ -926,6 +931,7 @@ public class CyActivator extends AbstractCyActivator {
 		collapseGroupTaskFactoryProps.setProperty(COMMAND, "collapse-grouped-nodes");
 		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace?
 		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
+		registerService(bc,collapseGroupTaskFactory,CollapseGroupTaskFactory.class, collapseGroupTaskFactoryProps);
 
 		GroupNodeContextTaskFactoryImpl expandGroupTaskFactory = 
 			new GroupNodeContextTaskFactoryImpl(cyGroupManager, false);
@@ -937,6 +943,7 @@ public class CyActivator extends AbstractCyActivator {
 		expandGroupTaskFactoryProps.setProperty(COMMAND, "expand-group");
 		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
 		registerService(bc,expandGroupTaskFactory,NodeViewTaskFactory.class, expandGroupTaskFactoryProps);
+		registerService(bc,expandGroupTaskFactory,ExpandGroupTaskFactory.class, expandGroupTaskFactoryProps);
 
 		UnGroupNodesTaskFactoryImpl unGroupNodesTaskFactory = 
 			new UnGroupNodesTaskFactoryImpl(cyGroupManager);
@@ -948,6 +955,7 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupTaskFactoryProps.setProperty(COMMAND, "ungroup");
 		unGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
 		registerService(bc,unGroupNodesTaskFactory,NodeViewTaskFactory.class, unGroupTaskFactoryProps);
+		registerService(bc,unGroupNodesTaskFactory,UnGroupNodesTaskFactory.class, unGroupTaskFactoryProps);
 		
 		MapTableToNetworkTablesTaskFactoryImpl mapNetworkAttrTaskFactory = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, cyApplicationManagerServiceRef,
 				  cyRootNetworkFactoryServiceRef,tunableSetterServiceRef);
