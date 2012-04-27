@@ -641,7 +641,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			// Create pop-up window for deletion
 			deleteAttributeButton.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
-						removeAttribute(e);
+						if (deleteAttributeButton.isEnabled())
+							removeAttribute(e);
 					}
 				});
 			deleteAttributeButton.setEnabled(false);
@@ -663,7 +664,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			// Create pop-up window for deletion
 			deleteTableButton.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
-						removeTable(e);
+						if (deleteTableButton.isEnabled())
+							removeTable(e);
 					}
 				});
 			deleteTableButton.setEnabled(false);
@@ -740,7 +742,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 
 	private void removeTable(final MouseEvent e) {
-				
 		final CyTable table = browserTableModel.getAttributes();
 
 		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
@@ -837,7 +838,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 			mapGlobalTableButton.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					guiTaskManagerServiceRef.execute(mapGlobalTableTaskFactoryService.createTaskIterator());
+					if (mapGlobalTableButton.isEnabled())
+						guiTaskManagerServiceRef.execute(mapGlobalTableTaskFactoryService.createTaskIterator());
 				}
 			});
 		}
