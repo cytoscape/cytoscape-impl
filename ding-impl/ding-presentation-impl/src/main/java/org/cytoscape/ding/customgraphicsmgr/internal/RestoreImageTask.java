@@ -23,6 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.imageio.ImageIO;
 
@@ -33,7 +35,9 @@ import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
+import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -42,6 +46,9 @@ import org.slf4j.LoggerFactory;
 public class RestoreImageTask implements Task {
 
 	private static final Logger logger = LoggerFactory.getLogger(RestoreImageTask.class);
+	
+	// Preset image location.
+	private static final String DEF_IMAGE_LOCATION = "images/sampleCustomGraphics";
 
 	private final CustomGraphicsManagerImpl manager;
 
@@ -55,6 +62,7 @@ public class RestoreImageTask implements Task {
 	private File imageHomeDirectory;
 	
 	private final CyEventHelper eventHelper;
+	private final Set<URL> defaultImageURLs;
 
 	// For image I/O, PNG is used as bitmap image format.
 	private static final String IMAGE_EXT = "png";
@@ -71,23 +79,24 @@ public class RestoreImageTask implements Task {
 			DEF_VECTORS_NAMES.add(cls.getName());
 	}
 	
-	RestoreImageTask(final File imageLocaiton, final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
+	RestoreImageTask(final Set<URL> defaultImageURLs, final File imageLocaiton, final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
 		this.manager = manager;
 		this.eventHelper = eventHelper;
 
 		// For loading images in parallel.
 		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
 		this.imageHomeDirectory = imageLocaiton;
+		this.defaultImageURLs = defaultImageURLs;
 	}
 	
-	RestoreImageTask(final File imageLocaiton, Collection<File> fileList, final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
-		this.manager = manager;
-		this.eventHelper = eventHelper;
-
-		// For loading images in parallel.
-		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
-		this.imageHomeDirectory = imageLocaiton;
-	}
+//	RestoreImageTask(final File imageLocaiton, Collection<File> fileList, final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
+//		this.manager = manager;
+//		this.eventHelper = eventHelper;
+//
+//		// For loading images in parallel.
+//		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
+//		this.imageHomeDirectory = imageLocaiton;
+//	}
 
 	private void restoreDefaultVectorImageObjects() {
 
@@ -142,6 +151,7 @@ public class RestoreImageTask implements Task {
 		final long startTime = System.currentTimeMillis();
 
 		restoreImages();
+		restoreSampleImages();
 		restoreDefaultVectorImageObjects();
 
 		long endTime = System.currentTimeMillis();
@@ -149,6 +159,26 @@ public class RestoreImageTask implements Task {
 		logger.info("Image saving process finished in " + sec + " sec.");
 		
 		eventHelper.fireEvent(new CustomGraphicsLibraryUpdatedEvent(manager));
+	}
+	
+	private void restoreSampleImages() throws IOException {
+		// Filter by display name
+		final Collection<CyCustomGraphics> allGraphics = manager.getAllCustomGraphics();
+		final Set<String> names = new HashSet<String>();
+		for(CyCustomGraphics cg: allGraphics)
+			names.add(cg.getDisplayName());
+		
+		for (final URL imageURL : defaultImageURLs) {
+			final String[] parts = imageURL.getFile().split("/");
+			final String dispNameString = parts[parts.length-1];
+			if (this.manager.getCustomGraphicsBySourceURL(imageURL) == null && !names.contains(dispNameString)) {
+				final CyCustomGraphics<?> cg = new URLImageCustomGraphics(manager.getNextAvailableID(), imageURL.toString());
+				if (cg != null) {
+					manager.addCustomGraphics(cg, imageURL);
+					cg.setDisplayName(dispNameString);
+				}
+			}
+		}
 	}
 
 	private void restoreImages() {

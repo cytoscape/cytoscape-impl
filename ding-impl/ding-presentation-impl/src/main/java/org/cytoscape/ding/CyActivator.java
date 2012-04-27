@@ -1,7 +1,14 @@
 package org.cytoscape.ding;
 
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
@@ -39,7 +46,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.PropertyUpdatedListener;
@@ -66,16 +72,14 @@ import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
-import static org.cytoscape.work.ServiceProperties.*;
-
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();
 	}
 
+	@Override
 	public void start(BundleContext bc) {
-
 		startSpacial(bc); 
 		startCustomGraphicsMgr(bc);
 		startPresentationImpl(bc);
@@ -247,7 +251,8 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 
 		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,
-				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef, vmmServiceRef, cyApplicationManagerServiceRef);
+				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef,
+				vmmServiceRef, cyApplicationManagerServiceRef, getdefaultImageURLs(bc));
 		CustomGraphicsBrowser browser = new CustomGraphicsBrowser(customGraphicsManager);
 		registerAllServices(bc, browser, new Properties());
 
@@ -256,6 +261,21 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerAllServices(bc, customGraphicsManager, new Properties());
 		registerService(bc, customGraphicsManagerAction, CyAction.class, new Properties());
+	}
+	
+	/**
+	 * Get list of default images from resource.
+	 * 
+	 * @param bc
+	 * @return Set of default image files in the bundle
+	 */
+	private Set<URL> getdefaultImageURLs(BundleContext bc) {
+		Enumeration<URL> e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
+		final Set<URL> defaultImageUrls = new HashSet<URL>();
+		while (e.hasMoreElements())
+			defaultImageUrls.add(e.nextElement());
+		
+		return defaultImageUrls;
 	}
 
 	private void startSpacial(BundleContext bc) {

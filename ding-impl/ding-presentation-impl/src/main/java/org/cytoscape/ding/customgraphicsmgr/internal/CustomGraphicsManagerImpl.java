@@ -3,10 +3,13 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
 import java.io.File;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +41,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	private static final String IMAGE_DIR_NAME = "images3";
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
-	private static final String SESSION_IMAGE_DIR_NAME = "custom_graphics";
 
 	protected final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>();
 
@@ -63,7 +65,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 */
 	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final DialogTaskManager taskManager,
 			final CyApplicationConfiguration config, final CyEventHelper eventHelper, final VisualMappingManager vmm,
-			final CyApplicationManager applicationManager) {
+			final CyApplicationManager applicationManager, final Set<URL> defaultImageURLs) {
 
 		this.taskManager = taskManager;
 		this.eventHelper = eventHelper;
@@ -79,14 +81,16 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		if (props == null)
 			throw new NullPointerException("Property is missing.");
 
+		// Usually, this is USER_HOME/.cytoscape/images3
 		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
 
-		logger.debug("\n!!!!!!!!!!!!!!!!! Cytoscape image directory: " + imageHomeDirectory.toString());
-
+		// Add NULL graphics.  This will be used to reset Custom Graphics.
 		graphicsMap.put(NULL.getIdentifier(), NULL);
 		this.isUsedCustomGraphics.put(NULL, false);
 
-		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(imageHomeDirectory, this, eventHelper, vmm, applicationManager);
+		// Restore Custom Graphics from the directory.
+		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, eventHelper,
+				vmm, applicationManager);
 		taskManager.execute(taskFactory.createTaskIterator());
 	}
 
@@ -278,7 +282,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				if (files != null && files.size() != 0) {
 					// get parent directory
 					final File parent = files.get(0).getParentFile();
-					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(parent, this, eventHelper, vmm, applicationManager);
+					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper, vmm, applicationManager);
 					taskManager.execute(taskFactory.createTaskIterator());
 				}
 			}

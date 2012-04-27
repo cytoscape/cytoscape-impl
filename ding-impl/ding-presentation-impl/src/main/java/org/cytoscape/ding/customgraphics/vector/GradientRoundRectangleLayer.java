@@ -16,7 +16,6 @@ public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 	private int r =20;
 
 	
-	
 	public GradientRoundRectangleLayer(final Long id) {
 		super(id, NAME);
 	}
