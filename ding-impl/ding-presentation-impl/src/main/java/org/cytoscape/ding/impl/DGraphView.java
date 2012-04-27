@@ -1112,12 +1112,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			m_networkCanvas.m_xCenter = (((double) m_extentsBuff[0]) + ((double) m_extentsBuff[2])) / 2.0d;
 			m_networkCanvas.m_yCenter = (((double) m_extentsBuff[1]) + ((double) m_extentsBuff[3])) / 2.0d;
+
+			// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
 			final double zoom = Math.min(((double) m_networkCanvas.getWidth()) / 
 			                             (((double) m_extentsBuff[2]) - 
 			                              ((double) m_extentsBuff[0])), 
 			                              ((double) m_networkCanvas.getHeight()) / 
 			                             (((double) m_extentsBuff[3]) - 
-			                              ((double) m_extentsBuff[1])));
+			                              ((double) m_extentsBuff[1]))) * 0.98;
 			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
 			if (calledFromGetSnapshot) {
 				calledFromGetSnapshot = false;
