@@ -59,6 +59,9 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -82,7 +85,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		NetworkViewChangedListener {
+		NetworkViewChangedListener, RowsSetListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -370,7 +373,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 			}
 		});
-
+		
 		desktopPane.add(iframe);
 		presentationContainerMap.put(view, iframe);
 		iFrameMap.put(iframe, view);
@@ -522,6 +525,25 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			}
 		} else {
 			logger.debug("Frame was not found. Need to create new frame for presentation.");
+		}
+	}
+
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		
+		for ( RowSetRecord record :e.getPayloadCollection()) {
+			// assume payload collection is for same column
+			if ( !record.getColumn().equals(CyNetwork.NAME))
+				break;
+			for (JInternalFrame targetIF: iFrameMap.keySet()){
+				
+				if ( iFrameMap.get(targetIF).getModel().getSUID().equals(record.getRow().get(CyNetwork.SUID, Long.class))){
+					targetIF.setTitle(record.getRow().get(CyNetwork.NAME, String.class));
+					return; //assuming just one row is set.
+				}
+
+			}
+
 		}
 	}
 }
