@@ -44,13 +44,20 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 
 		for (final CyNetwork network : allNetworks) {
 			locals.add(network.getDefaultNodeTable().getTitle());
+			name2tableMap.put(network.getDefaultNodeTable().getTitle(), network.getDefaultNodeTable());
+			
 			locals.add(network.getDefaultEdgeTable().getTitle());
+			name2tableMap.put(network.getDefaultEdgeTable().getTitle(), network.getDefaultEdgeTable());
+			
 			locals.add(network.getDefaultNetworkTable().getTitle());
+			name2tableMap.put(network.getDefaultNetworkTable().getTitle(), network.getDefaultNetworkTable());
 		}
 		
 		final Set<CyTable> globalTableSet = tableManager.getGlobalTables();
-		for (final CyTable table : globalTableSet)
+		for (final CyTable table : globalTableSet){
 			globals.add(table.getTitle());
+			name2tableMap.put(table.getTitle(), table);
+		}
 
 		if (globals.size() == 0)
 			throw new IllegalStateException("No Global Table in current session!");
@@ -70,7 +77,6 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 	}
 
 	private void mapTable(final CyTable localTable, final CyTable globalTable) {
-
 		if (globalTable.getPrimaryKey().getType() != String.class)
 			throw new IllegalStateException("Local table's primary key should be type String!");
 
