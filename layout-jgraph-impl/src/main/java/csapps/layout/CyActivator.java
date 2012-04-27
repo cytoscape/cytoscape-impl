@@ -10,7 +10,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.osgi.framework.BundleContext;
 
-
+import static org.cytoscape.work.ServiceProperties.*;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -31,35 +31,35 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		Properties jGraphAnnealingLayoutProps = new Properties();
-		jGraphAnnealingLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphAnnealingLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphAnnealingLayout,CyLayoutAlgorithm.class, jGraphAnnealingLayoutProps);
 
 		Properties jGraphMoenLayoutProps = new Properties();
-		jGraphMoenLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphMoenLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphMoenLayout,CyLayoutAlgorithm.class, jGraphMoenLayoutProps);
 
 		Properties jGraphCircleGraphLayoutProps = new Properties();
-		jGraphCircleGraphLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphCircleGraphLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphCircleGraphLayout,CyLayoutAlgorithm.class, jGraphCircleGraphLayoutProps);
 
 		Properties jGraphRadialTreeLayoutProps = new Properties();
-		jGraphRadialTreeLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphRadialTreeLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphRadialTreeLayout,CyLayoutAlgorithm.class, jGraphRadialTreeLayoutProps);
 
 		Properties jGraphGEMLayoutProps = new Properties();
-		jGraphGEMLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphGEMLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphGEMLayout,CyLayoutAlgorithm.class, jGraphGEMLayoutProps);
 
 		Properties jGraphSpringEmbeddedLayoutProps = new Properties();
-		jGraphSpringEmbeddedLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphSpringEmbeddedLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphSpringEmbeddedLayout,CyLayoutAlgorithm.class, jGraphSpringEmbeddedLayoutProps);
 
 		Properties jGraphSugiyamaLayoutProps = new Properties();
-		jGraphSugiyamaLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphSugiyamaLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphSugiyamaLayout,CyLayoutAlgorithm.class, jGraphSugiyamaLayoutProps);
 
 		Properties jGraphTreeLayoutProps = new Properties();
-		jGraphTreeLayoutProps.setProperty("preferredMenu","JGraph Layouts");
+		jGraphTreeLayoutProps.setProperty(PREFERRED_MENU,"JGraph Layouts");
 		registerService(bc,jGraphTreeLayout,CyLayoutAlgorithm.class, jGraphTreeLayoutProps);
 
 		

@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
 
+import static org.cytoscape.work.ServiceProperties.*;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -90,8 +91,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,statusBarAppender,PaxAppender.class, statusBarAppenderProps);
 
 		Properties consoleTaskFactoryProps = new Properties();
-		consoleTaskFactoryProps.setProperty("preferredMenu","Help");
-		consoleTaskFactoryProps.setProperty("title","Log Console");
+		consoleTaskFactoryProps.setProperty(PREFERRED_MENU,"Help");
+		consoleTaskFactoryProps.setProperty(TITLE,"Log Console");
 		registerService(bc,consoleTaskFactory,TaskFactory.class, consoleTaskFactoryProps);
 
 	}

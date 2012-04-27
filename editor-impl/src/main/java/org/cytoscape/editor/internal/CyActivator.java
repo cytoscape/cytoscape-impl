@@ -17,6 +17,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.osgi.framework.BundleContext;
 
+import static org.cytoscape.work.ServiceProperties.*;
 
 public class CyActivator extends AbstractCyActivator {
 	
@@ -40,36 +41,36 @@ public class CyActivator extends AbstractCyActivator {
 		NodeViewTaskFactory goToNestedNetworkTaskFactory = new GoToNestedNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyApplicationManagerServiceRef, createNetworkViewTaskFactoryServiceRef);
 			
 		Properties sifInterpreterTaskFactoryProps = new Properties();
-		sifInterpreterTaskFactoryProps.setProperty("enableFor", "networkAndView");
+		sifInterpreterTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		// Setting preferredAction to OPEN registers this service for double clicks on
 		// the network canvas, something we don't want right now for this task!
 		//sifInterpreterTaskFactoryProps.setProperty("preferredAction","OPEN");
-		sifInterpreterTaskFactoryProps.setProperty("preferredMenu", "Tools");
-		sifInterpreterTaskFactoryProps.setProperty("menuGravity", "5.0f");
-		sifInterpreterTaskFactoryProps.setProperty("title", "SIF Interpreter");
+		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools");
+		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "5.0f");
+		sifInterpreterTaskFactoryProps.setProperty(TITLE, "SIF Interpreter");
 		registerService(bc, sifInterpreterTaskFactory, NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
 
 		Properties networkViewLocationTaskFactoryProps = new Properties();
-		networkViewLocationTaskFactoryProps.setProperty("preferredAction", "NEW");
-		networkViewLocationTaskFactoryProps.setProperty("title", "Add Node");
+		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		networkViewLocationTaskFactoryProps.setProperty(TITLE, "Add Node");
 		registerService(bc, networkViewLocationTaskFactory, NetworkViewLocationTaskFactory.class, networkViewLocationTaskFactoryProps);
 
 		Properties addNestedNetworkProps = new Properties();
-		addNestedNetworkProps.setProperty("preferredAction", "NEW");
-		addNestedNetworkProps.setProperty("preferredMenu", "Nested Network");
-		addNestedNetworkProps.setProperty("title", "Add Nested Network");
+		addNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
+		addNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
+		addNestedNetworkProps.setProperty(TITLE, "Add Nested Network");
 		registerService(bc, addNestedNetworkTaskFactory, NodeViewTaskFactory.class, addNestedNetworkProps);
 
 		Properties deleteNestedNetworkProps = new Properties();
-		deleteNestedNetworkProps.setProperty("preferredAction", "NEW");
-		deleteNestedNetworkProps.setProperty("preferredMenu", "Nested Network");
-		deleteNestedNetworkProps.setProperty("title", "Delete Nested Network");
+		deleteNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
+		deleteNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
+		deleteNestedNetworkProps.setProperty(TITLE, "Delete Nested Network");
 		registerService(bc, deleteNestedNetworkTaskFactory, NodeViewTaskFactory.class, deleteNestedNetworkProps);
 		
 		Properties goToNestedNetworkProps = new Properties();
-		goToNestedNetworkProps.setProperty("preferredAction", "NEW");
-		goToNestedNetworkProps.setProperty("preferredMenu", "Nested Network");
-		goToNestedNetworkProps.setProperty("title", "Go to Nested Network");
+		goToNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
+		goToNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
+		goToNestedNetworkProps.setProperty(TITLE, "Go to Nested Network");
 		registerService(bc, goToNestedNetworkTaskFactory, NodeViewTaskFactory.class, goToNestedNetworkProps);
 	}
 }

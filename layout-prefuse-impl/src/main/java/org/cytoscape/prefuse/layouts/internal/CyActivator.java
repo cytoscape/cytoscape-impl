@@ -7,6 +7,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.osgi.framework.BundleContext;
 
+import static org.cytoscape.work.ServiceProperties.*;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -18,9 +19,9 @@ public class CyActivator extends AbstractCyActivator {
 		ForceDirectedLayout forceDirectedLayout = new ForceDirectedLayout();
 
         Properties forceDirectedLayoutProps = new Properties();
-        forceDirectedLayoutProps.setProperty("preferredMenu","Layout.Prefuse Layouts");
+        forceDirectedLayoutProps.setProperty(PREFERRED_MENU,"Layout.Prefuse Layouts");
         forceDirectedLayoutProps.setProperty("preferredTaskManager","menu");
-        forceDirectedLayoutProps.setProperty("title",forceDirectedLayout.toString());
+        forceDirectedLayoutProps.setProperty(TITLE,forceDirectedLayout.toString());
 		registerService(bc,forceDirectedLayout,CyLayoutAlgorithm.class, forceDirectedLayoutProps);
 	}
 }

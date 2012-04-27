@@ -44,6 +44,7 @@ import static org.cytoscape.internal.view.CyDesktopManager.Arrange.CASCADE;
 import static org.cytoscape.internal.view.CyDesktopManager.Arrange.GRID;
 import static org.cytoscape.internal.view.CyDesktopManager.Arrange.HORIZONTAL;
 import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
 
@@ -295,59 +296,59 @@ public class CyActivator extends AbstractCyActivator {
 		}
 
 		Properties helpContentsTaskFactoryProps = new Properties();
-		helpContentsTaskFactoryProps.setProperty("preferredMenu", "Help");
-		helpContentsTaskFactoryProps.setProperty("largeIconURL", getClass().getResource("/images/ximian/stock_help.png").toString());
-		helpContentsTaskFactoryProps.setProperty("title", "Contents...");
-		helpContentsTaskFactoryProps.setProperty("tooltip", "Show Help Contents...");
-		helpContentsTaskFactoryProps.setProperty("toolBarGravity", "20.0f");
-		helpContentsTaskFactoryProps.setProperty("inToolBar", "true");
+		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+		helpContentsTaskFactoryProps.setProperty(LARGE_ICON_URL, getClass().getResource("/images/ximian/stock_help.png").toString());
+		helpContentsTaskFactoryProps.setProperty(TITLE, "Contents...");
+		helpContentsTaskFactoryProps.setProperty(TOOLTIP, "Show Help Contents...");
+		helpContentsTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY, "20.0f");
+		helpContentsTaskFactoryProps.setProperty(IN_TOOL_BAR, "true");
 		registerService(bc, helpContentsTaskFactory, TaskFactory.class, helpContentsTaskFactoryProps);
 
 		Properties helpContactHelpDeskTaskFactoryProps = new Properties();
-		helpContactHelpDeskTaskFactoryProps.setProperty("preferredMenu", "Help");
-		helpContactHelpDeskTaskFactoryProps.setProperty("title", "Contact Help Desk...");
+		helpContactHelpDeskTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+		helpContactHelpDeskTaskFactoryProps.setProperty(TITLE, "Contact Help Desk...");
 		registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class,
 		                helpContactHelpDeskTaskFactoryProps);
 
 		Properties helpReportABugTaskFactoryProps = new Properties();
-		helpReportABugTaskFactoryProps.setProperty("preferredMenu", "Help");
-		helpReportABugTaskFactoryProps.setProperty("title", "Report a Bug...");
+		helpReportABugTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+		helpReportABugTaskFactoryProps.setProperty(TITLE, "Report a Bug...");
 		registerService(bc, helpReportABugTaskFactory, TaskFactory.class,
 		                helpReportABugTaskFactoryProps);
 
 		
 		Properties helpAboutTaskFactoryProps = new Properties();
-		helpAboutTaskFactoryProps.setProperty("preferredMenu", "Help");
-		helpAboutTaskFactoryProps.setProperty("title", "About...");
+		helpAboutTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+		helpAboutTaskFactoryProps.setProperty(TITLE, "About...");
 		registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
 
 		Properties arrangeGridTaskFactoryProps = new Properties();
 		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
-		arrangeGridTaskFactoryProps.setProperty("preferredMenu", "View.Arrange Network Windows[110]");
-		arrangeGridTaskFactoryProps.setProperty("title", "Grid");
+		arrangeGridTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[110]");
+		arrangeGridTaskFactoryProps.setProperty(TITLE, "Grid");
 		registerService(bc, arrangeGridTaskFactory, TaskFactory.class, arrangeGridTaskFactoryProps);
 
 		Properties arrangeCascadeTaskFactoryProps = new Properties();
 		arrangeCascadeTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
-		arrangeCascadeTaskFactoryProps.setProperty("preferredMenu",
+		arrangeCascadeTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                           "View.Arrange Network Windows[110]");
-		arrangeCascadeTaskFactoryProps.setProperty("title", "Cascade");
+		arrangeCascadeTaskFactoryProps.setProperty(TITLE, "Cascade");
 		registerService(bc, arrangeCascadeTaskFactory, TaskFactory.class,
 		                arrangeCascadeTaskFactoryProps);
 
 		Properties arrangeHorizontalTaskFactoryProps = new Properties();
 		arrangeHorizontalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
-		arrangeHorizontalTaskFactoryProps.setProperty("preferredMenu",
+		arrangeHorizontalTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                              "View.Arrange Network Windows[110]");
-		arrangeHorizontalTaskFactoryProps.setProperty("title", "Horizontal");
+		arrangeHorizontalTaskFactoryProps.setProperty(TITLE, "Horizontal");
 		registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class,
 		                arrangeHorizontalTaskFactoryProps);
 
 		Properties arrangeVerticalTaskFactoryProps = new Properties();
 		arrangeVerticalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
-		arrangeVerticalTaskFactoryProps.setProperty("preferredMenu",
+		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                            "View.Arrange Network Windows[110]");
-		arrangeVerticalTaskFactoryProps.setProperty("title", "Vertical");
+		arrangeVerticalTaskFactoryProps.setProperty(TITLE, "Vertical");
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
 		                arrangeVerticalTaskFactoryProps);
 		registerAllServices(bc, cytoscapeDesktop, new Properties());

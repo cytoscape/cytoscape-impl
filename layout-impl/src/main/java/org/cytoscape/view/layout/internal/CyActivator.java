@@ -11,6 +11,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 import org.osgi.framework.BundleContext;
 
+import static org.cytoscape.work.ServiceProperties.*;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -29,9 +30,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,cyLayouts,CyLayoutAlgorithmManager.class, new Properties());
 
 		Properties gridNodeLayoutProps = new Properties();
-		gridNodeLayoutProps.setProperty("preferredMenu","Layout.Cytoscape Layouts");
+		gridNodeLayoutProps.setProperty(PREFERRED_MENU,"Layout.Cytoscape Layouts");
 		gridNodeLayoutProps.setProperty("preferredTaskManager","menu");
-		gridNodeLayoutProps.setProperty("title",gridNodeLayout.toString());
+		gridNodeLayoutProps.setProperty(TITLE,gridNodeLayout.toString());
 		registerService(bc,gridNodeLayout,CyLayoutAlgorithm.class, gridNodeLayoutProps);
 
 		registerServiceListener(bc,cyLayouts,"addLayout","removeLayout",CyLayoutAlgorithm.class);

@@ -19,6 +19,7 @@ import org.osgi.framework.BundleContext;
 
 import java.io.File;
 import java.net.URL;
+import static org.cytoscape.work.ServiceProperties.*;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -36,8 +37,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		Properties commandExecutorTaskFactoryProps = new Properties();
-		commandExecutorTaskFactoryProps.setProperty("preferredMenu","Tools");
-		commandExecutorTaskFactoryProps.setProperty("title","Run Commands...");
+		commandExecutorTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools");
+		commandExecutorTaskFactoryProps.setProperty(TITLE,"Run Commands...");
 		registerService(bc,commandExecutorTaskFactory,TaskFactory.class, commandExecutorTaskFactoryProps);
 
 		registerServiceListener(bc,commandExecutorImpl,"addTaskFactory","removeTaskFactory",TaskFactory.class);

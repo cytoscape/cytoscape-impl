@@ -1,7 +1,6 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.net.URL;
 import java.util.Enumeration;
@@ -162,7 +161,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
-		addEdgeNodeViewTaskFactoryProps.setProperty("preferredAction", "Edge");
+		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
 		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Add Edge");
 		registerService(bc, addEdgeNodeViewTaskFactory, NodeViewTaskFactory.class, addEdgeNodeViewTaskFactoryProps);
 
@@ -185,17 +184,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
 		Properties addImageTaskFactoryProps = new Properties();
-		addImageTaskFactoryProps.setProperty("preferredAction", "NEW");
+		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addImageTaskFactoryProps.setProperty(TITLE, "Add Image");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
 		Properties addShapeTaskFactoryProps = new Properties();
-		addShapeTaskFactoryProps.setProperty("preferredAction", "NEW");
+		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addShapeTaskFactoryProps.setProperty(TITLE, "Add Shape");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
 
 		Properties addTextTaskFactoryProps = new Properties();
-		addTextTaskFactoryProps.setProperty("preferredAction", "NEW");
+		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addTextTaskFactoryProps.setProperty(TITLE, "Add Text");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 

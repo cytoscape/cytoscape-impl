@@ -20,6 +20,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 
 import java.util.Properties;
 
+import static org.cytoscape.work.ServiceProperties.*;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -48,7 +49,7 @@ public class CyActivator extends AbstractCyActivator {
 			new GroupViewDoubleClickListener(cyGroupManager, groupSettings);
 
 		Properties doubleClickProperties = new Properties();
-		doubleClickProperties.setProperty("preferredAction", "OPEN");
+		doubleClickProperties.setProperty(PREFERRED_ACTION, "OPEN");
 		registerService(bc,gvsListener,NodeViewTaskFactory.class, doubleClickProperties);
 	}
 }

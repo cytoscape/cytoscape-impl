@@ -907,7 +907,7 @@ public class CyActivator extends AbstractCyActivator {
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
 		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
 		groupNodesTaskFactoryProps.setProperty(TOOLTIP,"Group Selected Nodes Together");
-		groupNodesTaskFactoryProps.setProperty("preferredAction", "NEW");
+		groupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		groupNodesTaskFactoryProps.setProperty(COMMAND, "group-selected-nodes");
 		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
 		registerService(bc,groupNodesTaskFactory,NetworkViewTaskFactory.class, groupNodesTaskFactoryProps);
@@ -919,7 +919,7 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
 		unGroupNodesTaskFactoryProps.setProperty(TITLE,"Ungroup Selected Nodes");
 		unGroupNodesTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Selected Nodes");
-		unGroupNodesTaskFactoryProps.setProperty("preferredAction", "NEW");
+		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup-selected-nodes");
 		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
 		registerService(bc,unGroupTaskFactory,NetworkViewTaskFactory.class, unGroupNodesTaskFactoryProps);
@@ -931,7 +931,7 @@ public class CyActivator extends AbstractCyActivator {
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
 		collapseGroupTaskFactoryProps.setProperty(TITLE,"Collapse Group");
 		collapseGroupTaskFactoryProps.setProperty(TOOLTIP,"Collapse Grouped Nodes");
-		collapseGroupTaskFactoryProps.setProperty("preferredAction", "NEW");
+		collapseGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		collapseGroupTaskFactoryProps.setProperty(COMMAND, "collapse-grouped-nodes");
 		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace?
 		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
@@ -943,7 +943,7 @@ public class CyActivator extends AbstractCyActivator {
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
 		expandGroupTaskFactoryProps.setProperty(TITLE,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(TOOLTIP,"Expand Group");
-		expandGroupTaskFactoryProps.setProperty("preferredAction", "NEW");
+		expandGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		expandGroupTaskFactoryProps.setProperty(COMMAND, "expand-group");
 		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
 		registerService(bc,expandGroupTaskFactory,NodeViewTaskFactory.class, expandGroupTaskFactoryProps);
@@ -955,7 +955,7 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
 		unGroupTaskFactoryProps.setProperty(TITLE,"Ungroup Nodes");
 		unGroupTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Nodes");
-		unGroupTaskFactoryProps.setProperty("preferredAction", "NEW");
+		unGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		unGroupTaskFactoryProps.setProperty(COMMAND, "ungroup");
 		unGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
 		registerService(bc,unGroupNodesTaskFactory,NodeViewTaskFactory.class, unGroupTaskFactoryProps);
