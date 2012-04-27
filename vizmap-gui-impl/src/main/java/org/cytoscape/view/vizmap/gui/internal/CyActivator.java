@@ -30,9 +30,13 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedCellAction;
 import org.cytoscape.view.vizmap.gui.internal.bypass.BypassManager;
+import org.cytoscape.view.vizmap.gui.internal.editor.BooleanVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.EditorManagerImpl;
 import org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.StringVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.BooleanValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.CyColorChooser;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.FontEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.NumericValueEditor;
@@ -96,14 +100,22 @@ public class CyActivator extends AbstractCyActivator {
 		
 		CyColorChooser colorEditor = new CyColorChooser();
 		FontEditor fontEditor = new FontEditor();
-		NumericValueEditor doubleValueEditor = new NumericValueEditor(Double.class);
-		NumericValueEditor integerValueEditor = new NumericValueEditor(Integer.class);
-		NumericValueEditor floatValueEditor = new NumericValueEditor(Float.class);
-		StringValueEditor stringValueEditor = new StringValueEditor(String.class);
+		NumericValueEditor<Double> doubleValueEditor = new NumericValueEditor<Double>(Double.class);
+		NumericValueEditor<Integer> integerValueEditor = new NumericValueEditor<Integer>(Integer.class);
+		NumericValueEditor<Float> floatValueEditor = new NumericValueEditor<Float>(Float.class);
+		StringValueEditor stringValueEditor = new StringValueEditor();
+		BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
+		
 		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
 		NumberVisualPropertyEditor doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
 		NumberVisualPropertyEditor integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
 		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
+		
+		StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor();
+		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
+		booleanEditor.setAvailableValues(new Boolean[] {true, false});
+		BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor);
+		
 		ColorManager colorMgr = new ColorManager();
 		IconManager iconManager = new IconManager();
 		VizMapperMenuManager menuManager = new VizMapperMenuManager(dialogTaskManagerServiceRef,propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
@@ -150,10 +162,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,integerValueEditor, new Properties());
 		registerAllServices(bc,floatValueEditor, new Properties());
 		registerAllServices(bc,stringValueEditor, new Properties());
+		registerAllServices(bc,booleanValueEditor, new Properties());
 		registerAllServices(bc,colorPropertyEditor, new Properties());
 		registerAllServices(bc,doublePropertyEditor, new Properties());
 		registerAllServices(bc,floatPropertyEditor, new Properties());
 		registerAllServices(bc,integerPropertyEditor, new Properties());
+		
+		registerAllServices(bc,stringPropertyEditor, new Properties());
+		registerAllServices(bc,booleanVisualPropertyEditor, new Properties());
+		
 		registerAllServices(bc,editorManager, new Properties());
 
 		Properties createNewVisualStyleTaskFactoryProps = new Properties();

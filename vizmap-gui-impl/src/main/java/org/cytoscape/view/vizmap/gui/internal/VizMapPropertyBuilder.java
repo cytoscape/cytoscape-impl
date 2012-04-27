@@ -349,8 +349,9 @@ public class VizMapPropertyBuilder {
 				if (renderer != null)
 					cellRendererFactory.registerRenderer(valProp, renderer);
 			}
-			final PropertyEditor cellEditor = editorManager.getVisualPropertyEditor(vp).getPropertyEditor();
+			final PropertyEditor cellEditor = editor.getPropertyEditor();
 
+			System.out.println(editor + ": CELL Editor = " + cellEditor);
 			if (cellEditor != null)
 				cellEditorFactory.registerEditor(valProp, cellEditor);
 

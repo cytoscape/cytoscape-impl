@@ -75,12 +75,16 @@ import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.DiscreteValueEd
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
+
 /**
  *
  */
 public class EditorManagerImpl implements EditorManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(EditorManagerImpl.class);
+	
+	private static final PropertyEditorRegistry REGISTRY = new PropertyEditorRegistry();
 
 	private final Map<Class<?>, VisualPropertyEditor<?>> editors;
 
@@ -149,13 +153,7 @@ public class EditorManagerImpl implements EditorManager {
 		return (AttributeComboBoxPropertyEditor) attrComboBoxEditors.get(CyNetwork.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.cytoscape.application.swing.vizmap.gui.editors.EditorFactory#
-	 * addEditorDisplayer(org .cytoscape.vizmap.gui.editors.EditorDisplayer,
-	 * java.util.Map)
-	 */
+	@Override
 	public void addValueEditor(ValueEditor<?> ve, @SuppressWarnings("rawtypes") Map properties) {
 		logger.debug("Got Value Editor " + ve.toString() + ", this is for " + ve.getType() + "\n\n\n");
 		this.valueEditors.put(ve.getType(), ve);
@@ -169,7 +167,6 @@ public class EditorManagerImpl implements EditorManager {
 	public void addVisualPropertyEditor(VisualPropertyEditor<?> ve, @SuppressWarnings("rawtypes") Map properties) {
 		logger.debug("### Got VP Editor " + ve.toString() + ", this is for " + ve.getType());
 		this.editors.put(ve.getType(), ve);
-		logger.debug("Total editor count = " + editors.size());
 	}
 
 	public void removeVisualPropertyEditor(VisualPropertyEditor<?> vpEditor,
@@ -269,17 +266,18 @@ public class EditorManagerImpl implements EditorManager {
 	}
 
 	private void buildDiscreteEditors(final VisualLexicon lexicon) {
+		final Set<VisualProperty<?>> vps = lexicon.getAllVisualProperties();
 
-		logger.debug("\n\n\nNew Engine Factory: Adding discrete value editors------------------------");
-
-		Set<VisualProperty<?>> vps = lexicon.getAllVisualProperties();
 		for (final VisualProperty<?> vp : vps) {
 			Range<?> range = vp.getRange();
 
+			// If data type is basic (String, Boolean, etc.) not custom editor is not necessary.
+			final Class<?> targetDataType = range.getType();
+			if(REGISTRY.getEditor(targetDataType) != null)
+				continue;
+			
 			if (range instanceof DiscreteRange<?>) {
-
 				// Visual Property Editor.
-				logger.debug("Got new Discrete.  Creating new VP editor: " + vp.getDisplayName());
 				final Set<?> values = ((DiscreteRange<?>) range).values();
 				VisualPropertyEditor<?> vpEditor = new DiscreteValuePropertyEditor(range.getType(), values,
 						tableManager, appManager, selectedManager, this, vmm);

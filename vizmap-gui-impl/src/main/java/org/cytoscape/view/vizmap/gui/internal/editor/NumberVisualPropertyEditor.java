@@ -56,9 +56,6 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 			final EditorManager editorManager, final VisualMappingManager vmm) {
 		super(type, new CyNumberPropertyEditor<T>(type, null), ContinuousEditorType.CONTINUOUS);
 		discreteTableCellRenderer = REG.getRenderer(type);
-
-//		continuousEditor = new C2CEditor(manager, appManager, selectedManager, editorManager, vmm);
-//		continuousTableCellRenderer = new NumberContinuousCellRenderer((AbstractContinuousMappingEditor<?, ?>) continuousEditor);;
 	}
 
 	@Override

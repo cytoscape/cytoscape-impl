@@ -8,8 +8,8 @@ public class StringValueEditor extends AbstractValueEditor<String> {
 
 	private static final String MESSAGE = "Please enter new text value";
 
-	public StringValueEditor(Class<String> type) {
-		super(type);
+	public StringValueEditor() {
+		super(String.class);
 	}
 
 	
