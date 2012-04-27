@@ -76,7 +76,6 @@ import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedEvent;
 import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedListener;
-import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyFilter;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.jdesktop.swingx.JXList;
@@ -469,7 +468,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 			for (final VisualProperty<?> vp : vps) {
 
 				// Check supported or not.
-				if (VisualPropertyFilter.isCompatible(vp) == false)
+				if (PropertySheetUtil.isCompatible(vp) == false)
 					continue;
 
 				// Filter based on mode

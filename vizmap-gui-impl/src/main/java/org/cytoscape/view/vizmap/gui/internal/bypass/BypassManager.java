@@ -16,7 +16,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyFilter;
+import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.work.ServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +61,7 @@ public final class BypassManager {
 			final VisualProperty<?> vp = child.getVisualProperty();
 			
 			// Ignore incompatible VP
-			if(VisualPropertyFilter.isCompatible(vp) == false)
+			if(PropertySheetUtil.isCompatible(vp) == false)
 				continue;
 			
 			final String newMenu = menuText + "." + vp.getDisplayName();

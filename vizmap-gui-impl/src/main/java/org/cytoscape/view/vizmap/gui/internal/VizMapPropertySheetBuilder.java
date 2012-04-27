@@ -3,7 +3,6 @@ package org.cytoscape.view.vizmap.gui.internal;
 import java.awt.Color;
 import java.awt.Font;
 import java.beans.PropertyEditor;
-import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,9 +15,9 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -33,7 +32,6 @@ import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
-import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyFilter;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.slf4j.Logger;
@@ -273,7 +271,7 @@ public class VizMapPropertySheetBuilder {
 
 			for (final VisualProperty<?> vp : lex.getAllVisualProperties()) {
 				
-				if(VisualPropertyFilter.isCompatible(vp) == false)
+				if(PropertySheetUtil.isCompatible(vp) == false)
 					continue;
 				
 				if (PropertySheetUtil.isAdvancedMode() == false) {
