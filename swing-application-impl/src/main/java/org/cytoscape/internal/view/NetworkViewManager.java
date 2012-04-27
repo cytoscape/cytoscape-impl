@@ -537,7 +537,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				break;
 			for (JInternalFrame targetIF: iFrameMap.keySet()){
 				
-				if ( iFrameMap.get(targetIF).getModel().getSUID().equals(record.getRow().get(CyNetwork.SUID, Long.class))){
+				if ( iFrameMap.get(targetIF).getModel().getDefaultNetworkTable().equals(e.getSource())){
 					targetIF.setTitle(record.getRow().get(CyNetwork.NAME, String.class));
 					return; //assuming just one row is set.
 				}
