@@ -115,9 +115,7 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 	 *            DOCUMENT ME!
 	 */
 	@Override
-	public void processEvent(PropertyChangeEvent e) {
-		
-		System.out.println("2# Cell editor PC event");
+	public void processEvent(PropertyChangeEvent e) {		
 
 		final Object newVal = e.getNewValue();
 		final Object oldVal = e.getOldValue();
@@ -126,12 +124,10 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		if (newVal == null && oldVal == null)
 			return;
 
-		System.out.println("**e1");
 		// Same value.  No change required.
 		if (newVal != null && newVal.equals(oldVal))
 			return;
 
-		System.out.println("**e2");
 		// find selected cell
 		final PropertySheetTable table = propertySheetPanel.getTable();
 		final int selected = table.getSelectedRow();
@@ -140,7 +136,6 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 		if (selected < 0)
 			return;
 
-		System.out.println("**e3");
 		// Extract selected Property object in the table.
 		final Item selectedItem = (Item) propertySheetPanel.getTable().getValueAt(selected, 0);
 		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();
@@ -150,10 +145,8 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 		VisualProperty<?> type = null;
 
-		System.out.println("**e4");
 		// Case 1: Attribute type changed.
 		if (prop.getCellType().equals(CellType.VISUAL_PROPERTY_TYPE)) {
-			System.out.println("**attr edit!");
 			
 			if (e.getNewValue() == null)
 				throw new NullPointerException("New controlling attr name is null.");
@@ -181,8 +174,6 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 		// 2. Switch mapping type
 		if (prop.getCellType().equals(CellType.MAPPING_TYPE)) {
-
-			System.out.println("**map type edit!");
 			if (e.getNewValue() == e.getOldValue())
 				return;
 
@@ -200,8 +191,6 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 			switchMappingType(prop, type, (VisualMappingFunctionFactory) e.getNewValue(),
 					controllingAttrName.toString());
 		} else if (prop.getParentProperty() != null) {
-			System.out.println("** Discrete cell edit!");
-
 			// Discrete Cell editor event. Create new map entry and register it.
 			logger.debug("Cell edit event: name = " + prop.getName());
 			logger.debug("Cell edit event: old val = " + prop.getValue());
@@ -220,8 +209,6 @@ public class CellEditorEventHandler implements VizMapEventHandler {
 
 			selectedStyleManager.getCurrentVisualStyle().apply(applicationManager.getCurrentNetworkView());
 			applicationManager.getCurrentNetworkView().updateView();
-		} else {
-			System.out.println("**INVALID edit!");
 		}
 	}
 

@@ -61,8 +61,6 @@ public class CyStringPropertyEditor extends StringPropertyEditor {
 			public void focusGained(FocusEvent e) {
 				Method getM = null;
 				Object val = null;
-
-				System.out.println("!* String E Called!");
 				
 				try {
 					getM = e.getOppositeComponent().getClass().getMethod("getSelectedRow", new Class[] {});
