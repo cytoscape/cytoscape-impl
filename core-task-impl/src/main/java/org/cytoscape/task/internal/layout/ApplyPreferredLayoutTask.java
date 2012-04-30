@@ -28,13 +28,11 @@
 package org.cytoscape.task.internal.layout;
 
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
 
 import java.util.Properties;
 
@@ -42,20 +40,14 @@ import java.util.Properties;
 public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 	private static final String DEF_LAYOUT = "force-directed";
 
-	private final UndoSupport undoSupport;
-	private final CyEventHelper eventHelper;
 	private Properties props;
 	private final CyLayoutAlgorithmManager layouts;
 
-	public ApplyPreferredLayoutTask(final UndoSupport undoSupport,
-	                                final CyEventHelper eventHelper,
-	                                final CyNetworkView v,
+	public ApplyPreferredLayoutTask(final CyNetworkView v,
 	                                final CyLayoutAlgorithmManager layouts,
 	                                final Properties props)
 	{
 		super(v);
-		this.undoSupport = undoSupport;
-		this.eventHelper = eventHelper;
 		this.layouts     = layouts;
 		this.props       = props;
 	}
@@ -64,8 +56,6 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 	                                final CyLayoutAlgorithmManager layouts)
 	{
 		super(v);
-		this.undoSupport = null;
-		this.eventHelper = null;
 		this.layouts = layouts;
 	}
 
@@ -74,8 +64,6 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0d);
 		tm.setStatusMessage("Applying Default Layout...");
-		if (undoSupport != null)
-			undoSupport.postEdit(new LayoutEdit(eventHelper, view));
 		tm.setProgress(0.1);
 		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
 		if (props != null)
