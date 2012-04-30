@@ -26,13 +26,12 @@ import org.slf4j.LoggerFactory;
  * 
  * Export this as an OSGi service!
  */
-public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor implements ListEditor,
+public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor implements ListEditor,
 		SetCurrentNetworkViewListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(AttributeComboBoxPropertyEditor.class);
 
 	private final Class<? extends CyIdentifiable> type;
-
 	private final AttributeSetManager attrManager;
 
 	public AttributeComboBoxPropertyEditor(final Class<? extends CyIdentifiable> type,
@@ -63,10 +62,11 @@ public class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor im
 
 		if (currentNetwork != null) {
 			final AttributeSet targetSet = this.attrManager.getAttributeSet(currentNetwork, type);
-			if (targetSet == null)
-				throw new NullPointerException("AttributeSet is null.");
 
 			final SortedSet<String> sortedName = new TreeSet<String>();
+			if (targetSet == null)
+				return;
+			
 			for (String attrName : targetSet.getAttrMap().keySet())
 				sortedName.add(attrName);
 

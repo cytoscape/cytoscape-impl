@@ -62,8 +62,6 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 	public void handleEvent(NetworkAddedEvent e) {
 		final CyNetwork network = e.getNetwork();
 
-		logger.debug("@@@@@@ Attr Set manager got new network." + network.getSUID());
-
 		final Map<Class<? extends CyIdentifiable>, Set<CyTable>> object2tableMap = new HashMap<Class<? extends CyIdentifiable>, Set<CyTable>>();
 		final Map<Class<? extends CyIdentifiable>, AttributeSet> attrSetMap = new HashMap<Class<? extends CyIdentifiable>, AttributeSet>();
 

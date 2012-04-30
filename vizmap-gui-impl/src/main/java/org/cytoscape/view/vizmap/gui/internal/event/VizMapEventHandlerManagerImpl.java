@@ -2,7 +2,6 @@ package org.cytoscape.view.vizmap.gui.internal.event;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,8 +44,6 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 
 	private final VizMapperUtil util;
 	
-	private PropertyChangeSupport mappingTypePCS;
-
 	public VizMapEventHandlerManagerImpl(final SelectedVisualStyleManager manager, final EditorManager editorManager,
 			final VizMapPropertySheetBuilder vizMapPropertySheetBuilder, final PropertySheetPanel propertySheetPanel,
 			final VizMapperMainPanel gui, final CyNetworkTableManager tableMgr,
