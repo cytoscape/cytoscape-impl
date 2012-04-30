@@ -1,10 +1,9 @@
 package csapps.layout.algorithms.hierarchicalLayout;
 
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class HierarchicalLayoutContext extends AbstractLayoutContext implements TunableValidator {
+public class HierarchicalLayoutContext implements TunableValidator {
 	@Tunable(description="Horizontal spacing between nodes")
 	public int nodeHorizontalSpacing = 64;
 	@Tunable(description="Vertical spacing between nodes")

@@ -38,27 +38,29 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 /**
  * The GridNodeLayout provides a very simple layout, suitable as
  * the default layout for Cytoscape data readers.
  */
-public class GridNodeLayout extends AbstractLayoutAlgorithm<GridNodeLayoutContext> {
+public class GridNodeLayout extends AbstractLayoutAlgorithm {
+	
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public GridNodeLayout() {
-		super(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME,"Grid Layout");
+	public GridNodeLayout(UndoSupport undoSupport) {
+		super(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME,"Grid Layout", undoSupport);
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView, GridNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new GridNodeLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new GridNodeLayoutTask(getName(), networkView, nodesToLayOut, (GridNodeLayoutContext)context, attrName, undoSupport));
 	}
 	
 	@Override
-	public GridNodeLayoutContext createLayoutContext() {
+	public Object createLayoutContext() {
 		return new GridNodeLayoutContext();
 	}
 }

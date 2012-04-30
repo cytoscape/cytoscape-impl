@@ -15,6 +15,7 @@ import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
 
 import csapps.layout.Profile;
 
@@ -99,11 +100,13 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * @param supportEdgeWeights a boolean to indicate whether we should
 	 *                                                  behave as if we support weights
 	 */
-	public BioLayoutKKAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final BioLayoutKKContext context, final boolean supportWeights) {
-		super(name, networkView, nodesToLayOut, supportedEdgeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes, context.singlePartition);
+	public BioLayoutKKAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final BioLayoutKKContext context, final boolean supportWeights, String attrName, UndoSupport undo) {
+		super(name, networkView, nodesToLayOut, context.singlePartition, attrName, undo);
 		this.context = context;
 		this.supportWeights = supportWeights;
 		this.m_layoutPass = context.m_layoutPass;
+		this.edgeWeighter = context.edgeWeighter;
+		this.edgeWeighter.setWeightAttribute(layoutAttribute);
 	}
 
 	/**

@@ -46,6 +46,7 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
   This layout partitions the graph according to the selected node attribute's values.
@@ -59,16 +60,16 @@ import org.cytoscape.work.TaskIterator;
 /**
  *
  */
-public class GroupAttributesLayout extends AbstractLayoutAlgorithm<GroupAttributesLayoutContext> {
+public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
 	/**
 	 * Creates a new GroupAttributesLayout object.
 	 */
-	public GroupAttributesLayout() {
-		super("attributes-layout", "Group Attributes Layout");
+	public GroupAttributesLayout(UndoSupport undo) {
+		super("attributes-layout", "Group Attributes Layout", undo);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, GroupAttributesLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new GroupAttributesLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new GroupAttributesLayoutTask(getName(), networkView, nodesToLayOut, (GroupAttributesLayoutContext)context, attrName, undoSupport));
 	}
 	
 	@Override

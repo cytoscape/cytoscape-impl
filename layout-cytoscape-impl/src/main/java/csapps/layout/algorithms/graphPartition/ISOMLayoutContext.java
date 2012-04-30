@@ -1,10 +1,9 @@
 package csapps.layout.algorithms.graphPartition;
 
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class ISOMLayoutContext extends AbstractLayoutContext implements TunableValidator {
+public class ISOMLayoutContext implements TunableValidator {
 	@Tunable(description="Number of iterations")
 	public int maxEpoch = 5000;
 	@Tunable(description="Radius constant")

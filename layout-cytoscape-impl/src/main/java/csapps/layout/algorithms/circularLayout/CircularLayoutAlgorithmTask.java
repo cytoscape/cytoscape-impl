@@ -16,6 +16,7 @@ import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.undo.UndoSupport;
 
 import csapps.layout.algorithms.hierarchicalLayout.Edge;
 import csapps.layout.algorithms.hierarchicalLayout.Graph;
@@ -33,8 +34,8 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 	private boolean[] drawnBiComps;
 
 
-	public CircularLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, CircularLayoutContext context) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public CircularLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, CircularLayoutContext context, UndoSupport undo) {
+		super(name, context.singlePartition, networkView, nodesToLayOut,"", undo);
 	}
 
 

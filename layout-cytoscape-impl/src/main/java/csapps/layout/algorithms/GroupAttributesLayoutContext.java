@@ -1,9 +1,8 @@
 package csapps.layout.algorithms;
 
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 
-public class GroupAttributesLayoutContext extends AbstractLayoutContext {
+public class GroupAttributesLayoutContext  {
 	/*
 	  Layout parameters:
 	    - spacingx: Horizontal spacing (on the x-axis) between two partitions in a row.

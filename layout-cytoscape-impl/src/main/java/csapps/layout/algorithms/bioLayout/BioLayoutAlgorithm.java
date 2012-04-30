@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutContext;
+import org.cytoscape.work.undo.UndoSupport;
 
 /**
  * Superclass for the two bioLayout algorithms (KK and FR).
@@ -14,7 +14,7 @@ import org.cytoscape.view.layout.CyLayoutContext;
  * @author <a href="mailto:scooter@cgl.ucsf.edu">Scooter Morris</a>
  * @version 0.9
  */
-public abstract class BioLayoutAlgorithm<T extends CyLayoutContext> extends AbstractLayoutAlgorithm<T> {
+public abstract class BioLayoutAlgorithm extends AbstractLayoutAlgorithm {
 
 	/**
 	 * Value to set for doing unweighted layouts
@@ -23,8 +23,8 @@ public abstract class BioLayoutAlgorithm<T extends CyLayoutContext> extends Abst
 
 	final boolean supportWeights; 
 
-	public BioLayoutAlgorithm(String computerName, String humanName, boolean supportWeights) {
-		super(computerName, humanName);
+	public BioLayoutAlgorithm(String computerName, String humanName, boolean supportWeights, UndoSupport undo) {
+		super(computerName, humanName, undo);
 		this.supportWeights = supportWeights;
 	}
 
@@ -40,18 +40,9 @@ public abstract class BioLayoutAlgorithm<T extends CyLayoutContext> extends Abst
 
 		return ret;
 	}
-	
-	/**
-	 * Returns "(unweighted)", which is the "attribute" we
-	 * use to tell the algorithm not to use weights
-	 *
-	 * @returns List of our "special" weights
-	 */
-	public List<String> getInitialAttributeList() {
-		ArrayList<String> list = new ArrayList<String>();
-		list.add(UNWEIGHTEDATTRIBUTE);
 
-		return list;
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
 	}
-
 }

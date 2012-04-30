@@ -12,6 +12,7 @@ import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
 
 import cern.colt.list.tlong.LongArrayList;
 import cern.colt.map.OpenLongObjectHashMap;
@@ -37,8 +38,8 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	CyNetwork network;
 	private ISOMLayoutContext context;
 	
-	public ISOMLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, ISOMLayoutContext context) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public ISOMLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, ISOMLayoutContext context, String attrName, UndoSupport undo) {
+		super(name, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
 		this.context = context;
 		network = networkView.getModel();
 		q = new LongArrayList();

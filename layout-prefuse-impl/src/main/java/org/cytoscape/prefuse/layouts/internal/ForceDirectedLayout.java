@@ -11,21 +11,16 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 import prefuse.util.force.EulerIntegrator;
 import prefuse.util.force.Integrator;
 import prefuse.util.force.RungeKuttaIntegrator;
 
 
-public class ForceDirectedLayout extends AbstractLayoutAlgorithm<ForceDirectedLayoutContext> {
-	/**
-	 * Value to set for doing unweighted layouts
-	 */
-	public static final String UNWEIGHTEDATTRIBUTE = "(unweighted)";
+public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 
 	private Integrators integrator = Integrators.RUNGEKUTTA;
-
-	private boolean supportWeights;
 	
 	public enum Integrators {
 		RUNGEKUTTA ("Runge-Kutta"),
@@ -46,38 +41,32 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm<ForceDirectedLa
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public ForceDirectedLayout() {
-		super("force-directed", "Force Directed Layout");
+	public ForceDirectedLayout(UndoSupport undo) {
+		super("force-directed", "Force Directed Layout",undo);
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView, ForceDirectedLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new ForceDirectedLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context, integrator));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new ForceDirectedLayoutTask(getName(), networkView, nodesToLayOut, (ForceDirectedLayoutContext)context, integrator, attrName,undoSupport));
 	}
 	
 	@Override
-	public ForceDirectedLayoutContext createLayoutContext() {
+	public Object createLayoutContext() {
 		return new ForceDirectedLayoutContext();
 	}
 	
 	public Set<Class<?>> getSupportedEdgeAttributeTypes() {
 		Set<Class<?>> ret = new HashSet<Class<?>>();
-		if (!supportWeights)
-			return ret;
 
 		ret.add( Integer.class );
 		ret.add( Double.class );
 
 		return ret;
 	}
-
-	public List<String> getInitialAttributeList() {
-		List<String> list = new ArrayList<String>();
-		if (!supportWeights)
-			return list;
-		
-		list.add(UNWEIGHTEDATTRIBUTE);
-
-		return list;
+	
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
 	}
+
 }

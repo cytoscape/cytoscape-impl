@@ -18,6 +18,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 
@@ -31,8 +32,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public HierarchicalLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, HierarchicalLayoutContext context) {
-		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public HierarchicalLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, HierarchicalLayoutContext context, String attrName, UndoSupport undo) {
+		super(name, networkView, nodesToLayOut, attrName, undo);
 		this.context = context;
 	}
 

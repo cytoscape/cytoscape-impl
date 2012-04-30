@@ -47,6 +47,7 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 /**
@@ -72,20 +73,20 @@ import org.cytoscape.work.TaskIterator;
  * Steps 2 through 6 are performed by calls to methods in the class
  * {@link csapps.hierarchicallayout.Graph}
 */
-public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm<HierarchicalLayoutContext> {
+public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm {
 	/**
 	 * Creates a new HierarchicalLayoutAlgorithm object.
 	 */
-	public HierarchicalLayoutAlgorithm() {
-		super("hierarchical", "Hierarchical Layout");		
+	public HierarchicalLayoutAlgorithm(UndoSupport undo) {
+		super("hierarchical", "Hierarchical Layout", undo);		
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, HierarchicalLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(getName(), networkView, nodesToLayOut,(HierarchicalLayoutContext) context, attrName, undoSupport));
 	}
 	
 	@Override
-	public HierarchicalLayoutContext createLayoutContext() {
+	public Object createLayoutContext() {
 		return new HierarchicalLayoutContext();
 	}
 }

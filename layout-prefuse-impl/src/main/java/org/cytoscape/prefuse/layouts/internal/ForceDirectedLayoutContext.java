@@ -1,10 +1,16 @@
 package org.cytoscape.prefuse.layouts.internal;
 
-import org.cytoscape.view.layout.AbstractLayoutContext;
+import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TunableValidator;
 
-public class ForceDirectedLayoutContext extends AbstractLayoutContext implements TunableValidator {
+public class ForceDirectedLayoutContext implements TunableValidator {
+	
+
+	@ContainsTunables
+	public EdgeWeighter edgeWeighter = new EdgeWeighter();
+	
 	@Tunable(description="Number of Iterations")
 	public int numIterations = 100;
 	@Tunable(description="Default Spring Coefficient")

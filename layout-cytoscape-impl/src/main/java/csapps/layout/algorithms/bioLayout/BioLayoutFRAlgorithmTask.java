@@ -12,6 +12,7 @@ import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
@@ -64,11 +65,13 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	Profile updateProfile;
 	 */
 
-	public BioLayoutFRAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final BioLayoutFRContext context, final boolean supportWeights) {		
-		super(name, networkView, nodesToLayOut, supportedEdgeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes, context.singlePartition);
+	public BioLayoutFRAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final BioLayoutFRContext context, final boolean supportWeights, String attrName, UndoSupport undo) {		
+		super(name, networkView, nodesToLayOut,  context.singlePartition, attrName, undo);
 		this.context = context;
 
 		this.supportWeights =supportWeights;
+		this.edgeWeighter = context.edgeWeighter;
+		this.edgeWeighter.setWeightAttribute(layoutAttribute);
 		
 		displacementArray = new ArrayList<Double>(100);
 	}

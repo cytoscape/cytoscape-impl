@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 import csapps.layout.algorithms.GroupAttributesLayout;
@@ -30,17 +31,19 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	public void start(BundleContext bc) {
+		
+		UndoSupport undo = getService(bc,UndoSupport.class);
 
-		CircularLayoutAlgorithm circularLayoutAlgorithm = new CircularLayoutAlgorithm();
-		HierarchicalLayoutAlgorithm hierarchicalLayoutAlgorithm = new HierarchicalLayoutAlgorithm();
-		AttributeCircleLayout attributeCircleLayout = new AttributeCircleLayout();
-		DegreeSortedCircleLayout degreeSortedCircleLayout = new DegreeSortedCircleLayout();
-		ISOMLayout ISOMLayout = new ISOMLayout();
-		BioLayoutKKAlgorithm bioLayoutKKAlgorithmFALSE = new BioLayoutKKAlgorithm(false);
-		BioLayoutKKAlgorithm bioLayoutKKAlgorithmTRUE = new BioLayoutKKAlgorithm(true);
-		BioLayoutFRAlgorithm bioLayoutFRAlgorithm = new BioLayoutFRAlgorithm(true);
-		StackedNodeLayout stackedNodeLayout = new StackedNodeLayout();
-		GroupAttributesLayout groupAttributesLayout = new GroupAttributesLayout();
+		CircularLayoutAlgorithm circularLayoutAlgorithm = new CircularLayoutAlgorithm(undo);
+		HierarchicalLayoutAlgorithm hierarchicalLayoutAlgorithm = new HierarchicalLayoutAlgorithm(undo);
+		AttributeCircleLayout attributeCircleLayout = new AttributeCircleLayout(undo);
+		DegreeSortedCircleLayout degreeSortedCircleLayout = new DegreeSortedCircleLayout(undo);
+		ISOMLayout ISOMLayout = new ISOMLayout(undo);
+		BioLayoutKKAlgorithm bioLayoutKKAlgorithmFALSE = new BioLayoutKKAlgorithm(false,undo);
+		BioLayoutKKAlgorithm bioLayoutKKAlgorithmTRUE = new BioLayoutKKAlgorithm(true,undo);
+		BioLayoutFRAlgorithm bioLayoutFRAlgorithm = new BioLayoutFRAlgorithm(true,undo);
+		StackedNodeLayout stackedNodeLayout = new StackedNodeLayout(undo);
+		GroupAttributesLayout groupAttributesLayout = new GroupAttributesLayout(undo);
 		
 		
 		Properties circularLayoutAlgorithmProps = new Properties();

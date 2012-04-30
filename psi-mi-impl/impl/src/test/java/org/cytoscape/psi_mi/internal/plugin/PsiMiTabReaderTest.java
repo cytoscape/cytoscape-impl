@@ -18,7 +18,6 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.Task;
@@ -53,7 +52,7 @@ public class PsiMiTabReaderTest {
 		MockitoAnnotations.initMocks(this);
 
 		when(layouts.getDefaultLayout()).thenReturn(layout);
-		when(layout.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(CyLayoutContext.class), Mockito.anySet())).thenReturn(new TaskIterator(task));
+		when(layout.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(Object.class), Mockito.anySet(), Mockito.any(String.class))).thenReturn(new TaskIterator(task));
 		
 		networkFactory = new NetworkTestSupport().getNetworkFactory();
 		networkViewFactory = new NetworkViewTestSupport().getNetworkViewFactory();

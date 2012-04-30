@@ -13,12 +13,12 @@ import javax.swing.JPanel;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.view.layout.AbstractLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 import org.jgraph.JGraph;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.ConnectionSet;
@@ -44,9 +44,9 @@ public class JGraphLayoutWrapperTask extends AbstractLayoutTask{
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public JGraphLayoutWrapperTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, AbstractLayoutContext context, JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings)
+	public JGraphLayoutWrapperTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Object context, JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings, UndoSupport undo)
 	{
-		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+		super(name, networkView, nodesToLayOut,"", undo);
 
 		this.layoutSettings = layoutSettings;
 		this.layout = layout;

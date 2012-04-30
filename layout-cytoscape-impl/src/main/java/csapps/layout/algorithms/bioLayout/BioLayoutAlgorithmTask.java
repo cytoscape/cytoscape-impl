@@ -32,15 +32,14 @@
 package csapps.layout.algorithms.bioLayout;
 
 
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
-import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
@@ -64,11 +63,9 @@ public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask
 	/**
 	 * This is the constructor for the bioLayout algorithm.
 	 */
-	public BioLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final boolean singlePartition) {
-		super(name, singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
-		
-		if (edgeWeighter == null)
-			edgeWeighter = new EdgeWeighter();
+	public BioLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final boolean singlePartition, String attrName, UndoSupport undo) {
+		super(name, singlePartition, networkView, nodesToLayOut,attrName, undo);
+
 	}
 
 	/**

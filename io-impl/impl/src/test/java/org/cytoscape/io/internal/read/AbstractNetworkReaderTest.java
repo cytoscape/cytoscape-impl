@@ -23,7 +23,6 @@ import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.CyLayoutContext;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
@@ -53,9 +52,10 @@ public class AbstractNetworkReaderTest {
 		taskMonitor = mock(TaskMonitor.class);
 
 		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
-		CyLayoutContext context = mock(CyLayoutContext.class);
+		Object context = new Object();
 		when(def.createLayoutContext()).thenReturn(context);
-		when(def.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(CyLayoutContext.class), Mockito.anySet())).thenReturn(new TaskIterator(new SimpleTask()));
+		when(def.getDefaultLayoutContext()).thenReturn(context);
+		when(def.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(Object.class), Mockito.anySet(), Mockito.any(String.class))).thenReturn(new TaskIterator(new SimpleTask()));
 
 		layouts = mock(CyLayoutAlgorithmManager.class);
 		when(layouts.getDefaultLayout()).thenReturn(def);

@@ -17,6 +17,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,16 +31,10 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 
 	private GroupAttributesLayoutContext context;
 	
-	public GroupAttributesLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, GroupAttributesLayoutContext context) {
-		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public GroupAttributesLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, GroupAttributesLayoutContext context, String attrName, UndoSupport undo) {
+		super(name, networkView, nodesToLayOut, attrName, undo);
 		
 		this.context = context;
-	}
-
-	@Override
-	@Tunable(description = "Weight using")
-	public ListSingleSelection<String> getWeightingOptions() {
-		return super.getWeightingOptions();
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package csapps.layout.algorithms;
 
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
@@ -9,13 +8,14 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class StackedNodeLayoutTask extends AbstractLayoutTask {
 
 	private StackedNodeLayoutContext context;
 	
-	public StackedNodeLayoutTask(final String name, CyNetworkView networkView, final StackedNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes) {
-		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public StackedNodeLayoutTask(final String name, CyNetworkView networkView, final StackedNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut, String attr, UndoSupport undo) {
+		super(name, networkView, nodesToLayOut, attr, undo);
 		this.context = context;
 	}
 

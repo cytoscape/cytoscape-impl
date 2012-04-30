@@ -8,22 +8,28 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
-public class DegreeSortedCircleLayout extends AbstractLayoutAlgorithm<DegreeSortedCircleContext> {
+public class DegreeSortedCircleLayout extends AbstractLayoutAlgorithm{
 	/**
 	 * Creates a new DegreeSortedCircleLayout object.
 	 */
-	public DegreeSortedCircleLayout() {
-		super("degree-circle", "Degree Sorted Circle Layout");
+	public DegreeSortedCircleLayout(UndoSupport undo) {
+		super("degree-circle", "Degree Sorted Circle Layout", undo);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, DegreeSortedCircleContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new DegreeSortedCircleLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new DegreeSortedCircleLayoutTask(getName(), networkView, nodesToLayOut, (DegreeSortedCircleContext)context, attrName, undoSupport));
 	}
 	
 	@Override
-	public DegreeSortedCircleContext createLayoutContext() {
+	public Object createLayoutContext() {
 		return new DegreeSortedCircleContext();
+	}
+	
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
 	}
 }

@@ -44,6 +44,7 @@ import org.cytoscape.view.layout.WeightTypes;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import prefuse.util.force.DragForce;
@@ -59,29 +60,10 @@ import prefuse.util.force.SpringForce;
  */
 public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
-	private static final String groupName = "Edge Weight Settings";
-
-	/** A tunable for determining how to interpret weight values. */	
-	@Tunable(description="How to interpret weight values",groups=groupName)
-	public ListSingleSelection<WeightTypes> weightChoices;
-
-	/** A tunable for determining the minimum edge weight to consider. */
-	@Tunable(description="The minimum edge weight to consider",groups=groupName)
-	public double minWeight = 0;	
-
-	/** A tunable for determining the maximum edge weight to consider. */
-	@Tunable(description="The maximum edge weight to consider",groups=groupName)
-	public double maxWeight = Double.MAX_VALUE;	
-
 	private ForceSimulator m_fsim;
 
-//	public int numIterations;
-//	public double defaultSpringCoefficient;
-//	public double defaultSpringLength;
-//	public double defaultNodeMass;
 	private ForceDirectedLayout.Integrators integrator;
 	
-	private boolean supportWeights = true;
 	private Map<LayoutNode,ForceItem> forceItems;
 
 	private ForceDirectedLayoutContext context;
@@ -89,17 +71,15 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public ForceDirectedLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final ForceDirectedLayoutContext context,
-				       final ForceDirectedLayout.Integrators integrator) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
-
-		weightChoices = new ListSingleSelection<WeightTypes>( WeightTypes.values() );	
+	public ForceDirectedLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final ForceDirectedLayoutContext context,
+				       final ForceDirectedLayout.Integrators integrator, String attrName, UndoSupport undo) {
+		super(name, context.singlePartition, networkView, nodesToLayOut,attrName, undo);
 
 		this.context = context;
 		this.integrator = integrator;
 		
-		if (edgeWeighter == null)
-			edgeWeighter = new EdgeWeighter();
+		edgeWeighter = context.edgeWeighter;
+		edgeWeighter.setWeightAttribute(layoutAttribute);
 
 		m_fsim = new ForceSimulator();
 		m_fsim.addForce(new NBodyForce());

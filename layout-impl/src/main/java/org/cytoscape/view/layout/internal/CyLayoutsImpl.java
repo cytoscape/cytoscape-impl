@@ -50,10 +50,10 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	private final Map<String, CyLayoutAlgorithm> layoutMap;
 	private final CyProperty<Properties> cyProps;
 
-	public CyLayoutsImpl(final CyProperty<Properties> p) {
+	public CyLayoutsImpl(final CyProperty<Properties> p, CyLayoutAlgorithm defaultLayout) {
 		this.cyProps = p;
 		layoutMap = new HashMap<String,CyLayoutAlgorithm>();
-		addLayout(new GridNodeLayout(), new HashMap());
+		addLayout(defaultLayout, new HashMap());
 	}
 
 	/**

@@ -2,11 +2,10 @@ package org.cytoscape.view.layout.internal.algorithms;
 
 import java.io.IOException;
 
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class GridNodeLayoutContext extends AbstractLayoutContext implements TunableValidator {
+public class GridNodeLayoutContext implements TunableValidator {
 	@Tunable(description="Vertical spacing between nodes")
 	public double nodeVerticalSpacing = 40.0;
 

@@ -11,22 +11,28 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
-public class ISOMLayout extends AbstractLayoutAlgorithm<ISOMLayoutContext> {
+public class ISOMLayout extends AbstractLayoutAlgorithm {
 	/**
 	 * Creates a new ISOMLayout object.
 	 */
-	public ISOMLayout() {
-		super("isom", "Inverted Self-Organizing Map Layout");
+	public ISOMLayout(UndoSupport undo) {
+		super("isom", "Inverted Self-Organizing Map Layout", undo);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, ISOMLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new ISOMLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,String attrName) {
+		return new TaskIterator(new ISOMLayoutTask(getName(), networkView, nodesToLayOut, (ISOMLayoutContext) context, attrName, undoSupport));
 	}
 	
 	@Override
-	public ISOMLayoutContext createLayoutContext() {
+	public Object createLayoutContext() {
 		return new ISOMLayoutContext();
+	}
+	
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
 	}
 }

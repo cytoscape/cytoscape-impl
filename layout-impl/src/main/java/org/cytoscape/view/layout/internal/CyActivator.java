@@ -9,6 +9,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
+import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 import static org.cytoscape.work.ServiceProperties.*;
@@ -23,9 +24,10 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
+		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
 		
-		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(cyPropertyServiceRef);
-		GridNodeLayout gridNodeLayout = new GridNodeLayout();
+		GridNodeLayout gridNodeLayout = new GridNodeLayout(undoSupportServiceRef);
+		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(cyPropertyServiceRef, gridNodeLayout);
 		
 		registerService(bc,cyLayouts,CyLayoutAlgorithmManager.class, new Properties());
 

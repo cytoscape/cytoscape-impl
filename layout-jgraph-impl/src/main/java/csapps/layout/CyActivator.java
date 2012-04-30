@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 import static org.cytoscape.work.ServiceProperties.*;
@@ -19,15 +20,17 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	public void start(BundleContext bc) {
+		
+		UndoSupport undo = getService(bc,UndoSupport.class);
 
-		JGraphLayoutWrapper jGraphAnnealingLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.ANNEALING);
-		JGraphLayoutWrapper jGraphMoenLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.MOEN);
-		JGraphLayoutWrapper jGraphCircleGraphLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.CIRCLE_GRAPH);
-		JGraphLayoutWrapper jGraphRadialTreeLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.RADIAL_TREE);
-		JGraphLayoutWrapper jGraphGEMLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.GEM);
-		JGraphLayoutWrapper jGraphSpringEmbeddedLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.SPRING_EMBEDDED);
-		JGraphLayoutWrapper jGraphSugiyamaLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.SUGIYAMA);
-		JGraphLayoutWrapper jGraphTreeLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.TREE);
+		JGraphLayoutWrapper jGraphAnnealingLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.ANNEALING,undo);
+		JGraphLayoutWrapper jGraphMoenLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.MOEN,undo);
+		JGraphLayoutWrapper jGraphCircleGraphLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.CIRCLE_GRAPH,undo);
+		JGraphLayoutWrapper jGraphRadialTreeLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.RADIAL_TREE,undo);
+		JGraphLayoutWrapper jGraphGEMLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.GEM,undo);
+		JGraphLayoutWrapper jGraphSpringEmbeddedLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.SPRING_EMBEDDED,undo);
+		JGraphLayoutWrapper jGraphSugiyamaLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.SUGIYAMA,undo);
+		JGraphLayoutWrapper jGraphTreeLayout = new JGraphLayoutWrapper(JGraphLayoutWrapper.TREE,undo);
 		
 		
 		Properties jGraphAnnealingLayoutProps = new Properties();

@@ -30,7 +30,6 @@
 package org.cytoscape.view.layout.internal.algorithms;
 
 
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
@@ -40,6 +39,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 /**
@@ -53,8 +53,8 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public GridNodeLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final GridNodeLayoutContext context) {
-		super(name, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public GridNodeLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final GridNodeLayoutContext context, String attrName, UndoSupport undoSupport) {
+		super(name, networkView, nodesToLayOut, attrName, undoSupport);
 
 		this.nodeVerticalSpacing = context.nodeVerticalSpacing;
 		this.nodeHorizontalSpacing = context.nodeHorizontalSpacing;

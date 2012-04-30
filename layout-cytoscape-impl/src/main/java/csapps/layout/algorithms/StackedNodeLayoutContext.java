@@ -1,10 +1,9 @@
 package csapps.layout.algorithms;
 
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class StackedNodeLayoutContext extends AbstractLayoutContext implements TunableValidator {
+public class StackedNodeLayoutContext implements TunableValidator {
 
 	@Tunable(description="x_position")
 	public double x_position = 10.0;

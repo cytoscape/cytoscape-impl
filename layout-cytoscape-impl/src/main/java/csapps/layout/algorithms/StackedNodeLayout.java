@@ -35,9 +35,10 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
-public class StackedNodeLayout extends AbstractLayoutAlgorithm<StackedNodeLayoutContext> {
+public class StackedNodeLayout extends AbstractLayoutAlgorithm {
 	/**
 	 * Creates a new StackedNodeLayout object.
 	 *
@@ -45,12 +46,12 @@ public class StackedNodeLayout extends AbstractLayoutAlgorithm<StackedNodeLayout
 	 * @param y_start_position  DOCUMENT ME!
 	 * @param nodes  DOCUMENT ME!
 	 */
-	public StackedNodeLayout() {
-		super("stacked-node-layout", "Stacked Node Layout");
+	public StackedNodeLayout(UndoSupport undo) {
+		super("stacked-node-layout", "Stacked Node Layout",undo);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, StackedNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new StackedNodeLayoutTask(getName(), networkView, context, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList()));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attr) {
+		return new TaskIterator(new StackedNodeLayoutTask(getName(), networkView, (StackedNodeLayoutContext)context, nodesToLayOut, attr,undoSupport));
 	}
 	
 	@Override

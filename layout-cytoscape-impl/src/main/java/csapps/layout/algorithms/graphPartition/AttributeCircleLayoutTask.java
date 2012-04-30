@@ -14,6 +14,7 @@ import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
@@ -22,8 +23,8 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public AttributeCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, final AttributeCircleLayoutContext context) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public AttributeCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,  final AttributeCircleLayoutContext context, String attrName, UndoSupport undo) {
+		super(name, context.singlePartition, networkView, nodesToLayOut,attrName, undo);
 		this.context = context;
 	}
 

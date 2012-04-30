@@ -16,6 +16,7 @@ import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
@@ -25,8 +26,8 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public DegreeSortedCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Set<Class<?>> supportedNodeAttributeTypes, Set<Class<?>> supportedEdgeAttributeTypes, List<String> initialAttributes, DegreeSortedCircleContext context) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, supportedNodeAttributeTypes, supportedEdgeAttributeTypes, initialAttributes);
+	public DegreeSortedCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, DegreeSortedCircleContext context, String attrName, UndoSupport undo) {
+		super(name, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
 
 		this.network = networkView.getModel();
 	}

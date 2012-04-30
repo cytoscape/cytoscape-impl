@@ -43,9 +43,10 @@ import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
-public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCircleLayoutContext> {
+public class AttributeCircleLayout extends AbstractLayoutAlgorithm {
 	private final boolean supportNodeAttributes;
 
 	/**
@@ -53,31 +54,26 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCirc
 	 *
 	 * @param supportAttributes  DOCUMENT ME!
 	 */
-	public AttributeCircleLayout(final boolean supportNodeAttributes)
+	public AttributeCircleLayout(final boolean supportNodeAttributes, UndoSupport undo)
 	{
 		super((supportNodeAttributes ? "attribute-circle": "circle"), 
-		      (supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"));
+		      (supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"), undo);
 		this.supportNodeAttributes = supportNodeAttributes;
 	}
 
 	/**
 	 * Creates a new AttributeCircleLayout object.
 	 */
-	public AttributeCircleLayout() {
-		this(true);
+	public AttributeCircleLayout(UndoSupport undo) {
+		this(true, undo);
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView, AttributeCircleLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new AttributeCircleLayoutTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new AttributeCircleLayoutTask(getName(), networkView, nodesToLayOut, (AttributeCircleLayoutContext)context, attrName, undoSupport));
 	}
 
-	// Required methods for AbstactLayout
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public Set<Class<?>> getSupportedNodeAttributeTypes() {
 		Set<Class<?>> ret = new HashSet<Class<?>>();
 		if (!supportNodeAttributes)
@@ -88,26 +84,17 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm<AttributeCirc
 		ret.add(String.class);
 		ret.add(Boolean.class);
 		ret.add(List.class);
-		ret.add(Map.class);
 
 		return ret;
-	}
-
-	/**
-	 *
-	 * We don't have any special widgets
-	 *
-	 * @returns List of our "special" weights
-	 */
-	public List<String> getInitialAttributeList() {
-		ArrayList<String> attList = new ArrayList<String>();
-		attList.add("(none)");
-
-		return attList;
 	}
 	
 	@Override
 	public AttributeCircleLayoutContext createLayoutContext() {
 		return new AttributeCircleLayoutContext();
+	}
+	
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
 	}
 }

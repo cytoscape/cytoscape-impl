@@ -37,6 +37,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 /**
@@ -54,17 +55,17 @@ import org.cytoscape.work.TaskIterator;
  * @author <a href="mailto:scooter@cgl.ucsf.edu">Scooter Morris</a>
  * @version 0.9
  */
-public class BioLayoutFRAlgorithm extends BioLayoutAlgorithm<BioLayoutFRContext> {
+public class BioLayoutFRAlgorithm extends BioLayoutAlgorithm {
 	/**
 	 * This is the constructor for the bioLayout algorithm.
 	 */
-	public BioLayoutFRAlgorithm(boolean supportEdgeWeights) {
-		super("fruchterman-rheingold", (supportEdgeWeights ?  "Edge-weighted Force directed (BioLayout)" : "Force directed (BioLayout)"), supportEdgeWeights);
+	public BioLayoutFRAlgorithm(boolean supportEdgeWeights, UndoSupport undo) {
+		super("fruchterman-rheingold", (supportEdgeWeights ?  "Edge-weighted Force directed (BioLayout)" : "Force directed (BioLayout)"), supportEdgeWeights, undo);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, BioLayoutFRContext context, Set<View<CyNode>> nodesToLayOut) {
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
 		return new TaskIterator(
-			new BioLayoutFRAlgorithmTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context, supportWeights));
+			new BioLayoutFRAlgorithmTask(getName(), networkView, nodesToLayOut, (BioLayoutFRContext)context, supportWeights, attrName, undoSupport));
 	}
 	
 	@Override

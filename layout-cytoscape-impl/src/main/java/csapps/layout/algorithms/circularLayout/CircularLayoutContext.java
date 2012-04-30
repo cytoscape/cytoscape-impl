@@ -1,10 +1,9 @@
 package csapps.layout.algorithms.circularLayout;
 
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
-public class CircularLayoutContext extends AbstractLayoutContext implements TunableValidator {
+public class CircularLayoutContext implements TunableValidator {
 	
 	//TODO: these are not used in current implementations.
 	

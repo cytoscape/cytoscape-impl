@@ -5,10 +5,10 @@ import java.util.Set;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
-import org.cytoscape.view.layout.AbstractLayoutContext;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 import org.jgraph.plugins.layouts.AnnealingLayoutAlgorithm;
 import org.jgraph.plugins.layouts.CircleGraphLayout;
 import org.jgraph.plugins.layouts.GEMLayoutAlgorithm;
@@ -21,7 +21,7 @@ import org.jgraph.plugins.layouts.SugiyamaLayoutAlgorithm;
 import org.jgraph.plugins.layouts.TreeLayoutAlgorithm;
 
 
-public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutContext> {
+public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm {
 	public static final int ANNEALING = 0;
 	public static final int MOEN = 1;
 	public static final int CIRCLE_GRAPH = 2;
@@ -38,9 +38,9 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutC
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public JGraphLayoutWrapper(int layout_type) {
+	public JGraphLayoutWrapper(int layout_type, UndoSupport undo) {
 		// names here will be overridden by provided methods
-		super("jgraph", "jgraph");
+		super("jgraph", "jgraph", undo);
 		
 		this.layout_type = layout_type;
 
@@ -89,8 +89,8 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutC
 		layoutSettings = layout.createSettings();
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, AbstractLayoutContext context, Set<View<CyNode>> nodesToLayOut) {
-		return new TaskIterator(new JGraphLayoutWrapperTask(getName(), networkView, nodesToLayOut, getSupportedNodeAttributeTypes(), getSupportedEdgeAttributeTypes(), getInitialAttributeList(), context, layout, layoutSettings));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new JGraphLayoutWrapperTask(getName(), networkView, nodesToLayOut, context, layout, layoutSettings, undoSupport));
 	}
 
 	/**
@@ -163,8 +163,4 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm<AbstractLayoutC
 		return "";
 	}
 	
-	@Override
-	public AbstractLayoutContext createLayoutContext() {
-		return new AbstractLayoutContext();
-	}
 }
