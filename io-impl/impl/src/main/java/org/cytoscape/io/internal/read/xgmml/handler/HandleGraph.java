@@ -62,10 +62,10 @@ public class HandleGraph extends AbstractHandler {
 		return current;
 	}
 	
-	protected boolean isPrivate(Attributes atts) {
-		String s = atts.getValue("cy:private");
+	protected boolean isRegistered(Attributes atts) {
+		String s = atts.getValue("cy:registered");
 
-		return ObjectTypeMap.fromXGMMLBoolean(s);
+		return s == null || ObjectTypeMap.fromXGMMLBoolean(s);
 	}
 	
 	private ParseState handleCy2ModelAndView(String tag, Attributes atts, ParseState current) throws SAXException {
@@ -89,7 +89,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 		
 		final String id = getLabel(atts); // This is the network ID in 2.x
-		addCurrentNetwork(id, currentNet, atts, false);
+		addCurrentNetwork(id, currentNet, atts, true);
 		
 		return current;
 	}
@@ -111,7 +111,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 		
 		final Object id = getId(atts);
-		addCurrentNetwork(id, currentNet, atts, false);
+		addCurrentNetwork(id, currentNet, atts, true);
 		
 		return current;
 	}
@@ -130,7 +130,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 
 		final Object id = getId(atts);
-		addCurrentNetwork(id, currentNet, atts, false);
+		addCurrentNetwork(id, currentNet, atts, true);
 
 		return current;
 	}
@@ -139,10 +139,10 @@ public class HandleGraph extends AbstractHandler {
 	 * @param oldId The original Id of the graph element. If null, one will be created.
 	 * @param net Can be null if just adding an XLink to an existing network
 	 * @param atts The attributes of the graph tag
-	 * @param isPrivate Should be false for networks that must be registered later.
+	 * @param isRegistered Should be true for networks that must be registered.
 	 * @return The string identifier of the network
 	 */
-	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts, boolean isPrivate) {
+	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts, boolean isRegistered) {
 		if (oldId == null)
 			oldId = String.format("_graph%s_%s", manager.graphCount, net.getSUID());
 		
@@ -150,7 +150,7 @@ public class HandleGraph extends AbstractHandler {
 		manager.getNetworkIDStack().push(oldId);
 		
 		if (net != null) {
-			manager.addNetwork(oldId, net, isPrivate);
+			manager.addNetwork(oldId, net, isRegistered);
 			
 			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0)
 				setNetworkName(net, atts);

@@ -61,7 +61,11 @@ public class HandleNodeAttribute extends AbstractHandler {
 					// Handle 2.x nested network as network pointer
 					final String netId = atts.getValue("value");
 					final CyNode node = manager.getCurrentNode();
-					manager.getCache().addNetworkPointer(node, netId);
+					
+					// Don't add a network pointer again, if there is already one,
+					// because the first one may be a 2.x group-network
+					if (netId != null && !netId.equals(manager.getCache().getNetworkPointerId(node)))
+						manager.getCache().addNetworkPointer(node, netId);
 				}
 			}
 

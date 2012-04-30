@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
@@ -78,14 +80,14 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 
 	@Test
 	public void testReadFromTypicalFile() throws Exception {
-		CyNetworkView[] views = getViews("galFiltered.xgmml");
+		List<CyNetworkView> views = getViews("galFiltered.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 331, 362);
 		findInteraction(net, "YGR136W", "YGR058W", "pp", 1);
 	}
 	
 	@Test
 	public void testParseHiddenAtt() throws Exception {
-		CyNetworkView[] views = getViews("hiddenAtt.xgmml");
+		List<CyNetworkView> views = getViews("hiddenAtt.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
 		
 		// Test CyTables
@@ -109,7 +111,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	
 	@Test
 	public void testParseExpandedGroupFrom2x() throws Exception {
-		CyNetworkView[] views = getViews("group_2x_expanded.xgmml");
+		List<CyNetworkView> views = getViews("group_2x_expanded.xgmml");
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 4, 2);
@@ -140,7 +142,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	
 	@Test
 	public void testParseCollapsedGroupFrom2x() throws Exception {
-		CyNetworkView[] views = getViews("group_2x_collapsed.xgmml");
+		List<CyNetworkView> views = getViews("group_2x_collapsed.xgmml");
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
@@ -210,19 +212,17 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		assertTrue(reader.isLockedVisualProperty(edge, BasicVisualLexicon.EDGE_WIDTH.getIdString()));
 	}
 
-	private CyNetworkView[] getViews(String file) throws Exception {
+	private List<CyNetworkView> getViews(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
 		reader = new XGMMLNetworkReader(new FileInputStream(f), viewFactory, netFactory,
 				renderingEngineMgr, rootNetworkMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
 		reader.run(taskMonitor);
 
 		final CyNetwork[] networks = reader.getNetworks();
-		final CyNetworkView[] views = new CyNetworkView[networks.length];
-		int i = 0;
+		final List<CyNetworkView> views = new ArrayList<CyNetworkView>();
 
 		for (CyNetwork network : networks) {
-			views[i] = reader.buildCyNetworkView(network);
-			i++;
+			views.add(reader.buildCyNetworkView(network));
 		}
 
 		return views;

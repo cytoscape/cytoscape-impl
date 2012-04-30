@@ -58,14 +58,14 @@ public class HandleNodeGraph extends HandleGraph {
 				logger.error("The node's network pointer will not be created: "
 						+ "the network ID cannot be parsed from the XLink reference.");
 			
-			addCurrentNetwork(netId, network, atts, isPrivate(atts));
+			addCurrentNetwork(netId, network, atts, isRegistered(atts));
 		} else {
 			netId = getId(atts);
 			
 			// Create network
 			final CyRootNetwork rootNet = manager.getRootNetwork();
 			network = rootNet.addSubNetwork();
-			netId = addCurrentNetwork(netId, network, atts, isPrivate(atts));
+			netId = addCurrentNetwork(netId, network, atts, isRegistered(atts));
 		}
 		
 		if (netId != null)
@@ -75,8 +75,8 @@ public class HandleNodeGraph extends HandleGraph {
     }
 	
 	@Override
-	protected boolean isPrivate(Attributes atts) {
+	protected boolean isRegistered(Attributes atts) {
 		// 2.x nested graphs are group-networks, so they should be private.
-		return super.isPrivate(atts) || (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0);
+		return super.isRegistered(atts) && manager.getDocumentVersion() >= 3.0;
 	}
 }

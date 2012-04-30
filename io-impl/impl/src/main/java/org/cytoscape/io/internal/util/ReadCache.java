@@ -128,6 +128,10 @@ public class ReadCache {
 		networkPointerMap.put(node, networkId);
 	}
 	
+	public Object getNetworkPointerId(CyNode node) {
+		return networkPointerMap.get(node);
+	}
+	
 	public boolean hasNetworkPointers() {
 		return !networkPointerMap.isEmpty();
 	}

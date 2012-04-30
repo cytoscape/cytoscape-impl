@@ -94,8 +94,8 @@ public class XGMMLWriterTest {
 		write(rootNet, true);
 		assertEquals("0", evalString("/x:graph/@cy:view"));
 		assertEquals(""+XGMMLWriter.VERSION, evalString("/x:graph/@cy:documentVersion"));
-		// Making sure that the root graph also has the private attribute
-		assertEquals("1", evalString("/x:graph/@cy:private"));
+		// Making sure that the root graph also has the registered attribute
+		assertEquals("0", evalString("/x:graph/@cy:registered"));
 	}
 	
 	@Test
@@ -104,7 +104,7 @@ public class XGMMLWriterTest {
 		write(rootNet, true);
 		assertEquals(2, evalNumber("count(//x:graph)")); // Only the graph elements for the root and the base network
 		assertEquals(""+net.getSUID(), evalString("/x:graph/x:att/x:graph/@id"));
-		assertEquals("0", evalString("/x:graph/x:att/x:graph/@cy:private")); // Should be public
+		assertEquals("1", evalString("/x:graph/x:att/x:graph/@cy:registered"));
 	}
 	
 	@Test
@@ -112,7 +112,7 @@ public class XGMMLWriterTest {
 		CySubNetwork sn = rootNet.addSubNetwork();
 		setRegistered(sn, true);
 		write(rootNet, true);
-		assertEquals("0", evalString("/x:graph/x:att/x:graph[@id="+sn.getSUID()+"]/@cy:private"));
+		assertEquals("1", evalString("/x:graph/x:att/x:graph[@id="+sn.getSUID()+"]/@cy:registered"));
 	}
 	
 	@Test
@@ -134,7 +134,7 @@ public class XGMMLWriterTest {
 		write(rootNet, true);
 		// Test
 		assertEquals(""+sn.getSUID(), getElementId("//x:node[@id="+n.getSUID()+"]/x:att/x:graph")); // It is saved as a nested node graph
-		assertEquals("1", evalString("/x:graph//x:att/x:graph[@id="+sn.getSUID()+"]/@cy:private")); // But it must be private!
+		assertEquals("0", evalString("/x:graph//x:att/x:graph[@id="+sn.getSUID()+"]/@cy:registered")); // But it must NOT be registered!
 	}
 	
 	@Test

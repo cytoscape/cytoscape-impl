@@ -1,17 +1,18 @@
 package org.cytoscape.io.internal.read.sif;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
@@ -24,8 +25,8 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 	 */
 	@Test
 	public void testReadFromTypicalFile() throws Exception {
-
-		CyNetworkView[] views = getViews("sample.sif");
+		List<CyNetworkView> views = getViews("sample.sif");
+		
 		for ( CyNetworkView view : views ) {
 			for (CyNode n : view.getModel().getNodeList()) {
 				System.out.println("sample.sif: NODE " + view.getModel().getRow(n).get("name",String.class));
@@ -46,8 +47,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 	 */
 	@Test
 	public void testReadFileWithNoInteractions() throws Exception {
-		CyNetworkView[] views = getViews("degenerate.sif");
-
+		List<CyNetworkView> views = getViews("degenerate.sif");
 		CyNetwork net = checkSingleNetwork(views, 9, 0);
 
 		for (CyNode n : net.getNodeList())
@@ -56,9 +56,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 
 	@Test
 	public void testReadMultiWordProteinsFile() throws Exception {
-
-		CyNetworkView[] views = getViews("multiWordProteins.sif");
-
+		List<CyNetworkView> views = getViews("multiWordProteins.sif");
 		CyNetwork net = checkSingleNetwork(views, 28, 31);
 
 		findInteraction(net, "26S ubiquitin dependent proteasome", "I-kappa-B-alpha", "interactsWith", 1);
@@ -70,9 +68,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 
 	@Test
 	public void testReadMultiWordProteinsFileWithErrantSpaces() throws Exception {
-
-		CyNetworkView[] views = getViews("multiWordProteinsFileTrailingSpaces.sif");
-
+		List<CyNetworkView> views = getViews("multiWordProteinsFileTrailingSpaces.sif");
 		CyNetwork net = checkSingleNetwork(views, 28, 31);
 
 		findInteraction(net, "26S ubiquitin dependent proteasome", "I-kappa-B-alpha", "interactsWith", 1);
@@ -96,14 +92,13 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 		return snvp.getNetworks();
 	}
 
-	private CyNetworkView[] getViews(String file) throws Exception {
+	private List<CyNetworkView> getViews(String file) throws Exception {
 		final SIFNetworkReader snvp = readFile(file);
 		final CyNetwork[] networks = snvp.getNetworks(); 
-		final CyNetworkView[] views = new CyNetworkView[networks.length];
-		int i = 0;
+		final List<CyNetworkView> views = new ArrayList<CyNetworkView>();
+		
 		for(CyNetwork network: networks) {
-			views[i] = snvp.buildCyNetworkView(network);
-			i++;
+			views.add(snvp.buildCyNetworkView(network));
 		}
 		
 		return views;

@@ -486,9 +486,9 @@ public class ReadDataManager {
 		return edge;
 	}
 	
-	protected void addNetwork(Object oldId, CyNetwork net, boolean isPrivate) {
+	protected void addNetwork(Object oldId, CyNetwork net, boolean isRegistered) {
 		if (net != null) {
-			if (!isPrivate && !(net instanceof CyRootNetwork))
+			if (isRegistered && !(net instanceof CyRootNetwork))
 				publicNetworks.add(net);
 			
 			cache.cache(oldId, net);

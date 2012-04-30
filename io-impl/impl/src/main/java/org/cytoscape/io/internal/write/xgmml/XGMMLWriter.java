@@ -258,7 +258,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         		writeAttributePair("cy:networkId", network.getSUID());
         		writeAttributePair("cy:visualStyle", visualStyleName);
         	} else {
-        		writeAttributePair("cy:private", ObjectTypeMap.toXGMMLBoolean(!isRegistered(network)));
+        		writeAttributePair("cy:registered", ObjectTypeMap.toXGMMLBoolean(isRegistered(network)));
         	}
         } else {
         	// Only if exporting to standard XGMML
@@ -373,8 +373,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 				writeAttributePair("id", net.getSUID());
 				// Save the label to make it more human readable
 				writeAttributePair("label", getLabel(net, net));
-				// Unregistered networks are saved as "private"
-				writeAttributePair("cy:private", ObjectTypeMap.toXGMMLBoolean(!isRegistered(net)));
+				writeAttributePair("cy:registered", ObjectTypeMap.toXGMMLBoolean(isRegistered(net)));
 				write(">\n");
 				depth++;
 		

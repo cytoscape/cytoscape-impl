@@ -114,11 +114,11 @@ public class AbstractNetworkReaderTest {
 	/**
 	 * Assuming we only create one network.
 	 */
-	protected CyNetwork checkSingleNetwork(CyNetworkView[] views, int numNodes, int numEdges) {
+	protected CyNetwork checkSingleNetwork(List<CyNetworkView> views, int numNodes, int numEdges) {
 		assertNotNull(views);
-		assertEquals(1, views.length);
+		assertEquals(1, views.size());
 
-		CyNetwork net = views[0].getModel();
+		CyNetwork net = views.get(0).getModel();
 
 		assertNotNull(net);
 
