@@ -803,11 +803,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vpOriginal, V value) {
 		
 		final VisualProperty<?> vp = vpOriginal;
 
+		// If value is null, simply use the VP's default value.
 		if(value == null)
 			value = (V) vp.getDefault();
 		
@@ -871,7 +873,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			final String shapeID = shape.getSerializableString();
 			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
 		} else if (vp == BasicVisualLexicon.EDGE_LABEL) {
-			setText((String) value);
+			setText(value.toString());
 		} else if (vp == DVisualLexicon.EDGE_TOOLTIP) {
 			setToolTip(value.toString());
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {

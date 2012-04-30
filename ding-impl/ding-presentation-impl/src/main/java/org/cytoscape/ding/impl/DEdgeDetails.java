@@ -53,7 +53,7 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 
-class DEdgeDetails extends EdgeDetails {
+final class DEdgeDetails extends EdgeDetails {
 
 	final DGraphView m_view;
 	final Object m_deletedEntry = new Object();
@@ -587,14 +587,12 @@ class DEdgeDetails extends EdgeDetails {
 	 * A negative labelCount has the special meaning to remove overridden count.
 	 */
 	void overrideLabelCount(final CyEdge edge, final int labelCount) {
-	/*
 		if ((labelCount < 0) || (labelCount == super.labelCount(edge)))
 			m_labelCounts.remove(edge);
 		else {
 			m_labelCounts.put(edge, labelCount);
 			isCleared = false;
 		}
-		*/
 	}
 
 	/**

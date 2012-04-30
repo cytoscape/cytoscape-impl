@@ -350,7 +350,7 @@ public final class GraphRenderer {
 					final CyNode cyNode = graph.getNode(node);
 					final byte nodeShape = nodeDetails.shape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
-					for ( CyEdge edge : touchingEdges ) {
+					for (final CyEdge edge : touchingEdges ) {
 						final long otherNode = node ^ edge.getSource().getSUID()
 							^ edge.getTarget().getSUID();
 						final CyNode otherCyNode = graph.getNode(otherNode);
@@ -458,22 +458,17 @@ public final class GraphRenderer {
 
 							// Take care of label rendering.
 							if ((lodBits & LOD_EDGE_LABELS) != 0) {
+								
 								final int labelCount = edgeDetails.labelCount(edge);
-
 								for (int labelInx = 0; labelInx < labelCount; labelInx++) {
 									final String text = edgeDetails.labelText(edge, labelInx);
 									final Font font = edgeDetails.labelFont(edge, labelInx);
-									final double fontScaleFactor = edgeDetails.labelScaleFactor(edge,
-									                                                            labelInx);
+									final double fontScaleFactor = edgeDetails.labelScaleFactor(edge, labelInx);
 									final Paint paint = edgeDetails.labelPaint(edge, labelInx);
-									final byte textAnchor = edgeDetails.labelTextAnchor(edge,
-									                                                    labelInx);
-									final byte edgeAnchor = edgeDetails.labelEdgeAnchor(edge,
-									                                                    labelInx);
-									final float offsetVectorX = edgeDetails.labelOffsetVectorX(edge,
-									                                                           labelInx);
-									final float offsetVectorY = edgeDetails.labelOffsetVectorY(edge,
-									                                                           labelInx);
+									final byte textAnchor = edgeDetails.labelTextAnchor(edge, labelInx);
+									final byte edgeAnchor = edgeDetails.labelEdgeAnchor(edge, labelInx);
+									final float offsetVectorX = edgeDetails.labelOffsetVectorX(edge, labelInx);
+									final float offsetVectorY = edgeDetails.labelOffsetVectorY(edge, labelInx);
 									final byte justify;
 
 									if (text.indexOf('\n') >= 0)

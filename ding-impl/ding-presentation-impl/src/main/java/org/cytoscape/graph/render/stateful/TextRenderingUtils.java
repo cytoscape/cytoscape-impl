@@ -82,7 +82,6 @@ final class TextRenderingUtils {
 	 * DOCUMENT ME!
 	 *
 	 * @param grafx DOCUMENT ME!
-	 * @param text DOCUMENT ME!
 	 * @param font DOCUMENT ME!
 	 * @param fontScaleFactor DOCUMENT ME!
 	 * @param textXCenter DOCUMENT ME!

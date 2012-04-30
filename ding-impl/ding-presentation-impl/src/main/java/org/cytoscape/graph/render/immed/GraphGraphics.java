@@ -1110,7 +1110,6 @@ public final class GraphGraphics {
 			final Paint arrow1Paint, final float x0, final float y0,
 			EdgeAnchors anchors, final float x1, final float y1,
 			final float edgeThickness, final Stroke edgeStroke, final Paint edgePaint) {
-		final long startTime = System.nanoTime();
 		final double curveFactor = CURVE_ELLIPTICAL;
 
 		if (anchors == null) {
