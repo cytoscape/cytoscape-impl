@@ -19,6 +19,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListMultipleSelection;
 
@@ -69,7 +70,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 			return;
 		}
 
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		JTextArea jta = new JTextArea(getDescription());
 		jta.setLineWrap(true);
 		jta.setWrapStyleWord(true);

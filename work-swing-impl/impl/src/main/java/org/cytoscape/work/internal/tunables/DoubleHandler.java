@@ -63,9 +63,10 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 		//set Gui
 		textField = new JFormattedTextField(d.toString());
 		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
+		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		textField.addActionListener(this);
 		if (horizontal) {

@@ -5,6 +5,7 @@ import java.lang.reflect.*;
 import javax.swing.*;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -67,9 +68,9 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 		}
 
 		//set Gui
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		final JLabel textArea = new JLabel(getDescription());
-		textArea.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textArea.setFont(LABEL_FONT);
 		textArea.setPreferredSize(DEF_LABEL_SIZE);
 		textArea.setVerticalTextPosition(SwingConstants.CENTER);

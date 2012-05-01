@@ -57,10 +57,11 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		//set Gui
 		textField = new JFormattedTextField(s);
 		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		final JLabel label = new JLabel(getDescription());
 		label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 		label.setFont(LABEL_FONT);
+		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textField.setFont(TEXT_FONT);
 		
 		textField.setHorizontalAlignment(JTextField.LEFT);

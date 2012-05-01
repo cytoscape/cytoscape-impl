@@ -30,6 +30,7 @@
 package org.cytoscape.internal.layout.ui;
 
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -309,6 +310,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		// Create our main panel
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
+		mainPanel.setAutoscrolls(true);
 
 		// Create a panel for the list of algorithms
 		JPanel algorithmSelectorPanel = new JPanel();
@@ -324,7 +326,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		mainPanel.add(algorithmSelectorPanel);
 
 		// Create a panel for algorithm's content
-		this.algorithmPanel = new JPanel();
+		this.algorithmPanel = new JPanel(new BorderLayout(10, 10));
+		algorithmPanel.setAutoscrolls(true);
 		mainPanel.add(algorithmPanel);
 
 		// Create a panel for our button box

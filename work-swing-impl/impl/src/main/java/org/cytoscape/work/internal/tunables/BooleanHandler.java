@@ -8,11 +8,13 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 
@@ -46,11 +48,12 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 
 	private void init() {
 		//setup GUI
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		checkBox = new JCheckBox();
 		checkBox.setSelected(getBoolean());
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN, 12));
+		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		checkBox.addActionListener(this);
 
 		if (horizontal) {

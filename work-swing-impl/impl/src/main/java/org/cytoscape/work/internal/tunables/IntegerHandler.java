@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import javax.swing.BorderFactory;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -60,7 +61,7 @@ public class IntegerHandler extends AbstractGUITunableHandler implements ActionL
 		}
 
 		//set GUI
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		JLabel label = new JLabel(getDescription());
 		label.setFont(new Font(null, Font.PLAIN,12));
 		textField = new JFormattedTextField();
@@ -68,6 +69,7 @@ public class IntegerHandler extends AbstractGUITunableHandler implements ActionL
 		textField.setValue(i.toString());
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		textField.addActionListener(this);
+		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);

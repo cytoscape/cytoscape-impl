@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -147,6 +148,7 @@ public class FileHandler extends AbstractGUITunableHandler {
 	private void setGui() {
 		//titleSeparator = new JSeparator();
 		titleLabel = new JLabel();
+		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		image = new ImageIcon(getClass().getResource("/images/ximian/stock_open.png"));
 		fileTextField = new JTextField();
 		fileTextField.setName("fileTextField");

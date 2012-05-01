@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -16,6 +17,7 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.internal.tunables.utils.myBoundedSwing;
 import org.cytoscape.work.internal.tunables.utils.mySlider;
 import org.cytoscape.work.util.AbstractBounded;
@@ -72,13 +74,14 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 	private void init() {
 		final String title = getDescription();
 		useSlider = getParams().getProperty("slider", "false").equalsIgnoreCase("true");
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 
 		try {
 			final T bounded = getBounded();
 			if (useSlider) {
 				JLabel label = new JLabel(title);
 				label.setFont(new Font(null, Font.PLAIN,12));
+				label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				panel.add(label,BorderLayout.WEST);
 				slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
 				                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict());
@@ -89,6 +92,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 					new JLabel(title + " (max: " + bounded.getLowerBound().toString()
 					          + " min: " + bounded.getUpperBound().toString() + ")" );
 				label.setFont(new Font(null, Font.PLAIN,12));
+				label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 				                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 				                                  bounded.isUpperBoundStrict());
