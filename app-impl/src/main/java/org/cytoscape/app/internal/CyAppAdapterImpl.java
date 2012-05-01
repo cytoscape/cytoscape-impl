@@ -12,6 +12,9 @@ import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
@@ -135,6 +138,9 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	//
 	private final CyApplicationManager cyApplicationManager;
 	private final CyEventHelper cyEventHelper;
+	private final CyGroupAggregationManager cyGroupAggregationManager;
+	private final CyGroupFactory cyGroupFactory;
+	private final CyGroupManager cyGroupManager;
 	private final CyLayoutAlgorithmManager cyLayoutAlgorithmManager;
 	private final CyNetworkFactory cyNetworkFactory;
 	private final CyNetworkManager cyNetworkManager;
@@ -280,6 +286,9 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	//
 	CyAppAdapterImpl( final CyApplicationManager cyApplicationManager,
 	                     final CyEventHelper cyEventHelper,
+	                     final CyGroupAggregationManager cyGroupAggregationManager,
+	                     final CyGroupFactory cyGroupFactory,
+	                     final CyGroupManager cyGroupManager,
 	                     final CyLayoutAlgorithmManager cyLayoutAlgorithmManager,
 	                     final CyNetworkFactory cyNetworkFactory,
 	                     final CyNetworkManager cyNetworkManager,
@@ -386,6 +395,9 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	{		
 		this.cyApplicationManager = cyApplicationManager;
 		this.cyEventHelper = cyEventHelper;
+		this.cyGroupAggregationManager = cyGroupAggregationManager;
+		this.cyGroupFactory = cyGroupFactory;
+		this.cyGroupManager = cyGroupManager;
 		this.cyLayoutAlgorithmManager = cyLayoutAlgorithmManager;
 		this.cyNetworkFactory = cyNetworkFactory;
 		this.cyNetworkManager = cyNetworkManager;
@@ -485,6 +497,9 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	// 
 	public CyApplicationManager getCyApplicationManager() { return cyApplicationManager; }
 	public CyEventHelper getCyEventHelper() { return cyEventHelper; } 
+	@Override public CyGroupAggregationManager getCyGroupAggregationManager() { return cyGroupAggregationManager; } 
+	@Override public CyGroupFactory getCyGroupFactory() { return cyGroupFactory; } 
+	@Override public CyGroupManager getCyGroupManager() { return cyGroupManager; } 
 	public CyLayoutAlgorithmManager getCyLayoutAlgorithmManager() { return cyLayoutAlgorithmManager; } 
 	public CyNetworkFactory getCyNetworkFactory() { return cyNetworkFactory; }
 	public CyNetworkManager getCyNetworkManager() { return cyNetworkManager; } 

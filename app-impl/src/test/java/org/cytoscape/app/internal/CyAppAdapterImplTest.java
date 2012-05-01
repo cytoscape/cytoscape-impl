@@ -24,6 +24,9 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.data.CyGroupAggregationManager;
 //import org.cytoscape.app.CyAppAdapterTest;
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.property.CyProperty;
@@ -103,6 +106,9 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 		CyAppAdapter adapter = new CyAppAdapterImpl( 
 			mock(CyApplicationManager.class),
 			mock(CyEventHelper.class),
+			mock(CyGroupAggregationManager.class),
+			mock(CyGroupFactory.class),
+			mock(CyGroupManager.class),
 			mock(CyLayoutAlgorithmManager.class),
 			mock(CyNetworkFactory.class),
 			mock(CyNetworkManager.class),
