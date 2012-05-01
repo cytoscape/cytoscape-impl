@@ -31,6 +31,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Create the aggregation manager
 		CyGroupAggregationManager cyAggMgr = 
 			new CyGroupAggregationManagerImpl(cyGroupManager);
+    registerService(bc,cyAggMgr,CyGroupAggregationManager.class, new Properties());
 
 		// Get our Settings object
 		CyGroupSettingsImpl cyGroupSettings = 
