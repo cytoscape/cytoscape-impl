@@ -31,6 +31,8 @@ package org.cytoscape.internal.layout.ui;
 
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.property.CyProperty;
@@ -41,7 +43,7 @@ import org.cytoscape.work.swing.PanelTaskManager;
 import java.awt.event.ActionEvent;
 
 
-public class SettingsAction extends AbstractCyAction {
+public class SettingsAction extends AbstractCyAction implements SetCurrentNetworkViewListener {
 	private final static long serialVersionUID = 1202339874289357L;
 
 	private CyLayoutAlgorithmManager cyl;
@@ -69,5 +71,10 @@ public class SettingsAction extends AbstractCyAction {
 
 	public void actionPerformed(ActionEvent e) {
 		settingsDialog.actionPerformed(e);
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		settingsDialog.setNetworkView(e.getNetworkView());
 	}
 }

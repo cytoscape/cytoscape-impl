@@ -116,6 +116,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.events.NetworkViewChangedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -281,6 +282,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, preferenceAction, CyAction.class, new Properties());
 		registerService(bc, bookmarkAction, CyAction.class, new Properties());
 		registerService(bc, settingsAction, CyAction.class, new Properties());
+		registerService(bc, settingsAction, SetCurrentNetworkViewListener.class, new Properties());
 		registerService(bc, cytoPanelWestAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());

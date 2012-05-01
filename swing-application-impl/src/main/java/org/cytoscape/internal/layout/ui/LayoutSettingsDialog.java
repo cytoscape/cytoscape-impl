@@ -34,12 +34,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -60,8 +63,10 @@ import javax.swing.border.TitledBorder;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -70,7 +75,9 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.util.ListSingleSelection;
 
 
 /**
@@ -81,7 +88,8 @@ import org.cytoscape.work.swing.PanelTaskManager;
  */
 public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private final static long serialVersionUID = 1202339874277105L;
-	private TaskFactory currentLayout = null;
+	private CyLayoutAlgorithm currentLayout;
+	private TaskFactory currentAction = null;
 
 	// Dialog components
 	private JLabel titleLabel; // Our title
@@ -97,6 +105,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private CyProperty cytoscapePropertiesServiceRef;
 	private DynamicTaskFactoryProvisioner factoryProvisioner;
 	private boolean initialized;
+	private LayoutAttributeTunable layoutAttributeTunable;
+	private JPanel layoutAttributePanel;
+	private final SelectedTunable selectedTunable;
 
 	/**
 	 * Creates a new LayoutSettingsDialog object.
@@ -120,6 +131,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
 		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
 		
+		selectedTunable = new SelectedTunable();
+		
 		Properties props = (Properties)this.cytoscapePropertiesServiceRef.getProperties();
 		
 		//
@@ -141,7 +154,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		if (command.equals("done"))
 			setVisible(false);
 		else if (command.equals("execute")) {
-			taskManager.execute(currentLayout.createTaskIterator());
+			taskManager.execute(currentAction.createTaskIterator());
 		} else {
 			// OK, initialize and display
 			if (isVisible()) {
@@ -152,6 +165,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					setLocationRelativeTo(desktop.getJFrame());
 					pack();
 				}
+				setNetworkView(appMgr.getCurrentNetworkView());
 				setVisible(true);
 				initialized = true;
 			}
@@ -326,8 +340,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		mainPanel.add(algorithmSelectorPanel);
 
 		// Create a panel for algorithm's content
-		this.algorithmPanel = new JPanel(new BorderLayout(10, 10));
+		this.algorithmPanel = new JPanel();
 		algorithmPanel.setAutoscrolls(true);
+		algorithmPanel.setLayout(new GridBagLayout());
 		mainPanel.add(algorithmPanel);
 
 		// Create a panel for our button box
@@ -375,41 +390,126 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			Object o = algorithmSelector.getSelectedItem();
 			// if it's a string, that means it's the instructions
 			if (!(o instanceof String)) {
-				final CyLayoutAlgorithm newLayout = (CyLayoutAlgorithm)o;
+				currentLayout = (CyLayoutAlgorithm)o;
 				//Checking if the context has already been charged, if so there is no need to do it again
-				Object context = newLayout.getDefaultLayoutContext();
+				Object context = currentLayout.getDefaultLayoutContext();
 
-				TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(newLayout, context));
+				TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
 				if (!provisioner.isReady()) {
 					throw new IllegalArgumentException("Layout is not fully configured");
 				}
 				
 				JPanel tunablePanel = taskManager.getConfiguration(provisioner, context);
 
+				int row = 0;
 				if (tunablePanel == null){
-					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not avialable!", "Warning", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not available!", "Warning", JOptionPane.WARNING_MESSAGE);
 					algorithmPanel.removeAll();
 				}
 				else {
 					algorithmPanel.removeAll();
-					algorithmPanel.add(tunablePanel);					
+					algorithmPanel.add(tunablePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));					
 				}
-				currentLayout = provisioner;
+				
+				layoutAttributePanel = new JPanel();
+				layoutAttributePanel.setLayout(new GridLayout());
+				algorithmPanel.add(layoutAttributePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+				
+				CyNetworkView view = appMgr.getCurrentNetworkView();
+				setNetworkView(view);
+				
+				if (currentLayout.getSupportsSelectedOnly()) {
+					selectedTunable.selectedNodesOnly =  hasSelectedNodes(view);
+					JPanel panel = taskManager.getConfiguration(null, selectedTunable);
+					algorithmPanel.add(panel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+				}
+				currentAction = provisioner;
 				LayoutSettingsDialog.this.pack();
 			}
 		}
+	}
+
+	void setNetworkView(CyNetworkView view) {
+		if (layoutAttributePanel == null) {
+			return;
+		}
+		layoutAttributePanel.removeAll();
+		layoutAttributeTunable = new LayoutAttributeTunable();
+		if (view != null) {
+			List<String> attributeList = getAttributeList(view.getModel(), currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
+			if (attributeList.size() > 0) {
+				layoutAttributeTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
+				layoutAttributeTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
+				JPanel panel = taskManager.getConfiguration(null, layoutAttributeTunable);
+				layoutAttributePanel.add(panel);
+				panel.invalidate();
+			}
+		}
+	}
+
+	private boolean hasSelectedNodes(CyNetworkView view) {
+		CyNetwork network = view.getModel();
+		for (CyNode node : network.getNodeList()) {
+			if (network.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private List<String> getAttributeList(CyNetwork network, Set<Class<?>> allowedNodeAttributeTypes, Set<Class<?>> allowedEdgeAttributeTypes) {
+		List<String> attributes = new ArrayList<String>();
+        Set<Class<?>> allowedTypes;
+		CyTable table;
+		if (allowedNodeAttributeTypes.size() > 0) {
+			allowedTypes = allowedNodeAttributeTypes;
+			table = network.getDefaultNodeTable();
+		} else if (allowedEdgeAttributeTypes.size() > 0) {
+			allowedTypes = allowedEdgeAttributeTypes;
+			table = network.getDefaultEdgeTable();
+		} else {
+			return attributes;
+		}
+		
+		for (final CyColumn column : table.getColumns()) {
+            if (allowedTypes.contains(column.getType())) {
+            	attributes.add(column.getName());
+            }
+		}
+        return attributes;
+	}
+	
+	private String getLayoutAttribute() {
+		if (layoutAttributeTunable == null || layoutAttributeTunable.layoutAttribute == null) {
+			return null;
+		}
+		return layoutAttributeTunable.layoutAttribute.getSelectedValue();
+	}
+
+	private Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView) {
+		if (layout.getSupportsSelectedOnly() && selectedTunable.selectedNodesOnly) {
+			Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
+			CyNetwork network = networkView.getModel();
+			for (View<CyNode> view : networkView.getNodeViews()) {
+				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class)) {
+					nodeViews.add(view);
+				}
+			}
+			return nodeViews;
+		}
+		return CyLayoutAlgorithm.ALL_NODE_VIEWS;
 	}
 
 	private NetworkViewTaskFactory wrapWithContext(final CyLayoutAlgorithm layout, final Object tunableContext) {
 		return new NetworkViewTaskFactory() {
 			@Override
 			public boolean isReady(CyNetworkView networkView) {
-				return layout.isReady(networkView, tunableContext, CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
+				return layout.isReady(networkView, tunableContext, getLayoutNodes(layout, networkView), getLayoutAttribute());
 			}
 			
 			@Override
 			public TaskIterator createTaskIterator(CyNetworkView networkView) {
-				return layout.createTaskIterator(networkView, tunableContext, CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
+				return layout.createTaskIterator(networkView, tunableContext, getLayoutNodes(layout, networkView), getLayoutAttribute());
 			}
 		};
 	}
@@ -447,5 +547,15 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 			return this;
 		}
+	}
+	
+	public static class SelectedTunable {
+		@Tunable(description="Layout only selected nodes")
+		public boolean selectedNodesOnly;
+	}
+	
+	public static class LayoutAttributeTunable {
+		@Tunable(description="Weight using")
+		public ListSingleSelection<String> layoutAttribute;
 	}
 }
