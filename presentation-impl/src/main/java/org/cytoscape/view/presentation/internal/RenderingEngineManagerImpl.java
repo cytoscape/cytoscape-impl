@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -36,7 +37,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	 * listens to Presentation events and update its map based on them.
 	 */
 	public RenderingEngineManagerImpl() {
-		this.renderingEngineMap = new HashMap<View<?>, Collection<RenderingEngine<?>>>();
+		this.renderingEngineMap = new WeakHashMap<View<?>, Collection<RenderingEngine<?>>>();
 		this.factoryMap = new HashMap<String, RenderingEngineFactory<?>>();
 	}
 
