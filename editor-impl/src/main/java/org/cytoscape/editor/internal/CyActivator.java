@@ -34,39 +34,86 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		CreateNetworkViewTaskFactory createNetworkViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
 
-		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
-		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
-		NodeViewTaskFactory addNestedNetworkTaskFactory = new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
-		NodeViewTaskFactory deleteNestedNetworkTaskFactory = new DeleteNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
-		NodeViewTaskFactory goToNestedNetworkTaskFactory = new GoToNestedNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyApplicationManagerServiceRef, createNetworkViewTaskFactoryServiceRef);
 			
+		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		// Setting preferredAction to OPEN registers this service for double clicks on
 		// the network canvas, something we don't want right now for this task!
-		//sifInterpreterTaskFactoryProps.setProperty("preferredAction","OPEN");
+		//sifInterpreterTaskFactoryProps.setProperty(PREFERRED_ACTION,"OPEN");
 		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools");
 		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "5.0f");
 		sifInterpreterTaskFactoryProps.setProperty(TITLE, "SIF Interpreter");
 		registerService(bc, sifInterpreterTaskFactory, NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
 
+		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
 		Properties networkViewLocationTaskFactoryProps = new Properties();
 		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
 		networkViewLocationTaskFactoryProps.setProperty(TITLE, "Add Node");
 		registerService(bc, networkViewLocationTaskFactory, NetworkViewLocationTaskFactory.class, networkViewLocationTaskFactoryProps);
 
+		// We need a place to hold the objects themselves
+		ClipboardManagerImpl clipboardManager = new ClipboardManagerImpl();
+
+		// Copy node
+		NetworkViewTaskFactory copyTaskFactory = 
+			new CopyTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+		Properties copyTaskFactoryProps = new Properties();
+		copyTaskFactoryProps.setProperty(ENABLE_FOR, "SelectedNodes");
+		copyTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		copyTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		copyTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
+		copyTaskFactoryProps.setProperty(TITLE, "Copy");
+		copyTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0f");
+		registerService(bc, copyTaskFactory, NetworkViewTaskFactory.class, copyTaskFactoryProps);
+
+		// Cut node
+		NetworkViewTaskFactory cutTaskFactory = 
+			new CutTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+		Properties cutTaskFactoryProps = new Properties();
+		cutTaskFactoryProps.setProperty(ENABLE_FOR, "SelectedNodes");
+		cutTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		cutTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		cutTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
+		cutTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1f");
+		cutTaskFactoryProps.setProperty(TITLE, "Cut");
+		registerService(bc, cutTaskFactory, NetworkViewTaskFactory.class, cutTaskFactoryProps);
+
+		// Paste node
+		NetworkViewLocationTaskFactory pasteTaskFactory = 
+			new PasteTaskFactory(clipboardManager, cyEventHelperServiceRef, visualMappingManagerServiceRef);
+		Properties pasteTaskFactoryProps = new Properties();
+		pasteTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		pasteTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		pasteTaskFactoryProps.setProperty(TITLE, "Paste");
+		pasteTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2f");
+		pasteTaskFactoryProps.setProperty(ACCELERATOR, "cmd v");
+		registerService(bc, pasteTaskFactory, NetworkViewLocationTaskFactory.class, pasteTaskFactoryProps);
+
+		// How do I add this in the menu bar, but not get a duplicate in the context menu?
+		// registerService(bc, pasteTaskFactory, NetworkViewTaskFactory.class, pasteTaskFactoryProps);
+
+		// At some point, add Paste Special.  Paste special would allow paste node only, paste copy, etc.
+
+
+		NodeViewTaskFactory addNestedNetworkTaskFactory = 
+			new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
 		Properties addNestedNetworkProps = new Properties();
 		addNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
 		addNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
 		addNestedNetworkProps.setProperty(TITLE, "Add Nested Network");
 		registerService(bc, addNestedNetworkTaskFactory, NodeViewTaskFactory.class, addNestedNetworkProps);
 
+		NodeViewTaskFactory deleteNestedNetworkTaskFactory = 
+			new DeleteNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
 		Properties deleteNestedNetworkProps = new Properties();
 		deleteNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
 		deleteNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
 		deleteNestedNetworkProps.setProperty(TITLE, "Delete Nested Network");
 		registerService(bc, deleteNestedNetworkTaskFactory, NodeViewTaskFactory.class, deleteNestedNetworkProps);
 		
+		NodeViewTaskFactory goToNestedNetworkTaskFactory = new GoToNestedNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyApplicationManagerServiceRef, createNetworkViewTaskFactoryServiceRef);
 		Properties goToNestedNetworkProps = new Properties();
 		goToNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
 		goToNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
