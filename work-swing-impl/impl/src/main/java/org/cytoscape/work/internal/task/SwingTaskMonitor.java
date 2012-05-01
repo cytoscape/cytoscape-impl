@@ -156,4 +156,8 @@ class SwingTaskMonitor implements TaskMonitor {
 	public synchronized boolean isOpened() {
 		return dialog != null;
 	}
+
+	public synchronized boolean isClosed() {
+		return task == null;
+	}
 }

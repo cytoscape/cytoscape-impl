@@ -188,7 +188,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							taskMonitor.open();
+							if (!taskMonitor.isClosed()) {
+								taskMonitor.open();
+							}
 						}
 					});
 				}
@@ -247,9 +249,13 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			}
 
 			// clean up the task monitor
-			if (taskMonitor.isOpened() && !taskMonitor.isShowingException())
-				taskMonitor.close();
-
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					if (taskMonitor.isOpened() && !taskMonitor.isShowingException())
+						taskMonitor.close();
+				}
+			});
 		}
 	}
 
