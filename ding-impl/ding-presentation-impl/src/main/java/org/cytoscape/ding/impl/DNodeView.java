@@ -406,12 +406,18 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public void setTransparency(int trans) {
 		synchronized (graphView.m_lock) {
-			if (trans < 0 || trans > 255)
-				throw new IllegalArgumentException("Transparency is out of range.");
-			transparency = trans;
+			if (trans < 0 || trans > 255) {
+				// If out of range, use default value.
+				transparency = BasicVisualLexicon.NODE_TRANSPARENCY.getDefault();
+			} else
+				transparency = trans;
+
+			final Color unselectedColor = (Color) getUnselectedPaint();
+			if(unselectedColor.getAlpha() != transparency)
+				setUnselectedPaint(new Color(unselectedColor.getRed(), unselectedColor.getGreen(), unselectedColor.getBlue(), transparency));
+			
 			graphView.m_contentChanged = true;
 		}
-
 	}
 
 	/**

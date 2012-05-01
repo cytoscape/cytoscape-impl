@@ -34,8 +34,6 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
-import java.util.Collection;
-import java.util.List;
 
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
@@ -46,10 +44,7 @@ import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
@@ -62,6 +57,8 @@ import org.cytoscape.view.presentation.property.values.LineType;
  *
  */
 public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, EdgeAnchors {
+	
+	private static final int DEFAULT_TRANSPARENCY = 255;
 	
 	static final float DEFAULT_ARROW_SIZE = 8.0f;
 	static final Paint DEFAULT_ARROW_PAINT = Color.BLACK;
@@ -91,29 +88,22 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	
 	private LineType lineType;
 	private Float fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault().floatValue();
-	
-	// Visual Properties used in this node view.
-	private final VisualLexicon lexicon;
 
-	
 	/**
 	 * 
-	 * @param lexicon
 	 * @param view
 	 * @param inx
 	 * @param model
 	 */
-	DEdgeView(final VisualLexicon lexicon, final DGraphView view, final long inx, final CyEdge model) {
+	DEdgeView(final DGraphView view, final long inx, final CyEdge model) {
 		super(model);
-
-		if ( view == null )
-			throw new NullPointerException("view for edge view is null");
+		if (view == null )
+			throw new IllegalArgumentException("Constructor needs its parent DGraphView.");
 		
-		this.lexicon = lexicon;
 		m_view = view;
 		m_inx = inx;
 		m_selected = false;
-		transparency = 255;
+		transparency = DEFAULT_TRANSPARENCY;
 		m_sourceUnselectedPaint = DEFAULT_ARROW_PAINT;
 		m_sourceSelectedPaint = Color.red;
 		m_targetUnselectedPaint = DEFAULT_ARROW_PAINT;
@@ -758,29 +748,17 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setTransparency(int trans) {
+	public void setTransparency(final int trans) {
 		synchronized (m_view.m_lock) {
-			if (trans < 0 || trans > 255)
-				throw new IllegalArgumentException("Transparency is out of range.");
-			
-			transparency = trans;
+			if (trans < 0 || trans > 255) {
+				// If out of range, use default value.
+				transparency = BasicVisualLexicon.EDGE_TRANSPARENCY.getDefault();
+			} else
+				transparency = trans;
 
-			if (m_view.m_edgeDetails.m_unselectedPaints.get(model) != null) {
-				final Paint unselectedPaint = m_view.m_edgeDetails.unselectedPaint(model);
-				final Color transUnselected = new Color(((Color) unselectedPaint).getRed(),
-						((Color) unselectedPaint).getGreen(), ((Color) unselectedPaint).getBlue(), trans);
-
-				m_view.m_edgeDetails.setUnselectedPaint(model, transUnselected);
-			}
-			
-			if (m_view.m_edgeDetails.m_selectedPaints.get(model) != null) {
-				final Paint selectedPaint = m_view.m_edgeDetails.selectedPaint(model);
-
-				final Color transSelected = new Color(((Color) selectedPaint).getRed(),
-						((Color) selectedPaint).getGreen(), ((Color) selectedPaint).getBlue(), trans);
-
-				m_view.m_edgeDetails.setSelectedPaint(model, transSelected);
-			}
+			final Color unselectedColor = (Color) getUnselectedPaint();
+			if(unselectedColor.getAlpha() != transparency)
+				setUnselectedPaint(new Color(unselectedColor.getRed(), unselectedColor.getGreen(), unselectedColor.getBlue(), transparency));
 			
 			m_view.m_contentChanged = true;
 		}
@@ -901,8 +879,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				setLineType(EdgeView.STRAIGHT_LINES);
 		} else if(vp == DVisualLexicon.EDGE_BEND) {
 			setBend((Bend) value);
-		}
-		
+		}		
 		visualProperties.put(vp, value);
 	}
 }

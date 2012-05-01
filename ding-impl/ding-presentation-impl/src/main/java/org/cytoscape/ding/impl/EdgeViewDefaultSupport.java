@@ -32,33 +32,22 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
-import java.util.Collection;
 
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 
-class EdgeViewDefaultSupport {
+final class EdgeViewDefaultSupport {
 
 	private final Object lock;
 	private final DEdgeDetails edgeDetails;
-	private final VisualLexicon lexicon;
 	
-	EdgeViewDefaultSupport(final VisualLexicon lexicon, DEdgeDetails edgeDetails, Object lock) {
-		this.edgeDetails = edgeDetails;
-		this.lock = lock;
-		this.lexicon = lexicon;
-	}
-
 	private Font font;
 	private float fontSize;
 	private LineType lineType;
@@ -72,33 +61,14 @@ class EdgeViewDefaultSupport {
 	
 	private Color labelColor;
 	
+	EdgeViewDefaultSupport(final DEdgeDetails edgeDetails, final Object lock) {
+		this.edgeDetails = edgeDetails;
+		this.lock = lock;
+	}
 
 	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vpOriginal, V value) {
 		
 		final VisualProperty<?> vp = vpOriginal;
-//		final VisualLexiconNode treeNode = lexicon.getVisualLexiconNode(vpOriginal);
-//		
-//		if(treeNode == null)
-//			return;
-//		
-//		if(treeNode.getChildren().size() != 0) {
-//			final Collection<VisualLexiconNode> children = treeNode.getChildren();
-//			boolean shouldApply = false;
-//			for(VisualLexiconNode node: children) {
-//				if(node.isDepend()) {
-//					shouldApply = true;
-//					break;
-//				}
-//			}
-//			if(shouldApply == false)
-//				return;
-//		}
-//		
-//		if(treeNode.isDepend())
-//			return;
-//		else
-//			vp = vpOriginal;
-//		
 		if(value == null)
 			value = (V) vp.getDefault();
 		

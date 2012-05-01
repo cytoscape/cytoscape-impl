@@ -486,7 +486,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_nodeDetails = new DNodeDetails(this);
 		m_edgeDetails = new DEdgeDetails(this);
 		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
-		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(dingLexicon, m_edgeDetails, m_lock);
+		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
 		m_nodeViewMap = new HashMap<CyNode, NodeView>();
 		m_edgeViewMap = new HashMap<CyEdge, EdgeView>();
 		m_printLOD = new PrintLOD();
@@ -852,7 +852,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			m_drawPersp.addEdge(edge);
 
-			dEdgeView = new DEdgeView(dingLexicon, this, edgeInx, edge);
+			dEdgeView = new DEdgeView(this, edgeInx, edge);
 
 			m_edgeViewMap.put(edge, dEdgeView);
 			m_contentChanged = true;
