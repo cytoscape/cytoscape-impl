@@ -24,7 +24,6 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	private final AnnotationFactoryManager annMgr;
 	
 	private DialogTaskManager dialogTaskManager;
-	private SubmenuTaskManager menuTaskManager;
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
 	
@@ -56,7 +54,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			CyRootNetworkManager rootNetworkManager, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
 			DialogTaskManager dialogTaskManager, 
-			SubmenuTaskManager menuTaskManager, 
 			CyServiceRegistrar registrar,
 			CyNetworkTableManager tableMgr,
 			CyEventHelper eventHelper,
@@ -70,7 +67,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		this.undo = undo;
 		this.dingLexicon = dingLexicon;
 		this.dialogTaskManager = dialogTaskManager;
-		this.menuTaskManager = menuTaskManager;
 		this.registrar = registrar;
 		this.tableMgr = tableMgr;
 		this.eventHelper = eventHelper;
@@ -118,7 +114,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			else
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
-					vtfListener,dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
+					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());

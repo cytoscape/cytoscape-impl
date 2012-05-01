@@ -67,7 +67,6 @@ import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
@@ -96,7 +95,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc, CyTableFactory.class);
 		SpacialIndex2DFactory spacialIndex2DFactoryServiceRef = getService(bc, SpacialIndex2DFactory.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
-		SubmenuTaskManager submenuTaskManager = getService(bc, SubmenuTaskManager.class);
 		CyServiceRegistrar cyServiceRegistrarRef = getService(bc, CyServiceRegistrar.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
@@ -120,7 +118,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
-				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager, submenuTaskManager,
+				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
 				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
 				renderingEngineManagerServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
@@ -135,7 +133,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,
 				cyRootNetworkFactoryServiceRef, undoSupportServiceRef, spacialIndex2DFactoryServiceRef, dVisualLexicon,
-				dialogTaskManager, submenuTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
+				dialogTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
 				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD);
 
 		// Edge Bend editor

@@ -15,7 +15,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,6 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final CyServiceRegistrar registrar;
 
 	private DialogTaskManager dialogTaskManager;
-	private SubmenuTaskManager menuTaskManager;
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
 	private ViewTaskFactoryListener vtfListener;
@@ -42,7 +40,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkManager,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
-			DialogTaskManager dialogTaskManager, SubmenuTaskManager menuTaskManager,
+			DialogTaskManager dialogTaskManager,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
 			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD) {
@@ -58,7 +56,6 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.eventHelper = eventHelper;
 		this.vtfListener = vtfListener;
 		this.annMgr = annMgr;
-		this.menuTaskManager = menuTaskManager;
 		this.dingGraphLOD = dingGraphLOD;
 	}
 
@@ -74,7 +71,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				vtfListener, dialogTaskManager, menuTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
+				vtfListener, dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
 
 		registrar.registerAllServices(dgv, new Properties());
 

@@ -40,7 +40,6 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.After;
 import org.junit.Before;
@@ -79,8 +78,6 @@ public class DNodeViewTest {
 	@Mock
 	private DialogTaskManager manager;
 	@Mock
-	private SubmenuTaskManager submenuTaskManager;
-	@Mock
 	private CyEventHelper eventHelper;
 	@Mock
 	private CyNetworkTableManager tableMgr;
@@ -118,7 +115,7 @@ public class DNodeViewTest {
 		networkView = new DGraphView(network, dataFactory, cyRoot, undo, spacialFactory, lexicon,
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
-				dropEmptySpaceTFs,*/ manager, submenuTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
+				dropEmptySpaceTFs,*/ manager, eventHelper, tableMgr, annMgr, dingGraphLOD);
 		
 		dnv1 = (DNodeView) networkView.getDNodeView(node1);
 		dnv2 = (DNodeView) networkView.getDNodeView(node2);

@@ -187,17 +187,6 @@ class PopupMenuHelper {
 		String pref = (String)(props.get("preferredMenu"));
 		String toolTip = (String) (props.get("tooltip"));
 
-		// check if the menus are created dynamically, and if so add the listener
-		final Object preferredTaskManager = props.get("preferredTaskManager");
-		if ( preferredTaskManager != null && preferredTaskManager.toString().equals("menu")) {
-			if ( title == null )
-				title = "Dynamic";
-			DynamicSubmenuListener submenu = m_view.menuTaskManager.getConfiguration(tf, tunableContext);
-	        submenu.setMenuTitle(title);
-			popup.addPopupMenuListener( submenu );
-			return;
-		}
-
 		// otherwise create our own popup menus 
 		boolean useCheckBoxMenuItem = false;
 

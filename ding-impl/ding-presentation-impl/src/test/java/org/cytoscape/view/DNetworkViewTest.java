@@ -24,7 +24,6 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.AbstractCyNetworkViewTest;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 import org.mockito.Mock;
@@ -53,8 +52,6 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 	@Mock
 	private DialogTaskManager manager;
 	@Mock
-	private SubmenuTaskManager submenuTaskManager;
-	@Mock
 	private CyEventHelper eventHelper;
 	@Mock
 	private CyNetworkTableManager tableMgr;
@@ -81,7 +78,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
 				dropEmptySpaceTFs, */
-				manager, submenuTaskManager, eventHelper, tableMgr,annMgr, dingGRaphLOD);
+				manager, eventHelper, tableMgr,annMgr, dingGRaphLOD);
 	}
 	
 	@Override

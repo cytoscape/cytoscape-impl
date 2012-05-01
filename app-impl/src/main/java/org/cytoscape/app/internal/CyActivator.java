@@ -40,7 +40,6 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.io.read.CyNetworkReaderManager;
@@ -146,7 +145,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableReaderManager cyTableReaderManagerRef = getService(bc,CyTableReaderManager.class);
 		PanelTaskManager panelTaskManagerRef = getService(bc,PanelTaskManager.class);
 		DialogTaskManager dialogTaskManagerRef = getService(bc,DialogTaskManager.class);
-		SubmenuTaskManager submenuTaskManagerRef = getService(bc,SubmenuTaskManager.class);
 		PresentationWriterManager presentationWriterManagerRef = getService(bc,PresentationWriterManager.class);
 		RenderingEngineManager renderingEngineManagerRef = getService(bc,RenderingEngineManager.class);
 		TaskManager taskManagerRef = getService(bc,TaskManager.class);
@@ -261,7 +259,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                                     cytoscapeVersionService, 
 		                                                     dialogTaskManagerRef,
 		                                                     panelTaskManagerRef,
-		                                                     submenuTaskManagerRef,
 		                                                     presentationWriterManagerRef,
 		                                                     renderingEngineManagerRef,
 		                                                     taskManagerRef,
@@ -328,6 +325,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                     expandGroupTaskFactory,	
 		                                                     unGroupNodesTaskFactory
 		                                                     );
+
 		
 		AppLoaderTaskFactory appLoaderTaskFactory = new AppLoaderTaskFactory(cyAppAdapter);
 		AppManagerAction appManagerAction = new AppManagerAction(

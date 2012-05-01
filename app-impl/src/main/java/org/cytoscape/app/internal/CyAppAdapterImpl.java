@@ -115,7 +115,6 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -164,7 +163,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 //	private final CyTableWriterManager cyTableWriterManager;
 	private final DialogTaskManager dialogTaskManager;
 	private final PanelTaskManager panelTaskManager;
-	private final SubmenuTaskManager submenuTaskManager;
 	private final PresentationWriterManager presentationWriterManager;
 	private final RenderingEngineManager renderingEngineManager;
 	private final TaskManager taskManager;
@@ -312,7 +310,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 //	                     final CyTableWriterManager cyTableWriterManager,
 	                     final DialogTaskManager dialogTaskManager,
 	                     final PanelTaskManager panelTaskManager,
-	                     final SubmenuTaskManager submenuTaskManager,
 	                     final PresentationWriterManager presentationWriterManager,
 	                     final RenderingEngineManager renderingEngineManager,
 	                     final TaskManager taskManager,
@@ -421,7 +418,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 //		this.cyTableWriterManager = cyTableWriterManager;
 		this.dialogTaskManager = dialogTaskManager;
 		this.panelTaskManager = panelTaskManager;
-		this.submenuTaskManager = submenuTaskManager;
 		this.presentationWriterManager = presentationWriterManager;
 		this.renderingEngineManager = renderingEngineManager;
 		this.taskManager = taskManager;
@@ -523,7 +519,6 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 //	public CyTableWriterManager getCyTableWriterManager() { return cyTableWriterManager; }
 	public DialogTaskManager getDialogTaskManager() { return dialogTaskManager; }
 	public PanelTaskManager getPanelTaskManager() { return panelTaskManager; }
-	public SubmenuTaskManager getSubmenuTaskManager() { return submenuTaskManager; }
 	public PresentationWriterManager getPresentationWriterManager() { return presentationWriterManager; }
 	public RenderingEngineManager getRenderingEngineManager() { return renderingEngineManager; }
 	public TaskManager getTaskManager() { return taskManager; }

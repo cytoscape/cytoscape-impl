@@ -15,9 +15,6 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.TunableSetter;
-import org.cytoscape.work.internal.submenu.SubmenuTaskManagerImpl;
-import org.cytoscape.work.internal.submenu.SubmenuTunableHandlerImpl;
-import org.cytoscape.work.internal.submenu.SubmenuTunableMutator;
 import org.cytoscape.work.internal.sync.SyncTaskManager;
 import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutator;
@@ -43,9 +40,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
-import org.cytoscape.work.swing.SimpleSubmenuTunableHandlerFactory;
-import org.cytoscape.work.swing.SubmenuTaskManager;
-import org.cytoscape.work.swing.SubmenuTunableHandlerFactory;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
@@ -73,16 +67,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
-		
-		SimpleSubmenuTunableHandlerFactory<SubmenuTunableHandlerImpl> submenuListSingleSelectionHandlerFactory = new SimpleSubmenuTunableHandlerFactory<SubmenuTunableHandlerImpl>(
-				SubmenuTunableHandlerImpl.class, ListSingleSelection.class);
+
 
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator);
 
-		SubmenuTunableMutator submenuTunableMutator = new SubmenuTunableMutator(jDialogTaskManager);
-
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
-		SubmenuTaskManager submenuTaskManager = new SubmenuTaskManagerImpl(submenuTunableMutator,jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
 		SimpleGUITunableHandlerFactory<BooleanHandler> booleanHandlerFactory = new SimpleGUITunableHandlerFactory<BooleanHandler>(
@@ -126,12 +115,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());
 
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
-
-		registerService(bc,submenuTaskManager,SubmenuTaskManager.class, new Properties());
 		
 		registerAllServices(bc,syncTaskManager, new Properties());
-		
-		registerService(bc,submenuListSingleSelectionHandlerFactory,SubmenuTunableHandlerFactory.class, new Properties());
 
 		registerService(bc,integerHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,floatHandlerFactory,GUITunableHandlerFactory.class, new Properties());
@@ -161,9 +146,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
-		
-		registerServiceListener(bc,submenuTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SubmenuTunableHandlerFactory.class, TunableHandlerFactory.class);
-		registerServiceListener(bc,syncTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",SyncTunableHandlerFactory.class, TunableHandlerFactory.class);
 
 		TunableRecorderManager trm = new TunableRecorderManager();
 		registerServiceListener(bc,trm,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);

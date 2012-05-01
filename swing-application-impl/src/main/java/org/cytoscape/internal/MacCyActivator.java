@@ -4,7 +4,7 @@ import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.internal.dialogs.AboutDialogFactoryImpl;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.work.swing.SubmenuTaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 import com.apple.eawt.AboutHandler;
@@ -18,9 +18,9 @@ public class MacCyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		final CyShutdown shutdown = getService(context, CyShutdown.class);
-		final SubmenuTaskManager taskManager = getService(context, SubmenuTaskManager.class);
 		final CyVersion version = getService(context, CyVersion.class);
 		final AboutDialogFactoryImpl aboutDialogFactory = new AboutDialogFactoryImpl(version);
+		final DialogTaskManager taskManager = getService(context,DialogTaskManager.class);
 		
 		Application application = Application.getApplication();
 		application.setQuitHandler(new QuitHandler() {

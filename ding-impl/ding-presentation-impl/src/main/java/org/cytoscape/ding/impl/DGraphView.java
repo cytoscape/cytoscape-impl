@@ -134,7 +134,6 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -393,7 +392,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContextMenuFactory;
 
 	final DialogTaskManager manager;
-	final SubmenuTaskManager menuTaskManager;
 
 	// Will be injected.
 	final VisualLexicon dingLexicon;
@@ -413,13 +411,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
 			ViewTaskFactoryListener vtfl,
-			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
+			DialogTaskManager manager,
 			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, 
-				vtfl, manager, menuTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
+				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD);
 	}
 
 	
@@ -446,7 +444,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
 			ViewTaskFactoryListener vtfl,
-			DialogTaskManager manager, SubmenuTaskManager menuTaskManager,
+			DialogTaskManager manager,
 			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD) {
@@ -465,7 +463,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
 		
 		this.manager = manager;
-		this.menuTaskManager = menuTaskManager;
+
 		this.cyEventHelper = cyEventHelper;
 
 		final CyTable nodeCAM = dataFactory.createTable("node view", CyIdentifiable.SUID, Long.class, false, false);

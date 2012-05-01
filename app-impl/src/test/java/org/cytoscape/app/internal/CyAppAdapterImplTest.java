@@ -95,7 +95,6 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
-import org.cytoscape.work.swing.SubmenuTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 
@@ -132,7 +131,6 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 //			mock(CyTableWriterManager.class),
 			mock(DialogTaskManager.class),
 			mock(PanelTaskManager.class),
-			mock(SubmenuTaskManager.class),
 			mock(PresentationWriterManager.class),
 			mock(RenderingEngineManager.class),
 			mock(TaskManager.class),
