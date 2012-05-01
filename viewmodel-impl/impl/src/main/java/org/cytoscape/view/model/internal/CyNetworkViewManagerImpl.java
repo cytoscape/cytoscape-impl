@@ -30,7 +30,6 @@
 package org.cytoscape.view.model.internal;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +51,7 @@ import org.slf4j.LoggerFactory;
  * An implementation of CyNetworkViewManager.
  */
 public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAboutToBeDestroyedListener {
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyNetworkViewManagerImpl.class);
 
 	private final Map<CyNetwork, Collection<CyNetworkView>> networkViewMap;
@@ -116,8 +116,11 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 
 	@Override
 	public void destroyNetworkView(CyNetworkView view) {
-		if (view == null)
-			throw new NullPointerException("view is null");
+		if (view == null) {
+			// Do nothing if view is null.
+			logger.warn("Network view is null.");
+			return;
+		}
 
 		final CyNetwork network = view.getModel();
 
@@ -139,30 +142,26 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		}
 
 		cyEventHelper.fireEvent(new NetworkViewDestroyedEvent(this));
-		logger.debug("######### Network View deleted: " + view.getSUID());
 		view = null;
 	}
 
 	@Override
 	public void addNetworkView(final CyNetworkView view) {
-		if (view == null)
-			throw new NullPointerException("CyNetworkView is null");
-
+		if (view == null) {
+			// Do nothing if view is null.
+			logger.warn("Network view is null.");
+			return;
+		}
+		
 		final CyNetwork network = view.getModel();
-
 		synchronized (this) {
-			logger.debug("Adding new Network View Model: Model ID = " + network.getSUID());
 			Collection<CyNetworkView> existingSet = networkViewMap.get(network);
 
 			if (existingSet == null)
 				existingSet = new HashSet<CyNetworkView>();
 			existingSet.add(view);
-
 			networkViewMap.put(network, existingSet);
 		}
-
-		logger.debug("Firing event: NetworkViewAddedEvent");
 		cyEventHelper.fireEvent(new NetworkViewAddedEvent(this, view));
-		logger.debug("Done event: NetworkViewAddedEvent");
 	}
 }
