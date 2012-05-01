@@ -73,8 +73,6 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	
 	private final static long serialVersionUID = 1202416511863994L;
 	
-	private static final String ENGINE_ID = "ding-bev";
-	
 	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	
 	private static final Color VIEW_WINDOW_COLOR =  new Color(50, 50, 255, 50);
@@ -344,7 +342,6 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	public Properties getProperties() {
 		return viewModel.getProperties();
 	}
-
 	
 	@Override
 	public Printable createPrintable() {
@@ -362,16 +359,8 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		throw new UnsupportedOperationException("Printing is not supported for Bird's eye view.");
 	}
 
-
-	@Override
-	public String getRenderingEngineID() {
-		return ENGINE_ID;
-	}
-
-
 	@Override
 	public void handleEvent(UpdateNetworkPresentationEvent e) {
 		//System.out.println("#### Got redraw event for BEV");
-		
 	}
 }

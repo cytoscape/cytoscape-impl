@@ -157,8 +157,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private static final Logger logger = LoggerFactory.getLogger(DGraphView.class);
 	
-	private static final String ENGINE_ID = "ding";
-	
 	private static enum ZOrder {
 		BACKGROUND_PANE, NETWORK_PANE, FOREGROUND_PANE;
 		
@@ -2682,11 +2680,5 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	public CyAnnotator getCyAnnotator() {
 		return cyAnnotator;
-	}
-
-
-	@Override
-	public String getRenderingEngineID() {
-		return ENGINE_ID;
 	}
 }
