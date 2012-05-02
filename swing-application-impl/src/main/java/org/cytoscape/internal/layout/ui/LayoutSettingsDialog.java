@@ -448,12 +448,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 	private boolean hasSelectedNodes(CyNetworkView view) {
 		CyNetwork network = view.getModel();
-		for (CyNode node : network.getNodeList()) {
-			if (network.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
-				return true;
-			}
-		}
-		return false;
+		CyTable table = network.getDefaultNodeTable();
+		return table.countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE) > 0;
 	}
 	
 	private List<String> getAttributeList(CyNetwork network, Set<Class<?>> allowedNodeAttributeTypes, Set<Class<?>> allowedEdgeAttributeTypes) {
