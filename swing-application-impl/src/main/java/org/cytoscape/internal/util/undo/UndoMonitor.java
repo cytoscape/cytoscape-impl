@@ -84,16 +84,18 @@ public class UndoMonitor implements SetCurrentNetworkViewListener, NetworkDestro
         return lim;
     }
 
+
 	/**
- 	 * This method listens for changes to the current network and discards all edits
-   	 * when the network changes. 
-	 *
+	 * This method listens for changes to the current network and discards all
+	 * edits when the network changes.
+	 * 
 	 * @param e The change event.
 	 */
-    public void handleEvent(SetCurrentNetworkViewEvent e) {
-		if ( e.getNetworkView() != null )
+	public void handleEvent(final SetCurrentNetworkViewEvent e) {
+		if (e.getNetworkView() != null)
 			undo.getUndoManager().discardAllEdits();
-    }
+	}
+
 
     /**
  	 * This method listens for a network destroy event. If the network being destroyed 

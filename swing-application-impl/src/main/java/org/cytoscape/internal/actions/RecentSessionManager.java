@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -22,6 +24,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +67,6 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	}
 
 	private void updateMenuItems() {
-		
 		// If there is no recent items, add dummy menu.
 		if(tracker.getRecentlyOpenedURLs().size() == 0) {
 			registrar.registerService(factory, CyAction.class, new Properties());
@@ -82,9 +84,9 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 		for (final URL url : urls) {
 			final Properties prop = new Properties();
-			prop.put("preferredMenu", MENU_CATEGORY);
-			prop.put("title", url.getFile());
-			prop.put("menuGravity", "6.0");
+			prop.put(ServiceProperties.PREFERRED_MENU, MENU_CATEGORY);
+			prop.put(ServiceProperties.TITLE, url.getFile());
+			prop.put(ServiceProperties.MENU_GRAVITY, "6.0");
 			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager, appManager, tracker, url);
 			registrar.registerService(factory, TaskFactory.class, prop);
 
@@ -96,6 +98,13 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		updateMenuItems();
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				updateMenuItems();
+			}
+		});
 	}
 	
 	
@@ -127,7 +136,4 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			throw new RuntimeException("Could not save recently opened session file list.", ex);
 		}
 	}
-	
-	
-
 }

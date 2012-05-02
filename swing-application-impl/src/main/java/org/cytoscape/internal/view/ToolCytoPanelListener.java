@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2010, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,49 +31,52 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
 package org.cytoscape.internal.view;
+
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
 
-import javax.swing.JLabel;
-
-
 /**
  * This class handles the embedding of the Tools CytoPanel within the Control
- * CytoPanel. For all other cytopanels this is handled by CytoPanelAction,
- * but because tools panel is within another cytopanel, we have to handle things
+ * CytoPanel. For all other cytopanels this is handled by CytoPanelAction, but
+ * because tools panel is within another cytopanel, we have to handle things
  * separately.
  */
 public class ToolCytoPanelListener implements CytoPanelStateChangedListener {
 
-	BiModalJSplitPane split;
-	CytoPanel southWest;
-	CytoPanelImp west;
-	
+	private final BiModalJSplitPane split;
+	private final CytoPanel southWest;
+	private final CytoPanelImp west;
+
 	public ToolCytoPanelListener(BiModalJSplitPane split, CytoPanelImp west, CytoPanel southWest) {
 		this.split = split;
 		this.west = west;
 		this.southWest = southWest;
 	}
 
-
-    public void handleEvent(CytoPanelStateChangedEvent e) {
-		if ( e.getCytoPanel() != southWest )
+	public void handleEvent(CytoPanelStateChangedEvent e) {
+		if (e.getCytoPanel() != southWest)
 			return;
 
-		CytoPanelState newState = e.getNewState();
+		final CytoPanelState newState = e.getNewState();
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				if (newState == CytoPanelState.DOCK)
+					west.addComponentToSouth(split);
+				else
+					west.addComponentToSouth(new JLabel());
 
-		if (newState == CytoPanelState.DOCK) 
-			west.addComponentToSouth(split);
-		else 
-			// removeComponentAtSouth() doesn't work properly, so we do this...
-			west.addComponentToSouth(new JLabel());
-
-		west.validate();
+				west.validate();
+			}
+		});
 	}
 }

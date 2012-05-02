@@ -2,6 +2,8 @@ package org.cytoscape.internal.dialogs;
 
 import java.awt.Frame;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -24,11 +26,18 @@ public class BookmarkDialogFactoryImpl implements SessionLoadedListener {
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
-	public void handleEvent(SessionLoadedEvent e) {
-		// Update bookmarks
-		CySession sess = e.getLoadedSession();
+	public void handleEvent(final SessionLoadedEvent e) {
 		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				updateBookmarks(e.getLoadedSession());
+			}
+		});
+	}
+	
+	private void updateBookmarks(final CySession sess) {
+		// Update bookmarks
 		if (sess != null) {
 			for (CyProperty<?> p : sess.getProperties()) {
 				if (Bookmarks.class.isAssignableFrom(p.getPropertyType())) {

@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
@@ -61,6 +62,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
@@ -124,12 +126,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final CyApplicationManager applicationManager;
 	private final RenderingEngineManager renderingEngineManager;
 
-	/**
-	 * Creates a new NetworkViewManager object.
-	 * 
-	 * @param desktop
-	 *            DOCUMENT ME!
-	 */
+	
 	public NetworkViewManager(CyApplicationManager appMgr, CyNetworkViewManager netViewMgr,final RenderingEngineManager renderingEngineManager,
 			CyProperty<Properties> cyProps, CyHelpBroker help) {
 
@@ -151,9 +148,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
 
-		presentationContainerMap = new HashMap<CyNetworkView, JInternalFrame>();
-		presentationMap = new HashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
-		iFrameMap = new HashMap<JInternalFrame, CyNetworkView>();
+		presentationContainerMap = new WeakHashMap<CyNetworkView, JInternalFrame>();
+		presentationMap = new WeakHashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
+		iFrameMap = new WeakHashMap<JInternalFrame, CyNetworkView>();
 		currentView = null;
 	}
 
@@ -247,13 +244,16 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	// // Event Handlers ////
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		if (e.getNetworkView() == null) {
+		final CyNetworkView view = e.getNetworkView();
+		if (view == null) {
 			logger.info("Attempting to set current network view model: null view ");
 			return;
 		}
 
 		logger.info("Attempting to set current network view model: View Model ID = " + e.getNetworkView().getSUID());
-		setFocus(e.getNetworkView());
+		
+		// Do not use invokeLater() here! It cause all kinds of threading problem.
+		setFocus(view);
 	}
 
 	@Override
@@ -268,14 +268,25 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if(views.size() != 0)
 			view = views.iterator().next();
 		
-		if (view != null)
-			setFocus(view);
+		if (view == null)
+			return;
+		
+		final CyNetworkView targetView = view;
+	
+		// Do not use invokeLater() here! It cause all kinds of threading problem.
+		setFocus(targetView);
 	}
 
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
 		logger.info("Network view destroyed: View ID = " + nvde.getNetworkView());
-		removeView(nvde.getNetworkView());
+		final CyNetworkView view = nvde.getNetworkView();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				removeView(view);
+			}
+		});
 	}
 
 	/**
@@ -320,16 +331,17 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 	}
 
-	protected void removeView(final CyNetworkView view) {
+	private final void removeView(final CyNetworkView view) {
 		try {
-			final JInternalFrame frame = presentationContainerMap.get(view);
+			JInternalFrame frame = presentationContainerMap.get(view);
 			if (frame != null) {
 				RenderingEngine<CyNetwork> removed = this.presentationMap.remove(view);
-				logger.debug("#### Removing rendering engine: " + removed);
+				logger.debug("Removing rendering engine: " + removed);
 				removed = null;
 				iFrameMap.remove(frame);
 				presentationContainerMap.remove(view);
 				frame.dispose();
+				frame = null;
 			}
 		} catch (Exception e) {
 			logger.error("Network View unable to be killed", e);
@@ -439,8 +451,18 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 	
 	@Override
-	public void handleEvent(NetworkViewChangedEvent e) {
-		for ( ViewChangeRecord<CyNetwork> record : e.getPayloadCollection()) {
+	public void handleEvent(final NetworkViewChangedEvent e) {
+		final Collection<ViewChangeRecord<CyNetwork>> records = e.getPayloadCollection();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				updateInternalFrame(records);
+			}
+		});
+	}
+	
+	private final void updateInternalFrame(final Collection<ViewChangeRecord<CyNetwork>> records) {
+		for (final ViewChangeRecord<CyNetwork> record : records) {
 			CyNetworkView view = (CyNetworkView)(record.getView());
 			JInternalFrame iframe = presentationContainerMap.get(view);
 			if ( iframe == null )
@@ -532,21 +554,28 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 
 	@Override
-	public void handleEvent(RowsSetEvent e) {
-		
-		for ( RowSetRecord record :e.getPayloadCollection()) {
-			// assume payload collection is for same column
-			if ( !record.getColumn().equals(CyNetwork.NAME))
-				break;
-			for (JInternalFrame targetIF: iFrameMap.keySet()){
-				
-				if ( iFrameMap.get(targetIF).getModel().getDefaultNetworkTable().equals(e.getSource())){
-					targetIF.setTitle(record.getRow().get(CyNetwork.NAME, String.class));
-					return; //assuming just one row is set.
-				}
-
+	public void handleEvent(final RowsSetEvent e) {
+		final Collection<RowSetRecord> records = e.getPayloadCollection();
+		final CyTable source = e.getSource();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				updateNetworkNameColumn(records, source);
 			}
-
+		});
+	}
+	
+	private final void updateNetworkNameColumn(final Collection<RowSetRecord> records, final CyTable source) {
+		for (final RowSetRecord record : records) {
+			// assume payload collection is for same column
+			if (!record.getColumn().equals(CyNetwork.NAME))
+				break;
+			for (JInternalFrame targetIF : iFrameMap.keySet()) {
+				if (iFrameMap.get(targetIF).getModel().getDefaultNetworkTable().equals(source)) {
+					targetIF.setTitle(record.getRow().get(CyNetwork.NAME, String.class));
+					return; // assuming just one row is set.
+				}
+			}
 		}
 	}
 }

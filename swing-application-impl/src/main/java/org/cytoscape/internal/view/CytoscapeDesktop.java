@@ -417,25 +417,40 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	// handle CytoscapeStartEvent
 	@Override
 	public void handleEvent(CyStartEvent e) {
-		this.setVisible(true);
-		this.toFront();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				setVisible(true);
+				toFront();
+			}
+		});
 	}
 
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Update window title
 		String sessionName = e.getLoadedFileName();
-		
 		if (sessionName == null)
 			sessionName = NEW_SESSION_NAME;
+		final String title = TITLE_PREFIX_STRING + sessionName;
 		
-		this.setTitle(TITLE_PREFIX_STRING + sessionName);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				setTitle(title);
+			}
+		});
 	}
 
 	@Override
 	public void handleEvent(SessionSavedEvent e) {
 		// Update window title
 		final String sessionName = e.getSavedFileName();
-		this.setTitle(TITLE_PREFIX_STRING + sessionName);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				setTitle(TITLE_PREFIX_STRING + sessionName);
+			}
+		});
 	}
 }

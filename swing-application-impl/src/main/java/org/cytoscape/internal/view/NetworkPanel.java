@@ -136,10 +136,12 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	private boolean ignoreTreeSelectionEvents;
 
 	/**
-	 * Constructor for the Network Panel.
-	 * @param factoryProvisioner 
 	 * 
-	 * @param desktop
+	 * @param applicationManager
+	 * @param netmgr
+	 * @param networkViewManager
+	 * @param bird
+	 * @param taskManager
 	 */
 	public NetworkPanel(final CyApplicationManager applicationManager, final CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, final BirdsEyeViewHandler bird,
@@ -464,7 +466,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	@Override
 	public void handleEvent(final NetworkViewAddedEvent nde) {
-		SwingUtilities.invokeLater( new Runnable() {
+		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetworkView netView = nde.getNetworkView();
 				logger.debug("Network view added to NetworkPanel: " + netView.getModel().getSUID());

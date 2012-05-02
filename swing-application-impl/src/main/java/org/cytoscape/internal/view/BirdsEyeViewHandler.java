@@ -44,18 +44,23 @@ import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 
+import javax.help.CSH.Manager;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -107,7 +112,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 		this.networkViewManager = viewmgr;
 		this.renderingEngineManager = renderingEngineManager;
 		
-		presentationMap = new HashMap<CyNetworkView, JPanel>();
+		presentationMap = new WeakHashMap<CyNetworkView, JPanel>();
 
 		this.bevPanel = new JPanel();
 		this.bevPanel.setPreferredSize(DEF_PANEL_SIZE);
@@ -169,6 +174,16 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 	@Override
 	public void handleEvent(final SetCurrentRenderingEngineEvent e) {
 		final RenderingEngine<CyNetwork> newEngine = e.getRenderingEngine();
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				updateBEV(newEngine);
+			}
+		});
+	}
+	
+	private final void updateBEV(final RenderingEngine<CyNetwork> newEngine) {
 		final CyNetworkView newViewModel = (CyNetworkView) newEngine.getViewModel();
 		
 		// Remove it from the manager object.
@@ -192,17 +207,38 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 		presentationPanel.setSize(currentPanelSize);
 		presentationPanel.setPreferredSize(currentPanelSize);
 		
+		// TODO: Update timing is not correct.
 		bevPanel.add(presentationPanel, BorderLayout.CENTER);
 		setFocus();
 		
 		presentationPanel.repaint();		
 		bevPanel.repaint();
-		
-		//System.out.println("#10 of rendering engine ===> " + renderingEngineManager.getAllRenderingEngines().size());
 	}
 
 	@Override
-	public void handleEvent(NetworkViewDestroyedEvent e) {
+	public void handleEvent(final NetworkViewDestroyedEvent e) {
+		final CyNetworkViewManager manager = e.getSource();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				removeView(manager);
+			}
+		});
+	}
+	
+	private final void removeView(final CyNetworkViewManager manager) {
+		Set<CyNetworkView> toBeRemoved = new HashSet<CyNetworkView>();
+		for(CyNetworkView view: this.presentationMap.keySet()) {
+			if(manager.getNetworkViewSet().contains(view) == false)
+				toBeRemoved.add(view);
+		}
+		
+		for(CyNetworkView view: toBeRemoved)
+			presentationMap.remove(view);
+
+		toBeRemoved.clear();
+		toBeRemoved = null;
+		
 		// Cleanup the visualization container
 		if (appManager.getCurrentNetworkView() == null) {
 			bevPanel.removeAll();

@@ -43,7 +43,7 @@ public class ConfigDirPropertyWriter implements CyShutdownListener {
 			
 			final File outputFile = new File(config.getConfigurationDirectoryLocation(), propertyFileName);
 			
-			Properties props = (Properties) keyAndValue.getKey().getProperties();
+			final Properties props = (Properties) keyAndValue.getKey().getProperties();
 
 			try {
 				FileOutputStream out = new FileOutputStream(outputFile);
@@ -53,9 +53,7 @@ public class ConfigDirPropertyWriter implements CyShutdownListener {
 			catch(Exception e){
 				logger.error("Error in wring properties file!");
 			}
-			
 		}
-		
 	}
 
 	public void addCyProperty(final CyProperty newCyProperty, final Map properties) {

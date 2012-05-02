@@ -43,6 +43,7 @@ import java.util.Map;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -107,7 +108,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	}
 
 	@Override
-	public void handleEvent(CyShutdownEvent e) {
+	public void handleEvent(final CyShutdownEvent e) {
 		// If there are no networks, just quit.
 		if (netMgr.getNetworkSet().size() == 0) 
 			return;
@@ -134,90 +135,105 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	}
 
 	@Override
-	public void handleEvent(SessionAboutToBeSavedEvent e) {
+	public void handleEvent(final SessionAboutToBeSavedEvent e) {
+		// Do not use invokeLater() here!  It breaks session file.
+		prepareForSaving(e);
+	}
+	
+	private final void prepareForSaving(final SessionAboutToBeSavedEvent e) {
 		final SessionState sessState = new SessionState();
-		
+
 		// Network Frames
 		final NetworkFrames netFrames = new NetworkFrames();
 		sessState.setNetworkFrames(netFrames);
-		
+
 		final JInternalFrame[] internalFrames = netViewMgr.getDesktopPane().getAllFrames();
-    	
-    	for (JInternalFrame iframe : internalFrames) {
-    		final CyNetworkView view = netViewMgr.getNetworkView(iframe);
-    		
-    		if (view == null) {
+
+		for (JInternalFrame iframe : internalFrames) {
+			final CyNetworkView view = netViewMgr.getNetworkView(iframe);
+
+			if (view == null) {
 				logger.error("Cannot save position of network frame \"" + iframe.getTitle()
 						+ "\": Network View is null.");
-    			continue;
-    		}
-    		
-    		final NetworkFrame nf = new NetworkFrame();
-            nf.setNetworkViewID(view.getSUID().toString());
-            nf.setX(BigInteger.valueOf(iframe.getX()));
-            nf.setY(BigInteger.valueOf(iframe.getY()));
-    		
-            netFrames.getNetworkFrame().add(nf);
-    	}
-		
-        // CytoPanels States
-    	final Cytopanels cytopanels = new Cytopanels();
+				continue;
+			}
+
+			final NetworkFrame nf = new NetworkFrame();
+			nf.setNetworkViewID(view.getSUID().toString());
+			nf.setX(BigInteger.valueOf(iframe.getX()));
+			nf.setY(BigInteger.valueOf(iframe.getY()));
+
+			netFrames.getNetworkFrame().add(nf);
+		}
+
+		// CytoPanels States
+		final Cytopanels cytopanels = new Cytopanels();
 		sessState.setCytopanels(cytopanels);
-		
+
 		for (Map.Entry<String, CytoPanelName> entry : CYTOPANEL_NAMES.entrySet()) {
 			final CytoPanel p = desktop.getCytoPanel(entry.getValue());
-			
+
 			final Cytopanel cytopanel = new Cytopanel();
 			cytopanel.setId(entry.getKey());
 			cytopanel.setPanelState(p.getState().toString());
 			cytopanel.setSelectedPanel(Integer.toString(p.getSelectedIndex()));
-			
+
 			cytopanels.getCytopanel().add(cytopanel);
 		}
-		
+
 		// Create temp file
 		File tmpFile = new File(System.getProperty("java.io.tmpdir"), SESSION_STATE_FILENAME);
 		tmpFile.deleteOnExit();
-		
+
 		// Write to the file
 		sessionStateIO.write(sessState, tmpFile);
-		
+
 		// Add it to the apps list
 		List<File> fileList = new ArrayList<File>();
 		fileList.add(tmpFile);
-		
+
 		try {
 			e.addAppFiles(APP_NAME, fileList);
 		} catch (Exception ex) {
-			logger.error("Error adding "+SESSION_STATE_FILENAME+" file to be saved in the session.", ex);
+			logger.error("Error adding " + SESSION_STATE_FILENAME + " file to be saved in the session.", ex);
 		}
 	}
 
 	@Override
-	public void handleEvent(SessionLoadedEvent e) {
+	public void handleEvent(final SessionLoadedEvent e) {
 		final CySession sess = e.getLoadedSession();
 
-		if (sess != null) {
-			final Map<String, List<File>> filesMap = sess.getAppFileListMap();
+		if (sess == null)
+			return;
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				postLoading(sess);
+			}
+		});
+	}
+	
+	private final void postLoading(final CySession sess) {
+		final Map<String, List<File>> filesMap = sess.getAppFileListMap();
 
-			if (filesMap != null) {
-				final List<File> files = filesMap.get(APP_NAME);
+		if (filesMap != null) {
+			final List<File> files = filesMap.get(APP_NAME);
 
-				if (files != null) {
-					SessionState sessState = null;
-					
-					for (File f : files) {
-						if (f.getName().endsWith(SESSION_STATE_FILENAME)) {
-							// There should be only one file!
-							sessState = sessionStateIO.read(f);
-							break;
-						}
+			if (files != null) {
+				SessionState sessState = null;
+				
+				for (File f : files) {
+					if (f.getName().endsWith(SESSION_STATE_FILENAME)) {
+						// There should be only one file!
+						sessState = sessionStateIO.read(f);
+						break;
 					}
-					
-					if (sessState != null) {
-						setNetworkFrameLocations(sessState.getNetworkFrames(), sess);
-						setCytoPanelStates(sessState.getCytopanels());
-					}
+				}
+				
+				if (sessState != null) {
+					setNetworkFrameLocations(sessState.getNetworkFrames(), sess);
+					setCytoPanelStates(sessState.getCytopanels());
 				}
 			}
 		}
