@@ -127,9 +127,9 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.FitContentEvent;
-import org.cytoscape.view.model.events.FitContentEventListener;
+import org.cytoscape.view.model.events.FitContentListener;
 import org.cytoscape.view.model.events.FitSelectedEvent;
-import org.cytoscape.view.model.events.FitSelectedEventListener;
+import org.cytoscape.view.model.events.FitSelectedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -152,7 +152,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetworkView, RenderingEngine<CyNetwork>,
 		GraphView, Printable, AddedEdgesListener, AddedNodesListener, AboutToRemoveEdgesListener,
-		AboutToRemoveNodesListener, FitContentEventListener, FitSelectedEventListener {
+		AboutToRemoveNodesListener, FitContentListener, FitSelectedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(DGraphView.class);
 	
@@ -1146,6 +1146,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	@Override
 	public void updateView() {
+		//System.out.println("%% Update view called");
 		final long start = System.currentTimeMillis();
 		cyEventHelper.flushPayloadEvents();
 		m_networkCanvas.repaint();
@@ -1158,7 +1159,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,(double)imageWidth);
 			setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,(double)imageHeight);
 		}
-		logger.debug("Repaint finished in " + (System.currentTimeMillis() - start) + " msec.");
+		//System.out.println("Repaint finished in " + (System.currentTimeMillis() - start) + " msec.");
 		
 		// Fire for updating other presentations.
 		cyEventHelper.fireEvent(new UpdateNetworkPresentationEvent(this));

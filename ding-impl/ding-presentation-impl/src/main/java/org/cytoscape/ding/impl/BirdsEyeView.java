@@ -62,14 +62,14 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEventListener;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 /**
  * Swing component to display overview of the network.
  * 
  */
-public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork>, UpdateNetworkPresentationEventListener {
+public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork>, UpdateNetworkPresentationListener {
 	
 	private final static long serialVersionUID = 1202416511863994L;
 	
