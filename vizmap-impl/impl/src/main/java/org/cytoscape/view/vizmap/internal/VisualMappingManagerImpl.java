@@ -49,6 +49,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,13 +143,20 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 		if (nv == null)
 			throw new NullPointerException("Network view is null.");
 
-		if (vs == null)
-			network2VisualStyleMap.remove(nv);
-		else
-			network2VisualStyleMap.put(nv, vs);
+		boolean changed = false;
+		
+		if (vs == null) {
+			changed = network2VisualStyleMap.remove(nv) != null;
+		} else {
+			final VisualStyle previousStyle = network2VisualStyleMap.put(nv, vs);
+			changed = !vs.equals(previousStyle);
+		}
 
 		if (this.visualStyles.contains(vs) == false)
 			this.visualStyles.add(vs);
+		
+		if (changed)
+			cyEventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
 	}
 
 	/**
