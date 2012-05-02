@@ -183,16 +183,22 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties addImageTaskFactoryProps = new Properties();
 		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addImageTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
 		addImageTaskFactoryProps.setProperty(TITLE, "Add Image");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
 		Properties addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addShapeTaskFactoryProps.setProperty(MENU_GRAVITY, "1.3");
 		addShapeTaskFactoryProps.setProperty(TITLE, "Add Shape");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
 
 		Properties addTextTaskFactoryProps = new Properties();
 		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		addTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.4");
+		addTextTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
 		addTextTaskFactoryProps.setProperty(TITLE, "Add Text");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 

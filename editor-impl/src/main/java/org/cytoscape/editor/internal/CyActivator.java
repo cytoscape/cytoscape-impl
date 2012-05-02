@@ -49,7 +49,8 @@ public class CyActivator extends AbstractCyActivator {
 		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
 		Properties networkViewLocationTaskFactoryProps = new Properties();
 		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		networkViewLocationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
 		networkViewLocationTaskFactoryProps.setProperty(TITLE, "Add Node");
 		registerService(bc, networkViewLocationTaskFactory, NetworkViewLocationTaskFactory.class, networkViewLocationTaskFactoryProps);
 
