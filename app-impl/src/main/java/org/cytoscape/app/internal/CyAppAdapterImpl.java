@@ -4,6 +4,7 @@ package org.cytoscape.app.internal;
 import java.util.Properties;
 import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CyAction;
@@ -30,6 +31,7 @@ import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
@@ -125,7 +127,7 @@ import org.cytoscape.work.TaskFactory;
 /**
  * An implementation of CyAppAdapter
  */
-public class CyAppAdapterImpl implements CyAppAdapter {
+public class CyAppAdapterImpl implements CySwingAppAdapter {
 
 	//
 	// Since there are a lot of fields, keep them
@@ -160,7 +162,7 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	private final CyTableFactory cyTableFactory;
 	private final CyTableManager cyTableManager;
 	private final CyTableReaderManager cyTableReaderManager;
-//	private final CyTableWriterManager cyTableWriterManager;
+	private final CyTableWriterManager cyTableWriterManager;
 	private final DialogTaskManager dialogTaskManager;
 	private final PanelTaskManager panelTaskManager;
 	private final PresentationWriterManager presentationWriterManager;
@@ -306,8 +308,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	                     final CyTableFactory cyTableFactory,
 	                     final CyTableManager cyTableManager,
 	                     final CyTableReaderManager cyTableReaderManager,
+	                     final CyTableWriterManager cyTableWriterManager,
 	                     final CyVersion cyVersion,
-//	                     final CyTableWriterManager cyTableWriterManager,
 	                     final DialogTaskManager dialogTaskManager,
 	                     final PanelTaskManager panelTaskManager,
 	                     final PresentationWriterManager presentationWriterManager,
@@ -414,8 +416,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 		this.cyTableFactory = cyTableFactory;
 		this.cyTableManager = cyTableManager;
 		this.cyTableReaderManager = cyTableReaderManager;
+		this.cyTableWriterManager = cyTableWriterManager;
 		this.cyVersion = cyVersion;
-//		this.cyTableWriterManager = cyTableWriterManager;
 		this.dialogTaskManager = dialogTaskManager;
 		this.panelTaskManager = panelTaskManager;
 		this.presentationWriterManager = presentationWriterManager;
@@ -515,8 +517,8 @@ public class CyAppAdapterImpl implements CyAppAdapter {
 	public CyTableFactory getCyTableFactory() { return cyTableFactory; } 
 	public CyTableManager getCyTableManager() { return cyTableManager; }
 	public CyTableReaderManager getCyTableReaderManager() { return cyTableReaderManager; }
+	public CyTableWriterManager getCyTableWriterManager() { return cyTableWriterManager; }
 	public CyVersion getCyVersion() { return cyVersion; }
-//	public CyTableWriterManager getCyTableWriterManager() { return cyTableWriterManager; }
 	public DialogTaskManager getDialogTaskManager() { return dialogTaskManager; }
 	public PanelTaskManager getPanelTaskManager() { return panelTaskManager; }
 	public PresentationWriterManager getPresentationWriterManager() { return presentationWriterManager; }

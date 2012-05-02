@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 
-import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.work.TaskIterator;
@@ -89,7 +89,7 @@ public class AppManager {
 	private static String cyVersion;// = new CytoscapeVersion().getMajorVersion();
 
 	private static final Logger logger = LoggerFactory.getLogger(AppTracker.class);
-	private CyAppAdapter adapter = null;
+	private CySwingAppAdapter adapter = null;
 	
 	/**
 	/**
@@ -683,7 +683,7 @@ public class AppManager {
 //					URLClassLoader ucl = URLClassLoader.newInstance( new URL[]{jarurl}, 
 //					                                      AppLoaderTask.class.getClassLoader() );
 //					Class c = ucl.loadClass(name);
-//					Constructor<CyApp> con = c.getConstructor(CyAppAdapter.class);
+//					Constructor<CyApp> con = c.getConstructor(CySwingAppAdapter.class);
 //					o = con.newInstance(adapter);
 //				}
 //				catch (Exception e){
@@ -724,11 +724,11 @@ public class AppManager {
 	}
 
 	
-	public void setCyAppAdapter(CyAppAdapter adapter){
+	public void setCySwingAppAdapter(CySwingAppAdapter adapter){
 		this.adapter = adapter;
 	}
 
-	public CyAppAdapter getCyAppAdapter(){
+	public CySwingAppAdapter getCySwingAppAdapter(){
 		return adapter;
 	}
 	

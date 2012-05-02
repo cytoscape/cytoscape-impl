@@ -8,7 +8,7 @@ import java.net.URLClassLoader;
 import java.util.Set;
 import java.util.jar.JarFile;
 
-import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -21,7 +21,7 @@ public class AppLoaderTask2 extends AbstractTask {
 	private static final Logger logger = LoggerFactory.getLogger( AppLoaderTask2.class );
 	private static final String APP_TAG = "Cytoscape-App";
 	
-	private  CyAppAdapter adapter;
+	private  CySwingAppAdapter adapter;
 
 	private File filename;
 	
@@ -29,7 +29,7 @@ public class AppLoaderTask2 extends AbstractTask {
 	// If app developers want to avoid it, they need to try regular bundle app.
 	private Set<URL> urls= AppLoaderTaskFactory.urls;
 
-	public AppLoaderTask2(CyAppAdapter adapter) {
+	public AppLoaderTask2(CySwingAppAdapter adapter) {
 		this.adapter = adapter;
 	}
 
@@ -57,7 +57,7 @@ public class AppLoaderTask2 extends AbstractTask {
 			final MyClassLoader ucl = new MyClassLoader(parentLoader);
 			final Class<?> c = ucl.loadClass(name);
 			
-			final Constructor<?> con = c.getConstructor(CyAppAdapter.class);
+			final Constructor<?> con = c.getConstructor(CySwingAppAdapter.class);
 			app = con.newInstance(adapter);
 			logger.info("App loaded: " + app);
 		} finally {

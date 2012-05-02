@@ -1,6 +1,7 @@
 package org.cytoscape.app.internal;
 
 import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.app.internal.CyAppAdapterImpl;
 import org.cytoscape.app.internal.AppLoaderTaskFactory;
 import org.cytoscape.app.internal.StartupMostlyFinished;
@@ -32,6 +33,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -143,6 +145,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory cyTableFactoryRef = getService(bc,CyTableFactory.class);
 		CyTableManager cyTableManagerRef = getService(bc,CyTableManager.class);
 		CyTableReaderManager cyTableReaderManagerRef = getService(bc,CyTableReaderManager.class);
+		CyTableWriterManager cyTableWriterManagerRef = getService(bc,CyTableWriterManager.class);
 		PanelTaskManager panelTaskManagerRef = getService(bc,PanelTaskManager.class);
 		DialogTaskManager dialogTaskManagerRef = getService(bc,DialogTaskManager.class);
 		PresentationWriterManager presentationWriterManagerRef = getService(bc,PresentationWriterManager.class);
@@ -232,7 +235,7 @@ public class CyActivator extends AbstractCyActivator {
 		// End of core-task services
 		 
 		
-		CyAppAdapterImpl cyAppAdapter = new CyAppAdapterImpl(cyApplicationManagerRef,
+		CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(cyApplicationManagerRef,
 		                                                     cyEventHelperRef,
 		                                                     cyGroupAggregationManagerRef, 
 		                                                     cyGroupFactoryRef, 
@@ -256,6 +259,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                     cyTableFactoryRef,
 		                                                     cyTableManagerRef,
 		                                                     cyTableReaderManagerRef,
+		                                                     cyTableWriterManagerRef,
 		                                                     cytoscapeVersionService, 
 		                                                     dialogTaskManagerRef,
 		                                                     panelTaskManagerRef,
@@ -341,6 +345,7 @@ public class CyActivator extends AbstractCyActivator {
 		StartupMostlyFinished startupMostlyFinished = new StartupMostlyFinished(cyEventHelperRef);
 		
 		registerService(bc,cyAppAdapter,CyAppAdapter.class, new Properties());
+		registerService(bc,cyAppAdapter,CySwingAppAdapter.class, new Properties());
 		
 		registerService(bc,appLoaderTaskFactory,TaskFactory.class, new Properties());
 		registerAllServices(bc,appManagerAction, new Properties());

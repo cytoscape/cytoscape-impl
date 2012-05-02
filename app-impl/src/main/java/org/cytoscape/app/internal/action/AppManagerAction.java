@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.app.internal.AppInquireAction;
 import org.cytoscape.app.internal.AppManager;
 import org.cytoscape.app.internal.AppManagerInquireTask;
@@ -98,7 +98,7 @@ public class AppManagerAction extends AbstractCyAction implements SessionLoadedL
 							BookmarksUtil bookmarksUtil,
 							DialogTaskManager dialogTaskManager,
 							CyProperty<Properties> cytoscapeProperties,
-							CyAppAdapter adapter,
+							CySwingAppAdapter adapter,
 							TaskFactory appLoaderTaskFactory,
 							final CyApplicationConfiguration config) {
 				
@@ -128,7 +128,7 @@ public class AppManagerAction extends AbstractCyAction implements SessionLoadedL
 		//Initialize the AppManager
 		AppManager Mgr = AppManager.getAppManager();
 		Mgr.setTaskManager(this.dialogTaskManager);
-		Mgr.setCyAppAdapter(adapter);
+		Mgr.setCySwingAppAdapter(adapter);
 		
 		// Delete apps which are marked 'delete' in the track file
 		try {

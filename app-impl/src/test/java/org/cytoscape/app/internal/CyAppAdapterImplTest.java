@@ -19,6 +19,7 @@ import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
@@ -127,8 +128,8 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(CyTableFactory.class),
 			mock(CyTableManager.class),
 			mock(CyTableReaderManager.class),
+			mock(CyTableWriterManager.class),
 			mock(CyVersion.class),
-//			mock(CyTableWriterManager.class),
 			mock(DialogTaskManager.class),
 			mock(PanelTaskManager.class),
 			mock(PresentationWriterManager.class),

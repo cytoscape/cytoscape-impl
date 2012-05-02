@@ -5,19 +5,19 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
 public class AppLoaderTaskFactory extends AbstractTaskFactory {
 	
-	private final CyAppAdapter adapter;
+	private final CySwingAppAdapter adapter;
 	 
 	// App Jar file URLs
 	public static final Set<URL> urls = new HashSet<URL>();
 
-	AppLoaderTaskFactory(final CyAppAdapter adapter) {
+	AppLoaderTaskFactory(final CySwingAppAdapter adapter) {
 		this.adapter = adapter;
 	}
 
