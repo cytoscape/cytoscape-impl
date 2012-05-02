@@ -397,10 +397,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				Object context = currentLayout.getDefaultLayoutContext();
 
 				TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
-				if (!provisioner.isReady()) {
-					throw new IllegalArgumentException("Layout is not fully configured");
-				}
-				
 				JPanel tunablePanel = taskManager.getConfiguration(provisioner, context);
 
 				int row = 0;
