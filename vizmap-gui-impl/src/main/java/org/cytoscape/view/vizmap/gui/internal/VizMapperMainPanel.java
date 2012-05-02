@@ -69,6 +69,8 @@ import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedListener;
+import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
@@ -101,8 +103,9 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  * 
  */
 public class VizMapperMainPanel extends AbstractVizMapperPanel implements VisualStyleAddedListener,
-		VisualStyleAboutToBeRemovedListener, PopupMenuListener, NetworkViewAddedListener, CytoPanelComponent,
-		SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener, PropertyChangeListener, LexiconStateChangedListener {
+		VisualStyleSetListener, VisualStyleAboutToBeRemovedListener, PopupMenuListener, NetworkViewAddedListener,
+		CytoPanelComponent, SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener,
+		PropertyChangeListener, LexiconStateChangedListener {
 
 	private final static long serialVersionUID = 1202339867854959L;
 
@@ -424,6 +427,22 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	}
 
 	@Override
+	public void handleEvent(VisualStyleSetEvent e) {
+		final CyNetworkView view = e.getNetworkView();
+		
+		if(view.equals(applicationManager.getCurrentNetworkView())) {
+			// Only switch the selected style if the network view is the current one 
+			final VisualStyle style = e.getVisualStyle();
+			final VisualStyle lastStyle = (VisualStyle) visualStyleComboBox.getSelectedItem();
+			
+			// Also check if the style is not already selected
+			if(style.equals(lastStyle) == false) {
+				eventHelper.fireEvent(new SelectedVisualStyleSwitchedEvent(this, lastStyle, style));
+			}
+		}
+	}
+	
+	@Override
 	public String getTitle() {
 		return TAB_TITLE;
 	}
@@ -451,7 +470,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		if(newStyle.equals(currentSelected) == false)
 			this.visualStyleComboBox.setSelectedItem(newStyle);
 	}
-
 	
 	@Override
 	public void handleEvent(SetCurrentRenderingEngineEvent e) {
@@ -465,7 +483,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 			this.visualStyleComboBox.setSelectedItem(newStyle);
 	}
 
-	
 	/**
 	 * Handles local property change event.
 	 * This will be used to switch view mode: show all VPs or basic VPs only.
