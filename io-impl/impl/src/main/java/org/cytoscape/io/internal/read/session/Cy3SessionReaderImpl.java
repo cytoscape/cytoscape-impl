@@ -100,9 +100,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private static final String TEMP_DIR = "java.io.tmpdir";
 
 	public static final Pattern NETWORK_PATTERN = Pattern.compile(".*/"+NETWORKS_FOLDER+"(([^/]+)[.]xgmml)");
-	public static final Pattern NETWORK_NAME_PATTERN = Pattern.compile("(\\d+)(_[^_]+)?");
+	public static final Pattern NETWORK_NAME_PATTERN = Pattern.compile("(\\d+)(-(.+))?");
 	public static final Pattern NETWORK_VIEW_PATTERN = Pattern.compile(".*/"+NETWORK_VIEWS_FOLDER+"(([^/]+)[.]xgmml)");
-	public static final Pattern NETWORK_VIEW_NAME_PATTERN = Pattern.compile("(\\d+)_(\\d+)(_[^_]+)?"); // netId_viewId_title
+	public static final Pattern NETWORK_VIEW_NAME_PATTERN = Pattern.compile("(\\d+)-(\\d+)(-(.+))?"); // netId_viewId_title
 	public static final Pattern NETWORK_TABLE_PATTERN = Pattern.compile(".*/(([^/]+)/([^/]+)-([^/]+)-([^/]+)[.]cytable)");
 	public static final Pattern GLOBAL_TABLE_PATTERN = Pattern.compile(".*/(global/(\\d+)-([^/]+)[.]cytable)");
 	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/"+PROPERTIES_FOLDER+"?(([^/]+)[.](props|properties))");

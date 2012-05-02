@@ -91,20 +91,20 @@ public class SessionUtil {
 		String namespace = escape(metadata.getNamespace());
 		String type = escape(metadata.getType().getCanonicalName());
 		String tableTitle = escape(table.getTitle());
-		return String.format("%s_%s/%s-%s-%s%s", networkId, networkFileName, namespace, type, tableTitle, TABLE_EXT);
+		return String.format("%s-%s/%s-%s-%s%s", networkId, networkFileName, namespace, type, tableTitle, TABLE_EXT);
 	}
 	
 	public static String getXGMMLFilename(CyNetwork network) throws UnsupportedEncodingException {
 		String name = getNetworkFileName(network);
 		String id = escape(Long.toString(network.getSUID()));
-		return String.format("%s_%s%s", id, name, XGMML_EXT);
+		return String.format("%s-%s%s", id, name, XGMML_EXT);
 	}
 	
 	public static String getXGMMLFilename(CyNetworkView view) throws UnsupportedEncodingException {
 		String title = getNetworkViewFileName(view);
 		String viewId = escape(Long.toString(view.getSUID()));
 		String netId = escape(Long.toString(view.getModel().getSUID()));
-		return String.format("%s_%s_%s%s", netId, viewId, title, XGMML_EXT);
+		return String.format("%s-%s-%s%s", netId, viewId, title, XGMML_EXT);
 	}
 	
 	public static String getNetworkFileName(CyNetwork network) throws UnsupportedEncodingException {
