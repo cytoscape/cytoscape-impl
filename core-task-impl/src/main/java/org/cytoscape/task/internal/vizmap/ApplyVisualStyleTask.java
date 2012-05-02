@@ -14,6 +14,8 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public class ApplyVisualStyleTask extends AbstractNetworkViewTask {
 	
+	private final VisualMappingManager vmm;
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Visual Style to be applied";
@@ -25,6 +27,11 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewTask {
 	
 	public ApplyVisualStyleTask(final CyNetworkView view, final VisualMappingManager vmm) {
 		super(view);
+		
+		if (vmm == null)
+			throw new NullPointerException("VisualMappingManager is null");
+		this.vmm = vmm;
+		
 		final List<VisualStyle> vsList = new ArrayList<VisualStyle>(vmm.getAllVisualStyles());
 		styles = new ListSingleSelection<VisualStyle>(vsList);
 		if(vsList.size()>0)
@@ -35,8 +42,9 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		final VisualStyle selected = styles.getSelectedValue();
 		
-		// Simply apply the style to the view.
 		selected.apply(view);
+		view.updateView();
+		vmm.setVisualStyle(selected, view);
 	}
 
 }
