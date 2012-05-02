@@ -294,6 +294,10 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 		//Refresh indices for UI widgets after network switch			
 		CompositeFilter selectedFilter = (CompositeFilter) cmbFilters.getSelectedItem();
+		if (selectedFilter == null) {
+			return;
+		}
+		
 		selectedFilter.setNetwork(net);
 		FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
 
