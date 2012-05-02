@@ -56,6 +56,10 @@ public class UnGroupNodesTaskFactoryImpl implements NodeViewTaskFactory, Network
 	}
 
 	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
+		if (nodeView == null || netView == null) {
+			return false;
+		}
+		
 		List<CyNode> nodeList = new ArrayList<CyNode>();
 		nodeList.add(nodeView.getModel());
 
@@ -66,6 +70,10 @@ public class UnGroupNodesTaskFactoryImpl implements NodeViewTaskFactory, Network
 	}
 
 	public boolean isReady(CyNetworkView netView) {
+		if (netView == null) {
+			return false;
+		}
+		
 		// Get all of the selected nodes
 		CyNetwork net = netView.getModel();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
