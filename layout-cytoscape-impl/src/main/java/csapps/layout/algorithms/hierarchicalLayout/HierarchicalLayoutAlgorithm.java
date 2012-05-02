@@ -89,4 +89,10 @@ public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm {
 	public Object createLayoutContext() {
 		return new HierarchicalLayoutContext();
 	}
+	
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
+	}
+
 }

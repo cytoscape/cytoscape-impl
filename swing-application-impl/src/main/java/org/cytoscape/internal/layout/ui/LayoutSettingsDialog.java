@@ -108,6 +108,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private LayoutAttributeTunable layoutAttributeTunable;
 	private JPanel layoutAttributePanel;
 	private final SelectedTunable selectedTunable;
+	
+	private static final String UNWEIGHTED = "(none)";
 
 	/**
 	 * Creates a new LayoutSettingsDialog object.
@@ -418,8 +420,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				CyNetworkView view = appMgr.getCurrentNetworkView();
 				setNetworkView(view);
 				
-				if (currentLayout.getSupportsSelectedOnly()) {
-					selectedTunable.selectedNodesOnly =  hasSelectedNodes(view);
+				if (currentLayout.getSupportsSelectedOnly() && hasSelectedNodes(view)) {
+					selectedTunable.selectedNodesOnly =  true;
 					JPanel panel = taskManager.getConfiguration(null, selectedTunable);
 					algorithmPanel.add(panel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 				}
@@ -445,6 +447,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				panel.invalidate();
 			}
 		}
+		
 	}
 
 	private boolean hasSelectedNodes(CyNetworkView view) {
@@ -476,6 +479,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
             	attributes.add(column.getName());
             }
 		}
+		
+		if (attributes.size()>0)
+			attributes.add(0, UNWEIGHTED);
         return attributes;
 	}
 	
@@ -483,6 +489,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		if (layoutAttributeTunable == null || layoutAttributeTunable.layoutAttribute == null) {
 			return null;
 		}
+		if(layoutAttributeTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
+			return null;
 		return layoutAttributeTunable.layoutAttribute.getSelectedValue();
 	}
 

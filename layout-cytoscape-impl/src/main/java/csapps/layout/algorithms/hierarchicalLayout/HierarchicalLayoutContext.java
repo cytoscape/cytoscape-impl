@@ -18,8 +18,6 @@ public class HierarchicalLayoutContext implements TunableValidator {
 	public int topEdge = 32;
 	@Tunable(description="Right edge margin")
 	public int rightMargin = 7000;
-	@Tunable(description="layout selected nodes only")
-	public boolean selected_only = false;
 
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {

@@ -88,4 +88,10 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
 	public GroupAttributesLayoutContext createLayoutContext() {
 		return new GroupAttributesLayoutContext();
 	}
+	
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
+	}
+
 }

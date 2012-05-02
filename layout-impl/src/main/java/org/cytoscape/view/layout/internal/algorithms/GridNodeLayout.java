@@ -63,4 +63,10 @@ public class GridNodeLayout extends AbstractLayoutAlgorithm {
 	public Object createLayoutContext() {
 		return new GridNodeLayoutContext();
 	}
+	
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
+	}
+
 }

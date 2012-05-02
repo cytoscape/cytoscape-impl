@@ -32,6 +32,7 @@ package org.cytoscape.internal.layout.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.UnexpectedException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +72,8 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
     private final boolean supportsSelectedOnly;
     private final CyNetwork network;
     private final CyApplicationManager appMgr;
+
+	private static final String UNWEIGHTED = "(none)";
 
 
     /**
@@ -125,7 +128,8 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
     }
 
     private void addAttributeMenus(JMenu parent, CyTable attributes, Set<Class<?>> typeSet, boolean selectedOnly) {
-        for (final CyColumn column : attributes.getColumns())
+        parent.add(new LayoutAttributeMenuItem(UNWEIGHTED, selectedOnly));
+    	for (final CyColumn column : attributes.getColumns())
             if (typeSet.contains(column.getType()))
                 parent.add(new LayoutAttributeMenuItem(column.getName(), selectedOnly));
     }
@@ -137,7 +141,7 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
         if (usesNodeAttrs || usesEdgeAttrs) {
             allNodes = new JMenu("All Nodes");
             selNodes = new JMenu("Selected Nodes Only");
-
+            
             if (usesNodeAttrs) {
                 addNodeAttributeMenus((JMenu) allNodes, false);
                 addNodeAttributeMenus((JMenu) selNodes, true);
@@ -175,9 +179,11 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
                     nodeViews = CyLayoutAlgorithm.ALL_NODE_VIEWS;
 
                 String layoutAttribute = null;
-                if (layout.getSupportedNodeAttributeTypes().size() > 0 || layout.getSupportedEdgeAttributeTypes().size() > 0)
-                    layoutAttribute = e.getActionCommand();
-
+                if (layout.getSupportedNodeAttributeTypes().size() > 0 || layout.getSupportedEdgeAttributeTypes().size() > 0){
+                	layoutAttribute = e.getActionCommand();
+                	if (layoutAttribute.equals(UNWEIGHTED))
+                		layoutAttribute = null;
+                }
                 tm.execute(layout.createTaskIterator(netView,layout.getDefaultLayoutContext(),nodeViews,layoutAttribute));
             }
         }

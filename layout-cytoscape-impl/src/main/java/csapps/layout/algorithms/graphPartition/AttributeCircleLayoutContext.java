@@ -1,12 +1,11 @@
 package csapps.layout.algorithms.graphPartition;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
 public class AttributeCircleLayoutContext  implements TunableValidator {
-	@Tunable(description = "The attribute to use for the layout")
-	public String attribute = CyNetwork.NAME;
+//	@Tunable(description = "The attribute to use for the layout")
+//	public String attribute = CyNetwork.NAME;
 	
 //	@Tunable(description="Node attribute to be use")
 //	public ListSingleSelection<Integer> attrName;
@@ -19,7 +18,8 @@ public class AttributeCircleLayoutContext  implements TunableValidator {
 
 	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
-		return attribute.length() > 0 && spacing > 0.0 ? ValidationState.OK : ValidationState.INVALID;
+	//	return attribute.length() > 0 && spacing > 0.0 ? ValidationState.OK : ValidationState.INVALID;
+		return ValidationState.OK;
 	}
 
 	/**
@@ -27,10 +27,4 @@ public class AttributeCircleLayoutContext  implements TunableValidator {
 	 *
 	 * @param value the name of the attribute
 	 */
-	public void setLayoutAttribute(String value) {
-		if (value.equals("(none)"))
-			this.attribute = null;
-		else
-			this.attribute = value;
-	}
 }
