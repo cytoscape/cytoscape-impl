@@ -175,18 +175,12 @@ public class QuickFindImpl implements QuickFind {
 		// If all the values for the controllingAttribute are NULL, return null
 		CyTable table;
 		if (indexType == QuickFind.INDEX_NODES) {
-			CyNode node = null;
-			//
-			if (!(cyNetwork.getNodeList() == null || cyNetwork.getNodeList().size() == 0)){
-				node = cyNetwork.getNodeList().iterator().next();
-			}
-			if (node == null) {
+			if (cyNetwork.getNodeCount() == 0) {
 				return null;
 			}
 			table = cyNetwork.getDefaultNodeTable();
 		} else if (indexType == QuickFind.INDEX_EDGES){
-			CyEdge edge = cyNetwork.getEdgeList().iterator().next();
-			if (edge == null) {
+			if (cyNetwork.getEdgeCount() == 0) {
 				return null;
 			}
 			table = cyNetwork.getDefaultEdgeTable(); 

@@ -36,16 +36,16 @@
 
 package org.cytoscape.filter.internal.quickfind.util;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTable;
 
 
 /**
@@ -183,19 +183,19 @@ public class CyAttributesUtil {
 	}
 
 	public static boolean isNullAttribute(CyNetwork cyNetwork, String indexType, String attributeName) {
-		Collection<? extends CyIdentifiable> entries; 
+		CyTable table; 
 		if (indexType.equals("node")) {
-			entries = cyNetwork.getNodeList();
+			table = cyNetwork.getDefaultNodeTable();
 		} else if (indexType.equals("edge")) {
-			entries = cyNetwork.getEdgeList();
+			table = cyNetwork.getDefaultEdgeTable();
 		} else {
 			return true;
 		}
-		if (entries.size() == 0) {
+		if (table.getColumn(attributeName) == null) {
 			return true;
 		}
-		for (CyIdentifiable entry : entries) {
-			CyRow row = cyNetwork.getRow(entry);
+		
+		for (CyRow row :table.getAllRows()) {
 			Class<?> type = row.getTable().getColumn(attributeName).getType();
 			if (row.get(attributeName, type) != null) {
 				return false;

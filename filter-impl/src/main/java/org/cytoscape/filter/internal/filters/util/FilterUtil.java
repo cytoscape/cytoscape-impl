@@ -115,20 +115,16 @@ public class FilterUtil {
 		if (network == null)
 			return false;
 		if (pType == QuickFind.INDEX_NODES) {
-			List<CyNode> nodes = network.getNodeList();
-			if (nodes.size() == 0) {
+			if (network.getNodeCount() == 0) {
 				return false;
 			}
-			CyNode node = nodes.get(0);
-			return network.getRow(node).getTable().getColumn(pAttribute) != null;
+			return network.getDefaultNodeTable().getColumn(pAttribute) != null;
 		}
 		else if (pType == QuickFind.INDEX_EDGES) {
-			List<CyEdge> edges = network.getEdgeList();
-			if (edges.size() == 0) {
+			if (network.getEdgeCount() == 0) {
 				return false;
 			}
-			CyEdge edge = edges.get(0);
-			return network.getRow(edge).getTable().getColumn(pAttribute) != null;
+			return network.getDefaultEdgeTable().getColumn(pAttribute) != null;
 		}
 		return false;
 	}

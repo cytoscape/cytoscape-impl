@@ -88,6 +88,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -434,22 +435,17 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 */
 	private List<Object> getCyAttributesList(CyNetwork network, String pType) {
 		Vector<String> attributeList = new Vector<String>();
-		Collection<? extends CyIdentifiable> entries = null;
+		CyTable table;
 		
-		if (pType.equalsIgnoreCase("node")) {
-			entries = network.getNodeList();
-		} else if (pType.equalsIgnoreCase("edge")){
-			entries = network.getEdgeList();
+		if (pType.equalsIgnoreCase("node") && network.getNodeCount() > 0) {
+			table = network.getDefaultNodeTable();
+		} else if (pType.equalsIgnoreCase("edge") && network.getEdgeCount() > 0){
+			table = network.getDefaultEdgeTable();
 		} else {
 			return Collections.emptyList();
 		}
 		
-		if (entries.size() == 0) {
-			return Collections.emptyList();
-		}
-		
-		CyIdentifiable tableEntry = entries.iterator().next();
-		final Collection<CyColumn> columns = network.getRow(tableEntry).getTable().getColumns();
+		final Collection<CyColumn> columns = table.getColumns();
 		
 		for (final CyColumn column : columns) {
 			//  Show all attributes, with type of String or Number

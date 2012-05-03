@@ -31,6 +31,7 @@ package org.cytoscape.filter.internal.quickfind.app;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -256,27 +257,25 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 		}
 	}
 
-	private void selectNodes(final CyNetwork cyNetwork, List rangeList) {
+	private void selectNodes(final CyNetwork cyNetwork, List<CyNode> rangeList) {
 		//  First, do we have any edges selected?  If so, unselect them all
-		Set selectedEdgeSet = SelectUtil.getSelectedEdges(cyNetwork);
+		List<CyEdge> selectedEdgeSet = SelectUtil.getSelectedEdges(cyNetwork);
 
 		if (selectedEdgeSet.size() > 0) {
 			SelectUtil.setSelectedEdgeState(cyNetwork, selectedEdgeSet, false);
 		}
 
 		//  Then, determine the current set of selected nodes
-		Set selectedNodeSet = SelectUtil.getSelectedNodes(cyNetwork);
+		List<CyNode> selectedNodeSet = SelectUtil.getSelectedNodes(cyNetwork);
 
 		//  Then, figure out which new nodes to select
 		//  This is the set operation:  R - S
-		final List toBeSelected = new ArrayList();
-		toBeSelected.addAll(rangeList);
+		final Set<CyNode> toBeSelected = new HashSet<CyNode>(rangeList);
 		toBeSelected.removeAll(selectedNodeSet);
 
 		//  Then, figure out which current nodes to unselect
 		//  This is the set operation:  S - R
-		final List toBeUnselected = new ArrayList();
-		toBeUnselected.addAll(selectedNodeSet);
+		final Set<CyNode> toBeUnselected = new HashSet<CyNode>(selectedNodeSet);
 		toBeUnselected.removeAll(rangeList);
 
 		SwingUtilities.invokeLater(new Runnable() {
@@ -291,27 +290,25 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 			});
 	}
 
-	private void selectEdges(final CyNetwork cyNetwork, List rangeList) {
+	private void selectEdges(final CyNetwork cyNetwork, List<CyEdge> rangeList) {
 		//  First, do we have any nodes selected?  If so, unselect them all
-		Set selectedNodeSet = SelectUtil.getSelectedNodes(cyNetwork);
+		List<CyNode> selectedNodeSet = SelectUtil.getSelectedNodes(cyNetwork);
 
 		if (selectedNodeSet.size() > 0) {
 			SelectUtil.setSelectedNodeState(cyNetwork, selectedNodeSet, false);
 		}
 
 		//  Then, determine the current set of selected edge
-		Set selectedEdgeSet = SelectUtil.getSelectedEdges(cyNetwork);
+		List<CyEdge> selectedEdgeSet = SelectUtil.getSelectedEdges(cyNetwork);
 
 		//  Then, figure out which new nodes to select
 		//  This is the set operation:  R - S
-		final List toBeSelected = new ArrayList();
-		toBeSelected.addAll(rangeList);
+		final Set<CyEdge> toBeSelected = new HashSet<CyEdge>(rangeList);
 		toBeSelected.removeAll(selectedEdgeSet);
 
 		//  Then, figure out which current nodes to unselect
 		//  This is the set operation:  S - R
-		final List toBeUnselected = new ArrayList();
-		toBeUnselected.addAll(selectedEdgeSet);
+		final Set<CyEdge> toBeUnselected = new HashSet<CyEdge>(selectedEdgeSet);
 		toBeUnselected.removeAll(rangeList);
 
 		SwingUtilities.invokeLater(new Runnable() {
@@ -360,7 +357,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 		if (!networkManager.networkExists(cyNetwork.getSUID()))
 			return;
 		
-		if (cyNetwork.getNodeList() != null) {
+		if (cyNetwork.getNodeCount() > 0) {
 			// this network may not have been added to quick find - 
 			// this can happen if an empty network was added
 			if (quickFind.getIndex(cyNetwork) == null) {

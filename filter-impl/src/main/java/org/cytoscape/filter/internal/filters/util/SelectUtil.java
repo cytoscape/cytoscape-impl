@@ -1,22 +1,22 @@
 package org.cytoscape.filter.internal.filters.util;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTableUtil;
 
 public class SelectUtil {
 	public static void unselectAllNodes(CyNetwork network) {
-		setSelectedState(network, network.getNodeList(), Boolean.FALSE);
+		setSelectedState(network, CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true), false);
 	}
 	
 	public static void unselectAllEdges(CyNetwork network) {
-		setSelectedState(network, network.getEdgeList(), Boolean.FALSE);
+		setSelectedState(network, CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true), false);
 	}
 
 	public static void setSelectedNodeState(CyNetwork network, Collection<CyNode> list, boolean selected) {
@@ -35,23 +35,12 @@ public class SelectUtil {
 		
 	}
 	
-	public static Set<CyNode> getSelectedNodes(CyNetwork cyNetwork) {
-		return getSelected(cyNetwork, cyNetwork.getNodeList());
+	public static List<CyNode> getSelectedNodes(CyNetwork cyNetwork) {
+		return CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true);
 	}
 
-	public static Set<CyEdge> getSelectedEdges(CyNetwork cyNetwork) {
-		return getSelected(cyNetwork, cyNetwork.getEdgeList());
-	}
-	
-	static <T extends CyIdentifiable> Set<T> getSelected(CyNetwork network, Collection<T> items) {
-		Set<T> entries = new HashSet<T>();
-		for (T item : items) {
-			CyRow row = network.getRow(item);
-			if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-				entries.add(item);
-			}
-		}
-		return entries;
+	public static List<CyEdge> getSelectedEdges(CyNetwork cyNetwork) {
+		return CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
 	}
 	
 	public static void selectAllNodes(CyNetwork cyNetwork) {

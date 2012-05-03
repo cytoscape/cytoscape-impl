@@ -46,7 +46,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
@@ -61,7 +60,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.View;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -87,8 +85,7 @@ import org.cytoscape.filter.internal.widgets.autocomplete.view.ComboBoxFactory;
 import org.cytoscape.filter.internal.widgets.autocomplete.view.TextIndexComboBox;
 import org.cytoscape.filter.internal.widgets.slider.JRangeSliderExtended;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,23 +200,17 @@ public class FilterSettingPanel extends JPanel {
 	
 
 	private Class<?> getAttributeDataType(CyNetwork network, String pAttribute, int pType) {
-		Collection<? extends CyIdentifiable> entries;
+		CyTable table = null;
 		
-		if (pType == QuickFind.INDEX_NODES) {
-			entries = network.getNodeList();
-		} else if (pType == QuickFind.INDEX_EDGES) {
-			entries = network.getEdgeList();
+		if (pType == QuickFind.INDEX_NODES && network.getNodeCount() > 0) {
+			table = network.getDefaultNodeTable();
+		} else if (pType == QuickFind.INDEX_EDGES && network.getEdgeCount() > 0) {
+			table = network.getDefaultEdgeTable();
 		} else {
 			return null;
 		}
 		
-		if (entries.size() == 0) {
-			return null;
-		}
-		
-		CyIdentifiable entry = entries.iterator().next();
-		CyRow row = network.getRow(entry);
-		return row.getTable().getColumn(pAttribute).getType();
+		return table.getColumn(pAttribute).getType();
 	}
 
 	
