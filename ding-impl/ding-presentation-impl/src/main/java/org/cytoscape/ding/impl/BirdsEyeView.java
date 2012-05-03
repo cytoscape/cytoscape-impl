@@ -61,15 +61,13 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 /**
  * Swing component to display overview of the network.
  * 
  */
-public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork>, UpdateNetworkPresentationListener {
+public final class BirdsEyeView extends Component implements RenderingEngine<CyNetwork> {
 	
 	private final static long serialVersionUID = 1202416511863994L;
 	
@@ -80,7 +78,7 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	private static final Stroke VIEW_WINDOW_BORDER_STROKE =  new BasicStroke(2);
 	
 	// Ratio of the graph image to panel size 
-	private static final double SCALE_FACTOR = 0.92;
+	private static final double SCALE_FACTOR = 0.96;
 
 	private final double[] m_extents = new double[4];
 
@@ -90,9 +88,11 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	private final ContentChangeListener m_cLis;
 	private final ViewportChangeListener m_vLis;
 	
-	private Image networkImage = null;
+	private Image networkImage;
 	
-	private boolean m_contentChanged = false;
+	private boolean imageUpdated;
+	private boolean boundChanged;
+	
 	private double m_myXCenter;
 	private double m_myYCenter;
 	private double m_myScaleFactor;
@@ -103,15 +103,15 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	private double m_viewXCenter;
 	private double m_viewYCenter;
 	private double m_viewScaleFactor;
+	
+	private int imageWidth;
+	private int imageHeight;
 
 	/**
 	 * Creates a new BirdsEyeView object.
 	 * 
 	 * @param viewModel
 	 *            The view to monitor
-	 * @param container
-	 *            The desktop area holding the view. This should be
-	 *            NetworkViewManager.getDesktopPane().
 	 */
 	public BirdsEyeView(final DGraphView viewModel) {
 		super();
@@ -129,12 +129,11 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		setPreferredSize(MIN_SIZE);
 		setMinimumSize(MIN_SIZE);
 
-		setView(viewModel);
+		initializeView(viewModel);
 	}
 
 	
-	private void setView(final GraphView view) {
-
+	private void initializeView(final GraphView view) {
 		viewModel.addContentChangeListener(m_cLis);
 		viewModel.addViewportChangeListener(m_vLis);
 		
@@ -142,9 +141,16 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		final Point2D pt = viewModel.getCenter();
 		m_viewXCenter = pt.getX();
 		m_viewYCenter = pt.getY();
+		
 		m_viewScaleFactor = viewModel.getZoom();
-		m_contentChanged = true;
-
+		
+		// Create default empty graphics object
+		networkImage = new BufferedImage(MIN_SIZE.width, MIN_SIZE.height, BufferedImage.TYPE_INT_ARGB);
+		imageWidth = MIN_SIZE.width;
+		imageHeight = MIN_SIZE.height;
+		
+		boundChanged = true;
+		imageUpdated = true;
 		repaint();
 	}
 
@@ -152,11 +158,10 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		final Rectangle2D viewable = getViewableRect();
 		m_viewWidth = (int) viewable.getWidth();
 		m_viewHeight = (int) viewable.getHeight();
-		
+
 		final Rectangle2D viewableInView = getViewableRectInView(viewable);
 		m_viewXCenter = viewableInView.getX() + viewableInView.getWidth() / 2.0;
-		m_viewYCenter = viewableInView.getY() + viewableInView.getHeight()
-				/ 2.0;
+		m_viewYCenter = viewableInView.getY() + viewableInView.getHeight() / 2.0;
 	}
 	
 	private Rectangle2D getViewableRect() {
@@ -176,8 +181,7 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		destination[1] = viewable.getY() + viewable.getHeight();
 		viewModel.xformComponentToNodeCoords(destination);
 
-		return new Rectangle2D.Double(origin[0], origin[1],
-				destination[0] - origin[0], destination[1] - origin[1]);
+		return new Rectangle2D.Double(origin[0], origin[1], destination[0] - origin[0], destination[1] - origin[1]);
 	}
 	
 	/**
@@ -189,14 +193,16 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 	 * @param width
 	 * @param height
 	 */
-	@Override public void setBounds(int x, int y, int width, int height) {
+	@Override
+	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
 
-		if ((width > 0) && (height > 0))
-			networkImage = new BufferedImage(width, height,
-					BufferedImage.TYPE_INT_ARGB);
-
-		m_contentChanged = true;
+		if(imageWidth != width || imageHeight != height) {
+			imageWidth = width;
+			imageHeight = height;
+			imageUpdated = true;
+		}
+		boundChanged = true;
 	}
 
 	
@@ -209,7 +215,7 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 
 		updateBounds();
 
-		if (m_contentChanged) {
+		if (imageUpdated || boundChanged) {
 			if (viewModel.getExtents(m_extents)) {				
 				m_myXCenter = (m_extents[0] + m_extents[2]) / 2.0d;
 				m_myYCenter = (m_extents[1] + m_extents[3]) / 2.0d;
@@ -222,10 +228,13 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 				m_myScaleFactor = 1.0d;
 			}
 
-			viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(),
-					viewModel.getBackgroundPaint(), m_myXCenter, m_myYCenter,
-					m_myScaleFactor);
-			m_contentChanged = false;
+			// Create "background" network image.
+			if (imageUpdated) {
+				// Need to create new image.  This is VERY expensive operation.
+				networkImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+				viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(), viewModel.getBackgroundPaint(),
+						m_myXCenter, m_myYCenter, m_myScaleFactor);
+			}
 		}
 
 		// Render network graphics.
@@ -250,6 +259,9 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		g2.fill(viewArea);
 		g2.setColor(VIEW_WINDOW_BORDER_COLOR);
 		g2.draw(viewArea);
+		
+		boundChanged = false;
+		imageUpdated = false;
 	}
 
 	
@@ -257,23 +269,27 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		update(g);
 	}
 
-	private final class InnerContentChangeListener implements
-			ContentChangeListener {
+	private final class InnerContentChangeListener implements ContentChangeListener {
+		/**
+		 * Will be called when something is changed in the main view.
+		 */
 		public void contentChanged() {
-			m_contentChanged = true;
+			imageUpdated = true;
 			repaint();
 		}
 	}
 
-	private final class InnerViewportChangeListener implements
-			ViewportChangeListener {
-		public void viewportChanged(int w, int h, double newXCenter,
-				double newYCenter, double newScaleFactor) {
+	private final class InnerViewportChangeListener implements ViewportChangeListener {
+		
+		/**
+		 * Update the view if panned.
+		 */
+		public void viewportChanged(int w, int h, double newXCenter, double newYCenter, double newScaleFactor) {
 			m_viewWidth = w;
 			m_viewHeight = h;
 			m_viewXCenter = newXCenter;
 			m_viewYCenter = newYCenter;
-			m_viewScaleFactor = newScaleFactor;
+			m_viewScaleFactor = newScaleFactor;			
 			repaint();
 		}
 	}
@@ -353,14 +369,8 @@ public class BirdsEyeView extends Component implements RenderingEngine<CyNetwork
 		return viewModel.createIcon(vp, value, width, height);
 	}
 
-
 	@Override
 	public void printCanvas(Graphics printCanvas) {
 		throw new UnsupportedOperationException("Printing is not supported for Bird's eye view.");
-	}
-
-	@Override
-	public void handleEvent(UpdateNetworkPresentationEvent e) {
-		//System.out.println("#### Got redraw event for BEV");
 	}
 }
