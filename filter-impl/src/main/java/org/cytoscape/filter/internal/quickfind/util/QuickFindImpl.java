@@ -83,10 +83,7 @@ public class QuickFindImpl implements QuickFind {
 		//  Otherwise, index by UNIQUE_IDENTIFIER.
 		String controllingAttribute = network.getRow(network).get(QuickFind.DEFAULT_INDEX, String.class);
 
-		CyTable nodeTable = null;
-		CyNode node = network.getNodeList().iterator().next();
-		if (node != null)
-			nodeTable = network.getDefaultNodeTable();
+		CyTable nodeTable = network.getDefaultNodeTable();
 		
 		if (controllingAttribute == null) {
 			//  Small hack to index BioPAX Networks by default with node_label.
