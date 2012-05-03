@@ -120,7 +120,7 @@ public class CyActivator extends AbstractCyActivator {
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
 				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
-				renderingEngineManagerServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD);
+				vtfListener, annotationFactoryManager, dingGraphLOD);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
 				cyServiceRegistrarServiceRef, dVisualLexicon, renderingEngineManagerServiceRef,
 				applicationManagerManagerServiceRef);

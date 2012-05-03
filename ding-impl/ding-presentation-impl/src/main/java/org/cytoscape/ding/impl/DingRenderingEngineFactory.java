@@ -33,7 +33,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	
 	private static final Logger logger = LoggerFactory.getLogger(DingRenderingEngineFactory.class);
 
-	private final RenderingEngineManager renderingEngineManager;
 	private final CyTableFactory dataTableFactory;
 	private final CyRootNetworkManager rootNetworkManager;
 	private final SpacialIndex2DFactory spacialFactory;
@@ -57,7 +56,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			CyServiceRegistrar registrar,
 			CyNetworkTableManager tableMgr,
 			CyEventHelper eventHelper,
-			RenderingEngineManager renderingEngineManager,
 			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD) {
 		
@@ -70,7 +68,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		this.registrar = registrar;
 		this.tableMgr = tableMgr;
 		this.eventHelper = eventHelper;
-		this.renderingEngineManager = renderingEngineManager;
 		this.annMgr = annMgr;
 
 		this.vtfListener = vtfListener;
