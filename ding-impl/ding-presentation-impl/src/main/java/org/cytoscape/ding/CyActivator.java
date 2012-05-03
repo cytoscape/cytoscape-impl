@@ -30,6 +30,7 @@ import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
+import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
@@ -87,7 +88,7 @@ public class CyActivator extends AbstractCyActivator {
 	private void startPresentationImpl(BundleContext bc) {
 
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
-		CyApplicationManager applicationManagerManagerServiceRef = getService(bc, CyApplicationManager.class);
+		CyApplicationManager applicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CustomGraphicsManager customGraphicsManagerServiceRef = getService(bc, CustomGraphicsManager.class);
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
@@ -106,12 +107,13 @@ public class CyActivator extends AbstractCyActivator {
 
 		DVisualLexicon dVisualLexicon = new DVisualLexicon(customGraphicsManagerServiceRef);
 
-		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener();
+		NVLTFActionSupport nvltfActionSupport = new NVLTFActionSupport(applicationManagerServiceRef,cyNetworkViewManagerServiceRef,dialogTaskManager,cyServiceRegistrarRef);
+		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 
 
-		DingGraphLOD dingGraphLOD = new DingGraphLOD(cyPropertyServiceRef, applicationManagerManagerServiceRef);
+		DingGraphLOD dingGraphLOD = new DingGraphLOD(cyPropertyServiceRef, applicationManagerServiceRef);
 		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class, new Properties());
 		
 		DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
@@ -123,7 +125,7 @@ public class CyActivator extends AbstractCyActivator {
 				vtfListener, annotationFactoryManager, dingGraphLOD);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
 				cyServiceRegistrarServiceRef, dVisualLexicon, renderingEngineManagerServiceRef,
-				applicationManagerManagerServiceRef);
+				applicationManagerServiceRef);
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(
 				cyNetworkManagerServiceRef);
 
@@ -218,7 +220,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, annotationFactoryManager, "addAnnotationFactory", "removeAnnotationFactory",
 				AnnotationFactory.class);
 
-		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerManagerServiceRef,
+		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerServiceRef,
 				cyNetworkViewManagerServiceRef, dialogTaskManager, cyPropertyServiceRef, dingGraphLOD, dingGraphLODAll);
 		registerAllServices(bc, graphicsDetailAction, new Properties());
 

@@ -22,9 +22,12 @@ public class ViewTaskFactoryListener {
 	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTFs;
 	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContexMenuFactory;
 	final Map<CyEdgeViewContextMenuFactory, Map> cyEdgeViewContextMenuFactory;
+	
+	private final NVLTFActionSupport nvltfActionSupport;
 
 
-	public ViewTaskFactoryListener(){
+	public ViewTaskFactoryListener(NVLTFActionSupport nvltfActionSupport){
+		this.nvltfActionSupport = nvltfActionSupport;
 		viewMap = new WeakHashMap<CyNetworkView, Reference<DGraphView>>();
 		nodeViewTFs = new HashMap<NodeViewTaskFactory, Map>();
 		edgeViewTFs = new HashMap<EdgeViewTaskFactory, Map>();
@@ -83,6 +86,7 @@ public class ViewTaskFactoryListener {
 		if(nvltf == null)
 			return;
 		networkViewLocationTFs.put(nvltf, props);
+		nvltfActionSupport.registerAction(nvltf,props);
 	}
 	
 	public void removeNetworkViewLocationTaskFactory(NetworkViewLocationTaskFactory nvltf, Map props){
