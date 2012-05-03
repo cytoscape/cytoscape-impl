@@ -138,8 +138,7 @@ public class LayoutMenu extends JMenu implements MenuListener {
         CyNetworkView view = appMgr.getCurrentNetworkView();
         CyNetwork network = view.getModel();
 
-        List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network,CyNetwork.SELECTED,true);
-        boolean someSelected = selectedNodes.size() > 0;
+        boolean someSelected = network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
         boolean enableMenuItem = checkEnabled();
         
 
