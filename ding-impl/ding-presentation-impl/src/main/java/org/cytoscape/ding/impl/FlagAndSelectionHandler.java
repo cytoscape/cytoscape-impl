@@ -44,6 +44,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTableUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,37 +77,13 @@ public class FlagAndSelectionHandler implements GraphViewChangeListener {
 		view.addGraphViewChangeListener(this);
 	}
 
-	private Set<CyNode> getSelectedNodes() {
-		final Set<CyNode> selectedNodes = new HashSet<CyNode>();
-
-		for (final CyNode n : network.getNodeList()) {
-			final Boolean selected = network.getRow(n).get(CyNetwork.SELECTED, Boolean.class);
-			if (selected != null && selected)
-				selectedNodes.add(n);
-		}
-
-		return selectedNodes;
-	}
-
-	private Set<CyEdge> getSelectedEdges() {
-		final Set<CyEdge> selectedEdges = new HashSet<CyEdge>();
-
-		for (final CyEdge n : network.getEdgeList()) {
-			final Boolean selected = network.getRow(n).get(CyNetwork.SELECTED, Boolean.class);
-			if (selected != null && selected)
-				selectedEdges.add(n);
-		}
-
-		return selectedEdges;
-	}
-
 	/**
 	 * Synchronizes the filter and view of this object by selecting every object
 	 * that is currently flagged and vice versa.
 	 */
 	private void syncFilterAndView() {
-		final Set<CyNode> flaggedNodes = getSelectedNodes();
-		final Set<CyEdge> flaggedEdges = getSelectedEdges();
+		final List<CyNode> flaggedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+		final List<CyEdge> flaggedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 
 		final List<CyNode> selectedNodes = view.getSelectedNodes();
 		final List<CyEdge> selectedEdges = view.getSelectedEdges();
