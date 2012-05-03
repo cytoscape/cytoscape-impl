@@ -33,7 +33,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
+import java.util.Set;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
@@ -56,6 +60,16 @@ public class SelectConnectedNodesTaskTest extends AbstractSelectTaskTester {
 		// more setup
 		when(r1.get("selected", Boolean.class)).thenReturn(true);
 		when(r2.get("selected", Boolean.class)).thenReturn(false);
+
+		final CyTable edgeTable = mock(CyTable.class);
+		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
+		
+		Set<CyRow> selectedEdges = new HashSet<CyRow>();
+		selectedEdges.add(r1);
+		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedEdges);
+
+		when (r1.get(CyNetwork.SUID, Long.class)).thenReturn(1L);
+		when (net.getEdge(1L)).thenReturn(e1);
 
 		when(e1.getSource()).thenReturn(e3);
 		when(e1.getTarget()).thenReturn(e4);

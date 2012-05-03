@@ -34,11 +34,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
@@ -61,6 +65,13 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 		// more setup
 		when(r3.get("selected", Boolean.class)).thenReturn(true);
 		when(r4.get("selected", Boolean.class)).thenReturn(false);
+
+		Set<CyRow> selectedNodes = new HashSet<CyRow>();
+		selectedNodes.add(r3);
+		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);
+		
+		when (r3.get(CyNetwork.SUID, Long.class)).thenReturn(3L);
+		when (net.getNode(3L)).thenReturn(e3);
 
 		List<CyNode> nl = new ArrayList<CyNode>();
 		nl.add(e4);
