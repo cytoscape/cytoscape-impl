@@ -279,6 +279,8 @@ public class CyActivator extends AbstractCyActivator {
 		applyVisualStyleProps.setProperty(TITLE, "Apply visual style");
 		applyVisualStyleProps.setProperty(COMMAND,"apply-visualstyle");
 		applyVisualStyleProps.setProperty(COMMAND_NAMESPACE,"vizmap");
+		applyVisualStyleProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
+		
 		registerService(bc, applyVisualStyleTaskFactory, NetworkViewTaskFactory.class, applyVisualStyleProps);
 		registerService(bc, applyVisualStyleTaskFactory, ApplyVisualStyleTaskFactory.class, applyVisualStyleProps);
 		
