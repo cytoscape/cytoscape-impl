@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.internal;
 import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -23,10 +24,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		final CyServiceRegistrar serviceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
+		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 
 		VisualLexiconManager visualLexiconManager = new VisualLexiconManager();
 		VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(visualLexiconManager,
-				serviceRegistrarServiceRef);
+				serviceRegistrarServiceRef, cyNetworkManagerServiceRef);
 		VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(cyEventHelperServiceRef,
 				visualStyleFactory, visualLexiconManager);
 		DiscreteMappingFactory discreteMappingFactory = new DiscreteMappingFactory();

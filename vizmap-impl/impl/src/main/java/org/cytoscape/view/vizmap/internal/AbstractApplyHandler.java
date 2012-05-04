@@ -8,7 +8,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
 
-public abstract class AbstractApplyHandler implements ApplyHandler {
+public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements ApplyHandler<T> {
 
 	protected final VisualStyle style;
 	protected final VisualLexiconManager lexManager;
@@ -19,9 +19,8 @@ public abstract class AbstractApplyHandler implements ApplyHandler {
 	}
 
 	
-	protected void applyValues(final View<? extends CyIdentifiable> view, final Collection<VisualProperty<?>> vps) {
-
-		for (VisualProperty<?> vp : vps) {
+	protected void applyValues(final View<T> view, final Collection<VisualProperty<?>> vps) {
+		for (final VisualProperty<?> vp : vps) {
 			// check mapping exists or not
 			final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 			if (mapping != null) {
@@ -35,11 +34,12 @@ public abstract class AbstractApplyHandler implements ApplyHandler {
 				defaultValue = style.getDefaultValue(vp);
 			}
 
-			view.setVisualProperty(vp, defaultValue);
+			if(!vp.shouldIgnoreDefault())
+				view.setVisualProperty(vp, defaultValue);
 		}
 	}
 
-	protected void applyMappedValue(final View<? extends CyIdentifiable> nodeView, final VisualProperty<?> vp,
+	protected void applyMappedValue(final View<T> nodeView, final VisualProperty<?> vp,
 			final VisualMappingFunction<?, ?> mapping) {}
 
 }

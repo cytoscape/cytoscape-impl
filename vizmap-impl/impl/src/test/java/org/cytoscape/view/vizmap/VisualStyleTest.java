@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -59,7 +60,8 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		when(lexManager.getAllVisualLexicon()).thenReturn(lexSet);
 
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar);
+		final CyNetworkManager cyNetworkManagerServiceRef = mock(CyNetworkManager.class);
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, cyNetworkManagerServiceRef);
 		originalTitle = "Style 1";
 		newTitle = "Style 2";
 		style = visualStyleFactory.createVisualStyle(originalTitle);

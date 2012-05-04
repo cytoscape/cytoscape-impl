@@ -17,6 +17,7 @@ import org.cytoscape.work.TaskMonitor;
  * Task to execute visual style bypass.
  * 
  * @param <T>
+ *            Type of Graph object: CyNode or CyEdge.
  */
 public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 
@@ -30,7 +31,8 @@ public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 
 	private final SelectedVisualStyleManager selectedManager;
 
-	public BypassTask(Component parent, ValueEditor<?> editor, final VisualProperty<?> vp, final View<T> view,
+	@SuppressWarnings("unchecked")
+	BypassTask(Component parent, ValueEditor<?> editor, final VisualProperty<?> vp, final View<T> view,
 			final CyNetworkView networkView, final SelectedVisualStyleManager selectedManager) {
 		this.view = view;
 		this.vp = (VisualProperty<Object>) vp;
@@ -43,26 +45,28 @@ public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-
 		final boolean lock = view.isValueLocked(vp);
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				update(lock);
+			}
+		});
 
+		
+	}
+	
+	private final void update(final boolean lock) {
 		if (!lock) {
-			// Should be executed in EDT
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
-					view.setLockedValue(vp, newValue);
-				}
-			});
-			
+			final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
+			view.setLockedValue(vp, newValue);
 		} else {
 			// Unlock it
 			view.clearValueLock(vp);
 		}
 
-		selectedManager.getCurrentVisualStyle().apply(networkView);
+		selectedManager.getCurrentVisualStyle().apply(view);
 		networkView.updateView();
 	}
-
 }

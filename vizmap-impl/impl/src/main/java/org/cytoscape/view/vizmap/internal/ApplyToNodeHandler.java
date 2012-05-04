@@ -1,24 +1,28 @@
 package org.cytoscape.view.vizmap.internal;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
 
-public class ApplyToNodeHandler extends AbstractApplyHandler {
+public class ApplyToNodeHandler extends AbstractApplyHandler<CyNode> {
 
-	ApplyToNodeHandler(final VisualStyle style, final VisualLexiconManager lexManager) {
+	private final CyNetworkManager networkManager;
+
+	ApplyToNodeHandler(final VisualStyle style, final VisualLexiconManager lexManager,
+			final CyNetworkManager networkManager) {
 		super(style, lexManager);
+		this.networkManager = networkManager;
 	}
 
 	@Override
-	public void apply(View<?> view) {
-		final View<CyNode> nodeView = (View<CyNode>) view;
+	public void apply(final View<CyNode> nodeView) {
 		final Collection<VisualProperty<?>> nodeVP = lexManager.getNodeVisualProperties();
 		applyValues(nodeView, nodeVP);
 	}
@@ -30,18 +34,27 @@ public class ApplyToNodeHandler extends AbstractApplyHandler {
 	 * @param vp
 	 */
 	@Override
-	protected void applyMappedValue(final View<? extends CyIdentifiable> nodeView, final VisualProperty<?> vp,
+	protected void applyMappedValue(final View<CyNode> view, final VisualProperty<?> vp,
 			final VisualMappingFunction<?, ?> mapping) {
-		
-		final View<CyNode> view = (View<CyNode>) nodeView;
 		final CyNode model = view.getModel();
-		final CyNetwork net = model.getNetworkPointer();
+		CyNetwork targetNetwork = null;
+		Set<CyNetwork> networks = networkManager.getNetworkSet();
+		for (CyNetwork net : networks) {
+			if (net.containsNode(model)) {
+				targetNetwork = net;
+				break;
+			}
+		}
+		
+		if (targetNetwork==null) {
+			throw new NullPointerException("Could'nt find network");
+		}
+
 		// Default of this style
 		final Object styleDefaultValue = style.getDefaultValue(vp);
 		// Default of this Visual Property
 		final Object vpDefault = vp.getDefault();
-
-		mapping.apply(net.getRow(model), view);
+		mapping.apply(targetNetwork.getRow(model), view);
 
 		if (view.getVisualProperty(vp) == vpDefault)
 			view.setVisualProperty(vp, styleDefaultValue);

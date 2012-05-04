@@ -21,6 +21,10 @@ import org.cytoscape.work.ServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Creates Visual Style Bypass menu.
+ *
+ */
 public final class BypassManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(BypassManager.class);
@@ -39,6 +43,7 @@ public final class BypassManager {
 	}
 
 	public void addBypass(RenderingEngineFactory<?> factory, Map props) {
+		// TODO: Replace this with Marker interface.
 		if (props.containsValue("ding") == false)
 			return;
 
@@ -53,6 +58,10 @@ public final class BypassManager {
 		
 		depthFirst(PARENT_MENU_ITEM, nodeRootNode);
 		depthFirst(PARENT_MENU_ITEM, edgeRootNode);
+	}
+	
+	public void removeBypass(RenderingEngineFactory<?> factory, Map props) {
+		// TODO: implement this
 	}
 
 	private void depthFirst(String menuText, final VisualLexiconNode node) {
@@ -88,8 +97,6 @@ public final class BypassManager {
 		}
 	}
 
-	public void removeBypass(RenderingEngineFactory<?> factory, Map props) {
-		// TODO: implement this
-	}
+	
 
 }

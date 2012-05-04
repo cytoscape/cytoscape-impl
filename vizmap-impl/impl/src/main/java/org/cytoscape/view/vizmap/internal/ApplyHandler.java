@@ -1,8 +1,9 @@
 package org.cytoscape.view.vizmap.internal;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.View;
 
 
-public interface ApplyHandler {
-	void apply(final View<?> view);
+public interface ApplyHandler<T extends CyIdentifiable> {
+	void apply(final View<T> view);
 }

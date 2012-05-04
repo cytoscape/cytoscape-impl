@@ -44,6 +44,7 @@ import java.util.Set;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
@@ -71,7 +72,7 @@ public class VisualStyleImpl implements VisualStyle {
 	private String title;
 
 	private final Set<VisualPropertyDependency<?>> dependencies;
-
+	
 	/**
 	 * 
 	 * @param title
@@ -79,7 +80,7 @@ public class VisualStyleImpl implements VisualStyle {
 	 * @param lexManager
 	 */
 	public VisualStyleImpl(final String title, final VisualLexiconManager lexManager,
-			final CyServiceRegistrar serviceRegistrar) {
+			final CyServiceRegistrar serviceRegistrar, final CyNetworkManager networkManager) {
 
 		if (lexManager == null)
 			throw new NullPointerException("Lexicon Manager is missing.");
@@ -88,15 +89,15 @@ public class VisualStyleImpl implements VisualStyle {
 			this.title = DEFAULT_TITLE;
 		else
 			this.title = title;
-
+		
 		mappings = new HashMap<VisualProperty<?>, VisualMappingFunction<?, ?>>();
 		styleDefaults = new HashMap<VisualProperty<?>, Object>();
 
 		// Init Apply handlers for node, egde and network.
 		this.applyHandlersMap = new HashMap<Class<? extends CyIdentifiable>, ApplyHandler>();
 		applyHandlersMap.put(CyNetwork.class, new ApplyToNetworkHandler(this, lexManager));
-		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager));
-		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager));
+		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager, networkManager));
+		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager, networkManager));
 
 		dependencies = new HashSet<VisualPropertyDependency<?>>();
 

@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ApplyToNetworkHandler extends AbstractApplyHandler {
+public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ApplyToNetworkHandler.class);
 
@@ -29,7 +29,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler {
 	}
 
 	@Override
-	public void apply(final View<?> view) {
+	public void apply(final View<CyNetwork> view) {
 		final long start = System.currentTimeMillis();
 
 		CyNetworkView networkView = (CyNetworkView) view;

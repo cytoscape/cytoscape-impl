@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -22,15 +23,18 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	private final VisualLexiconManager lexManager;
 	private final CyServiceRegistrar serviceRegistrar;
+	private final CyNetworkManager networkManager;
 
-	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar) {
+	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar,
+			final CyNetworkManager networkManager) {
 		this.lexManager = lexManager;
 		this.serviceRegistrar = serviceRegistrar;
+		this.networkManager = networkManager;
 	}
 
 	@Override
 	public VisualStyle createVisualStyle(final VisualStyle original) {
-		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager, serviceRegistrar);
+		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager, serviceRegistrar,networkManager);
 
 		copyDefaultValues(original, copy);
 		copyMappingFunctions(original, copy);
@@ -40,7 +44,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	@Override
 	public VisualStyle createVisualStyle(final String title) {
-		return new VisualStyleImpl(title, lexManager, serviceRegistrar);
+		return new VisualStyleImpl(title, lexManager, serviceRegistrar, networkManager);
 	}
 
 	private <V, S extends V> void copyDefaultValues(final VisualStyle original, final VisualStyle copy) {

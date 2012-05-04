@@ -1,25 +1,27 @@
 package org.cytoscape.view.vizmap.internal;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
 
-public class ApplyToEdgeHandler extends AbstractApplyHandler {
+public class ApplyToEdgeHandler extends AbstractApplyHandler<CyEdge> {
 
-	ApplyToEdgeHandler(final VisualStyle style, final VisualLexiconManager lexManager) {
+	private final CyNetworkManager networkManager;
+	
+	ApplyToEdgeHandler(final VisualStyle style, final VisualLexiconManager lexManager, final CyNetworkManager networkManager) {
 		super(style, lexManager);
+		this.networkManager = networkManager;
 	}
 
 	@Override
-	public void apply(View<?> view) {
-		final View<CyEdge> edgeView = (View<CyEdge>) view;
+	public void apply(final View<CyEdge> edgeView) {
 		final Collection<VisualProperty<?>> edgeVP = lexManager.getEdgeVisualProperties();
 		applyValues(edgeView, edgeVP);
 	}
@@ -28,19 +30,27 @@ public class ApplyToEdgeHandler extends AbstractApplyHandler {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void applyMappedValue(final View<? extends CyIdentifiable> edgeView, final VisualProperty<?> vp,
+	protected void applyMappedValue(final View<CyEdge> view, final VisualProperty<?> vp,
 			final VisualMappingFunction<?, ?> mapping) {
-		
-		final View<CyEdge> view = (View<CyEdge>) edgeView;
 		final CyEdge model = view.getModel();
-		final CyNode sourceNode = model.getSource();
-		final CyNetwork net = sourceNode.getNetworkPointer();
+		CyNetwork targetNetwork = null;
+		Set<CyNetwork> networks = networkManager.getNetworkSet();
+		for (CyNetwork net : networks) {
+			if (net.containsEdge(model)) {
+				targetNetwork = net;
+				break;
+			}
+		}
+		
+		if (targetNetwork==null) {
+			throw new NullPointerException("Could'nt find network");
+		}
 		// Default of this style
 		final Object styleDefaultValue = style.getDefaultValue(vp);
 		// Default of this Visual Property
 		final Object vpDefault = vp.getDefault();
 
-		mapping.apply(net.getRow(model), view);
+		mapping.apply(targetNetwork.getRow(model), view);
 
 		if (view.getVisualProperty(vp) == vpDefault)
 			view.setVisualProperty(vp, styleDefaultValue);
