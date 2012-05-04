@@ -50,7 +50,6 @@ import org.cytoscape.model.events.RemovedEdgesEvent;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.mockito.cglib.core.Local;
 
 
 /**
@@ -102,6 +101,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			ret = parent.addNode();
 			// then add the resulting CyNode to this network
 			addNodeInternal(ret);
+			getRow(ret).set(SELECTED, false);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)

@@ -34,6 +34,7 @@ import java.util.Collection;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
@@ -61,7 +62,7 @@ public class DeselectAllEdgesTask extends AbstractSelectTask {
 		undoSupport.postEdit(new SelectionEdit(eventHelper, "Deselect All Edges", network, view,
 				SelectionEdit.SelectionFilter.EDGES_ONLY));
 		tm.setProgress(0.2);
-		selectUtils.setSelectedEdges(network, network.getEdgeList(), false);
+		selectUtils.setSelectedEdges(network, CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true), false);
 		tm.setProgress(0.6);
 		updateView();
 		tm.setProgress(1.0);

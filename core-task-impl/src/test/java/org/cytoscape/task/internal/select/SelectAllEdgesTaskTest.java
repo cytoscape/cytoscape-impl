@@ -33,7 +33,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
+import java.util.Set;
 
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
@@ -52,6 +57,16 @@ public class SelectAllEdgesTaskTest extends AbstractSelectTaskTester {
 		final CyTable edgeTable = mock(CyTable.class);
 		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
 		UndoSupport undoSupport = mock(UndoSupport.class);
+
+		Set<CyRow> deselectedEdges = new HashSet<CyRow>();
+		deselectedEdges.add(r1);
+		deselectedEdges.add(r2);
+		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, false)).thenReturn(deselectedEdges);
+		
+		when (r1.get(CyNetwork.SUID, Long.class)).thenReturn(1L);
+		when (net.getEdge(1L)).thenReturn(e1);
+		when (r2.get(CyNetwork.SUID, Long.class)).thenReturn(2L);
+		when (net.getEdge(2L)).thenReturn(e2);
 
 		// run the task
 		Task t = new SelectAllEdgesTask(undoSupport, net, networkViewManager, eventHelper);

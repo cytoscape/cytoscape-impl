@@ -33,7 +33,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
+import java.util.Set;
 
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
@@ -53,6 +58,16 @@ public class DeselectAllNodesTaskTest extends AbstractSelectTaskTester {
 		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
+		Set<CyRow> selectedNodes = new HashSet<CyRow>();
+		selectedNodes.add(r3);
+		selectedNodes.add(r4);
+		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);
+		
+		when (r3.get(CyNetwork.SUID, Long.class)).thenReturn(3L);
+		when (net.getNode(3L)).thenReturn(e3);
+		when (r4.get(CyNetwork.SUID, Long.class)).thenReturn(4L);
+		when (net.getNode(4L)).thenReturn(e4);
+		
 		// run the task
 		Task t = new DeselectAllNodesTask(undoSupport, net, networkViewManager, eventHelper);
 		t.run(tm);
