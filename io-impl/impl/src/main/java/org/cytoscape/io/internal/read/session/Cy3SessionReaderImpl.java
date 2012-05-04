@@ -74,12 +74,12 @@ import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -460,10 +460,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				throw new RuntimeException("Cannot merge network tables: Cannot find network " + oldId);
 
 			for (CyTableMetadataBuilder builder : builders) {
-				if ("VIEW".equals(builder.getNamespace())) {
-					continue; // TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
-				}
-				
 				builder.setNetwork(network);
 				mergeNetworkTable(network, builder);
 				CyTableMetadata metadata = builder.build();
@@ -478,14 +474,19 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 	@SuppressWarnings("unchecked")
 	private void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder) {
-		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) builder.getType();
-		String namespace = builder.getNamespace();
-		Map<String, CyTable> tableMap = networkTableMgr.getTables(network, type);
-		CyTable targetTable = tableMap.get(namespace);
-		CyTable sourceTable = builder.getTable();
+		final Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) builder.getType();
+		final String namespace = builder.getNamespace();
+		final CyTable src = builder.getTable();
+		final CyTable tgt = networkTableMgr.getTable(network, type, namespace);
 		
-		mergeTables(sourceTable, targetTable, type);
-		builder.setCyTable(targetTable);
+		if (tgt == null) {
+			// Just use the source table
+			networkTableMgr.setTable(network, type, namespace, src);
+			builder.setCyTable(src);
+		} else {
+			mergeTables(src, tgt, type);
+			builder.setCyTable(tgt);
+		}
 	}
 	
 	private void mergeTables(CyTable source, CyTable target, Class<? extends CyIdentifiable> type) {
