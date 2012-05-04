@@ -49,10 +49,7 @@ public class SelectExportTableTask extends AbstractTask {
 			CyNetwork net = this.tableNetworkMap.get(tbl);
 			
 			String title = tbl.getTitle();
-			if (net != null) {
-				title = net.getRow(net).get("name", String.class)+" -- "+title;
-			}
-			
+		
 			options.add(title);			
 			this.titleTableMap.put(title, tbl);
 		}
