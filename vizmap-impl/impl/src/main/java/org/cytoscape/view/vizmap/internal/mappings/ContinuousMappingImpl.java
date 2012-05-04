@@ -70,7 +70,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	// Contains List of Data Points
 	private List<ContinuousMappingPoint<K, V>> points;
 
-	ContinuousMappingImpl(final String attrName, final Class<K> attrType, final CyTable table, final VisualProperty<V> vp) {
+	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final CyTable table, final VisualProperty<V> vp) {
 		super(attrName, attrType, table, vp);
 		
 		// Validate type.  K is always a number.

@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.internal;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -9,6 +10,13 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingImpl;
+import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
+import org.cytoscape.view.vizmap.internal.mappings.PassthroughMappingImpl;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
@@ -51,15 +59,64 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		}
 	}
 
+	/**
+	 * Copy Mapping functions
+	 * 
+	 * @param original
+	 * @param copy
+	 */
 	private void copyMappingFunctions(final VisualStyle original, final VisualStyle copy) {
-		Collection<VisualMappingFunction<?, ?>> allMapping = original.getAllVisualMappingFunctions();
+		final Collection<VisualMappingFunction<?, ?>> allMapping = original.getAllVisualMappingFunctions();
 
 		for (VisualMappingFunction<?, ?> mapping : allMapping) {
-			String attrName = mapping.getMappingColumnName();
-			VisualProperty<?> vp = mapping.getVisualProperty();
+			VisualMappingFunction<?, ?> copyMapping = null;
+			if (mapping instanceof PassthroughMapping) {
+				copyMapping = createPassthrough((PassthroughMapping<?, ?>) mapping);
+			} else if (mapping instanceof ContinuousMapping) {
+				copyMapping = createContinuous((ContinuousMapping<?, ?>) mapping);
+			} else if (mapping instanceof DiscreteMapping) {
+				copyMapping = createDiscrete((DiscreteMapping<?, ?>) mapping);
+			}
 
-			// TODO: clone mappings
-			// copy.addVisualMappingFunction(mapping);
+			if (copyMapping != null)
+				copy.addVisualMappingFunction(mapping);
 		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private <K,V> VisualMappingFunction<K, V> createPassthrough(final PassthroughMapping<K, V> originalMapping) {
+
+		final String attrName = originalMapping.getMappingColumnName();
+		final Class<K> colType = originalMapping.getMappingColumnType();
+
+		final PassthroughMapping<K, V> copyMapping = new PassthroughMappingImpl(attrName, colType,
+				originalMapping.getMappingTable(), originalMapping.getVisualProperty());
+		return copyMapping;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private <K,V> VisualMappingFunction<K, V> createContinuous(final ContinuousMapping<K, V> originalMapping) {
+		final String attrName = originalMapping.getMappingColumnName();
+		final Class<?> colType = originalMapping.getMappingColumnType();
+		
+		final ContinuousMapping<K,V> copyMapping = new ContinuousMappingImpl(attrName, colType,
+				originalMapping.getMappingTable(), originalMapping.getVisualProperty());
+		List<ContinuousMappingPoint<K, V>> points = originalMapping.getAllPoints();
+		for(ContinuousMappingPoint<K, V> point: points)
+			 copyMapping.addPoint(point.getValue(), point.getRange());
+		
+		return copyMapping;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private <K,V> VisualMappingFunction<K,V> createDiscrete(final DiscreteMapping<K, V> originalMapping) {
+		final String attrName = originalMapping.getMappingColumnName();
+		final Class<K> colType = originalMapping.getMappingColumnType();
+
+		final DiscreteMapping<K, V> copyMapping = new DiscreteMappingImpl(attrName, colType,
+				originalMapping.getMappingTable(), originalMapping.getVisualProperty());
+		
+		copyMapping.putAll(originalMapping.getAll());
+		return copyMapping;
 	}
 }
