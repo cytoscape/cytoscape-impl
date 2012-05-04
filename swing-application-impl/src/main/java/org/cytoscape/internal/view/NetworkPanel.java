@@ -496,6 +496,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			if (parentTreeNode == null)
 				parentTreeNode = new NetworkTreeNode("", null);
 
+			
 			// Actual tree node for this network
 			String netName = network.getRow(network).get(CyNetwork.NAME, String.class);
 			
@@ -581,7 +582,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void valueChanged(TreeSelectionEvent e) {
 		if (ignoreTreeSelectionEvents)
 			return;
-		
 		JTree mtree = treeTable.getTree();
 
 		// sets the "current" network based on last node in the tree selected
@@ -590,18 +590,33 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			// logger.debug("NetworkPanel: null node - returning");
 			return;
 		}
-
+		
 		final CyNetwork net = node.getNetwork();
-		
 		// This is a "network set" node.
-		if (net == null)
+		if (net == null){ //When selecting root node all of the subnetworks are selected.
+			CyRootNetwork root = ((CySubNetwork) ((NetworkTreeNode) node.getFirstChild()).getNetwork()).getRootNetwork();
+
+			List<CySubNetwork> subNetworkList = root.getSubNetworkList();
+			List<CyNetwork> networkList = new LinkedList<CyNetwork>();
+			for ( CySubNetwork sn: subNetworkList)
+				networkList.add(sn);
+			if (networkList.size() > 0) {
+				appManager.setCurrentNetwork( ( (NetworkTreeNode)node.getFirstChild() ).getNetwork() );
+				appManager.setSelectedNetworks(networkList);
+				final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+				for(final CyNetwork network: networkList) {
+					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+					if(views.size() !=0)
+						selectedViews.addAll(views);
+				}
+				appManager.setSelectedNetworkViews(selectedViews);
+			}
 			return;
-		
+		}
 		// No need to set the same network again. It should prevent infinite loops.
 		// Also check if the network still exists (it could have been removed by another thread).
-		if (netmgr.networkExists(net.getSUID()) && !net.equals(appManager.getCurrentNetwork())) {
+		if (netmgr.networkExists(net.getSUID()) && !net.equals(appManager.getCurrentNetwork())) 
 			appManager.setCurrentNetwork(net);
-		}
 
 		// creates a list of all selected networks
 		List<CyNetwork> networkList = new LinkedList<CyNetwork>();
@@ -634,6 +649,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	 * view, and destroying network (this is platform specific apparently)
 	 */
 	private class PopupListener extends MouseAdapter {
+		
 		/**
 		 * Don't know why you need both of these, but this is how they did it in
 		 * the example
@@ -657,7 +673,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		 * display the popup
 		 */
 		private void maybeShowPopup(MouseEvent e) {
-			// check for the popup type
+
 			if (e.isPopupTrigger()) {
 				// get the row where the mouse-click originated
 				int row = treeTable.rowAtPoint(e.getPoint());
@@ -665,7 +681,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				if (row != -1) {
 					JTree tree = treeTable.getTree();
 					TreePath treePath = tree.getPathForRow(row);
-					
+				
 					Long networkID = -1L;
 					try {
 						networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork().getSUID();						
@@ -674,6 +690,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 						return;
 					}
 					
+					tree.setSelectionPath(treePath);
 					CyNetwork cyNetwork = netmgr.getNetwork(networkID);
 
 					if (cyNetwork != null) {
@@ -684,6 +701,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 						// then popup menu
 						popup.show(e.getComponent(), e.getX(), e.getY());
 					}
+					
 				}
 			}
 		}
