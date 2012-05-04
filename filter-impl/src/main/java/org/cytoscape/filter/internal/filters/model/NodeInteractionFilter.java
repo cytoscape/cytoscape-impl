@@ -85,16 +85,16 @@ public class NodeInteractionFilter extends InteractionFilter {
 			passFilter.apply();		
 		}	
 
-		List<CyNode> nodes_list = null;
+		List<CyNode> nodes_list = network.getNodeList();
+		List<CyEdge> edges = network.getEdgeList();
 
 		// NodeInteractionFilter will select node only
-		nodes_list = network.getNodeList();
 		int objectCount = nodes_list.size();
 		nodeBits = new BitSet(objectCount); // all the bits are false at very beginning
 			
 		if ((nodeType != NODE_UNDEFINED)&&(!passFilter.getName().equalsIgnoreCase("None"))) {
 			for (int i=0; i<objectCount; i++) {
-				if (isHit(nodes_list.get(i))) {
+				if (isHit(nodes_list.get(i), edges)) {
 					nodeBits.set(i);
 				}
 			}			
@@ -108,7 +108,7 @@ public class NodeInteractionFilter extends InteractionFilter {
 	}
 
 
-	private boolean isHit(CyNode pNode) {
+	private boolean isHit(CyNode pNode, List<CyEdge> edges) {
 		
 		// Get the list of relevant edges for this node
 		List<CyEdge> adjacentEdges = null;
@@ -134,7 +134,7 @@ public class NodeInteractionFilter extends InteractionFilter {
 
 		int edgeIndex = -1;
 		for (int i=0; i < adjacentEdges.size(); i++) {
-			edgeIndex = network.getEdgeList().indexOf(adjacentEdges.get(i));
+			edgeIndex = edges.indexOf(adjacentEdges.get(i));
 		
 			if (passFilter_edgeBits.get(edgeIndex) == true) {
 				return true;

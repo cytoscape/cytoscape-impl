@@ -40,6 +40,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -151,11 +152,11 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			return;
 		}
 
-		List<CyNode> nodeList = network.getNodeList();
+		List<CyNode> nodeList = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		for (CyNode n : nodeList) {
 			network.getRow(n).set(CyNetwork.SELECTED,false);
 		}
-		List<CyEdge> edgeList = network.getEdgeList();
+		List<CyEdge> edgeList = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 		for (CyEdge e : edgeList) {
 			network.getRow(e).set(CyNetwork.SELECTED, false);
 		}

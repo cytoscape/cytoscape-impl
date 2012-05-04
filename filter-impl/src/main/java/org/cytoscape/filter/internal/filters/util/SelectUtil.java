@@ -44,40 +44,17 @@ public class SelectUtil {
 	}
 	
 	public static void selectAllNodes(CyNetwork cyNetwork) {
-		selectAll(cyNetwork,cyNetwork.getNodeList());
+		selectAll(cyNetwork, CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, false));
 	}
 	
 	public static void selectAllEdges(CyNetwork cyNetwork) {
-		selectAll(cyNetwork,cyNetwork.getEdgeList());
+		selectAll(cyNetwork, CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, false));
 	}
 	
 	static <T extends CyIdentifiable> void selectAll(CyNetwork network, Collection<T> items) {
 		for (T item : items) {
 			CyRow row = network.getRow(item);
-			if (!row.get(CyNetwork.SELECTED, Boolean.class)) {
-				row.set(CyNetwork.SELECTED, Boolean.TRUE);
-			}
+			row.set(CyNetwork.SELECTED, Boolean.TRUE);
 		}
 	}
-
-	public static int getSelectedNodeCount(CyNetwork cyNetwork) {
-		return countSelected(cyNetwork, cyNetwork.getNodeList());
-	}
-
-	public static int getSelectedEdgeCount(CyNetwork cyNetwork) {
-		return countSelected(cyNetwork, cyNetwork.getNodeList());
-	}
-	
-	static <T extends CyIdentifiable> int countSelected(CyNetwork network, Collection<T> items) {
-		int count = 0;
-		for (T item : items) {
-			CyRow row = network.getRow(item);
-			if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-				count++;
-			}
-		}
-		return count;
-	}
-	
-
 }
