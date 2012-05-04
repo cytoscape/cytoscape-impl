@@ -48,9 +48,8 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 		return writerManager.getWriter(view,re,filter,file);
 	}
 
-	@Tunable(description="Save Image As:", params="input=false", dependsOn="options!=")
+	@Tunable(description="Save Image As:", params="fileCategory=image;input=false", dependsOn="options!=")
 	public File getOutputFile() {
-		System.out.println("ViewWriter.getOutputFile()");
 		return outputFile;
 	}
 	

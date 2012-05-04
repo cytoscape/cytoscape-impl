@@ -47,11 +47,31 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 
 	@Override
 	public final ValidationState getValidationState(final Appendable msg) {
+		if(getExportFileFormat()==null){
+			try {
+				msg.append("Select a file type!");
+			} catch (final Exception e) {
+				/* Intentionally empty! */
+			}
+			return ValidationState.INVALID;
+		}
+		
+		if(outputFile==null){
+			try {
+				msg.append("Enter the file address!");
+			} catch (final Exception e) {
+				/* Intentionally empty! */
+			}
+			return ValidationState.INVALID;
+		}
+			
+		boolean isFileChanged = false;
 		// Make sure we have the right extension, if not, then force it:
-		if (!fileExtensionIsOk(outputFile))
+		if (!fileExtensionIsOk(outputFile)){
 			outputFile = addOrReplaceExtension(outputFile);
-
-		if (outputFile.exists()) {
+			isFileChanged = true;
+		}
+		if (isFileChanged && outputFile.exists()) {
 			try {
 				msg.append("File already exists, are you sure you want to overwrite it?");
 			} catch (final Exception e) {
