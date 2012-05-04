@@ -24,58 +24,62 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.task.internal.layout;
 
-
+import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.work.TaskMonitor;
 
+import java.util.Collection;
 import java.util.Properties;
 
+public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask {
 
-public class ApplyPreferredLayoutTask extends AbstractNetworkViewTask {
 	private static final String DEF_LAYOUT = "force-directed";
 
 	private Properties props;
 	private final CyLayoutAlgorithmManager layouts;
 
-	public ApplyPreferredLayoutTask(final CyNetworkView v,
-	                                final CyLayoutAlgorithmManager layouts,
-	                                final Properties props)
-	{
-		super(v);
-		this.layouts     = layouts;
-		this.props       = props;
+	public ApplyPreferredLayoutTask(final Collection<CyNetworkView> networkViews,
+			final CyLayoutAlgorithmManager layouts, final Properties props) {
+		super(networkViews);
+		this.layouts = layouts;
+		this.props = props;
 	}
-	
-	public ApplyPreferredLayoutTask(final CyNetworkView v,
-	                                final CyLayoutAlgorithmManager layouts)
-	{
-		super(v);
+
+	public ApplyPreferredLayoutTask(final Collection<CyNetworkView> networkViews, final CyLayoutAlgorithmManager layouts) {
+		super(networkViews);
 		this.layouts = layouts;
 	}
 
-	
 	@Override
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0d);
 		tm.setStatusMessage("Applying Default Layout...");
-		tm.setProgress(0.1);
-		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
-		if (props != null)
-			pref = props.getProperty("preferredLayoutAlgorithm", DEF_LAYOUT);
-		tm.setProgress(0.2d);
-		final CyLayoutAlgorithm layout = layouts.getLayout(pref);
-		if (layout != null) {
-			tm.setProgress(0.6);
-			insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
-		} else {
-			throw new IllegalArgumentException("Couldn't find layout algorithm: " + pref);
+
+		int i = 0;
+		int viewCount = networkViews.size();
+		for (final CyNetworkView view : networkViews) {
+			String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
+			if (props != null)
+				pref = props.getProperty("preferredLayoutAlgorithm", DEF_LAYOUT);
+			tm.setProgress(0.2d);
+			final CyLayoutAlgorithm layout = layouts.getLayout(pref);
+			if (layout != null) {
+				insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
+						CyLayoutAlgorithm.ALL_NODE_VIEWS, ""));
+			} else {
+				throw new IllegalArgumentException("Couldn't find layout algorithm: " + pref);
+			}
+			
+			i++;
+			tm.setProgress((i / (double) viewCount));
 		}
+		
 		tm.setProgress(1.0);
 	}
 }

@@ -20,12 +20,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 
@@ -46,7 +45,7 @@ public class SourceStatusPanel extends JPanel {
 
 	private final SearchMode mode;
 
-	private final NetworkTaskFactory createViewTaskFactory;
+	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 	
 	private volatile boolean enableItem = true;
 
@@ -56,7 +55,7 @@ public class SourceStatusPanel extends JPanel {
 	 */
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
-			SearchMode mode, final NetworkTaskFactory createViewTaskFactory) {
+			SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;

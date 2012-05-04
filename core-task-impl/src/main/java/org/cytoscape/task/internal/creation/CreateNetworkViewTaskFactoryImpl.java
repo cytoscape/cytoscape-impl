@@ -30,9 +30,11 @@
 package org.cytoscape.task.internal.creation;
 
 
+import java.util.Collection;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -41,7 +43,8 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkTaskFactory implements CreateNetworkViewTaskFactory {
+public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionTaskFactory implements CreateNetworkViewTaskFactory {
+	
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyNetworkViewFactory viewFactory;
@@ -61,13 +64,15 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkTaskFactory
 		this.eventHelper        = eventHelper;
 	}
 
-	public TaskIterator createTaskIterator(CyNetwork network) {
+
+	@Override
+	public TaskIterator createTaskIterator(final Collection<CyNetwork> networks) {
 		// Create visualization + layout (optional)
 		if (layouts == null)
-			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, network, viewFactory, networkViewManager,
+			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
 					layouts, eventHelper));
 		else
-			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, network, viewFactory, networkViewManager,
+			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
 					layouts, eventHelper));
 	}
 

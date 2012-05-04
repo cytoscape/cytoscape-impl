@@ -26,14 +26,16 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.task.internal.creation;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -45,11 +47,10 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
-public class CreateNetworkViewTask extends AbstractNetworkTask {
-	
 	private static final Logger logger = LoggerFactory.getLogger(CreateNetworkViewTask.class);
-	
+
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyNetworkViewFactory viewFactory;
@@ -58,71 +59,81 @@ public class CreateNetworkViewTask extends AbstractNetworkTask {
 	private final VisualMappingManager vmm;
 	private final CyNetworkView sourceView;
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport, final CyNetwork networkModel,
-	                             final CyNetworkViewFactory viewFactory,
-	                             final CyNetworkViewManager networkViewManager,
-	                             final CyLayoutAlgorithmManager layouts,
-	                             final CyEventHelper eventHelper)
-	{
-		this(undoSupport,networkModel,viewFactory,networkViewManager,layouts,eventHelper,null,null);
+	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
+			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager networkViewManager,
+			final CyLayoutAlgorithmManager layouts, final CyEventHelper eventHelper) {
+		this(undoSupport, networks, viewFactory, networkViewManager, layouts, eventHelper, null, null);
 	}
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport, final CyNetwork networkModel,
-	                             final CyNetworkViewFactory viewFactory,
-	                             final CyNetworkViewManager networkViewManager,
-	                             final CyLayoutAlgorithmManager layouts,
-	                             final CyEventHelper eventHelper,
-								 final VisualMappingManager vmm,
-								 final CyNetworkView sourceView)
-	{
-		super(networkModel);
+	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
+			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager networkViewManager,
+			final CyLayoutAlgorithmManager layouts, final CyEventHelper eventHelper, final VisualMappingManager vmm,
+			final CyNetworkView sourceView) {
+		super(networks);
 
-		this.undoSupport        = undoSupport;
-		this.viewFactory        = viewFactory;
+		this.undoSupport = undoSupport;
+		this.viewFactory = viewFactory;
 		this.networkViewManager = networkViewManager;
-		this.layouts            = layouts;
-		this.eventHelper        = eventHelper;
-		this.vmm                = vmm;
-		this.sourceView         = sourceView;
+		this.layouts = layouts;
+		this.eventHelper = eventHelper;
+		this.vmm = vmm;
+		this.sourceView = sourceView;
 	}
 
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		
-		taskMonitor.setProgress(0.01d);
+
+		taskMonitor.setProgress(0.0);
 		taskMonitor.setTitle("Creating Network View");
 		taskMonitor.setStatusMessage("Creating network view...");
-		
+
+		int i = 0;
+		int viewCount = networks.size();
+		for (final CyNetwork n : networks) {
+			
+			createView(n);
+			taskMonitor.setStatusMessage("Network view successfully create for:  "
+					+ n.getRow(n).get(CyNetwork.NAME, String.class));
+			i++;
+			taskMonitor.setProgress((i / (double) viewCount));
+		}
+
+		taskMonitor.setProgress(1.0);
+	}
+
+	private final void createView(CyNetwork network) throws Exception {		
+
 		final long start = System.currentTimeMillis();
-		
+
 		try {
 			// By calling this task, actual view will be created even if it's a
 			// large network.
 			final CyNetworkView view = viewFactory.createNetworkView(network, false);
-			
 			networkViewManager.addNetworkView(view);
-			taskMonitor.setProgress(0.9d);
-		
-			// If a source view has been provided, use that to set the X/Y positions of the 
+
+			// If a source view has been provided, use that to set the X/Y
+			// positions of the
 			// nodes along with the visual style.
-			if ( sourceView != null )	
+			if (sourceView != null)
 				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, view, sourceView, null));
 
 			// Otherwise check if layouts have been provided.
-			else if (layouts != null)
-				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(view, layouts));
+			else if (layouts != null) {
+				final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+				views.add(view);
+				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layouts));
+			}
 
 		} catch (Exception e) {
 			throw new Exception("Could not create network view for network: "
-				+ network.getRow(network).get(CyNetwork.NAME, String.class), e);
+					+ network.getRow(network).get(CyNetwork.NAME, String.class), e);
 		}
 
 		if (undoSupport != null)
 			undoSupport.postEdit(new CreateNetworkViewEdit(eventHelper, network, viewFactory, networkViewManager));
+
 		
-		taskMonitor.setProgress(1.0d);
-		taskMonitor.setStatusMessage("Network view successfully create for:  "
-				+ network.getRow(network).get(CyNetwork.NAME, String.class));
-		
-		logger.info("Network view creation finished in " + (System.currentTimeMillis() -start) + " msec.");
+
+		logger.info("Network view creation finished in " + (System.currentTimeMillis() - start) + " msec.");
 	}
 }

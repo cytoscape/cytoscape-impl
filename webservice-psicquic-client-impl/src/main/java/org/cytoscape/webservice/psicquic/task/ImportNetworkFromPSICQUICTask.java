@@ -7,20 +7,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskMonitor;
-import org.omg.CORBA.PRIVATE_MEMBER;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +26,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	private final RegistryManager registryManager;
 	
 	// TaskFactory for creating view
-	private final NetworkTaskFactory createViewTaskFactory;
+	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 
 	private String query;
 
@@ -47,25 +41,27 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	
 	private volatile boolean canceled = false;
 	
-	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client, final CyNetworkManager manager,
-			final RegistryManager registryManager, final Set<String> searchResult, final SearchMode mode, final NetworkTaskFactory createViewTaskFactory) {
+	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
+			final CyNetworkManager manager, final RegistryManager registryManager, final Set<String> searchResult,
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory) {
 		this.client = client;
 		this.manager = manager;
 		this.registryManager = registryManager;
 		this.query = query;
-		
+
 		this.searchResult = searchResult;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
 	}
 
-	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client, final CyNetworkManager manager,
-			final RegistryManager registryManager, final SearchRecoredsTask searchTask, final SearchMode mode, final NetworkTaskFactory createViewTaskFactory) {
+	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
+			final CyNetworkManager manager, final RegistryManager registryManager, final SearchRecoredsTask searchTask,
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory) {
 		this.client = client;
 		this.manager = manager;
 		this.registryManager = registryManager;
 		this.query = query;
-		
+
 		this.searchTask = searchTask;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
@@ -114,9 +110,10 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			networks.add(network);
 		}		
 
+		logger.debug(networks.size() + " networks created.");
+		
 		if (!canceled)
-			for (final CyNetwork network : networks)
-				insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(network));
+			insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(networks));
 	}
 	
 	@Override

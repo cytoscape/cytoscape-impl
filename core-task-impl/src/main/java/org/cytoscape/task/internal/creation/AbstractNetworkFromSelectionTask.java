@@ -31,7 +31,9 @@ package org.cytoscape.task.internal.creation;
 
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -39,8 +41,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -48,11 +48,7 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
@@ -130,9 +126,10 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.6);
 
 		// create the view in a separate task
-		final Task createViewTask = new CreateNetworkViewTask(undoSupport, newNet, viewFactory,
-		                                                      networkViewManager, null, eventHelper, 
-		                                                      vmm, sourceView);
+		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		networks.add(newNet);
+		final Task createViewTask = new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
+				null, eventHelper, vmm, sourceView);
 		insertTasksAfterCurrentTask(createViewTask);
 
 		tm.setProgress(1.0);

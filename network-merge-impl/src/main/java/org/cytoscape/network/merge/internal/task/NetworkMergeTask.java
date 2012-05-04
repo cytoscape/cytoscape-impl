@@ -1,6 +1,7 @@
 
 package org.cytoscape.network.merge.internal.task;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,19 +26,16 @@ import org.cytoscape.work.TaskMonitor;
  */
 
 public class NetworkMergeTask extends AbstractTask {
-        private CyNetwork network;
-	//private MatchingAttribute matchingAttribute;
-	//private AttributeMapping nodeAttributeMapping;
-	//private AttributeMapping edgeAttributeMapping;
+	
+	private final CyNetwork network;
+
 	private List<CyNetwork> selectedNetworkList;
 	private Operation operation;
 	private AttributeConflictCollector conflictCollector;
-	//private Map<String,Map<String,Set<String>>> selectedNetworkAttributeIDType;
-	//private final String tgtType;
-	final private AttributeBasedNetworkMerge networkMerge ;  
-	//private boolean cancelled;
 
-	final private CreateNetworkViewTaskFactory netViewCreator; 
+	final private AttributeBasedNetworkMerge networkMerge;
+	final private CreateNetworkViewTaskFactory netViewCreator;
+	
 	/**
 	 * Constructor.<br>
 	 *
@@ -174,7 +172,9 @@ public class NetworkMergeTask extends AbstractTask {
 				HandleConflictsTask hcTask = new HandleConflictsTask(conflictCollector);
 				insertTasksAfterCurrentTask( hcTask );
 			} else {
-				insertTasksAfterCurrentTask( netViewCreator.createTaskIterator( network ) );
+				final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+				networks.add(network);
+				insertTasksAfterCurrentTask( netViewCreator.createTaskIterator( networks ) );
 			}
 	}
 }

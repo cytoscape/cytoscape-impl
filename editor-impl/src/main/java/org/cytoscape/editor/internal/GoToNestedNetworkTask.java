@@ -1,6 +1,8 @@
 package org.cytoscape.editor.internal;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
@@ -51,7 +53,9 @@ public class GoToNestedNetworkTask extends AbstractNodeViewTask {
 			
 			if (pointerView == null) {
 				// Create a network view
-				TaskIterator iter = createViewFactory.createTaskIterator(netPointer);
+				final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+				networks.add(netPointer);
+				TaskIterator iter = createViewFactory.createTaskIterator(networks);
 				this.insertTasksAfterCurrentTask(iter);
 			} else {
 				// Just set the existing one as current

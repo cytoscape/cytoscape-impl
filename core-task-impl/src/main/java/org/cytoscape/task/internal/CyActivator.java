@@ -1,9 +1,23 @@
 
 package org.cytoscape.task.internal;
 
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+
 import java.util.Properties;
 
-import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
@@ -143,25 +157,21 @@ import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
 import org.cytoscape.task.select.SelectFromFileListTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
-
-import static org.cytoscape.work.ServiceProperties.*;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -174,7 +184,6 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CyEventHelper cyEventHelperRef = getService(bc,CyEventHelper.class);
-		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc,RecentlyOpenedTracker.class);
 		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
 		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
@@ -185,7 +194,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableReaderManager cyDataTableReaderManagerServiceRef = getService(bc,CyTableReaderManager.class);
 		VizmapReaderManager vizmapReaderManagerServiceRef = getService(bc,VizmapReaderManager.class);
 		VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
-		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
 		StreamUtil streamUtilRef = getService(bc,StreamUtil.class);
 		PresentationWriterManager viewWriterManagerServiceRef = getService(bc,PresentationWriterManager.class);
 		CyNetworkViewWriterManager networkViewWriterManagerServiceRef = getService(bc,CyNetworkViewWriterManager.class);
@@ -273,15 +281,16 @@ public class CyActivator extends AbstractCyActivator {
 		MapGlobalToLocalTableTaskFactoryImpl mapGlobal = new MapGlobalToLocalTableTaskFactoryImpl(cyTableManagerServiceRef, cyNetworkManagerServiceRef, tunableSetterServiceRef);
 		
 		// Apply Visual Style Task
-		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef, tunableSetterServiceRef);
+		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
 		Properties applyVisualStyleProps = new Properties();
 		applyVisualStyleProps.setProperty(ID,"applyVisualStyleTaskFactory");
 		applyVisualStyleProps.setProperty(TITLE, "Apply Visual Style");
 		applyVisualStyleProps.setProperty(COMMAND,"apply-visualstyle");
 		applyVisualStyleProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		applyVisualStyleProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
+		applyVisualStyleProps.setProperty(ENABLE_FOR,"networkAndView");
 		
-		registerService(bc, applyVisualStyleTaskFactory, NetworkViewTaskFactory.class, applyVisualStyleProps);
+		registerService(bc, applyVisualStyleTaskFactory, NetworkViewCollectionTaskFactory.class, applyVisualStyleProps);
 		registerService(bc, applyVisualStyleTaskFactory, ApplyVisualStyleTaskFactory.class, applyVisualStyleProps);
 		
 		
@@ -754,7 +763,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		createNetworkViewTaskFactoryProps.setProperty(COMMAND,"create-view");
 		createNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		registerService(bc,createNetworkViewTaskFactory,NetworkTaskFactory.class, createNetworkViewTaskFactoryProps);
+		registerService(bc,createNetworkViewTaskFactory,NetworkCollectionTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
 
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
@@ -870,7 +879,7 @@ public class CyActivator extends AbstractCyActivator {
 		applyPreferredLayoutTaskFactoryProps.setProperty(TOOLTIP,"Apply Preferred Layout");
 		applyPreferredLayoutTaskFactoryProps.setProperty(COMMAND,"apply-preferred-layout");
 		applyPreferredLayoutTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
-		registerService(bc,applyPreferredLayoutTaskFactory,NetworkViewTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
+		registerService(bc,applyPreferredLayoutTaskFactory,NetworkViewCollectionTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
 		registerService(bc,applyPreferredLayoutTaskFactory,ApplyPreferredLayoutTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
 
 		Properties deleteColumnTaskFactoryProps = new Properties();

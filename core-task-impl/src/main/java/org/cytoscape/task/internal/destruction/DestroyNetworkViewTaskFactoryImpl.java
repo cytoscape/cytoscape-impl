@@ -39,15 +39,22 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 
 
-public class DestroyNetworkViewTaskFactoryImpl extends AbstractNetworkViewCollectionTaskFactory implements DestroyNetworkViewTaskFactory {
-	private CyNetworkViewManager networkViewManager;
+/**
+ * Implementation of DestroyNetworkViewTaskFactory.
+ *
+ */
+public class DestroyNetworkViewTaskFactoryImpl extends AbstractNetworkViewCollectionTaskFactory implements
+		DestroyNetworkViewTaskFactory {
+	
+	private final CyNetworkViewManager networkViewManager;
 
 	public DestroyNetworkViewTaskFactoryImpl(final CyNetworkViewManager networkViewManager) {
 		super();
 		this.networkViewManager = networkViewManager;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(Collection<CyNetworkView> networkViews) {
 		return new TaskIterator(new DestroyNetworkViewTask(networkViews, networkViewManager));
-	} 
+	}
 }

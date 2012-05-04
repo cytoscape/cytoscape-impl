@@ -45,6 +45,8 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 		this.networkViewManager = networkViewManager;
 	}
 
+	
+	@Override
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
 		

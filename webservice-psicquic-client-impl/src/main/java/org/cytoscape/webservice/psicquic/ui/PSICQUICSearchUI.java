@@ -27,6 +27,7 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -61,7 +62,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 	private final PSICQUICRestClient client;
 	private final TaskManager taskManager;
 	private final CyNetworkManager networkManager;
-	private final NetworkTaskFactory createViewTaskFactory;
+	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 
 	private JTextArea queryArea;
 	private SourceStatusPanel statesPanel;
@@ -85,7 +86,8 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 	private final OpenBrowser openBrowserUtil;
 	
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
-			final PSICQUICRestClient client, final TaskManager tmManager, final NetworkTaskFactory createViewTaskFactory, final OpenBrowser openBrowserUtil) {
+			final PSICQUICRestClient client, final TaskManager<?,?> tmManager,
+			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowserUtil) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;

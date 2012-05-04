@@ -2,10 +2,8 @@ package org.cytoscape.webservice.psicquic;
 
 import java.awt.Container;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -17,10 +15,9 @@ import java.util.concurrent.TimeUnit;
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.SearchWebServiceClient;
 import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
@@ -46,7 +43,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private final TaskManager<?, ?> tManager;
 
 	private ImportNetworkFromPSICQUICTask networkTask;
-	private final NetworkTaskFactory createViewTaskFactory;
+	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 
 	private SearchRecoredsTask searchTask;
 	
@@ -54,7 +51,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
 			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager, final TaskManager<?, ?> tManager,
-			final NetworkTaskFactory createViewTaskFactory, final OpenBrowser openBrowser) {
+			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowser) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;

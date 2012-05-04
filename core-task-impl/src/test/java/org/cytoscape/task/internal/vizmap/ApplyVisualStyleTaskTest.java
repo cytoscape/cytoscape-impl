@@ -1,11 +1,14 @@
 package org.cytoscape.task.internal.vizmap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.text.html.StyleSheet;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -35,9 +38,11 @@ public class ApplyVisualStyleTaskTest {
 		TaskMonitor tm = mock(TaskMonitor.class);
 		
 		final CyNetworkView view = nvts.getNetworkView();
+		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+		views.add(view);
 		
 		final VisualMappingManager vmm = mock(VisualMappingManager.class);
-		ApplyVisualStyleTask task = new ApplyVisualStyleTask(view, vmm);
+		ApplyVisualStyleTask task = new ApplyVisualStyleTask(views, vmm);
 		
 		final List<VisualStyle> vsList = new ArrayList<VisualStyle>();
 		VisualStyle style1 = mock(VisualStyle.class);

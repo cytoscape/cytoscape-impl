@@ -6,6 +6,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -23,8 +24,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 
-		NetworkTaskFactory createViewTaskFactoryServiceRef = getService(bc, NetworkTaskFactory.class,
-				"(id=createNetworkViewTaskFactory)");
+		CreateNetworkViewTaskFactory createViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
 
 		PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "PSICQUIC Universal Client",
