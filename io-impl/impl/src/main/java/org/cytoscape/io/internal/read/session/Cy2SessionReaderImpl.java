@@ -86,6 +86,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 
@@ -320,21 +321,16 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				if (selEdges != null)
 					setBooleanEdgeAttr(net, selEdges, SELECTED, DEFAULT_ATTRS);
 				
-				// TODO: handle 2.x groups
-//				if (i == 0) {
-//					// Sub-networks (other than the base-network) generated from the same 2.x XGMML file
-//					// should not be registered, because they are probably 2.x groups.
-					networks.add(net);
-				
-					if (i == 0 && createView) {
-						// Create a network view for the first network only,
-						// which is supposed to be the top-level one
-						CyNetworkView view = reader.buildCyNetworkView(net);
-						networkViewLookup.put(netName, view);
-						networkViews.add(view);
-						cache.cache(netName, view);
-					}
-//				}
+				networks.add(net);
+			
+				if (i == 0 && createView) {
+					// Create a network view for the first network only,
+					// which is supposed to be the top-level one
+					CyNetworkView view = reader.buildCyNetworkView(net);
+					networkViewLookup.put(netName, view);
+					networkViews.add(view);
+					cache.cache(netName, view);
+				}
 			}
 		}
 		
@@ -524,26 +520,53 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					continue;
 				
 				final String netName = net.getId();
-				
-				// Set attribute values that are saved in the cysession.xml
-				final CyNetwork cyNet = getNetwork(netName);
-				
-				if (cyNet != null) {
-					// TODO: disabled due to timing conflicts with Ding (The VIEW tables are not created yet).
-//					if (net.getHiddenNodes() != null)
-//						setBooleanNodeAttr(cyNet, net.getHiddenNodes().getNode(), "hidden", "VIEW");
-//					if (net.getHiddenEdges() != null)
-//						setBooleanEdgeAttr(cyNet, net.getHiddenEdges().getEdge(), "hidden", "VIEW");
-				}
-				
-				// Populate the visual style map
 				final CyNetworkView view = getNetworkView(netName);
 				
 				if (view != null) {
+					// Populate the visual style map
 					String vsName = net.getVisualStyle();
 					
 					if (vsName != null)
 						visualStyleMap.put(view, vsName);
+					
+					// Convert 2.x hidden state (cysession.xml) to 3.x visual properties
+					if (net.getHiddenEdges() != null) {
+						for (final Edge edgeObject : net.getHiddenEdges().getEdge()) {
+							final String name = edgeObject.getId();
+							final CyEdge e = cache.getEdge(name);
+
+							if (e != null) {
+								final View<CyEdge> ev = view.getEdgeView(e);
+								
+								if (ev != null)
+									ev.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+								else
+									logger.error("Cannot restore hidden state of edge \"" + name
+											+ "\": Edge view not found.");
+							} else {
+								logger.error("Cannot restore hidden state of edge \"" + name + "\": Edge not found.");
+							}
+						}
+					}
+					
+					if (net.getHiddenNodes() != null) {
+						for (final Node nodeObject : net.getHiddenNodes().getNode()) {
+							final String name = nodeObject.getId();
+							final CyNode n = cache.getNodeByName(name);
+
+							if (n != null) {
+								final View<CyNode> nv = view.getNodeView(n);
+
+								if (nv != null)
+									nv.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+								else
+									logger.error("Cannot restore hidden state of node \"" + name
+											+ "\": Node view not found.");
+							} else {
+								logger.error("Cannot restore hidden state of node \"" + name + "\": Node not found.");
+							}
+						}
+					}
 				}
 			}
 		}
@@ -593,25 +616,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		}
 
 		return view;
-	}
-
-	private CyNetwork getNetwork(final String name) {
-		for (String s : networkLookup.keySet()) {
-			String decode = s;
-
-			try {
-				decode = URLDecoder.decode(s, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-				return null;
-			}
-
-			if (decode.equals(name)) {
-				return networkLookup.get(s);
-			}
-		}
-
-		return null;
 	}
 
 	private void setBooleanNodeAttr(final CyNetwork net, final List<Node> nodes, final String attrName,
