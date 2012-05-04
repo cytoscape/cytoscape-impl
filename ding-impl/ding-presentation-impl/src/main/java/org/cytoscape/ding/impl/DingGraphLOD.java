@@ -27,8 +27,6 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 
 	private final CyApplicationManager appManager;
 
-	// FIXME
-	private final String UPDATED = "PROPERTY_UPDATED";
 
 	public DingGraphLOD(final CyProperty<Properties> defaultProps, final CyApplicationManager appManager) {
 		if (defaultProps == null)
@@ -56,14 +54,11 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		try {
 			value = Integer.parseInt(intString);
 		} catch (Exception e) {	
-			System.out.println("returning default value");
 			return defaultValue;
 		}
 		return value;
 	}
 
-	// FIXME
-	//   public void propertyChange(PropertyChangeEvent e) {
 
 	@Override
 	public void handleEvent(PropertyUpdatedEvent e) {

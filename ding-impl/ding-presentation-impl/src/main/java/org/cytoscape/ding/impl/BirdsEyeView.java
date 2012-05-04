@@ -35,21 +35,18 @@
 
 package org.cytoscape.ding.impl;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.GraphicsConfiguration;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.awt.print.Printable;
 import java.util.Properties;
 
@@ -73,12 +70,11 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	
-	private static final Color VIEW_WINDOW_COLOR =  new Color(50, 50, 255, 50);
-	private static final Color VIEW_WINDOW_BORDER_COLOR =  new Color(10,10,200,180);
-	private static final Stroke VIEW_WINDOW_BORDER_STROKE =  new BasicStroke(2);
+	private static final Color VIEW_WINDOW_COLOR =  new Color(10, 10, 255, 80);
+	
 	
 	// Ratio of the graph image to panel size 
-	private static final double SCALE_FACTOR = 0.96;
+	private static final double SCALE_FACTOR = 0.97;
 
 	private final double[] m_extents = new double[4];
 
@@ -88,7 +84,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private final ContentChangeListener m_cLis;
 	private final ViewportChangeListener m_vLis;
 	
-	private Image networkImage;
+	private VolatileImage networkImage;
 	
 	private boolean imageUpdated;
 	private boolean boundChanged;
@@ -145,13 +141,11 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		m_viewScaleFactor = viewModel.getZoom();
 		
 		// Create default empty graphics object
-		networkImage = new BufferedImage(MIN_SIZE.width, MIN_SIZE.height, BufferedImage.TYPE_INT_ARGB);
 		imageWidth = MIN_SIZE.width;
 		imageHeight = MIN_SIZE.height;
 		
 		boundChanged = true;
-		imageUpdated = true;
-		repaint();
+		imageUpdated = true;		
 	}
 
 	private void updateBounds() {
@@ -210,9 +204,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 * Render actual image on the panel.
 	 */
 	@Override public void update(Graphics g) {
-		if (networkImage == null)
-			return;
-
 		updateBounds();
 
 		if (imageUpdated || boundChanged) {
@@ -231,7 +222,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			// Create "background" network image.
 			if (imageUpdated) {
 				// Need to create new image.  This is VERY expensive operation.
-				networkImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+				final GraphicsConfiguration gc = getGraphicsConfiguration();
+				networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
 				viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(), viewModel.getBackgroundPaint(),
 						m_myXCenter, m_myYCenter, m_myScaleFactor);
 			}
@@ -241,24 +233,18 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		g.drawImage(networkImage, 0, 0, null);
 
 		// Compute view area
-		final double rectWidth = m_myScaleFactor * (((double) m_viewWidth) / m_viewScaleFactor);
-		final double rectHeight = m_myScaleFactor * (((double) m_viewHeight) / m_viewScaleFactor);
+		final int rectWidth = (int) (m_myScaleFactor * (((double) m_viewWidth) / m_viewScaleFactor));
+		final int rectHeight = (int) (m_myScaleFactor * (((double) m_viewHeight) / m_viewScaleFactor));
 		
 		final double rectXCenter = (((double) getWidth()) / 2.0d) + (m_myScaleFactor * (m_viewXCenter - m_myXCenter));
 		final double rectYCenter = (((double) getHeight()) / 2.0d) + (m_myScaleFactor * (m_viewYCenter - m_myYCenter));
 		
-		final double x = rectXCenter - (rectWidth/2);
-		final double y = rectYCenter - (rectHeight/2);
+		final int x = (int) (rectXCenter - (rectWidth/2));
+		final int y = (int) (rectYCenter - (rectHeight/2));
 		
-		final Rectangle2D viewArea = new Rectangle2D.Double(x, y, rectWidth, rectHeight);
-
 		// Draw the view area window		
-		final Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(VIEW_WINDOW_BORDER_STROKE);
-		g2.setColor(VIEW_WINDOW_COLOR);
-		g2.fill(viewArea);
-		g2.setColor(VIEW_WINDOW_BORDER_COLOR);
-		g2.draw(viewArea);
+		g.setColor(VIEW_WINDOW_COLOR);
+		g.fillRect(x, y, rectWidth, rectHeight);
 		
 		boundChanged = false;
 		imageUpdated = false;
