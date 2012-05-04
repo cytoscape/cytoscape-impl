@@ -84,6 +84,7 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
 import org.cytoscape.util.swing.JTreeTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -235,6 +236,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		popup.addPopupMenuListener(action);
 	}
 
+
 	private void removeFactory(TaskFactory factory) {
 		JMenuItem item = popupMap.remove(factory);
 		if (item != null)
@@ -291,6 +293,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
 		removeFactory(provisionerMap.remove(factory));
 	}
+
 
 	public void setNavigator(final Component comp) {
 		this.navigatorPanel.removeAll();

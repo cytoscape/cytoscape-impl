@@ -111,6 +111,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -179,7 +180,7 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
-
+		
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
 		RedoAction redoAction = new RedoAction(undoSupportServiceRef);
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(dialogTaskManagerServiceRef,
@@ -389,6 +390,8 @@ public class CyActivator extends AbstractCyActivator {
 		                        "removeTableTaskFactory", TableTaskFactory.class);
 		registerServiceListener(bc, networkViewManager, "addPresentationFactory",
 		                        "removePresentationFactory", RenderingEngineFactory.class);
+		
+		// For Network Panel context menu
 		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",
 		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, networkPanel, "addNetworkTaskFactory",
@@ -399,6 +402,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, networkPanel, "addNetworkCollectionTaskFactory",
 		                        "removeNetworkCollectionTaskFactory",
 		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
+		
 		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty",
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
