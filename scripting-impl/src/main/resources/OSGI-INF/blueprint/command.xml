@@ -1,0 +1,24 @@
+<blueprint default-activation="eager"
+	xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<reference id="taskManagerServiceRef" interface="org.cytoscape.work.TaskManager" />
+	<reference id="cyAppAdapterServiceRef" interface="org.cytoscape.app.CyAppAdapter" />
+
+	<command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
+		<command name="cytoscape/script">
+			<action
+				class="org.cytoscape.scripting.internal.command.ExecuteScriptCommand">
+				<property name="taskManager" ref="taskManagerServiceRef" />
+				<property name="cyAppAdapter" ref="cyAppAdapterServiceRef" />
+			</action>
+			<completers>
+				<ref component-id="commandCompleter" />
+				<null />
+			</completers>
+		</command>
+	</command-bundle>
+
+	<bean id="commandCompleter"
+		class="org.cytoscape.scripting.internal.command.CommandCompleter" />
+
+</blueprint>
