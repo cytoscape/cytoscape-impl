@@ -42,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
@@ -132,9 +133,9 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     private final CyNetworkManager networkMgr;
     private final CyRootNetworkManager rootNetworkMgr;
 
-    private HashMap<CyNode, CyNode> writtenNodeMap = new HashMap<CyNode, CyNode>();
-    private HashMap<CyEdge, CyEdge> writtenEdgeMap = new HashMap<CyEdge, CyEdge>();
-    private HashMap<CyNetwork, CyNetwork> writtenNetMap = new HashMap<CyNetwork, CyNetwork>();
+    private final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<CyNode, CyNode>();
+    private final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
+    private final Map<CyNetwork, CyNetwork> writtenNetMap = new WeakHashMap<CyNetwork, CyNetwork>();
 
     private int depth = 0;
     private String indentString = "";

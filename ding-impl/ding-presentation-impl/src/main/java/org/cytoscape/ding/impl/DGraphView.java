@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -471,8 +472,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_edgeDetails = new DEdgeDetails(this);
 		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
 		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
-		m_nodeViewMap = new HashMap<CyNode, NodeView>();
-		m_edgeViewMap = new HashMap<CyEdge, EdgeView>();
+		m_nodeViewMap = new WeakHashMap<CyNode, NodeView>();
+		m_edgeViewMap = new WeakHashMap<CyEdge, EdgeView>();
 		m_printLOD = new PrintLOD();
 		m_defaultNodeXMin = 0.0f;
 		m_defaultNodeYMin = 0.0f;

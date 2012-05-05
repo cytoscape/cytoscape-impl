@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -81,8 +82,8 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 		this.numberOfIsolatedNodes = 0;
 		this.numberOfSelfLoops = 0;
 		this.multiEdgePartners = 0;
-		this.nodeBetweenness = new HashMap<CyNode, NodeBetweenInfo>();
-		this.edgeBetweenness = new HashMap<CyEdge, Double>();
+		this.nodeBetweenness = new WeakHashMap<CyNode, NodeBetweenInfo>();
+		this.edgeBetweenness = new WeakHashMap<CyEdge, Double>();
 		this.stress = new HashMap<CyNode, Long>();
 		computeNB = true;
 		AttributeSetup.createDirectedNodeAttributes(aNetwork.getDefaultNodeTable());

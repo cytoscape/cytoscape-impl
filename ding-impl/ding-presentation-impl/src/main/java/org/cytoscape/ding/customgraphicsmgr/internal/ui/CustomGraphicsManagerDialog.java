@@ -1,7 +1,6 @@
 package org.cytoscape.ding.customgraphicsmgr.internal.ui;
 
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +17,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

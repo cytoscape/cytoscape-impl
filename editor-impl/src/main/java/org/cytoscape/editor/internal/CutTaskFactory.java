@@ -1,11 +1,8 @@
 package org.cytoscape.editor.internal;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
 public class CutTaskFactory extends AbstractNetworkViewTaskFactory {

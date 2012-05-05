@@ -35,6 +35,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -58,8 +59,8 @@ class AddEdgeStateMonitor {
 	private final InnerCanvas canvas;
 	private final DGraphView m_view;
 
-	private static Map<CyNetworkView,CyNode> sourceNodes = new HashMap<CyNetworkView,CyNode>();
-	private static Map<CyNetworkView,Point2D> sourcePoints = new HashMap<CyNetworkView,Point2D>();
+	private static Map<CyNetworkView,CyNode> sourceNodes = new WeakHashMap<CyNetworkView,CyNode>();
+	private static Map<CyNetworkView,Point2D> sourcePoints = new WeakHashMap<CyNetworkView,Point2D>();
 
 	AddEdgeStateMonitor(InnerCanvas canvas, DGraphView m_view) {
 		this.canvas = canvas;

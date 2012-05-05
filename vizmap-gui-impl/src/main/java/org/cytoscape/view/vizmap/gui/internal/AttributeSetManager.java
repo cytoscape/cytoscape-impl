@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -43,8 +44,8 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 	public AttributeSetManager(final CyNetworkTableManager tableMgr) {
 		this.tableMgr = tableMgr;
 
-		this.attrSets = new HashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, AttributeSet>>();
-		this.tableSets = new HashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, Set<CyTable>>>();
+		this.attrSets = new WeakHashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, AttributeSet>>();
+		this.tableSets = new WeakHashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, Set<CyTable>>>();
 	}
 
 	public AttributeSet getAttributeSet(final CyNetwork network, final Class<? extends CyIdentifiable> objectType) {

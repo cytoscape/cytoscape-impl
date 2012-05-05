@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.WeakHashMap;
 
 import org.cytoscape.network.merge.internal.util.ColumnType;
 
@@ -65,10 +66,10 @@ public class AttributeMappingImpl implements AttributeMapping {
     private final String nullAttr = ""; // to hold a position in vector standing that it's not a attribute
 
     public AttributeMappingImpl() {
-        attributeMapping = new HashMap<CyNetwork,List<String>>();
+        attributeMapping = new WeakHashMap<CyNetwork,List<String>>();
         mergedAttributes = new ArrayList<String>();
         mergedAttributeTypes = new ArrayList<ColumnType>();
-        cyTables = new HashMap<CyNetwork,CyTable>();
+        cyTables = new WeakHashMap<CyNetwork,CyTable>();
     }
 
 

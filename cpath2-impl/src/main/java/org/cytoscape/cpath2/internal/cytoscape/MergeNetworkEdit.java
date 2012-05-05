@@ -35,8 +35,8 @@ package org.cytoscape.cpath2.internal.cytoscape;
 
 import java.awt.geom.Point2D;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
@@ -90,7 +90,7 @@ public class MergeNetworkEdit extends AbstractCyEdit {
         this.cyNetwork = cyNetwork;
         this.cyEdges = cyEdges;
 
-        this.cyNodes = new HashMap<CyNode, Point2D.Double>();
+        this.cyNodes = new WeakHashMap<CyNode, Point2D.Double>();
         final Collection<CyNetworkView> views = factory.getCyNetworkViewManager().getNetworkViews(cyNetwork);
         CyNetworkView view = null;
 		if(views.size() != 0)

@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
@@ -125,8 +126,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	}
 
 	private void cloneNodes(CyNetwork origNet, CyNetwork newNet) {
-		orig2NewNodeMap = new HashMap<CyNode, CyNode>();
-		new2OrigNodeMap = new HashMap<CyNode, CyNode>();
+		orig2NewNodeMap = new WeakHashMap<CyNode, CyNode>();
+		new2OrigNodeMap = new WeakHashMap<CyNode, CyNode>();
 		for (final CyNode origNode : origNet.getNodeList()) {
 			final CyNode newNode = newNet.addNode();
 			orig2NewNodeMap.put(origNode, newNode);

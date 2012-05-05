@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
@@ -69,35 +70,35 @@ class DNodeDetails extends NodeDetails {
 	
 	final Object m_deletedEntry = new Object();
 
-	Map<CyNode,Object> m_colorsLowDetail = new HashMap<CyNode,Object>();
-	Map<CyNode,Object> m_selectedColorsLowDetail = new HashMap<CyNode,Object>();
+	Map<CyNode,Object> m_colorsLowDetail = new WeakHashMap<CyNode,Object>();
+	Map<CyNode,Object> m_selectedColorsLowDetail = new WeakHashMap<CyNode,Object>();
 	
-	Map<CyNode, Byte> m_shapes = new HashMap<CyNode, Byte>();
-	Map<CyNode, Paint> m_unselectedPaints = new HashMap<CyNode, Paint>();
-	Map<CyNode, Paint> m_selectedPaints = new HashMap<CyNode, Paint>();
+	Map<CyNode, Byte> m_shapes = new WeakHashMap<CyNode, Byte>();
+	Map<CyNode, Paint> m_unselectedPaints = new WeakHashMap<CyNode, Paint>();
+	Map<CyNode, Paint> m_selectedPaints = new WeakHashMap<CyNode, Paint>();
 	
-	Map<CyNode, Float> m_borderWidths = new HashMap<CyNode, Float>();
-	Map<CyNode, Paint> m_borderPaints = new HashMap<CyNode, Paint>();
-	Map<CyNode, Integer> m_labelCounts = new HashMap<CyNode, Integer>();
+	Map<CyNode, Float> m_borderWidths = new WeakHashMap<CyNode, Float>();
+	Map<CyNode, Paint> m_borderPaints = new WeakHashMap<CyNode, Paint>();
+	Map<CyNode, Integer> m_labelCounts = new WeakHashMap<CyNode, Integer>();
 	
-	Map<CyNode, String> m_labelTexts = new HashMap<CyNode, String>();
-	Map<CyNode, String> m_tooltipTexts = new HashMap<CyNode, String>();
+	Map<CyNode, String> m_labelTexts = new WeakHashMap<CyNode, String>();
+	Map<CyNode, String> m_tooltipTexts = new WeakHashMap<CyNode, String>();
 
-	Map<CyNode, Font> m_labelFonts = new HashMap<CyNode, Font>();
-	Map<CyNode, Paint> m_labelPaints = new HashMap<CyNode, Paint>();
-	Map<CyNode, Double> m_labelWidths = new HashMap<CyNode, Double>();
+	Map<CyNode, Font> m_labelFonts = new WeakHashMap<CyNode, Font>();
+	Map<CyNode, Paint> m_labelPaints = new WeakHashMap<CyNode, Paint>();
+	Map<CyNode, Double> m_labelWidths = new WeakHashMap<CyNode, Double>();
 	
-	Map<CyNode, Integer> m_labelTextAnchors = new HashMap<CyNode, Integer>();
-	Map<CyNode, Integer> m_labelNodeAnchors = new HashMap<CyNode, Integer>();
-	Map<CyNode, Integer> m_labelJustifys = new HashMap<CyNode, Integer>();
-	Map<CyNode, Double> m_labelOffsetXs = new HashMap<CyNode, Double>();
-	Map<CyNode, Double> m_labelOffsetYs = new HashMap<CyNode, Double>();
+	Map<CyNode, Integer> m_labelTextAnchors = new WeakHashMap<CyNode, Integer>();
+	Map<CyNode, Integer> m_labelNodeAnchors = new WeakHashMap<CyNode, Integer>();
+	Map<CyNode, Integer> m_labelJustifys = new WeakHashMap<CyNode, Integer>();
+	Map<CyNode, Double> m_labelOffsetXs = new WeakHashMap<CyNode, Double>();
+	Map<CyNode, Double> m_labelOffsetYs = new WeakHashMap<CyNode, Double>();
 	
-	Map<CyNode, Double> m_width = new HashMap<CyNode, Double>();
+	Map<CyNode, Double> m_width = new WeakHashMap<CyNode, Double>();
 	
-	Map<CyNode, List<CustomGraphic>> m_customGraphics = new HashMap<CyNode, List<CustomGraphic>>();
+	Map<CyNode, List<CustomGraphic>> m_customGraphics = new WeakHashMap<CyNode, List<CustomGraphic>>();
 	
-	private Set<CyNode> selected = new HashSet<CyNode>();
+	private final Set<CyNode> selected = new HashSet<CyNode>();
 
 	// Default values
 	private Color m_colorLowDetailDefault;
@@ -121,54 +122,44 @@ class DNodeDetails extends NodeDetails {
 	private Double m_labelOffsetVectorYDefault;
 	private Byte m_labelJustifyDefault; 
 	private Double m_labelWidthDefault;
-	
-	private Map<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>> defaultCustomGraphicsMap;
-	private Map<ObjectPositionVisualProperty, ObjectPosition> defaultCustomGraphicsPositionMap;
-	
-	private List<CustomGraphic> defaultCGList;
+
 
 	private boolean isCleared = false;
 	
 	
 	DNodeDetails(final DGraphView view) {
 		this.m_view = view;
-		
-		defaultCustomGraphicsMap = new HashMap<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>>();
-		defaultCustomGraphicsPositionMap = new HashMap<ObjectPositionVisualProperty, ObjectPosition>();
 	}
 	
 	void clear() {
 		if(isCleared)
 			return;
 		
-		m_colorsLowDetail = new HashMap<CyNode,Object>();
-		m_selectedColorsLowDetail = new HashMap<CyNode,Object>();
+		m_colorsLowDetail = new WeakHashMap<CyNode,Object>();
+		m_selectedColorsLowDetail = new WeakHashMap<CyNode,Object>();
 		
-		m_shapes = new HashMap<CyNode, Byte>();
-		m_unselectedPaints = new HashMap<CyNode, Paint>();
-		m_borderWidths = new HashMap<CyNode, Float>();
-		m_borderPaints = new HashMap<CyNode, Paint>();
-		m_labelCounts = new HashMap<CyNode, Integer>();
-		m_labelTexts = new HashMap<CyNode, String>();
-		m_tooltipTexts = new HashMap<CyNode, String>();
-		m_labelFonts = new HashMap<CyNode, Font>();
-		m_labelPaints = new HashMap<CyNode, Paint>();
-		m_labelWidths = new HashMap<CyNode, Double>();
+		m_shapes = new WeakHashMap<CyNode, Byte>();
+		m_unselectedPaints = new WeakHashMap<CyNode, Paint>();
+		m_borderWidths = new WeakHashMap<CyNode, Float>();
+		m_borderPaints = new WeakHashMap<CyNode, Paint>();
+		m_labelCounts = new WeakHashMap<CyNode, Integer>();
+		m_labelTexts = new WeakHashMap<CyNode, String>();
+		m_tooltipTexts = new WeakHashMap<CyNode, String>();
+		m_labelFonts = new WeakHashMap<CyNode, Font>();
+		m_labelPaints = new WeakHashMap<CyNode, Paint>();
+		m_labelWidths = new WeakHashMap<CyNode, Double>();
 		
-		m_labelTextAnchors = new HashMap<CyNode, Integer>();
-		m_labelNodeAnchors = new HashMap<CyNode, Integer>();
-		m_labelJustifys = new HashMap<CyNode, Integer>();
-		m_labelOffsetXs = new HashMap<CyNode, Double>();
-		m_labelOffsetYs = new HashMap<CyNode, Double>();
-		m_width = new HashMap<CyNode, Double>();
+		m_labelTextAnchors = new WeakHashMap<CyNode, Integer>();
+		m_labelNodeAnchors = new WeakHashMap<CyNode, Integer>();
+		m_labelJustifys = new WeakHashMap<CyNode, Integer>();
+		m_labelOffsetXs = new WeakHashMap<CyNode, Double>();
+		m_labelOffsetYs = new WeakHashMap<CyNode, Double>();
+		m_width = new WeakHashMap<CyNode, Double>();
 		
-		m_selectedPaints = new HashMap<CyNode, Paint>();
+		m_selectedPaints = new WeakHashMap<CyNode, Paint>();
 		
-		m_customGraphics = new HashMap<CyNode, List<CustomGraphic>>();
-		
-		defaultCustomGraphicsMap = new HashMap<CustomGraphicsVisualProperty, CyCustomGraphics<CustomGraphic>>();
-		defaultCustomGraphicsPositionMap = new HashMap<ObjectPositionVisualProperty, ObjectPosition>();
-		defaultCGList = new ArrayList<CustomGraphic>();
+		m_customGraphics = new WeakHashMap<CyNode, List<CustomGraphic>>();
+
 		
 		// Clear all Custom Graphics
 		for(final View<CyNode> nv: m_view.getNodeViews())

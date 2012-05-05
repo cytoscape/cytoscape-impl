@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -20,19 +20,16 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
-public class ClipboardManagerImpl {
-	CyNetworkView sourceView;
-	List<View<CyNode>> nodeViews;
-	List<View<CyEdge>> edgeViews;
+public final class ClipboardManagerImpl {
+	private CyNetworkView sourceView;
+	private List<View<CyNode>> nodeViews;
+	private List<View<CyEdge>> edgeViews;
 
 	// Row maps
-	Map<CyIdentifiable, CyRow> oldDefaultRowMap;
-	Map<CyIdentifiable, CyRow> oldHiddenRowMap;
+	private Map<CyIdentifiable, CyRow> oldDefaultRowMap;
+	private Map<CyIdentifiable, CyRow> oldHiddenRowMap;
 
-	double xCenter, yCenter;
-
-	public ClipboardManagerImpl() {
-	}
+	private double xCenter, yCenter;
 
 	public boolean clipboardHasData() {
 		if (nodeViews != null && nodeViews.size() > 0)
@@ -45,8 +42,8 @@ public class ClipboardManagerImpl {
 		CyNetwork sourceNetwork = sourceView.getModel();
 		nodeViews = new ArrayList<View<CyNode>>();
 		edgeViews = new ArrayList<View<CyEdge>>();
-		oldDefaultRowMap = new HashMap<CyIdentifiable, CyRow>();
-		oldHiddenRowMap = new HashMap<CyIdentifiable, CyRow>();
+		oldDefaultRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
+		oldHiddenRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
 
 		xCenter = 0.0;
 		yCenter = 0.0;
@@ -77,7 +74,7 @@ public class ClipboardManagerImpl {
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y, boolean createColumns) {
 		List<CyIdentifiable> pastedObjects = new ArrayList<CyIdentifiable>();
-		Map<CyRow, CyRow> rowMap = new HashMap<CyRow, CyRow>();
+		final Map<CyRow, CyRow> rowMap = new HashMap<CyRow, CyRow>();
 
 		CyNetwork sourceNetwork = sourceView.getModel();
 
@@ -91,7 +88,7 @@ public class ClipboardManagerImpl {
 		// nodes and add the edges.
 
 		// Pass 1: add the nodes 
-		Map<CyNode, CyNode> newNodeMap = new HashMap<CyNode, CyNode>();
+		final Map<CyNode, CyNode> newNodeMap = new HashMap<CyNode, CyNode>();
 		for (View<CyNode> nodeView: nodeViews) {
 			CyNode node = nodeView.getModel();
 			CyNode newNode = null;

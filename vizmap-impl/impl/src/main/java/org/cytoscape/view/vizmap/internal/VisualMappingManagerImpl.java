@@ -65,8 +65,6 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	
 	// Default Style
 	private static final Color NETWORK_COLOR = Color.WHITE;
-	private static final Color NETWORK_NODE_SELECTED_COLOR = Color.YELLOW;
-	private static final Color NETWORK_EDGE_SELECTED_COLOR = Color.YELLOW;
 	private static final Color NODE_COLOR = new Color(0x4F, 0x94, 0xCD);
 	private static final Color NODE_LABEL_COLOR = Color.BLACK;
 	private static final Color EDGE_COLOR = new Color(50, 50, 50);
@@ -83,8 +81,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	private final CyEventHelper cyEventHelper;
 	private final VisualLexiconManager lexManager;
 
-	public VisualMappingManagerImpl(final CyEventHelper eventHelper,
-			final VisualStyleFactory factory, final VisualLexiconManager lexManager) {
+	public VisualMappingManagerImpl(final CyEventHelper eventHelper, final VisualStyleFactory factory,
+			final VisualLexiconManager lexManager) {
 		if (eventHelper == null)
 			throw new NullPointerException("CyEventHelper cannot be null");
 
@@ -131,7 +129,6 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 			style = getDefaultVisualStyle();
 			network2VisualStyleMap.put(nv, style);
 		}
-
 		return style;
 	}
 

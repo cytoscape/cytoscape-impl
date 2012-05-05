@@ -36,6 +36,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -68,7 +69,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Set<CyNetwork> networks = new LinkedHashSet<CyNetwork>();
 	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<CyNetworkView>();
 	protected final Set<VisualStyle> visualStyles = new HashSet<VisualStyle>();
-	protected final Map<CyNetworkView, String> visualStyleMap = new HashMap<CyNetworkView, String>();
+	protected final Map<CyNetworkView, String> visualStyleMap = new WeakHashMap<CyNetworkView, String>();
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<CyTableMetadata>();
 	protected final Map<String, List<File>> appFileListMap = new HashMap<String, List<File>>();
 	protected final Map<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>> objectMap = new HashMap<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>>();

@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
@@ -82,7 +83,7 @@ public class ViewState {
 		// node views, which can disappear between when this edit
 		// is created and when it is used.
 		if (whatToSave == ViewChangeEdit.SavedObjs.ALL || whatToSave == ViewChangeEdit.SavedObjs.NODES) {
-			points = new HashMap<CyNode, Point2D.Double>();
+			points = new WeakHashMap<CyNode, Point2D.Double>();
 			for (CyNode n: view.getNetwork().getNodeList()) {
 				NodeView nv = view.getDNodeView(n);
 				points.put(n, new Point2D.Double(nv.getXPosition(), nv.getYPosition()));
@@ -90,8 +91,8 @@ public class ViewState {
 		}
 
 		if (whatToSave == ViewChangeEdit.SavedObjs.ALL || whatToSave == ViewChangeEdit.SavedObjs.EDGES) {
-			anchors = new HashMap<CyEdge, List>();
-			linetype = new HashMap<CyEdge, Integer>();
+			anchors = new WeakHashMap<CyEdge, List>();
+			linetype = new WeakHashMap<CyEdge, Integer>();
 			for (CyEdge e: view.getNetwork().getEdgeList()) {
 				EdgeView ev = view.getDEdgeView(e);
 				
@@ -103,7 +104,7 @@ public class ViewState {
 
 		if (whatToSave == ViewChangeEdit.SavedObjs.SELECTED ||
 		    whatToSave == ViewChangeEdit.SavedObjs.SELECTED_NODES ) {
-			points = new HashMap<CyNode, Point2D.Double>();
+			points = new WeakHashMap<CyNode, Point2D.Double>();
 
 			Iterator<CyNode> nodeIter = view.getSelectedNodes().iterator();
 			while (nodeIter.hasNext()) {
@@ -115,8 +116,8 @@ public class ViewState {
 
 		if (whatToSave == ViewChangeEdit.SavedObjs.SELECTED ||
 		    whatToSave == ViewChangeEdit.SavedObjs.SELECTED_EDGES ) {
-			anchors = new HashMap<CyEdge, List>();
-			linetype = new HashMap<CyEdge, Integer>();
+			anchors = new WeakHashMap<CyEdge, List>();
+			linetype = new WeakHashMap<CyEdge, Integer>();
 
 			Iterator<CyEdge> edgeIter = view.getSelectedEdges().iterator();
 			while (edgeIter.hasNext()) {

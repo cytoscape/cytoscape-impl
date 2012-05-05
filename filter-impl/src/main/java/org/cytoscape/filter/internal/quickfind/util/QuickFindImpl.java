@@ -30,21 +30,19 @@ package org.cytoscape.filter.internal.quickfind.util;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.filter.internal.widgets.autocomplete.index.GenericIndex;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.IndexFactory;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -66,7 +64,7 @@ public class QuickFindImpl implements QuickFind {
 
 	public QuickFindImpl() {
 		this.listenerList = new ArrayList<QuickFindListener>();
-		this.networkMap = new HashMap<CyNetwork, GenericIndex>();
+		this.networkMap = new WeakHashMap<CyNetwork, GenericIndex>();
 	}
 	
 	

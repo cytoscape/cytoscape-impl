@@ -12,6 +12,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -78,7 +79,7 @@ final class CreateNetworkViewEdit extends AbstractCyEdit {
 		networkScaleFactor = view.getVisualProperty(NETWORK_SCALE_FACTOR);
 
 		final Collection<View<CyNode>> nodeViews = view.getNodeViews();
-		nodesAndLocations = new HashMap<CyNode, NodeLocations>(nodeViews.size());
+		nodesAndLocations = new WeakHashMap<CyNode, NodeLocations>(nodeViews.size());
 		for (final View<CyNode> nodeView : nodeViews)
 			nodesAndLocations.put(nodeView.getModel(), new NodeLocations(nodeView));
 

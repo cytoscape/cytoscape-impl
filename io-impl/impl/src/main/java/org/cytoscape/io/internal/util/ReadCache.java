@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -70,9 +71,9 @@ public class ReadCache {
 		
 		nodeByNameMap = new HashMap<Object, CyNode>();
 		
-		nodeLinkMap = new HashMap<CyNetwork, Set<Long>>();
-		edgeLinkMap = new HashMap<CyNetwork, Set<Long>>();
-		networkPointerMap = new HashMap<CyNode, Object>();
+		nodeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
+		edgeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
+		networkPointerMap = new WeakHashMap<CyNode, Object>();
 	}
 	
 	public void dispose() {

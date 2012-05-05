@@ -37,9 +37,9 @@
 package org.cytoscape.network.merge.internal.model;
 
 
-import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -55,7 +55,7 @@ public class MatchingAttributeImpl implements MatchingAttribute {
     private Map<CyNetwork,CyColumn> attributeForMatching; // network to attribute name
     
     public MatchingAttributeImpl() {
-        attributeForMatching = new HashMap<CyNetwork,CyColumn>();
+        attributeForMatching = new WeakHashMap<CyNetwork,CyColumn>();
     }
 
     @Override

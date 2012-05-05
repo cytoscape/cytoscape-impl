@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionService;
@@ -261,7 +262,7 @@ public class PSICQUICRestClient {
 			this.serviceURL = serviceURL;
 			this.query = query;
 			this.mode = mode;
-			this.returnThis = new HashMap<CyNetwork, String>();
+			this.returnThis = new WeakHashMap<CyNetwork, String>();
 			this.networkBuilder = new CyNetworkBuilder(factory);
 		}
 
