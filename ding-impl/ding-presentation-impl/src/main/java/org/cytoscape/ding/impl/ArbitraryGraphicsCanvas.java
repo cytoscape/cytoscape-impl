@@ -39,6 +39,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -170,6 +171,57 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			// update children's bounds
 			setBoundsChildren();
 		}
+	}
+
+	/**
+	 * An implementation of getBounds that adjusts the bounds to
+	 * include all of the child elements
+	 */
+	public boolean adjustBounds(double[] currentBounds) {
+		final double[] nodeCanvasCoordinates = new double[2];
+
+		// get list of child components
+		Component[] components = getComponents();
+
+		// no components, outta here
+		if (components.length == 0)
+			return false;
+
+		// The currentBounds represents the current extents.  We're
+		// going to walk our children and make sure the extents
+		// are large enought to cover them
+
+		// interate through the components
+		for (Component c : components) {
+			// get position of this component in network coordinates
+			Point position = m_componentToPointMap.get(c);
+
+			// Adjust, if necessary
+			if (position.getX() < currentBounds[0]) 
+				currentBounds[0] = position.getX();
+			if (position.getY() < currentBounds[1]) 
+				currentBounds[1] = position.getY();
+			
+			// Now, get the maximum extent of the component in component coordinates
+			nodeCanvasCoordinates[0] = c.getX() + c.getWidth();
+			nodeCanvasCoordinates[1] = c.getY() + c.getHeight();
+
+			// Transform the maximum extent to get network cooredinates
+			m_dGraphView.xformComponentToNodeCoords(nodeCanvasCoordinates);
+
+			// Adjust, if necessary
+			if (nodeCanvasCoordinates[0] > currentBounds[2])
+				currentBounds[2] = nodeCanvasCoordinates[0];
+			if (nodeCanvasCoordinates[1] > currentBounds[3])
+				currentBounds[3] = nodeCanvasCoordinates[1];
+		}
+
+		return true;
+	}
+
+	public void drawCanvas(VolatileImage image, double xCenter, double yCenter, double scaleFactor) {
+		// get image graphics
+		final Graphics2D image2D = image.createGraphics();
 	}
 
 	/**

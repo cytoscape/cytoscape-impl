@@ -86,7 +86,7 @@ public class CyGroupManagerImpl implements CyGroupManager {
 				groupSet.add(group);
 			}
 		}
-		// Fire GroupsAddedEvent...
+		// Fire GroupsAddedEvent?
 		// cyEventHelper.fireEvent(new GroupAddedEvent(CyGroupManagerImpl.this, group));
 	}
 

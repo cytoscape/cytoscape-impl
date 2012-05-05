@@ -10,7 +10,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 
-public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory implements NetworkViewTaskFactory {
+public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory {
 
 	private final CyEventHelper eh;
 	private final VisualMappingManager vmm;
@@ -23,7 +23,10 @@ public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory imp
 	}
 
 	@Override
-	public boolean isReady(CyNetworkView networkView) {
+	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
+		if (!super.isReady(networkView, javaPt, xformPt))
+			return false;
+
 		return clipMgr.clipboardHasData();
 	}
 
@@ -33,8 +36,4 @@ public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory imp
 		return new TaskIterator(new PasteTask(vmm, networkView, xformPt, clipMgr));
 	}
 
-	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView) { 
-		return new TaskIterator(new PasteTask(vmm, networkView, null, clipMgr));
-	}
 }

@@ -31,11 +31,13 @@ public class PasteTask extends AbstractNetworkViewTask {
 			clipMgr.paste(view, 0.0, 0.0, true);
 		else
 			clipMgr.paste(view, xformPt.getX(), xformPt.getY(), true);
-
+		
 		view.updateView();
 
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);
 		vs.apply(view);
+
+		view.updateView();
 	}
 }

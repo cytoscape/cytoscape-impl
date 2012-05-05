@@ -28,14 +28,19 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupFactoryImpl cyGroupFactory = new CyGroupFactoryImpl(cyEventHelperServiceRef, 
 		                                                           cyGroupManager, 
 		                                                           cyServiceRegistrarServiceRef);
+		registerService(bc,cyGroupManager,CyGroupManager.class, new Properties());
+		registerService(bc,cyGroupFactory,CyGroupFactory.class, new Properties());
+
+/*
+		// Move this to a separate module
 		SessionEventsListener sessListener = new SessionEventsListener(cyGroupFactory,
 				                                                       cyGroupManager,
 				                                                       cyNetworkManagerServiceRef,
 				                                                       cyRootNetworkManagerServiceRef);
 		
-		registerService(bc,cyGroupManager,CyGroupManager.class, new Properties());
-		registerService(bc,cyGroupFactory,CyGroupFactory.class, new Properties());
-		registerAllServices(bc, sessListener, new Properties());
+		registerService(bc, sessListener, SessionLoadedListener.class, new Properties());
+		registerService(bc, sessListener, SessionAboutToBeSavedListener.class, new Properties());
+*/
 	}
 }
 

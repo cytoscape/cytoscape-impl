@@ -1,6 +1,10 @@
 package org.cytoscape.editor.internal;
 
+import java.util.List;
+
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -12,6 +16,18 @@ public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
 	public CutTaskFactory(final ClipboardManagerImpl clipboardMgr, final CyNetworkManager netMgr) {
 		this.netMgr = netMgr;
 		this.clipMgr = clipboardMgr;
+	}
+
+	@Override
+	public boolean isReady(CyNetworkView networkView) {
+		if (!super.isReady(networkView))
+			return false;
+
+		// Make sure we've got something selected
+		List<CyNode> selNodes = CyTableUtil.getNodesInState(networkView.getModel(), CyNetwork.SELECTED, true);
+		if (selNodes != null && selNodes.size() > 0) return true;
+
+		return false;
 	}
 
 	@Override

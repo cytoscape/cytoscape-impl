@@ -107,11 +107,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		DVisualLexicon dVisualLexicon = new DVisualLexicon(customGraphicsManagerServiceRef);
 
-		NVLTFActionSupport nvltfActionSupport = new NVLTFActionSupport(applicationManagerServiceRef,cyNetworkViewManagerServiceRef,dialogTaskManager,cyServiceRegistrarRef);
+		NVLTFActionSupport nvltfActionSupport = 
+		    new NVLTFActionSupport(applicationManagerServiceRef,cyNetworkViewManagerServiceRef,
+		                           dialogTaskManager,cyServiceRegistrarRef);
 		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
-
 
 		DingGraphLOD dingGraphLOD = new DingGraphLOD(cyPropertyServiceRef, applicationManagerServiceRef);
 		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class, new Properties());

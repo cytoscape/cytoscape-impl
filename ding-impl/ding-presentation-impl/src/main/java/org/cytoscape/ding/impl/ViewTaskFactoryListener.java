@@ -25,7 +25,6 @@ public class ViewTaskFactoryListener {
 	
 	private final NVLTFActionSupport nvltfActionSupport;
 
-
 	public ViewTaskFactoryListener(NVLTFActionSupport nvltfActionSupport){
 		this.nvltfActionSupport = nvltfActionSupport;
 		viewMap = new WeakHashMap<CyNetworkView, Reference<DGraphView>>();

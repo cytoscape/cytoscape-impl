@@ -61,7 +61,7 @@ public class CyActivator extends AbstractCyActivator {
 		NetworkViewTaskFactory copyTaskFactory = 
 			new CopyTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
 		Properties copyTaskFactoryProps = new Properties();
-		copyTaskFactoryProps.setProperty(ENABLE_FOR, "SelectedNodes");
+		copyTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		copyTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		copyTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
 		copyTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
@@ -73,7 +73,7 @@ public class CyActivator extends AbstractCyActivator {
 		NetworkViewTaskFactory cutTaskFactory = 
 			new CutTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
 		Properties cutTaskFactoryProps = new Properties();
-		cutTaskFactoryProps.setProperty(ENABLE_FOR, "SelectedNodes");
+		cutTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		cutTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		cutTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
 		cutTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
@@ -85,15 +85,14 @@ public class CyActivator extends AbstractCyActivator {
 		NetworkViewLocationTaskFactory pasteTaskFactory = 
 			new PasteTaskFactory(clipboardManager, cyEventHelperServiceRef, visualMappingManagerServiceRef);
 		Properties pasteTaskFactoryProps = new Properties();
+		cutTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		pasteTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		pasteTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
 		pasteTaskFactoryProps.setProperty(TITLE, "Paste");
 		pasteTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2f");
 		pasteTaskFactoryProps.setProperty(ACCELERATOR, "cmd v");
+		pasteTaskFactoryProps.setProperty(IN_MENU_BAR, "true");
 		registerService(bc, pasteTaskFactory, NetworkViewLocationTaskFactory.class, pasteTaskFactoryProps);
-
-		// How do I add this in the menu bar, but not get a duplicate in the context menu?
-		// registerService(bc, pasteTaskFactory, NetworkViewTaskFactory.class, pasteTaskFactoryProps);
 
 		// At some point, add Paste Special.  Paste special would allow paste node only, paste copy, etc.
 

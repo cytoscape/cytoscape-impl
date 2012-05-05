@@ -83,7 +83,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private final ContentChangeListener m_cLis;
 	private final ViewportChangeListener m_vLis;
-	
+
 	private VolatileImage networkImage;
 	
 	private boolean imageUpdated;
@@ -204,15 +204,25 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 * Render actual image on the panel.
 	 */
 	@Override public void update(Graphics g) {
+		ArbitraryGraphicsCanvas foregroundCanvas = 
+		    (ArbitraryGraphicsCanvas) viewModel.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS);
+		ArbitraryGraphicsCanvas backgroundCanvas = 
+		    (ArbitraryGraphicsCanvas) viewModel.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS);
+
 		updateBounds();
 
 		if (imageUpdated || boundChanged) {
 			if (viewModel.getExtents(m_extents)) {				
+
+				// Adjust for foreground/background components
+				foregroundCanvas.adjustBounds(m_extents);
+				backgroundCanvas.adjustBounds(m_extents);
+
 				m_myXCenter = (m_extents[0] + m_extents[2]) / 2.0d;
 				m_myYCenter = (m_extents[1] + m_extents[3]) / 2.0d;
-				m_myScaleFactor = SCALE_FACTOR * Math.min(((double) getWidth())
-						/ (m_extents[2] - m_extents[0]), ((double) getHeight())
-						/ (m_extents[3] - m_extents[1]));
+				m_myScaleFactor = SCALE_FACTOR * 
+				                  Math.min(((double) getWidth()) / (m_extents[2] - m_extents[0]), 
+				                           ((double) getHeight()) / (m_extents[3] - m_extents[1]));
 			} else {				
 				m_myXCenter = 0.0d;
 				m_myYCenter = 0.0d;
@@ -224,6 +234,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				// Need to create new image.  This is VERY expensive operation.
 				final GraphicsConfiguration gc = getGraphicsConfiguration();
 				networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
+
+				// Now draw the network
 				viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(), viewModel.getBackgroundPaint(),
 						m_myXCenter, m_myYCenter, m_myScaleFactor);
 			}
@@ -246,8 +258,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		g.setColor(VIEW_WINDOW_COLOR);
 		g.fillRect(x, y, rectWidth, rectHeight);
 		
-		boundChanged = false;
-		imageUpdated = false;
+	boundChanged = false; imageUpdated = false;
 	}
 
 	

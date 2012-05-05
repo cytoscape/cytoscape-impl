@@ -59,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -97,6 +96,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
@@ -206,6 +206,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * minimum bounding box?
 	 */
 	final float[] m_extentsBuff = new float[4];
+	final double[] m_extentsBuffD = new double[4];
 
 	/**
 	 * A common general path variable used for holding lots of shapes.
@@ -460,8 +461,18 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.networkViewLocationTfs = vtfl.networkViewLocationTFs;
 		this.cyEdgeViewContextMenuFactory = vtfl.cyEdgeViewContextMenuFactory;
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
+		
 		this.manager = manager;
+
 		this.cyEventHelper = cyEventHelper;
+
+		final CyTable nodeCAM = dataFactory.createTable("node view", CyIdentifiable.SUID, Long.class, false, false);
+		nodeCAM.createColumn("hidden", Boolean.class, false);
+		tableMgr.setTable(model, CyNode.class, "VIEW", nodeCAM);
+
+		final CyTable edgeCAM = dataFactory.createTable("edge view", CyIdentifiable.SUID, Long.class, false, false);
+		edgeCAM.createColumn("hidden", Boolean.class, false);
+		tableMgr.setTable(model, CyEdge.class, "VIEW", edgeCAM);
 
 		// creating empty subnetworks
 		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork();
@@ -472,8 +483,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_edgeDetails = new DEdgeDetails(this);
 		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
 		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
-		m_nodeViewMap = new WeakHashMap<CyNode, NodeView>();
-		m_edgeViewMap = new WeakHashMap<CyEdge, EdgeView>();
+		m_nodeViewMap = new HashMap<CyNode, NodeView>();
+		m_edgeViewMap = new HashMap<CyEdge, EdgeView>();
 		m_printLOD = new PrintLOD();
 		m_defaultNodeXMin = 0.0f;
 		m_defaultNodeYMin = 0.0f;
@@ -1064,7 +1075,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @param zoom
 	 *            DOCUMENT ME!
 	 */
-	private void setZoom(final double zoom, final boolean updateView) {
+	public void setZoom(final double zoom, final boolean updateView) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
 			m_viewportChanged = true;
@@ -1095,16 +1106,25 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				return;
 			}
 
-			m_networkCanvas.m_xCenter = (((double) m_extentsBuff[0]) + ((double) m_extentsBuff[2])) / 2.0d;
-			m_networkCanvas.m_yCenter = (((double) m_extentsBuff[1]) + ((double) m_extentsBuff[3])) / 2.0d;
+			// At this point, we actually want doubles
+			m_extentsBuffD[0] = (double)m_extentsBuff[0];
+			m_extentsBuffD[1] = (double)m_extentsBuff[1];
+			m_extentsBuffD[2] = (double)m_extentsBuff[2];
+			m_extentsBuffD[3] = (double)m_extentsBuff[3];
+
+			// Adjust the content based on the foreground canvas
+			m_foregroundCanvas.adjustBounds(m_extentsBuffD);
+			// Adjust the content based on the background canvas
+			m_backgroundCanvas.adjustBounds(m_extentsBuffD);
+
+			m_networkCanvas.m_xCenter = (m_extentsBuffD[0] + m_extentsBuffD[2]) / 2.0d;
+			m_networkCanvas.m_yCenter = (m_extentsBuffD[1] + m_extentsBuffD[3]) / 2.0d;
 
 			// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
 			final double zoom = Math.min(((double) m_networkCanvas.getWidth()) / 
-			                             (((double) m_extentsBuff[2]) - 
-			                              ((double) m_extentsBuff[0])), 
+			                             (m_extentsBuffD[2] - m_extentsBuffD[0]), 
 			                              ((double) m_networkCanvas.getHeight()) / 
-			                             (((double) m_extentsBuff[3]) - 
-			                              ((double) m_extentsBuff[1]))) * 0.98;
+			                             (m_extentsBuffD[3] - m_extentsBuffD[1])) * 0.98;
 			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
 			if (calledFromGetSnapshot) {
 				calledFromGetSnapshot = false;
@@ -1327,6 +1347,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			synchronized (m_lock) {
 				edge = ((DEdgeView) obj).getEdge();
 
+				model.getRow(edge,"VIEW").set("hidden", true);
 				if (!m_drawPersp.removeEdges(Collections.singletonList(edge)))
 					return false;
 
@@ -1373,6 +1394,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				nView.m_hiddenXMax = m_extentsBuff[2];
 				nView.m_hiddenYMax = m_extentsBuff[3];
 				m_drawPersp.removeNodes(Collections.singletonList(nnode));
+				model.getRow(nnode,"VIEW").set("hidden", true);
 				m_spacial.delete(nodeInx);
 				m_contentChanged = true;
 			}
@@ -1435,6 +1457,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					return false;
 				}
 
+				model.getRow(nnode,"VIEW").set("hidden", false);
 				if (!m_drawPersp.addNode(nnode))
 					return false;
 
@@ -1484,6 +1507,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 				newEdge = edge;
 
+				model.getRow(newEdge,"VIEW").set("hidden", false);
 				if (!m_drawPersp.addEdge(newEdge))
 					return false;
 
@@ -1849,7 +1873,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * DOCUMENT ME!
+	 * This method is called by the BirdsEyeView to get a snapshot of the graphics.
 	 *
 	 * @param img
 	 *            DOCUMENT ME!
@@ -1864,6 +1888,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @param scaleFactor
 	 *            DOCUMENT ME!
 	 */
+//TODO: Need to fix up scaling and sizing.  
 	public void drawSnapshot(Image img, GraphLOD lod, Paint bgPaint, double xCenter,
 	                         double yCenter, double scaleFactor) {
 		synchronized (m_lock) {
@@ -2234,7 +2259,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_networkCanvas.setBounds(x, y, width, height);
 		m_foregroundCanvas.setBounds(x, y, width, height);
 	}
-	
+
 	public void setSize(Dimension d) {
 		m_networkCanvas.setSize(d);
 	}
