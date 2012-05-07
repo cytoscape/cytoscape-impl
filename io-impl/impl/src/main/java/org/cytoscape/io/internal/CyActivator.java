@@ -145,7 +145,6 @@ public class CyActivator extends AbstractCyActivator {
 		BasicCyFileFilter pdfFilter = new BasicCyFileFilter(new String[]{"pdf"}, new String[]{"image/pdf"}, "PDF File",DataCategory.IMAGE, streamUtil);
 		BasicCyFileFilter psFilter = new BasicCyFileFilter(new String[]{"ps"}, new String[]{"image/ps"}, "Post Script (PS) File",DataCategory.IMAGE, streamUtil);
 		BasicCyFileFilter svgFilter = new BasicCyFileFilter(new String[]{"svg"}, new String[]{"image/svg"}, "Scalable Vector Graphics (SVG) File",DataCategory.IMAGE, streamUtil);
-		BasicCyFileFilter textTableFilter = new BasicCyFileFilter(new String[]{}, new String[]{"text/plain"}, "Any text file",DataCategory.TABLE, streamUtil);
 		BasicCyFileFilter attrsFilter = new BasicCyFileFilter(new String[]{"attrs"}, new String[]{"text/plain"}, "Any text file",DataCategory.TABLE, streamUtil);
 		BasicCyFileFilter sifFilter = new BasicCyFileFilter(new String[]{"sif"}, new String[]{"text/sif"}, "SIF files",DataCategory.NETWORK, streamUtil);
 		BasicCyFileFilter csvFilter = new BasicCyFileFilter(new String[]{"csv"}, new String[]{"text/plain"}, "CSV file",DataCategory.TABLE, streamUtil);
