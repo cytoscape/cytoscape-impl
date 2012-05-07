@@ -281,11 +281,7 @@ public class VisualStyleSerializer {
 				if (defValue != null) {
 					String sValue = null;
 					
-					try {
-						sValue = vp.toSerializableString(defValue);
-					} catch (UnsupportedOperationException uoe) {
-						// Just ignore
-					}
+					sValue = vp.toSerializableString(defValue);
 					
 					if (sValue != null)
 						vpModel.setDefault(sValue);
