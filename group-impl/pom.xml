@@ -126,6 +126,10 @@
 			<artifactId>guava-osgi</artifactId>
 			<version>9.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>session-api</artifactId>
+		</dependency>
 	</dependencies>
 </project>
 
