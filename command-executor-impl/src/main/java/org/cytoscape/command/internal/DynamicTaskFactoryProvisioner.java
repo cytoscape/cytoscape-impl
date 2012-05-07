@@ -3,6 +3,7 @@ package org.cytoscape.command.internal;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -39,6 +40,20 @@ public class DynamicTaskFactoryProvisioner {
 			@Override
 			public boolean isReady() {
 				return factory.isReady(applicationManager.getCurrentNetworkView());
+			}
+		};
+	}
+
+	public  TaskFactory createFor(final NetworkViewCollectionTaskFactory factory) {
+		return new TaskFactory() {
+			@Override
+			public TaskIterator createTaskIterator() {
+				return factory.createTaskIterator(applicationManager.getSelectedNetworkViews());
+			}
+			
+			@Override
+			public boolean isReady() {
+				return factory.isReady(applicationManager.getSelectedNetworkViews());
 			}
 		};
 	}

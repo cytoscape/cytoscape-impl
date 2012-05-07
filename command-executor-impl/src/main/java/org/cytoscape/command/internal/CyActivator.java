@@ -12,6 +12,7 @@ import org.cytoscape.work.TaskFactory;
 
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.util.*;
 
@@ -44,6 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,commandExecutorImpl,"addTaskFactory","removeTaskFactory",TaskFactory.class);
 		registerServiceListener(bc,commandExecutorImpl,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
 		registerServiceListener(bc,commandExecutorImpl,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
+		registerServiceListener(bc,commandExecutorImpl,"addNetworkViewCollectionTaskFactory","removeNetworkViewCollectionTaskFactory",NetworkViewCollectionTaskFactory.class);
 		registerServiceListener(bc,commandExecutorImpl,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
 
 		registerServiceListener(bc,interceptor,"addTunableHandlerFactory","removeTunableHandlerFactory",StringTunableHandlerFactory.class);

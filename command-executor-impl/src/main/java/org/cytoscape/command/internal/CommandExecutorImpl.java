@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.TaskMonitor;
 
@@ -59,6 +60,14 @@ public class CommandExecutorImpl {
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
+		removeTF(props);
+	}
+
+	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) {
+		addTF(new TFExecutor(factoryProvisioner.createFor(tf),interceptor), props);
+	}
+
+	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) {
 		removeTF(props);
 	}
 
