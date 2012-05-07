@@ -1,6 +1,10 @@
 package org.cytoscape.task.internal.hide;
 
 
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -8,6 +12,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkViewTaskTest;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
@@ -22,6 +28,7 @@ public class HideSelectedEdgesTaskTest extends AbstractNetworkViewTaskTest {
 	@Mock TaskMonitor tm;
 	@Mock CyEventHelper eventHelper;
 	@Mock UndoSupport undoSupport;
+	@Mock VisualMappingManager vmMgr;
 	
 	CyEdge edge1;
 	CyEdge edge2;
@@ -30,6 +37,8 @@ public class HideSelectedEdgesTaskTest extends AbstractNetworkViewTaskTest {
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
+		final VisualStyle vs = mock(VisualStyle.class);
+		when(vmMgr.getVisualStyle(any(CyNetworkView.class))).thenReturn(vs);
 		
 		final CyNetwork network = view.getModel();
 		final CyNode n1 = network.addNode();
@@ -46,10 +55,7 @@ public class HideSelectedEdgesTaskTest extends AbstractNetworkViewTaskTest {
 	
 	@Test(expected=NullPointerException.class)
 	public void testHideSelectedEdgesTask() throws Exception {
-		final HideSelectedEdgesTask task =
-			new HideSelectedEdgesTask(undoSupport, eventHelper, view);
-		
+		final HideSelectedEdgesTask task = new HideSelectedEdgesTask(undoSupport, eventHelper, vmMgr, view);
 		task.run(tm);
 	}
-
 }

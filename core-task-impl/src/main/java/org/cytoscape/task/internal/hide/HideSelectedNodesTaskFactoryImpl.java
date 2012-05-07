@@ -26,30 +26,33 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, write to the Free Software Foundation,
   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.task.internal.hide;
-
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
-
-public class HideSelectedNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements HideSelectedNodesTaskFactory{
+public class HideSelectedNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements
+		HideSelectedNodesTaskFactory {
+	
 	private final UndoSupport undoSupport;
 	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmMgr;
 
 	public HideSelectedNodesTaskFactoryImpl(final UndoSupport undoSupport,
-	                                    final CyEventHelper eventHelper)
-	{
+											final CyEventHelper eventHelper,
+											final VisualMappingManager vmMgr) {
 		this.undoSupport = undoSupport;
 		this.eventHelper = eventHelper;
+		this.vmMgr = vmMgr;
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new HideSelectedNodesTask(undoSupport, eventHelper, view));
-	} 
+		return new TaskIterator(new HideSelectedNodesTask(undoSupport, eventHelper, vmMgr, view));
+	}
 }

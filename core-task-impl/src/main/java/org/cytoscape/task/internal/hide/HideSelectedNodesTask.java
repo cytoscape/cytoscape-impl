@@ -29,15 +29,15 @@
 */
 package org.cytoscape.task.internal.hide;
 
-
 import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -45,26 +45,30 @@ import org.cytoscape.work.undo.UndoSupport;
 public class HideSelectedNodesTask extends AbstractNetworkViewTask {
 	private final UndoSupport undoSupport;
 	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmMgr;
 
 	public HideSelectedNodesTask(final UndoSupport undoSupport,
-	                             final CyEventHelper eventHelper, final CyNetworkView v)
-	{
+	                             final CyEventHelper eventHelper,
+	                             final VisualMappingManager vmMgr,
+	                             final CyNetworkView v) {
 		super(v);
 		this.undoSupport = undoSupport;
 		this.eventHelper = eventHelper;
+		this.vmMgr = vmMgr;
 	}
 
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
+		
 		final CyNetwork network = view.getModel();
-		undoSupport.postEdit(
-			new HideEdit(eventHelper, "Hide Selected Nodes", network, view));
-
-		final List<CyNode> selectedNodes =
-			CyTableUtil.getNodesInState(network, CyNetwork.SELECTED ,true);
+		undoSupport.postEdit(new HideEdit(eventHelper, "Hide Selected Nodes", network, view));
 		e.setProgress(0.3);
+		
+		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED ,true);
 		HideUtils.setVisibleNodes(selectedNodes, false, view);
 		e.setProgress(0.7);
+		
+		vmMgr.getVisualStyle(view).apply(view);
 		view.updateView();
 		e.setProgress(1.0);
 	} 

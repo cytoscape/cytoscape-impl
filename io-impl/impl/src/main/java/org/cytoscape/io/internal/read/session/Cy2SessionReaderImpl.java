@@ -539,7 +539,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 								final View<CyEdge> ev = view.getEdgeView(e);
 								
 								if (ev != null)
-									ev.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+									ev.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, false);
 								else
 									logger.error("Cannot restore hidden state of edge \"" + name
 											+ "\": Edge view not found.");
@@ -558,7 +558,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 								final View<CyNode> nv = view.getNodeView(n);
 
 								if (nv != null)
-									nv.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+									nv.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, false);
 								else
 									logger.error("Cannot restore hidden state of node \"" + name
 											+ "\": Node view not found.");

@@ -48,23 +48,41 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 
 abstract class HideUtils {
 
 	static void setVisibleNodes(Collection<CyNode> nodes, boolean visible, CyNetworkView view) {
 		final CyNetwork net = view.getModel();
+		
 		for (CyNode n : nodes) {
-			view.getNodeView(n).setVisualProperty(NODE_VISIBLE, visible);
+			if (visible)
+				view.getNodeView(n).clearValueLock(NODE_VISIBLE);
+			else
+				view.getNodeView(n).setLockedValue(NODE_VISIBLE, false);
 
-			for (CyNode n2 : net.getNeighborList(n, CyEdge.Type.ANY))
-				for (CyEdge e : net.getConnectingEdgeList(n, n2, CyEdge.Type.ANY))
-					view.getEdgeView(e).setVisualProperty(EDGE_VISIBLE, visible);
+			for (CyNode n2 : net.getNeighborList(n, CyEdge.Type.ANY)) {
+				for (CyEdge e : net.getConnectingEdgeList(n, n2, CyEdge.Type.ANY)) {
+					final View<CyEdge> ev = view.getEdgeView(e);
+					
+					if (visible)
+						ev.clearValueLock(EDGE_VISIBLE);
+					else
+						ev.setLockedValue(EDGE_VISIBLE, false);
+				}
+			}
 		}
 	}
 
 	static void setVisibleEdges(Collection<CyEdge> edges, boolean visible, CyNetworkView view) {
-		for (CyEdge e : edges)
-			view.getEdgeView(e).setVisualProperty(EDGE_VISIBLE, visible);
+		for (CyEdge e : edges) {
+			final View<CyEdge> ev = view.getEdgeView(e);
+					
+			if (visible)
+				ev.clearValueLock(EDGE_VISIBLE);
+			else
+				ev.setLockedValue(EDGE_VISIBLE, false);
+		}
 	}
 }

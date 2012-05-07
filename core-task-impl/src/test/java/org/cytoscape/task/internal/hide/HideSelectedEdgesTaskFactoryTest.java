@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
@@ -18,8 +19,9 @@ public class HideSelectedEdgesTaskFactoryTest {
 	public void testRun() throws Exception {
 		UndoSupport undoSupport = mock(UndoSupport.class);
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
-		HideSelectedEdgesTaskFactoryImpl factory =
-			new HideSelectedEdgesTaskFactoryImpl(undoSupport, eventHelper);
+		VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		
+		HideSelectedEdgesTaskFactoryImpl factory = new HideSelectedEdgesTaskFactoryImpl(undoSupport, eventHelper, vmMgr);
 
 		CyNetworkView view = mock(CyNetworkView.class);
 		
