@@ -73,7 +73,7 @@ public class CyActivator extends AbstractCyActivator {
 		AdvancedQueueAppender advancedAppender = new AdvancedQueueAppender(advancedQueue);
 		SimpleQueueAppender simpleAppender = new SimpleQueueAppender(simpleQueue);
 		StatusBarQueueAppender statusBarAppender = new StatusBarQueueAppender(statusBarQueue);
-		CytoStatusBar cytoStatusBar = new CytoStatusBar(cySwingApplicationRef,"/user-trash.png");
+		CytoStatusBar cytoStatusBar = new CytoStatusBar(cySwingApplicationRef,"/user-trash.png", "/logConsole.png");
 		StatusBarUpdater statusBarUpdater = new StatusBarUpdater(cytoStatusBar,statusBarQueue,statusBarConfigMap);
 		ConsoleTaskFactory consoleTaskFactory = new ConsoleTaskFactory(simpleQueue,advancedQueue,executorService,cytoStatusBar,cySwingApplicationRef,taskManagerRef,logViewConfigMap,logViewConfigMap);
 		

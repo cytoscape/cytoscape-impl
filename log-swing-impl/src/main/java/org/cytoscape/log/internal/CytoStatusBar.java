@@ -21,10 +21,12 @@ class CytoStatusBar extends JPanel {
 	String		lastMessage = null;
 	private final int uiUpdateDelay = 500;
 	private final String trashIconPath;
+	private final String logConsoleIcon;
 
-	public CytoStatusBar(CySwingApplication app, String trashIconPath) {
+	public CytoStatusBar(CySwingApplication app, String trashIconPath, String logIconPath) {
 		super();
 		this.trashIconPath = trashIconPath;
+		this.logConsoleIcon = logIconPath;
 		initGui();
 		app.getStatusToolBar().add(panel);
 	}
@@ -32,7 +34,7 @@ class CytoStatusBar extends JPanel {
 	private void initGui() {
 		panel = new JPanel(new GridBagLayout());
 
-		statusMessage = new JButton();
+		statusMessage = new JButton(new ImageIcon(getClass().getResource(logConsoleIcon)));
 		statusMessage.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		setFontSize(statusMessage, 9);
 		statusMessage.setToolTipText("Open Log Console");
@@ -62,17 +64,18 @@ class CytoStatusBar extends JPanel {
 		// status
 		JPanel panel1 = new JPanel(new GridBagLayout());
 		panel1.setBorder(new EtchedBorder());
-		panel1.add(statusMessage, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-		panel.add(panel1, new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 3, 2, 1), 0, 0));
+		panel1.add(statusMessage, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		panel1.add(performGC, new GridBagConstraints(1, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		panel.add(panel1, new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(3, 1, 2, 2), 0, 0));
 
 		// memory
 		JPanel panel2 = new JPanel(new GridBagLayout());
 		panel2.setBorder(new EtchedBorder());
 		JPanel panel3 = new JPanel(new GridBagLayout());
 //		panel3.add(memoryAvailable, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		panel3.add(performGC, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		panel2.add(panel3, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-		panel.add(panel2, new GridBagConstraints(1, 0, 1, 1, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 1, 2, 2), 0, 0));
+//		panel3.add(performGC, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+//		panel2.add(panel3, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+//		panel.add(panel2, new GridBagConstraints(1, 0, 1, 1, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(3, 1, 2, 2), 0, 0));
 	}
 
 	static void setFontSize(Component component, int size) {
