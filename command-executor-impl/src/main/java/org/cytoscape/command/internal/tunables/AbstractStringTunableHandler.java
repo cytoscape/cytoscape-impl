@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractStringTunableHandler extends AbstractTunableHandler implements StringTunableHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(IntTunableHandler.class);
+	private static final String SPACE = " ";
+	private static final String EQUALS = "=";
+	private static final String QUOTE = "\"";
 
 	public AbstractStringTunableHandler(Field f, Object o, Tunable t) {
 		super(f,o,t);
@@ -31,11 +34,15 @@ public abstract class AbstractStringTunableHandler extends AbstractTunableHandle
 			if ( s == null )
 				return;
 
-			String[] args = s.split("\\s+");
+			String[] args = s.split(SPACE);
 
-			for ( String arg : args ) {
+			for ( int i = 0; i < args.length; i++ ) {
+				String arg = args[i];
 
-				String[] keyValue = arg.split("=");
+				if ( arg.isEmpty() )
+					continue;
+
+				String[] keyValue = arg.split(EQUALS);
 
 				if ( keyValue.length != 2 ) {
 					logger.warn("couldn't parse 'key=value' string from arg: '" + arg +"'");
@@ -44,6 +51,18 @@ public abstract class AbstractStringTunableHandler extends AbstractTunableHandle
 
 				String key = keyValue[0];
 				String value = keyValue[1];
+
+				// process any quote marks
+				if ( value.startsWith(QUOTE) ) {
+
+					// get additional strings from args that are part of this value
+					while ( value.startsWith(QUOTE) && !value.endsWith(QUOTE))  {
+						value = value + SPACE + args[++i]; 
+					}
+
+					// strip off quote marks
+					value = value.substring(1,value.length()-1);
+				}
 
 				if ( key.equals(getName()) ) {
 					Object result;

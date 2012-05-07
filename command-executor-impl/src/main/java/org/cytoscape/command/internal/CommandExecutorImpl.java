@@ -107,21 +107,6 @@ public class CommandExecutorImpl {
 		}
 	}
 
-	// If the key matches the first chars of the line, then
-	// return the remainder of the line. Otherwise return null.
-	private String peel(String line, String key) {
-		if ( line.length() < key.length() ) {
-			return null;
-		}
-		final String match = line.substring(0,key.length());
-		final String remainder = line.substring(key.length(),line.length()).trim(); 
-		if ( match.equals(key) ) {
-			return remainder;
-		} else {
-			return null;
-		}
-	}
-
 	public void executeList(List<String> commandLines, TaskMonitor tm) throws Exception {
 
 		double size = (double)commandLines.size();
