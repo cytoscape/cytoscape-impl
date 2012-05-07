@@ -422,7 +422,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	
 	/**
-	 * Create an instance as a ViewModel.
 	 * 
 	 * @param model
 	 * @param dataFactory
@@ -430,14 +429,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @param undo
 	 * @param spacialFactory
 	 * @param dingLexicon
-	 * @param nodeViewTFs
-	 * @param edgeViewTFs
-	 * @param emptySpaceTFs
-	 * @param dropNodeViewTFs
-	 * @param dropEmptySpaceTFs
+	 * @param vtfl
 	 * @param manager
-	 * @param eventHelper
+	 * @param cyEventHelper
 	 * @param tableMgr
+	 * @param annMgr
+	 * @param dingGraphLOD
 	 */
 	public DGraphView(final CyNetwork model, CyTableFactory dataFactory,
 			CyRootNetworkManager cyRoot, UndoSupport undo,
@@ -1711,12 +1708,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return m_networkCanvas.m_lod[0];
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param textAsShape
-	 *            DOCUMENT ME!
-	 */
+
+	@Override
 	public void setPrintingTextAsShape(boolean textAsShape) {
 		synchronized (m_lock) {
 			m_printLOD.setPrintingTextAsShape(textAsShape);
@@ -2325,13 +2318,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return this.props;
 	}
 	
-//	@Override
-//	public void setProperties(String key, String value) {
-//		this.props.setProperty(key, value);
-//		if (key.equals("exportTextAsShape"))
-//			setPrintingTextAsShape(Boolean.parseBoolean(value));
-//		
-//	}
 	
 	/**
 	 * Common API for all rendering engines.
@@ -2421,6 +2407,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public void printCanvas(Graphics printCanvas) {
 		logger.debug("PrintCanvas called: " + printCanvas);
+		
+		// Check properties related to printing:
+		boolean exportAsShape = false;
+		final String exportAsShapeString = props.getProperty("exportTextAsShape");
+		if (exportAsShapeString != null)
+			exportAsShape = Boolean.parseBoolean(exportAsShapeString);
+		setPrintingTextAsShape(exportAsShape);
+		
 		print(printCanvas);
 		logger.debug("PrintCanvas Done: ");
 	}
@@ -2533,31 +2527,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			return;
 		
 		final VisualProperty<?> vp = vpOriginal;
-//		final VisualLexiconNode treeNode = dingLexicon.getVisualLexiconNode(vpOriginal);
-//		if (treeNode == null)
-//			return;
-//
-//		if (treeNode.getChildren().size() != 0) {
-//			// This is not leaf.
-//			final Collection<VisualLexiconNode> children = treeNode.getChildren();
-//			boolean shouldApply = false;
-//			for (VisualLexiconNode node : children) {
-//				if (node.isDepend()) {
-//					shouldApply = true;
-//					break;
-//				}
-//			}
-//
-//			if (shouldApply == false)
-//				return;
-//		}
-//
-//		if (treeNode.isDepend()) {
-//			// Do not use this. Parent will be applied.
-//			return;
-//		} else
-//			vp = vpOriginal;
-		
 
 		if (vp == DVisualLexicon.NETWORK_NODE_SELECTION) {
 			boolean b = ((Boolean) value).booleanValue();
