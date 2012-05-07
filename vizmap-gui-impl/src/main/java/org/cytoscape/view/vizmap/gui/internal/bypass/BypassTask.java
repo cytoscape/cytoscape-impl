@@ -5,6 +5,7 @@ import java.awt.Component;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -66,7 +67,8 @@ public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 			view.clearValueLock(vp);
 		}
 
-		selectedManager.getCurrentVisualStyle().apply(view);
+		final CyRow row = networkView.getModel().getRow(view.getModel());
+		selectedManager.getCurrentVisualStyle().apply(row, view);
 		networkView.updateView();
 	}
 }

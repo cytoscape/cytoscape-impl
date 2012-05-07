@@ -16,8 +16,7 @@ public class VisualStyleFactoryTest extends AbstractVisualStyleFactoryTest {
 	public void setUp() throws Exception {
 		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final CyNetworkManager cyNetworkManagerServiceRef = mock(CyNetworkManager.class);
-		factory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, cyNetworkManagerServiceRef);
+		factory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar);
 	}
 
 	@After

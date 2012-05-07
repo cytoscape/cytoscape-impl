@@ -1,18 +1,25 @@
 package org.cytoscape.view.vizmap;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -20,8 +27,11 @@ import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
 import org.junit.Before;
+import org.junit.Test;
 
 public class VisualStyleTest extends AbstractVisualStyleTest {
+	
+	private static final int NETWORK_SIZE = 1000;
 
 	@Before
 	public void setUp() throws Exception {
@@ -60,10 +70,53 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		when(lexManager.getAllVisualLexicon()).thenReturn(lexSet);
 
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final CyNetworkManager cyNetworkManagerServiceRef = mock(CyNetworkManager.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, cyNetworkManagerServiceRef);
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar);
 		originalTitle = "Style 1";
 		newTitle = "Style 2";
 		style = visualStyleFactory.createVisualStyle(originalTitle);
 	}
+	
+	@Test
+	public void testApplyPerformance() throws Exception {
+		
+		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
+		final CyNetwork largeNetwork = nvts.getNetworkFactory().createNetwork();
+		for(int i=0; i<NETWORK_SIZE; i++) {
+			CyNode node = largeNetwork.addNode();
+		}
+		
+		CyNetworkView largeNetworkView = nvts.getNetworkViewFactory().createNetworkView(largeNetwork);
+		
+		final long start = System.currentTimeMillis();
+		style.apply(largeNetworkView);
+		final long endNetwork = System.currentTimeMillis()-start;
+		
+		System.out.println("* Apply to network takes " + endNetwork + " msec.");
+		
+		
+		// Pick 10 random nodes in the network
+		final List<View<CyNode>> views = new ArrayList<View<CyNode>>(largeNetworkView.getNodeViews());
+		Set<View<CyNode>> targets = new HashSet<View<CyNode>>();
+		for(int i=0; i<10; i++) {
+			double rand = Math.random();
+			int index = (int) (NETWORK_SIZE*rand);
+			if(index<0)
+				index=0;
+			else if(index>NETWORK_SIZE-1)
+				index = NETWORK_SIZE-1;
+			
+			targets.add(views.get(index));
+		}
+		
+		// Apply to individual views
+		final long start2 = System.currentTimeMillis();
+		for(final View<CyNode> view:targets)
+			style.apply(largeNetwork.getRow(view.getModel()), view);
+		final long endNode = System.currentTimeMillis()-start2;
+		
+		System.out.println("* Apply to nodes takes " + endNode + " msec.");
+		
+		assertTrue(endNetwork>endNode);
+	}
+	
 }

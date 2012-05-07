@@ -44,9 +44,10 @@ import java.util.Set;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -80,7 +81,7 @@ public class VisualStyleImpl implements VisualStyle {
 	 * @param lexManager
 	 */
 	public VisualStyleImpl(final String title, final VisualLexiconManager lexManager,
-			final CyServiceRegistrar serviceRegistrar, final CyNetworkManager networkManager) {
+			final CyServiceRegistrar serviceRegistrar) {
 
 		if (lexManager == null)
 			throw new NullPointerException("Lexicon Manager is missing.");
@@ -96,8 +97,8 @@ public class VisualStyleImpl implements VisualStyle {
 		// Init Apply handlers for node, egde and network.
 		this.applyHandlersMap = new HashMap<Class<? extends CyIdentifiable>, ApplyHandler>();
 		applyHandlersMap.put(CyNetwork.class, new ApplyToNetworkHandler(this, lexManager));
-		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager, networkManager));
-		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager, networkManager));
+		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager));
+		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager));
 
 		dependencies = new HashSet<VisualPropertyDependency<?>>();
 
@@ -149,17 +150,23 @@ public class VisualStyleImpl implements VisualStyle {
 		styleDefaults.put(vp, value);
 	}
 
+	
+	@Override
+	public void apply(final CyNetworkView networkView) {
+		@SuppressWarnings("unchecked") // This is always safe.
+		final ApplyHandler<CyNetwork> networkViewHandler = applyHandlersMap.get(CyNetwork.class);
+		networkViewHandler.apply(null, networkView);
+	}
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void apply(final View<? extends CyIdentifiable> view) {
+	public void apply(final CyRow row, final View<? extends CyIdentifiable> view) {
 		if (view == null) {
 			logger.warn("Tried to apply Visual Style to null view");
 			return;
 		}
-
-		final long start = System.currentTimeMillis();
 
 		ApplyHandler handler = null;
 		for (final Class<?> viewType : applyHandlersMap.keySet()) {
@@ -172,9 +179,7 @@ public class VisualStyleImpl implements VisualStyle {
 		if (handler == null)
 			throw new IllegalArgumentException("This view type is not supported: " + view.getClass());
 
-		handler.apply(view);
-
-		logger.info(title + ": Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
+		handler.apply(row, view);
 	}
 
 	/**

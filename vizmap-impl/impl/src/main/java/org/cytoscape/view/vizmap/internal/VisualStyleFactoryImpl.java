@@ -23,18 +23,15 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	private final VisualLexiconManager lexManager;
 	private final CyServiceRegistrar serviceRegistrar;
-	private final CyNetworkManager networkManager;
 
-	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar,
-			final CyNetworkManager networkManager) {
+	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar) {
 		this.lexManager = lexManager;
 		this.serviceRegistrar = serviceRegistrar;
-		this.networkManager = networkManager;
 	}
 
 	@Override
 	public VisualStyle createVisualStyle(final VisualStyle original) {
-		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager, serviceRegistrar,networkManager);
+		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager, serviceRegistrar);
 
 		copyDefaultValues(original, copy);
 		copyMappingFunctions(original, copy);
@@ -44,7 +41,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	@Override
 	public VisualStyle createVisualStyle(final String title) {
-		return new VisualStyleImpl(title, lexManager, serviceRegistrar, networkManager);
+		return new VisualStyleImpl(title, lexManager, serviceRegistrar);
 	}
 
 	private <V, S extends V> void copyDefaultValues(final VisualStyle original, final VisualStyle copy) {
