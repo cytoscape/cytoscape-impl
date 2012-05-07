@@ -1,7 +1,6 @@
 package org.cytoscape.group.internal;
 
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
@@ -15,16 +14,11 @@ import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SessionEventsListener implements NetworkAddedListener, SessionLoadedListener,
-		SessionAboutToBeSavedListener {
+public class SessionEventsListener implements NetworkAddedListener/*, SessionLoadedListener,
+		SessionAboutToBeSavedListener*/ {
 
 	private final CyGroupFactory groupFactory;
 	private final CyGroupManager groupMgr;
@@ -48,23 +42,23 @@ public class SessionEventsListener implements NetworkAddedListener, SessionLoade
 		// TODO: handle imported XGMML
 	}
 	
-	@Override
-	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		// TODO: anything to be done here?
-	}
-
-	@Override
-	public void handleEvent(SessionLoadedEvent e) {
-		final CySession sess = e.getLoadedSession();
-
-		if (sess != null) {
-			final Set<CyNetwork> networks = sess.getNetworks();
-			
-			for (final CyNetwork net : networks) {
-				recreateGroups(net);
-			}
-		}
-	}
+//	@Override
+//	public void handleEvent(SessionAboutToBeSavedEvent e) {
+//		// TODO: anything to be done here?
+//	}
+//
+//	@Override
+//	public void handleEvent(SessionLoadedEvent e) {
+//		final CySession sess = e.getLoadedSession();
+//
+//		if (sess != null) {
+//			final Set<CyNetwork> networks = sess.getNetworks();
+//			
+//			for (final CyNetwork net : networks) {
+//				recreateGroups(net);
+//			}
+//		}
+//	}
 	
 	private void recreateGroups(final CyNetwork net) {
 		// Look for possible meta-nodes by inspecting the groups metadata in the network's hidden table
