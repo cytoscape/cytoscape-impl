@@ -1,6 +1,6 @@
 package org.cytoscape.edge.bundler.internal;
 
-public class EdgeBundlerRunner implements Runnable{
+public class EdgeBundlerRunner implements Runnable {
 
 	private final int ni;
 	private final int numNubs;

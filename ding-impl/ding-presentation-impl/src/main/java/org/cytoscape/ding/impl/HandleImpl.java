@@ -18,9 +18,9 @@ public class HandleImpl implements Handle {
 	
 	private static final String DELIMITER =",";
 	
-	private Double cosTheta = 0.5d;
-	private Double sinTheta = 0.5d;
-	private Double ratio = 0.5;
+	private double cosTheta = Double.NaN;
+	private double sinTheta = Double.NaN;
+	private double ratio = Double.NaN;
 	
 	// Original handle location
 	private double x = 0;
@@ -89,13 +89,15 @@ public class HandleImpl implements Handle {
 		// Distance from source to target (Edge length)
 		final double v1x = tX - sX;
 		final double v1y = tY - sY;
-		final double dist1 = Math.sqrt(Math.pow(v1x, 2) + Math.pow(v1y, 2));
+//		final double dist1 = Math.sqrt(Math.pow(v1x, 2) + Math.pow(v1y, 2));
+		final double dist1 = Point2D.Double.distance(sX, sY, tX, tY);
 		
 		// Vector v2
 		// Distance from source to current handle
 		final double v2x = hX - sX;
 		final double v2y = hY - sY;
-		final double dist2 = Math.sqrt(Math.pow(v2x, 2) + Math.pow(v2y, 2));
+//		final double dist2 = Math.sqrt(Math.pow(v2x, 2) + Math.pow(v2y, 2));
+		final double dist2 = Point2D.Double.distance(sX, sY, hX, hY);
 		
 		// Ratio of vector lengths
 		ratio = dist2/dist1; 
@@ -104,8 +106,12 @@ public class HandleImpl implements Handle {
 		final double dotProduct = (v1x * v2x) + (v1y * v2y);
 		cosTheta = dotProduct/(dist1*dist2);
 		
+		// Avoid rounding problem
+		if(cosTheta>1.0d)
+			cosTheta = 1.0d;
+		
 		// Theta is the angle between v1 and v2
-		final double theta = Math.acos(cosTheta);
+		double theta = Math.acos(cosTheta);
 		sinTheta = Math.sin(theta);
 		
 //		System.out.println("\n\n## Dot prod = " + dotProduct);
@@ -116,6 +122,10 @@ public class HandleImpl implements Handle {
 		final Point2D validate = convert(sX, sY, tX, tY);
 		if(Math.abs(validate.getX()-hX) > 2 || Math.abs(validate.getY()-hY) > 2)
 			sinTheta = -sinTheta;
+		
+		// Validate
+		if(theta == Double.NaN ||sinTheta == Double.NaN)
+			throw new IllegalStateException("Invalid angle: " + theta +". Cuased by cos(theta) = " + cosTheta);
 	}
 	
 	/**
@@ -129,7 +139,6 @@ public class HandleImpl implements Handle {
 	 */
 	private Point2D convert(double sX, double sY,double tX, double tY ) {
 		final Point2D newPoint = new Point2D.Double();
-		
 		// Original edge vector v = (vx, vy). (from source to target)
 		final double vx = tX - sX;
 		final double vy = tY - sY;
@@ -150,7 +159,6 @@ public class HandleImpl implements Handle {
 		
 		return newPoint;
 	}
-	
 
 
 	/**
@@ -158,20 +166,18 @@ public class HandleImpl implements Handle {
 	 */
 	@Override
 	public String getSerializableString() {
-		if(cosTheta == null || sinTheta  == null || ratio == null)
-			return null;
-		return cosTheta.toString() + DELIMITER + sinTheta.toString() + DELIMITER + ratio;
+		return cosTheta + DELIMITER + sinTheta + DELIMITER + ratio;
 	}
 	
-	private void setCos(final Double cos) {
+	private void setCos(final double cos) {
 		this.cosTheta = cos;
 	}
 	
-	private void setSin(final Double sin) {
+	private void setSin(final double sin) {
 		this.sinTheta = sin;
 	}
 	
-	private void setRatio(final Double ratio) {
+	private void setRatio(final double ratio) {
 		this.ratio = ratio;
 	}
 	
@@ -189,9 +195,9 @@ public class HandleImpl implements Handle {
 			return null;
 		
 		try {
-			final Double cos = Double.parseDouble(parts[0]);
-			final Double sin = Double.parseDouble(parts[1]);
-			final Double ratio = Double.parseDouble(parts[2]);
+			final double cos = Double.valueOf(parts[0]);
+			final double sin = Double.valueOf(parts[1]);
+			final double ratio = Double.valueOf(parts[2]);
 			
 			HandleImpl handle = new HandleImpl(0, 0);
 			handle.setSin(sin);

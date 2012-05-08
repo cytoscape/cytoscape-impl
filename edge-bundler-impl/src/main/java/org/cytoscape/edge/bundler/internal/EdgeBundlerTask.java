@@ -4,6 +4,7 @@
 
 package org.cytoscape.edge.bundler.internal;
 
+import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,6 +19,7 @@ import org.cytoscape.view.model.View;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -73,6 +75,8 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		this.selection = selection;
 	}
 
+	
+	@Override
 	public void run(TaskMonitor tm) {
 
 		// Check tunables
@@ -140,7 +144,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		edgeLength = new double[numEdges];
 
 		ei = 0;
-		for (View<CyEdge> e : edges) {
+		for (final View<CyEdge> e : edges) {
 			// System.out.println("SUID: "+e.getModel().getSUID());
 
 			View<CyNode> eSource = view.getNodeView(e.getModel().getSource());
@@ -153,13 +157,6 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			edgePos[0][1][ei] = eSource.getVisualProperty(NODE_Y_LOCATION);
 			edgePos[1][0][ei] = eTarget.getVisualProperty(NODE_X_LOCATION);
 			edgePos[1][1][ei] = eTarget.getVisualProperty(NODE_Y_LOCATION);
-
-			// if (edgePos[0][0][ei]>edgePos[1][0][ei]) {double temp =
-			// edgePos[0][0][ei]; edgePos[0][0][ei] = edgePos[1][0][ei];
-			// edgePos[1][0][ei] = temp;}
-			// if (edgePos[0][1][ei]>edgePos[1][1][ei]) {double temp =
-			// edgePos[0][1][ei]; edgePos[0][1][ei] = edgePos[1][1][ei];
-			// edgePos[1][1][ei] = temp;}
 
 			double diffx = edgePos[1][0][ei] - edgePos[0][0][ei];
 			double diffy = edgePos[1][1][ei] - edgePos[0][1][ei];
@@ -174,13 +171,12 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			ei++;
 		}
 
-		// networkScale = computeNetworkScale();
 		computeEdgeCompatability();
 
 		// Simulating physics
 		tm.setStatusMessage("Simulating physics");
 		double time = System.nanoTime();
-		double[][][] forces = new double[numNubs][2][numEdges]; // Nub, X/Y,
+		final double[][][] forces = new double[numNubs][2][numEdges]; // Nub, X/Y,
 																// edgeIndex
 		for (int iteri = 0; iteri < maxIterations; iteri++) {
 			if (this.cancelled) {
@@ -212,61 +208,8 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		}
 
 		render(edges);
-
-		// double minX = 0;
-		// double maxX = 0;
-		// double minY = 0;
-		// double maxY = 0;
-		//
-		//
-		// for (ei=0;ei<edgeLength.length;ei++)
-		// for (int ni=0;ni<numNubs;ni++)
-		// {
-		// double x = nubs[ni][0][ei];
-		// double y = nubs[ni][1][ei];
-		//
-		// if (x<minX) minX = x;
-		// if (x>maxX) maxX = x;
-		// if (y<minY) minY = y;
-		// if (y>maxY) maxY = y;
-		//
-		// if (Double.isInfinite(x) || Double.isInfinite(y) || Double.isNaN(x)
-		// || Double.isNaN(y))
-		// System.out.println("Infinite or NaN positions detected!");
-		// }
-		//
-		// System.out.println(minX+":"+maxX+",  "+minY+":"+maxY);
 	}
 
-	private double computeNetworkScale() {
-		double centerX = 0;
-		double centerY = 0;
-
-		for (int ei = 0; ei < edgeLength.length; ei++) {
-			centerX += edgePos[0][0][ei] + edgePos[1][0][ei];
-			centerY += edgePos[0][1][ei] + edgePos[1][1][ei];
-		}
-
-		centerX /= 2.0 * edgeLength.length;
-		centerY /= 2.0 * edgeLength.length;
-
-		double[] dist = new double[2 * edgeLength.length];
-
-		for (int ei = 0; ei < edgeLength.length; ei++) {
-			double diff0x = edgePos[0][0][ei] - centerX;
-			double diff0y = edgePos[0][1][ei] - centerY;
-			double diff1x = edgePos[1][0][ei] - centerX;
-			double diff1y = edgePos[1][1][ei] - centerY;
-
-			dist[2 * ei] = Math.sqrt(diff0x * diff0x + diff0y * diff0y);
-			dist[2 * ei + 1] = Math.sqrt(diff1x * diff1x + diff1y * diff1y);
-		}
-
-		Arrays.sort(dist);
-		double scale = dist[dist.length / 2];
-
-		return scale;
-	}
 
 	private boolean isConverged(double[][][] forces, double threshold) {
 		for (int ei = 0; ei < edgeLength.length; ei++)
@@ -280,37 +223,37 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		return true;
 	}
 
-	private void render(Collection<View<CyEdge>> edges) {
-		DiscreteMapping<Long, Bend> function = (DiscreteMapping<Long, Bend>) discreteFactory
+	private final void render(final Collection<View<CyEdge>> edges) {
+		// Create new discrete mapping for edge SUID to Edge Bend
+		final DiscreteMapping<Long, Bend> function = (DiscreteMapping<Long, Bend>) discreteFactory
 				.createVisualMappingFunction(CyTable.SUID, Long.class, null, EDGE_BEND);
 
 		int ei = 0;
-		for (View<CyEdge> e : edges) {
-			View<CyNode> eSource = view.getNodeView(e.getModel().getSource());
-			View<CyNode> eTarget = view.getNodeView(e.getModel().getTarget());
+		for (final View<CyEdge> edge : edges) {
+			final View<CyNode> eSource = view.getNodeView(edge.getModel().getSource());
+			final View<CyNode> eTarget = view.getNodeView(edge.getModel().getTarget());
 
+			// Ignore self-edge
 			if (eSource.getSUID().equals(eTarget.getSUID()))
 				continue;
 
-			Bend b = bf.createBend();
-			List<Handle> hlist = b.getAllHandles();
-
+			final Bend bend = bf.createBend();
+			final List<Handle> hlist = bend.getAllHandles();
 			for (int ni = 0; ni < numNubs; ni++) {
-				double x = nubs[ni][0][ei];
-				double y = nubs[ni][1][ei];
-
-				Handle h = hf.createHandle(0, 0);
-				h.defineHandle(view, e, x, y);
+				final double x = nubs[ni][0][ei];
+				final double y = nubs[ni][1][ei];
+				final Handle h = hf.createHandle(0, 0);
+				h.defineHandle(view, edge, x, y);
 				hlist.add(h);
 			}
-
-			function.putMapValue(e.getModel().getSUID(), b);
+			
+			function.putMapValue(edge.getModel().getSUID(), bend);
 			ei++;
 		}
 
-		vmm.getVisualStyle(view).addVisualMappingFunction(function);
-
-		vmm.getVisualStyle(view).apply(view);
+		final VisualStyle style = vmm.getVisualStyle(view);
+		style.addVisualMappingFunction(function);
+		style.apply(view);
 		view.updateView();
 	}
 
@@ -461,7 +404,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		return new double[] { x, y };
 	}
 
-	private void updateForces(double[][][] forces) {
+	private void updateForces(final double[][][] forces) {
 		// Spring forces
 		for (int ei = 0; ei < edgeLength.length; ei++)
 			for (int ni = 0; ni < numNubs; ni++) {
