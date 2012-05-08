@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -742,7 +743,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 					new ValidatedObjectAndEditStringComparator(rowDataType));
 	}
 	
-
-
+	@Override
+	public void paint(Graphics graphics) {
+		synchronized (getModel()) {
+			super.paint(graphics);
+		}
+	}
 }
 

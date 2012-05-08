@@ -320,25 +320,16 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		
 		final Collection<RowSetRecord> rows = e.getPayloadCollection();
 		
-		if (regularViewMode) {
-			for (final RowSetRecord rowSet : rows)
-				handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
-		} else {
-			table.clearSelection();
-			fireTableDataChanged();
-			SwingUtilities.invokeLater(new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						if(tableManager.getGlobalTables().contains(dataTable) == false)
-							bulkUpdate(rows);
-					}
-					catch (Exception e){
-						// do nothing, ignore this exception
-					}
-				}
-			});
+		synchronized (this) {
+			if (regularViewMode) {
+				for (final RowSetRecord rowSet : rows)
+					handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
+			} else {
+				table.clearSelection();
+				fireTableDataChanged();
+				if(tableManager.getGlobalTables().contains(dataTable) == false)
+					bulkUpdate(rows);
+			}
 		}
 	}
 
