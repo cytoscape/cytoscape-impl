@@ -31,26 +31,24 @@ package org.cytoscape.io.webservice.biomart;
 
 import javax.naming.ConfigurationException;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.io.webservice.biomart.task.ImportTableTask;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
 import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.ServiceException;
 
 
 /**
- * Biomart Web Service Client.
+ * BioMart Web Service Client.
  * 
  */
-public class BiomartClient extends AbstractWebServiceGUIClient {
+public class BiomartClient extends AbstractWebServiceGUIClient implements TableImportWebServiceClient {
 	
 	private final CyTableFactory tableFactory;
 	private final BiomartRestClient restClient;

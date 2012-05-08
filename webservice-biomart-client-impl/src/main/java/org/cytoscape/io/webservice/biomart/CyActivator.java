@@ -21,9 +21,9 @@ public class CyActivator extends AbstractCyActivator {
 		super();
 	}
 
-
 	public void start(BundleContext bc) {
 
+		// Import services
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		DialogTaskManager taskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
@@ -32,15 +32,14 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory cyTableFactoryServiceRef = getService(bc,CyTableFactory.class);
 		MapTableToNetworkTablesTaskFactory mapNetworkAttrTFServiceRef = getService(bc,MapTableToNetworkTablesTaskFactory.class);
 		
+		
+		// Export services
 		BiomartRestClient biomartRestClient = new BiomartRestClient("http://www.biomart.org/biomart/martservice");
 		BiomartAttrMappingPanel biomartAttrMappingPanel = new BiomartAttrMappingPanel(taskManagerServiceRef,cyApplicationManagerServiceRef,cyTableManagerServiceRef,cyNetworkManagerServiceRef);
 		
 		BiomartClient biomartClient = new BiomartClient("BioMart Client","REST version of BioMart Web Service Client.",biomartRestClient,cyTableFactoryServiceRef,cySwingApplicationServiceRef,cyTableManagerServiceRef, biomartAttrMappingPanel, mapNetworkAttrTFServiceRef);
 		biomartAttrMappingPanel.setClient(biomartClient);
 		
-		//ShowBiomartGUIAction showBiomartGUIAction = new ShowBiomartGUIAction(biomartAttrMappingPanel,biomartClient,taskManagerServiceRef,cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
-		
-		//registerService(bc,showBiomartGUIAction,CyAction.class, new Properties());
 		registerAllServices(bc,biomartAttrMappingPanel, new Properties());
 		registerAllServices(bc,biomartClient, new Properties());
 	}
