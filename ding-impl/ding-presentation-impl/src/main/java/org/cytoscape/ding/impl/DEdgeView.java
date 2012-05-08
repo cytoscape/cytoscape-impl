@@ -54,7 +54,6 @@ import org.cytoscape.view.presentation.property.values.LineType;
 
 /**
  * Ding implementation of Edge View.
- *
  */
 public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, EdgeAnchors {
 	
@@ -764,6 +763,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 	}
 	
+	@Override
 	public void setBend(final Bend bend) {
 		synchronized (m_view.m_lock) {
 			m_view.m_edgeDetails.m_edgeBends.put(model, bend);
@@ -779,14 +779,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 	}
 
-	
-
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vpOriginal, V value) {
-		
-		final VisualProperty<?> vp = vpOriginal;
-
+	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value) {
 		// If value is null, simply use the VP's default value.
 		if(value == null)
 			value = (V) vp.getDefault();
@@ -880,6 +875,5 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		} else if(vp == DVisualLexicon.EDGE_BEND) {
 			setBend((Bend) value);
 		}		
-		visualProperties.put(vp, value);
 	}
 }

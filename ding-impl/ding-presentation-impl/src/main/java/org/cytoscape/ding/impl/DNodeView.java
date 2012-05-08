@@ -1146,11 +1146,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		return newCg;
 	}
-
+	
 	@Override
-	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
-		
-		VisualProperty<?> vp = vpOriginal;
+	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value) {
 		// Null means set value to VP's default.
 		if(value == null)
 			value = (V) vp.getDefault();
@@ -1233,7 +1231,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp instanceof ObjectPositionVisualProperty) {
 			applyCustomGraphicsPosition(vp, (ObjectPosition) value);
 		}
-		visualProperties.put(vp, value);
 	}
 
 	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {

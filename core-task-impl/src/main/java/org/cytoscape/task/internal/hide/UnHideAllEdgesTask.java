@@ -34,6 +34,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.undo.UndoSupport;
 
 import org.cytoscape.work.TaskMonitor;
@@ -42,24 +43,29 @@ import org.cytoscape.work.TaskMonitor;
 public class UnHideAllEdgesTask extends AbstractNetworkViewTask {
 	private final UndoSupport undoSupport;
 	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmMgr;
 
-	public UnHideAllEdgesTask(final UndoSupport undoSupport, final CyEventHelper eventHelper,
-	                          final CyNetworkView v)
-	{
+	public UnHideAllEdgesTask(final UndoSupport undoSupport,
+							  final CyEventHelper eventHelper,
+							  final VisualMappingManager vmMgr,
+							  final CyNetworkView v) {
 		super(v);
 		this.undoSupport = undoSupport;
 		this.eventHelper = eventHelper;
+		this.vmMgr = vmMgr;
 	}
 
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
+		
 		final CyNetwork network = view.getModel();
-		undoSupport.postEdit(
-			new HideEdit(eventHelper, "Show All Edges", network, view));
-
+		undoSupport.postEdit(new HideEdit(eventHelper, "Show All Edges", network, view));
 		e.setProgress(0.2);
+		
 		HideUtils.setVisibleEdges(network.getEdgeList(), true, view);
 		e.setProgress(0.7);
+		
+		vmMgr.getVisualStyle(view).apply(view);
 		view.updateView();
 		e.setProgress(1.0);
 	} 

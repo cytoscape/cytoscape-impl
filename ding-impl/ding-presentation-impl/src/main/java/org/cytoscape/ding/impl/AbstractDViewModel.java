@@ -42,23 +42,31 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		return suid;
 	}
 
+	@Override
+	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
+		visualProperties.put(vp, value);
+		
+		if (!isValueLocked(vp))
+			applyVisualProperty(vp, value);
+	}
 
 	@Override
 	public <T, V extends T> void setLockedValue(final VisualProperty<? extends T> vp, final V value) {
-		this.visualPropertyLocks.put(vp, value);
+		visualPropertyLocks.put(vp, value);
+		applyVisualProperty(vp, value);
 	}
 
 	@Override
 	public boolean isValueLocked(final VisualProperty<?> vp) {
-		if (visualPropertyLocks.get(vp) == null)
-			return false;
-		else
-			return true;
+		return visualPropertyLocks.get(vp) != null;
 	}
 
 	@Override
 	public void clearValueLock(final VisualProperty<?> vp) {
-		this.visualPropertyLocks.remove(vp);
+		visualPropertyLocks.remove(vp);
+		// Re-apply the regular visual property value
+		Object newValue = getVisualProperty(vp);
+		applyVisualProperty(vp, newValue);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -73,4 +81,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		} else
 			return (T) this.visualPropertyLocks.get(vp);
 	}
+	
+	protected abstract <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value);
 }

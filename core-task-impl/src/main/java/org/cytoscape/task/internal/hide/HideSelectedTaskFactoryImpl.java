@@ -34,6 +34,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.hide.HideSelectedTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -41,15 +42,17 @@ import org.cytoscape.work.undo.UndoSupport;
 public class HideSelectedTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements HideSelectedTaskFactory {
 	private final UndoSupport undoSupport;
 	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmMgr;
 
 	public HideSelectedTaskFactoryImpl(final UndoSupport undoSupport,
-	                               final CyEventHelper eventHelper)
-	{
+									   final CyEventHelper eventHelper,
+									   final VisualMappingManager vmMgr) {
 		this.undoSupport = undoSupport;
 		this.eventHelper = eventHelper;
+		this.vmMgr = vmMgr;
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new HideSelectedTask(undoSupport, eventHelper, view));
+		return new TaskIterator(new HideSelectedTask(undoSupport, eventHelper, vmMgr, view));
 	} 
 }
