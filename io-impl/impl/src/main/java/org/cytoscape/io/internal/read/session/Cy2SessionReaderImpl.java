@@ -29,6 +29,7 @@ package org.cytoscape.io.internal.read.session;
 
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
+import static org.cytoscape.io.internal.util.session.SessionUtil.IMAGES_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_ROOT;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_PROPS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
@@ -172,7 +173,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			}
 		} else if (entryName.endsWith(BOOKMARKS_FILE)) {
 			extractBookmarks(is, entryName);
-		} else {
+		} else if (!entryName.contains("/" + IMAGES_FOLDER)) {
 			logger.warn("Unknown entry found in session zip file!\n" + entryName);
 		}
 	}

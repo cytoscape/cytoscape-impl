@@ -49,6 +49,7 @@ public class SessionUtil {
 	public static final String NETWORK_VIEWS_FOLDER = "views/";
 	public static final String PROPERTIES_FOLDER = "properties/";
 	public static final String TABLES_FOLDER = "tables/";
+	public static final String IMAGES_FOLDER = "images/";
 	public static final String APPS_FOLDER = "apps/";
 	
 	public static final String BOOKMARKS_FILE = "session_bookmarks.xml";
