@@ -425,8 +425,6 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
 			final Object newRawValue) {
 		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
-			System.out.println("in handle row value updated for selected");
-
 			fireTableDataChanged();
 		} 
 	}
