@@ -1,6 +1,19 @@
 <?xml version="1.0"?>
 <project name="Cytoscape" default="usage" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
+<!-- =====================================================================================
+
+NOTE!  
+
+For this project to build, you need to install two additional ant libraries in your
+$ANT_HOME/lib directory.  They are the maven ant tasks and ant-contrib tasks.  The are
+available here: 
+
+	http://maven.apache.org/ant-tasks/index.html
+	http://ant-contrib.sourceforge.net/
+
+======================================================================================= -->
+
     <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 
 	<artifact:pom id="mypom" file="pom.xml" />
@@ -232,6 +245,7 @@
 
 		<delete file="manual.fo"/>
 		<delete file="manual_pdf.xml"/>
+
 		<delete dir="xsl/${docbook-xsl}"/>
 	</target>
 
