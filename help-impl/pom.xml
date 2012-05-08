@@ -1,0 +1,150 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <artifactId>impl-parent</artifactId>
+        <groupId>org.cytoscape</groupId>
+        <version>3.0.0-alpha8-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <bundle.symbolicName>org.cytoscape.help-impl</bundle.symbolicName>
+        <bundle.namespace>org.cytoscape.help.internal</bundle.namespace>
+    </properties>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>help-impl</artifactId>
+
+    <name>Cytoscape Help Impl (${project.artifactId})</name>
+
+    <packaging>jar</packaging>
+
+    <!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
+    <repositories>
+        <repository>
+            <id>cytoscape_snapshots</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <name>Cytoscape Snapshots</name>
+            <url>http://cytoscape.wodaklab.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>cytoscape_releases</id>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <name>Cytoscape Releases</name>
+            <url>http://cytoscape.wodaklab.org/nexus/content/repositories/releases/</url>
+        </repository>
+    </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2.1</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/html.xml</descriptor>
+            <descriptor>src/main/assembly/pdf.xml</descriptor>
+            <descriptor>src/main/assembly/javahelp.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.3</version>
+          <executions>
+            <execution>
+              <id>copy-html-images</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>copy-resources</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>target/docbkx/html/images</outputDirectory>
+                <resources>
+                  <resource>
+                    <directory>src/docbkx/images</directory>
+                 </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-javahelp-images</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>target/docbkx/javahelp/images</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/docbkx/images</directory>
+               </resource>
+            </resources>
+           </configuration>
+          </execution>
+          <execution>
+            <id>copy-pdf</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>target/docbkx/pdf</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/pdf</directory>
+               </resource>
+            </resources>
+           </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.agilejava.docbkx</groupId>
+        <artifactId>docbkx-maven-plugin</artifactId>
+        <version>2.0.9</version>
+        <executions>
+          <execution>
+            <goals>
+             <!--
+              <goal>generate-pdf</goal>
+              -->
+              <goal>generate-javahelp</goal>
+              <goal>generate-html</goal>
+            </goals>
+            <phase>generate-sources</phase>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.docbook</groupId>
+            <artifactId>docbook-xml</artifactId>
+            <version>4.4</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+

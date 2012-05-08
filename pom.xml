@@ -48,6 +48,7 @@
 		<module>sbml-impl</module>
 		<module>search-impl</module>
 		<module>session-impl</module>
+		<module>help-impl</module>
 		<module>swing-application-impl</module>
 		<module>table-browser-impl</module>
 		<module>table-import-impl</module>

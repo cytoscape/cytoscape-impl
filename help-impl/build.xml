@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<project name="Cytoscape" default="usage" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+	<artifact:pom id="mypom" file="pom.xml" />
+	<property name="basedir" value="."/>
+	<property name="xep.home" value="/cellar/users/mes/XEP"/>
+	<property name="images.dir" value="${basedir}/src/docbkx/images"/>
+	<property name="manual.dir" value="${basedir}/src/docbkx"/>
+	<propertyregex property="version" input="${mypom.version}" regexp="(\d+\.\d+\.\d+).*" select="\1" />
+
+	<available file="${xep.home}" property="xep-exists"/>
+
+	<target name="usage">
+		<echo message="----------------------------------------------------------"/>
+		<echo message="      Cytoscape Manual Fetching System "/>
+		<echo message="----------------------------------------------------------"/>
+		<echo message=" "/>
+		<echo message="  Primary target:"/>
+		<echo message="     ant update        # Will re-download manual and regenerate PDF."/>
+		<echo message=" "/>
+		<echo message="  Other targets:"/>
+		<echo message="     ant fetch-manual  # Just downloads manual. "/>
+		<echo message="     ant fetch-images  # Downloads manual and images."/>
+		<echo message="     ant prep-manual   # Downloads everything and processes raw xml."/>
+		<echo message="     ant create-pdf    # Runs prep-manual and then creates the PDF (same as update)."/>
+		<echo message=" "/>
+
+<echo message="----------------------------------------------------------"/>
+	</target>
+
+
+
+	<!--==============================================================-->
+	<!-- Init conditionally -->
+	<target name="init"
+	        depends="xep-init,non-xep-init"/>
+
+
+
+	<!--==============================================================-->
+	<!-- Init if XEP does not exist -->
+	<target name="non-xep-init"
+	        unless="xep-exists">
+		<echo message="XEP does not exist - No PDF for you!"/>
+	</target>
+
+	<!--==============================================================-->
+	<!-- Init if XEP does exist -->
+	<target name="xep-init"
+	        if="xep-exists">
+		<echo message="XEP exists - You get a PDF!"/>
+		<property name="xep.lib" value="${xep.home}/lib"/>
+		<taskdef name="xep" classname="com.renderx.xepx.ant.XEPTask"
+			 classpath="${xep.lib}/XEPTask.jar"/>
+
+		<path id="classpath">
+			<fileset dir="${xep.lib}">
+				<include name="xep*.jar"/>
+				<include name="xt.jar"/>
+			</fileset>
+			<pathelement path="${xep.lib}/XEPTask.jar"/>
+		</path>
+	</target>
+
+
+	<!--==============================================================-->
+	<!-- Fetch the DocBook XML from the wiki page. --> 
+	<target name="fetch-manual" 
+	        description="fetches the raw manual file"
+	        depends="init" >
+		<get src="http://wiki.cytoscape.org/Cytoscape_3/UserManual?action=show&amp;mimetype=text/docbook"
+		     dest="manual_raw.xml"/>
+
+	</target>
+
+
+	<!--==============================================================-->
+	<!-- Fetch the images from the wiki page. --> 
+	<target name="fetch-images" 
+	        description="Fetches the images from the manual"
+	        depends="fetch-manual" >
+
+		<!-- Correct the urls in the raw manual.  -->
+		<copy file="manual_raw.xml" 
+		      tofile="manual_tmp_fetch_images.xml" 
+		      overwrite="yes"
+			  encoding="utf-8">
+		      <filterchain>
+				<tokenfilter>
+					<replacestring from="wiki//wiki" 
+					               to="wiki"/>
+					<replacestring from="&amp;amp;#8594;" to="&amp;#8594;" />
+				</tokenfilter>
+		      </filterchain>
+		</copy>
+	
+		<!-- Strip out the image file names from the manual and create a new ant
+		build file that will fetch them.  -->
+		<xslt in="manual_tmp_fetch_images.xml" 
+		      out="fetch_images_tmp.xml" 
+		      classpathref="classpath"
+		      style="xsl/strip_images.xsl"/>
+
+		<!-- Change the file destination in the build file. -->
+		<copy file="fetch_images_tmp.xml" 
+		      tofile="fetch_image_files.xml" 
+		      overwrite="yes"
+			  encoding="utf-8">
+		      <filterchain>
+				<tokenfilter>
+					<replaceregex pattern='dest=\S+target=' 
+					              replace='dest="${images.dir}/' 
+						      flags="g"/>
+					<replacestring from='&amp;' to='&amp;amp;'/>
+				</tokenfilter>
+		      </filterchain>
+		</copy>
+
+		<!-- Run the new build file fetching all of the image files.  -->
+		<ant antfile="fetch_image_files.xml" target="strip"/>
+
+		<delete file="fetch_images_tmp.xml"/>
+		<delete file="fetch_image_files.xml"/>
+		<delete file="manual_tmp_fetch_images.xml"/>
+	</target>
+
+
+	<!--==============================================================-->
+	<!-- Substitute file locations and other XML problems -->
+	<target name="prep-manual" 
+	        description="Prep Manual XML"
+	        depends="fetch-manual">
+			<!-- change this once we have images!!!!!
+	        depends="fetch-images">
+			-->
+
+		<copy file="manual_raw.xml" 
+		      tofile="manual_tmp_prep.xml" 
+		      overwrite="yes"
+		      encoding="utf-8">
+		      <filterchain>
+				<tokenfilter>
+					<!-- this gets the images -->
+					<replaceregex pattern='http://wiki.cytoscape.org/Cytoscape_3/UserManual\S+target=' 
+					              replace='images/' 
+					              flags="g"/>
+					<replacestring from="&amp;amp;#8592;" to="&amp;#8592;" />
+					<replacestring from="&amp;amp;#8593;" to="&amp;#8593;" />
+					<replacestring from="&amp;amp;#8594;" to="&amp;#8594;" />
+					<replacestring from="&amp;amp;#8595;" to="&amp;#8595;" />
+					<replacestring from="@version@" to="${version}" />
+					<replacestring from="&lt;title&gt;Cytoscape_User_Manual&lt;/title&gt;" 
+					               to=  "&lt;title&gt;Cytoscape User Manual&lt;/title&gt;" />
+
+				</tokenfilter>
+		      </filterchain>
+		</copy>
+
+
+		<!-- Add id to section elements 
+		<xslt classpathref="classpath"
+		      in="manual_tmp_prep.xml"
+		      out="manual_tmp_prep2.xml"
+		      style="xsl/add_id_to_section.xsl"/>
+		-->
+
+		<!-- Remove revision history 
+		<xslt classpathref="classpath"
+		      in="manual_tmp_prep2.xml"
+		      out="${manual.dir}/manual.xml"
+		      style="xsl/remove_revision_history.xsl"/>
+		-->
+
+		<!-- TEMPORARY until the above transforms get uncommented! -->
+		<copy file="manual_tmp_prep.xml" 
+		      tofile="${manual.dir}/manual.xml"
+		      overwrite="yes"
+		      encoding="utf-8"/>
+
+		<delete file="manual_tmp_prep.xml"/>
+		<delete file="manual_tmp_prep2.xml"/>
+		<delete file="manual_raw.xml"/>
+	</target> 
+
+
+	<!--==============================================================-->
+	<!-- Create the manual PDF file.  -->
+	<target name="create-pdf" 
+	        description="Create Cytoscape Manual PDF"
+	        depends="prep-manual"
+	        if="xep-exists">
+
+		<property name="docbook-xsl" value="docbook-xsl-1.75.2"/>
+		<property name="xsl" value="${basedir}/xsl/${docbook-xsl}"/>
+		<unzip src="${basedir}/xsl/${docbook-xsl}.zip" 
+		       dest="${basedir}/xsl" />
+
+		<!-- so that images scale correctly -->
+		<copy file="${manual.dir}/manual.xml" 
+		      tofile="manual_pdf.xml" 
+		      overwrite="yes"
+			  encoding="utf-8">
+		      <filterchain>
+				<tokenfilter>
+					<replacestring from="imagedata fileref" 
+					               to="imagedata scaletofit='1' width='100%' fileref"/>
+					<replacestring from='fileref="images/' 
+					               to='fileref="src/docbkx/images/'/>
+				</tokenfilter>
+		      </filterchain>
+		</copy>
+
+		<!-- transform the manual to fo -->
+		<xslt classpathref="classpath"
+		      in="manual_pdf.xml"
+		      out="manual.fo"
+		      style="${xsl}/fo/docbook.xsl">
+			<param name="ulink.show" expression="0"/>
+		</xslt>
+
+
+		<!-- convert to pdf -->
+		<xep in="manual.fo" 
+		     out="src/main/pdf/manual.pdf" 
+		     format="PDF">
+			<classpath refid="classpath"/>
+			<sysproperty key="com.renderx.xep.CONFIG" 
+		                     value="${xep.home}/xep.xml"/>
+		</xep>
+
+		<delete file="manual.fo"/>
+		<delete file="manual_pdf.xml"/>
+		<delete dir="xsl/${docbook-xsl}"/>
+	</target>
+
+	<!--==============================================================-->
+	<!-- Create the manual PDF file.  -->
+	<target name="update" 
+	        description="Download manual and regenerated PDF"
+	        depends="create-pdf">
+	</target>
+	
+</project>
