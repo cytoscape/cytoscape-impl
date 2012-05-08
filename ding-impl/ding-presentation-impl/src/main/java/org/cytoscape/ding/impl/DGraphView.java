@@ -460,16 +460,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
 		
 		this.manager = manager;
-
 		this.cyEventHelper = cyEventHelper;
-
-		final CyTable nodeCAM = dataFactory.createTable("node view", CyIdentifiable.SUID, Long.class, false, false);
-		nodeCAM.createColumn("hidden", Boolean.class, false);
-		tableMgr.setTable(model, CyNode.class, "VIEW", nodeCAM);
-
-		final CyTable edgeCAM = dataFactory.createTable("edge view", CyIdentifiable.SUID, Long.class, false, false);
-		edgeCAM.createColumn("hidden", Boolean.class, false);
-		tableMgr.setTable(model, CyEdge.class, "VIEW", edgeCAM);
 
 		// creating empty subnetworks
 		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork();
@@ -1356,7 +1347,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			synchronized (m_lock) {
 				edge = ((DEdgeView) obj).getEdge();
 
-				model.getRow(edge,"VIEW").set("hidden", true);
 				if (!m_drawPersp.removeEdges(Collections.singletonList(edge)))
 					return false;
 
@@ -1403,7 +1393,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				nView.m_hiddenXMax = m_extentsBuff[2];
 				nView.m_hiddenYMax = m_extentsBuff[3];
 				m_drawPersp.removeNodes(Collections.singletonList(nnode));
-				model.getRow(nnode,"VIEW").set("hidden", true);
 				m_spacial.delete(nodeInx);
 				m_contentChanged = true;
 			}
@@ -1467,7 +1456,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					return false;
 				}
 
-				model.getRow(nnode,"VIEW").set("hidden", false);
 				if (!m_drawPersp.addNode(nnode))
 					return false;
 
@@ -1517,7 +1505,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 				newEdge = edge;
 
-				model.getRow(newEdge,"VIEW").set("hidden", false);
 				if (!m_drawPersp.addEdge(newEdge))
 					return false;
 
