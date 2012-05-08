@@ -134,10 +134,13 @@ public class LayoutMenu extends JMenu implements MenuListener {
         // Clear any previous entries
         this.removeAll();
 
-        // Figure out if we have anything selected
         CyNetworkView view = appMgr.getCurrentNetworkView();
+		if ( view == null )
+			return;
+
         CyNetwork network = view.getModel();
 
+        // Figure out if we have anything selected
         boolean someSelected = network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
         boolean enableMenuItem = checkEnabled();
         
