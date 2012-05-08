@@ -2545,9 +2545,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
-	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value) {
+	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		if (value == null) 
 			return;
+		
+		final VisualProperty<?> vp = vpOriginal;
 		
 		if (vp == DVisualLexicon.NETWORK_NODE_SELECTION) {
 			boolean b = ((Boolean) value).booleanValue();

@@ -781,7 +781,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value) {
+	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
+		VisualProperty<?> vp = vpOriginal;
+		
 		// If value is null, simply use the VP's default value.
 		if(value == null)
 			value = (V) vp.getDefault();

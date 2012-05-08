@@ -1148,7 +1148,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 	
 	@Override
-	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value) {
+	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
+		VisualProperty<?> vp = vpOriginal;
+		
 		// Null means set value to VP's default.
 		if(value == null)
 			value = (V) vp.getDefault();
