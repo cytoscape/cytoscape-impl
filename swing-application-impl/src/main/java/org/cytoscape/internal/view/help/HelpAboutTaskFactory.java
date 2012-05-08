@@ -32,11 +32,18 @@ package org.cytoscape.internal.view.help;
 
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.application.CyVersion;
 
 
 public class HelpAboutTaskFactory extends AbstractTaskFactory {
 
+	private final CyVersion vers;
+
+	public HelpAboutTaskFactory(CyVersion vers) {
+		this.vers = vers;
+	}
+
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new HelpAboutTask());
+		return new TaskIterator(new HelpAboutTask(vers));
 	}
 }

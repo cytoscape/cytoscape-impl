@@ -32,10 +32,16 @@ package org.cytoscape.internal.view.help;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.application.CyVersion;
 
 public class HelpAboutTask extends AbstractTask {
+	private final CyVersion vers;
+
+	HelpAboutTask(CyVersion vers) {
+		this.vers = vers;
+	}
 
 	public void run(TaskMonitor tm) {
-		new CreditScreen().showCredits();
+		new CreditScreen(vers).showCredits();
 	}
 }

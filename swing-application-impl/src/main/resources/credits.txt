@@ -1,15 +1,27 @@
 Cytoscape is a collaboration 
-between the Institute for 
-Systems Biology, University of 
-California San Diego, Memorial
-Sloan-Kettering Cancer Center,
-Institut Pasteur, and Agilent 
-Technologies.
+between the University of 
+California San Diego,
+the University of Toronto, 
+the University of California 
+San Francisco, the Institute 
+for Systems Biology, Memorial 
+Sloan-Kettering Cancer Center
+the Institut Pasteur, and 
+Agilent Technologies.
 
-For more information, please see:
-http://www.cytoscape.org
+Cytoscape is organized under
+the auspices of the National
+Resource for Network Biology
+(NRNB).
 
-Cytosape Developers, past and present,
+For more information, 
+please see:
+
+http://cytoscape.org
+http://nrnb.org
+
+Cytosape Developers, 
+past and present, 
 in alphabetical order: 
 
 Annette Adler
@@ -24,11 +36,13 @@ Melissa Cline
 Mike Creech
 Paul Edlefsen
 Stephanie Fan
+Roza Ghamari
 Trey Ideker
 Liz Kain
 Larissa Kamenkovich
 Ryan Kelley
 Sarah Killcoyne
+Michael Kirby
 Brad Kohlenberg
 Allan Kuchinsky
 Nerius Landys

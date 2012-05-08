@@ -56,6 +56,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.cytoscape.application.CyVersion;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +73,11 @@ public class CreditScreen {
 	private static final Logger logger = LoggerFactory.getLogger(CreditScreen.class);
 	private static final String CREDIT_IMAGE = "/images/CytoscapeCredits.png";
 	private static final String CREDITS = "/credits.txt";
+	private final String version;
 
 
-	public CreditScreen() {
+	public CreditScreen(CyVersion vers) {
+		version = vers.getVersion();
 		try {
 			image = new ImageIcon(getClass().getResource(CREDIT_IMAGE)); 
 			BufferedReader br = new BufferedReader(
@@ -129,7 +133,7 @@ public class CreditScreen {
 			timer.stop();
 	}
 
-	private static class ScrollingLinesPanel extends JPanel {
+	private class ScrollingLinesPanel extends JPanel {
 		private final static long serialVersionUID = 1202339874718767L;
 		int yPos;
 		int xPos;
@@ -148,7 +152,9 @@ public class CreditScreen {
 
 		protected void paintComponent(Graphics g) {
 			g.drawImage(background.getImage(), 0, 0, null);
-			((Graphics2D) g).setPaint(Color.white);
+			((Graphics2D) g).setPaint(Color.black);
+
+			g.drawString(version,xPos,35);
 
 			int i = 1;
 			int y = yPos;
@@ -156,7 +162,7 @@ public class CreditScreen {
 			for ( String sub : lines ) {
 				y = yPos + (12 * i);
 
-				if (y > 80)
+				if (y > 120)
 					g.drawString(sub, xPos, y);
 
 				i++;
