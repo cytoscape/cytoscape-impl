@@ -13,7 +13,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>swing-application-impl</artifactId>
-    <name>Cytoscape Swing Application Impl (${project.artifactId})</name>
+	<name>Cytoscape Swing Application Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
 
@@ -21,6 +21,9 @@
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+			   <directory>${project.build.outputDirectory}/help</directory>
 			</resource>
 		</resources>
 		<plugins>
@@ -63,6 +66,32 @@
 					</execution>
 				</executions>
 			</plugin>
+		   <plugin>
+			 <groupId>org.apache.maven.plugins</groupId>
+			 <artifactId>maven-dependency-plugin</artifactId>
+			 <executions>
+			   <execution>
+				 <id>copy-javahelp</id>
+				 <phase>generate-sources</phase>
+				 <goals>
+				   <goal>unpack</goal>
+				 </goals>
+				 <configuration>
+				   <artifactItems>
+					 <artifactItem>
+					   <groupId>org.cytoscape</groupId>
+					   <artifactId>help-impl</artifactId>
+					   <version>${project.version}</version>
+					   <type>zip</type>
+					   <classifier>javahelp</classifier>
+					   <overWrite>true</overWrite>
+					   <outputDirectory>${project.build.outputDirectory}/help/cytoscape/help</outputDirectory>
+					 </artifactItem>
+				   </artifactItems>
+				 </configuration>
+			   </execution>
+			 </executions>
+		   </plugin>
 		</plugins>
 	</build>
 
@@ -146,17 +175,17 @@
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.core</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>cytoscape-sun</groupId>
-            <artifactId>jhall</artifactId>
-            <version>1.0</version>
-        </dependency>
-        
-        <dependency>
-        	<groupId>com.apple.developer</groupId>
-        	<artifactId>AppleJavaExtensions</artifactId>
-        	<version>1.6</version>
-        	<scope>compile</scope>
-        </dependency>
+		<dependency>
+			<groupId>cytoscape-sun</groupId>
+			<artifactId>jhall</artifactId>
+			<version>1.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.apple.developer</groupId>
+			<artifactId>AppleJavaExtensions</artifactId>
+			<version>1.6</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 </project>
