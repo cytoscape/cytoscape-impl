@@ -434,8 +434,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 		// Electrostatic forces
 		// For parallel processing
-		ExecutorService exec = Executors.newFixedThreadPool(Math.min(numNubs, Runtime.getRuntime()
-				.availableProcessors()));
+		final ExecutorService exec = Executors.newCachedThreadPool();
 		for (int ni = 0; ni < numNubs; ni++)
 			exec.execute(new EdgeBundlerRunner(ni, numNubs, edgeAlign, nubs, forces, edgeCompatability, edgeMatcher));
 
@@ -454,13 +453,6 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			for (int ni = 0; ni < numNubs; ni++) {
 				nubs[ni][0][ei] += forces[ni][0][ei];
 				nubs[ni][1][ei] += forces[ni][1][ei];
-
-				// nubs[ni][0][ei] += Math.signum(forces[ni][0][ei]) *
-				// Math.min(Math.abs(forces[ni][0][ei]) * stepsize, networkScale
-				// * 1e-2);
-				// nubs[ni][1][ei] += Math.signum(forces[ni][1][ei]) *
-				// Math.min(Math.abs(forces[ni][1][ei]) * stepsize, networkScale
-				// * 1e-2);
 			}
 	}
 }
