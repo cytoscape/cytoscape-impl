@@ -36,11 +36,9 @@ import org.cytoscape.model.CyTableManager;
 
 public abstract class AbstractTableReaderFactory extends AbstractInputStreamTaskFactory {
 	protected final CyTableFactory tableFactory;
-	protected final CyTableManager tableManager;
 
 	public AbstractTableReaderFactory(final CyFileFilter filter,
-	                                  final CyTableFactory tableFactory,
-	                                  final CyTableManager tableManager)
+	                                  final CyTableFactory tableFactory)
 	{
 		super(filter);
 		if (filter == null)
@@ -50,8 +48,5 @@ public abstract class AbstractTableReaderFactory extends AbstractInputStreamTask
 			throw new NullPointerException("tableFactory is null!");
 		this.tableFactory = tableFactory;
 
-		if (tableManager == null)
-			throw new NullPointerException("tableManager is null!");
-		this.tableManager = tableManager;
 	}
 }

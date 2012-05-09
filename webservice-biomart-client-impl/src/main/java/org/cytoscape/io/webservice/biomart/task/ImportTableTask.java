@@ -81,8 +81,7 @@ public class ImportTableTask extends AbstractTask {
 
 		tables.add(newTable);
 
-		final TaskIterator ti = mapNetworkAttrTF.createTaskIterator(
-				CyNode.class, newTable, CyNetwork.NAME);
+		final TaskIterator ti = mapNetworkAttrTF.createTaskIterator(newTable);
 		this.insertTasksAfterCurrentTask(ti);
 		
 		final ShowResultTask messageTask = new ShowResultTask();

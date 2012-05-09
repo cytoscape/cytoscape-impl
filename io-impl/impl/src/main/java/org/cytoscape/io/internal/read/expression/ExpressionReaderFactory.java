@@ -11,14 +11,13 @@ import org.cytoscape.work.TaskIterator;
 
 
 public class ExpressionReaderFactory extends AbstractTableReaderFactory {
-	public ExpressionReaderFactory(final CyFileFilter filter, final CyTableFactory tableFactory,
-				       final CyTableManager tableManager)
+	public ExpressionReaderFactory(final CyFileFilter filter, final CyTableFactory tableFactory)
 	{
-		super(filter, tableFactory, tableManager);
+		super(filter, tableFactory);
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new ExpressionReader(inputStream, tableFactory, tableManager));
+		return new TaskIterator(new ExpressionReader(inputStream, tableFactory));
 	}
 }

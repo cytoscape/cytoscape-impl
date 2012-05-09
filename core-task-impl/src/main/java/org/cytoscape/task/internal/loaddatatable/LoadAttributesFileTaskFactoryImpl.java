@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.io.read.CyTableReaderManager;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -16,15 +18,18 @@ public class LoadAttributesFileTaskFactoryImpl extends AbstractTaskFactory imple
 	private CyTableReaderManager mgr;
 	
 	private final TunableSetter tunableSetter; 
-
+	private final CyNetworkManager netMgr;
+	private final CyTableManager tableMgr;
 	
-	public LoadAttributesFileTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter) {
+	public LoadAttributesFileTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr, final CyTableManager tabelMgr) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
+		this.netMgr = netMgr;
+		this.tableMgr = tabelMgr;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadAttributesFileTask(mgr));
+		return new TaskIterator(2, new LoadAttributesFileTask(mgr, netMgr, tableMgr));
 	}
 
 	@Override

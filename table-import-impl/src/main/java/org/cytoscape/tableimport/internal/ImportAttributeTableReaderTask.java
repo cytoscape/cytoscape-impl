@@ -39,7 +39,6 @@ import org.cytoscape.work.TunableValidator;
 public class ImportAttributeTableReaderTask extends AbstractTask implements CyTableReader , TunableValidator {
 	private  InputStream is;
 	private final String fileType;
-	private final CyTableManager tableManager;
 	protected CyNetworkView[] cyNetworkViews;
 	protected VisualStyle[] visualstyles;
 	private final String inputName;
@@ -54,11 +53,10 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	TextTableReader reader;
 
 	public ImportAttributeTableReaderTask(final InputStream is, final String fileType,
-			final String inputName, final CyTableManager tableManager)
+			final String inputName)
 	{
 		
 		this.fileType     = fileType;
-		this.tableManager = tableManager;
 		this.inputName = inputName;
 		this.is = is;
 		
@@ -129,9 +127,6 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 				this.reader = new DefaultAttributeTableReader(null,amp,this.is); 
 				loadAnnotation(tm);
 			}
-		//Only do the mapping if there is some network open
-		if (CytoscapeServices.cyNetworkManager.getNetworkSet().size() > 0)
-			insertTasksAfterCurrentTask(CytoscapeServices.mapGlobalToLocalTableTaskFactory.createTaskIterator());
 	}
 
 
@@ -165,8 +160,6 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		tm.setProgress(0.9);
-		tableManager.addTable(table);
 		tm.setProgress(1.0);
 	}
 

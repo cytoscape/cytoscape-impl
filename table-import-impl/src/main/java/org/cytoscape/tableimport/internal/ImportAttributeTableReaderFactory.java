@@ -23,6 +23,6 @@ public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactor
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		String fileFormat = inputName.substring(inputName.lastIndexOf('.'));
 		return new TaskIterator(
-			new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName, CytoscapeServices.cyTableManager));
+			new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName));
 	}
 }

@@ -12,21 +12,16 @@ import java.util.StringTokenizer;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,20 +33,6 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private static final byte TYPE_FLOATING_POINT = 2;
 	private static final byte TYPE_INTEGER = 3;
 	private static final byte TYPE_STRING = 4;
-
-	private static enum TableType {
-		NODE("Node"), EDGE("Edge"), NETWORK("Network"), GLOBAL("Global (Not associated with any networks)");
-
-		private final String name;
-
-		private TableType(final String name) {
-			this.name = name;
-		}
-
-		@Override public String toString() {
-			return name;
-		}
-	};
 
 	private static final String ENCODING_SCHEME = "UTF-8";
 	private static final String DECODE_PROPERTY = "cytoscape.decode.attributes";
@@ -66,22 +47,12 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private CyTable[] cyTables;
 	private final CyApplicationManager appMgr;
 	private final CyNetworkManager netMgr;
-	private final CyTableManager tableManager;
 	private final CyRootNetworkManager rootNetFact;
-
-	@Tunable(description = "Map table to:")
-	public ListSingleSelection<TableType> dataTypeOptions;
-
-	@ProvidesTitle
-	public String getTitle() {
-		return "Import Table";
-	}
 	
 	private static int nextTableNumber = 1;
 
 	public CyAttributesReader(final InputStream inputStream, final CyTableFactory tableFactory,
-				  final CyApplicationManager appMgr, final CyNetworkManager netMgr,
-				  final CyTableManager tableManager, final CyRootNetworkManager rootNetFact)
+				  final CyApplicationManager appMgr, final CyNetworkManager netMgr, final CyRootNetworkManager rootNetFact)
 	{
 		lineNum = 0;
 		doDecoding = Boolean.valueOf(System.getProperty(DECODE_PROPERTY, "true"));
@@ -90,18 +61,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 		this.appMgr = appMgr;
 		this.netMgr = netMgr;
 		this.inputStream = inputStream;
-		this.tableManager = tableManager;
 		this.rootNetFact = rootNetFact;
-
-		final List<TableType> options = new ArrayList<TableType>();
-		if (netMgr.getNetworkSet().size() > 0 ) {
-			for(TableType type: TableType.values())
-				options.add(type);
-		} else
-			options.add(TableType.GLOBAL);
-
-		dataTypeOptions = new ListSingleSelection<TableType>(options);
-		dataTypeOptions.setSelectedValue(TableType.GLOBAL);
 	}
 
 	@Override
@@ -116,29 +76,14 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 		try {
 			loadAttributesInternal(table);
 			tm.setProgress(0.3);
-			tableManager.addTable(table);
 		} finally {
 			if (inputStream != null) {
 				inputStream.close();
 				inputStream = null;
 			}
 		}
-		tm.setProgress(0.7);
-		Class<? extends CyIdentifiable> type = getMappingClass();
-
-		tm.setProgress(1.0);
-	}
-
-	private Class<? extends CyIdentifiable> getMappingClass() {
-		final TableType sel = dataTypeOptions.getSelectedValue();
-		if (sel == TableType.NODE)
-			return CyNode.class;
-		else if (sel == TableType.EDGE)
-			return CyEdge.class;
-		else if (sel == TableType.NETWORK)
-			return CyNetwork.class;
-		else
-			return null;
+		tm.setProgress(1.0);	
+		
 	}
 
 	private void loadAttributesInternal(final CyTable table) throws IOException {

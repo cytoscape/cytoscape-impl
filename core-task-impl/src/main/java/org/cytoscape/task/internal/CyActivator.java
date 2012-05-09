@@ -66,8 +66,8 @@ import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
-import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
+import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
 import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
 import org.cytoscape.task.edit.UnGroupTaskFactory;
@@ -127,8 +127,8 @@ import org.cytoscape.task.internal.session.SaveSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
-import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
+import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.vizmap.ApplyVisualStyleTaskFactoryimpl;
@@ -211,8 +211,8 @@ public class CyActivator extends AbstractCyActivator {
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc,SynchronousTaskManager.class);
 		TunableSetter tunableSetterServiceRef = getService(bc,TunableSetter.class);
 		
-		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef);
-		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef);
+		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef);
+		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef);
 
 		CyGroupManager cyGroupManager = getService(bc, CyGroupManager.class);
 		CyGroupFactory cyGroupFactory = getService(bc, CyGroupFactory.class);
@@ -972,10 +972,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,unGroupNodesTaskFactory,NodeViewTaskFactory.class, unGroupTaskFactoryProps);
 		registerService(bc,unGroupNodesTaskFactory,UnGroupNodesTaskFactory.class, unGroupTaskFactoryProps);
 		
-		MapTableToNetworkTablesTaskFactoryImpl mapNetworkAttrTaskFactory = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, cyApplicationManagerServiceRef,
-				  cyRootNetworkFactoryServiceRef,tunableSetterServiceRef);
-		Properties mapNetworkAttrTaskFactoryProps = new Properties();
-		registerService(bc,mapNetworkAttrTaskFactory,MapTableToNetworkTablesTaskFactory.class,mapNetworkAttrTaskFactoryProps);
+		MapTableToNetworkTablesTaskFactoryImpl mapNetworkToTables = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, tunableSetterServiceRef);
+		Properties mapNetworkToTablesProps = new Properties();
+		registerService(bc, mapNetworkToTables, MapTableToNetworkTablesTaskFactory.class, mapNetworkToTablesProps);
 		
 		ExportTableTaskFactoryImpl exportTableTaskFactory = new ExportTableTaskFactoryImpl(cyTableWriterManagerRef,tunableSetterServiceRef);
 		Properties exportTableTaskFactoryProps = new Properties();
