@@ -9,7 +9,7 @@
 	<properties>
 		<bundle.symbolicName>org.cytoscape.cpath2-impl</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.cpath2</bundle.namespace>
-		<paxtools.version>4.1.3-SNAPSHOT</paxtools.version>
+		<paxtools.version>4.1.1</paxtools.version>
 	</properties>
 	
 	<modelVersion>4.0.0</modelVersion>
