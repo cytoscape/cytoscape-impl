@@ -46,6 +46,9 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	@Tunable(description = "Maximum iterations")
 	public int maxIterations = 10000;
+	
+	// For parallel processing
+	private final ExecutorService exec;
 
 	private boolean animate = false;
 
@@ -73,6 +76,8 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		this.vmm = vmm;
 		this.discreteFactory = discreteFactory;
 		this.selection = selection;
+		
+		this.exec = Executors.newCachedThreadPool();
 	}
 
 	
@@ -176,16 +181,17 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		// Simulating physics
 		tm.setStatusMessage("Simulating physics");
 		double time = System.nanoTime();
-		final double[][][] forces = new double[numNubs][2][numEdges]; // Nub, X/Y,
-																// edgeIndex
+		final double maxItrDouble = Double.valueOf(maxIterations);
+		final double[][][] forces = new double[numNubs][2][numEdges]; // Nub, X/Y, edgeIndex
+		
+		// Repeat the simulation [maxIterations] times.
 		for (int iteri = 0; iteri < maxIterations; iteri++) {
 			if (this.cancelled) {
-				// reset();
 				logger.info("Edge bundling cancelled: iter=" + iteri);
 				break;
 			}
 
-			tm.setProgress(iteri / Double.valueOf(maxIterations));
+			tm.setProgress(iteri / maxItrDouble);
 
 			updateForces(forces);
 			updateNubs(forces);
@@ -406,7 +412,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	private void updateForces(final double[][][] forces) {
 		// Spring forces
-		for (int ei = 0; ei < edgeLength.length; ei++)
+		for (int ei = 0; ei < edgeLength.length; ei++) {
 			for (int ni = 0; ni < numNubs; ni++) {
 				if (ni == 0) {
 					forces[ni][0][ei] = nubs[ni][0][ei] - edgePos[0][0][ei];
@@ -428,11 +434,9 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 				forces[ni][1][ei] *= -K;
 
 			}
+		}
 
 		// Electrostatic forces
-		ExecutorService exec = Executors.newFixedThreadPool(Math.min(numNubs, Runtime.getRuntime()
-				.availableProcessors()));
-
 		for (int ni = 0; ni < numNubs; ni++)
 			exec.execute(new EdgeBundlerRunner(ni, numNubs, edgeAlign, nubs, forces, edgeCompatability, edgeMatcher));
 
