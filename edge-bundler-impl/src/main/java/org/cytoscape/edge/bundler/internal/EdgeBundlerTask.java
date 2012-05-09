@@ -47,8 +47,6 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	@Tunable(description = "Maximum iterations")
 	public int maxIterations = 10000;
 	
-	// For parallel processing
-	private final ExecutorService exec;
 
 	private boolean animate = false;
 
@@ -75,9 +73,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		this.bf = bf;
 		this.vmm = vmm;
 		this.discreteFactory = discreteFactory;
-		this.selection = selection;
-		
-		this.exec = Executors.newCachedThreadPool();
+		this.selection = selection;		
 	}
 
 	
@@ -437,6 +433,9 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		}
 
 		// Electrostatic forces
+		// For parallel processing
+		ExecutorService exec = Executors.newFixedThreadPool(Math.min(numNubs, Runtime.getRuntime()
+				.availableProcessors()));
 		for (int ni = 0; ni < numNubs; ni++)
 			exec.execute(new EdgeBundlerRunner(ni, numNubs, edgeAlign, nubs, forces, edgeCompatability, edgeMatcher));
 
