@@ -139,6 +139,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
+				<artifactId>swing-app-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
 				<artifactId>presentation-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
@@ -189,6 +194,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
+				<artifactId>webservice-swing-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
 				<artifactId>work-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
@@ -215,7 +225,19 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
+				<artifactId>swing-app-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
 				<artifactId>event-api</artifactId>
+				<version>${cytoscape.api.version}</version> 
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>webservice-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 				<type>test-jar</type>
 			</dependency>
