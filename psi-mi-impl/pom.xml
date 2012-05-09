@@ -76,11 +76,24 @@
 	-->
 
 	<dependencies>
-		<!-- PSI-MI lib -->
+		<!-- PSI-MI lib 
+		We can't use this jar because it's a snapshot, but we need what is in 
+		1.7.10, so can't use 1.7.9 or earlier.  When 1.7.10 is actually released
+		we should switch to use that
+
 		<dependency>
 			<groupId>psidev.psi.mi</groupId>
 			<artifactId>psi25-xml</artifactId>
-			<version>1.7.10-SNAPSHOT</version>
+			<version>1.7.10-SNAPSHOT</version>  NOT BEING USED!
+		</dependency>
+
+		The following jar is actually the SNAPSHOT jar from above, just copied into our
+		local repository so that we have something fixed to build off of.
+		-->
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>psi-mi-psi25-xml</artifactId>
+			<version>1.7.10</version>
 		</dependency>
 
 		<!-- Logging -->
