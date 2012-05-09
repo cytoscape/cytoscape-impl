@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
+
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -31,7 +33,7 @@ import org.junit.Test;
 
 public class VisualStyleTest extends AbstractVisualStyleTest {
 	
-	private static final int NETWORK_SIZE = 1000;
+	private static final int NETWORK_SIZE = 5000;
 
 	@Before
 	public void setUp() throws Exception {
@@ -82,41 +84,54 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		final CyNetwork largeNetwork = nvts.getNetworkFactory().createNetwork();
 		for(int i=0; i<NETWORK_SIZE; i++) {
-			CyNode node = largeNetwork.addNode();
+			largeNetwork.addNode();
 		}
 		
-		CyNetworkView largeNetworkView = nvts.getNetworkViewFactory().createNetworkView(largeNetwork);
+		final CyNetworkView largeNetworkView = nvts.getNetworkViewFactory().createNetworkView(largeNetwork);
 		
+		long global = 0;
+		long local = 0;
+		
+		final int repeat = 5;
+		for(int i=0; i<repeat; i++) {
+			global += runApplyGlobal(largeNetworkView);
+			local += runApplyLocal(largeNetworkView);
+		}
+		
+		long globalAverage = global/repeat;
+		long localAverage = local/repeat;
+		
+		System.out.println("* Apply to network takes: Global " + globalAverage + " msec.");
+		System.out.println("* Apply to network takes: Local " + localAverage + " msec.");
+		assertTrue(globalAverage>localAverage);
+	}
+	
+	private long runApplyGlobal(final CyNetworkView largeNetworkView) {
 		final long start = System.currentTimeMillis();
 		style.apply(largeNetworkView);
-		final long endNetwork = System.currentTimeMillis()-start;
-		
-		System.out.println("* Apply to network takes " + endNetwork + " msec.");
-		
-		
-		// Pick 10 random nodes in the network
+		return System.currentTimeMillis()-start;
+	}
+	
+	private long runApplyLocal(final CyNetworkView largeNetworkView) {
+		// Pick 5 random nodes in the network
 		final List<View<CyNode>> views = new ArrayList<View<CyNode>>(largeNetworkView.getNodeViews());
 		Set<View<CyNode>> targets = new HashSet<View<CyNode>>();
-		for(int i=0; i<10; i++) {
+		for (int i = 0; i < 5; i++) {
 			double rand = Math.random();
-			int index = (int) (NETWORK_SIZE*rand);
-			if(index<0)
-				index=0;
-			else if(index>NETWORK_SIZE-1)
-				index = NETWORK_SIZE-1;
-			
+			int index = (int) (NETWORK_SIZE * rand);
+			if (index < 0)
+				index = 0;
+			else if (index > NETWORK_SIZE - 1)
+				index = NETWORK_SIZE - 1;
+
 			targets.add(views.get(index));
 		}
-		
+
 		// Apply to individual views
 		final long start2 = System.currentTimeMillis();
-		for(final View<CyNode> view:targets)
-			style.apply(largeNetwork.getRow(view.getModel()), view);
-		final long endNode = System.currentTimeMillis()-start2;
-		
-		System.out.println("* Apply to nodes takes " + endNode + " msec.");
-		
-		assertTrue(endNetwork>endNode);
+		for (final View<CyNode> view : targets)
+			style.apply(largeNetworkView.getModel().getRow(view.getModel()), view);
+		return System.currentTimeMillis() - start2;
 	}
 	
 }
