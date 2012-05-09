@@ -50,7 +50,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		tableChooser.setSize(SELECTOR_SIZE);
 		tableChooser.setFont(GLOBAL_FONT);
 		tableChooser.setForeground(GLOBAL_TABLE_COLOR);
-		tableChooser.setToolTipText("\"Global Tables\" are data tables not associated with specific networks.");
+		tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
 		tableChooser.setEnabled(false);
 		
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,

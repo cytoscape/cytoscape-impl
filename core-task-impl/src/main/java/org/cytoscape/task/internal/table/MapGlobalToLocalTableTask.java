@@ -23,10 +23,10 @@ import org.cytoscape.work.util.ListSingleSelection;
  */
 public final class MapGlobalToLocalTableTask extends AbstractTask {
 
-	@Tunable(description = "Select a Global Table:")
+	@Tunable(description = "Select a Table:")
 	public ListSingleSelection<String> globalTables;
 
-	@Tunable(description = "Map selected Global Table to:")
+	@Tunable(description = "Link Selected Table to:")
 	public ListSingleSelection<String> localTables;
 
 	private final Map<String, CyTable> name2tableMap;
