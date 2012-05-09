@@ -13,6 +13,8 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public final class MapTableToNetworkTablesTask extends AbstractTask {
@@ -29,6 +31,9 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			return name;
 		}
 	};
+	
+	
+	private static Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
 	
 	private final CyNetworkManager networkManager;
 	private final CyTable globalTable;
@@ -104,7 +109,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			return network.getDefaultEdgeTable();
 		if (tableType == TableType.NETWORK_ATTR)
 			return network.getDefaultNetworkTable();
-		
+		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR + ", "+ TableType.NETWORK_ATTR +" or "+TableType.GLOBAL +".");
 		return null;
 	}
 	
@@ -115,5 +120,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		final CyColumn trgCol = localTable.getColumn(CyNetwork.NAME);
 		if (trgCol != null)
 			localTable.addVirtualColumns(globalTable, CyNetwork.NAME, false);
+		else
+			logger.warn("Name column in the target table was not found!");
 	}
 }
