@@ -12,7 +12,7 @@
 
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0-alpha8-SNAPSHOT</version>
+	<version>3.0.0-alpha8</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<modules>
@@ -318,9 +318,9 @@
     </dependencies>
 
 	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/trunk</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/trunk</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/impl/trunk</url>
+		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/tags/impl-parent-3.0.0-alpha8</connection>
+		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/tags/impl-parent-3.0.0-alpha8</developerConnection>
+		<url>http://chianti.ucsd.edu/svn/core3/impl/tags/impl-parent-3.0.0-alpha8</url>
 	</scm>
 
 	<build>
@@ -344,7 +344,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
