@@ -62,7 +62,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>webservice-swing-api</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -115,7 +114,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>webservice-api</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
