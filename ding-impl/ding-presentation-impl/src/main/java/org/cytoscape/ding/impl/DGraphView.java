@@ -2566,6 +2566,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
+	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
+		if (vp == BasicVisualLexicon.NETWORK_WIDTH) {
+			m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
+		} else if (vp == BasicVisualLexicon.NETWORK_HEIGHT) {
+			m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
+		}
+		super.setVisualProperty(vp, value);
+	}
+	
+	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
 		Object value = null;
 		
