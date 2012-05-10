@@ -35,16 +35,20 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.swing.InputMap;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -57,6 +61,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -68,6 +73,7 @@ import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
@@ -84,7 +90,6 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
 import org.cytoscape.util.swing.JTreeTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -106,9 +111,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
 
 	static final Color FONT_COLOR = new Color(20, 20, 20);
-
 	private static final int TABLE_ROW_HEIGHT = 32;
-
 	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
 
 	private final JTreeTable treeTable;
@@ -131,7 +134,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	private final Map<CyTable, CyNetwork> nodeEdgeTables;
 
 	private final Map<Long, NetworkTreeNode> treeNodeMap;
-
 	private final Map<Object, TaskFactory> provisionerMap;
 	
 	private boolean ignoreTreeSelectionEvents;
@@ -208,6 +210,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		treeTable.setSelectionForeground(FONT_COLOR);
 		treeTable.setCellSelectionEnabled(true);
 		treeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		treeTable.getTree().setSelectionModel(new DefaultTreeSelectionModel());
 
 		navigatorPanel = new JPanel();
 		navigatorPanel.setLayout(new BorderLayout());
@@ -439,7 +442,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		if (!cnet.equals(selectedNet)) {
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
-					logger.debug("Set current network " + cnet.getSUID());
 					updateNetworkTreeSelection();
 				}
 			});
@@ -447,7 +449,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	}
 
 	@Override
-	public void handleEvent(SetSelectedNetworksEvent e) {
+	public void handleEvent(final SetSelectedNetworksEvent e) {
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				updateNetworkTreeSelection();
@@ -532,13 +534,27 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		}
 	}
 
-	public void updateNetworkTreeSelection() {
-		final List<CyNetwork> selNets = appManager.getSelectedNetworks();
-		final List<TreePath> paths = new ArrayList<TreePath>(selNets.size());
-
-		for (final CyNetwork net : selNets) {
+	private final void updateNetworkTreeSelection() {		
+		final List<CyNetwork> selectedNetworks = appManager.getSelectedNetworks();
+		
+		// Phase 1: Add selected path from GUI status
+		final List<TreePath> paths = new ArrayList<TreePath>();
+		final int[] selectedRows = treeTable.getSelectedRows();
+		for(int i=0; i<selectedRows.length; i++) {
+			final TreePath selectedP = treeTable.getTree().getPathForRow(selectedRows[i]);
+			final Object val = selectedP.getLastPathComponent();
+			if(val != null && val instanceof NetworkTreeNode) {
+				final CyNetwork network = ((NetworkTreeNode)val).getNetwork();
+				if(network== null)
+					continue;
+				
+				paths.add(selectedP);
+			}
+		}
+		
+		// Phase 2: add selected networks from app manager
+		for (final CyNetwork net : selectedNetworks) {
 			final NetworkTreeNode node = getNetworkNode(net.getSUID());
-			
 			if (node != null) {
 				final TreePath tp = new TreePath(node.getPath());
 				paths.add(tp);
@@ -557,6 +573,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		}
 		
 		treeTable.getTree().scrollRowToVisible(maxRow);
+		treeTable.getTree().updateUI();
+		treeTable.updateUI();
+		treeTable.repaint();
 	}
 
 	NetworkTreeNode getNetworkNode(final Long networkId) {
@@ -571,7 +590,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			if (network.getSUID() == networkId)
 				return node;
 		}
-
 		return null;
 	}
 
@@ -582,14 +600,13 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void valueChanged(TreeSelectionEvent e) {
 		if (ignoreTreeSelectionEvents)
 			return;
-		JTree mtree = treeTable.getTree();
-
-		// sets the "current" network based on last node in the tree selected
-		NetworkTreeNode node = (NetworkTreeNode) mtree.getLastSelectedPathComponent();
-		if (node == null || node.getUserObject() == null) {
-			// logger.debug("NetworkPanel: null node - returning");
+		
+		final JTree tree = treeTable.getTree();
+				
+		// Sets the "current" network based on last node in the tree selected
+		final NetworkTreeNode node = (NetworkTreeNode) tree.getLastSelectedPathComponent();
+		if (node == null || node.getUserObject() == null)
 			return;
-		}
 		
 		final CyNetwork net = node.getNetwork();
 		// This is a "network set" node.
@@ -621,9 +638,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		// creates a list of all selected networks
 		List<CyNetwork> networkList = new LinkedList<CyNetwork>();
 		try {
-			for (int i = mtree.getMinSelectionRow(); i <= mtree.getMaxSelectionRow(); i++) {
-				NetworkTreeNode n = (NetworkTreeNode) mtree.getPathForRow(i).getLastPathComponent();
-				if (n != null && n.getUserObject() != null && mtree.isRowSelected(i))
+			for (int i = tree.getMinSelectionRow(); i <= tree.getMaxSelectionRow(); i++) {
+				NetworkTreeNode n = (NetworkTreeNode) tree.getPathForRow(i).getLastPathComponent();
+				if (n != null && n.getUserObject() != null && tree.isRowSelected(i))
 					networkList.add(n.getNetwork());
 			}
 		} catch (Exception ex) {
@@ -648,23 +665,10 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	 * click) it will pop up the menu with option for destroying view, creating
 	 * view, and destroying network (this is platform specific apparently)
 	 */
-	private class PopupListener extends MouseAdapter {
+	private final class PopupListener extends MouseAdapter {
 		
-		/**
-		 * Don't know why you need both of these, but this is how they did it in
-		 * the example
-		 */
 		@Override
 		public void mousePressed(MouseEvent e) {
-			maybeShowPopup(e);
-		}
-
-		/**
-		 * Don't know why you need both of these, but this is how they did it in
-		 * the example
-		 */
-		@Override
-		public void mouseReleased(MouseEvent e) {
 			maybeShowPopup(e);
 		}
 
@@ -672,37 +676,37 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		 * if the mouse press is of the correct type, this function will maybe
 		 * display the popup
 		 */
-		private void maybeShowPopup(MouseEvent e) {
+		private final void maybeShowPopup(final MouseEvent e) {
+			// Ignore if not valid trigger.
+			if (!e.isPopupTrigger())
+				return;
 
-			if (e.isPopupTrigger()) {
-				// get the row where the mouse-click originated
-				int row = treeTable.rowAtPoint(e.getPoint());
-				
-				if (row != -1) {
-					JTree tree = treeTable.getTree();
-					TreePath treePath = tree.getPathForRow(row);
-				
-					Long networkID = -1L;
-					try {
-						networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork().getSUID();						
-					} catch (NullPointerException nullExp){
-						//The tree root does not represent a network, ignore it.
-						return;
-					}
-					
-					tree.setSelectionPath(treePath);
-					CyNetwork cyNetwork = netmgr.getNetwork(networkID);
+			// get the row where the mouse-click originated
+			final int row = treeTable.rowAtPoint(e.getPoint());
+			if (row == -1)
+				return; // None selected.
 
-					if (cyNetwork != null) {
-						// enable/disable any actions based on state of system
-						for (CyAction action : popupActions.values())
-							action.updateEnableState();
+			
+			final JTree tree = treeTable.getTree();
+			final TreePath treePath = tree.getPathForRow(row);
 
-						// then popup menu
-						popup.show(e.getComponent(), e.getX(), e.getY());
-					}
-					
-				}
+			Long networkID = -1L;
+			try {
+				networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork().getSUID();
+			} catch (NullPointerException nullExp) {
+				// The tree root does not represent a network, ignore it.
+				return;
+			}
+
+			final CyNetwork cyNetwork = netmgr.getNetwork(networkID);
+
+			if (cyNetwork != null) {
+				// enable/disable any actions based on state of system
+				for (CyAction action : popupActions.values())
+					action.updateEnableState();
+
+				// then popup menu
+				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}
 	}

@@ -24,7 +24,7 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 	}
 
 	public Object getChild(Object parent, int index) {
-		Enumeration tree_node_enum = ((DefaultMutableTreeNode) getRoot()).breadthFirstEnumeration();
+		Enumeration<?> tree_node_enum = ((DefaultMutableTreeNode) getRoot()).breadthFirstEnumeration();
 
 		while (tree_node_enum.hasMoreElements()) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree_node_enum.nextElement();

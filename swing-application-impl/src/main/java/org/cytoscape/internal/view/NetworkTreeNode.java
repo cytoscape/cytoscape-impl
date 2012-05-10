@@ -13,31 +13,27 @@ import org.cytoscape.model.CyNetwork;
 final class NetworkTreeNode extends DefaultMutableTreeNode {
 
 	private final static long serialVersionUID = 1213748836736485L;
+	private static final Color DEF_NODE_COLOR = Color.RED;
 
 	private final CyNetwork network;
-	
-	private Color nodeColor = Color.red;
+	private Color nodeColor;
 
-	
 	NetworkTreeNode(final Object userobj, final CyNetwork network) {
 		super(userobj.toString());
 		this.network = network;
+		this.nodeColor = DEF_NODE_COLOR;
 	}
 
 	CyNetwork getNetwork() {
 		return network;
 	}
-	
-	/*
-	 * These are necessary to avoid deadlock in the renderer.
-	 */
 
 	Color getNodeColor() {
 		return nodeColor;
 	}
-	
+
 	void setNodeColor(final Color newColor) {
-		if(newColor != null)
+		if (newColor != null)
 			this.nodeColor = newColor;
 	}
 }
