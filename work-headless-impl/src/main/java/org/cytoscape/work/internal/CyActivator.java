@@ -3,9 +3,11 @@ package org.cytoscape.work.internal;
 import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.internal.sync.SyncTaskManager;
+import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutator;
 import org.cytoscape.work.internal.sync.TunableRecorderManager;
 import org.cytoscape.work.internal.sync.TunableSetterImpl;
@@ -44,6 +46,10 @@ public class CyActivator extends AbstractCyActivator {
 		TunableSetterImpl tsi = new TunableSetterImpl(syncTunableMutator,trm);
 		registerService(bc,tsi,TunableSetter.class, new Properties());
 		
+		SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
+		Properties syncFactoryProp = new Properties();
+		registerService(bc,syncTunableHandlerFactory, TunableHandlerFactory.class, syncFactoryProp);
+		syncTunableMutator.addTunableHandlerFactory(syncTunableHandlerFactory, syncFactoryProp);
 		
 	}
 }
