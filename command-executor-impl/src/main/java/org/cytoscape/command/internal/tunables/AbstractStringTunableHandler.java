@@ -80,7 +80,7 @@ public abstract class AbstractStringTunableHandler extends AbstractTunableHandle
 					return;
 				}
 			}
-			logger.warn("found no match for tunable: " + getQualifiedName());
+			logger.debug("found no match for tunable: " + getQualifiedName());
 		} catch ( Exception e) {
 			logger.warn("tunable handler exception: " + getQualifiedName(), e);
 		}
