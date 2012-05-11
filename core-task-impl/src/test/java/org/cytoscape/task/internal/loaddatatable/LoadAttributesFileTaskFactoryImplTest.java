@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;

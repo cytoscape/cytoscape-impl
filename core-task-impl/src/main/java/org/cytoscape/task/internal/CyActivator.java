@@ -37,6 +37,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -130,6 +131,7 @@ import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
+import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.vizmap.ApplyVisualStyleTaskFactoryimpl;
 import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
@@ -979,5 +981,9 @@ public class CyActivator extends AbstractCyActivator {
 		ExportTableTaskFactoryImpl exportTableTaskFactory = new ExportTableTaskFactoryImpl(cyTableWriterManagerRef,tunableSetterServiceRef);
 		Properties exportTableTaskFactoryProps = new Properties();
 		registerService(bc,exportTableTaskFactory,ExportTableTaskFactory.class,exportTableTaskFactoryProps);
+		
+		UpdateAddedNetworkAttributes updateAddedNetworkAttributes = new UpdateAddedNetworkAttributes(mapGlobal, synchronousTaskManagerServiceRef);
+		registerService(bc, updateAddedNetworkAttributes, NetworkAddedListener.class, new Properties());
+
 	}
 }

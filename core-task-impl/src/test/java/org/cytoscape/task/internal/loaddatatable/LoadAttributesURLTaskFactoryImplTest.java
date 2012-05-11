@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
@@ -33,6 +34,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	
 	@Mock
 	CyTableManager tabMgr;
+	
 	
 	@Before
 	public void initMocks() {

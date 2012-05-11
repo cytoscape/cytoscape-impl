@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.table;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractTableTaskFactory;
