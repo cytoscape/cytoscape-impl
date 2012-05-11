@@ -29,6 +29,7 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -47,6 +48,9 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ComponentSampleModel;
+
+import javax.swing.JComponent;
 
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphViewChangeListener;
@@ -279,18 +283,22 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	
+	@Override
 	public void mouseDragged(MouseEvent e) {
 		mouseDraggedDelegator.delegateMouseDragEvent(e);
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		
 		if (addEdgeMode.addingEdge())
 			addEdgeMode.drawRubberBand(e);
 		else {
 			final String tooltipText = getToolTipText(e.getPoint());
-			setToolTipText(tooltipText);
+			final Component[] components = this.getParent().getComponents();
+			for(Component comp: components) {
+				if(comp instanceof JComponent)
+				((JComponent) comp).setToolTipText(tooltipText);
+			}
 		}
 	}
 

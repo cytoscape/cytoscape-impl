@@ -387,7 +387,7 @@ public class CyAnnotator {
 		return os.regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
 	}
 
-	private class ForegroundMouseListener implements MouseListener{
+	private final class ForegroundMouseListener implements MouseListener {
 
 		public void mousePressed(MouseEvent e) {
 			Component comp = getComponentAt(e.getX(), e.getY());
