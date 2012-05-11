@@ -78,17 +78,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>work-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>work-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

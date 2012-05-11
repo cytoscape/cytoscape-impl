@@ -3,14 +3,6 @@ package org.cytoscape.work.internal;
 import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.work.TunableHandlerFactory;
-import org.cytoscape.work.TunableRecorder;
-import org.cytoscape.work.TunableSetter;
-import org.cytoscape.work.internal.sync.SyncTaskManager;
-import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
-import org.cytoscape.work.internal.sync.SyncTunableMutator;
-import org.cytoscape.work.internal.sync.TunableRecorderManager;
-import org.cytoscape.work.internal.sync.TunableSetterImpl;
 import org.cytoscape.work.internal.task.*;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
@@ -36,7 +28,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
 
 		
-		SyncTunableMutator syncTunableMutator = new SyncTunableMutator();
+		/*SyncTunableMutator syncTunableMutator = new SyncTunableMutator();
 		SyncTaskManager syncTaskManager = new SyncTaskManager(syncTunableMutator);
 		
 		registerAllServices(bc,syncTaskManager, new Properties());
@@ -49,7 +41,7 @@ public class CyActivator extends AbstractCyActivator {
 		SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 		Properties syncFactoryProp = new Properties();
 		registerService(bc,syncTunableHandlerFactory, TunableHandlerFactory.class, syncFactoryProp);
-		syncTunableMutator.addTunableHandlerFactory(syncTunableHandlerFactory, syncFactoryProp);
+		syncTunableMutator.addTunableHandlerFactory(syncTunableHandlerFactory, syncFactoryProp);*/
 		
 	}
 }
