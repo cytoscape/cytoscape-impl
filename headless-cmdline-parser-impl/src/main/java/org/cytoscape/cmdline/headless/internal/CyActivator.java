@@ -43,6 +43,8 @@ public class CyActivator extends AbstractCyActivator {
 		StartupConfig sc = new StartupConfig(streamUtil, cmdExec, taskManager, setter);
 		Parser p = new Parser(args.getArgs(), cyShutdown, cyVersion, sc,null);
 		sc.start();
-		//*/
+		
+		//Terminate the program
+		cyShutdown.exit(0);
 	}
 }
