@@ -48,7 +48,6 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ComponentSampleModel;
 
 import javax.swing.JComponent;
 
@@ -295,9 +294,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		else {
 			final String tooltipText = getToolTipText(e.getPoint());
 			final Component[] components = this.getParent().getComponents();
-			for(Component comp: components) {
-				if(comp instanceof JComponent)
-				((JComponent) comp).setToolTipText(tooltipText);
+			for (Component comp : components) {
+				if (comp instanceof JComponent)
+					((JComponent) comp).setToolTipText(tooltipText);
 			}
 		}
 	}
