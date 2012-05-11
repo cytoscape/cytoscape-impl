@@ -555,7 +555,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		final Collection<RowSetRecord> records = e.getPayloadCollection();
+		final Collection<RowSetRecord> records = e.getColumnRecords(CyNetwork.NAME);
 		final CyTable source = e.getSource();
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -568,8 +568,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final void updateNetworkNameColumn(final Collection<RowSetRecord> records, final CyTable source) {
 		for (final RowSetRecord record : records) {
 			// assume payload collection is for same column
-			if (!record.getColumn().equals(CyNetwork.NAME))
-				break;
 			for (JInternalFrame targetIF : iFrameMap.keySet()) {
 				if (iFrameMap.get(targetIF).getModel().getDefaultNetworkTable().equals(source)) {
 					targetIF.setTitle(record.getRow().get(CyNetwork.NAME, String.class));

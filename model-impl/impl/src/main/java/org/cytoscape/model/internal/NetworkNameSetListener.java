@@ -1,14 +1,8 @@
 package org.cytoscape.model.internal;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
@@ -20,7 +14,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 /**
  * NetworkNameSetListener implements NetworkAddedListener and RowsSetListener. 
  * The tables are renamed based on the network name. When a network is created
- * for the first time first root network is consructed which creates the base network 
+ * for the first time first root network is constructed which creates the base network 
  * immediately. Since when networks are created the rowssetevent is not fired, the 
  * networkaddedlistener is implemented which sets the name of the table at first. 
  * If the networkaddedevent is for the base network, it sets the root network name 
@@ -48,7 +42,7 @@ public class NetworkNameSetListener implements RowsSetListener, NetworkAddedList
 			updateRootNetworkTableNames(e.getPayloadCollection());
 		}
 		else{
-			updateSubNetworkTableNames(e.getPayloadCollection(), sourceTable);
+			updateSubNetworkTableNames(e.getColumnRecords(CyNetwork.NAME), sourceTable);
 		}
 		
 	
@@ -60,9 +54,6 @@ public class NetworkNameSetListener implements RowsSetListener, NetworkAddedList
 			if (sourceTable.equals(net.getDefaultNetworkTable())){
 				for ( RowSetRecord record :payloadCollection) {
 					// assume payload collection is for same column
-					if ( !record.getColumn().equals(CyNetwork.NAME))
-						break;
-					
 					final Object name = record.getValue();
 					setTablesName(name.toString() + " default ", net.getDefaultEdgeTable(), net.getDefaultNodeTable(), net.getDefaultNetworkTable());
 					
@@ -78,15 +69,11 @@ public class NetworkNameSetListener implements RowsSetListener, NetworkAddedList
 
 		for ( RowSetRecord record : payloadCollection ) {
 			// assume payload collection is for same column
-			if ( !record.getColumn().equals(CyNetwork.NAME))
-				break;
-			
 			final Object name = record.getValue();
 			setTablesName(name.toString() + " root shared ", rootNetwork.getSharedEdgeTable(), rootNetwork.getSharedNodeTable(), rootNetwork.getSharedNetworkTable());
 			setTablesName(name.toString() + " root default ", rootNetwork.getDefaultEdgeTable(), rootNetwork.getDefaultNodeTable(), rootNetwork.getDefaultNetworkTable());
 			
 			return;
-
 		}
 		
 	}

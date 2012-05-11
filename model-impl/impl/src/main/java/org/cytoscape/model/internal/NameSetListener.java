@@ -30,16 +30,7 @@ package org.cytoscape.model.internal;
 
 
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.RowSetRecord;
-
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Any time that the CyNetwork.NAME column is set
@@ -51,7 +42,6 @@ class NameSetListener extends ColumnSetListener {
 	NameSetListener() {
 		super(CyNetwork.NAME, CyRootNetwork.SHARED_NAME);
 	}
-
 	
 }
 

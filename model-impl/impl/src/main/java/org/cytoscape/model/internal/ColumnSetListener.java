@@ -2,14 +2,12 @@ package org.cytoscape.model.internal;
 
 import java.util.List;
 
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 public class ColumnSetListener implements RowsSetListener {
 
@@ -29,10 +27,8 @@ public class ColumnSetListener implements RowsSetListener {
 		final List<CyTable> sharedList = tables.get(local);
 		
 		for ( CyTable shared : sharedList ) {
-			for ( RowSetRecord record : e.getPayloadCollection() ) {
+			for ( RowSetRecord record : e.getColumnRecords(columnName) ) {
 				// assume payload collection is for same column
-				if ( !record.getColumn().equals(columnName))
-					continue;
 				final CyRow r = shared.getRow(record.getRow().get( CyIdentifiable.SUID, Long.class ));
 				if( r != null ) {
 					final Object name = record.getValue();
