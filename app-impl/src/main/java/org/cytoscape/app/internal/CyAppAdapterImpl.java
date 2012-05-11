@@ -523,6 +523,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	public PanelTaskManager getPanelTaskManager() { return panelTaskManager; }
 	public PresentationWriterManager getPresentationWriterManager() { return presentationWriterManager; }
 	public RenderingEngineManager getRenderingEngineManager() { return renderingEngineManager; }
+	public StreamUtil getStreamUtil(){ return streamUtil;}
 	public TaskManager getTaskManager() { return taskManager; }
 	public UndoSupport getUndoSupport() { return undoSupport; }
 	@Override public VisualMappingFunctionFactory getVisualMappingFunctionContinuousFactory() { return visualMappingFunctionContinuousFactory; }
