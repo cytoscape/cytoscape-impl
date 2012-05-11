@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -275,7 +276,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 			CyNetworkView cv = getCurrentNetworkView();
 
-			if (!selectedNetworkViews.contains(cv)) {
+			if (cv != null && !selectedNetworkViews.contains(cv)) {
 				selectedNetworkViews.add(cv);
 			}
 		}
@@ -301,13 +302,14 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setSelectedNetworks(final List<CyNetwork> networks) {
-		final Set<CyNetwork> selectedNetworks;
+		Set<CyNetwork> selectedNetworks = networks != null ? new LinkedHashSet<CyNetwork>(networks)
+				: new LinkedHashSet<CyNetwork>();
 		
 		synchronized (this) {
-			selectedNetworks = selectNetworks(networks);
-			
 			if (currentNetwork != null)
 				selectedNetworks.add(currentNetwork);
+			
+			selectedNetworks = selectNetworks(selectedNetworks);
 		}
 
 		cyEventHelper.fireEvent(new SetSelectedNetworksEvent(this, new ArrayList<CyNetwork>(selectedNetworks)));
