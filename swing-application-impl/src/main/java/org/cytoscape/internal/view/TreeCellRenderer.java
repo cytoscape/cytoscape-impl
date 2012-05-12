@@ -1,24 +1,17 @@
 package org.cytoscape.internal.view;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.xml.soap.Node;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.util.swing.JTreeTable;
-import org.cytoscape.view.model.CyNetworkViewManager;
 
 final class TreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -75,7 +68,6 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 			return this;
 		}
 		
-		setForeground(treeNode.getNodeColor());
 		setForeground(treeNode.getNodeColor());
 		setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyNetwork.NAME, String.class));
 
