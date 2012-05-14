@@ -1015,7 +1015,10 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 		List<CySubNetwork> subNetList = rootNet.getSubNetworkList();
 		Set<CySubNetwork> registeredSubNetSet = new LinkedHashSet<CySubNetwork>();
 		
-		registeredSubNetSet.add(rootNet.getBaseNetwork()); // The base network must be the first one!
+		CySubNetwork baseNetwork = rootNet.getBaseNetwork();
+		if (isRegistered(baseNetwork)) {
+			registeredSubNetSet.add(baseNetwork); // The base network must be the first one!
+		}
 		
 		for (CySubNetwork sn : subNetList) {
 			if (isRegistered(sn))
