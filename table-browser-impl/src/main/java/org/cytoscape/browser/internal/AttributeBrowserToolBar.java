@@ -579,6 +579,9 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 			formulaBuilderButton.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
+						if (browserTableModel == null)
+							return;
+						
 						final JTable table = browserTableModel.getTable();
 
 						// Do not allow opening of the formula builder dialog
