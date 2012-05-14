@@ -4,6 +4,7 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.modify.mArrow;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.model.CyNetwork;
 
 import java.awt.AlphaComposite;
@@ -20,6 +21,8 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+
+import java.awt.geom.AffineTransform;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -118,8 +121,12 @@ public class Annotation extends Component {
 		nextLocn[0] = Double.parseDouble(argMap.get(X));
 		nextLocn[1] = Double.parseDouble(argMap.get(Y));
 		// Transform the coordinates
-		cyAnnotator.getNetworkCanvas().getAffineTransform().transform(nextLocn, 0, nextLocn, 0, 1);
+		AffineTransform t = ((InnerCanvas)view.getCanvas()).getAffineTransform();
+		if (t != null) {
+			t.transform(nextLocn, 0, nextLocn, 0, 1);
+		}
 		this.setLocation((int)nextLocn[0],(int)nextLocn[1]);
+
 	}
 
 	public void updateAnnotationAttributes() {
@@ -149,10 +156,14 @@ public class Annotation extends Component {
 	}
 
   protected Color getColor(String strColor) {
+		if (strColor == null)
+			return null;
 		return new Color(Integer.parseInt(strColor));
   }
 
   protected String convertColor(Color clr) {
+		if (clr == null)
+			return null;
 		return Integer.toString(clr.getRGB());
   }
 

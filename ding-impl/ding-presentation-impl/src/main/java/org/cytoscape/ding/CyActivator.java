@@ -145,8 +145,13 @@ public class CyActivator extends AbstractCyActivator {
 		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor);
 
 		AnnotationFactory imageAnnotationFactory = new ImageAnnotationFactory(customGraphicsManagerServiceRef);
+		annotationFactoryManager.addAnnotationFactory(imageAnnotationFactory, null);
+
 		AnnotationFactory shapeAnnotationFactory = new ShapeAnnotationFactory();
+		annotationFactoryManager.addAnnotationFactory(shapeAnnotationFactory, null);
+
 		AnnotationFactory textAnnotationFactory = new TextAnnotationFactory();
+		annotationFactoryManager.addAnnotationFactory(textAnnotationFactory, null);
 
 		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
 		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);

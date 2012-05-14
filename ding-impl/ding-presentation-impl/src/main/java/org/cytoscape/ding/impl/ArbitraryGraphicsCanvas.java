@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
+import org.cytoscape.ding.impl.cyannotator.annotations.Annotation;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
@@ -123,7 +124,11 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		m_componentToPointMap.put(component, nodePos);
 
 		// do our stuff
-		return super.add(component);
+		Component c = super.add(component);
+
+		contentChanged();
+
+		return c;
 	}
 
 	/**
@@ -134,6 +139,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		m_componentToPointMap.remove(component);
 
 		super.remove(component);
+
+		contentChanged();
 	}
         
 	/**
@@ -156,6 +163,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 
 		nodePos.x=(int)nodeCanvasCoordinates[0];
 		nodePos.y=(int)nodeCanvasCoordinates[1];
+
+		contentChanged();
 	}
 
 	/**
@@ -219,9 +228,65 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		return true;
 	}
 
-	public void drawCanvas(VolatileImage image, double xCenter, double yCenter, double scaleFactor) {
+	public void drawCanvas(VolatileImage image, double xCenter, double yCenter, 
+	                       double scaleFactor) {
+/*
 		// get image graphics
 		final Graphics2D image2D = image.createGraphics();
+		System.out.println("drawCanvas: new scaleFactor = "+scaleFactor+", xCenter = "+xCenter+", yCenter = "+yCenter);
+		double x = m_dGraphView.m_networkCanvas.m_xCenter;
+		double y = m_dGraphView.m_networkCanvas.m_yCenter;
+		double deltaX = x-xCenter;
+		double deltaY = y-yCenter;
+		System.out.println("drawCanvas: xCenter = "+x+", yCenter = "+y);
+
+		// get list of child components
+		Component[] components = getComponents();
+
+		// no components, outta here
+		if (components.length == 0)
+			return;
+
+		// interate through the components
+		for (Component c : components) {
+			// get position of this component in network coordinates
+			Point position = m_componentToPointMap.get(c);
+			int xOrig = position.x;
+			int yOrig = position.y;
+
+			final double[] nodeCanvasCoordinates = new double[2];
+			nodeCanvasCoordinates[0] = position.getX();
+			nodeCanvasCoordinates[1] = position.getY();
+			System.out.println("   component is at: "+position.getX()+","+position.getY());
+
+			// Scale & Translate
+			nodeCanvasCoordinates[0] = (nodeCanvasCoordinates[0]+deltaX) * scaleFactor;
+			nodeCanvasCoordinates[1] = (nodeCanvasCoordinates[1]+deltaY) * scaleFactor;
+
+			// Move it into position
+			c.setLocation((int)nodeCanvasCoordinates[0], (int)nodeCanvasCoordinates[1]);
+
+			System.out.println("   transformed component is at: "+nodeCanvasCoordinates[0]+","+nodeCanvasCoordinates[1]);
+
+			// If we're painting an annotation, set the zoom
+			if (c instanceof Annotation) {
+				Annotation a = (Annotation)c;
+				double zoom = a.getZoom();
+				// a.adjustZoom(scaleFactor);
+				a.paint(image2D);
+				// a.adjustZoom(zoom);
+			} else {
+				c.paint(image2D);
+			}
+
+			// Move it back
+			position.x = xOrig;
+			position.y = yOrig;
+			c.setLocation(xOrig, yOrig);
+			System.out.println("   done");
+		}
+		System.out.println("drawCanvas: done");
+*/
 	}
 
 	/**
@@ -330,5 +395,12 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		image2D.setPaint(backgroundColor);
 		image2D.fillRect(0, 0, m_img.getWidth(null), m_img.getHeight(null));
 		image2D.setComposite(origComposite);
+	}
+
+	private void contentChanged() {
+		ContentChangeListener lis = m_dGraphView.m_cLis[0];
+
+		if (lis != null)
+			lis.contentChanged();
 	}
 }

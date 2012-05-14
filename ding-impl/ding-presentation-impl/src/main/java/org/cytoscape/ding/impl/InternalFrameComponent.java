@@ -104,6 +104,11 @@ public class InternalFrameComponent extends JComponent implements Printable {
 	private DingCanvas foregroundCanvas;
 
 	/**
+	 * ref to the graph view
+	 */
+	private DGraphView dGraphView;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param layeredPane JLayedPane
@@ -115,6 +120,7 @@ public class InternalFrameComponent extends JComponent implements Printable {
 		this.backgroundCanvas = dGraphView.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS);
 		this.networkCanvas = dGraphView.getCanvas(DGraphView.Canvas.NETWORK_CANVAS);
 		this.foregroundCanvas = dGraphView.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS);
+		this.dGraphView = dGraphView;
 
 		// set default ordering
 		initLayeredPane();
@@ -131,10 +137,7 @@ public class InternalFrameComponent extends JComponent implements Printable {
 	 */
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-		// call reshape on each innercanvas
-		backgroundCanvas.setBounds(x, y, width, height);
-		networkCanvas.setBounds(x, y, width, height);
-		foregroundCanvas.setBounds(x, y, width, height);
+		dGraphView.setBounds(x, y, width, height);
 	}
 
 	/**

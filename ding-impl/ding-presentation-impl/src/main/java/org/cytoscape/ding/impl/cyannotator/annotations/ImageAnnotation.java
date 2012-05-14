@@ -49,7 +49,9 @@ public class ImageAnnotation extends Annotation {
 
 	public ImageAnnotation() { super(); }
 
-	public ImageAnnotation(CyAnnotator cyAnnotator, DGraphView view, int x, int y, URL url, BufferedImage image, int compCount, double zoom, CustomGraphicsManager customGraphicsManager) {
+	public ImageAnnotation(CyAnnotator cyAnnotator, DGraphView view, int x, int y, 
+	                       URL url, BufferedImage image, int compCount, double zoom, 
+	                       CustomGraphicsManager customGraphicsManager) {
 		super(cyAnnotator, view, x, y, compCount, zoom);
 		this.image=image;
 		this.customGraphicsManager = customGraphicsManager;
@@ -61,9 +63,11 @@ public class ImageAnnotation extends Annotation {
 		this.cg = new URLImageCustomGraphics(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
+		updateAnnotationAttributes();
 	}
 
-	public ImageAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, CustomGraphicsManager customGraphicsManager) {
+	public ImageAnnotation(CyAnnotator cyAnnotator, DGraphView view, 
+	                       Map<String, String> argMap, CustomGraphicsManager customGraphicsManager) {
 		super(cyAnnotator, view, argMap);
 		this.customGraphicsManager = customGraphicsManager;
 		// Get the image from the image pool
@@ -81,6 +85,7 @@ public class ImageAnnotation extends Annotation {
 		imageWidth = Double.parseDouble(argMap.get(WIDTH));
 		imageHeight = Double.parseDouble(argMap.get(HEIGHT));
 		resizedImage=resize(image, (int)image.getWidth(), (int)image.getHeight());
+		updateAnnotationAttributes();
 	}
 
 	public Map<String,String> getArgMap() {

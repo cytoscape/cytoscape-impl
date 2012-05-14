@@ -55,7 +55,8 @@ public class CyAnnotator {
 
 	private static final String ANNOTATION_ATTRIBUTE="__Annotations";
 
-	private Map<Annotation, Map<String,String>> annotationMap = new HashMap<Annotation, Map<String,String>>();
+	private Map<Annotation, Map<String,String>> annotationMap = 
+	        new HashMap<Annotation, Map<String,String>>();
 
 	private List<Annotation> selectedAnnotations=new ArrayList<Annotation>();
 	private double prevZoom=1;
@@ -69,7 +70,8 @@ public class CyAnnotator {
 
 	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager) {
 		this.view = view;
-		this.foreGroundCanvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
+		this.foreGroundCanvas = 
+			(ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.networkCanvas = view.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
 		initListeners();  
@@ -83,6 +85,7 @@ public class CyAnnotator {
 
 		//Set up the foreGroundCanvas as a dropTarget, so that we can drag and drop JPanels, created Annotations onto it.
 		//We also set it up as a DragSource, so that we can drag created Annotations
+		// TODO: This should be replaced with a drag of the component
 		DropTargetComponent dtarget=new DropTargetComponent();
 		DragSourceComponent dsource=new DragSourceComponent();
 
@@ -92,17 +95,28 @@ public class CyAnnotator {
 		//We also setup this class as a ViewportChangeListener to the current networkview
 		myViewportChangeListener=new MyViewportChangeListener();
 		view.addViewportChangeListener(myViewportChangeListener);
+	}
 
+
+	public void loadAnnotations() {
+		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
-		final CyTable networkAttributes = view.getModel().getDefaultNetworkTable();
+		final CyTable networkAttributes = network.getDefaultNetworkTable();
 
+		// This should be in the HIDDEN_ATTRS namespace, but we can't get to it
+		// without a pointer to the CyNetworkTableManager
 		if (networkAttributes.getColumn(ANNOTATION_ATTRIBUTE) == null) {
-			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE,String.class,false,Collections.EMPTY_LIST);
+			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE,
+			                                   String.class,false,Collections.EMPTY_LIST);
 		}
 
-		List<String> annotations = view.getModel().getRow(view.getModel()).getList(ANNOTATION_ATTRIBUTE,String.class);
-		Map<Integer, Annotation> idMap = new HashMap<Integer, Annotation>(); // Keep a map of the original annotation ID's
-		List<Map<String,String>> arrowList = new ArrayList<Map<String, String>>(); // Keep a list of arrows
+		List<String> annotations = network.getRow(network).
+		                                          getList(ANNOTATION_ATTRIBUTE,String.class);
+		Map<Integer, Annotation> idMap = 
+		    new HashMap<Integer, Annotation>(); // Keep a map of the original annotation ID's
+
+		List<Map<String,String>> arrowList = 
+		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
 
 		if (annotations != null) {
 			for (String s: annotations) {
@@ -134,8 +148,6 @@ public class CyAnnotator {
 				arrow.setSource(annotation.getComponentNumber());
 			}
 		}
-		
-		view.updateView();	
 	}
 
 	public Component getComponentAt(int x, int y) {
@@ -226,6 +238,7 @@ public class CyAnnotator {
 		//createShape will have all the properties associated with the shape to be drawn
 		//Create a shapeAnnotattion based on these properties and add it to foreGroundCanvas
 		newShape= new ShapeAnnotation(this,view, x, y, createShape.getShapeType(), 
+		                              10, 10,
 		                              createShape.getFillColor(), 
 		                              createShape.getEdgeColor(), createShape.getEdgeThickness());
 		foreGroundCanvas.add(newShape);

@@ -50,10 +50,12 @@ public class TextAnnotation extends Annotation {
 
 	public TextAnnotation() { super(); }
 
-	public TextAnnotation(CyAnnotator cyAnnotator, DGraphView view, int x, int y, String text, int compCount, double zoom){
+	public TextAnnotation(CyAnnotator cyAnnotator, DGraphView view, 
+	                      int x, int y, String text, int compCount, double zoom){
 		super(cyAnnotator, view, x, y, compCount, zoom);
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
+		updateAnnotationAttributes();
 	}
 
 	// This constructor is used to construct a text annotation from an
@@ -63,6 +65,7 @@ public class TextAnnotation extends Annotation {
 		this.font = getArgFont(argMap);
 		this.color = getColor(argMap.get(COLOR));
 		this.text = argMap.get(TEXT);
+		updateAnnotationAttributes();
 	}
 
 	public Map<String,String> getArgMap() {

@@ -44,6 +44,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.io.ByteArrayInputStream;
@@ -178,8 +179,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	static final Paint DEFAULT_ANCHOR_SELECTED_PAINT = Color.red;
 	static final Paint DEFAULT_ANCHOR_UNSELECTED_PAINT = Color.DARK_GRAY;
 
-	boolean calledFromGetSnapshot = false;
-	
 	private final CyEventHelper cyEventHelper;
 
 	// Size of snapshot image
@@ -401,6 +400,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final NodeViewDefaultSupport m_nodeViewDefaultSupport;
 	private final EdgeViewDefaultSupport m_edgeViewDefaultSupport;
 	private final CyAnnotator cyAnnotator;
+	private final AnnotationFactoryManager annMgr;
+
+	private boolean annotationsLoaded = false;
 
 	/**
 	 * Create presentation from View Model
@@ -461,6 +463,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		
 		this.manager = manager;
 		this.cyEventHelper = cyEventHelper;
+		this.annMgr = annMgr;
 
 		// creating empty subnetworks
 		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork();
@@ -504,9 +507,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// Used to synchronize ding's internal selection state with the rest of Cytoscape.
 		new FlagAndSelectionHandler(this); 
 
-		cyAnnotator = new CyAnnotator(this,annMgr);
 		logger.debug("Phase 4: Everything created: time = " + (System.currentTimeMillis() - start));
 		setGraphLOD(dingGraphLOD);
+
+		// Finally, intialize our annotations
+		this.cyAnnotator = new CyAnnotator(this, annMgr);
 	}
 
 	
@@ -1121,10 +1126,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			                              ((double) m_networkCanvas.getHeight()) / 
 			                             (m_extentsBuffD[3] - m_extentsBuffD[1])) * 0.98;
 			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
-			if (calledFromGetSnapshot) {
-				calledFromGetSnapshot = false;
-				m_networkCanvas.m_scaleFactor = 1.0;
-			}
 			m_viewportChanged = true;
 			
 			// Update view model.  Zoom Level should be modified.
@@ -1884,13 +1885,19 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *            DOCUMENT ME!
 	 */
 //TODO: Need to fix up scaling and sizing.  
-	public void drawSnapshot(Image img, GraphLOD lod, Paint bgPaint, double xCenter,
+	public void drawSnapshot(VolatileImage img, GraphLOD lod, Paint bgPaint, double xCenter,
 	                         double yCenter, double scaleFactor) {
+		// First paint the background
+		m_backgroundCanvas.drawCanvas(img, xCenter, yCenter, scaleFactor);
+
 		synchronized (m_lock) {
 			GraphRenderer.renderGraph(m_drawPersp, m_spacial, lod, m_nodeDetails,
 			                          m_edgeDetails, m_hash, new GraphGraphics(img, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor);
 		}
+
+		// Finally, draw the foreground
+		m_foregroundCanvas.drawCanvas(img, xCenter, yCenter, scaleFactor);
 	}
 
 	/**
@@ -2024,7 +2031,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @return Image
 	 * @throws IllegalArgumentException
 	 */
-	private Image createImage(final int width, final int height, double shrink, final boolean skipBackground) {
+	private Image createImage(final int width, final int height, 
+	                          double shrink, final boolean skipBackground) {
 		// Validate arguments
 		if (width < 0 || height < 0) {
 			throw new IllegalArgumentException("DGraphView.createImage(int width, int height): "
@@ -2256,6 +2264,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_backgroundCanvas.setBounds(x, y, width, height);
 		m_networkCanvas.setBounds(x, y, width, height);
 		m_foregroundCanvas.setBounds(x, y, width, height);
+	
+		// If this is the first call to setBounds, load any annotations
+		if (!annotationsLoaded) {
+			annotationsLoaded = true;
+			cyAnnotator.loadAnnotations();
+		}
+
 	}
 
 	@Override
