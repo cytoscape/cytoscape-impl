@@ -328,7 +328,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		final boolean somethingChanged;
 
 		synchronized (m_view.m_lock) {
-			somethingChanged = selectInternal(true);
+			somethingChanged = selectInternal(false);
 
 			if (somethingChanged)
 				m_view.m_contentChanged = true;

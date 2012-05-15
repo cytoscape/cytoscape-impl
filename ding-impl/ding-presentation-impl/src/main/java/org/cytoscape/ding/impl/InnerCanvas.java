@@ -616,7 +616,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			selectedEdges[i] = edges.nextLong();
 
 		for (int i = 0; i < selectedEdges.length; i++)
-			((DEdgeView) m_view.getDEdgeView(selectedEdges[i])).selectInternal(true);
+			((DEdgeView) m_view.getDEdgeView(selectedEdges[i])).selectInternal(false);
 
 		if (selectedEdges.length > 0)
 			m_view.m_contentChanged = true;
@@ -1314,7 +1314,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 
 		public void delegateMouseDragEvent(MouseEvent e) {
-			// Note: the fake clic are here for OSX but I do not see a reason to disable them on other systems
+			// Note: the fake clicks are here for OSX but I do not see a reason to disable them on other systems
 			switch (e.getModifiersEx()) {
 			case MouseEvent.BUTTON1_DOWN_MASK:
 				singleLeftClick(e);
