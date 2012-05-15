@@ -12,6 +12,8 @@ public final class VizMapPropertySheetTable extends PropertySheetTable {
 
 	private final static long serialVersionUID = 1213748836812161L;
 
+	
+	@Override
 	public String getToolTipText(MouseEvent me) {
 		final Point pt = me.getPoint();
 		final int row = rowAtPoint(pt);

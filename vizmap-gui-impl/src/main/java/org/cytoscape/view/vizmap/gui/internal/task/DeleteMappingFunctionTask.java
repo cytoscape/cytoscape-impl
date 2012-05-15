@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
@@ -30,25 +32,32 @@ public class DeleteMappingFunctionTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-		int selectedRow = table.getSelectedRow();
-		
-		// If not selected, do nothing.
-		if(selectedRow < 0)
-			return;
-		
-		final Item value = (Item) table.getValueAt(selectedRow, 0);
-		
-		
-		if(value.isProperty()) {
-			final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
-			
-			if(prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
-				final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
-				removeMapping(manager.getCurrentVisualStyle(), vp);
-				
-				updatePropertySheet(prop, vp);
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				int selectedRow = table.getSelectedRow();
+
+				// If not selected, do nothing.
+				if (selectedRow < 0)
+					return;
+
+				final Item value = (Item) table.getValueAt(selectedRow, 0);
+
+				if (value.isProperty()) {
+					final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
+
+					if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
+						final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
+						removeMapping(manager.getCurrentVisualStyle(), vp);
+
+						updatePropertySheet(prop, vp);
+					}
+				}
+
 			}
-		}
+		});
+
 	}
 	
 	private void removeMapping(final VisualStyle style, final VisualProperty<?> vp) {

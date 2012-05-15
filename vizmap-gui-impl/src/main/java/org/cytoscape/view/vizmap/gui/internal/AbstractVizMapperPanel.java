@@ -265,7 +265,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 		bottomPanel = new javax.swing.JPanel();
 
 		defaultViewImagePanel = new javax.swing.JPanel();
-		propertySheetPanel.setTable(new PropertySheetTable());
+		propertySheetPanel.setTable(new VizMapPropertySheetTable());
 
 		vsSelectPanel = new javax.swing.JPanel();
 

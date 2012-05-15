@@ -6,6 +6,8 @@ import java.beans.PropertyEditor;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -118,8 +120,14 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 			return;
 
 		final VizMapEventHandler handler = getHandler(handlerKey.toUpperCase());
-		if (handler != null)
-			handler.processEvent(e);
+		if (handler != null) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					handler.processEvent(e);
+				}
+			});
+		}
 	}
 
 }

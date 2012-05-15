@@ -8,7 +8,7 @@ import javax.swing.event.MenuEvent;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
-public class SetViewModeAction extends AbstractCyAction {
+public final class SetViewModeAction extends AbstractCyAction {
 	
 	private static final long serialVersionUID = -832910068413870738L;
 

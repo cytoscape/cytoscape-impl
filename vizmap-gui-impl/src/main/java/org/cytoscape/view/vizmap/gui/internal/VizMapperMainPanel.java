@@ -204,7 +204,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	protected void switchVS(final VisualStyle style, boolean forceUpdate) {
 		// Close editor windows
 		editorWindowManager.closeAllEditorWindows();
-		
 		vizMapPropertySheetBuilder.setPropertyTable(style);
 
 		// Apply style to the current network view if necessary.
@@ -490,8 +489,14 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	@Override
 	public void propertyChange(PropertyChangeEvent fromSetViewMode) {
 		// Need to update property sheet.
-		if(fromSetViewMode.getPropertyName().equals(SetViewModeAction.VIEW_MODE_CHANGED))
-			switchVS(manager.getCurrentVisualStyle(), true);
+		if (fromSetViewMode.getPropertyName().equals(SetViewModeAction.VIEW_MODE_CHANGED)) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					switchVS(manager.getCurrentVisualStyle(), true);
+				}
+			});
+		}
 
 	}
 

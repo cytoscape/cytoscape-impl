@@ -56,7 +56,7 @@ public class VizMapPropertySheetBuilder {
 	private static final int ROW_HEIGHT_MAPPING_CELL = 90;
 	private static final Color CATEGORY_BACKGROUND_COLOR = new Color(10, 10, 50, 20);
 
-	private PropertySheetPanel propertySheetPanel;
+	private final PropertySheetPanel propertySheetPanel;
 
 	private DefaultTableCellRenderer emptyBoxRenderer;
 	private DefaultTableCellRenderer filledBoxRenderer;

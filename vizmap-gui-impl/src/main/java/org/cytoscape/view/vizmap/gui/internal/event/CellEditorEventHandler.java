@@ -28,9 +28,12 @@
 package org.cytoscape.view.vizmap.gui.internal.event;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.EventListener;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.event.TableModelListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyIdentifiable;
@@ -59,6 +62,7 @@ import org.slf4j.LoggerFactory;
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTable;
+import com.l2fprod.common.propertysheet.PropertySheetTableModel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
 // TODO: Should be refactored for readability!!
@@ -112,7 +116,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	 * @param e PCE to be processed in this handler.
 	 */
 	@Override
-	public void processEvent(final PropertyChangeEvent e) {		
+	public void processEvent(final PropertyChangeEvent e) {
 
 		final Object newVal = e.getNewValue();
 		final Object oldVal = e.getOldValue();
@@ -145,6 +149,9 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				return;
 			final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
 			processTableColumnChange(newVal.toString(), prop, editor);
+			
+			
+			
 		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
 			// Case 2. Switch mapping type
 			// Parent is always root.
@@ -304,7 +311,13 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			style.addVisualMappingFunction(newMapping);
 		} else
 			newMapping = currentMapping;
-
+		
+		// Disable listeners to avoid unnecessary updates
+		final PropertySheetTableModel model = (PropertySheetTableModel) this.propertySheetPanel.getTable().getModel();
+		final TableModelListener[] modelListeners = model.getTableModelListeners();
+		for(final TableModelListener tm: modelListeners)
+			model.removeTableModelListener(tm);
+		
 		logger.debug("New VisualMappingFunction Created: Mapping Type = "
 				+ style.getVisualMappingFunction(vp).toString());
 		logger.debug("New VisualMappingFunction Created: Controlling attr = "
@@ -331,6 +344,10 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		applicationManager.getCurrentNetworkView().updateView();
 
 		vizMapPropertySheetBuilder.updateTableView();
+		
+		// Restore listeners
+		for(final TableModelListener tm: modelListeners)
+			model.addTableModelListener(tm);
 	}
 	
 	private void processTableColumnChange(final String newColumnName, final VizMapperProperty<?, ?, ?> prop,
