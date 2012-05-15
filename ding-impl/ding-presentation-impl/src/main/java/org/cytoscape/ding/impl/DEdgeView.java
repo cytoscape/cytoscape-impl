@@ -551,7 +551,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		synchronized (m_view.m_lock) {
 			
 			final Bend bend = m_view.m_edgeDetails.bend(model);
-			
 			if (bend.getAllHandles().size() == 0) {
 				// anchors object is empty. Add first handle.
 				addHandleInternal(0, pt);
@@ -606,8 +605,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	 */
 	private void addHandleInternal(final int insertInx, final Point2D handleLocation) {
 		synchronized (m_view.m_lock) {
-			final Bend bend = m_view.m_edgeDetails.bend(model);
+			final Bend bend = m_view.m_edgeDetails.bend(model);			
 			final Handle handle = new HandleImpl(handleLocation.getX(), handleLocation.getY());
+			handle.defineHandle(m_view, this, handleLocation.getX(), handleLocation.getY());
 			
 			bend.insertHandleAt(insertInx, handle);
 
