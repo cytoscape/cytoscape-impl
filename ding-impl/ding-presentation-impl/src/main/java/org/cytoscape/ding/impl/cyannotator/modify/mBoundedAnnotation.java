@@ -10,14 +10,12 @@ public class mBoundedAnnotation extends javax.swing.JFrame {
 
 	
     public mBoundedAnnotation(BoundedAnnotation mAnnotation) {
-    	
     	this.mAnnotation=mAnnotation;
-        initComponents();
+    	initComponents();
     }
     
 
     private void initComponents() {
-    	
         jScrollPane1 = new javax.swing.JScrollPane();
         boundedAnnotation1 = new mBoundedAnnotationPanel(mAnnotation);
         applyButton = new javax.swing.JButton();

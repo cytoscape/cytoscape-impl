@@ -64,7 +64,6 @@ public class ImageAnnotation extends Annotation {
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public ImageAnnotation(CyAnnotator cyAnnotator, DGraphView view, 
@@ -87,7 +86,6 @@ public class ImageAnnotation extends Annotation {
 		imageHeight = Double.parseDouble(argMap.get(HEIGHT));
 		resizedImage=resize(image, (int)image.getWidth(), (int)image.getHeight());
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -180,7 +178,6 @@ public class ImageAnnotation extends Annotation {
 	   
 		setTempZoom(newZoom);		
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 
@@ -200,7 +197,6 @@ public class ImageAnnotation extends Annotation {
 				
 		setZoom(newZoom);		
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 

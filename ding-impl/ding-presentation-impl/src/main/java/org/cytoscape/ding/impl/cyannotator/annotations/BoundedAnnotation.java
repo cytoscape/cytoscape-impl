@@ -22,11 +22,8 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 
 public class BoundedAnnotation extends TextAnnotation {
-
-	private int shapeType=1; //0-Rect 1-RoundRect 2-Ovel
-	private Color fillColor=null, edgeColor=Color.BLACK;
-	private boolean fillVal=false;
 	private float edgeThickness=2.0f;
+	private boolean fillVal = false;
 
 	private static String EDGECOLOR = "edgeColor";
 	private static String EDGETHICKNESS = "edgeThickness";
@@ -37,13 +34,15 @@ public class BoundedAnnotation extends TextAnnotation {
 
 	public BoundedAnnotation() { super(); }
 	
-	public BoundedAnnotation(CyAnnotator cyAnnotator, DGraphView view, int x, int y, String text, int compCount, double zoom, 
+	public BoundedAnnotation(CyAnnotator cyAnnotator, DGraphView view, int x, int y, 
+	                         String text, int compCount, double zoom, 
 	                         Color fillColor, Color edgeColor, int shapeType, float edgeThickness){
 		super(cyAnnotator, view, x, y, text, compCount, zoom);
 		this.shapeType=shapeType;
 		setFillColor(fillColor);
 		this.edgeColor=edgeColor;
 		this.edgeThickness=edgeThickness;
+		updateAnnotationAttributes();
 	}
 
 	public BoundedAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
@@ -55,6 +54,7 @@ public class BoundedAnnotation extends TextAnnotation {
 		setFillColor(fillColor);
 		this.edgeThickness = Float.parseFloat(argMap.get(EDGETHICKNESS));
 		this.shapeType = Integer.parseInt(argMap.get(SHAPETYPE));
+		updateAnnotationAttributes();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -67,10 +67,47 @@ public class BoundedAnnotation extends TextAnnotation {
 		argMap.put(SHAPETYPE, Integer.toString(this.shapeType));
 		return argMap;
 	}
+
+	@Override
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+		super.drawAnnotation(g, x, y, scaleFactor);
+		Graphics2D g2=(Graphics2D)g;
+		float stroke = (float)(edgeThickness*scaleFactor);
+		if (stroke < 1.0f) stroke = 1.0f;
+
+		//Setting up anti-aliasing for high quality rendering
+		g2.setComposite(AlphaComposite.Src);
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+
+		int width = (int)(getAnnotationWidth()*scaleFactor/view.getZoom());
+		int height = (int)(getAnnotationHeight()*scaleFactor/view.getZoom());
+
+			x -= (getAnnotationWidth(g2)-getTextWidth(g2))/2; // Provide a little padding
+
+		// Get the scaled font metrics
+		int tWidth = getTextWidth(g2, scaleFactor);
+		int offset = (width - tWidth) / 2;
+
+		boolean selected = isSelected();
+		setSelected(false);
+		drawShape(g2, (int)(x*scaleFactor)-offset, (int)(y*scaleFactor), 
+		          width, height, stroke);
+		setSelected(selected);
+	}
 	
 	public void paint(Graphics g) {
 		Graphics2D g2=(Graphics2D)g;
+
+		// Disable the selection for our parent
+		boolean selected = isSelected();
+		setSelected(false);
 		super.paint(g);		
+		setSelected(selected);
+
+		float stroke = edgeThickness;
+		if (stroke < 1.0f) stroke = 1.0f;
 
 		//Setting up anti-aliasing for high quality rendering
 		g2.setComposite(AlphaComposite.Src);
@@ -82,92 +119,32 @@ public class BoundedAnnotation extends TextAnnotation {
 		if(usedForPreviews){
 			x+=(int)(getWidth()-getAnnotationWidth(g2))/2;
 			y+=(int)(getHeight()-getAnnotationHeight(g2))/2;
+		} else {
+			x -= (getAnnotationWidth(g2)-getTextWidth(g2))/2; // Provide a little padding
 		}
-						
-		if(shapeType==0) {			
-			//Rectangle
-			if(fillVal)
-			{
-				g2.setColor(fillColor);
-				g2.fillRect(x, y, getAnnotationWidth(), getAnnotationHeight());
-			}
-			
-			if(isSelected())
-				g2.setColor(Color.YELLOW);
-			else
-				g2.setColor(edgeColor);
-			
-			g2.setStroke(new BasicStroke(edgeThickness));
-			g2.drawRect(x, y, getAnnotationWidth(), getAnnotationHeight());
-		} else if(shapeType==1) {
-			//Rounded Rectangle
-			if(fillVal)
-			{
-				g2.setColor(fillColor);
-				g2.fillRoundRect(x, y, getAnnotationWidth(), getAnnotationHeight(), 10, 10);
-			}
-			
-			if(isSelected())
-				g2.setColor(Color.YELLOW);
-			else
-				g2.setColor(edgeColor);
-			
-			g2.setStroke(new BasicStroke(edgeThickness));
-			g2.drawRoundRect(x, y, getAnnotationWidth(), getAnnotationHeight(), 10, 10);
-		} else if(shapeType==2) {
-			//Oval
-			if(fillVal)
-			{
-				g2.setColor(fillColor);
-				g2.fillOval(x, y, getAnnotationWidth(), getAnnotationHeight());
-			}
-			
-			if(isSelected())
-				g2.setColor(Color.YELLOW);
-			else
-				g2.setColor(edgeColor);
-			
-			g2.setStroke(new BasicStroke(edgeThickness));
-			g2.drawOval(x, y, getAnnotationWidth(), getAnnotationHeight());						
-		}
-		
-		//To draw Text
-		
-		g2.setColor(getTextColor());
-		g2.setFont(getFont());
-		
-		g2.drawChars(getText().toCharArray(), 0, getText().length(), x+(getAnnotationWidth()-getTextWidth())/2, y+getTextHeight());		
-	}	
-	
-	public void adjustSpecificZoom(double newZoom){
-		float factor=((float)(newZoom/tempZoom));
-		
-		font=font.deriveFont(factor*font.getSize2D());
-		tempZoom=newZoom;
-		
-		setSize(getAnnotationWidth(), getAnnotationHeight());		
+
+		drawShape(g2, x, y, getAnnotationWidth(), getAnnotationHeight(), stroke);
 	}	
 	
 	public void adjustZoom(double newZoom){
-		float factor=((float)(newZoom/zoom));
-		
-		font=font.deriveFont(factor*font.getSize2D());
+		float factor=((float)(newZoom/getZoom()));
 		edgeThickness*=factor;
-		adjustArrowThickness(newZoom);
-		setSize(getAnnotationWidth(), getAnnotationHeight());		
-		zoom=newZoom;	   
+		super.adjustZoom(newZoom);
 	}	
-	
+
 	public void setEdgeThickness(float val){
 		edgeThickness=val;
+		updateAnnotationAttributes();
 	}
 	
 	public void setShapeType(int val){
 		shapeType=val;
+		updateAnnotationAttributes();
 	}
 
 	public void setFillVal(boolean val){
 		fillVal=val;
+		updateAnnotationAttributes();
 	}
 	
 	public void setFillColor(Color newColor){
@@ -178,10 +155,13 @@ public class BoundedAnnotation extends TextAnnotation {
 		}
 		else
 			this.fillVal=false;
+
+		updateAnnotationAttributes();
 	} 
 	
 	public void setEdgeColor(Color newColor){
 		this.edgeColor=newColor;
+		updateAnnotationAttributes();
 	}	
 
 	public boolean getFillVal(){
@@ -209,10 +189,8 @@ public class BoundedAnnotation extends TextAnnotation {
 	 
 	@Override
 	public int getAnnotationWidth(){
-
 		if(shapeType==0 || shapeType==1)
 			return getTextWidth()+getTextHeight()/2;
-
 		else
 			return getTextWidth()*3/2;
 	}
@@ -223,10 +201,8 @@ public class BoundedAnnotation extends TextAnnotation {
 	}
    
 	public int getAnnotationWidth(Graphics2D g2){
-
 		if(shapeType==0 || shapeType==1)
 			return getTextWidth(g2)+getTextHeight(g2)/2;
-
 		else
 			return getTextWidth(g2)*3/2;
 	}

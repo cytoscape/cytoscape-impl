@@ -17,7 +17,7 @@ public class BoundedAnnotationFactory implements AnnotationFactory {
 
 	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
 		if ( type.equals(BoundedAnnotation.NAME) ) 
-			return new BoundedAnnotation(cyAnnotator, view,argMap);
+			return new BoundedAnnotation(cyAnnotator, view, argMap);
 		else 
 			return null;
 	}

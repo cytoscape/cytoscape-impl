@@ -62,6 +62,11 @@ public class Annotation extends Component {
 	protected boolean drawArrow=false, arrowDrawn=false;
 	protected int arrowIndex=0;
 
+	// These allow us to have a shared shape drawing routine
+	protected int rVal=5;
+	protected int shapeType=1;
+	protected Color fillColor=null, edgeColor=Color.BLACK;
+
 	// arguments that are common to more than one annotation type
 	protected static final String TYPE="type";
 	protected static final String X="x";
@@ -141,6 +146,7 @@ public class Annotation extends Component {
 					cyAnnotator.addAnnotation(annotation);
 				}
 			}
+			contentChanged();
 		}
 	}
 
@@ -659,11 +665,58 @@ public class Annotation extends Component {
 	}
 
 	public void contentChanged() {
+		if (view == null) return;
 		final ContentChangeListener lis = view.getContentChangeListener();
 		if (lis != null)
 			lis.contentChanged();
 	}
 
+	protected void drawShape(Graphics2D g2, int x, int y, int width, int height, float stroke) {
+		// System.out.println("drawShape: x,y="+x+","+y+" "+width+"x"+height);
+		if(shapeType==0) {//Rectangle
+			if(fillColor!=null) {
+				g2.setColor(fillColor);
+				g2.fillRect( x, y, width, height);
+			}
+
+			if(isSelected())
+				g2.setColor(Color.YELLOW);
+			else
+				g2.setColor(edgeColor);
+
+			g2.setStroke(new BasicStroke(stroke));
+			g2.drawRect(x, y, width, height);
+				
+		} else if(shapeType==1) {//Rounded Rectangle
+			if(fillColor!=null) {
+				g2.setColor(fillColor);
+				g2.fillRoundRect(x, y, width, height, rVal, rVal);
+			}
+
+			if(isSelected())
+				g2.setColor(Color.YELLOW);
+			else
+				g2.setColor(edgeColor);
+			
+			g2.setStroke(new BasicStroke(stroke));
+			g2.drawRoundRect(x, y, width, height, rVal, rVal);
+
+		} else if(shapeType==2) {//Oval
+			if(fillColor!=null) {
+				g2.setColor(fillColor);
+				g2.fillOval( x, y, width, height);
+			}
+
+			if(isSelected())
+				g2.setColor(Color.YELLOW);
+			else
+				g2.setColor(edgeColor);
+			
+			g2.setStroke(new BasicStroke(stroke));
+			g2.drawOval(x, y, width, height);
+		}
+		//Now draw the arrows associated with this annotation
+	}
 	
 	class removeArrowListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {

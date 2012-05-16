@@ -18,11 +18,9 @@ import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 
 public class ShapeAnnotation extends Annotation {
 
-	private int otherCornerX=0, otherCornerY=0, shapeType=1;
-	private Color fillColor=null, edgeColor=Color.BLACK;
+	private int otherCornerX=0, otherCornerY=0;
 	private float edgeThickness=2.0f;
 	public boolean cornersAdjusted=false;
-	private int rVal=5;
 	private double shapeWidth=0.0, shapeHeight=0.0;
 
 	private static String EDGECOLOR = "edgeColor";
@@ -60,7 +58,6 @@ public class ShapeAnnotation extends Annotation {
 		otherCornerY = y+(int)shapeHeight;
 		setSize((int)shapeWidth, (int)shapeHeight);
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public ShapeAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
@@ -77,7 +74,6 @@ public class ShapeAnnotation extends Annotation {
 		setSize((int)shapeWidth, (int)shapeHeight);
 		cornersAdjusted = true;
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -160,54 +156,6 @@ public class ShapeAnnotation extends Annotation {
 		drawShape(g2, p1.x, p1.y, width, height, stroke);
 	}
 
-	private void drawShape(Graphics2D g2, int x, int y, int width, int height, float stroke) {
-		// System.out.println("drawShape: x,y="+x+","+y+" "+width+"x"+height);
-		if(shapeType==0) {//Rectangle
-			if(fillColor!=null) {
-				g2.setColor(fillColor);
-				g2.fillRect( x, y, width, height);
-			}
-
-			if(isSelected())
-				g2.setColor(Color.YELLOW);
-			else
-				g2.setColor(edgeColor);
-
-			g2.setStroke(new BasicStroke(stroke));
-			g2.drawRect(x, y, width, height);
-				
-		} else if(shapeType==1) {//Rounded Rectangle
-			if(fillColor!=null) {
-				g2.setColor(fillColor);
-				g2.fillRoundRect(x, y, width, height, rVal, rVal);
-			}
-
-			if(isSelected())
-				g2.setColor(Color.YELLOW);
-			else
-				g2.setColor(edgeColor);
-			
-			g2.setStroke(new BasicStroke(stroke));
-			g2.drawRoundRect(x, y, width, height, rVal, rVal);
-
-		} else if(shapeType==2) {//Oval
-			if(fillColor!=null) {
-				g2.setColor(fillColor);
-				g2.fillOval( x, y, width, height);
-			}
-
-			if(isSelected())
-				g2.setColor(Color.YELLOW);
-			else
-				g2.setColor(edgeColor);
-			
-			g2.setStroke(new BasicStroke(stroke));
-			g2.drawOval(x, y, width, height);
-		}
-		//Now draw the arrows associated with this annotation
-	}
-
-
 	public boolean isShapeAnnotation() {
 		return true;
 	}
@@ -249,7 +197,6 @@ public class ShapeAnnotation extends Annotation {
 		
 		setSize((int)shapeWidth, (int)shapeHeight);
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	@Override
@@ -263,7 +210,6 @@ public class ShapeAnnotation extends Annotation {
 		
 		setSize((int)shapeWidth, (int)shapeHeight);
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 	
 	public void addModifyMenuItem(JPopupMenu popup) {
@@ -304,7 +250,6 @@ public class ShapeAnnotation extends Annotation {
 
 		cornersAdjusted=true;
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public Point getFirstCorner() {
@@ -357,23 +302,28 @@ public class ShapeAnnotation extends Annotation {
 		
 	public void setFillColor(Color val) {
 		fillColor=val;
+		updateAnnotationAttributes();
 	}
 	
 	public void setEdgeColor(Color val) {
 		edgeColor=val;
+		updateAnnotationAttributes();
 	}
 
 	public void setOtherCorner(int x, int y) {
 		otherCornerX=x;
 		otherCornerY=y;
+		updateAnnotationAttributes();
 	}
 	
 	public void setEdgeThickness(int val) {
 		edgeThickness=val;
+		updateAnnotationAttributes();
 	}
 
 	public void setShapeType(int val) {
 		shapeType=val;
+		updateAnnotationAttributes();
 	}
 		
 }

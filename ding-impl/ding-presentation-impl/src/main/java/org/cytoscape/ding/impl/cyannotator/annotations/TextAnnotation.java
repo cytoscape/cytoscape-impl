@@ -48,6 +48,9 @@ public class TextAnnotation extends Annotation {
 
 	public static final String NAME="TEXT";
 
+	private Font scaledFont = null;
+	private double lastScaleFactor = -1;
+
 	public TextAnnotation() { super(); }
 
 	public TextAnnotation(CyAnnotator cyAnnotator, DGraphView view, 
@@ -56,7 +59,6 @@ public class TextAnnotation extends Annotation {
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	// This constructor is used to construct a text annotation from an
@@ -67,7 +69,6 @@ public class TextAnnotation extends Annotation {
 		this.color = getColor(argMap.get(COLOR));
 		this.text = argMap.get(TEXT);
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -129,6 +130,22 @@ public class TextAnnotation extends Annotation {
 		FontMetrics fontMetrics=this.getGraphics().getFontMetrics(font);
 		return fontMetrics.getHeight();
 	}
+
+	public int getTextHeight(Graphics2D g2, double scaleFactor) {
+		if (scaleFactor == lastScaleFactor || scaledFont == null) {
+			scaledFont = getScaledFont(scaleFactor);
+			lastScaleFactor = scaleFactor;
+		}
+		return g2.getFontMetrics(scaledFont).getHeight();
+	}
+
+	public int getTextWidth(Graphics2D g2, double scaleFactor) {
+		if (scaleFactor == lastScaleFactor || scaledFont == null) {
+			scaledFont = getScaledFont(scaleFactor);
+			lastScaleFactor = scaleFactor;
+		}
+		return g2.getFontMetrics(scaledFont).stringWidth(text);
+	}
 	
 	public int getTextWidth(Graphics2D g2){
 		FontMetrics fontMetrics=g2.getFontMetrics(font);
@@ -140,41 +157,50 @@ public class TextAnnotation extends Annotation {
 		return fontMetrics.getHeight();
 	}	
 
+	private Font getScaledFont(double scaleFactor) {
+		return font.deriveFont(((float)(scaleFactor/zoom))*font.getSize2D());
+	}
+
 	//Set methods
 	public void setText(String newText) {
 		this.text=newText;
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public void setTextColor(Color color) {
 		this.color = color;
+		updateAnnotationAttributes();
 	}
 
 	@Override
-	public void setFont(Font font) {
-		this.font = font;
+	public void setFont(Font tFont) {
+		double tZoom = getTempZoom();
+		if(usedForPreviews) {			
+			tZoom = 1.0;
+		}
+		// Don't lose our current zoom
+		// TODO: this is still not quite right....
+		this.font=tFont.deriveFont(((float)(1.0/tZoom))*tFont.getSize2D());
+		updateAnnotationAttributes();
 	}
 
 	public void adjustSpecificZoom(double newZoom){
-		font=font.deriveFont(((float)(newZoom/tempZoom))*font.getSize2D());
-		tempZoom=newZoom;
+		font=font.deriveFont(((float)(newZoom/getTempZoom()))*font.getSize2D());
+		setTempZoom(newZoom);
 
 		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	public void adjustZoom(double newZoom){
-		font=font.deriveFont(((float)(newZoom/zoom))*font.getSize2D());
+		font=font.deriveFont(((float)(newZoom/getZoom()))*font.getSize2D());
 
 		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
 		
 		adjustArrowThickness(newZoom);
 		
-		zoom=newZoom;
+		setZoom(newZoom);
 		updateAnnotationAttributes();
-		contentChanged();
 	}
 
 	@Override
@@ -182,7 +208,7 @@ public class TextAnnotation extends Annotation {
 		super.paint(g);
 		Graphics2D g2=(Graphics2D)g;
 		g2.setColor(color);
-		Font tFont=font.deriveFont(((float)(scaleFactor/zoom))*font.getSize2D());
+		Font tFont=getScaledFont(scaleFactor);
 		FontMetrics fontMetrics=g.getFontMetrics(tFont);
 		g2.setFont(tFont);
 		g2.drawChars(getText().toCharArray(), 0, getText().length(), 

@@ -36,6 +36,7 @@ import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.BoundedAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
@@ -153,9 +154,14 @@ public class CyActivator extends AbstractCyActivator {
 		AnnotationFactory textAnnotationFactory = new TextAnnotationFactory();
 		annotationFactoryManager.addAnnotationFactory(textAnnotationFactory, null);
 
+		AnnotationFactory boundedAnnotationFactory = new BoundedAnnotationFactory();
+		annotationFactoryManager.addAnnotationFactory(boundedAnnotationFactory, null);
+
 		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
 		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
 		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
+		AddAnnotationTaskFactory addBoundedTextTaskFactory = 
+			new AddAnnotationTaskFactory(boundedAnnotationFactory);
 
 		
 		Properties dingRenderingEngineFactoryProps = new Properties();
@@ -209,6 +215,14 @@ public class CyActivator extends AbstractCyActivator {
 		addTextTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
 		addTextTaskFactoryProps.setProperty(TITLE, "Add Text");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
+
+		Properties addBoundedTextTaskFactoryProps = new Properties();
+		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.5");
+		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Add Bounded Text");
+		registerService(bc, addBoundedTextTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                addBoundedTextTaskFactoryProps);
 
 		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",
 				NodeViewTaskFactory.class);
