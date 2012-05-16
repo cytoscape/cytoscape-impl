@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
+import javax.swing.BorderFactory;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -74,6 +75,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		JTextArea jta = new JTextArea(getDescription());
 		jta.setLineWrap(true);
 		jta.setWrapStyleWord(true);
+		jta.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		panel.add(jta,BorderLayout.BEFORE_LINE_BEGINS);
 		jta.setBackground(null);
 		jta.setEditable(false);

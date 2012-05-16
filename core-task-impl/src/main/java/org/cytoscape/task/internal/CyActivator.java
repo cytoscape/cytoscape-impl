@@ -282,6 +282,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		MapGlobalToLocalTableTaskFactoryImpl mapGlobal = new MapGlobalToLocalTableTaskFactoryImpl(cyTableManagerServiceRef, cyNetworkManagerServiceRef, tunableSetterServiceRef);
 		
+		
 		// Apply Visual Style Task
 		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
 		Properties applyVisualStyleProps = new Properties();
@@ -300,13 +301,13 @@ public class CyActivator extends AbstractCyActivator {
 		mapGlobalProps.setProperty(ID,"mapGlobalToLocalTableTaskFactory");
 		mapGlobalProps.setProperty(PREFERRED_MENU,"Tools");
 		mapGlobalProps.setProperty(ACCELERATOR,"cmd m");
-		mapGlobalProps.setProperty(TITLE, "Map Global Table to Local Table");
+		mapGlobalProps.setProperty(TITLE, "Map Table to Attributes");
 		mapGlobalProps.setProperty(MENU_GRAVITY,"1.0");
 		mapGlobalProps.setProperty(TOOL_BAR_GRAVITY,"3.0");
 		mapGlobalProps.setProperty(IN_TOOL_BAR,"false");
 		mapGlobalProps.setProperty(COMMAND,"map-global-to-local");
 		mapGlobalProps.setProperty(COMMAND_NAMESPACE,"table");
-		registerService(bc, mapGlobal, TaskFactory.class, mapGlobalProps);
+		registerService(bc, mapGlobal, TableTaskFactory.class, mapGlobalProps);
 		registerService(bc, mapGlobal, MapGlobalToLocalTableTaskFactory.class, mapGlobalProps);
 		
 		Properties loadNetworkFileTaskFactoryProps = new Properties();

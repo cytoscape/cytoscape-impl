@@ -1,7 +1,9 @@
 package org.cytoscape.task.internal.table;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyTableReader;
@@ -16,13 +18,15 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class MapTableToNetworkTablesTask extends AbstractTask {
+	
 	private static enum TableType {
-		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class), GLOBAL("Tables", CyTable.class);
+		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class), GLOBAL("Other Tables", CyTable.class);
 
 		private final String name;
 		private final  Class<? extends CyIdentifiable> type;
@@ -41,21 +45,26 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		}
 	};
 	
-	
 	private static Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
 	
 	private final CyNetworkManager networkManager;
 	private final CyTable globalTable;
 	private final  CyTableReader reader;
 	private final boolean byReader;
+	private Map<String, CyNetwork> name2NetworkMap;
 	
+	@Tunable(description = "Apply to Selected Networks Only",groups="Select Tables")
+	public boolean selectedNetworksOnly = false;
+	
+	@Tunable(description = "Network List",groups="Select Tables",dependsOn="selectedNetworksOnly=true")
+	public ListMultipleSelection<String> networkList;
 	
 	@Tunable(description = "Import Data To:")
 	public ListSingleSelection<TableType> dataTypeOptions;
 
 	@ProvidesTitle
 	public String getTitle() {
-		return "Import Data";
+		return "Import Data ";
 	}
 
 	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader){
@@ -63,7 +72,8 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		globalTable = null;
 		this.byReader = true;
 		this.networkManager = networkManager;
-		initTunable();
+		this.name2NetworkMap = new HashMap<String, CyNetwork>();
+		initTunable(networkManager);
 	}
 	
 	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTable globalTable){
@@ -71,30 +81,41 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		this.globalTable = globalTable;
 		this.byReader = false;
 		this.reader = null;
-		initTunable();
+		this.name2NetworkMap = new HashMap<String, CyNetwork>();
+		initTunable(networkManager);
 	}
 	
-	private void initTunable(){
+	private void initTunable(CyNetworkManager networkManage){
 		final List<TableType> options = new ArrayList<TableType>();
 		for(TableType type: TableType.values())
 			options.add(type);
-
-		options.add(TableType.GLOBAL);
-
 		dataTypeOptions = new ListSingleSelection<TableType>(options);
 		dataTypeOptions.setSelectedValue(TableType.NODE_ATTR);
+		
+		for(CyNetwork net: networkManage.getNetworkSet()){
+			String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
+			name2NetworkMap.put(netName, net);
+		}
+		List<String> names = new ArrayList<String>();
+		names.addAll(name2NetworkMap.keySet());
+		networkList = new ListMultipleSelection<String>(names);
+			
 	}
 	
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {	
-
 		TableType tableType = dataTypeOptions.getSelectedValue();
 		if (tableType != tableType.GLOBAL ){ //The table has already been added to the global tables
-			boolean isEverMapped = false;
-			for (CyNetwork network: networkManager.getNetworkSet()){
+			List<CyNetwork> networks = new ArrayList<CyNetwork>();
+			if (!selectedNetworksOnly)
+				networks.addAll(networkManager.getNetworkSet());
+			else
+				for(String netName: networkList.getSelectedValues())
+					networks.add(name2NetworkMap.get(netName));
+			
+			for (CyNetwork network: networks){
 				CyTable targetTable = getTable(network, tableType);
 				if (targetTable != null){
-					isEverMapped = true;
 					if(byReader){
 						if (reader.getTables() != null && reader.getTables().length >0){
 							for(CyTable sourceTable : reader.getTables())
@@ -103,7 +124,6 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 					}else{
 						mapTable(targetTable, globalTable);
 					}
-
 				}
 			}
 			//add each mapped table to the list for mapping to networks going to be added later

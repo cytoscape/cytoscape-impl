@@ -42,7 +42,9 @@ public class UpdateAddedNetworkAttributes implements NetworkAddedListener{
 	public void handleEvent(NetworkAddedEvent e) {
 		for (CyTable mappedTable: tableMappings.keySet()){
 			for( Class<? extends CyIdentifiable> tableType: tableMappings.get(mappedTable)){
-				syncTaskManager.execute(mappingTF.createTaskIterator(mappedTable, getTable(e.getNetwork(),tableType)));
+				List<CyTable> targetTables = new ArrayList<CyTable>();
+				targetTables.add( getTable(e.getNetwork(),tableType));
+				syncTaskManager.execute(mappingTF.createTaskIterator(mappedTable, targetTables));
 			}
 		}
 

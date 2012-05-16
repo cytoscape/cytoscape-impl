@@ -1,18 +1,23 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
+import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTaskFactory implements MapGlobalToLocalTableTaskFactory {
+public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTableTaskFactory implements MapGlobalToLocalTableTaskFactory {
 	
 	private final CyTableManager tableManager;
 	private final CyNetworkManager networkManager;
@@ -26,27 +31,28 @@ public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTaskFact
 		this.tunableSetter = tunableSetter;
 	}
 
+
 	@Override
-	public TaskIterator createTaskIterator() {
-		return  new TaskIterator(new MapGlobalToLocalTableTask(tableManager, networkManager));
+	public TaskIterator createTaskIterator(CyTable globalTable) {
+		return new TaskIterator(new MapGlobalToLocalTableTask(globalTable, tableManager, networkManager) );
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTable globalTable,
-	                                       CyTable localTable) {
-
+			Collection<CyTable> localTables) {
 		final Map<String, Object> m = new HashMap<String, Object>();
 
-		ListSingleSelection<String> globalTables = new ListSingleSelection<String>(globalTable.getTitle());
-		globalTables.setSelectedValue(globalTable.getTitle());
+		List<String> localTableTitles = new ArrayList<String>();
+		for(CyTable local: localTables){
+			localTableTitles.add(local.getTitle());
+		}
+		
+		ListMultipleSelection<String> localTablesTunable = new ListMultipleSelection<String>(localTableTitles);
+		localTablesTunable.setSelectedValues(localTableTitles);
 
-		ListSingleSelection<String> localTables = new ListSingleSelection<String>(localTable.getTitle());
-		localTables.setSelectedValue(localTable.getTitle());
+		m.put("localTables", localTablesTunable);
 
-		m.put("globalTables", globalTables);
-		m.put("localTables", localTables);
+		return tunableSetter.createTaskIterator(this.createTaskIterator(globalTable), m); 
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
-
 }

@@ -836,13 +836,13 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			mapGlobalTableButton.setBorder(null);
 			mapGlobalTableButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 			mapGlobalTableButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_map.png")));
-			mapGlobalTableButton.setToolTipText("Map Global Table to Networks");
+			mapGlobalTableButton.setToolTipText("Link Table to Attributes");
 			mapGlobalTableButton.setBorder(null);
 
 			mapGlobalTableButton.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					if (mapGlobalTableButton.isEnabled())
-						guiTaskManagerServiceRef.execute(mapGlobalTableTaskFactoryService.createTaskIterator());
+						guiTaskManagerServiceRef.execute(mapGlobalTableTaskFactoryService.createTaskIterator( browserTableModel.getAttributes() ));
 				}
 			});
 		}

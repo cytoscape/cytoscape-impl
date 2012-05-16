@@ -55,7 +55,7 @@ public class TableChooser extends JComboBox {
 		private void updateTableToStringMap() {
 			tableToStringMap.clear();
 			for (final CyTable table : tables)
-				tableToStringMap.put(table, "Global Table: " + table.getTitle());
+				tableToStringMap.put(table,  table.getTitle());
 		}
 
 		@Override
