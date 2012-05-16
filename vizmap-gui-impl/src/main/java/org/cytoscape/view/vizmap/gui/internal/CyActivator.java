@@ -19,10 +19,11 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -42,6 +43,7 @@ import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.FontEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.StringValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
+import org.cytoscape.view.vizmap.gui.internal.task.ClearBendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
@@ -51,7 +53,6 @@ import org.cytoscape.view.vizmap.gui.internal.task.ImportDefaultVizmapTaskFactor
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
-import org.cytoscape.view.vizmap.gui.internal.util.DefaultVisualStyleBuilder;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
@@ -59,6 +60,7 @@ import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorM
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -146,6 +148,13 @@ public class CyActivator extends AbstractCyActivator {
 		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(selectedVisualStyleManager,editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
 		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager,selectedVisualStyleManager);
 		
+		// Context menu for edge bend
+		BendFactory bf = getService(bc, BendFactory.class);
+		
+		final Properties clearBendProp = new Properties();
+		clearBendProp.put(ServiceProperties.PREFERRED_MENU, "Clear Bend");
+		final ClearBendTaskFactory clearBendTaskFactory = new ClearBendTaskFactory(selectedVisualStyleManager, bf);
+		registerService(bc, clearBendTaskFactory, EdgeViewTaskFactory.class, clearBendProp);
 		
 		registerAllServices(bc,viewModeAction, new Properties());
 		

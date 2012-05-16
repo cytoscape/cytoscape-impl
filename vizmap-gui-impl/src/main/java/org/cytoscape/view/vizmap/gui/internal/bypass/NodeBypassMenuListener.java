@@ -54,34 +54,4 @@ class NodeBypassMenuListener {
 	NodeBypassMenuListener(EditorManager ef) {
 		this.ef = ef;
 	}
-
-	/**
-	 * @param nodeView
-	 *            The clicked NodeView
-	 * @param menu
-	 *            popup menu to add the Bypass menu
-	 */
-//	public void addNodeContextMenuItems(NodeView nodeView, JPopupMenu menu) {
-//		NodeBypass nb = new NodeBypass(ef);
-//
-//		if (menu == null)
-//			menu = new JPopupMenu();
-//
-//		/*
-//		 * Add Node ID as label.
-//		 */
-//		final String nodeID = nodeView.getNode().attrs().get("name",
-//				String.class);
-//		final JLabel nodeLabel = new JLabel(nodeID);
-//
-//		if (menu == null)
-//			menu = new JPopupMenu();
-//
-//		nodeLabel.setForeground(new Color(10, 50, 250, 150));
-//		nodeLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-//		nodeLabel.setBorder(new EmptyBorder(5, 10, 5, 5));
-//		menu.add(nodeLabel);
-//
-//		menu.add(nb.addMenu(nodeView.getNode()));
-//	}
 }
