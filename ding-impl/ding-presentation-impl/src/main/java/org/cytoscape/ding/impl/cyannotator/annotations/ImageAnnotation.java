@@ -64,6 +64,7 @@ public class ImageAnnotation extends Annotation {
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public ImageAnnotation(CyAnnotator cyAnnotator, DGraphView view, 
@@ -86,6 +87,7 @@ public class ImageAnnotation extends Annotation {
 		imageHeight = Double.parseDouble(argMap.get(HEIGHT));
 		resizedImage=resize(image, (int)image.getWidth(), (int)image.getHeight());
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -124,6 +126,25 @@ public class ImageAnnotation extends Annotation {
 	}
 
 	@Override
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+		super.paint(g);
+		
+		Graphics2D g2=(Graphics2D)g;
+
+		g2.setComposite(AlphaComposite.Src);
+
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+
+		int width = (int)Math.round(imageWidth*scaleFactor/zoom);
+		int height = (int)Math.round(imageHeight*scaleFactor/zoom);
+		BufferedImage newImage =resize(image, width, height);
+
+		g2.drawImage(newImage, (int)(x*scaleFactor), (int)(y*scaleFactor), null);
+	}
+
+	@Override
 	public void paint(Graphics g) {				
 		super.paint(g);
 		
@@ -158,6 +179,8 @@ public class ImageAnnotation extends Annotation {
 		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
 	   
 		setTempZoom(newZoom);		
+		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 
@@ -176,6 +199,8 @@ public class ImageAnnotation extends Annotation {
 		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
 				
 		setZoom(newZoom);		
+		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 

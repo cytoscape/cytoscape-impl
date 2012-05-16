@@ -229,6 +229,10 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				m_myScaleFactor = 1.0d;
 			}
 
+			// System.out.println("BirdsEyeView: extent[0] = "+m_extents[0]+" extent[1] = "+m_extents[1]+" extent[2] = "+m_extents[2]+" extent[3] = "+m_extents[3]);
+			// System.out.println("BirdsEyeView: component = "+getWidth()+"x"+getHeight());
+			// System.out.println("BirdsEyeView: image = "+imageWidth+"x"+imageHeight);
+
 			// Create "background" network image.
 			if (imageUpdated) {
 				// Need to create new image.  This is VERY expensive operation.
@@ -237,7 +241,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 				// Now draw the network
 				viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(), viewModel.getBackgroundPaint(),
-						m_myXCenter, m_myYCenter, m_myScaleFactor);
+						m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor);
 			}
 		}
 
@@ -257,8 +261,9 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		// Draw the view area window		
 		g.setColor(VIEW_WINDOW_COLOR);
 		g.fillRect(x, y, rectWidth, rectHeight);
+		// System.out.println("Viewable rectangle: "+x+", "+y+" "+rectWidth+"x"+rectHeight);
 		
-	boundChanged = false; imageUpdated = false;
+		boundChanged = false; imageUpdated = false;
 	}
 
 	

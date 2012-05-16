@@ -23,7 +23,7 @@ public class ShapeAnnotation extends Annotation {
 	private float edgeThickness=2.0f;
 	public boolean cornersAdjusted=false;
 	private int rVal=5;
-	private int shapeWidth=0, shapeHeight=0;
+	private double shapeWidth=0.0, shapeHeight=0.0;
 
 	private static String EDGECOLOR = "edgeColor";
 	private static String EDGETHICKNESS = "edgeThickness";
@@ -56,26 +56,28 @@ public class ShapeAnnotation extends Annotation {
 		this.edgeThickness=edgeThickness;
 		this.shapeWidth = width;
 		this.shapeHeight = height;
-		otherCornerX = x+shapeWidth;
-		otherCornerY = y+shapeHeight;
-		setSize(shapeWidth, shapeHeight);
+		otherCornerX = x+(int)shapeWidth;
+		otherCornerY = y+(int)shapeHeight;
+		setSize((int)shapeWidth, (int)shapeHeight);
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public ShapeAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
 		this.edgeColor = getColor(argMap.get(EDGECOLOR));
 		this.fillColor = getColor(argMap.get(FILLCOLOR));
-		this.shapeWidth = Integer.parseInt(argMap.get(WIDTH));
-		this.shapeHeight = Integer.parseInt(argMap.get(HEIGHT));
+		this.shapeWidth = Double.parseDouble(argMap.get(WIDTH));
+		this.shapeHeight = Double.parseDouble(argMap.get(HEIGHT));
 		setFillColor(fillColor);
 		this.edgeThickness = Float.parseFloat(argMap.get(EDGETHICKNESS));
 		this.shapeType = Integer.parseInt(argMap.get(SHAPETYPE));
-		otherCornerX = getX()+shapeWidth;
-		otherCornerY = getY()+shapeHeight;
-		setSize(shapeWidth, shapeHeight);
+		otherCornerX = getX()+(int)shapeWidth;
+		otherCornerY = getY()+(int)shapeHeight;
+		setSize((int)shapeWidth, (int)shapeHeight);
 		cornersAdjusted = true;
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -87,14 +89,43 @@ public class ShapeAnnotation extends Annotation {
 			argMap.put(EDGECOLOR,convertColor(this.edgeColor));
 		argMap.put(EDGETHICKNESS,Float.toString(this.edgeThickness));
 		argMap.put(SHAPETYPE, Integer.toString(this.shapeType));
-		argMap.put(WIDTH, Integer.toString(this.shapeWidth));
-		argMap.put(HEIGHT, Integer.toString(this.shapeHeight));
+		argMap.put(WIDTH, Double.toString(this.shapeWidth));
+		argMap.put(HEIGHT, Double.toString(this.shapeHeight));
 		return argMap;
 	}
 
 	@Override
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+		Graphics2D g2=(Graphics2D)g;
+		float stroke = (float)(edgeThickness*scaleFactor);
+		if (stroke < 1.0f) stroke = 1.0f;
+
+		if(getArrowDrawn())
+			super.paint(g);		
+
+		g2.setComposite(AlphaComposite.Src);
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+
+		// System.out.println("drawAnnotation: x,y="+x+","+y+" "+shapeWidth+"x"+shapeHeight+" zoom = "+view.getZoom());
+		int width = (int)(shapeWidth*scaleFactor/view.getZoom());
+		int height = (int)(shapeHeight*scaleFactor/view.getZoom());
+
+		boolean selected = isSelected();
+		setSelected(false);
+		drawShape(g2, (int)(x*scaleFactor), (int)(y*scaleFactor), width, height, stroke);
+		setSelected(selected);
+	}
+
+
+	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2=(Graphics2D)g;
+		float stroke = edgeThickness;
+		if (stroke < 1.0f) stroke = 1.0f;
+
+		// System.out.println("paint: x,y="+getX()+","+getY()+" "+shapeWidth+"x"+shapeHeight);
 		
 		if(getArrowDrawn())
 			super.paint(g);		
@@ -118,20 +149,23 @@ public class ShapeAnnotation extends Annotation {
 			height=Math.abs(p2.y-p1.y);
 		} else {
 			if(usedForPreviews)
-				p1=new Point(getX()+shapeWidth/2, getY()+shapeHeight);
+				p1=new Point(getX()+(int)(shapeWidth/2), getY()+(int)(shapeHeight));
 			else
 				p1=new Point(getX(), getY());
 
-			width=shapeWidth;
-			height=shapeHeight;			
+			width=(int)shapeWidth;
+			height=(int)shapeHeight;			
 		}
 
-		// System.out.println("Drawing rectangle: x="+p1.x+", y="+p1.y+" size="+width+"x"+height+", edgeThickness = "+edgeThickness);
-			
+		drawShape(g2, p1.x, p1.y, width, height, stroke);
+	}
+
+	private void drawShape(Graphics2D g2, int x, int y, int width, int height, float stroke) {
+		// System.out.println("drawShape: x,y="+x+","+y+" "+width+"x"+height);
 		if(shapeType==0) {//Rectangle
 			if(fillColor!=null) {
 				g2.setColor(fillColor);
-				g2.fillRect( p1.x, p1.y, width, height);
+				g2.fillRect( x, y, width, height);
 			}
 
 			if(isSelected())
@@ -139,13 +173,13 @@ public class ShapeAnnotation extends Annotation {
 			else
 				g2.setColor(edgeColor);
 
-			g2.setStroke(new BasicStroke(edgeThickness));
-			g2.drawRect(p1.x, p1.y, width, height);
+			g2.setStroke(new BasicStroke(stroke));
+			g2.drawRect(x, y, width, height);
 				
 		} else if(shapeType==1) {//Rounded Rectangle
 			if(fillColor!=null) {
 				g2.setColor(fillColor);
-				g2.fillRoundRect( p1.x, p1.y, width, height, rVal, rVal);
+				g2.fillRoundRect(x, y, width, height, rVal, rVal);
 			}
 
 			if(isSelected())
@@ -153,12 +187,13 @@ public class ShapeAnnotation extends Annotation {
 			else
 				g2.setColor(edgeColor);
 			
-			g2.setStroke(new BasicStroke(edgeThickness));
-			g2.drawRoundRect(p1.x, p1.y, width, height, rVal, rVal);
+			g2.setStroke(new BasicStroke(stroke));
+			g2.drawRoundRect(x, y, width, height, rVal, rVal);
+
 		} else if(shapeType==2) {//Oval
 			if(fillColor!=null) {
 				g2.setColor(fillColor);
-				g2.fillOval( p1.x, p1.y, width, height);
+				g2.fillOval( x, y, width, height);
 			}
 
 			if(isSelected())
@@ -166,8 +201,8 @@ public class ShapeAnnotation extends Annotation {
 			else
 				g2.setColor(edgeColor);
 			
-			g2.setStroke(new BasicStroke(edgeThickness));
-			g2.drawOval(p1.x, p1.y, width, height);
+			g2.setStroke(new BasicStroke(stroke));
+			g2.drawOval(x, y, width, height);
 		}
 		//Now draw the arrows associated with this annotation
 	}
@@ -191,12 +226,12 @@ public class ShapeAnnotation extends Annotation {
 	}	
 
 	public int getAnnotationWidth() {
-		return shapeWidth;
+		return (int)shapeWidth;
 	}
 
 
 	public int getAnnotationHeight() {
-		return shapeHeight;
+		return (int)shapeHeight;
 	}
 
 	@Override
@@ -204,7 +239,6 @@ public class ShapeAnnotation extends Annotation {
 		float factor=(float)(newZoom/getZoom());
 		
 		edgeThickness*=factor;
-		if (edgeThickness < 1.0f) edgeThickness = 1.0f;
 		
 		adjustArrowThickness(newZoom);
 		
@@ -213,8 +247,9 @@ public class ShapeAnnotation extends Annotation {
 		shapeWidth*=factor;
 		shapeHeight*=factor;
 		
-		setSize(shapeWidth, shapeHeight);
+		setSize((int)shapeWidth, (int)shapeHeight);
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	@Override
@@ -226,12 +261,12 @@ public class ShapeAnnotation extends Annotation {
 		shapeWidth*=factor;
 		shapeHeight*=factor;
 		
-		setSize(shapeWidth, shapeHeight);
+		setSize((int)shapeWidth, (int)shapeHeight);
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 	
 	public void addModifyMenuItem(JPopupMenu popup) {
-		
 		JMenuItem modify=new JMenuItem("Modify Properties");
 		modify.addActionListener(new modifyShapeAnnotationListener());
 		
@@ -269,6 +304,7 @@ public class ShapeAnnotation extends Annotation {
 
 		cornersAdjusted=true;
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public Point getFirstCorner() {

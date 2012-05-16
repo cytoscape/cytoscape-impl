@@ -56,6 +56,7 @@ public class TextAnnotation extends Annotation {
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	// This constructor is used to construct a text annotation from an
@@ -66,6 +67,7 @@ public class TextAnnotation extends Annotation {
 		this.color = getColor(argMap.get(COLOR));
 		this.text = argMap.get(TEXT);
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -142,6 +144,7 @@ public class TextAnnotation extends Annotation {
 	public void setText(String newText) {
 		this.text=newText;
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public void setTextColor(Color color) {
@@ -159,6 +162,7 @@ public class TextAnnotation extends Annotation {
 
 		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
 		updateAnnotationAttributes();
+		contentChanged();
 	}
 
 	public void adjustZoom(double newZoom){
@@ -170,6 +174,19 @@ public class TextAnnotation extends Annotation {
 		
 		zoom=newZoom;
 		updateAnnotationAttributes();
+		contentChanged();
+	}
+
+	@Override
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+		super.paint(g);
+		Graphics2D g2=(Graphics2D)g;
+		g2.setColor(color);
+		Font tFont=font.deriveFont(((float)(scaleFactor/zoom))*font.getSize2D());
+		FontMetrics fontMetrics=g.getFontMetrics(tFont);
+		g2.setFont(tFont);
+		g2.drawChars(getText().toCharArray(), 0, getText().length(), 
+		             (int)(x*scaleFactor), (int)(y*scaleFactor)+fontMetrics.getHeight());
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.modify.mArrow;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.model.CyNetwork;
@@ -127,6 +128,9 @@ public class Annotation extends Component {
 		}
 		this.setLocation((int)nextLocn[0],(int)nextLocn[1]);
 
+	}
+
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 	}
 
 	public void updateAnnotationAttributes() {
@@ -653,6 +657,13 @@ public class Annotation extends Component {
 	public void showChangePopup(MouseEvent e) {
 		createPopUp().show(e.getComponent(), e.getX(), e.getY());
 	}
+
+	public void contentChanged() {
+		final ContentChangeListener lis = view.getContentChangeListener();
+		if (lis != null)
+			lis.contentChanged();
+	}
+
 	
 	class removeArrowListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {

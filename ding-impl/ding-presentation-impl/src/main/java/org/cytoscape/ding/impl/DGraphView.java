@@ -1885,10 +1885,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *            DOCUMENT ME!
 	 */
 //TODO: Need to fix up scaling and sizing.  
-	public void drawSnapshot(VolatileImage img, GraphLOD lod, Paint bgPaint, double xCenter,
+	public void drawSnapshot(VolatileImage img, GraphLOD lod, Paint bgPaint, 
+	                         double xMin, double yMin, double xCenter,
 	                         double yCenter, double scaleFactor) {
 		// First paint the background
-		m_backgroundCanvas.drawCanvas(img, xCenter, yCenter, scaleFactor);
+		m_backgroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 
 		synchronized (m_lock) {
 			GraphRenderer.renderGraph(m_drawPersp, m_spacial, lod, m_nodeDetails,
@@ -1897,7 +1898,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 
 		// Finally, draw the foreground
-		m_foregroundCanvas.drawCanvas(img, xCenter, yCenter, scaleFactor);
+		m_foregroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 	}
 
 	/**
@@ -1918,6 +1919,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	public void removeContentChangeListener(ContentChangeListener l) {
 		m_cLis[0] = ContentChangeListenerChain.remove(m_cLis[0], l);
+	}
+
+	public ContentChangeListener getContentChangeListener() {
+		return m_cLis[0];
 	}
 
 	/**
