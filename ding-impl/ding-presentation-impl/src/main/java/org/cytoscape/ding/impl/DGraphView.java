@@ -2692,4 +2692,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public CyAnnotator getCyAnnotator() {
 		return cyAnnotator;
 	}
+
+	@Override
+	public String toString() {
+		return "DGraphView: suid=" + suid + ", model=" + model;
+	}
 }

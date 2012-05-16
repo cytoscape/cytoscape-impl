@@ -69,19 +69,20 @@ public class CyApplicationManagerImplTest {
 
 	@Test
 	public void testSetNullCurrentNetwork() {
-		try {
-			appMgr.setCurrentNetwork(null);
-			fail("Should hgave thrown NullPointerException");
-		} catch (NullPointerException e) { }
+		appMgr.setCurrentNetwork(newNetwork());
+		appMgr.setCurrentNetworkView(newNetworkView());
+		appMgr.setCurrentNetwork(null);
+		assertNull(appMgr.getCurrentNetwork());
+		assertNull(appMgr.getCurrentNetworkView());
 	}
 	
 	@Test
 	public void testSetNullCurrentNetworkView() {
 		final CyNetworkView view = newNetworkView();
 		appMgr.setCurrentNetworkView(view);
-		assertNotNull(appMgr.getCurrentNetworkView());
 		appMgr.setCurrentNetworkView(null);
-		assertEquals(view, appMgr.getCurrentNetworkView());
+		assertNull(appMgr.getCurrentNetworkView());
+		assertEquals(view.getModel(), appMgr.getCurrentNetwork());
 	}
 	
 	@Test

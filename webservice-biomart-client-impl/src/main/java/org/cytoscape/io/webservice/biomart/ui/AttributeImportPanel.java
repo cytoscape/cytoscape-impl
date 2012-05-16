@@ -406,17 +406,20 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				updateColumnList(e.getNetwork().getDefaultNodeTable());
+				updateColumnList(e.getNetwork() != null ? e.getNetwork().getDefaultNodeTable() : null);
 			}
 		});
 	}
 	
 	private void updateColumnList(final CyTable currentNodeTable) {
 		final SortedSet<String> attrNameSet = new TreeSet<String>();
-		final Collection<CyColumn> columns = currentNodeTable.getColumns();
 		
-		for(CyColumn col: columns)
-			attrNameSet.add(col.getName());
+		if (currentNodeTable != null) {
+			final Collection<CyColumn> columns = currentNodeTable.getColumns();
+			
+			for (CyColumn col: columns)
+				attrNameSet.add(col.getName());
+		}
 
 		columnNameComboBox.removeAllItems();
 
