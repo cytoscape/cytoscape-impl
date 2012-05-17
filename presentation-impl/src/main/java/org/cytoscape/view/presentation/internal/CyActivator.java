@@ -2,6 +2,7 @@ package org.cytoscape.view.presentation.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -13,7 +14,9 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		RenderingEngineManagerImpl renderingEngineManager = new RenderingEngineManagerImpl();
+		
+		final CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
+		RenderingEngineManagerImpl renderingEngineManager = new RenderingEngineManagerImpl(eventHelper);
 
 		Properties renderingEngineManagerProps = new Properties();
 		renderingEngineManagerProps.setProperty("service.type", "manager");

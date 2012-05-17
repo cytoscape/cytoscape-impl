@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -15,6 +16,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +33,18 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 	private final Map<String, RenderingEngineFactory<?>> factoryMap;
 	
+	private final CyEventHelper eventHelper;
+	
 
 	/**
 	 * Create an instance of rendering engine manager. This implementation
 	 * listens to Presentation events and update its map based on them.
 	 */
-	public RenderingEngineManagerImpl() {
+	public RenderingEngineManagerImpl(final CyEventHelper eventHelper) {
+		if(eventHelper == null)
+			throw new IllegalArgumentException("CyEventHelper cannot be null.");
+		
+		this.eventHelper = eventHelper;
 		this.renderingEngineMap = new WeakHashMap<View<?>, Collection<RenderingEngine<?>>>();
 		this.factoryMap = new HashMap<String, RenderingEngineFactory<?>>();
 	}
@@ -79,6 +87,8 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 	@Override
 	public void removeRenderingEngine(final RenderingEngine<?> renderingEngine) {
+		eventHelper.fireEvent(new RenderingEngineAboutToBeRemovedEvent(this, renderingEngine));
+		
 		final View<?> viewModel = renderingEngine.getViewModel();
 		final Collection<RenderingEngine<?>> currentEngines = renderingEngineMap.get(viewModel);
 		currentEngines.remove(renderingEngine);
