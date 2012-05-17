@@ -39,19 +39,12 @@ package org.cytoscape.internal.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.help.CSH.Manager;
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -65,7 +58,6 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,45 +65,31 @@ import org.slf4j.LoggerFactory;
  * This class handles the creation of the BirdsEyeView navigation object and
  * handles the events which change view seen.
  */
-public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
-		NetworkViewDestroyedListener {
+public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, NetworkViewDestroyedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(BirdsEyeViewHandler.class);
 
-	private static final Dimension DEF_PANEL_SIZE = new Dimension(280, 280);
+	private static final Dimension DEF_PANEL_SIZE = new Dimension(300, 300);
 	private static final Color DEF_BACKGROUND_COLOR = Color.WHITE;
 
 	// BEV is just a special implementation of RenderingEngine.
 	private final RenderingEngineFactory<CyNetwork> bevFactory;
-
-	private FrameListener frameListener = new FrameListener();
-
-	private final NetworkViewManager networkViewManager;
-	private final RenderingEngineManager renderingEngineManager;
-
-	private Container bevPanel;
-
-	private RenderingEngine<CyNetwork> engine;
+	private final JPanel bevPanel;
+	private final Map<CyNetworkView, RenderingEngine<?>> viewToEngineMap;
 	private final CyApplicationManager appManager;
-	
 	private final Map<CyNetworkView, JPanel> presentationMap;
 
 	/**
 	 * Updates Bird's Eye View
 	 * 
 	 * @param appManager
-	 * @param viewmgr
 	 * @param defaultFactory
-	 * @param renderingEngineManager
 	 */
 	public BirdsEyeViewHandler(final CyApplicationManager appManager,
-			final NetworkViewManager viewmgr,
-			final RenderingEngineFactory<CyNetwork> defaultFactory, final RenderingEngineManager renderingEngineManager) {
+			final RenderingEngineFactory<CyNetwork> defaultFactory) {
 
 		this.appManager = appManager;
-		this.networkViewManager = viewmgr;
-		this.renderingEngineManager = renderingEngineManager;
-		
+		this.viewToEngineMap = new WeakHashMap<CyNetworkView, RenderingEngine<?>>();
 		presentationMap = new WeakHashMap<CyNetworkView, JPanel>();
 
 		this.bevPanel = new JPanel();
@@ -120,28 +98,6 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 		this.bevPanel.setBackground(DEF_BACKGROUND_COLOR);
 
 		this.bevFactory = defaultFactory;
-
-		final JDesktopPane desktopPane = viewmgr.getDesktopPane();
-		desktopPane.addComponentListener(new DesktopListener());
-	}
-
-	private void setFocus() {
-		final JDesktopPane desktopPane = networkViewManager.getDesktopPane();
-		if (desktopPane == null)
-			return;
-
-		final JInternalFrame frame = desktopPane.getSelectedFrame();
-		if (frame == null)
-			return;
-
-		boolean hasListener = false;
-		ComponentListener[] listeners = frame.getComponentListeners();
-		for (int i = 0; i < listeners.length; i++)
-			if (listeners[i] == frameListener)
-				hasListener = true;
-
-		if (!hasListener)
-			frame.addComponentListener(frameListener);
 	}
 
 	/**
@@ -149,32 +105,14 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 	 * 
 	 * @return The component that contains the birds eye view.
 	 */
-	Component getBirdsEyeView() {
+	final Component getBirdsEyeView() {
 		return bevPanel;
-	}
-
-	/**
-	 * Repaint a JInternalFrame whenever it is moved.
-	 */
-	class FrameListener extends ComponentAdapter {
-		public void componentMoved(ComponentEvent e) {
-			bevPanel.repaint();
-		}
-	}
-
-	/**
-	 * Repaint the JDesktopPane whenever its size has changed.
-	 */
-	class DesktopListener extends ComponentAdapter {
-		public void componentResized(ComponentEvent e) {
-			bevPanel.repaint();
-		}
 	}
 
 	@Override
 	public void handleEvent(final SetCurrentRenderingEngineEvent e) {
 		final RenderingEngine<CyNetwork> newEngine = e.getRenderingEngine();
-		
+
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -182,37 +120,26 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 			}
 		});
 	}
-	
+
 	private final void updateBEV(final RenderingEngine<CyNetwork> newEngine) {
 		final CyNetworkView newViewModel = (CyNetworkView) newEngine.getViewModel();
-		
-		// Remove it from the manager object.
-		if(engine != null)
-			renderingEngineManager.removeRenderingEngine(engine);
-		
-		engine = newEngine;
 
 		JPanel presentationPanel = presentationMap.get(newViewModel);
-		
-		if(presentationPanel == null) {
+
+		if (presentationPanel == null) {
+			logger.debug("Creating new BEV for network SUID: " + newViewModel.getModel().getSUID());
 			presentationPanel = new JPanel();
-			final RenderingEngine<CyNetwork> bevEngine = bevFactory.createRenderingEngine(presentationPanel, newViewModel);
-			renderingEngineManager.addRenderingEngine(bevEngine);
+			viewToEngineMap.put(newViewModel, bevFactory.createRenderingEngine(presentationPanel, newViewModel));
 			presentationMap.put((CyNetworkView) newViewModel, presentationPanel);
 		}
-		
-		bevPanel.removeAll();
 		final Dimension currentPanelSize = bevPanel.getSize();
 		bevPanel.setLayout(new BorderLayout());
 		presentationPanel.setSize(currentPanelSize);
 		presentationPanel.setPreferredSize(currentPanelSize);
-		
-		// TODO: Update timing is not correct.
+
+		bevPanel.removeAll();
 		bevPanel.add(presentationPanel, BorderLayout.CENTER);
-		setFocus();
-		
-		presentationPanel.repaint();		
-		bevPanel.repaint();
+		bevPanel.updateUI();
 	}
 
 	@Override
@@ -225,20 +152,24 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener,
 			}
 		});
 	}
-	
+
 	private final void removeView(final CyNetworkViewManager manager) {
 		Set<CyNetworkView> toBeRemoved = new HashSet<CyNetworkView>();
-		for(CyNetworkView view: this.presentationMap.keySet()) {
-			if(manager.getNetworkViewSet().contains(view) == false)
+		for (CyNetworkView view : this.presentationMap.keySet()) {
+			if (manager.getNetworkViewSet().contains(view) == false)
 				toBeRemoved.add(view);
 		}
-		
-		for(CyNetworkView view: toBeRemoved)
-			presentationMap.remove(view);
+
+		for (CyNetworkView view : toBeRemoved) {
+			JPanel panel = presentationMap.remove(view);
+			RenderingEngine<?> engine = viewToEngineMap.remove(view);
+			panel = null;
+			engine = null;
+		}
 
 		toBeRemoved.clear();
 		toBeRemoved = null;
-		
+
 		// Cleanup the visualization container
 		if (appManager.getCurrentNetworkView() == null) {
 			bevPanel.removeAll();
