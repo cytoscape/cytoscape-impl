@@ -102,6 +102,12 @@ public class ImageAnnotation extends Annotation {
 	//Returns a resized high quality BufferedImage
 	private static BufferedImage resize(BufferedImage image, int width, int height)
 	{
+		if (image == null) {
+			if (width == 0) width = 1;
+			if (height == 0) height = 1;
+			return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		}
+
 		int type = image.getType() == 0? BufferedImage.TYPE_INT_ARGB : image.getType();
 		if(height==0)
 			height++;

@@ -45,8 +45,6 @@ import java.util.Map;
 
 public class Annotation extends Component {
 	protected int componentNumber=0;
-	protected int initialFontSize=12;
-	protected Font font =new Font("Arial", Font.PLAIN, initialFontSize);
 	protected boolean selected=false;
 
 	protected double zoom, tempZoom;

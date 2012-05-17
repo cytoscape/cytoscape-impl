@@ -44,12 +44,14 @@ import java.util.Map;
 public class TextAnnotation extends Annotation {
 	private String text;
 
-	protected Color color=Color.BLACK;	   
-
 	public static final String NAME="TEXT";
 
 	private Font scaledFont = null;
 	private double lastScaleFactor = -1;
+
+	protected float fontSize = 0.0f;
+	protected Font font = null;
+	protected int initialFontSize=12;
 
 	public TextAnnotation() { super(); }
 
@@ -58,6 +60,7 @@ public class TextAnnotation extends Annotation {
 		super(cyAnnotator, view, x, y, compCount, zoom);
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float)initialFontSize;
 		updateAnnotationAttributes();
 	}
 
@@ -68,6 +71,7 @@ public class TextAnnotation extends Annotation {
 		this.font = getArgFont(argMap);
 		this.color = getColor(argMap.get(COLOR));
 		this.text = argMap.get(TEXT);
+		this.fontSize = font.getSize2D();
 		updateAnnotationAttributes();
 	}
 
@@ -174,13 +178,16 @@ public class TextAnnotation extends Annotation {
 
 	@Override
 	public void setFont(Font tFont) {
-		double tZoom = getTempZoom();
-		if(usedForPreviews) {			
-			tZoom = 1.0;
+		float fZoom = 1.0f;
+		if(!usedForPreviews) {			
+			// Calculate our current zoom
+			float currentSize = font.getSize2D();
+			fZoom = currentSize/fontSize;
 		}
-		// Don't lose our current zoom
-		// TODO: this is still not quite right....
-		this.font=tFont.deriveFont(((float)(1.0/tZoom))*tFont.getSize2D());
+
+		fontSize = tFont.getSize2D();
+		this.font=tFont.deriveFont(tFont.getSize2D()*fZoom);
+		scaledFont = null;
 		updateAnnotationAttributes();
 	}
 

@@ -110,26 +110,6 @@ public class ArrowAnnotation extends Annotation {
 		return source;
 	}
 
-	//Set methods
-	public void adjustSpecificZoom(double newZoom){
-		font=font.deriveFont(((float)(newZoom/tempZoom))*font.getSize2D());
-		tempZoom=newZoom;
-
-		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
-		updateAnnotationAttributes();
-	}
-
-	public void adjustZoom(double newZoom){
-		font=font.deriveFont(((float)(newZoom/zoom))*font.getSize2D());
-
-		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
-		
-		adjustArrowThickness(newZoom);
-		
-		zoom=newZoom;
-		updateAnnotationAttributes();
-	}
-	
 	public void setArrowStroke(BasicStroke newStroke) {
 		arrowStroke=newStroke;
 		updateAnnotationAttributes();
