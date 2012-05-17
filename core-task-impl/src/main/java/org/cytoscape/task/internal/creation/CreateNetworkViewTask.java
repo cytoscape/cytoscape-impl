@@ -90,12 +90,13 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		int i = 0;
 		int viewCount = networks.size();
 		for (final CyNetwork n : networks) {
-			
-			createView(n);
-			taskMonitor.setStatusMessage("Network view successfully create for:  "
-					+ n.getRow(n).get(CyNetwork.NAME, String.class));
-			i++;
-			taskMonitor.setProgress((i / (double) viewCount));
+			if (networkViewManager.getNetworkViews(n).isEmpty()) {
+				createView(n);
+				taskMonitor.setStatusMessage("Network view successfully created for:  "
+						+ n.getRow(n).get(CyNetwork.NAME, String.class));
+				i++;
+				taskMonitor.setProgress((i / (double) viewCount));
+			}
 		}
 
 		taskMonitor.setProgress(1.0);
