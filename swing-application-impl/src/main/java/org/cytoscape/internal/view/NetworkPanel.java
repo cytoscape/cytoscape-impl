@@ -348,8 +348,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			parentNode.removeFromParent();
 		}
 
-		treeTable.updateUI();
-		treeTable.doLayout();
+		treeTable.getTree().updateUI();
 		treeTable.repaint();
 	}
 
@@ -532,7 +531,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			treeTable.getTree().collapsePath(new TreePath(new TreeNode[] { root }));
 
 			treeTable.getTree().updateUI();
-			TreePath path = new TreePath(dmtn.getPath());
+			final TreePath path = new TreePath(dmtn.getPath());
 			treeTable.getTree().expandPath(path);
 			treeTable.getTree().scrollPathToVisible(path);
 			treeTable.doLayout();
@@ -547,21 +546,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 		// Phase 1: Add selected path from GUI status
 		final List<TreePath> paths = new ArrayList<TreePath>();
-
-//		if (!singleSet) {
-//			final int[] selectedRows = treeTable.getSelectedRows();
-//			for (int i = 0; i < selectedRows.length; i++) {
-//				final TreePath selectedP = treeTable.getTree().getPathForRow(selectedRows[i]);
-//				final Object val = selectedP.getLastPathComponent();
-//				if (val != null && val instanceof NetworkTreeNode) {
-//					final CyNetwork network = ((NetworkTreeNode) val).getNetwork();
-//					if (network == null)
-//						continue;
-//
-//					paths.add(selectedP);
-//				}
-//			}
-//		}
 
 		// Phase 2: add selected networks from app manager
 		for (final CyNetwork network : selectedNetworks) {
