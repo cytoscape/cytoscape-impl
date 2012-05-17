@@ -1,5 +1,6 @@
 package org.cytoscape.internal.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -58,10 +59,14 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 		this.setBackground(treeTable.getBackground());
 		this.setBackgroundSelectionColor(treeTable.getSelectionBackground());
 
-		if (selected)
+		if (selected) {
 			this.setFont(TABLE_FONT_SELECTED);
-		else
+			this.setBackgroundSelectionColor(Color.lightGray);			
+			}
+		else {
 			this.setFont(TABLE_FONT);
+			this.setBackgroundNonSelectionColor(Color.white); 
+		}
 
 		if(treeNode.getNetwork() == null) {
 			setForeground(treeTable.getForeground());
