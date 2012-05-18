@@ -46,23 +46,23 @@ public class CyActivator extends AbstractCyActivator {
 		DialogTaskManager guiTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
-		MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryServiceRef = getService(bc,MapGlobalToLocalTableTaskFactory.class);
+		//MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryServiceRef = getService(bc,MapGlobalToLocalTableTaskFactory.class);
 		
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 
 		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(guiTaskManagerServiceRef);
 		
-		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Attributes", CyNode.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef, mapGlobalTableTaskFactoryServiceRef);
-		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Attributes", CyEdge.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef, mapGlobalTableTaskFactoryServiceRef);
-		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Attributes", CyNetwork.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef, mapGlobalTableTaskFactoryServiceRef);
+		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Attributes", CyNode.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef);//, mapGlobalTableTaskFactoryServiceRef);
+		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Attributes", CyEdge.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef);//, mapGlobalTableTaskFactoryServiceRef);
+		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Attributes", CyNetwork.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef);//, mapGlobalTableTaskFactoryServiceRef);
 		
-		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Other Tables", cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef, mapGlobalTableTaskFactoryServiceRef);
+		//AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Other Tables", cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,openBrowserServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef, mapGlobalTableTaskFactoryServiceRef);
 
 		
 		registerAllServices(bc,nodeTableBrowser, new Properties());
 		registerAllServices(bc,edgeTableBrowser, new Properties());
 		registerAllServices(bc,networkTableBrowser, new Properties());
-		registerAllServices(bc,globalTableBrowser, new Properties());
+		//registerAllServices(bc,globalTableBrowser, new Properties());
 
 		registerServiceListener(bc,popupMenuHelper,"addTableColumnTaskFactory","removeTableColumnTaskFactory",TableColumnTaskFactory.class);
 		registerServiceListener(bc,popupMenuHelper,"addTableCellTaskFactory","removeTableCellTaskFactory",TableCellTaskFactory.class);

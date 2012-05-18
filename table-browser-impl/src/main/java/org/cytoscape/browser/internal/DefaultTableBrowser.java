@@ -61,7 +61,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			CyNetworkTableManager networkTableManager, CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
 			OpenBrowser openBrowser, CyNetworkManager networkManager, DeleteTableTaskFactory deleteTableTaskFactoryService,
 			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
-			CyApplicationManager applicationManager, final CyEventHelper eventHelper, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+			CyApplicationManager applicationManager, final CyEventHelper eventHelper){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
 
@@ -91,7 +91,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			});
 		
 		this.attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType, applicationManager, mapGlobalTableTaskFactoryService);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType, applicationManager);//, mapGlobalTableTaskFactoryService);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}

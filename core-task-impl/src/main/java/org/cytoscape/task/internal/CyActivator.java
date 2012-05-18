@@ -298,7 +298,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		Properties mapGlobalProps = new Properties();
-		mapGlobalProps.setProperty(ID,"mapGlobalToLocalTableTaskFactory");
+	/*	mapGlobalProps.setProperty(ID,"mapGlobalToLocalTableTaskFactory");
 		mapGlobalProps.setProperty(PREFERRED_MENU,"Tools");
 		mapGlobalProps.setProperty(ACCELERATOR,"cmd m");
 		mapGlobalProps.setProperty(TITLE, "Map Table to Attributes");
@@ -307,9 +307,9 @@ public class CyActivator extends AbstractCyActivator {
 		mapGlobalProps.setProperty(IN_TOOL_BAR,"false");
 		mapGlobalProps.setProperty(COMMAND,"map-global-to-local");
 		mapGlobalProps.setProperty(COMMAND_NAMESPACE,"table");
-		registerService(bc, mapGlobal, TableTaskFactory.class, mapGlobalProps);
+	*/	registerService(bc, mapGlobal, TableTaskFactory.class, mapGlobalProps);
 		registerService(bc, mapGlobal, MapGlobalToLocalTableTaskFactory.class, mapGlobalProps);
-		
+	
 		Properties loadNetworkFileTaskFactoryProps = new Properties();
 		loadNetworkFileTaskFactoryProps.setProperty(ID,"loadNetworkFileTaskFactory");
 		loadNetworkFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network");

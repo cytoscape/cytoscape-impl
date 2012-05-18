@@ -41,7 +41,8 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 
 		taskMonitor.setStatusMessage("Importing Data Table...");
 		
-		insertTasksAfterCurrentTask(reader ,new AddImportedTableTask(tableMgr, reader), new MapTableToNetworkTablesTask(netMgr, reader), new FinalStatusMessageUpdateTask(reader));
+		insertTasksAfterCurrentTask(reader , new MapTableToNetworkTablesTask(netMgr, reader), new AddImportedTableTask(tableMgr, reader), new FinalStatusMessageUpdateTask(reader));
+		
 	}
 }
 

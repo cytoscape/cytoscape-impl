@@ -54,7 +54,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		tableChooser.setEnabled(false);
 		
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, null, applicationManager, mapGlobalTableTaskFactoryService);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, null, applicationManager);//, mapGlobalTableTaskFactoryService);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}

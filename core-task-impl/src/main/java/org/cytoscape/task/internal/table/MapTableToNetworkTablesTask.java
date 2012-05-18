@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 public final class MapTableToNetworkTablesTask extends AbstractTask {
 	
 	private static enum TableType {
-		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class), GLOBAL("Other Tables", CyTable.class);
+		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class);
 
 		private final String name;
 		private final  Class<? extends CyIdentifiable> type;
@@ -105,27 +105,28 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {	
 		TableType tableType = dataTypeOptions.getSelectedValue();
-		if (tableType != tableType.GLOBAL ){ //The table has already been added to the global tables
-			List<CyNetwork> networks = new ArrayList<CyNetwork>();
-			if (!selectedNetworksOnly)
-				networks.addAll(networkManager.getNetworkSet());
-			else
-				for(String netName: networkList.getSelectedValues())
-					networks.add(name2NetworkMap.get(netName));
-			
-			for (CyNetwork network: networks){
-				CyTable targetTable = getTable(network, tableType);
-				if (targetTable != null){
-					if(byReader){
-						if (reader.getTables() != null && reader.getTables().length >0){
-							for(CyTable sourceTable : reader.getTables())
-								mapTable(targetTable, sourceTable);
-						}
-					}else{
-						mapTable(targetTable, globalTable);
+
+		List<CyNetwork> networks = new ArrayList<CyNetwork>();
+		
+		if (!selectedNetworksOnly)
+			networks.addAll(networkManager.getNetworkSet());
+		else
+			for(String netName: networkList.getSelectedValues())
+				networks.add(name2NetworkMap.get(netName));
+
+		for (CyNetwork network: networks){
+			CyTable targetTable = getTable(network, tableType);
+			if (targetTable != null){
+				if(byReader){
+					if (reader.getTables() != null && reader.getTables().length >0){
+						for(CyTable sourceTable : reader.getTables())
+							mapTable(targetTable, sourceTable);
 					}
-				}
+				}else
+					mapTable(targetTable, globalTable);
 			}
+		}
+		if(!selectedNetworksOnly){ //if table should be mapped to all of the tables
 			//add each mapped table to the list for mapping to networks going to be added later
 			if(byReader){
 				if (reader.getTables() != null && reader.getTables().length >0)
@@ -145,7 +146,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			return network.getDefaultEdgeTable();
 		if (tableType == TableType.NETWORK_ATTR)
 			return network.getDefaultNetworkTable();
-		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR + ", "+ TableType.NETWORK_ATTR +" or "+TableType.GLOBAL +".");
+		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR + "or "+ TableType.NETWORK_ATTR +".");
 		return null;
 	}
 	
