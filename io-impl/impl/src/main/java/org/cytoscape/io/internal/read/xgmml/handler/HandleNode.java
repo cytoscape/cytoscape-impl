@@ -79,6 +79,9 @@ public class HandleNode extends AbstractHandler {
 			}
 		}
 		
+		if (node != null)
+			manager.setCurrentElement(node);
+		
 		return current;
 	}
 }

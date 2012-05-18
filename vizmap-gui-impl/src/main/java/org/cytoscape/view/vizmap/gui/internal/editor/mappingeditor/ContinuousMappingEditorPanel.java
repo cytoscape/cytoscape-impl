@@ -123,11 +123,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	final JPanel mainPanel;
 
 	/**
-	 * 
-	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual
-	 * property type T.
-	 * 
-	 * */
+	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual property type T.
+	 */
 	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
 			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		if (mapping == null)
@@ -150,8 +147,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		
 		//TODO more error checking
 		final CyColumn col = table.getColumn(controllingAttrName);
-		if(col == null)
-			throw new NullPointerException("No such column exists in the given table.");
+		
+		if (col == null) {
+			throw new NullPointerException("The column \"" + controllingAttrName + "\" does not exist in the \""
+					+ table.getTitle() + "\" table");
+		}
 		
 		final Class<?> attrType = col.getType();
 
@@ -436,12 +436,12 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	abstract public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail);
 
 	private void initRangeValues() {
-
 		// Set range values
 		if (tracer.getRange(type) == 0) {
 			Double maxValue = Double.NEGATIVE_INFINITY;
 			Double minValue = Double.POSITIVE_INFINITY;
 			final List<K> valueList = dataTable.getColumn(mapping.getMappingColumnName()).getValues(this.dataType);
+			
 			for (K val : valueList) {
 				if (val.doubleValue() > maxValue)
 					maxValue = val.doubleValue();

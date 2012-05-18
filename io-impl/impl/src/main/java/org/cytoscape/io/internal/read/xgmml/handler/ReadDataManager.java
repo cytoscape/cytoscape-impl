@@ -426,8 +426,6 @@ public class ReadDataManager {
 	        node = this.getCurrentNetwork().addNode();
         }
         
-        this.setCurrentElement(node);
-        
         // Add to internal cache:
         cache.cache(oldId, node);
         cache.cacheNodeByName(label, node);
@@ -477,7 +475,6 @@ public class ReadDataManager {
         	}
         	
         	edge = net.addEdge(actualSrc, actualTgt, directed);
-        	this.setCurrentElement(edge);
         }
         
         // Add to internal cache:

@@ -114,7 +114,6 @@ public class HandleEdge extends AbstractHandler {
 					edge = manager.createEdge(sourceNode, targetNode, id, label, directed);
 				} else if (curNet instanceof CySubNetwork && !curNet.containsEdge(edge)) {
 					((CySubNetwork) curNet).addEdge(edge);
-					manager.setCurrentElement(edge);
 				}
 				
 				if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) {
@@ -135,6 +134,9 @@ public class HandleEdge extends AbstractHandler {
 						row.set(CyEdge.INTERACTION, interaction);
 					}
 				}
+				
+				manager.setCurrentElement(edge);
+				
 			} else {
 				throw new SAXException("Cannot create edge from XGMML (id=" + id + " label=" + label + " source=" +
 									   sourceId + " target=" + targetId + "): source or target node not found");
