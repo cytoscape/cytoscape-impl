@@ -13,19 +13,16 @@ public class CreateLegendTaskFactory extends AbstractTaskFactory {
 	private final CyApplicationManager appManager;
 	private final VisualMappingManager vmm;
 
-	private final CySwingApplication desktop;
-
-	public CreateLegendTaskFactory(final CySwingApplication desktop, final SelectedVisualStyleManager manager,
+	public CreateLegendTaskFactory(final SelectedVisualStyleManager manager,
 			final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		this.manager = manager;
 		this.appManager = appManager;
 		this.vmm = vmm;
-		this.desktop = desktop;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CreateLegendTask(desktop, manager, appManager, vmm));
+		return new TaskIterator(new CreateLegendTask(manager, appManager, vmm));
 	}
 
 }

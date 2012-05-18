@@ -10,7 +10,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.model.CyNetworkFactory;
@@ -77,7 +76,6 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
@@ -134,7 +132,7 @@ public class CyActivator extends AbstractCyActivator {
 		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef,viewModeAction );
 		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(selectedVisualStyleManager);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager);
-		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(cySwingApplicationServiceRef, selectedVisualStyleManager,cyApplicationManagerServiceRef, vmmServiceRef);
+		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(selectedVisualStyleManager,cyApplicationManagerServiceRef, vmmServiceRef);
 		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
 		
 		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
