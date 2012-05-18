@@ -122,25 +122,28 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	// UI to select presentation.
 	private static final String DEFAULT_PRESENTATION = "ding";
 
-	private final CyNetworkViewManager networkViewManager;
-	private final CyApplicationManager applicationManager;
-	private final RenderingEngineManager renderingEngineManager;
+	private final CyNetworkViewManager netViewMgr;
+	private final CyApplicationManager appMgr;
+	private final RenderingEngineManager renderingEngineMgr;
 
 	
-	public NetworkViewManager(CyApplicationManager appMgr, CyNetworkViewManager netViewMgr,final RenderingEngineManager renderingEngineManager,
-			CyProperty<Properties> cyProps, CyHelpBroker help) {
+	public NetworkViewManager(final CyApplicationManager appMgr,
+							  final CyNetworkViewManager netViewMgr,
+							  final RenderingEngineManager renderingEngineManager,
+							  final CyProperty<Properties> cyProps,
+							  final CyHelpBroker help) {
 
 		if (appMgr == null)
 			throw new NullPointerException("CyApplicationManager is null.");
 		if (netViewMgr == null)
 			throw new NullPointerException("CyNetworkViewManager is null.");
 		
-		this.renderingEngineManager = renderingEngineManager;
+		this.renderingEngineMgr = renderingEngineManager;
 
 		this.factories = new HashMap<String, RenderingEngineFactory<CyNetwork>>();
 
-		this.networkViewManager = netViewMgr;
-		this.applicationManager = appMgr;
+		this.netViewMgr = netViewMgr;
+		this.appMgr = appMgr;
 		this.props = cyProps.getProperties();
 
 		this.desktopPane = new JDesktopPane();
@@ -224,13 +227,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (view == null)
 			return;
 
-		final RenderingEngine<CyNetwork> currentEngine = applicationManager.getCurrentRenderingEngine();
+		final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
 		
-		if (!view.equals(applicationManager.getCurrentNetworkView()))
-			applicationManager.setCurrentNetworkView(view);
+		if (netViewMgr.getNetworkViewSet().contains(view) && !view.equals(appMgr.getCurrentNetworkView()))
+			appMgr.setCurrentNetworkView(view);
 
 		if (currentEngine == null || currentEngine.getViewModel() != view)
-			applicationManager.setCurrentRenderingEngine(presentationMap.get(view));
+			appMgr.setCurrentRenderingEngine(presentationMap.get(view));
 	}
 
 	/**
@@ -263,7 +266,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			return;
 		}
 		
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(e.getNetwork());
+		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(e.getNetwork());
 		CyNetworkView view = null;
 		if(views.size() != 0)
 			view = views.iterator().next();
@@ -377,7 +380,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 		iframe.addInternalFrameListener(new InternalFrameAdapter() {
 			public void internalFrameClosing(InternalFrameEvent e) {
-				networkViewManager.destroyNetworkView(view);
+				netViewMgr.destroyNetworkView(view);
 
 				Component[] components = iframe.getComponents();
 				for (Component cp : components) {
@@ -396,7 +399,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		final long start = System.currentTimeMillis();
 		logger.debug("Rendering start: view model = " + view.getSUID());
 		final RenderingEngine<CyNetwork> renderingEngine = currentRenderingEngineFactory.createRenderingEngine(iframe, view);
-		renderingEngineManager.addRenderingEngine(renderingEngine);
+		renderingEngineMgr.addRenderingEngine(renderingEngine);
 		
 		logger.debug("Rendering finished in " + (System.currentTimeMillis() - start) + " m sec.");
 		presentationMap.put(view, renderingEngine);

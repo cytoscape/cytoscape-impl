@@ -36,6 +36,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -116,11 +117,11 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	private JSplitPane split;
 
 	private final NetworkTreeTableModel treeTableModel;
-	private final CyApplicationManager appManager;
-	final CyNetworkManager netmgr;
-	final CyNetworkViewManager networkViewManager;
+	private final CyApplicationManager appMgr;
+	final CyNetworkManager netMgr;
+	final CyNetworkViewManager netViewMgr;
 
-	private final DialogTaskManager taskManager;
+	private final DialogTaskManager taskMgr;
 	private final DynamicTaskFactoryProvisioner factoryProvisioner;
 
 	private final JPopupMenu popup;
@@ -138,24 +139,26 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	/**
 	 * 
-	 * @param applicationManager
-	 * @param netmgr
-	 * @param networkViewManager
+	 * @param appMgr
+	 * @param netMgr
+	 * @param netViewMgr
 	 * @param bird
-	 * @param taskManager
+	 * @param taskMgr
 	 */
-	public NetworkPanel(final CyApplicationManager applicationManager, final CyNetworkManager netmgr,
-			final CyNetworkViewManager networkViewManager, final BirdsEyeViewHandler bird,
-			final DialogTaskManager taskManager) {
+	public NetworkPanel(final CyApplicationManager appMgr,
+						final CyNetworkManager netMgr,
+						final CyNetworkViewManager netViewMgr,
+						final BirdsEyeViewHandler bird,
+						final DialogTaskManager taskMgr) {
 		super();
 
 		this.treeNodeMap = new HashMap<Long, NetworkTreeNode>();
 		this.provisionerMap = new HashMap<Object, TaskFactory>();
-		this.appManager = applicationManager;
-		this.netmgr = netmgr;
-		this.networkViewManager = networkViewManager;
-		this.taskManager = taskManager;
-		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appManager);
+		this.appMgr = appMgr;
+		this.netMgr = netMgr;
+		this.netViewMgr = netViewMgr;
+		this.taskMgr = taskMgr;
+		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
 
 		root = new NetworkTreeNode("Network Root", null);
 		treeTableModel = new NetworkTreeTableModel(this, root);
@@ -248,7 +251,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	}
 
 	public void addTaskFactory(TaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
-		addFactory(factory, new TaskFactoryTunableAction(taskManager, factory, props, appManager, networkViewManager));
+		addFactory(factory, new TaskFactoryTunableAction(taskMgr, factory, props, appMgr, netViewMgr));
 	}
 
 	public void removeTaskFactory(TaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
@@ -258,8 +261,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager,
-				networkViewManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskMgr, provisioner, props, appMgr,
+				netViewMgr));
 	}
 
 	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
@@ -269,8 +272,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager,
-				networkViewManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskMgr, provisioner, props, appMgr,
+				netViewMgr));
 	}
 
 	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
@@ -280,8 +283,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager,
-				networkViewManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskMgr, provisioner, props, appMgr,
+				netViewMgr));
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
@@ -291,8 +294,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	public void addNetworkViewTaskFactory(final NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, new TaskFactoryTunableAction(taskManager, provisioner, props, appManager,
-				networkViewManager));
+		addFactory(provisioner, new TaskFactoryTunableAction(taskMgr, provisioner, props, appMgr,
+				netViewMgr));
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
@@ -353,7 +356,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	}
 
 	// // Event handlers /////
-
+	
 	@Override
 	public void handleEvent(final NetworkAboutToBeDestroyedEvent nde) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -522,7 +525,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			if (parentNetwork != null)
 				this.treeNodeMap.put(parentNetwork.getSUID(), parentTreeNode);
 
-			if (networkViewManager.viewExists(network))
+			if (netViewMgr.viewExists(network))
 				dmtn.setNodeColor(Color.black);
 
 			this.treeNodeMap.put(network.getSUID(), dmtn);
@@ -542,7 +545,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	 * Update selected row.
 	 */
 	private final void updateNetworkTreeSelection(final boolean singleSet) {
-		final List<CyNetwork> selectedNetworks = appManager.getSelectedNetworks();
+		final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
 
 		// Phase 1: Add selected path from GUI status
 		final List<TreePath> paths = new ArrayList<TreePath>();
@@ -583,61 +586,83 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 		// Sets the "current" network based on last node in the tree selected
 		final NetworkTreeNode node = (NetworkTreeNode) tree.getLastSelectedPathComponent();
+		
 		if (node == null || node.getUserObject() == null)
 			return;
 
-		final CyNetwork net = node.getNetwork();
-		// This is a "network set" node.
-		if (net == null) { // When selecting root node all of the subnetworks
-							// are selected.
+		CyNetwork cn = node.getNetwork();
+		final List<CyNetwork> selectedNetworks = new LinkedList<CyNetwork>();
+		
+		if (cn == null) {
+			// This is a "network set" node...
+			// When selecting root node, all of the subnetworks are selected.
 			CyRootNetwork root = ((CySubNetwork) ((NetworkTreeNode) node.getFirstChild()).getNetwork())
 					.getRootNetwork();
 
-			List<CySubNetwork> subNetworkList = root.getSubNetworkList();
-			List<CyNetwork> networkList = new LinkedList<CyNetwork>();
-			for (CySubNetwork sn : subNetworkList)
-				networkList.add(sn);
-			if (networkList.size() > 0) {
-				appManager.setCurrentNetwork(((NetworkTreeNode) node.getFirstChild()).getNetwork());
-				appManager.setSelectedNetworks(networkList);
-				final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
-				for (final CyNetwork network : networkList) {
-					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-					if (views.size() != 0)
-						selectedViews.addAll(views);
+			// Creates a list of all selected networks
+			List<CySubNetwork> subNetworks = root.getSubNetworkList();
+			
+			for (CySubNetwork sn : subNetworks) {
+				if (netMgr.networkExists(sn.getSUID()))
+					selectedNetworks.add(sn);
+			}
+			
+			// Determine the current network
+			if (!selectedNetworks.isEmpty())
+				cn = ((NetworkTreeNode) node.getFirstChild()).getNetwork();
+		} else {
+			// Regular multiple networks selection...
+			try {
+				// Create a list of all selected networks
+				for (int i = tree.getMinSelectionRow(); i <= tree.getMaxSelectionRow(); i++) {
+					NetworkTreeNode tn = (NetworkTreeNode) tree.getPathForRow(i).getLastPathComponent();
+					
+					if (tn != null && tn.getUserObject() != null && tree.isRowSelected(i))
+						selectedNetworks.add(tn.getNetwork());
 				}
-				appManager.setSelectedNetworkViews(selectedViews);
+			} catch (Exception ex) {
+				logger.error("Error creating the list of selected networks", ex);
 			}
-			return;
 		}
-		// No need to set the same network again. It should prevent infinite
-		// loops.
-		// Also check if the network still exists (it could have been removed by
-		// another thread).
-		if (netmgr.networkExists(net.getSUID()) && !net.equals(appManager.getCurrentNetwork()))
-			appManager.setCurrentNetwork(net);
-
-		// creates a list of all selected networks
-		List<CyNetwork> networkList = new LinkedList<CyNetwork>();
-		try {
-			for (int i = tree.getMinSelectionRow(); i <= tree.getMaxSelectionRow(); i++) {
-				NetworkTreeNode n = (NetworkTreeNode) tree.getPathForRow(i).getLastPathComponent();
-				if (n != null && n.getUserObject() != null && tree.isRowSelected(i))
-					networkList.add(n.getNetwork());
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		
+		final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+		
+		for (final CyNetwork n : selectedNetworks) {
+			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(n);
+			
+			if (!views.isEmpty())
+				selectedViews.addAll(views);
 		}
-
-		if (networkList.size() > 0) {
-			appManager.setSelectedNetworks(networkList);
-			final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
-			for (final CyNetwork network : networkList) {
-				final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-				if (views.size() != 0)
-					selectedViews.addAll(views);
+		
+		// No need to set the same network again. It should prevent infinite loops.
+		// Also check if the network still exists (it could have been removed by another thread).
+		if (cn == null || netMgr.networkExists(cn.getSUID())) {
+			if (cn == null || !cn.equals(appMgr.getCurrentNetwork()))
+				appMgr.setCurrentNetwork(cn);
+		
+			CyNetworkView cv = null;
+			
+			// Try to get the first view of the current network
+			final Collection<CyNetworkView> cnViews = cn != null ? netViewMgr.getNetworkViews(cn) : null;
+			cv = (cnViews == null || cnViews.isEmpty()) ? null : cnViews.iterator().next();
+			
+			if (cv == null) {
+				// The current network has no view, so try to get the next existing view of the current selection
+				for (final CyNetwork n : selectedNetworks) {
+					final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(n);
+					
+					if (!views.isEmpty()) {
+						cv = views.iterator().next();
+						break;
+					}
+				}
 			}
-			appManager.setSelectedNetworkViews(selectedViews);
+			
+			if (cv == null || !cv.equals(appMgr.getCurrentNetworkView()))
+				appMgr.setCurrentNetworkView(cv);
+			
+			appMgr.setSelectedNetworks(selectedNetworks);
+			appMgr.setSelectedNetworkViews(selectedViews);
 		}
 	}
 
@@ -679,9 +704,19 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				return;
 			}
 
-			final CyNetwork cyNetwork = netmgr.getNetwork(networkID);
+			final CyNetwork network = netMgr.getNetwork(networkID);
 
-			if (cyNetwork != null) {
+			if (network != null) {
+				// if the network is not selected, select it
+				final List<CyNetwork> selectedList = appMgr.getSelectedNetworks();
+				
+				if (selectedList == null || !selectedList.contains(network)) {
+					appMgr.setCurrentNetwork(network);
+					appMgr.setSelectedNetworks(Arrays.asList(new CyNetwork[]{ network }));
+					final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
+					appMgr.setSelectedNetworkViews(new ArrayList<CyNetworkView>(netViews));
+				}
+				
 				// enable/disable any actions based on state of system
 				for (CyAction action : popupActions.values())
 					action.updateEnableState();

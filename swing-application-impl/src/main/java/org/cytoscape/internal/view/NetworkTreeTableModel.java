@@ -83,14 +83,14 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 		if (column == 0)
 			return node.getUserObject();
 		else if (column == 1) {
-			final CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(node.getNetwork().getSUID());
+			final CyNetwork cyNetwork = this.networkPanel.netMgr.getNetwork(node.getNetwork().getSUID());
 			if(cyNetwork == null)
 				return null;
 			
 			return "" + cyNetwork.getNodeCount() + "("
 				+ cyNetwork.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
 		} else if (column == 2) {
-			final CyNetwork cyNetwork = this.networkPanel.netmgr.getNetwork(((NetworkTreeNode) node).getNetwork().getSUID());
+			final CyNetwork cyNetwork = this.networkPanel.netMgr.getNetwork(((NetworkTreeNode) node).getNetwork().getSUID());
 			if(cyNetwork == null)
 				return null;
 			

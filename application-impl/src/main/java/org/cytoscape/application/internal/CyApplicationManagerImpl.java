@@ -72,7 +72,9 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
                                                  NetworkViewAboutToBeDestroyedListener,
 												 NetworkAddedListener,
 												 NetworkViewAddedListener {
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyApplicationManagerImpl.class);
+	
 	private final CyEventHelper cyEventHelper;
 	private final CyNetworkManager networkManager;
 	private final CyNetworkViewManager networkViewManager;
@@ -92,21 +94,18 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		this.networkViewManager = networkViewManager;
 
 		selectedNetworkViews = new LinkedList<CyNetworkView>();
-		currentNetwork = null;
-		currentNetworkView = null;
-		this.currentRenderer = null;
 	}
 
 	@Override
 	public void handleEvent(final NetworkViewAddedEvent event) {
-		if (!event.getNetworkView().equals( currentNetworkView ))
-			setCurrentNetworkView( event.getNetworkView() );
+		if (!event.getNetworkView().equals(currentNetworkView))
+			setCurrentNetworkView(event.getNetworkView());
 	}
 
 	@Override
 	public void handleEvent(final NetworkAddedEvent event) {
-		if (!event.getNetwork().equals( currentNetwork ))
-			setCurrentNetwork( event.getNetwork() );
+		if (!event.getNetwork().equals(currentNetwork))
+			setCurrentNetwork(event.getNetwork());
 	}
 
 	@Override
@@ -151,15 +150,23 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			logger.info("Set current network called: " + network);
 			changed = (network == null && currentNetwork != null) || (network != null && !network.equals(currentNetwork));
 			
-			currentNetwork = network; 
-			
-			if (network != null) {
-				final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-				currentNetworkView = views.isEmpty() ? null : views.iterator().next();
-				// reset selected networks
-				selectNetworks(Arrays.asList(new CyNetwork[]{ network }));
-			} else {
-				currentNetworkView = null;
+			if (changed) {
+				currentNetwork = network;
+				
+				if (network != null) {
+					// set new current network view?
+					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+					final CyNetworkView nv = views.isEmpty() ? null : views.iterator().next();
+					
+					if (nv != currentNetworkView)
+						setCurrentNetworkView(nv);
+					
+					// reset selected networks
+					selectNetworks(Arrays.asList(new CyNetwork[]{ network }));
+				} else {
+					if (currentNetworkView != null)
+						setCurrentNetworkView(null);
+				}
 			}
 		}
 
@@ -185,14 +192,18 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			logger.debug("Set current network view called: " + view);
 
 			changed = (view == null && currentNetworkView != null) || (view != null && !view.equals(currentNetworkView));
-			currentNetworkView = view;
 
-			// reset selected network views
-			selectedNetworkViews.clear();
-			
-			if (view != null) {
-				selectedNetworkViews.add(currentNetworkView);
-				setCurrentNetwork(view.getModel());
+			if (changed) {
+				currentNetworkView = view;
+				// reset selected network views
+				selectedNetworkViews.clear();
+				
+				if (view != null) {
+					selectedNetworkViews.add(view);
+					
+					if (!view.getModel().equals(currentNetwork))
+						setCurrentNetwork(view.getModel());
+				}
 			}
 		}
 

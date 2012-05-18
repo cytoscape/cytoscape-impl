@@ -36,6 +36,7 @@ package org.cytoscape.session.internal;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -239,7 +240,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	@Override
 	public void setCurrentSession(CySession sess, final String fileName) {
 		boolean emptySession = sess == null;
-
+		
 		// Always remove the current session first
 		disposeCurrentSession(!emptySession);
 
@@ -403,18 +404,31 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private void restoreNetworkSelection(final CySession sess, final List<CyNetwork> selectedNets) {
 		// If the current view/network was not set, set the first selected network as current
 		if (!selectedNets.isEmpty()) {
-			appMgr.setCurrentNetwork(selectedNets.get(0));
-		} else {
-			final Set<CyNetwork> allNets = sess.getNetworks();
+			final CyNetwork cn = selectedNets.get(0);
+			appMgr.setCurrentNetwork(cn);
 			
-			if (!allNets.isEmpty())
-				appMgr.setCurrentNetwork(allNets.iterator().next());
-		}
+			// Also set the current view, if there is one
+			final Collection<CyNetworkView> cnViews = nvMgr.getNetworkViews(cn);
+			CyNetworkView cv = cnViews.isEmpty() ? null : cnViews.iterator().next();
 			
+			if (cv == null) {
+				// The current network has no view, so try to get the next existing view of the network selection
+				for (final CyNetwork n : selectedNets) {
+					final Collection<CyNetworkView> views = nvMgr.getNetworkViews(n);
+					
+					if (!views.isEmpty()) {
+						cv = views.iterator().next();
+						break;
+					}
+				}
+			}
+			
+			appMgr.setCurrentNetworkView(cv);
 		
-		// The selected networks must be set after setting the current one!
-		if (!selectedNets.isEmpty())
-			appMgr.setSelectedNetworks(selectedNets);
+			// The selected networks must be set after setting the current one!
+			if (!selectedNets.isEmpty())
+				appMgr.setSelectedNetworks(selectedNets);
+		}
 	}
 
 	private void disposeCurrentSession(boolean removeVisualStyles) {
