@@ -135,12 +135,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
-
-				if ((currentNetwork == null && selectedNetwork != null) || !currentNetwork.equals(selectedNetwork)) {
-					ignoreSetCurrentNetwork = true;
-					networkChooser.setSelectedItem(currentNetwork);
-					ignoreSetCurrentNetwork = false;
-				}
+				if(selectedNetwork!= null)
+					if ((currentNetwork == null && selectedNetwork != null) || !currentNetwork.equals(selectedNetwork)) {
+						ignoreSetCurrentNetwork = true;
+						networkChooser.setSelectedItem(currentNetwork);
+						ignoreSetCurrentNetwork = false;
+					}
 			}
 		});
 	}
