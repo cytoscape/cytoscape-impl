@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -46,14 +45,14 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	};
 	
 	private static Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
-	
+	private static String NO_NETWORKS = "No Networks Found";
 	private final CyNetworkManager networkManager;
 	private final CyTable globalTable;
 	private final  CyTableReader reader;
 	private final boolean byReader;
 	private Map<String, CyNetwork> name2NetworkMap;
 	
-	@Tunable(description = "Apply to Selected Networks Only",groups="Select Tables")
+	@Tunable(description = "Apply to Selected Networks Only",groups="Select Tables", dependsOn="noNetworks=false")
 	public boolean selectedNetworksOnly = false;
 	
 	@Tunable(description = "Network List",groups="Select Tables",dependsOn="selectedNetworksOnly=true")
@@ -67,6 +66,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		return "Import Data ";
 	}
 
+	
 	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader){
 		this.reader = reader;
 		globalTable = null;
@@ -98,7 +98,10 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		}
 		List<String> names = new ArrayList<String>();
 		names.addAll(name2NetworkMap.keySet());
-		networkList = new ListMultipleSelection<String>(names);
+		if(names.isEmpty())
+			networkList = new ListMultipleSelection<String>(NO_NETWORKS);
+		else
+			networkList = new ListMultipleSelection<String>(names);
 			
 	}
 	
@@ -110,10 +113,12 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		
 		if (!selectedNetworksOnly)
 			networks.addAll(networkManager.getNetworkSet());
-		else
-			for(String netName: networkList.getSelectedValues())
-				networks.add(name2NetworkMap.get(netName));
+		else{
+			if(!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
+				for(String netName: networkList.getSelectedValues())
+					networks.add(name2NetworkMap.get(netName));
 
+		}
 		for (CyNetwork network: networks){
 			CyTable targetTable = getTable(network, tableType);
 			if (targetTable != null){
