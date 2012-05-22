@@ -73,6 +73,19 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-swing-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 
 
 		<!-- Pax Exam Dependencies -->
@@ -168,11 +181,6 @@
 			<version>4.9_2</version>
 			<scope>test</scope>
 		</dependency>
-
-
-
-
-
 
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>

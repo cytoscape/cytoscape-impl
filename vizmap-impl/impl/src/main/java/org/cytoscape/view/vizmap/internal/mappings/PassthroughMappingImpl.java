@@ -97,7 +97,7 @@ public class PassthroughMappingImpl<K, V> extends
 				
 				value = (K) sb.toString();
 			} else {
-				value = row.get(attrName, attrType);
+				value = row.get(attrName, (Class<? extends K>) attrClass);
 			}
 
 			final V converted = convertToValue(value);

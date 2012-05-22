@@ -58,7 +58,8 @@
 		<module>webservice-biomart-client-impl</module>
 		<module>webservice-impl</module>
 		<module>webservice-ncbi-client-impl</module>
-		<!-- <module>work-headless-impl</module> -->
+		<module>work-headless-impl</module>
+		<module>work-impl</module>
 		<module>work-swing-impl</module>
 		<module>application-impl</module>
 		<module>webservice-psicquic-client-impl</module>

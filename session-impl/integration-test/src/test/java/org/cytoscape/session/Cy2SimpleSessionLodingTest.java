@@ -19,8 +19,8 @@ public class Cy2SimpleSessionLodingTest extends BasicIntegrationTest {
 
 	@Before
 	public void setup() throws Exception {
-//		sessionFile = new File("./src/test/resources/testData/session3x/", "smallSession.cys");
-//		checkBasicConfiguration();
+		sessionFile = new File("./src/test/resources/testData/session3x/", "smallSession.cys");
+		checkBasicConfiguration();
 	}
 
 	@Test

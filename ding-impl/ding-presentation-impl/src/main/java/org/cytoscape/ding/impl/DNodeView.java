@@ -1203,7 +1203,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == BasicVisualLexicon.NODE_Y_LOCATION) {
 			setYPosition(((Number) value).doubleValue());
 		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
-			setToolTip((String) value);
+			setToolTip(value.toString());
 		} else if (vp == BasicVisualLexicon.NODE_LABEL_COLOR) {
 			final Color labelColor = (Color) value;
 			final int opacity = ((Color)getTextPaint()).getAlpha();
