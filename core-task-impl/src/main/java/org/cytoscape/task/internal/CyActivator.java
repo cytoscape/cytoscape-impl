@@ -6,6 +6,7 @@ import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
@@ -921,6 +922,8 @@ public class CyActivator extends AbstractCyActivator {
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
 		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
 		groupNodesTaskFactoryProps.setProperty(TOOLTIP,"Group Selected Nodes Together");
+		groupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
+		groupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		groupNodesTaskFactoryProps.setProperty(COMMAND, "group-selected-nodes");
 		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
@@ -933,6 +936,8 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
 		unGroupNodesTaskFactoryProps.setProperty(TITLE,"Ungroup Selected Nodes");
 		unGroupNodesTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Selected Nodes");
+		unGroupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
+		unGroupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup-selected-nodes");
 		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
