@@ -146,7 +146,7 @@
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-api</artifactId>
-			<version>1.6.7</version>
+			<version>1.6.4</version>
 			<scope>test</scope>
 		</dependency>
 
