@@ -115,8 +115,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
-
 		<dependency>
 			<groupId>org.ops4j.pax.exam</groupId>
 			<artifactId>pax-exam-junit4</artifactId>
@@ -144,6 +142,14 @@
 			<version>${felix.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.ops4j.pax.logging</groupId>
+			<artifactId>pax-logging-api</artifactId>
+			<version>1.6.7</version>
+			<scope>test</scope>
+		</dependency>
+
 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
