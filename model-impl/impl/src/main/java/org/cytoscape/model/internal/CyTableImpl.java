@@ -237,9 +237,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				reverse.put(newColumnName, valueKeysPairs);
 			}
 
-			final CyColumn column = types.get(oldColumnName);
-			types.put(newColumnName, column);
-			types.remove(oldColumnName);
+			final CyColumn column = types.get(normalizeColumnName( oldColumnName));
+			types.put(normalizeColumnName( newColumnName), column);
+			types.remove(normalizeColumnName( oldColumnName));
 		}
 
 		eventHelper.fireEvent(new ColumnNameChangedEvent(this, oldColumnName, newColumnName));
