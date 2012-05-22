@@ -146,6 +146,8 @@ public class FormulaBuilderDialog extends JDialog {
 
 		initLayout(groupLayout);
 		setResizable(false);
+		
+		this.setAlwaysOnTop(true);
 	}
 
 	private void initFunctionComboBox(final Container contentPane) {
