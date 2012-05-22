@@ -52,6 +52,8 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+
 
 /**
  * Creates the menu and tool bars for a Cytoscape window object. It
@@ -118,6 +120,9 @@ public class CytoscapeMenuPopulator {
 	}
 
 	public void addNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map props) {
+		// Check to make sure this is supposed to be in the menus
+		if (props.containsKey(IN_MENU_BAR) && !Boolean.parseBoolean(props.get(IN_MENU_BAR).toString()))
+			return;
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(new TaskFactoryTunableAction(dialogTaskManager, provisioner, props, appManager, networkViewManager), provisioner, props);
