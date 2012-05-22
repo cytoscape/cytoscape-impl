@@ -446,18 +446,21 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 		
 		final Collection<CyColumn> columns = table.getColumns();
-		
+
 		for (final CyColumn column : columns) {
-			//  Show all attributes, with type of String or Number
-			Class<?> type = column.getType();
-			
-			//  only show user visible attributes,with type = Number/String/List
-			if ((type == Integer.class)||(type == Double.class)||(type == Boolean.class)||(type == String.class)||(type == List.class)) {
-				attributeList.add(pType + "." + column.getName());
+			if(column!= null){
+				//  Show all attributes, with type of String or Number
+				Class<?> type = column.getType();
+
+				//  only show user visible attributes,with type = Number/String/List
+				if ((type == Integer.class)||(type == Double.class)||(type == Boolean.class)||(type == String.class)||(type == List.class)) {
+					attributeList.add(pType + "." + column.getName());
+				}
+
+				//  Alphabetical sort
+				Collections.sort(attributeList);
 			}
-		
-			//  Alphabetical sort
-			Collections.sort(attributeList);
+			
 		}
 
 		// type conversion
