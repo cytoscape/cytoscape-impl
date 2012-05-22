@@ -79,7 +79,7 @@ class ButtonDelegator {
 	private boolean isLeftClick(MouseEvent e) {
 		boolean b1 = (e.getButton() == MouseEvent.BUTTON1);
 		if ( isMacPlatform ) {
-			return (!e.isMetaDown() && !e.isAltDown() && b1);
+			return (!e.isControlDown() && !e.isAltDown() && b1);
 		}
 		return b1;
 	}
@@ -88,7 +88,7 @@ class ButtonDelegator {
 		boolean b3 = (e.getButton() == MouseEvent.BUTTON3); 
 		if ( !b3 && isMacPlatform ) {
 			// meta - left click
-			return (e.isMetaDown() && !e.isAltDown() && (e.getButton() == MouseEvent.BUTTON1));
+			return (e.isControlDown() && !e.isAltDown() && (e.getButton() == MouseEvent.BUTTON1));
 		}
 		return b3;
 	}
@@ -97,7 +97,7 @@ class ButtonDelegator {
 		boolean b2 = (e.getButton() == MouseEvent.BUTTON2); 
 		if ( !b2 && isMacPlatform ) {
 			// alt - left click
-			return (!e.isMetaDown() && e.isAltDown() && (e.getButton() == MouseEvent.BUTTON1));
+			return (!e.isControlDown() && e.isAltDown() && (e.getButton() == MouseEvent.BUTTON1));
 		}
 		return b2;
 	}
