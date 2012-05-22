@@ -4,6 +4,7 @@ package org.cytoscape.ding.impl.cyannotator.create;
 
 import org.cytoscape.ding.impl.DGraphView;
 import javax.swing.JFrame;
+import java.awt.geom.Point2D;
 import java.util.Map;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.Annotation;
@@ -11,7 +12,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotation;
 
 public class ArrowAnnotationFactory implements AnnotationFactory {
 
-	public JFrame createAnnotationFrame(DGraphView view) {
+	public JFrame createAnnotationFrame(DGraphView view, Point2D location) {
 		System.err.println("Not yet implemented");
 		return new JFrame("Not Yet Implemented!");
 	}

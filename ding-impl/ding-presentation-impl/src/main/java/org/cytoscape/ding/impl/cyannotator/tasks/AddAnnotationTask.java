@@ -37,7 +37,7 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 			
-		 			JFrame frame = annotationFactory.createAnnotationFrame((DGraphView)view);	
+		 			JFrame frame = annotationFactory.createAnnotationFrame((DGraphView)view, location);	
 					frame.setLocation((int)location.getX(), (int)location.getY());
 					frame.setVisible(true);
 				}

@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
 import java.awt.Font;
+import java.awt.geom.Point2D;
 
 import javax.swing.JFrame;
 
@@ -12,10 +13,12 @@ public class cTextAnnotation extends javax.swing.JFrame {
 
 	private final DGraphView view;
 	private final CyAnnotator cyAnnotator;
+	private final Point2D startingLocation;
 
-	public cTextAnnotation(DGraphView view) {
+	public cTextAnnotation(DGraphView view, Point2D start) {
 		this.view = view;
 		this.cyAnnotator =  view.getCyAnnotator();
+		this.startingLocation = start;
 		    			
         initComponents();		        
 			  setSize(474, 504);
@@ -61,7 +64,11 @@ public class cTextAnnotation extends javax.swing.JFrame {
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
         //Apply
 
-        TextAnnotation newOne=new TextAnnotation(cyAnnotator, view, getX(), getY(), textAnnotation1.getText() ,view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).getComponentCount(), view.getZoom());
+        TextAnnotation newOne=new TextAnnotation(cyAnnotator, view, 
+				                                         (int)startingLocation.getX(), (int)startingLocation.getY(), 
+				                                         textAnnotation1.getText() ,
+				                                         view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).getComponentCount(), 
+				                                         view.getZoom());
         
         newOne.setFont(textAnnotation1.getNewFont());
         newOne.setTextColor(textAnnotation1.getTextColor());

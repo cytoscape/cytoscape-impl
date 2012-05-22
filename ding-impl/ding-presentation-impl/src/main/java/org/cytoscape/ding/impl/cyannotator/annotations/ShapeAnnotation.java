@@ -114,6 +114,10 @@ public class ShapeAnnotation extends Annotation {
 		setSelected(selected);
 	}
 
+	public void resize() {
+		cornersAdjusted = false;
+	}
+
 
 	@Override
 	public void paint(Graphics g) {

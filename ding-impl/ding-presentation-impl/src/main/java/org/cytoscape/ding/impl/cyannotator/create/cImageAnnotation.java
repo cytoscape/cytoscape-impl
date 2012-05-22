@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
 import java.awt.Container;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
@@ -8,7 +9,6 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
-
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotation;
@@ -26,18 +26,19 @@ public class cImageAnnotation extends javax.swing.JFrame {
 	private final DGraphView view;
 	private final CyAnnotator cyAnnotator; 
 	private final CustomGraphicsManager cgm;
+	private final Point2D startingLocation;
 
 	private static final Logger logger = LoggerFactory.getLogger(cImageAnnotation.class);
 
-	public cImageAnnotation(DGraphView view, CustomGraphicsManager cgm) {
+	public cImageAnnotation(DGraphView view, Point2D location, CustomGraphicsManager cgm) {
 		this.view = view;
 		this.cgm = cgm;
 		this.cyAnnotator = view.getCyAnnotator();
-
+		this.startingLocation = location;
 		
 		initComponents(this.getContentPane());
-			  setSize(474, 445);
-			  setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setSize(474, 445);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 
 	private void initComponents(Container pane) {
@@ -94,7 +95,9 @@ public class cImageAnnotation extends javax.swing.JFrame {
 			BufferedImage image = ImageIO.read(imageFile);
 			URL url = imageFile.toURI().toURL();
 			//The Attributes are x, y, Image, componentNumber, scaleFactor
-			ImageAnnotation newOne=new ImageAnnotation(cyAnnotator, view, getX(), getY(), url, image, 
+			ImageAnnotation newOne=new ImageAnnotation(cyAnnotator, view, 
+			                                           (int)startingLocation.getX(), (int)startingLocation.getY(), 
+			                                           url, image, 
 			                                           cyAnnotator.getForeGroundCanvas().getComponentCount(),
  			                                           view.getZoom(),cgm);
 

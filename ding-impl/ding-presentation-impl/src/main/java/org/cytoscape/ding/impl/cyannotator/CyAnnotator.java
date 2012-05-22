@@ -61,10 +61,10 @@ public class CyAnnotator {
 	private List<Annotation> selectedAnnotations=new ArrayList<Annotation>();
 	private double prevZoom=1;
 	private ShapeAnnotation newShape=null;
-	private ShapeAnnotation createShape=null;
 
 	private final DGraphView view;
 	private final ArbitraryGraphicsCanvas foreGroundCanvas;
+	private final ArbitraryGraphicsCanvas backGroundCanvas;
 	private final InnerCanvas networkCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 
@@ -72,22 +72,24 @@ public class CyAnnotator {
 		this.view = view;
 		this.foreGroundCanvas = 
 			(ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
+		this.backGroundCanvas = 
+			(ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 		this.networkCanvas = view.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
 		initListeners();  
 	}
 	
 	private void initListeners() {
-		foreGroundCanvas.addMouseListener(new ForegroundMouseListener());
-		foreGroundCanvas.addMouseMotionListener(new ForegroundMouseMotionListener());
-		foreGroundCanvas.addKeyListener(new ForegroundKeyListener());
+		foreGroundCanvas.addMouseListener(new CanvasMouseListener());
+		foreGroundCanvas.addMouseMotionListener(new CanvasMouseMotionListener());
+		foreGroundCanvas.addKeyListener(new CanvasKeyListener());
 		foreGroundCanvas.setFocusable(true);
 
 		//Set up the foreGroundCanvas as a dropTarget, so that we can drag and drop JPanels, created Annotations onto it.
 		//We also set it up as a DragSource, so that we can drag created Annotations
 		// TODO: This should be replaced with a drag of the component
-		DropTargetComponent dtarget=new DropTargetComponent();
-		DragSourceComponent dsource=new DragSourceComponent();
+		new DropTargetComponent();
+		new DragSourceComponent();
 
 		//The created annotations resize (Their font changes), if we zoom in and out
 		foreGroundCanvas.addMouseWheelListener(new MyMouseWheelListener());
@@ -150,12 +152,12 @@ public class CyAnnotator {
 		}
 	}
 
-	public Component getComponentAt(int x, int y) {
-		return foreGroundCanvas.getComponentAt(x, y);
+	public Component getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+		return cnvs.getComponentAt(x, y);
 	}
 
-	public void modifyComponentLocation(int x, int y, int number) {
-		foreGroundCanvas.modifyComponentLocation(x, y, number);
+	public void modifyComponentLocation(ArbitraryGraphicsCanvas cnvs, int x, int y, int number) {
+		cnvs.modifyComponentLocation(x, y, number);
 	}
 
 	public InnerCanvas getNetworkCanvas() {
@@ -164,6 +166,10 @@ public class CyAnnotator {
 
 	public ArbitraryGraphicsCanvas getForeGroundCanvas() {
 		return foreGroundCanvas;
+	}
+
+	public ArbitraryGraphicsCanvas getBackGroundCanvas() {
+		return backGroundCanvas;
 	}
 
 	public void addAnnotation(Annotation annotation) {
@@ -231,9 +237,14 @@ public class CyAnnotator {
 		}
 	}
 
+	public void resizeShape(ShapeAnnotation newShape) { 
+		this.newShape = newShape;
+		newShape.resize();
+		drawShape = true; 
+	}
+
 	public void startDrawShape(ShapeAnnotation createShape, int x, int y) {
 		drawShape=true;
-		this.createShape=createShape;
 
 		//createShape will have all the properties associated with the shape to be drawn
 		//Create a shapeAnnotattion based on these properties and add it to foreGroundCanvas
@@ -248,16 +259,18 @@ public class CyAnnotator {
 	private class DragSourceComponent extends DragSourceAdapter implements DragGestureListener {
 		//Add the foreGroundCanvas as DraggableComponent
 		DragSource dragSource;
+		ArbitraryGraphicsCanvas canvas;
 
 		DragSourceComponent() {
+			this.canvas = foreGroundCanvas;
 			dragSource = new DragSource();
-			dragSource.createDefaultDragGestureRecognizer( foreGroundCanvas, 
+			dragSource.createDefaultDragGestureRecognizer( canvas, 
 			                                               DnDConstants.ACTION_COPY_OR_MOVE, this);
 		}
 
 		public void dragGestureRecognized(DragGestureEvent dge) {
-			Component annotation = getComponentAt((int)(dge.getDragOrigin().getX()), 
-			                                      (int)(dge.getDragOrigin().getY()));
+			Component annotation = getComponentAt(canvas, (int)(dge.getDragOrigin().getX()), 
+			                                              (int)(dge.getDragOrigin().getY()));
 
 			//Add the component number of the annotation being dragged in the form of string to transfer information
 			if(annotation!=null){
@@ -268,11 +281,13 @@ public class CyAnnotator {
 	}
 
 	private class DropTargetComponent implements DropTargetListener {
+		ArbitraryGraphicsCanvas canvas;
 	
 		// Add the foreGroundCanvas as a drop Target
 		public DropTargetComponent()
 		{
-			new DropTarget(foreGroundCanvas, this);
+			this.canvas = foreGroundCanvas;
+			new DropTarget(canvas, this);
 		}
 
 		public void dragEnter(DropTargetDragEvent evt){}
@@ -287,7 +302,7 @@ public class CyAnnotator {
 					String s = (String)t.getTransferData(DataFlavor.stringFlavor);
 					//Get hold of the transfer information and complete the drop
 					//Based on that information popup appropriate JFrames to create those Annotatons
-					Component annotation=(foreGroundCanvas.getComponent(Integer.parseInt(s)));
+					Component annotation=(canvas.getComponent(Integer.parseInt(s)));
 					if (annotation instanceof Annotation) {
 						Annotation textAnnotation = (Annotation)annotation;
 						if(!textAnnotation.getDrawArrow()){
@@ -295,9 +310,9 @@ public class CyAnnotator {
 							textAnnotation.setLocation((int)evt.getLocation().getX(),(int)evt.getLocation().getY());
 							//This will modify the initial location of this annotation stored in an array in 	
 							//Very important. Without it you won't be able to handle change in viewports
-							modifyComponentLocation(textAnnotation.getX(), 
-							                        textAnnotation.getY(), 
-							                        textAnnotation.getComponentNumber());
+							modifyComponentLocation(canvas, textAnnotation.getX(), 
+							                                textAnnotation.getY(), 
+							                                textAnnotation.getComponentNumber());
 						 }
 					}
 	
@@ -328,7 +343,7 @@ public class CyAnnotator {
 	
 					//Get hold of the transfer information and complete the drop
 					//Based on that information popup appropriate JFrames to create those Annotatons
-					Component annotation=(foreGroundCanvas.getComponent(Integer.parseInt(s)));
+					Component annotation=(canvas.getComponent(Integer.parseInt(s)));
 					if (annotation instanceof Annotation) {
 						Annotation textAnnotation = (Annotation)annotation;
 						if(textAnnotation.getDrawArrow()){
@@ -341,8 +356,7 @@ public class CyAnnotator {
 							textAnnotation.setLocation((int)evt.getLocation().getX(),(int)evt.getLocation().getY());
 							//This will modify the initial location of this annotation stored in an array in foreGroundCanvas
 							//Very important. Without it you won't be able to handle change in viewports
-							modifyComponentLocation(annotation.getX(), 
-							                        annotation.getY(), 
+							modifyComponentLocation(canvas, annotation.getX(), annotation.getY(), 
 							                        textAnnotation.getComponentNumber());
 						}
 						// Update our attributes
@@ -393,18 +407,21 @@ public class CyAnnotator {
 	//Returns a boolean value, whether this is a Mac Platform or not
 
 	private boolean isMacPlatform() {
-
 		String MAC_OS_ID = "mac";
 		String os = System.getProperty("os.name");
 
 		return os.regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
 	}
 
-	private final class ForegroundMouseListener implements MouseListener {
-
+	private final class CanvasMouseListener implements MouseListener {
 		public void mousePressed(MouseEvent e) {
-			Component comp = getComponentAt(e.getX(), e.getY());
+			Component comp = getComponentAt(foreGroundCanvas, e.getX(), e.getY());
 			Annotation newOne = null;
+
+			// If we don't have a component in the foreground -- check the background
+			if (comp == null) {
+				comp = getComponentAt(backGroundCanvas, e.getX(), e.getY());
+			}
 	
 			if (comp instanceof Annotation && comp!=null) {
 				newOne = (Annotation)comp;
@@ -413,7 +430,8 @@ public class CyAnnotator {
 				DRAG_VAL=true;
 	
 				//We have right clicked on the Annotation, show a popup
-				if( (e.getButton() == MouseEvent.BUTTON3) || ( isMacPlatform()  && e.isControlDown()) ) {
+				if( (e.getButton() == MouseEvent.BUTTON3) || 
+				    ( isMacPlatform()  && e.isControlDown()) ) {
 					newOne.showChangePopup(e);
 				}
 			} else {
@@ -431,8 +449,14 @@ public class CyAnnotator {
 		}
 
 		public void mouseClicked(MouseEvent e) {
-			Component comp = getComponentAt(e.getX(), e.getY());
+			Component comp = getComponentAt(foreGroundCanvas, e.getX(), e.getY());
 			Annotation newOne = null;
+
+			// If we don't have a component in the foreground -- check the background
+			if (comp == null) {
+				comp = getComponentAt(backGroundCanvas, e.getX(), e.getY());
+			}
+
 			if(comp instanceof Annotation)
 				newOne = (Annotation)comp;
 	
@@ -450,7 +474,7 @@ public class CyAnnotator {
 				newOne.setSelected(true);
 	
 				//We request focus in this window, so that we can move these selected Annotations around using arrow keys
-				foreGroundCanvas.requestFocusInWindow();
+				newOne.getCanvas().requestFocusInWindow();
 	
 				//Repaint the whole network. The selected annotations will have a yellow outline now
 				view.updateView();	
@@ -490,8 +514,7 @@ public class CyAnnotator {
 		}
 	}
 
-	private class ForegroundMouseMotionListener implements MouseMotionListener{
-
+	private class CanvasMouseMotionListener implements MouseMotionListener{
 		public void mouseDragged(MouseEvent e) {
 			//If we are not dragging an Annotation then let the InnerCanvas handle this event
 			if(!DRAG_VAL)
@@ -508,7 +531,7 @@ public class CyAnnotator {
 		}
 	}
 
-	private class ForegroundKeyListener implements KeyListener {
+	private class CanvasKeyListener implements KeyListener {
 		public void keyPressed(KeyEvent e) {
 			int code = e.getKeyCode();
 
@@ -533,7 +556,7 @@ public class CyAnnotator {
 
 					//Adjust the locations of the selected annotations
 					annotation.setLocation(x,y);
-					modifyComponentLocation(annotation.getX(), annotation.getY(), 
+					modifyComponentLocation(annotation.getCanvas(), annotation.getX(), annotation.getY(), 
 					                        annotation.getComponentNumber());
 				}
 				view.updateView();	

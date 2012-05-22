@@ -261,13 +261,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			if (c instanceof Annotation) {
 				Annotation a = (Annotation)c;
 				a.drawAnnotation(image2D, position.getX()+xOffset, position.getY()+yOffset, scaleFactor);
-/*
-				double zoom = a.getZoom();
-				a.adjustSpecificZoom(scaleFactor);
-				a.paint(image2D);
-				a.adjustSpecificZoom(zoom);
-*/
-			
 			}
 		}
 		// System.out.println("drawCanvas: done");

@@ -50,6 +50,9 @@ public class Annotation extends Component {
 	protected double zoom, tempZoom;
 	protected boolean usedForPreviews=false;
 
+	protected ArbitraryGraphicsCanvas canvas;
+	protected DGraphView.Canvas canvasName;
+
 	protected Color color=Color.BLACK;
 	protected CyNetwork network;
 	protected List<ArrowAnnotation> arrowList;
@@ -76,6 +79,9 @@ public class Annotation extends Component {
 	protected static final String FONTFAMILY="fontFamily";
 	protected static final String FONTSIZE="fontSize";
 	protected static final String FONTSTYLE="fontStyle";
+	protected static final String CANVAS="canvas";
+	protected static final String BACKGROUND="background";
+	protected static final String FOREGROUND="foreground";
 
 	protected final DGraphView view;
 	protected final CyAnnotator cyAnnotator;
@@ -92,6 +98,7 @@ public class Annotation extends Component {
 		this.zoom=zoom;
 		this.setLocation(x, y);
 		this.network = view.getModel(); 
+		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 	}
 
 	// This constructor is used to construct a text annotation from an
@@ -103,6 +110,14 @@ public class Annotation extends Component {
 		this.componentNumber = Integer.parseInt(argMap.get(ID));
 		this.zoom = Double.parseDouble(argMap.get(ZOOM));
 		this.network = view.getModel(); 
+		String canvasString = argMap.get(CANVAS);
+		if (canvasString != null && canvasString.equals(BACKGROUND)) {
+			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
+			this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
+		} else {
+			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
+			this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
+		}
 	}
 
 	public Map<String,String> getArgMap() {
@@ -112,6 +127,8 @@ public class Annotation extends Component {
 		argMap.put(ZOOM,Double.toString(this.zoom));
 		return argMap;
 	}
+
+	public ArbitraryGraphicsCanvas getCanvas() {return this.canvas;}
 
 	protected void addNodeCoordinates(Map<String, String> argMap) {
 		Point xy = getNodeCoordinates(getX(), getY());
@@ -383,7 +400,7 @@ public class Annotation extends Component {
 	public double getTempZoom(){
 		return tempZoom;
 	}
-	
+
 	@Override
 	public Component getComponentAt(int x, int y) {
 		if(isPointInComponent(x,y))
@@ -412,12 +429,10 @@ public class Annotation extends Component {
 
 			//The ArrowEndPoints are also set up as Annotations of null size.
 			//They have been implemented this way, so as to handle the change in viewports
-			ArbitraryGraphicsCanvas foreGroundCanvas = cyAnnotator.getForeGroundCanvas();
-
-			ArrowAnnotation arrowEndPoint=new ArrowAnnotation(cyAnnotator, view, pX, pY, foreGroundCanvas.getComponentCount(), getComponentNumber(), view.getZoom());
+			ArrowAnnotation arrowEndPoint=new ArrowAnnotation(cyAnnotator, view, pX, pY, canvas.getComponentCount(), getComponentNumber(), view.getZoom());
 			arrowEndPoint.setSize(0, 0);			
 
-			foreGroundCanvas.add(arrowEndPoint);
+			canvas.add(arrowEndPoint);
 			arrowList.add(arrowEndPoint);
 		}
 		updateAnnotationAttributes();
@@ -623,7 +638,6 @@ public class Annotation extends Component {
 		{
 			JMenuItem modArrow=new JMenuItem("Modify Properties");
 			modArrow.addActionListener(new modifyArrowListener());
-			
 			popup.add(modArrow);
 			
 			popup.add(new JSeparator());
@@ -640,9 +654,30 @@ public class Annotation extends Component {
 				addModifyMenuItem(popup);
 				popup.add(new JSeparator());
 			}
+
+			if (canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)) {
+				JMenuItem moveAnnotation=new JMenuItem("Move Annotation to Background");
+				moveAnnotation.addActionListener(new moveAnnotationListener());
+				popup.add(moveAnnotation);
+			} else {
+				JMenuItem moveAnnotation=new JMenuItem("Move Annotation to Foreground");
+				moveAnnotation.addActionListener(new moveAnnotationListener());
+				popup.add(moveAnnotation);
+			}
 	
 			JMenuItem removeAnnotation=new JMenuItem("Remove Annotation");
 			removeAnnotation.addActionListener(new removeAnnotationListener());
+			popup.add(removeAnnotation);
+
+			if (isShapeAnnotation()) {
+				JMenuItem resizeAnnotation=new JMenuItem("Resize Annotation");
+				resizeAnnotation.addActionListener( new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						cyAnnotator.resizeShape((ShapeAnnotation)Annotation.this);
+					}
+				});
+				popup.add(resizeAnnotation);
+			}
 	
 			JMenuItem addArrow=new JMenuItem("Add Arrow");
 	
@@ -652,7 +687,6 @@ public class Annotation extends Component {
 				}
 			});
 	
-			popup.add(removeAnnotation);
 			popup.add(addArrow);
 		}
 		return popup;
@@ -716,16 +750,37 @@ public class Annotation extends Component {
 		//Now draw the arrows associated with this annotation
 	}
 	
+	class moveAnnotationListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			int remPos=getComponentNumber();
+			int num=canvas.getComponentCount();
+
+			// Remove the annotation from the current canvas
+			for(int i=remPos+1;i<num;i++)
+				((Annotation)canvas.getComponent(i)).setComponentNumber(i-1);
+
+			canvas.remove(Annotation.this);
+
+			// Change our canvas to the new canvas
+			if (canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)) {
+				canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
+			} else {
+				canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
+			}
+			canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(canvasName));
+			canvas.add(Annotation.this);
+		}
+	}
+
 	class removeArrowListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			ArbitraryGraphicsCanvas foreGroundCanvas = cyAnnotator.getForeGroundCanvas();
 			int remPos=(arrowList.get(arrowIndex)).getComponentNumber();
-			int num=foreGroundCanvas.getComponentCount();
+			int num=canvas.getComponentCount();
 
 			for(int i=remPos+1;i<num;i++)
-				((Annotation)foreGroundCanvas.getComponent(i)).setComponentNumber(i-1);
+				((Annotation)canvas.getComponent(i)).setComponentNumber(i-1);
 
-			foreGroundCanvas.remove(arrowList.get(arrowIndex));
+			canvas.remove(arrowList.get(arrowIndex));
 
 			cyAnnotator.removeAnnotation(arrowList.get(arrowIndex));
 			arrowList.remove(arrowIndex);
@@ -750,21 +805,24 @@ public class Annotation extends Component {
 
 	}	
 	
+	class resizeAnnotationListener implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+		}
+	}
+
 	class removeAnnotationListener implements ActionListener{
 
 		public void actionPerformed(ActionEvent e){
-			ArbitraryGraphicsCanvas foreGroundCanvas = cyAnnotator.getForeGroundCanvas();
-
 			//When an Annotation is removed we have to adjust the componentNumbers of the anotations added
 			//after this Annotation
 
 			int remPos=getComponentNumber();
-			int num=foreGroundCanvas.getComponentCount();
+			int num=canvas.getComponentCount();
 
 			for(int i=remPos+1;i<num;i++)
-				((Annotation)foreGroundCanvas.getComponent(i)).setComponentNumber(i-1);
+				((Annotation)canvas.getComponent(i)).setComponentNumber(i-1);
 
-			foreGroundCanvas.remove(Annotation.this);
+			canvas.remove(Annotation.this);
 
 			if(getArrowDrawn()){
 
@@ -773,10 +831,10 @@ public class Annotation extends Component {
 					num--;
 
 					for(int i=remPos+1;i<num;i++)
-						((Annotation)foreGroundCanvas.getComponent(i)).setComponentNumber(i-1);
+						((Annotation)canvas.getComponent(i)).setComponentNumber(i-1);
 
 					cyAnnotator.removeAnnotation(arrowPoint);
-					foreGroundCanvas.remove(arrowPoint);
+					canvas.remove(arrowPoint);
 				}
 			}
 
