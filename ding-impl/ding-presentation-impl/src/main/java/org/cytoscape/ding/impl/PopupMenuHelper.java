@@ -61,6 +61,8 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DynamicSubmenuListener;
 
+import static org.cytoscape.work.ServiceProperties.*;
+
 
 // TODO Consider generalizing this class so that it can be used by anyone
 // who needs a popup menu based on TaskFactories.
@@ -159,6 +161,8 @@ class PopupMenuHelper {
 		
 		final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
 		final JMenuTracker tracker = new JMenuTracker(menu);
+
+		System.out.println("creating empty space menu");
 		
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
 		for ( NetworkViewTaskFactory nvtf : usableTFs ) {
@@ -183,9 +187,17 @@ class PopupMenuHelper {
 	private void addMenuItem(View<?> view, JPopupMenu popup, NamedTaskFactory tf, Object tunableContext,
 	                            JMenuTracker tracker, Map props) {
 
-		String title = (String)(props.get("title"));
-		String pref = (String)(props.get("preferredMenu"));
-		String toolTip = (String) (props.get("tooltip"));
+		String title = (String)(props.get(TITLE));
+		String pref = (String)(props.get(PREFERRED_MENU));
+		String toolTip = (String) (props.get(TOOLTIP));
+		String menuGravity = (String) (props.get(MENU_GRAVITY));
+		double gravity;
+
+		if (menuGravity != null) {
+			gravity = Double.parseDouble(menuGravity);
+		} else  {
+			gravity = largeValue++;
+		}
 
 		// otherwise create our own popup menus 
 		boolean useCheckBoxMenuItem = false;
@@ -244,7 +256,7 @@ class PopupMenuHelper {
 					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem)item; 
 					checkBox.setSelected(isSelected);
 				}
-				gravityTracker.addMenuItem(item, ++largeValue);
+				gravityTracker.addMenuItem(item, gravity);
 			// otherwise just use the preferred menu as the menuitem name
 			} else {
 				title = pref;
@@ -254,7 +266,7 @@ class PopupMenuHelper {
 		// title and preferred menu
 		} else {
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem, toolTip), ++largeValue);
+			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem, toolTip), gravity);
 		}
 	}
 
