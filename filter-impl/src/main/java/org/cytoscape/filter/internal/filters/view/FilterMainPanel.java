@@ -214,26 +214,31 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	@Override
 	public void handleEvent(ColumnNameChangedEvent e) {
-
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
 			public void run() {
-
 				handleAttributesChanged();
 				logger.warn("A column name has been updated. The filter may not be applied on some of the added widgets");
 			}
 		});
 	}	
+
 	@Override
-	public void handleEvent(FiltersChangedEvent event) {
+	public void handleEvent(final FiltersChangedEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
 			public void run() {
 				updateCMBFilters();
-				refreshAttributeCMB();
-			}});
+
+				// select the current filter
+				final CompositeFilter currentFilter = e.getCurrentFilter();
+
+				if (currentFilter != null)
+					cmbFilters.setSelectedItem(currentFilter);
+			}
+		});
 	}
 	
 	@Override
@@ -287,40 +292,37 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	}
 	
-	public void handleNetworkFocused(final CyNetwork net) {
-		if (net == null) {
+	private void handleNetworkFocused(final CyNetwork net) {
+		if (net == null)
 			return;
-		}
+		
 		handleAttributesChanged();
 
 		//Refresh indices for UI widgets after network switch			
 		CompositeFilter selectedFilter = (CompositeFilter) cmbFilters.getSelectedItem();
-		if (selectedFilter == null) {
-			return;
-		}
 		
-		selectedFilter.setNetwork(net);
-		FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
-
-		if (theSettingPanel != null) {
-			theSettingPanel.refreshIndicesForWidgets();
-			updateFeedbackTableModel();
+		if (selectedFilter != null) {
+			selectedFilter.setNetwork(net);
+			FilterSettingPanel theSettingPanel= filter2SettingPanelMap.get(selectedFilter);
+	
+			if (theSettingPanel != null) {
+				theSettingPanel.refreshIndicesForWidgets();
+				updateFeedbackTableModel();
+			}
 		}
-
 	}
 
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				enableForNetwork();
 				handleNetworkFocused(e.getNetwork());
 				refreshAttributeCMB();
-			}});
+			}
+		});
 	}
-
 	
 	@Override
 	public void handleEvent(final NetworkDestroyedEvent e) {
@@ -361,20 +363,20 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 
 	private void updateFeedbackTableModel(){
-				String netName = null;
-				String nodeCount = null;
-				String edgeCount = null;
-				final CyNetwork net = applicationManager.getCurrentNetwork();
-				
-				if (net != null) {
-					netName = net.getRow(net).get(CyNetwork.NAME, String.class);
-					nodeCount = net.getNodeCount() + "(" + net.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) + ")";
-					edgeCount = net.getEdgeCount() + "(" + net.getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, true) + ")";
-				}
-				
-				tblFeedBack.getModel().setValueAt(netName, 0, 0);
-				tblFeedBack.getModel().setValueAt(nodeCount, 0, 1);
-				tblFeedBack.getModel().setValueAt(edgeCount, 0, 2);				
+		String netName = null;
+		String nodeCount = null;
+		String edgeCount = null;
+		final CyNetwork net = applicationManager.getCurrentNetwork();
+		
+		if (net != null) {
+			netName = net.getRow(net).get(CyNetwork.NAME, String.class);
+			nodeCount = net.getNodeCount() + "(" + net.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) + ")";
+			edgeCount = net.getEdgeCount() + "(" + net.getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, true) + ")";
+		}
+		
+		tblFeedBack.getModel().setValueAt(netName, 0, 0);
+		tblFeedBack.getModel().setValueAt(nodeCount, 0, 1);
+		tblFeedBack.getModel().setValueAt(edgeCount, 0, 2);				
 	}
 	
 	/**
@@ -395,7 +397,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 	
 	public void handlePanelSelected() {
-		
 		updateIndex(applicationManager.getCurrentNetwork());
 	}
 	
@@ -427,7 +428,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		updateCMBAttributes();
 		cmbAttributes.repaint();
 	}
-		
+	
 	/**
 	 * Get the list of attribute names for either "node" or "edge". The attribute names will be
 	 * prefixed either with "node." or "edge.". Those attributes whose data type is neither
@@ -501,8 +502,8 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		currentFilterSettingPanel = next;
 		
 		if (currentFilterSettingPanel == null || currentFilterSettingPanel.hasNullIndexChildFilter()) {
-			currentFilterSettingPanel = new FilterSettingPanel(quickFind, this, pNewFilter, modelLocator, applicationManager,
-					eventHelper);
+			currentFilterSettingPanel = new FilterSettingPanel(quickFind, this, pNewFilter, modelLocator,
+					applicationManager, eventHelper);
 			//Update the HashMap
 			filter2SettingPanelMap.put(pNewFilter, currentFilterSettingPanel);			
 		}
@@ -590,7 +591,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	}
 
 	private void updateIndex(CyNetwork curNetwork) {
-
 		//final CyNetwork curNetwork = applicationManager.getCurrentNetwork();
 
 		// Update only when current network is available.
@@ -1234,14 +1234,11 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		CompositeFilter newFilter = (CompositeFilter) theFilter.clone(); 
 		newFilter.setName(newFilterName);
 		
-		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
-		allFilters.add(newFilter);
+		modelLocator.addFilter(newFilter);
+		
 		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(quickFind, this, newFilter, modelLocator,
 				applicationManager, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);
-		
-		// set the new filter in the combobox selected
-		cmbFilters.setSelectedItem(newFilter);
 	}	
 	
 	private void renameFilter(){
@@ -1317,9 +1314,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		FilterSettingPanel newFilterSettingPanel = new FilterSettingPanel(quickFind, this, newFilter, modelLocator,
 				applicationManager, eventHelper);
 		filter2SettingPanelMap.put(newFilter, newFilterSettingPanel);
-
-		// set the new filter in the combobox selected
-		cmbFilters.setSelectedItem(newFilter);
 
 		if (pFilterType.equalsIgnoreCase("Composite")) {
 			updateCMBAttributes();

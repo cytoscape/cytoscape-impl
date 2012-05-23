@@ -31,7 +31,7 @@ public class FilterModelLocator {
 			boolean changed = this.filters.add(filter);
 			
 			if (changed)
-				notifyListeners(new FiltersChangedEvent(this.filters));
+				notifyListeners(new FiltersChangedEvent(this.filters, filter));
 		}
 	}
 	
