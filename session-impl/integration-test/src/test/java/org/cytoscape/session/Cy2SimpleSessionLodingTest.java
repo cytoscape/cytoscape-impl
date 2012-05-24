@@ -124,8 +124,7 @@ public class Cy2SimpleSessionLodingTest extends BasicIntegrationTest {
 		Double h = style.getDefaultValue(BasicVisualLexicon.NODE_HEIGHT);
 		
 		Paint edgeLabelColor = style.getDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR);
-		//FIXME: this is broken.  ALways black
-		//assertEquals(Color.yellow, edgeLabelColor);
+		assertEquals(new Color(255,255,204), edgeLabelColor);
 
 		assertEquals(NodeShapeVisualProperty.ROUND_RECTANGLE, defaultShape);
 		assertEquals(Color.WHITE, nodeColor);
