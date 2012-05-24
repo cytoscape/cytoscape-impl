@@ -162,8 +162,6 @@ class PopupMenuHelper {
 		final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
 		final JMenuTracker tracker = new JMenuTracker(menu);
 
-		System.out.println("creating empty space menu");
-		
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
 		for ( NetworkViewTaskFactory nvtf : usableTFs ) {
 			NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
