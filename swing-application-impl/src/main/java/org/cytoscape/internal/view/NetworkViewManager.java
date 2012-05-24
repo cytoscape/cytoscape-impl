@@ -310,18 +310,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 					"(Current View Threshold = " + viewThreshold + ")");
 			// TODO: Should we cancel visualization?
 		}
-		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				@Override
-				public void run() {
-					render(networkView);
-				}
-			});
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Rendering interrupted.", e);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException("Failed to render network view.", e);
-		}
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				render(networkView);
+			}
+		});
 	}
 
 	private final void removeView(final CyNetworkView view) {
