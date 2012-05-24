@@ -410,19 +410,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			// Also set the current view, if there is one
 			final Collection<CyNetworkView> cnViews = nvMgr.getNetworkViews(cn);
 			CyNetworkView cv = cnViews.isEmpty() ? null : cnViews.iterator().next();
-			
-			if (cv == null) {
-				// The current network has no view, so try to get the next existing view of the network selection
-				for (final CyNetwork n : selectedNets) {
-					final Collection<CyNetworkView> views = nvMgr.getNetworkViews(n);
-					
-					if (!views.isEmpty()) {
-						cv = views.iterator().next();
-						break;
-					}
-				}
-			}
-			
 			appMgr.setCurrentNetworkView(cv);
 		
 			// The selected networks must be set after setting the current one!

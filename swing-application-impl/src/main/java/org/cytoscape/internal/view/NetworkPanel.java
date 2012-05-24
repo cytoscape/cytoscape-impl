@@ -646,18 +646,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			final Collection<CyNetworkView> cnViews = cn != null ? netViewMgr.getNetworkViews(cn) : null;
 			cv = (cnViews == null || cnViews.isEmpty()) ? null : cnViews.iterator().next();
 			
-			if (cv == null) {
-				// The current network has no view, so try to get the next existing view of the current selection
-				for (final CyNetwork n : selectedNetworks) {
-					final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(n);
-					
-					if (!views.isEmpty()) {
-						cv = views.iterator().next();
-						break;
-					}
-				}
-			}
-			
 			if (cv == null || !cv.equals(appMgr.getCurrentNetworkView()))
 				appMgr.setCurrentNetworkView(cv);
 			

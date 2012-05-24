@@ -154,7 +154,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		presentationContainerMap = new WeakHashMap<CyNetworkView, JInternalFrame>();
 		presentationMap = new WeakHashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
 		iFrameMap = new WeakHashMap<JInternalFrame, CyNetworkView>();
-		currentView = null;
 	}
 
 	/**
@@ -248,36 +247,28 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		final CyNetworkView view = e.getNetworkView();
-		if (view == null) {
-			logger.info("Attempting to set current network view model: null view ");
-			return;
-		}
+		logger.debug("Attempting to set current network view: " + view);
 
-		logger.info("Attempting to set current network view model: View Model ID = " + e.getNetworkView().getSUID());
-		
 		// Do not use invokeLater() here! It cause all kinds of threading problem.
 		setFocus(view);
 	}
 
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent e) {
-		if (e.getNetwork() == null) {
-			logger.info("Attempting to set current network : null network ");
-			return;
-		}
+		final CyNetwork net = e.getNetwork();
+		logger.debug("Attempting to set current network: " + net);
 		
-		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(e.getNetwork());
 		CyNetworkView view = null;
-		if(views.size() != 0)
-			view = views.iterator().next();
 		
-		if (view == null)
-			return;
-		
-		final CyNetworkView targetView = view;
+		if (net != null) {
+			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
+			
+			if (!views.isEmpty())
+				view = views.iterator().next();
+		}
 	
 		// Do not use invokeLater() here! It cause all kinds of threading problem.
-		setFocus(targetView);
+		setFocus(view);
 	}
 
 	@Override
@@ -297,8 +288,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 */
 	@Override
 	public void handleEvent(final NetworkViewAddedEvent nvae) {
-
-		logger.info("\n\n\nView Manager got Network view added event.  Adding view to manager: NetworkViewManager: View ID = "
+		logger.debug("\n\n\nView Manager got Network view added event.  Adding view to manager: NetworkViewManager: View ID = "
 				+ nvae.getNetworkView().getSUID() + "\n\n\n");
 
 		final String viewThresholdString = props.getProperty(VIEW_THRESHOLD);
@@ -342,7 +332,11 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				logger.debug("Removing rendering engine: " + removed);
 				removed = null;
 				iFrameMap.remove(frame);
-				presentationContainerMap.remove(view);
+				
+				synchronized (presentationContainerMap) {
+					presentationContainerMap.remove(view);
+				}
+				
 				frame.dispose();
 				frame = null;
 			}
@@ -350,7 +344,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			logger.error("Network View unable to be killed", e);
 		}
 
-		presentationContainerMap.remove(view);
+		synchronized (presentationContainerMap) {
+			presentationContainerMap.remove(view);
+		}
+		
 		logger.debug("Network View Model removed.");
 	}
 
@@ -393,7 +390,11 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		});
 		
 		desktopPane.add(iframe);
-		presentationContainerMap.put(view, iframe);
+		
+		synchronized (presentationContainerMap) {
+			presentationContainerMap.put(view, iframe);
+		}
+		
 		iFrameMap.put(iframe, view);
 
 		final long start = System.currentTimeMillis();
@@ -515,13 +516,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 
 	private void setFocus(CyNetworkView targetViewModel) {
-		if (targetViewModel == null) {
-			logger.warn("Set Focus method got a null view.");
-			return;
-		}
-
-		// make sure we're not redundant
-		if (currentView != null && currentView.equals(targetViewModel)) {
+		if ((currentView == null && targetViewModel == null)
+				|| (currentView != null && currentView.equals(targetViewModel))) {
 			logger.debug("Same as current focus.  No need to update focus view model: " + targetViewModel);
 			return;
 		}
@@ -529,30 +525,35 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		currentView = targetViewModel;
 
 		// Reset focus on frames
-		for (JInternalFrame f : presentationContainerMap.values()) {
-			try {
-				f.setSelected(false);
-			} catch (PropertyVetoException pve) {
-				logger.error("Couldn't reset focus for internal frames.", pve);
+		synchronized (presentationContainerMap) {
+			for (JInternalFrame f : presentationContainerMap.values()) {
+				try {
+					f.setSelected(false);
+				} catch (PropertyVetoException pve) {
+					logger.error("Couldn't reset focus for internal frames.", pve);
+				}
 			}
 		}
 
 		// Set focus
-		final JInternalFrame curr = presentationContainerMap.get(targetViewModel);
-		if (curr != null) {
-			try {
-				logger.debug("Updating JInternalFrame selection");
-
-				curr.setIcon(false);
-				curr.show();
-				// fires internalFrameActivated
-				curr.setSelected(true);
-
-			} catch (Exception ex) {
-				logger.error("Could not update focus: ", ex);
+		if (targetViewModel != null) {
+			final JInternalFrame curr = presentationContainerMap.get(targetViewModel);
+			
+			if (curr != null) {
+				try {
+					logger.debug("Updating JInternalFrame selection");
+	
+					curr.setIcon(false);
+					curr.show();
+					// fires internalFrameActivated
+					curr.setSelected(true);
+	
+				} catch (Exception ex) {
+					logger.error("Could not update focus: ", ex);
+				}
+			} else {
+				logger.debug("Frame was not found. Need to create new frame for presentation.");
 			}
-		} else {
-			logger.debug("Frame was not found. Need to create new frame for presentation.");
 		}
 	}
 
