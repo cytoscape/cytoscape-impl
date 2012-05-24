@@ -225,21 +225,23 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				currentlyActiveAttributes.add(newColumnName);
 			}
 
-			final Map<Object, Object> keyValuePairs = attributes.get(oldColumnName);
+			String normalizedOldColName = normalizeColumnName(oldColumnName);
+			String normalizedNewColName = normalizeColumnName(newColumnName);
+			final Map<Object, Object> keyValuePairs = attributes.get(normalizedOldColName);
 			if (keyValuePairs != null) {
-				attributes.remove(oldColumnName);
-				attributes.put(newColumnName, keyValuePairs);
+				attributes.remove(normalizedOldColName);
+				attributes.put(normalizedNewColName, keyValuePairs);
 			}
 
-			final SetMultimap<Object,Object> valueKeysPairs = reverse.get(oldColumnName);
+			final SetMultimap<Object,Object> valueKeysPairs = reverse.get(normalizedOldColName);
 			if (valueKeysPairs != null) {
-				reverse.remove(oldColumnName);
-				reverse.put(newColumnName, valueKeysPairs);
+				reverse.remove(normalizedOldColName);
+				reverse.put(normalizedNewColName, valueKeysPairs);
 			}
 
-			final CyColumn column = types.get(normalizeColumnName( oldColumnName));
-			types.put(normalizeColumnName( newColumnName), column);
-			types.remove(normalizeColumnName( oldColumnName));
+			final CyColumn column = types.get(normalizedOldColName);
+			types.put(normalizedNewColName, column);
+			types.remove( normalizedOldColName);
 		}
 
 		eventHelper.fireEvent(new ColumnNameChangedEvent(this, oldColumnName, newColumnName));
