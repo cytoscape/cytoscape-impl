@@ -37,6 +37,8 @@
 package org.cytoscape.linkout.internal;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 
 import org.cytoscape.property.CyProperty;
 
@@ -47,21 +49,13 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 
 import org.cytoscape.util.swing.OpenBrowser;
 
-import org.cytoscape.view.model.View;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyColumn;
-
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.SynchronousTaskManager;
 
 
 import java.io.File;
 import java.io.FileInputStream;
 
 import java.util.Properties;
-import java.util.List;
-import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +90,8 @@ public class LinkOut {
 	private final CyServiceRegistrar registrar;
 	private final OpenBrowser browser;
 	private final CyApplicationConfiguration config;
+	private final SynchronousTaskManager synTaskManager;
+	
 
 	/**
 	 * Creates a new LinkOut object.
@@ -106,11 +102,12 @@ public class LinkOut {
 	 * @param config  DOCUMENT ME!
 	 */
 	public LinkOut(CyProperty<Properties> propService, CyServiceRegistrar registrar, OpenBrowser browser,
-	               final CyApplicationConfiguration config) {
+	               final CyApplicationConfiguration config, final SynchronousTaskManager synTaskManager) {
 		this.props = propService.getProperties();
 		this.registrar = registrar;
 		this.browser = browser;
 		this.config = config;
+		this.synTaskManager = synTaskManager;
 
 		readLocalProperties();
 
@@ -190,17 +187,15 @@ public class LinkOut {
 
 		Properties ndict = new Properties();
 		ndict.setProperty("preferredTaskManager","menu");
-		ndict.setProperty("title","LinkOut Dynamic");
 		// menu titles are generated dynamically
-		NodeViewTaskFactory dynamicNodeUrls = new DynamicNodeLinkoutTaskFactory(browser);
-		registrar.registerService(dynamicNodeUrls, NodeViewTaskFactory.class, ndict);
+		CyNodeViewContextMenuFactory dynamicNodeUrls = new DynamicNodeLinkoutMenuFactory(browser, synTaskManager);
+		registrar.registerService(dynamicNodeUrls, CyNodeViewContextMenuFactory.class, ndict);
 
 		Properties edict = new Properties();
 		edict.setProperty("preferredTaskManager","menu");
-		ndict.setProperty("title","LinkOut Dynamic");
 		// menu titles are generated dynamically
-		EdgeViewTaskFactory dynamicEdgeUrls = new DynamicEdgeLinkoutTaskFactory(browser);
-		registrar.registerService(dynamicEdgeUrls, EdgeViewTaskFactory.class, edict);
+		CyEdgeViewContextMenuFactory dynamicEdgeUrls = new DynamicEdgeLinkoutMenuFactory(browser, synTaskManager);
+		registrar.registerService(dynamicEdgeUrls, CyEdgeViewContextMenuFactory.class, edict);
 	}
 
 }
