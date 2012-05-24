@@ -53,30 +53,21 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 
 	private void applyImpl(final CyNetworkView networkView, final Collection<? extends View<?>> views,
 			final Collection<VisualProperty<?>> visualProperties) {
-
 		for (VisualProperty<?> vp : visualProperties)
 			applyToView(networkView, views, vp);
 	}
 
 	private void applyToView(final CyNetworkView networkView, final Collection<? extends View<?>> views,
 			final VisualProperty<?> vp) {
-
 		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
-		if (mapping == null)
-			return;
-
-		// Default of this style
-		final Object styleDefaultValue = style.getDefaultValue(vp);
-		// Default of this Visual Property
-		final Object vpDefault = vp.getDefault();
-		final CyNetwork net = networkView.getModel();
-
-		for (View<?> v : views) {
-			View<? extends CyIdentifiable> view = (View<? extends CyIdentifiable>) v;
-			mapping.apply(net.getRow(view.getModel()), view);
-
-			if (view.getVisualProperty(vp) == vpDefault)
-				view.setVisualProperty(vp, styleDefaultValue);
+		
+		if (mapping != null) {
+			final CyNetwork net = networkView.getModel();
+	
+			for (View<?> v : views) {
+				View<? extends CyIdentifiable> view = (View<? extends CyIdentifiable>) v;
+				mapping.apply(net.getRow(view.getModel()), view);
+			}
 		}
 	}
 
@@ -88,7 +79,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 			final VisualLexiconNode node = lex.getVisualLexiconNode(vp);
 			final Collection<VisualLexiconNode> children = node.getChildren();
 			
-			if(children.size() != 0)
+			if (children.size() != 0)
 				continue;
 
 			Object defaultValue = style.getDefaultValue(vp);
@@ -102,8 +93,8 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		}
 		
 		// Override dependency
-		for(final VisualPropertyDependency<?> dep: dependencies) {
-			if(dep.isDependencyEnabled()) {
+		for (final VisualPropertyDependency<?> dep: dependencies) {
+			if (dep.isDependencyEnabled()) {
 				final Set<?> vpSet = dep.getVisualProperties();
 				// Pick parent
 				VisualProperty<?> visualProperty = (VisualProperty<?>) vpSet.iterator().next();
@@ -115,7 +106,8 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 					((VisualStyleImpl)style).getStyleDefaults().put(visualProperty, visualProperty.getDefault());
 					defaultValue = style.getDefaultValue(visualProperty);
 				}
-				for(Object vp: vpSet)
+				
+				for (Object vp: vpSet)
 					view.setViewDefault((VisualProperty<?>)vp, defaultValue);
 			}
 		}
