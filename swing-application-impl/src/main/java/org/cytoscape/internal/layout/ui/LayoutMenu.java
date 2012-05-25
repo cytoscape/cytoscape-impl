@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 /**
@@ -69,6 +71,7 @@ public class LayoutMenu extends JMenu implements MenuListener {
     List<CyLayoutAlgorithm> subMenuList;
     private CyApplicationManager appMgr;
     private DialogTaskManager tm;
+	private final LayoutComparator layoutComparator = new LayoutComparator();
 
     /**
      * Creates a new LayoutMenu object.
@@ -144,6 +147,7 @@ public class LayoutMenu extends JMenu implements MenuListener {
         boolean someSelected = network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
         boolean enableMenuItem = checkEnabled();
         
+		Collections.sort(subMenuList,layoutComparator);
 
         for ( CyLayoutAlgorithm layout : subMenuList ) {
         	
@@ -178,7 +182,14 @@ public class LayoutMenu extends JMenu implements MenuListener {
         else
             return true;
     }
-    
 
+	private static class LayoutComparator implements Comparator<CyLayoutAlgorithm> {
+		public int compare(CyLayoutAlgorithm o1, CyLayoutAlgorithm o2) {
+			return o1.toString().compareTo(o2.toString());	
+		}
+		public boolean equals(Object obj) {
+			return ( obj == this );
+		}
+	}
 }
 
