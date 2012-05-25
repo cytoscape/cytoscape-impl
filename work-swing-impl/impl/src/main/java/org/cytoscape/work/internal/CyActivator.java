@@ -15,11 +15,6 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.TunableSetter;
-import org.cytoscape.work.internal.sync.SyncTaskManager;
-import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
-import org.cytoscape.work.internal.sync.SyncTunableMutator;
-import org.cytoscape.work.internal.sync.TunableSetterImpl;
-import org.cytoscape.work.internal.sync.TunableRecorderManager;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
@@ -103,10 +98,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager);
 
-		SyncTunableMutator syncTunableMutator = new SyncTunableMutator();
-		SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
-		SyncTaskManager syncTaskManager = new SyncTaskManager(syncTunableMutator);
-	
 		Properties undoSupportProps = new Properties();
 		registerService(bc,undoSupport,UndoSupport.class, undoSupportProps);
 		registerService(bc,undoSupport,SwingUndoSupport.class, undoSupportProps);
@@ -116,7 +107,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
 		
-		registerAllServices(bc,syncTaskManager, new Properties());
 
 		registerService(bc,integerHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,floatHandlerFactory,GUITunableHandlerFactory.class, new Properties());
@@ -133,24 +123,13 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,fileHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,urlHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		
-		Properties syncFactoryProp = new Properties();
-		registerService(bc,syncTunableHandlerFactory, TunableHandlerFactory.class, syncFactoryProp);
-		// This is a hack: directly add factory to the service.
-		syncTunableMutator.addTunableHandlerFactory(syncTunableHandlerFactory, syncFactoryProp);
-
 		registerServiceListener(bc,supportedFileTypesManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
 		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
 
 		registerServiceListener(bc,jDialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
-		registerServiceListener(bc,syncTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
 
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 
-		TunableRecorderManager trm = new TunableRecorderManager();
-		registerServiceListener(bc,trm,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
-
-		TunableSetterImpl tsi = new TunableSetterImpl(syncTunableMutator,trm);
-		registerService(bc,tsi,TunableSetter.class, new Properties());
 	}
 }
