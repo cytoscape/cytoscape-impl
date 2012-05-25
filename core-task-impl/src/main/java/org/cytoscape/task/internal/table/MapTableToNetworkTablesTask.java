@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public final class MapTableToNetworkTablesTask extends AbstractTask {
 	
 	private static enum TableType {
-		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class);
+		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class), GLOBAL("Other Tables", CyTable.class);
 
 		private final String name;
 		private final  Class<? extends CyIdentifiable> type;
@@ -52,14 +52,17 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	private final boolean byReader;
 	private Map<String, CyNetwork> name2NetworkMap;
 	
-	@Tunable(description = "Apply to Selected Networks Only",groups="Select Tables", dependsOn="noNetworks=false")
-	public boolean selectedNetworksOnly = false;
-	
-	@Tunable(description = "Network List",groups="Select Tables",dependsOn="selectedNetworksOnly=true")
-	public ListMultipleSelection<String> networkList;
 	
 	@Tunable(description = "Import Data To:")
 	public ListSingleSelection<TableType> dataTypeOptions;
+	
+	//******* we couldnt use the enum to check the dependency! So, update this line if you change the GLOBAL enum string 
+	@Tunable(description = "Apply to Selected Networks Only",groups="Network Options", dependsOn="dataTypeOptions!=Other Tables", params="displayState=collapsed")
+	public boolean selectedNetworksOnly = false;
+	
+	@Tunable(description = "Network List",groups="Network Options",dependsOn="selectedNetworksOnly=true", params="displayState=collapsed")
+	public ListMultipleSelection<String> networkList;
+
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -74,6 +77,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		this.networkManager = networkManager;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
 		initTunable(networkManager);
+		
 	}
 	
 	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTable globalTable){
@@ -108,42 +112,43 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {	
 		TableType tableType = dataTypeOptions.getSelectedValue();
+		if (tableType != TableType.GLOBAL ){
+			List<CyNetwork> networks = new ArrayList<CyNetwork>();
 
-		List<CyNetwork> networks = new ArrayList<CyNetwork>();
-		
-		if (!selectedNetworksOnly)
-			networks.addAll(networkManager.getNetworkSet());
-		else{
-			if(!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
-				for(String netName: networkList.getSelectedValues())
-					networks.add(name2NetworkMap.get(netName));
+			if (!selectedNetworksOnly)
+				networks.addAll(networkManager.getNetworkSet());
+			else{
+				if(!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
+					for(String netName: networkList.getSelectedValues())
+						networks.add(name2NetworkMap.get(netName));
 
-		}
-		for (CyNetwork network: networks){
-			CyTable targetTable = getTable(network, tableType);
-			if (targetTable != null){
-				if(byReader){
-					if (reader.getTables() != null && reader.getTables().length >0){
-						for(CyTable sourceTable : reader.getTables())
-							mapTable(targetTable, sourceTable);
-					}
-				}else
-					mapTable(targetTable, globalTable);
 			}
-		}
-		if(!selectedNetworksOnly){ //if table should be mapped to all of the tables
-			//add each mapped table to the list for mapping to networks going to be added later
-			if(byReader){
-				if (reader.getTables() != null && reader.getTables().length >0)
-					for(CyTable sourceTable : reader.getTables())
-						UpdateAddedNetworkAttributes.addMappingToList(sourceTable, tableType.getType());
-			}else
-				UpdateAddedNetworkAttributes.addMappingToList(globalTable, tableType.getType());
+			for (CyNetwork network: networks){
+				CyTable targetTable = getTable(network, tableType);
+				if (targetTable != null){
+					if(byReader){
+						if (reader.getTables() != null && reader.getTables().length >0){
+							for(CyTable sourceTable : reader.getTables())
+								mapTable(targetTable, sourceTable);
+						}
+					}else
+						mapTable(targetTable, globalTable);
+				}
+			}
+			if(!selectedNetworksOnly){ //if table should be mapped to all of the tables
+				//add each mapped table to the list for mapping to networks going to be added later
+				if(byReader){
+					if (reader.getTables() != null && reader.getTables().length >0)
+						for(CyTable sourceTable : reader.getTables())
+							UpdateAddedNetworkAttributes.addMappingToList(sourceTable, tableType.getType());
+				}else
+					UpdateAddedNetworkAttributes.addMappingToList(globalTable, tableType.getType());
+			}
 		}
 	}
 
 
-	
+
 	private CyTable getTable(CyNetwork network, TableType tableType){
 		if (tableType == TableType.NODE_ATTR)
 			return network.getDefaultNodeTable();
@@ -151,7 +156,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			return network.getDefaultEdgeTable();
 		if (tableType == TableType.NETWORK_ATTR)
 			return network.getDefaultNetworkTable();
-		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR + "or "+ TableType.NETWORK_ATTR +".");
+		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR  + ", "+ TableType.NETWORK_ATTR +" or "+TableType.GLOBAL +".");
 		return null;
 	}
 	
