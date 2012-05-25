@@ -84,6 +84,10 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 		return networkTableManager.getTable(networkRef.get(), CyEdge.class, CyNetwork.DEFAULT_ATTRS); 
 	}
 
+	public CyTable getTable(Class<? extends CyIdentifiable> type, String namespace) {
+		return networkTableManager.getTable(networkRef.get(), type, namespace); 
+	}
+
 	public CyRow getRow(final CyIdentifiable entry) {
 		return getRow(entry, CyNetwork.DEFAULT_ATTRS);
 	}
