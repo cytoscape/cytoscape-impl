@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -260,7 +261,9 @@ public abstract class AbstractVizMapperPanel extends JPanel implements
 
 	private void initComponents() {
 		mainSplitPane = new javax.swing.JSplitPane();
+		mainSplitPane.setBorder(BorderFactory.createEmptyBorder());
 		listSplitPane = new javax.swing.JSplitPane();
+		listSplitPane.setBorder(BorderFactory.createEmptyBorder());
 
 		bottomPanel = new javax.swing.JPanel();
 

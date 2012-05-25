@@ -1311,7 +1311,7 @@ public class FilterSettingPanel extends JPanel {
 
         pnlCustomSettings.setLayout(new java.awt.GridBagLayout());
 
-        pnlCustomSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
+        pnlCustomSettings.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 2, 4, 2));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;

@@ -832,15 +832,17 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		// feedback panel
 		pnlFeedBack.setLayout(new GridBagLayout());
 		pnlFeedBack.setBorder(BorderFactory.createTitledBorder(""));
-		pnlFeedBack.setMinimumSize(new Dimension(pnlFeedBack.getWidth(),52));
+		pnlFeedBack.setMinimumSize(new Dimension(pnlFeedBack.getWidth(), 44));
 		//pnlFeedBack.setMinimumSize(new java.awt.Dimension(300,52));
         
 		pnlScroll.setViewportView(tblFeedBack);
+		pnlScroll.setBorder(BorderFactory.createEmptyBorder());
 
 		//tblFeedBack.setAutoCreateColumnsFromModel(true);
 		//tblFeedBack.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		tblFeedBack.setEnabled(false);
 		tblFeedBack.setFocusable(false);
+		tblFeedBack.setBorder(BorderFactory.createEmptyBorder());
 		//tblFeedBack.setRequestFocusEnabled(false);
 		//tblFeedBack.setRowSelectionAllowed(false);
 		//tblFeedBack.setTableHeader(null);

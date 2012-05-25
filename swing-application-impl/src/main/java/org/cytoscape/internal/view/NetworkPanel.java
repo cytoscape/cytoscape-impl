@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -223,6 +224,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		JScrollPane scroll = new JScrollPane(treeTable);
 
 		split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scroll, navigatorPanel);
+		split.setBorder(BorderFactory.createEmptyBorder());
 		split.setResizeWeight(1);
 		split.setDividerLocation(400);
 
