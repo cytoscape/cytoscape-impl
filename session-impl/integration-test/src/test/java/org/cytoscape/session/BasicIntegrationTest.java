@@ -28,6 +28,8 @@ import java.io.File;
 import javax.inject.Inject;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.read.CySessionReader;
+import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -104,6 +106,9 @@ public abstract class BasicIntegrationTest {
 	
 	@Inject
 	protected CyApplicationManager applicationManager;
+	
+	@Inject
+	protected CySessionReaderManager sessionReaderManager;
 	
 	
 	// Target file name.  Assume we always have one test session file per test class.
@@ -202,5 +207,7 @@ public abstract class BasicIntegrationTest {
 		assertNotNull(tm);
 		assertNotNull(openSessionTF);
 		assertNotNull(applicationManager);
+		assertNotNull(sessionReaderManager);
+		
 	}
 }

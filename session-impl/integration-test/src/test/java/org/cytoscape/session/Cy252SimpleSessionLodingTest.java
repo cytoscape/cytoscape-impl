@@ -38,7 +38,7 @@ import org.ops4j.pax.exam.spi.reactors.AllConfinedStagedReactorFactory;
  */
 @RunWith(JUnit4TestRunner.class)
 @ExamReactorStrategy(AllConfinedStagedReactorFactory.class)
-public class Cy2SimpleSessionLodingTest extends BasicIntegrationTest {
+public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 
 	@Before
 	public void setup() throws Exception {
