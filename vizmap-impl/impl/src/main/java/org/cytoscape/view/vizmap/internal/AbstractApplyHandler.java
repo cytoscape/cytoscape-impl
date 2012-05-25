@@ -32,26 +32,13 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 			final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 
 			if (mapping != null)
-				applyMappedValue(row, view, vp, mapping);
+				mapping.apply(row, view);
 			else
 				applyDefaultToView(view, vp);
 		}
 
 		override(view);
 	}
-
-	// private void applyDefaultValue(final View<T> view, final
-	// VisualProperty<?> vp) {
-	// Object defaultValue = style.getDefaultValue(vp);
-	//
-	// if (defaultValue == null) {
-	// ((VisualStyleImpl) style).getStyleDefaults().put(vp, vp.getDefault());
-	// defaultValue = style.getDefaultValue(vp);
-	// }
-	//
-	// if (!vp.shouldIgnoreDefault())
-	// view.setVisualProperty(vp, defaultValue);
-	// }
 
 	private void applyDefaultToView(final View<T> view, final VisualProperty<?> vp) {
 		final Set<VisualLexicon> lexSet = lexManager.getAllVisualLexicon();
@@ -96,19 +83,4 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 			}
 		}
 	}
-
-	private void applyMappedValue(final CyRow row, final View<T> view, final VisualProperty<?> vp,
-			final VisualMappingFunction<?, ?> mapping) {
-		// Default of this style
-		final Object styleDefaultValue = style.getDefaultValue(vp);
-		// Default of this Visual Property
-		final Object vpDefault = vp.getDefault();
-
-		mapping.apply(row, view);
-
-		if (view.getVisualProperty(vp) == vpDefault)
-			view.setVisualProperty(vp, styleDefaultValue);
-
-	}
-
 }

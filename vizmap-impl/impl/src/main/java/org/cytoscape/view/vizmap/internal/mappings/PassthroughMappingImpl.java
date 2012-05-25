@@ -41,48 +41,40 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 /**
  */
-public class PassthroughMappingImpl<K, V> extends
-		AbstractVisualMappingFunction<K, V> implements PassthroughMapping<K, V> {
+public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<K, V> implements
+		PassthroughMapping<K, V> {
 	
 	/**
 	 * dataType is the type of the _attribute_ !! currently we force that to be
-	 * the same as the VisualProperty; FIXME: allow different once? but how to
-	 * coerce?
+	 * the same as the VisualProperty; FIXME: allow different once? but how to coerce?
 	 */
 	public PassthroughMappingImpl(final String attrName, final Class<K> attrType, final CyTable table,
 			final VisualProperty<V> vp) {
 		super(attrName, attrType, table, vp);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.PassthroughMapping#toString()
-	 */
 	@Override
 	public String toString() {
 		return PassthroughMapping.PASSTHROUGH;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.PassthroughMapping#apply(org.cytoscape.view.model.View)
-	 */
 	@Override
 	public void apply(final CyRow row, final View<? extends CyIdentifiable> view) {
-		if ( row == null )
+		if (row == null || view == null)
 			return;
 
-		if (view == null)
-			return; // empty list, nothing to do
-
-		if(attrName.equals(CyIdentifiable.SUID)) {
+		V value = null;
+		
+		if (attrName.equals(CyIdentifiable.SUID)) {
 			// Special case: SUID
-			view.setVisualProperty(vp, (V)Long.valueOf(view.getModel().getSUID()));
+			value = (V) view.getModel().getSUID();
 		} else if (row.isSet(attrName)) {
 			// skip Views where source attribute is not defined;
 			// ViewColumn will automatically substitute the per-VS or
 			// global default, as appropriate
 			final CyColumn column = row.getTable().getColumn(attrName);
 			final Class<?> attrClass = column.getType();
-			K value = null;
+			K tempValue = null;
 			
 			if (attrClass.isAssignableFrom(List.class)) {
 				List<?> list = row.getList(attrName, column.getListElementType());
@@ -95,18 +87,16 @@ public class PassthroughMappingImpl<K, V> extends
 					sb.deleteCharAt(sb.length() - 1);
 				}
 				
-				value = (K) sb.toString();
+				tempValue = (K) sb.toString();
 			} else {
-				value = row.get(attrName, (Class<? extends K>) attrClass);
+				tempValue = row.get(attrName, (Class<? extends K>) attrClass);
 			}
 
-			final V converted = convertToValue(value);
-
-			view.setVisualProperty(vp, converted);
-		} else {
-			// remove value, so that default value will be used:
-			view.setVisualProperty(vp, null);
+			value = convertToValue(tempValue);
 		}
+		
+		if (value != null)
+			view.setVisualProperty(vp, value);
 	}
 
 	// TODO: make this converter pluggable
@@ -116,6 +106,5 @@ public class PassthroughMappingImpl<K, V> extends
 		} catch (Exception e) {
 			return null;
 		}
-
 	}
 }

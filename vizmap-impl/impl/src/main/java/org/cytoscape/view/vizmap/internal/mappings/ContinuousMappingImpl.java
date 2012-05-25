@@ -74,7 +74,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 		super(attrName, attrType, table, vp);
 		
 		// Validate type.  K is always a number.
-		if(Number.class.isAssignableFrom(attrType) == false)
+		if (Number.class.isAssignableFrom(attrType) == false)
 			throw new IllegalArgumentException("Attribute type should be Number.");
 		
 		this.points = new ArrayList<ContinuousMappingPoint<K, V>>();
@@ -89,70 +89,40 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 			interpolator = (Interpolator<K, V>) new FlatInterpolator();
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#toString()
-	 */
 	@Override
 	public String toString() {
 		return ContinuousMapping.CONTINUOUS;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#getAllPoints()
-	 */
 	@Override
 	public List<ContinuousMappingPoint<K, V>> getAllPoints() {
 		return points;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#addPoint(K, org.cytoscape.view.vizmap.mappings.BoundaryRangeValues)
-	 */
 	@Override
 	public void addPoint(K value, BoundaryRangeValues<V> brv) {
 		points.add(new ContinuousMappingPoint<K, V>(value, brv));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#removePoint(int)
-	 */
 	@Override
 	public void removePoint(int index) {
 		points.remove(index);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#getPointCount()
-	 */
 	@Override
 	public int getPointCount() {
 		return points.size();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#getPoint(int)
-	 */
 	@Override
 	public ContinuousMappingPoint<K, V> getPoint(int index) {
 		return points.get(index);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.ContinuousMapping#apply(org.cytoscape.view.model.View)
-	 */
 	@Override
 	public void apply(final CyRow row, final View<? extends CyIdentifiable> view) {
-		if (row == null)
-			return;
-
-		if (view == null)
-			return;
-		
-		if(this.points.size() == 0)
-			return;
-
-		doMap(row,view);
+		if (row != null && view != null && !this.points.isEmpty())
+			doMap(row,view);
 	}
 
 	/**
@@ -172,7 +142,6 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	 *            the type-parameter of the View
 	 */
 	private void doMap(final CyRow row, final View<? extends CyIdentifiable> view) {
-
 		if (row.isSet(attrName)) {
 			// skip Views where source attribute is not defined;
 			// ViewColumn will automatically substitute the per-VS or global
@@ -183,8 +152,6 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 			final K attrValue = row.get(attrName, attrType);
 			final V value = getRangeValue(attrValue);
 			view.setVisualProperty(vp, value);
-		} else { // remove value so that default value will be used:
-			view.setVisualProperty(vp, null);
 		}
 	}
 
@@ -202,7 +169,6 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 			if (firstCmp < 0)
 				return bv.lesserValue;
 			else
-
 				return bv.equalValue;
 		}
 
@@ -275,7 +241,6 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	 * doesn't allow comparing, for example, Integer objects to Double objects.
 	 */
 	private int compareValues(K probe, K target) {
-		
 		final Number n1 = (Number) probe;
 		final Number n2 = (Number) target;
 		double d1 = n1.doubleValue();

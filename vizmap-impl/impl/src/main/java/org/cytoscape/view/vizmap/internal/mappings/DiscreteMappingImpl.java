@@ -67,111 +67,69 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 		attribute2visualMap = new HashMap<K, V>();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#toString()
-	 */
 	@Override
 	public String toString() {
 		return DiscreteMapping.DISCRETE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#apply(org.cytoscape.view.model.View)
-	 */
 	@Override
 	public void apply(CyRow row, View<? extends CyIdentifiable> view) {
-		if ( row == null )
-			return;
-
-		if (view == null)
-			return; // empty view, nothing to do
-
-		applyDiscreteMapping(row,view);
-	}
-
-	/**
-	 * Read attribute from row, map it and apply it.
-	 * 
-	 * types are guaranteed to be correct (? FIXME: check this)
-	 * 
-	 * Putting this in a separate method makes it possible to make it
-	 * type-parametric.
-	 * 
-	 * @param <V>
-	 *            the type-parameter of the ViewColumn column
-	 * @param <K>
-	 *            the type-parameter of the key stored in the mapping (the
-	 *            object read as an attribute value has to be is-a K)
-	 * @param <V>
-	 *            the type-parameter of the View
-	 */
-	private void applyDiscreteMapping(final CyRow row, final View<? extends CyIdentifiable> view) {
-		
-		V value = null;
-
-		if(attrName.equals(CyIdentifiable.SUID)) {
-			// Special case: SUID
-			Object key = Long.valueOf(view.getModel().getSUID());
-			if (key != null)
-				value = attribute2visualMap.get(key);
-		} else if (row.isSet(attrName)) {
-			// skip Views where source attribute is not defined;
-			// ViewColumn will automatically substitute the per-VS or global
-			// default, as appropriate
-			final CyColumn column = row.getTable().getColumn(attrName);
-			final Class<?> attrClass = column.getType();
-
-			if (attrClass.isAssignableFrom(List.class)) {
-				List<?> list = row.getList(attrName, column.getListElementType());
-
-				if (list != null) {
-					for (Object item : list) {
-						// TODO: should we convert other types to String?
-						String key = item.toString();
-						value = attribute2visualMap.get(key);
-						if (value != null)
-							break;
-					}
-				}
-			} else {
-				Object key = row.get(attrName, attrType);
-
+		if (row != null && view != null) {
+			V value = null;
+	
+			if (attrName.equals(CyIdentifiable.SUID)) {
+				// Special case: SUID
+				Object key = Long.valueOf(view.getModel().getSUID());
+				
 				if (key != null)
 					value = attribute2visualMap.get(key);
+			} else if (row.isSet(attrName)) {
+				// skip Views where source attribute is not defined;
+				// ViewColumn will automatically substitute the per-VS or global default, as appropriate
+				final CyColumn column = row.getTable().getColumn(attrName);
+				final Class<?> attrClass = column.getType();
+	
+				if (attrClass.isAssignableFrom(List.class)) {
+					List<?> list = row.getList(attrName, column.getListElementType());
+	
+					if (list != null) {
+						for (Object item : list) {
+							// TODO: should we convert other types to String?
+							String key = item.toString();
+							value = attribute2visualMap.get(key);
+							
+							if (value != null)
+								break;
+						}
+					}
+				} else {
+					Object key = row.get(attrName, attrType);
+	
+					if (key != null)
+						value = attribute2visualMap.get(key);
+				}
 			}
+	
+			if (value != null)
+				view.setVisualProperty(vp, value);
 		}
-
-		// set a new value or null to use the default one:
-		view.setVisualProperty(vp, value);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#getMapValue(K)
-	 */
 	@Override
 	public V getMapValue(K key) {
 		return attribute2visualMap.get(key);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#putMapValue(K, T)
-	 */
 	@Override
 	public <T extends V> void putMapValue(final K key, final T value) {
 		attribute2visualMap.put(key, value);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#putAll(java.util.Map)
-	 */
 	@Override
 	public <T extends V> void putAll(Map<K, T> map) {
 		attribute2visualMap.putAll(map);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.view.vizmap.mappings.DiscreteMapping#getAll()
-	 */
 	@Override
 	public Map<K, V> getAll() {
 		return attribute2visualMap;
