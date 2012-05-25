@@ -20,7 +20,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 
 public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
-	private String DEGREE_ATTR_NAME = "degree";
+	private String DEGREE_ATTR_NAME = "degree.layout";
 	private CyNetwork network;
 
 	/**
