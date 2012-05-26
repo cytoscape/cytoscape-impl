@@ -31,7 +31,7 @@ public class CustomGraphicsSizeDependencyFactory implements VisualPropertyDepend
 		customGraphicsSizeDependency.add(DVisualLexicon.NODE_CUSTOMGRAPHICS_SIZE_8);
 		customGraphicsSizeDependency.add(DVisualLexicon.NODE_CUSTOMGRAPHICS_SIZE_9);
 		
-		return new VisualPropertyDependency<Double>("Fit Custom Graphics to node", customGraphicsSizeDependency, lexicon);
+		return new VisualPropertyDependency<Double>("CustomGraphicsSizeToNodeSize", "Fit Custom Graphics to node", customGraphicsSizeDependency, lexicon);
 	}
 
 }

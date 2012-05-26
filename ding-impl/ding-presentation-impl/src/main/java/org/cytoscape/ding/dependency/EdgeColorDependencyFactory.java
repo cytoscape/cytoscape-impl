@@ -28,7 +28,7 @@ private final VisualLexicon lexicon;
 		edgeColorDependency.add(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 		edgeColorDependency.add(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 		
-		return new VisualPropertyDependency<Paint>("Edge color to arrows", edgeColorDependency, lexicon);
+		return new VisualPropertyDependency<Paint>("EdgeColorToArrowColor", "Edge color to arrows", edgeColorDependency, lexicon);
 	}
 
 }

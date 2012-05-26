@@ -495,7 +495,7 @@ public class VisualStyleSerializer {
 
 		for (VisualPropertyDependency<?> vpDep : dependencies) {
 			final Dependency newDependency = new Dependency();
-			newDependency.setName(vpDep.getDisplayName());
+			newDependency.setName(vpDep.getIdString());
 			newDependency.setValue(vpDep.isDependencyEnabled());
 
 			final VisualProperty<?> parent = vpDep.getParentVisualProperty();
@@ -529,7 +529,7 @@ public class VisualStyleSerializer {
 			final Boolean depEnabled = dep.isValue();
 			
 			for(final VisualPropertyDependency<?> vsDependency: availableDependencies) {
-				if(vsDependency.getDisplayName().equals(newDependencyName))
+				if(vsDependency.getIdString().equals(newDependencyName))
 					vsDependency.setDependency(depEnabled);
 			}		
 		}

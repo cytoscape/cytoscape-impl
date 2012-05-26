@@ -24,7 +24,7 @@ private final VisualLexicon lexicon;
 		nodeSizeVisualProperties.add(BasicVisualLexicon.NODE_WIDTH);
 		nodeSizeVisualProperties.add(BasicVisualLexicon.NODE_HEIGHT);
 
-		return new VisualPropertyDependency<Double>("Lock node width and height", nodeSizeVisualProperties, lexicon);
+		return new VisualPropertyDependency<Double>("NodeSizeToNodeWidthAndHeight", "Lock node width and height", nodeSizeVisualProperties, lexicon);
 	}
 
 }
