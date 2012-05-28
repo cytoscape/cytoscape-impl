@@ -57,13 +57,22 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private boolean ignoreSetCurrentNetwork = true;
 	
 
-	public DefaultTableBrowser(String tabTitle, Class<? extends CyIdentifiable> objType, CyTableManager tableManager,
-			CyNetworkTableManager networkTableManager, CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
-			OpenBrowser openBrowser, CyNetworkManager networkManager, DeleteTableTaskFactory deleteTableTaskFactoryService,
-			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
-			CyApplicationManager applicationManager, final CyEventHelper eventHelper){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+	public DefaultTableBrowser(String tabTitle,
+							   Class<? extends CyIdentifiable> objType,
+							   CyTableManager tableManager,
+							   CyNetworkTableManager networkTableManager,
+							   CyServiceRegistrar serviceRegistrar,
+							   EquationCompiler compiler,
+							   OpenBrowser openBrowser,
+							   CyNetworkManager networkManager,
+							   DeleteTableTaskFactory deleteTableTaskFactoryService,
+							   DialogTaskManager guiTaskManagerServiceRef,
+							   PopupMenuHelper popupMenuHelper,
+							   CyApplicationManager applicationManager,
+							   final CyEventHelper eventHelper) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager,
+				eventHelper);
 
 		this.objType = objType;
 
@@ -83,16 +92,15 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		selectionModeButton.setMargin(new Insets(0, 0, 0, 0));
 		selectionModeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_selection_mode.png")));
 		selectionModeButton.setToolTipText("Change Selection Mode");
-
 		selectionModeButton.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent e) {
-					changeSelectionMode();
-				}
-			});
+			public void mouseClicked(MouseEvent e) {
+				changeSelectionMode();
+			}
+		});
 		
-		this.attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType, applicationManager);//, mapGlobalTableTaskFactoryService);
-
+		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType,
+				applicationManager);// , mapGlobalTableTaskFactoryService);
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
 	
@@ -104,14 +112,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	
 	@Override
 	public void actionPerformed(final ActionEvent e) {
-		if (ignoreSetCurrentNetwork)
-			return;
+		if (!ignoreSetCurrentNetwork) {
+			final CyNetwork network = (CyNetwork) networkChooser.getSelectedItem();
+			final CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
 			
-		final CyNetwork currentNetwork = this.applicationManager.getCurrentNetwork();
-		final CyNetwork network = (CyNetwork) networkChooser.getSelectedItem();
-		
-		if (network != null && !network.equals(currentNetwork) && networkManager.networkExists(network.getSUID())) {
-			applicationManager.setCurrentNetwork(network);
+			if (network != null && !network.equals(currentNetwork) && networkManager.networkExists(network.getSUID())) {
+				applicationManager.setCurrentNetwork(network);
+			}
 		}
 	}
 
@@ -127,20 +134,28 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			} else {
 				currentTable = currentNetwork.getDefaultNetworkTable();
 			}
+		} else {
+			currentTable = null;
 		}
 		
-		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
+		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel();
+		
+		if (currentBrowserTableModel != null)
+			currentBrowserTableModel.setShowAll(rowSelectionMode);
+		
 		showSelectedTable();
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
-				if(selectedNetwork!= null)
+				
+				if (selectedNetwork != null) {
 					if ((currentNetwork == null && selectedNetwork != null) || !currentNetwork.equals(selectedNetwork)) {
 						ignoreSetCurrentNetwork = true;
 						networkChooser.setSelectedItem(currentNetwork);
 						ignoreSetCurrentNetwork = false;
 					}
+				}
 			}
 		});
 	}
@@ -185,13 +200,11 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		});
 	}
 	
-	
 	@Override
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
-		DeleteTable(cyTable);
+		deleteTable(cyTable);
 	}
-	
 	
 	private static final class NetworkChooserCustomRenderer extends JLabel implements ListCellRenderer {
 

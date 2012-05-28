@@ -30,20 +30,29 @@ package org.cytoscape.browser.internal;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JMenu;
@@ -57,6 +66,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -73,9 +83,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -88,67 +96,78 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private static final long serialVersionUID = -508393701912596399L;
 
-	private BrowserTableModel browserTableModel = null;
+	private BrowserTableModel browserTableModel;
 	
 	private static final Dimension TOOLBAR_SIZE = new Dimension(500, 38);
 
-	/**
-	 *  GUI components
-	 */
-	private JPopupMenu attributeSelectionPopupMenu = null;
-	private JScrollPane jScrollPane = null;
-	private JPopupMenu createColumnMenu = null;
+	/* GUI components */
+	private JPopupMenu attributeSelectionPopupMenu;
+	private JScrollPane jScrollPane;
+	private JPopupMenu createColumnMenu;
 
-	private JToolBar browserToolBar = null;
-	private JButton selectButton = null;
-	private CheckBoxJList attributeList = null;
-	private JList attrDeletionList = null;
+	private JToolBar toolBar;
+	private SequentialGroup hToolBarGroup;
+	private ParallelGroup vToolBarGroup;
 	
-	private JButton createNewAttributeButton = null;
-	private JButton deleteAttributeButton = null;
-	private JButton deleteTableButton = null;
-	private JButton selectAllAttributesButton = null;
-	private JButton unselectAllAttributesButton = null;
+	private JButton selectButton;
+	private CheckBoxJList attributeList;
+	private JList attrDeletionList;
 	
-//	private JButton mapGlobalTableButton = null;
+	private JButton createNewAttributeButton;
+	private JButton deleteAttributeButton;
+	private JButton deleteTableButton;
+	private JButton selectAllAttributesButton;
+	private JButton unselectAllAttributesButton;
+	private JButton formulaBuilderButton;
+	
+//	private JButton mapGlobalTableButton;
 //	private final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService;
 	
 	private final JComboBox tableChooser;
 
 	private AttributeListModel attrListModel;
 	private final EquationCompiler compiler;
-	private final DeleteTableTaskFactory deleteTableTaskFactoryService;
-	private final DialogTaskManager guiTaskManagerServiceRef;
+	private final DeleteTableTaskFactory deleteTableTaskFactory;
+	private final DialogTaskManager guiTaskMgr;
 	
 	private final JToggleButton selectionModeButton;
 	
+	private final List<JComponent> components;
+	
 	private final Class<? extends CyIdentifiable> objType;
 	
-	private final CyApplicationManager appManager;
+	private final CyApplicationManager appMgr;
+
 	
-	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final DeleteTableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
-			final JComboBox tableChooser, final Class<? extends CyIdentifiable> objType,
-			final CyApplicationManager appManager){//,
-			//final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		
-		this(serviceRegistrar, compiler, deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser,
-				new JToggleButton(), objType, appManager);//, mapGlobalTableTaskFactoryService);
+	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar,
+								   final EquationCompiler compiler,
+								   final DeleteTableTaskFactory deleteTableTaskFactory,
+								   final DialogTaskManager guiTaskMgr,
+								   final JComboBox tableChooser,
+								   final Class<? extends CyIdentifiable> objType,
+								   final CyApplicationManager appMgr) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+		this(serviceRegistrar, compiler, deleteTableTaskFactory, guiTaskMgr, tableChooser,
+				new JToggleButton(), objType, appMgr);//, mapGlobalTableTaskFactoryService);
 	}
 	
-	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar, final EquationCompiler compiler,
-			final DeleteTableTaskFactory deleteTableTaskFactoryService, DialogTaskManager guiTaskManagerServiceRef,
-			final JComboBox tableChooser, final JToggleButton selectionModeButton,
-			Class<? extends CyIdentifiable> objType, final CyApplicationManager appManager){//,
-		//	final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar,
+								   final EquationCompiler compiler,
+								   final DeleteTableTaskFactory deleteTableTaskFactory,
+								   final DialogTaskManager guiTaskMgr,
+								   final JComboBox tableChooser,
+								   final JToggleButton selectionModeButton,
+								   final Class<? extends CyIdentifiable> objType,
+								   final CyApplicationManager appMgr) {// , final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		this.compiler = compiler;
 		this.selectionModeButton = selectionModeButton;
-		this.appManager = appManager;
+		this.appMgr = appMgr;
 //		this.mapGlobalTableTaskFactoryService = mapGlobalTableTaskFactoryService;
 		
+		this.components = new ArrayList<JComponent>();
+		
 		this.tableChooser = tableChooser;
-		this.deleteTableTaskFactoryService = deleteTableTaskFactoryService;
-		this.guiTaskManagerServiceRef = guiTaskManagerServiceRef;
+		this.deleteTableTaskFactory = deleteTableTaskFactory;
+		this.guiTaskMgr = guiTaskMgr;
 		this.attrListModel = new AttributeListModel(null);
 		this.objType = objType;
 		
@@ -160,33 +179,76 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	public void setBrowserTableModel(final BrowserTableModel browserTableModel) {
 		this.browserTableModel = browserTableModel;
-		
 		attrListModel.setBrowserTableModel(browserTableModel);
-		selectButton.setEnabled(browserTableModel != null);
-		selectAllAttributesButton.setEnabled(browserTableModel != null);
-		unselectAllAttributesButton.setEnabled(browserTableModel != null);
-		createNewAttributeButton.setEnabled(browserTableModel != null);
-		deleteAttributeButton.setEnabled(browserTableModel != null);
-		
-		if(browserTableModel != null && objType != null) {
-			deleteTableButton.setEnabled(false);
-//			mapGlobalTableButton.setEnabled(false);
-		} else {
-			deleteTableButton.setEnabled(browserTableModel != null);
-//			mapGlobalTableButton.setEnabled(browserTableModel != null);
-		}
-		
-		formulaBuilderButton.setEnabled(browserTableModel != null);
-		selectionModeButton.setEnabled(browserTableModel != null);
+		updateEnableState();
 	}
 
-	private void initializeGUI() {
-		this.setLayout(new BorderLayout());
+	@Override
+	public void popupMenuCanceled(PopupMenuEvent e) {
+		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+		// Update actual table
+		try {
+			if (attributeList != null) {
+				final Object[] selectedValues = attributeList.getSelectedValues();
+				final Set<String> visibleAttributes = new HashSet<String>();
+				for (final Object selectedValue : selectedValues)
+					visibleAttributes.add((String)selectedValue);
 
-		this.add(getJToolBar(), java.awt.BorderLayout.CENTER);
+				browserTableModel.setVisibleAttributeNames(visibleAttributes);
+			}
+		} catch (Exception ex) {
+			attributeList.clearSelection();
+		}
+	}
+
+	@Override
+	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+		// Do nothing
+	}
+
+	public void updateEnableState() {
+		for (final JComponent comp : components) {
+			boolean enabled = browserTableModel != null;
+			
+			if (comp == deleteTableButton /*|| comp == mapGlobalTableButton*/)
+				enabled &= objType == null;
+			
+			comp.setEnabled(enabled);
+		}
+	}
+	
+	protected void addComponent(final JComponent component, final ComponentPlacement placement) {
+		hToolBarGroup.addPreferredGap(placement).addComponent(component);
+		vToolBarGroup.addComponent(component, Alignment.CENTER, GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE);
+		components.add(component);
+	}
+	
+	private void initializeGUI() {
+		setLayout(new BorderLayout());
+		add(getToolBar(), BorderLayout.CENTER);
 
 		getAttributeSelectionPopupMenu();
 		getJPopupMenu();
+		
+		// Add buttons
+		if (selectionModeButton != null)
+			addComponent(selectionModeButton, ComponentPlacement.RELATED);
+		
+		addComponent(getSelectButton(), ComponentPlacement.UNRELATED);
+		addComponent(getSelectAllButton(), ComponentPlacement.RELATED);
+		addComponent(getUnselectAllButton(), ComponentPlacement.RELATED);
+		addComponent(getNewButton(), ComponentPlacement.UNRELATED);
+		addComponent(getDeleteButton(), ComponentPlacement.RELATED);
+		addComponent(getDeleteTableButton(), ComponentPlacement.RELATED);
+		addComponent(getFunctionBuilderButton(), ComponentPlacement.UNRELATED);
+//		addComponent(getMapGlobalTableButton(). ComponentPlacement.UNRELATED);
+		
+		if (tableChooser != null)
+			addComponent(tableChooser, ComponentPlacement.UNRELATED);
 	}
 
 	
@@ -254,7 +316,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			createColumnMenu.add(column);
 			
 			// This is not valid for Global Table.
-			if(objType != null) {
+			if (objType != null) {
 				final JMenu shared = new JMenu("New Shared Column");
 				
 				final JMenu sharedRegular = new JMenu("Single");
@@ -290,8 +352,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 		final JMenuItem jMenuItemStringAttribute = new JMenuItem();
 		jMenuItemStringAttribute.setText("String Column");
-		jMenuItemStringAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemStringAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("String", isShared);
 			}
 		});
@@ -307,8 +369,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemIntegerAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemIntegerAttribute = new JMenuItem();
 		jMenuItemIntegerAttribute.setText("Integer Column");
-		jMenuItemIntegerAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemIntegerAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Integer", isShared);
 			}
 		});
@@ -324,8 +386,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemLongIntegerAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemLongIntegerAttribute = new JMenuItem();
 		jMenuItemLongIntegerAttribute.setText("Long Integer Column");
-		jMenuItemLongIntegerAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemLongIntegerAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Long Integer", isShared);
 			}
 		});
@@ -340,8 +402,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemFloatingPointAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemFloatingPointAttribute = new JMenuItem();
 		jMenuItemFloatingPointAttribute.setText("Floating Point Column");
-		jMenuItemFloatingPointAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemFloatingPointAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Floating Point", isShared);
 			}
 		});
@@ -357,8 +419,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemBooleanAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemBooleanAttribute = new JMenuItem();
 		jMenuItemBooleanAttribute.setText("Boolean Column");
-		jMenuItemBooleanAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemBooleanAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Boolean", isShared);
 			}
 		});
@@ -374,8 +436,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemStringListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemStringListAttribute = new JMenuItem();
 		jMenuItemStringListAttribute.setText("String List Column");
-		jMenuItemStringListAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemStringListAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("String List", isShared);
 			}
 		});
@@ -391,8 +453,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemIntegerListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemIntegerListAttribute = new JMenuItem();
 		jMenuItemIntegerListAttribute.setText("Integer List Column");
-		jMenuItemIntegerListAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemIntegerListAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Integer List", isShared);
 			}
 		});
@@ -408,8 +470,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemLongIntegerListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemLongIntegerListAttribute = new JMenuItem();
 		jMenuItemLongIntegerListAttribute.setText("Long Integer List Column");
-		jMenuItemLongIntegerListAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemLongIntegerListAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Integer List", isShared);
 			}
 		});
@@ -425,8 +487,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemFloatingPointListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemFloatingPointListAttribute = new JMenuItem();
 		jMenuItemFloatingPointListAttribute.setText("Floating Point List Column");
-		jMenuItemFloatingPointListAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemFloatingPointListAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Floating Point List", isShared);
 			}
 		});
@@ -442,8 +504,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemBooleanListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemBooleanListAttribute = new JMenuItem();
 		jMenuItemBooleanListAttribute.setText("Boolean List Column");
-		jMenuItemBooleanListAttribute.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+		jMenuItemBooleanListAttribute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				createNewAttribute("Boolean List", isShared);
 			}
 		});
@@ -452,88 +514,32 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 
 	/**
-	 * This method initializes jToolBar
+	 * This method initializes  the toolBar
 	 *
 	 * @return javax.swing.JToolBar
 	 */
-	private JToolBar getJToolBar() {
-		if (browserToolBar == null) {
-			browserToolBar = new JToolBar();
-			browserToolBar.setMargin(new java.awt.Insets(0, 0, 3, 0));
-			browserToolBar.setPreferredSize(TOOLBAR_SIZE);
-			browserToolBar.setSize(TOOLBAR_SIZE);
-			browserToolBar.setFloatable(false);
-			browserToolBar.setOrientation(JToolBar.HORIZONTAL);
+	private JToolBar getToolBar() {
+		if (toolBar == null) {
+			toolBar = new JToolBar();
+			toolBar.setMargin(new Insets(0, 0, 3, 0));
+			toolBar.setPreferredSize(TOOLBAR_SIZE);
+			toolBar.setSize(TOOLBAR_SIZE);
+			toolBar.setFloatable(false);
+			toolBar.setOrientation(JToolBar.HORIZONTAL);
 
-			final GroupLayout buttonBarLayout = new GroupLayout(browserToolBar);
-			browserToolBar.setLayout(buttonBarLayout);
-
+			final GroupLayout buttonBarLayout = new GroupLayout(toolBar);
+			toolBar.setLayout(buttonBarLayout);
+			hToolBarGroup = buttonBarLayout.createSequentialGroup();
+			vToolBarGroup = buttonBarLayout.createParallelGroup(GroupLayout.Alignment.LEADING);
+			
 			// Layout information.
 			buttonBarLayout.setHorizontalGroup(buttonBarLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-							   .addGroup(buttonBarLayout.createSequentialGroup()
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(selectionModeButton)
-								.addPreferredGap(ComponentPlacement.UNRELATED)
-								.addComponent(getSelectButton())
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(getSelectAllButton())
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(getUnselectAllButton())
-								.addPreferredGap(ComponentPlacement.UNRELATED)
-								.addComponent(getNewButton())
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(getDeleteButton())
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(getDeleteTableButton())
-								.addPreferredGap(ComponentPlacement.UNRELATED)
-								.addComponent(getFunctionBuilderButton())
-								.addPreferredGap(ComponentPlacement.UNRELATED)
-//								.addComponent(getMapGlobalTableButton())
-//								.addPreferredGap(ComponentPlacement.UNRELATED)
-								.addComponent(this.tableChooser)));
-			buttonBarLayout.setVerticalGroup(buttonBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-							.addComponent(selectionModeButton, javax.swing.GroupLayout.Alignment.CENTER,
-									javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
-							.addComponent(selectButton,
-								       javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.PREFERRED_SIZE,
-								       27,
-								       Short.MAX_VALUE)
-							 .addComponent(selectAllAttributesButton,
-								       javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE)
-							 .addComponent(unselectAllAttributesButton,
-								       javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE)
-							.addComponent(createNewAttributeButton,
-								       javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE)
-							 .addComponent(deleteAttributeButton,
-								       javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE)
-							 .addComponent(deleteTableButton,
-								       javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE)
-							.addComponent(formulaBuilderButton,
-									javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE)
-//							.addComponent(mapGlobalTableButton,
-//									javax.swing.GroupLayout.Alignment.CENTER,
-//								       javax.swing.GroupLayout.DEFAULT_SIZE,
-//								       27, Short.MAX_VALUE)
-							.addComponent(tableChooser,
-									javax.swing.GroupLayout.Alignment.CENTER,
-								       javax.swing.GroupLayout.DEFAULT_SIZE,
-								       27, Short.MAX_VALUE));
+								.addGroup(hToolBarGroup));
+			buttonBarLayout.setVerticalGroup(vToolBarGroup);
+
 		}
 
-		return browserToolBar;
+		return toolBar;
 	}
 
 	/**
@@ -545,26 +551,24 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		if (selectButton == null) {
 			selectButton = new JButton();
 			selectButton.setBorder(null);
-			selectButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+			selectButton.setMargin(new Insets(0, 0, 0, 0));
 			selectButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/stock_select-row.png")));
 			selectButton.setToolTipText("Select Column");
 			selectButton.setBorder(null);
+			selectButton.setEnabled(false);
 
 			selectButton.addMouseListener(new MouseAdapter() {
-					public void mouseClicked(MouseEvent e) {
-						if (browserTableModel == null)
-							return;
-						attributeList.setSelectedItems(browserTableModel.getVisibleAttributeNames());
-						attributeSelectionPopupMenu.show(e.getComponent(), e.getX(), e.getY());
-					}
-				});
+				public void mouseClicked(MouseEvent e) {
+					if (browserTableModel == null)
+						return;
+					attributeList.setSelectedItems(browserTableModel.getVisibleAttributeNames());
+					attributeSelectionPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			});
 		}
-		selectButton.setEnabled(false);
-
+		
 		return selectButton;
 	}
-
-	private JButton formulaBuilderButton = null;
 
 	private JButton getFunctionBuilderButton() {
 		if (formulaBuilderButton == null) {
@@ -572,59 +576,51 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			formulaBuilderButton.setBorder(null);
 			formulaBuilderButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/fx.png")));
 			formulaBuilderButton.setToolTipText("Function Builder");
-			formulaBuilderButton.setMargin(new java.awt.Insets(1, 1, 1, 1));
+			formulaBuilderButton.setMargin(new Insets(1, 1, 1, 1));
 			formulaBuilderButton.setBorder(null);
+			formulaBuilderButton.setEnabled(false);
 
-			final JFrame rootFrame = (JFrame)SwingUtilities.getRoot(this);
+			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
 
-			formulaBuilderButton.addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						if (browserTableModel == null)
-							return;
-						
-						final JTable table = browserTableModel.getTable();
+			formulaBuilderButton.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					if (browserTableModel == null)
+						return;
 
-						// Do not allow opening of the formula builder dialog
-						// while a cell is being edited!
-						if (table.getCellEditor() != null)
-							return;
+					final JTable table = browserTableModel.getTable();
 
-						final int cellRow = table.getSelectedRow();
-						final int cellColumn = table.getSelectedColumn();
-						if (cellRow == -1 || cellColumn == -1
-						    || !browserTableModel.isCellEditable(cellRow, cellColumn))
-							JOptionPane.showMessageDialog(
-								rootFrame,
-							        "Can't enter a formula w/o a selected cell!",
-							        "Information", JOptionPane.INFORMATION_MESSAGE);
-						else {
-							final String attrName = getAttribName(cellRow, cellColumn);
-							final Map<String, Class<?>> attribNameToTypeMap
-								= new HashMap<String, Class<?>>();
-							final CyTable attrs =
-								browserTableModel.getAttributes();
-							initAttribNameToTypeMap(attrs, attrName, attribNameToTypeMap);
-							final FormulaBuilderDialog formulaBuilderDialog =
-								new FormulaBuilderDialog(compiler, browserTableModel,
-											 rootFrame, attrName);
-							formulaBuilderDialog.setLocationRelativeTo(rootFrame);
-							formulaBuilderDialog.setVisible(true);
-						}
+					// Do not allow opening of the formula builder dialog
+					// while a cell is being edited!
+					if (table.getCellEditor() != null)
+						return;
+
+					final int cellRow = table.getSelectedRow();
+					final int cellColumn = table.getSelectedColumn();
+
+					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, cellColumn)) {
+						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell!",
+								"Information", JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						final String attrName = getAttribName(cellRow, cellColumn);
+						final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+						final CyTable attrs = browserTableModel.getAttributes();
+						initAttribNameToTypeMap(attrs, attrName, attribNameToTypeMap);
+						final FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler,
+								browserTableModel, rootFrame, attrName);
+						formulaBuilderDialog.setLocationRelativeTo(rootFrame);
+						formulaBuilderDialog.setVisible(true);
 					}
+				}
 
-					private void initAttribNameToTypeMap(
-						final CyTable attrs, final String attrName,
-						final Map<String, Class<?>> attribNameToTypeMap)
-					{
-						for (final CyColumn column : attrs.getColumns())
-							attribNameToTypeMap.put(column.getName(),
-										column.getType());
-						attribNameToTypeMap.remove(attrName);
-					}
-				});
+				private void initAttribNameToTypeMap(final CyTable attrs, final String attrName,
+						final Map<String, Class<?>> attribNameToTypeMap) {
+					for (final CyColumn column : attrs.getColumns())
+						attribNameToTypeMap.put(column.getName(), column.getType());
+					attribNameToTypeMap.remove(attrName);
+				}
+			});
 		}
-		formulaBuilderButton.setEnabled(false);
-
+		
 		return formulaBuilderButton;
 	}
 
@@ -636,41 +632,38 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		if (deleteAttributeButton == null) {
 			deleteAttributeButton = new JButton();
 			deleteAttributeButton.setBorder(null);
-			deleteAttributeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+			deleteAttributeButton.setMargin(new Insets(0, 0, 0, 0));
 			deleteAttributeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/stock_delete.png")));
 			deleteAttributeButton.setToolTipText("Delete Column...");
 			deleteAttributeButton.setBorder(null);
-
 			// Create pop-up window for deletion
-			deleteAttributeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						if (deleteAttributeButton.isEnabled())
-							removeAttribute(e);
-					}
-				});
+			deleteAttributeButton.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					if (deleteAttributeButton.isEnabled())
+						removeAttribute(e);
+				}
+			});
 			deleteAttributeButton.setEnabled(false);
 		}
 
 		return deleteAttributeButton;
 	}
 
-
 	private JButton getDeleteTableButton() {
 		if (deleteTableButton == null) {
 			deleteTableButton = new JButton();
 			deleteTableButton.setBorder(null);
-			deleteTableButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+			deleteTableButton.setMargin(new Insets(0, 0, 0, 0));
 			deleteTableButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_delete.png")));
 			deleteTableButton.setToolTipText("Delete Table...");
 			deleteTableButton.setBorder(null);
-			
 			// Create pop-up window for deletion
-			deleteTableButton.addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						if (deleteTableButton.isEnabled())
-							removeTable(e);
-					}
-				});
+			deleteTableButton.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					if (deleteTableButton.isEnabled())
+						removeTable(e);
+				}
+			});
 			deleteTableButton.setEnabled(false);
 		}
 
@@ -682,29 +675,29 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		if (selectAllAttributesButton == null) {
 			selectAllAttributesButton = new JButton();
 			selectAllAttributesButton.setBorder(null);
-			selectAllAttributesButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-			selectAllAttributesButton.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/select_all.png")));
+			selectAllAttributesButton.setMargin(new Insets(0, 0, 0, 0));
+			selectAllAttributesButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/select_all.png")));
 			selectAllAttributesButton.setToolTipText("Select All Columns");
 			selectAllAttributesButton.setBorder(null);
+			selectAllAttributesButton.setEnabled(false);
 
-			selectAllAttributesButton.addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						try {
-							final CyTable table = browserTableModel.getAttributes();
-							final Set<String> allAttrNames = new HashSet<String>();
-							for (final CyColumn column : table.getColumns())
-								allAttrNames.add(column.getName());
-							browserTableModel.setVisibleAttributeNames(allAttrNames);
-							
-							// Resize column
-							ColumnResizer.adjustColumnPreferredWidths(browserTableModel.getTable());
-						} catch (Exception ex) {
-							attributeList.clearSelection();
-						}
+			selectAllAttributesButton.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					try {
+						final CyTable table = browserTableModel.getAttributes();
+						final Set<String> allAttrNames = new HashSet<String>();
+						for (final CyColumn column : table.getColumns())
+							allAttrNames.add(column.getName());
+						browserTableModel.setVisibleAttributeNames(allAttrNames);
+
+						// Resize column
+						ColumnResizer.adjustColumnPreferredWidths(browserTableModel.getTable());
+					} catch (Exception ex) {
+						attributeList.clearSelection();
 					}
-				});
+				}
+			});
 		}
-		selectAllAttributesButton.setEnabled(false);
 
 		return selectAllAttributesButton;
 	}
@@ -713,22 +706,22 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		if (unselectAllAttributesButton == null) {
 			unselectAllAttributesButton = new JButton();
 			unselectAllAttributesButton.setBorder(null);
-			unselectAllAttributesButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-			unselectAllAttributesButton.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/unselect_all.png")));
+			unselectAllAttributesButton.setMargin(new Insets(0, 0, 0, 0));
+			unselectAllAttributesButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/unselect_all.png")));
 			unselectAllAttributesButton.setToolTipText("Unselect All Columns");
 			unselectAllAttributesButton.setBorder(null);
+			unselectAllAttributesButton.setEnabled(false);
 
-			unselectAllAttributesButton.addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						try {
-							browserTableModel.setVisibleAttributeNames(new HashSet<String>());
-						} catch (Exception ex) {
-							attributeList.clearSelection();
-						}
+			unselectAllAttributesButton.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					try {
+						browserTableModel.setVisibleAttributeNames(new HashSet<String>());
+					} catch (Exception ex) {
+						attributeList.clearSelection();
 					}
-				});
+				}
+			});
 		}
-		unselectAllAttributesButton.setEnabled(false);
 
 		return unselectAllAttributesButton;
 	}
@@ -740,7 +733,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getAttributes());
 
 		dDialog.pack();
-		dDialog.setLocationRelativeTo(browserToolBar);
+		dDialog.setLocationRelativeTo(toolBar);
 		dDialog.setVisible(true);
 	}
 
@@ -755,7 +748,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 			// if user selects yes delete the table
 			if (_confirmValue == JOptionPane.OK_OPTION)
-				guiTaskManagerServiceRef.execute(deleteTableTaskFactoryService.createTaskIterator(table));
+				guiTaskMgr.execute(deleteTableTaskFactory.createTaskIterator(table));
 		} else if (table.getMutability() == CyTable.Mutability.PERMANENTLY_IMMUTABLE) {
 			String title = "Error";
 			String msg = "Can not delete this table, it is PERMANENTLY_IMMUTABLE";
@@ -774,12 +767,12 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			attributeList.setModel(attrListModel);
 			attributeList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			attributeList.addMouseListener(new MouseAdapter() {
-					public void mouseClicked(MouseEvent e) {
-						if (SwingUtilities.isRightMouseButton(e)) {
-							attributeSelectionPopupMenu.setVisible(false);
-						}
+				public void mouseClicked(MouseEvent e) {
+					if (SwingUtilities.isRightMouseButton(e)) {
+						attributeSelectionPopupMenu.setVisible(false);
 					}
-				});
+				}
+			});
 		}
 
 		return attributeList;
@@ -810,20 +803,20 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			createNewAttributeButton.setBorder(null);
 
 			createNewAttributeButton.setFont(new java.awt.Font("Dialog", java.awt.Font.PLAIN, 12));
-			createNewAttributeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			createNewAttributeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+			createNewAttributeButton.setHorizontalTextPosition(SwingConstants.CENTER);
+			createNewAttributeButton.setMargin(new Insets(0, 0, 0, 0));
 			createNewAttributeButton.setToolTipText("Create New Column");
-			createNewAttributeButton.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/stock_new.png")));
+			createNewAttributeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/stock_new.png")));
 			createNewAttributeButton.setBorder(null);
 			
 			createNewAttributeButton.addMouseListener(new MouseAdapter() {
-				
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						if (browserTableModel != null)
-							createColumnMenu.show(e.getComponent(), e.getX(), e.getY());
-					}
-				});
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (browserTableModel != null)
+						createColumnMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			});
+			
 			createNewAttributeButton.setEnabled(false);
 		}
 
@@ -835,7 +828,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		if (mapGlobalTableButton == null) {
 			mapGlobalTableButton = new JButton();
 			mapGlobalTableButton.setBorder(null);
-			mapGlobalTableButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+			mapGlobalTableButton.setMargin(new Insets(0, 0, 0, 0));
 			mapGlobalTableButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_map.png")));
 			mapGlobalTableButton.setToolTipText("Link Table to Attributes");
 			mapGlobalTableButton.setBorder(null);
@@ -851,7 +844,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 		return mapGlobalTableButton;
 	}
-	 */
+	*/
+	
 	private void createNewAttribute(final String type, boolean isShared) {
 		
 		final String[] existingAttrs = getAttributeArray();
@@ -873,7 +867,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 		final CyTable attrs;
 		if(isShared) {
-			final CyNetwork network = appManager.getCurrentNetwork();
+			final CyNetwork network = appMgr.getCurrentNetwork();
 						
 			if(network instanceof CySubNetwork) {
 				final CyRootNetwork rootNetwork = ((CySubNetwork) network).getRootNetwork();
@@ -918,33 +912,5 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			attrs.createListColumn(newAttribName, Boolean.class, false);
 		else
 			throw new IllegalArgumentException("unknown column type \"" + type + "\"!");
-	}
-
-	@Override
-	public void popupMenuCanceled(PopupMenuEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-	
-	@Override
-	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-		// Update actual table
-		try {
-			if (attributeList != null) {
-				final Object[] selectedValues = attributeList.getSelectedValues();
-				final Set<String> visibleAttributes = new HashSet<String>();
-				for (final Object selectedValue : selectedValues)
-					visibleAttributes.add((String)selectedValue);
-
-				browserTableModel.setVisibleAttributeNames(visibleAttributes);
-			}
-		} catch (Exception ex) {
-			attributeList.clearSelection();
-		}
-	}
-
-	@Override
-	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-		// Do nothing
 	}
 }
