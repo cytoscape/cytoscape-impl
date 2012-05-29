@@ -499,6 +499,7 @@ public class VisualStyleSerializer {
 			newDependency.setValue(vpDep.isDependencyEnabled());
 
 			final VisualProperty<?> parent = vpDep.getParentVisualProperty();
+			
 			if (nodeVisualProperties.contains(parent))
 				nodeDep.add(newDependency);
 			else if (edgeVisualProperties.contains(parent))
@@ -509,44 +510,29 @@ public class VisualStyleSerializer {
 	}
 	
 	private void restoreDependency(final VisualStyle visualStyle, org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
-		
 		final Node nodeSection = vsModel.getNode();
 		final Edge edgeSection = vsModel.getEdge();
 		final Network networkSection = vsModel.getNetwork();
-		
-		final Set<Dependency> dependencyStates = new HashSet<Dependency>();
-		
-		if(nodeSection != null)
-			dependencyStates.addAll(nodeSection.getDependency());
-		if(edgeSection != null)
-			dependencyStates.addAll(edgeSection.getDependency());
-		if(networkSection != null)
-			dependencyStates.addAll(networkSection.getDependency());
-		
-		final Set<VisualPropertyDependency<?>> availableDependencies = visualStyle.getAllVisualPropertyDependencies();
-		for(final Dependency dep: dependencyStates) {
-			final String newDependencyName = dep.getName();
-			final Boolean depEnabled = dep.isValue();
-			
-			for(final VisualPropertyDependency<?> vsDependency: availableDependencies) {
-				if(vsDependency.getIdString().equals(newDependencyName))
-					vsDependency.setDependency(depEnabled);
-			}		
-		}
-	}
 
-	
-	/**
-	 * For 2.x compatibility?
-	 * @param vs
-	 * @param key
-	 * @param value
-	 */
-	private void setDependency(final VisualStyle vs, final String key, final String value) {
-		if (key.contains("nodeSizeLocked")) {
-			boolean isDependencyEnabled = Boolean.parseBoolean(value);
-//			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH).setDependency(b);
-//			lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_HEIGHT).setDependency(b);
+		final Set<Dependency> dependencyStates = new HashSet<Dependency>();
+
+		if (nodeSection != null)
+			dependencyStates.addAll(nodeSection.getDependency());
+		if (edgeSection != null)
+			dependencyStates.addAll(edgeSection.getDependency());
+		if (networkSection != null)
+			dependencyStates.addAll(networkSection.getDependency());
+
+		final Set<VisualPropertyDependency<?>> availableDependencies = visualStyle.getAllVisualPropertyDependencies();
+		
+		for (final Dependency dep : dependencyStates) {
+			final String depName = dep.getName();
+			final Boolean enabled = dep.isValue();
+
+			for (final VisualPropertyDependency<?> vsDependency : availableDependencies) {
+				if (vsDependency.getIdString().equalsIgnoreCase(depName))
+					vsDependency.setDependency(enabled);
+			}
 		}
 	}
 
