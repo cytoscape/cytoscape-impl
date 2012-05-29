@@ -78,9 +78,9 @@
 
 		<!-- MI Cluster -->
 		<dependency>
-			<groupId>org.cytoscape</groupId>
+			<groupId>cytoscape-temp</groupId>
 			<artifactId>uk.ac.ebi.enfin.mi.cluster.micluster</artifactId>
-			<version>1.6-SNAPSHOT</version>
+			<version>1.6</version>
 		</dependency>
 
 		<!-- Testing -->
