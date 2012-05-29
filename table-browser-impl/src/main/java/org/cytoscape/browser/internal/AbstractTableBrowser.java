@@ -76,8 +76,8 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 						 final EquationCompiler compiler,
 						 final OpenBrowser openBrowser,
 						 final CyNetworkManager networkManager,
-						 final TableTaskFactory deleteTableTaskFactoryService,
-						 final DialogTaskManager guiTaskManagerServiceRef,
+						 final TableTaskFactory deleteTableTaskFactory,
+						 final DialogTaskManager guiTaskManager,
 						 final PopupMenuHelper popupMenuHelper,
 						 final CyApplicationManager applicationManager,
 						 final CyEventHelper eventHelper) {

@@ -1,7 +1,6 @@
 package org.cytoscape.browser.internal;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -22,25 +21,23 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.destroy.DeleteTableTaskFactory;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
@@ -57,22 +54,21 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private boolean ignoreSetCurrentNetwork = true;
 	
 
-	public DefaultTableBrowser(String tabTitle,
-							   Class<? extends CyIdentifiable> objType,
-							   CyTableManager tableManager,
-							   CyNetworkTableManager networkTableManager,
-							   CyServiceRegistrar serviceRegistrar,
-							   EquationCompiler compiler,
-							   OpenBrowser openBrowser,
-							   CyNetworkManager networkManager,
-							   DeleteTableTaskFactory deleteTableTaskFactoryService,
-							   DialogTaskManager guiTaskManagerServiceRef,
-							   PopupMenuHelper popupMenuHelper,
-							   CyApplicationManager applicationManager,
+	public DefaultTableBrowser(final String tabTitle,
+							   final Class<? extends CyIdentifiable> objType,
+							   final CyTableManager tableManager,
+							   final CyNetworkTableManager networkTableManager,
+							   final CyServiceRegistrar serviceRegistrar,
+							   final EquationCompiler compiler,
+							   final OpenBrowser openBrowser,
+							   final CyNetworkManager networkManager,
+							   final DeleteTableTaskFactory deleteTableTaskFactory,
+							   final DialogTaskManager guiTaskManager,
+							   final PopupMenuHelper popupMenuHelper,
+							   final CyApplicationManager applicationManager,
 							   final CyEventHelper eventHelper) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager,
-				eventHelper);
+				deleteTableTaskFactory, guiTaskManager, popupMenuHelper, applicationManager, eventHelper);
 
 		this.objType = objType;
 
@@ -99,7 +95,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		});
 		
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, networkChooser, selectionModeButton, objType,
+				deleteTableTaskFactory, guiTaskManager, networkChooser, selectionModeButton, objType,
 				applicationManager);// , mapGlobalTableTaskFactoryService);
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
@@ -138,26 +134,25 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			currentTable = null;
 		}
 		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
+				
+				if ((currentNetwork == null && selectedNetwork != null)
+						|| (currentNetwork != null && !currentNetwork.equals(selectedNetwork))) {
+					ignoreSetCurrentNetwork = true;
+					networkChooser.setSelectedItem(currentNetwork);
+					ignoreSetCurrentNetwork = false;
+				}
+			}
+		});
+		
 		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel();
 		
 		if (currentBrowserTableModel != null)
 			currentBrowserTableModel.setShowAll(rowSelectionMode);
 		
 		showSelectedTable();
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
-				
-				if (selectedNetwork != null) {
-					if ((currentNetwork == null && selectedNetwork != null) || !currentNetwork.equals(selectedNetwork)) {
-						ignoreSetCurrentNetwork = true;
-						networkChooser.setSelectedItem(currentNetwork);
-						ignoreSetCurrentNetwork = false;
-					}
-				}
-			}
-		});
 	}
 
 	@Override
@@ -170,9 +165,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				
 				try {
 					networkChooser.addItem(network);
-					
-					if (networkChooser.isEnabled() == false)
-						networkChooser.setEnabled(true);
 				} finally {
 					ignoreSetCurrentNetwork = false;
 				}
@@ -190,9 +182,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				
 				try {
 					networkChooser.removeItem(network);
-					
-					if (networkChooser.getItemCount() == 0)
-						networkChooser.setEnabled(false);
 				} finally {
 					ignoreSetCurrentNetwork = false;
 				}
@@ -214,13 +203,14 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		public Component getListCellRendererComponent(JList list, Object item, int index, boolean isSelected,
 				boolean hasFocus) {
 			
-			if(item instanceof CyNetwork == false) {
+			if (item instanceof CyNetwork == false) {
 				this.setText("No Network");
 				return this;
 			}
 			
 			final CyNetwork network = (CyNetwork) item;
-			if(isSelected || hasFocus) {
+			
+			if (isSelected || hasFocus) {
 				this.setBackground(list.getSelectionBackground());				
 				this.setForeground(list.getSelectionForeground());
 			} else {
@@ -230,6 +220,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			
 			setOpaque(true);
 			this.setText(network.getRow(network).get(CyNetwork.NAME, String.class));
+			
 			return this;
 		}
 	}
