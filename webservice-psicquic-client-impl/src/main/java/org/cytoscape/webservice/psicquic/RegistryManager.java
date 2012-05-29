@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -36,6 +38,7 @@ public class RegistryManager {
 
 	// Tag definitions
 	private static final String REST_URL = "restUrl";
+	private static final String TAG = "tag";
 	private static final String IS_ACTIVE = "active";
 	private static final String DEF_SERVICE_URL = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry";
 
@@ -53,7 +56,9 @@ public class RegistryManager {
 	
 	private final Map<String, Boolean> statusMap;
 	private final Map<String, String> urlMap;
-
+	private final Map<String, List<String>> tagMap;
+	
+	
 	/**
 	 * Constructor to use default registry location.
 	 */
@@ -78,6 +83,7 @@ public class RegistryManager {
 		source2NameMap = new HashMap<String, String>();
 		statusMap = new HashMap<String, Boolean>();
 		urlMap = new HashMap<String, String>();
+		tagMap = new HashMap<String, List<String>>();
 		invoke();
 		
 		allServiceNames = new TreeSet<String>(activeServiceMap.keySet());
@@ -90,6 +96,10 @@ public class RegistryManager {
 
 	public Map<String, String> getInactiveServices() {
 		return inactiveServiceMap;
+	}
+	
+	public Map<String, List<String>> getTagMap() {
+		return this.tagMap;
 	}
 	
 	public SortedSet<String> getAllServiceNames() {
@@ -180,6 +190,15 @@ public class RegistryManager {
 				urlMap.put(serviceName, item.getFirstChild().getNodeValue());
 			else if (tag.equals(IS_ACTIVE))
 				statusMap.put(serviceName, Boolean.parseBoolean(item.getFirstChild().getNodeValue()));
+			else if (tag.equals(TAG)) {
+				List<String> tagList = tagMap.get(serviceName);
+				if(tagList == null)
+					tagList = new ArrayList<String>();
+				tagList.add(item.getFirstChild().getNodeValue());
+				tagMap.put(serviceName, tagList);
+			}
+				
+			
 			walk(n, serviceName);
 		}
 	}

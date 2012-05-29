@@ -60,7 +60,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 
 	private final RegistryManager regManager;
 	private final PSICQUICRestClient client;
-	private final TaskManager taskManager;
+	private final TaskManager<?, ?> taskManager;
 	private final CyNetworkManager networkManager;
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 

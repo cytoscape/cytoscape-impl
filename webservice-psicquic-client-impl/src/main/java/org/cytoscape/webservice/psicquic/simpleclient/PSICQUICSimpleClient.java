@@ -28,11 +28,13 @@ import java.net.URLEncoder;
  * Simple rest client created by IntAct team.
  * 
  * @author Bruno Aranda (baranda@ebi.ac.uk)
+ * Modified by Keiichiro Ono for 2.7
  */
-public class PSICQUICSimpleClient {
+public final class PSICQUICSimpleClient {
 
 	public static final String XML25 = "xml25";
 	public static final String MITAB25 = "tab25";
+	public static final String MITAB27 = "tab27";
 	public static final String MITAB25_COMPRESSED = "tab25-bin";
 	public static final String COUNT = "count";
 
@@ -43,15 +45,15 @@ public class PSICQUICSimpleClient {
 	}
 
 	public InputStream getByQuery(String query) throws IOException {
-		return getByQuery(query, "tab25");
+		return getByQuery(query, MITAB25);
 	}
 
 	public InputStream getByInteractor(String query) throws IOException {
-		return getByQuery(query, "tab25");
+		return getByQuery(query, MITAB25);
 	}
 
 	public InputStream getByInteraction(String query) throws IOException {
-		return getByQuery(query, "tab25");
+		return getByQuery(query, MITAB25);
 	}
 
 	public InputStream getByQuery(String query, String format) throws IOException {
@@ -139,14 +141,15 @@ public class PSICQUICSimpleClient {
 		if (is == null)
 			return "";
 
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		String line;
 
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 			while ((line = reader.readLine()) != null) {
 				sb.append(line).append("\n");
 			}
+			reader.close();
 		} finally {
 			is.close();
 		}

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.LayoutStyle;
@@ -41,7 +42,7 @@ public class SourceStatusPanel extends JPanel {
 	private final String query;
 	private final CyNetworkManager networkManager;
 
-	private final TaskManager taskManager;
+	private final TaskManager<?,?> taskManager;
 
 	private final SearchMode mode;
 
@@ -117,40 +118,41 @@ public class SourceStatusPanel extends JPanel {
 	}
 
 	private void setTableModel(final Map<String, Long> result) {
-
 		final StatusTableModel model = new StatusTableModel();
 		model.addColumn("Import");
 		model.addColumn("Data Source Name");
+		model.addColumn("Tags");
 		model.addColumn("Records Found");
 		model.addColumn("Status");
 
 		for (final String serviceName : manager.getAllServiceNames()) {
-			final Object[] rowValues = new Object[4];
+			final Object[] rowValues = new Object[5];
 
 			rowValues[1] = serviceName;
+			rowValues[2] = manager.getTagMap().get(serviceName).toString();
 			if (result != null) {
 				final String targetURL = manager.getActiveServices().get(serviceName);
 				if (targetURL != null) {
 					Integer count = result.get(targetURL).intValue();
 					if (count < 0)
-						rowValues[2] = 0;
+						rowValues[3] = 0;
 					else
-						rowValues[2] = count;
+						rowValues[3] = count;
 				} else
-					rowValues[2] = 0;
+					rowValues[3] = 0;
 			} else {
-				rowValues[2] = 0;
+				rowValues[3] = 0;
 			}
 
 			if (manager.isActive(serviceName)) {
-				rowValues[3] = "Active";
-				if (((Integer) rowValues[2]) != 0)
+				rowValues[4] = "Active";
+				if (((Integer) rowValues[3]) != 0)
 					rowValues[0] = true;
 				else
 					rowValues[0] = false;
 			} else {
 				rowValues[0] = false;
-				rowValues[3] = "Inactive";
+				rowValues[4] = "Inactive";
 			}
 			model.addRow(rowValues);
 
@@ -178,6 +180,7 @@ public class SourceStatusPanel extends JPanel {
 		cancelButton = new javax.swing.JButton();
 		clearSelectionButton = new JButton();
 		selectAllButton = new JButton();
+		clusterResultCheckBox = new JCheckBox("Mearge Networks (Cluster Result)");
 
 		titlePanel.setBackground(java.awt.Color.white);
 
@@ -227,6 +230,8 @@ public class SourceStatusPanel extends JPanel {
 				selectAllButtonActionPerformed(evt);
 			}
 		});
+		
+		clusterResultCheckBox.setToolTipText("<html><h3>Cluster to single network</h3></html>");
 
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
 		buttonPanel.setLayout(buttonPanelLayout);
@@ -235,6 +240,7 @@ public class SourceStatusPanel extends JPanel {
 						GroupLayout.Alignment.TRAILING,
 						buttonPanelLayout.createSequentialGroup().addComponent(clearSelectionButton)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(selectAllButton)
+								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(clusterResultCheckBox)
 								.addContainerGap(100, Short.MAX_VALUE).addComponent(cancelButton)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 								.addComponent(importNetworkButton).addContainerGap()));
@@ -250,6 +256,8 @@ public class SourceStatusPanel extends JPanel {
 												.addComponent(clearSelectionButton, GroupLayout.PREFERRED_SIZE,
 														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 												.addComponent(selectAllButton, GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+												.addComponent(clusterResultCheckBox, GroupLayout.PREFERRED_SIZE,
 														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 												.addComponent(importNetworkButton, GroupLayout.PREFERRED_SIZE,
 														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -277,6 +285,7 @@ public class SourceStatusPanel extends JPanel {
 
 	private void importButtonActionPerformed(ActionEvent evt) {
 
+		final boolean toBeClustered = clusterResultCheckBox.isSelected();
 		final Set<String> targetSources = getSelected();
 		final Set<String> sourceURLs = new HashSet<String>();
 		for (String source : targetSources) {
@@ -285,7 +294,7 @@ public class SourceStatusPanel extends JPanel {
 
 		// Execute Import Task
 		final ImportNetworkFromPSICQUICTask networkTask = new ImportNetworkFromPSICQUICTask(query, client,
-				networkManager, manager, sourceURLs, mode, createViewTaskFactory);
+				networkManager, manager, sourceURLs, mode, createViewTaskFactory, toBeClustered);
 
 		taskManager.execute(new TaskIterator(networkTask));
 		
@@ -320,6 +329,7 @@ public class SourceStatusPanel extends JPanel {
 	private javax.swing.JButton importNetworkButton;
 	private JButton clearSelectionButton;
 	private JButton selectAllButton;
+	private JCheckBox clusterResultCheckBox;
 
 	private javax.swing.JScrollPane resultScrollPane;
 	private javax.swing.JTable resultTable;
@@ -337,9 +347,8 @@ public class SourceStatusPanel extends JPanel {
 
 		@Override
 		public boolean isCellEditable(int row, int column) {
-			final int count = (Integer) getValueAt(row, 2);
+			final int count = (Integer) getValueAt(row, 3);
 			final String sourceName = getValueAt(row, 1).toString();
-
 			if (column == 0 && manager.isActive(sourceName) && count != 0)
 				return true;
 			else
@@ -350,9 +359,7 @@ public class SourceStatusPanel extends JPanel {
 		public Class<?> getColumnClass(int colIdx) {
 			if (colIdx == 0)
 				return Boolean.class;
-			else if (colIdx == 1 || colIdx == 3)
-				return String.class;
-			else if (colIdx == 2)
+			else if (colIdx == 3)
 				return Integer.class;
 			else
 				return String.class;

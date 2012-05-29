@@ -3,6 +3,7 @@ package org.cytoscape.webservice.psicquic.task;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,16 +39,19 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	private SearchRecoredsTask searchTask;
 	
 	private final SearchMode mode;
+	private final boolean toCluster;
+	
 	
 	private volatile boolean canceled = false;
 	
 	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
 			final CyNetworkManager manager, final RegistryManager registryManager, final Set<String> searchResult,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory) {
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final boolean toCluster) {
 		this.client = client;
 		this.manager = manager;
 		this.registryManager = registryManager;
 		this.query = query;
+		this.toCluster = toCluster;
 
 		this.searchResult = searchResult;
 		this.mode = mode;
@@ -61,6 +65,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		this.manager = manager;
 		this.registryManager = registryManager;
 		this.query = query;
+		this.toCluster = false;
 
 		this.searchTask = searchTask;
 		this.mode = mode;
@@ -87,7 +92,12 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		if (targetServices == null)
 			throw new NullPointerException("Target service set is null");
 
-		result = client.importNetwork(query, targetServices, mode, taskMonitor);
+		if(toCluster) {
+			final CyNetwork network = client.importClusteredNetwork(query, targetServices, mode, taskMonitor);
+			result = new HashMap<String, CyNetwork>();
+			result.put("clustered", network);
+		} else
+			result = client.importNetwork(query, targetServices, mode, taskMonitor);
 		
 		if(canceled) {
 			result.clear();
@@ -102,13 +112,25 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		
 		// Register networks to the manager
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
-		for (String sourceURL : result.keySet()) {
-			final CyNetwork network = result.get(sourceURL);
-			network.getRow(network).set(CyNetwork.NAME, registryManager.getSource2NameMap().get(sourceURL) + " " + suffix);
-			addNetworkData(network);
-			manager.addNetwork(network);
-			networks.add(network);
-		}		
+		
+		if (toCluster) {
+			final CyNetwork network = result.values().iterator().next();
+			if(network != null) {
+				network.getRow(network).set(CyNetwork.NAME, "Merged Network " + suffix);
+				addNetworkData(network);
+				manager.addNetwork(network);
+				networks.add(network);
+			}
+		} else {
+			for (String sourceURL : result.keySet()) {
+				final CyNetwork network = result.get(sourceURL);
+				network.getRow(network).set(CyNetwork.NAME,
+						registryManager.getSource2NameMap().get(sourceURL) + " " + suffix);
+				addNetworkData(network);
+				manager.addNetwork(network);
+				networks.add(network);
+			}
+		}
 
 		logger.debug(networks.size() + " networks created.");
 		
