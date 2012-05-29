@@ -142,29 +142,28 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.appManager = appManager;
 		this.style = style;
 		this.mainPanel = new JPanel();
-
+		this.dataTable = table;
+		
 		final String controllingAttrName = mapping.getMappingColumnName();
 		
 		//TODO more error checking
 		final CyColumn col = table.getColumn(controllingAttrName);
 		
 		if (col == null) {
-			throw new NullPointerException("The column \"" + controllingAttrName + "\" does not exist in the \""
-					+ table.getTitle() + "\" table");
+			logger.info("The column \"" + controllingAttrName + "\" does not exist in the \"" + table.getTitle()
+					+ "\" table");
 		}
 		
-		final Class<?> attrType = col.getType();
-
+		final Class<?> attrType = mapping.getMappingColumnType();
 		logger.debug("Selected attr type is " + attrType);
+
 		if (!Number.class.isAssignableFrom(attrType))
 			throw new IllegalArgumentException("Cannot support attribute data type.  Numerical values only: "
 					+ attrType);
-
-		this.dataTable = table;
+		
 		this.dataType = (Class<K>) attrType;
-
+		
 		initComponents();
-
 		initRangeValues();
 		setSpinner();
 	}
@@ -184,7 +183,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	// <editor-fold defaultstate="collapsed" desc=" Generated Code ">
 	private void initComponents() {
-
 		// Add margin
 		this.setOpaque(true);
 		this.setBackground(BACKGROUND);
@@ -195,7 +193,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.setPreferredSize(EDITOR_SIZE);
 
 		mainPanel.setBackground(BACKGROUND);
-		
 		
 		abovePanel = new BelowAndAbovePanel(this, Color.yellow, false, mapping);
 		abovePanel.setName("abovePanel");
@@ -278,7 +275,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			}
 		});
 
-		
 		// Property value editor components
 		final JPanel propValuePanel = new JPanel();
 		propValuePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -290,6 +286,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		final Class<V> vpValueType = type.getRange().getType();
 		propertyLabel = new JLabel();
 		propertyLabel.setFont(SMALL_FONT);
+		
 		if (Number.class.isAssignableFrom(vpValueType)) {
 			propertySpinner = new JSpinner();
 			propertySpinner.setPreferredSize(SPINNER_SIZE);
@@ -438,20 +435,29 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private void initRangeValues() {
 		// Set range values
 		if (tracer.getRange(type) == 0) {
-			Double maxValue = Double.NEGATIVE_INFINITY;
-			Double minValue = Double.POSITIVE_INFINITY;
-			final List<K> valueList = dataTable.getColumn(mapping.getMappingColumnName()).getValues(this.dataType);
+			final CyColumn col = dataTable.getColumn(mapping.getMappingColumnName());
 			
-			for (K val : valueList) {
-				if (val.doubleValue() > maxValue)
-					maxValue = val.doubleValue();
+			if (col != null) {
+				Double maxValue = Double.NEGATIVE_INFINITY;
+				Double minValue = Double.POSITIVE_INFINITY;
+				final List<?> valueList = col.getValues(col.getType());
+				
+				for (Object o : valueList) {
+					if (o instanceof Number) {
+						Number val = (Number) o;
+						
+						if (val.doubleValue() > maxValue)
+							maxValue = val.doubleValue();
+		
+						if (val.doubleValue() < minValue)
+							minValue = val.doubleValue();
+					}
 
-				if (val.doubleValue() < minValue)
-					minValue = val.doubleValue();
+				}
+	
+				tracer.setMax(type, maxValue);
+				tracer.setMin(type, minValue);
 			}
-
-			tracer.setMax(type, maxValue);
-			tracer.setMin(type, minValue);
 		}
 
 		allPoints = mapping.getAllPoints();
@@ -594,10 +600,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	protected void disableSpinner() {
-		Class dataType = type.getClass();
+		Class<?> dataType = type.getClass();
 		valueSpinner.setEnabled(false);
 		valueSpinner.setValue(0);
-		if (dataType == Number.class) {
+		
+		if (Number.class.isAssignableFrom(dataType)) {
 			propertySpinner.setEnabled(false);
 			propertySpinner.setValue(0);
 		}
@@ -607,9 +614,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected class ThumbMouseListener extends MouseAdapter {
 
 		public void mouseReleased(MouseEvent e) {
-
 			logger.debug("Mouse released from thumb: ");
-
 			int selectedIndex = slider.getSelectedIndex();
 
 			if ((0 <= selectedIndex) && (slider.getModel().getThumbCount() > 0)) {
