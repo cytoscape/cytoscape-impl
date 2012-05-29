@@ -61,12 +61,6 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 
 	@Override
 	public CyNetworkView createNetworkView(final CyNetwork network) {
-		return createNetworkView(network, false);
-	}
-
-	@Override
-	public CyNetworkView createNetworkView(final CyNetwork network, final Boolean useThreshold) {
-
 		if (network == null)
 			throw new IllegalArgumentException("Cannot create view without model.");
 
