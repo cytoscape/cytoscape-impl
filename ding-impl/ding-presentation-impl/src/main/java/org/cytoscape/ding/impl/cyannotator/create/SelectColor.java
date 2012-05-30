@@ -1,11 +1,14 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.Annotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.Color;
+import java.awt.Paint;
 
 public class SelectColor extends javax.swing.JFrame{
 
@@ -28,11 +31,11 @@ public class SelectColor extends javax.swing.JFrame{
     	previewPanel=jPanel;
     }
     
-    public SelectColor(Annotation annotation, int colorType, JPanel jPanel, Color newColor){
+    public SelectColor(Annotation annotation, int colorType, JPanel jPanel, Paint newColor){
     	
     	this(annotation, colorType, jPanel);
     	
-    	jColorChooser1.setColor(newColor);
+    	jColorChooser1.setColor((Color)newColor);
     }    
 
     private void initComponents() {
@@ -72,17 +75,17 @@ public class SelectColor extends javax.swing.JFrame{
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
-    	if(colorType==0)
-    		preview.setTextColor(jColorChooser1.getColor());
+    	if(colorType==0 && preview instanceof TextAnnotation)
+    		((TextAnnotation)preview).setTextColor(jColorChooser1.getColor());
+    	else if(colorType==1 && preview instanceof ShapeAnnotation)
+    		((ShapeAnnotation)preview).setFillColor(jColorChooser1.getColor());
+    	else if(colorType==2 && preview instanceof ShapeAnnotation)
+    		((ShapeAnnotation)preview).setBorderColor(jColorChooser1.getColor());
     	
-    	else if(colorType==1)
-    		preview.setFillColor(jColorChooser1.getColor());
-    	
-    	else if(colorType==2)
-    		preview.setEdgeColor(jColorChooser1.getColor());
-    	
-    	else if(colorType==3 && preview.isArrowAnnotation())
+/*
+    	else if(colorType==3 && preview instanceof ArrowAnnotation)
     		((ArrowAnnotation)preview).setArrowColor(jColorChooser1.getColor());    	
+*/
     	
     	dispose();
     	

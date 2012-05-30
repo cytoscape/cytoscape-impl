@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.Annotation;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 
 public class AnnotationFactoryManager {
 
@@ -27,13 +27,13 @@ public class AnnotationFactoryManager {
 		return annotation;
 	}
 
-    public void addAnnotationFactory(AnnotationFactory factory, Map props) {
-        if ( factory != null )
-            annotationFactories.add(factory);
-    }
+	public void addAnnotationFactory(AnnotationFactory factory, Map props) {
+		if ( factory != null )
+			annotationFactories.add(factory);
+	}
 
-    public void removeAnnotationFactory(AnnotationFactory factory, Map props) {
-        if ( factory != null )
-            annotationFactories.remove(factory);
-    }
+	public void removeAnnotationFactory(AnnotationFactory factory, Map props) {
+		if ( factory != null )
+			annotationFactories.remove(factory);
+	}
 }

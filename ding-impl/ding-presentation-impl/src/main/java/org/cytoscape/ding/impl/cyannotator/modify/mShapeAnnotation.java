@@ -2,7 +2,7 @@ package org.cytoscape.ding.impl.cyannotator.modify;
 
 import javax.swing.JFrame;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
 public class mShapeAnnotation extends javax.swing.JFrame {
 		
@@ -48,6 +48,8 @@ public class mShapeAnnotation extends javax.swing.JFrame {
         cancelButton.setBounds(370, 440, cancelButton.getPreferredSize().width, 23);
 
         pack();
+				setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				setSize(474, 504);		
     }
        
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -55,10 +57,10 @@ public class mShapeAnnotation extends javax.swing.JFrame {
 
     	mAnnotation.setShapeType(shapeAnnotation1.getPreview().getShapeType());
         mAnnotation.setFillColor(shapeAnnotation1.getPreview().getFillColor());
-        mAnnotation.setEdgeColor(shapeAnnotation1.getPreview().getEdgeColor());
-        mAnnotation.setEdgeThickness((int)shapeAnnotation1.getPreview().getEdgeThickness());
+        mAnnotation.setBorderColor(shapeAnnotation1.getPreview().getBorderColor());
+        mAnnotation.setBorderWidth((int)shapeAnnotation1.getPreview().getBorderWidth());
 
-       	mAnnotation.getView().updateView(); 
+       	mAnnotation.update(); 
     	
     	dispose();
            

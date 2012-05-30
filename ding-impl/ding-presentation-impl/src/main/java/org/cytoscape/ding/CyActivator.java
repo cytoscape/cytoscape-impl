@@ -32,13 +32,21 @@ import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+// Annotation creation
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.BoundedAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
+// Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.MoveAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.ResizeAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.SelectAnnotationTaskFactory;
+
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
@@ -145,24 +153,6 @@ public class CyActivator extends AbstractCyActivator {
 				dingRenderingEngineFactory);
 		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor);
 
-		AnnotationFactory imageAnnotationFactory = new ImageAnnotationFactory(customGraphicsManagerServiceRef);
-		annotationFactoryManager.addAnnotationFactory(imageAnnotationFactory, null);
-
-		AnnotationFactory shapeAnnotationFactory = new ShapeAnnotationFactory();
-		annotationFactoryManager.addAnnotationFactory(shapeAnnotationFactory, null);
-
-		AnnotationFactory textAnnotationFactory = new TextAnnotationFactory();
-		annotationFactoryManager.addAnnotationFactory(textAnnotationFactory, null);
-
-		AnnotationFactory boundedAnnotationFactory = new BoundedAnnotationFactory();
-		annotationFactoryManager.addAnnotationFactory(boundedAnnotationFactory, null);
-
-		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
-		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
-		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
-		AddAnnotationTaskFactory addBoundedTextTaskFactory = 
-			new AddAnnotationTaskFactory(boundedAnnotationFactory);
-
 		
 		Properties dingRenderingEngineFactoryProps = new Properties();
 		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
@@ -195,34 +185,104 @@ public class CyActivator extends AbstractCyActivator {
 		Properties dingNetworkViewFactoryServiceProps = new Properties();
 		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
+		// Annotations
+
+		// Image annotation
+		AnnotationFactory imageAnnotationFactory = new ImageAnnotationFactory(customGraphicsManagerServiceRef);
+		annotationFactoryManager.addAnnotationFactory(imageAnnotationFactory, null);
+		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
+
 		Properties addImageTaskFactoryProps = new Properties();
 		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
 		addImageTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
-		addImageTaskFactoryProps.setProperty(TITLE, "Add Image");
+		addImageTaskFactoryProps.setProperty(TITLE, "Image Annotation");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
+
+		// Shape annotation
+		AnnotationFactory shapeAnnotationFactory = new ShapeAnnotationFactory();
+		annotationFactoryManager.addAnnotationFactory(shapeAnnotationFactory, null);
+		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
 
 		Properties addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
 		addShapeTaskFactoryProps.setProperty(MENU_GRAVITY, "1.3");
-		addShapeTaskFactoryProps.setProperty(TITLE, "Add Shape");
+		addShapeTaskFactoryProps.setProperty(TITLE, "Shape Annotation");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
+
+		// Text annotation
+		AnnotationFactory textAnnotationFactory = new TextAnnotationFactory();
+		annotationFactoryManager.addAnnotationFactory(textAnnotationFactory, null);
+		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
 
 		Properties addTextTaskFactoryProps = new Properties();
 		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.4");
 		addTextTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
-		addTextTaskFactoryProps.setProperty(TITLE, "Add Text");
+		addTextTaskFactoryProps.setProperty(TITLE, "Text Annotation");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
+
+		// Bounded Text annotation
+		AnnotationFactory boundedAnnotationFactory = new BoundedAnnotationFactory();
+		annotationFactoryManager.addAnnotationFactory(boundedAnnotationFactory, null);
+		AddAnnotationTaskFactory addBoundedTextTaskFactory = 
+			new AddAnnotationTaskFactory(boundedAnnotationFactory);
 
 		Properties addBoundedTextTaskFactoryProps = new Properties();
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.5");
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
-		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Add Bounded Text");
+		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Bounded Text Annotation");
 		registerService(bc, addBoundedTextTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                addBoundedTextTaskFactoryProps);
+
+		// Annotation edit
+		EditAnnotationTaskFactory editAnnotationTaskFactory = new EditAnnotationTaskFactory();
+		Properties editAnnotationTaskFactoryProps = new Properties();
+		editAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		editAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
+		editAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		editAnnotationTaskFactoryProps.setProperty(TITLE, "Modify Annotation");
+		registerService(bc, editAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                editAnnotationTaskFactoryProps);
+
+		MoveAnnotationTaskFactory moveAnnotationTaskFactory = new MoveAnnotationTaskFactory();
+		Properties moveAnnotationTaskFactoryProps = new Properties();
+		moveAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		moveAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.1");
+		moveAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		moveAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation");
+		registerService(bc, moveAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                moveAnnotationTaskFactoryProps);
+
+		ResizeAnnotationTaskFactory resizeAnnotationTaskFactory = new ResizeAnnotationTaskFactory();
+		Properties resizeAnnotationTaskFactoryProps = new Properties();
+		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		resizeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.2");
+		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		resizeAnnotationTaskFactoryProps.setProperty(TITLE, "Resize Annotation");
+		registerService(bc, resizeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                resizeAnnotationTaskFactoryProps);
+
+		SelectAnnotationTaskFactory selectAnnotationTaskFactory = new SelectAnnotationTaskFactory();
+		Properties selectAnnotationTaskFactoryProps = new Properties();
+		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		selectAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.3");
+		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select Annotation");
+		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                selectAnnotationTaskFactoryProps);
+
+		// Annotation delete
+		RemoveAnnotationTaskFactory removeAnnotationTaskFactory = new RemoveAnnotationTaskFactory();
+		Properties removeAnnotationTaskFactoryProps = new Properties();
+		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		removeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
+		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Delete");
+		removeAnnotationTaskFactoryProps.setProperty(TITLE, "Remove Annotation");
+		registerService(bc, removeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                removeAnnotationTaskFactoryProps);
 
 		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",
 				NodeViewTaskFactory.class);

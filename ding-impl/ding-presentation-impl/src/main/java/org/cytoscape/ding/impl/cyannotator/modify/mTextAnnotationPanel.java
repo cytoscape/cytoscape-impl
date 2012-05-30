@@ -3,7 +3,8 @@ package org.cytoscape.ding.impl.cyannotator.modify;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.create.SelectColor;
 import java.awt.*;
 
@@ -161,12 +162,12 @@ public class mTextAnnotationPanel extends javax.swing.JPanel {
 			add(jPanel1);
 			jPanel1.setBounds(19, 277, 430, 102);
 				
-			preview=new TextAnnotation();
-			
-			jPanel1.add(preview);
-			preview.setBounds(1, 1, jPanel1.getWidth(), jPanel1.getHeight());
-			
+			preview=new TextAnnotationImpl((TextAnnotationImpl)mAnnotation);
 			preview.setUsedForPreviews(true);
+
+			Component previewComponent = preview.getComponent();
+			jPanel1.add(previewComponent);
+			previewComponent.setBounds(1, 1, jPanel1.getWidth(), jPanel1.getHeight());
 			
 			iModifyTAPreview();											   
 			

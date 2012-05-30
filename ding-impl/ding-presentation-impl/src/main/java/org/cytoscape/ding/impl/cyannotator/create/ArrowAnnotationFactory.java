@@ -7,8 +7,8 @@ import javax.swing.JFrame;
 import java.awt.geom.Point2D;
 import java.util.Map;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.Annotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+// import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 
 public class ArrowAnnotationFactory implements AnnotationFactory {
 
@@ -18,9 +18,12 @@ public class ArrowAnnotationFactory implements AnnotationFactory {
 	}
 
 	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
+/*
 		if ( type.equals(ArrowAnnotation.NAME) ) 
-			return new ArrowAnnotation(cyAnnotator, view,argMap);
+			return new ArrowAnnotationImpl(cyAnnotator, view,argMap);
 		else 
+*/
 			return null;
+
 	}
 }

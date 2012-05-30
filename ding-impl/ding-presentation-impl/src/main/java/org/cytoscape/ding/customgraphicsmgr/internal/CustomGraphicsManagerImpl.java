@@ -22,6 +22,7 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
@@ -29,7 +30,9 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -283,7 +286,11 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 					// get parent directory
 					final File parent = files.get(0).getParentFile();
 					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper, vmm, applicationManager);
-					taskManager.execute(taskFactory.createTaskIterator());
+					TaskIterator loadImagesIterator = taskFactory.createTaskIterator();
+					for (CyNetworkView networkView: sess.getNetworkViews()) {
+						loadImagesIterator.append(((DGraphView)networkView).getCyAnnotator().getReloadImagesTask());
+					}
+					taskManager.execute(loadImagesIterator);
 				}
 			}
 		}

@@ -4,12 +4,12 @@ import java.awt.Font;
 
 import javax.swing.JFrame;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.BoundedAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 
-public class mBoundedAnnotation extends javax.swing.JFrame {
+public class mImageAnnotation extends javax.swing.JFrame {
 
 	
-    public mBoundedAnnotation(BoundedAnnotation mAnnotation) {
+    public mImageAnnotation(ImageAnnotation mAnnotation) {
     	this.mAnnotation=mAnnotation;
     	initComponents();
     }
@@ -17,18 +17,18 @@ public class mBoundedAnnotation extends javax.swing.JFrame {
 
     private void initComponents() {
         jScrollPane1 = new javax.swing.JScrollPane();
-        boundedAnnotation1 = new mBoundedAnnotationPanel(mAnnotation);
+        // boundedAnnotation1 = new mBoundedAnnotationPanel(mAnnotation);
         applyButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setTitle("Modify Bounded Annotation");
+        setTitle("Modify Image Annotation");
         setAlwaysOnTop(true);
         setResizable(false);
         getContentPane().setLayout(null);
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setViewportView(boundedAnnotation1);
+        // jScrollPane1.setViewportView(boundedAnnotation1);
 
         getContentPane().add(jScrollPane1);
         jScrollPane1.setBounds(0, 0, 475, 428);
@@ -52,10 +52,13 @@ public class mBoundedAnnotation extends javax.swing.JFrame {
         cancelButton.setBounds(370, 440, cancelButton.getPreferredSize().width, 23);
 
         pack();
+				setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				setSize(474, 804);		
     }
        
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
+/*
         mAnnotation.setFont(boundedAnnotation1.getNewFont());
         mAnnotation.setTextColor(boundedAnnotation1.getTextColor());
         mAnnotation.setText(boundedAnnotation1.getText());
@@ -64,8 +67,9 @@ public class mBoundedAnnotation extends javax.swing.JFrame {
         mAnnotation.setEdgeThickness(boundedAnnotation1.getPreview().getEdgeThickness());
         mAnnotation.setFillColor(boundedAnnotation1.getPreview().getFillColor());
         mAnnotation.setEdgeColor(boundedAnnotation1.getPreview().getEdgeColor());        
+*/
 
-		mAnnotation.getView().updateView();
+		mAnnotation.update();
     	
     	dispose();    	    	       
     }
@@ -77,11 +81,11 @@ public class mBoundedAnnotation extends javax.swing.JFrame {
     }
     
     private javax.swing.JButton applyButton;
-    private mBoundedAnnotationPanel boundedAnnotation1;
+    // private mBoundedAnnotationPanel boundedAnnotation1;
     private javax.swing.JButton cancelButton;
     private javax.swing.JScrollPane jScrollPane1;
 
     
-    private BoundedAnnotation mAnnotation;
+    private ImageAnnotation mAnnotation;
 
 }

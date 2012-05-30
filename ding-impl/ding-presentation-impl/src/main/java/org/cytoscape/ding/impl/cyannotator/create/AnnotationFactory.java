@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 import java.awt.geom.Point2D;
 import java.util.Map;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.Annotation;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 
 public interface AnnotationFactory {
 

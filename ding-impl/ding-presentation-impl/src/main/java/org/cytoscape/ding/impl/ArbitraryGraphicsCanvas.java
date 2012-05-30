@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
-import org.cytoscape.ding.impl.cyannotator.annotations.Annotation;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
@@ -153,8 +153,9 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			repaint();
 	}
 
-	public void modifyComponentLocation(int x,int y, int componentNum){
-		final Point nodePos = m_componentToPointMap.get(this.getComponent(componentNum));
+	public void modifyComponentLocation(int x,int y, Component component){
+		final Point nodePos = m_componentToPointMap.get(component);
+		if (nodePos == null) return;
 
 		final double[] nodeCanvasCoordinates = new double[2];
 		nodeCanvasCoordinates[0] = x;
@@ -296,6 +297,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	}
 
 
+/*
 	@Override
 	public Component getComponentAt(int x, int y) {
 
@@ -309,6 +311,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		}
 		return null;
 	}
+*/
 
 
 	/**

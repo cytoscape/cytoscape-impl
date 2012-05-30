@@ -11,7 +11,8 @@ import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 
@@ -95,16 +96,13 @@ public class cImageAnnotation extends javax.swing.JFrame {
 			BufferedImage image = ImageIO.read(imageFile);
 			URL url = imageFile.toURI().toURL();
 			//The Attributes are x, y, Image, componentNumber, scaleFactor
-			ImageAnnotation newOne=new ImageAnnotation(cyAnnotator, view, 
-			                                           (int)startingLocation.getX(), (int)startingLocation.getY(), 
-			                                           url, image, 
-			                                           cyAnnotator.getForeGroundCanvas().getComponentCount(),
- 			                                           view.getZoom(),cgm);
+			ImageAnnotation newOne=new ImageAnnotationImpl(cyAnnotator, view, 
+			                                               (int)startingLocation.getX(), (int)startingLocation.getY(), 
+			                                               url, image, 
+ 			                                               view.getZoom(),cgm);
 
-			cyAnnotator.getForeGroundCanvas().add(newOne);
+			cyAnnotator.getForeGroundCanvas().add(newOne.getComponent());
 			view.updateView();
-
-			//Cytoscape.getDesktop().getNetworkViewManager().getInternalFrameComponent(Cytoscape.getCurrentNetworkView()).repaint();
 
 			this.dispose();
 		} catch(Exception ex){

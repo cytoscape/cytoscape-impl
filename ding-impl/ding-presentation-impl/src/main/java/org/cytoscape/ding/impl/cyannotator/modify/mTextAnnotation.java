@@ -5,83 +5,80 @@ import java.awt.Font;
 import javax.swing.JFrame;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 
 public class mTextAnnotation extends javax.swing.JFrame {
 
-	private final CyAnnotator cyAnnotator;
-
-	public mTextAnnotation(TextAnnotation mAnnotation, CyAnnotator cyAnnotator){
-		    	
-		this.mAnnotation=mAnnotation;
-		this.cyAnnotator=cyAnnotator;
+  public mTextAnnotation(TextAnnotation mAnnotation) {
 		
-        initComponents();		        
-	}	
-    
-    private void initComponents() {
-    	
-        textAnnotation1 = new mTextAnnotationPanel(mAnnotation);
+	this.mAnnotation=mAnnotation;
 
-        applyButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
+		initComponents();
+  }
+	
+	private void initComponents() {
+	
+		textAnnotation1 = new mTextAnnotationPanel(mAnnotation);
 
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setTitle("Modify Text Annotation");
-        setAlwaysOnTop(true);
-        setResizable(false);
-        getContentPane().setLayout(null);
+		applyButton = new javax.swing.JButton();
+		cancelButton = new javax.swing.JButton();
 
-        getContentPane().add(textAnnotation1);
-        textAnnotation1.setBounds(0, 0, 475, 428);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setTitle("Modify Text Annotation");
+		setAlwaysOnTop(true);
+		setResizable(false);
+		getContentPane().setLayout(null);
 
-        applyButton.setText("OK");
-        applyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyButtonActionPerformed(evt);
-            }
-        });
-        getContentPane().add(applyButton);
-        applyButton.setBounds(290, 440, applyButton.getPreferredSize().width, 23);
+		getContentPane().add(textAnnotation1);
+		textAnnotation1.setBounds(0, 0, 475, 428);
 
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-        getContentPane().add(cancelButton);
-        cancelButton.setBounds(370, 440, cancelButton.getPreferredSize().width, 23);
+		applyButton.setText("OK");
+		applyButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				applyButtonActionPerformed(evt);
+			}
+		});
+		getContentPane().add(applyButton);
+		applyButton.setBounds(290, 440, applyButton.getPreferredSize().width, 23);
 
-        pack();
-    }
-       
-    private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        //Apply
+		cancelButton.setText("Cancel");
+		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				cancelButtonActionPerformed(evt);
+			}
+		});
+		getContentPane().add(cancelButton);
+		cancelButton.setBounds(370, 440, cancelButton.getPreferredSize().width, 23);
 
-        mAnnotation.setFont(textAnnotation1.getNewFont());
-        mAnnotation.setTextColor(textAnnotation1.getTextColor());
-        mAnnotation.setText(textAnnotation1.getText());
+		pack();
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setSize(474, 504);
+	}
+	   
+	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
+		//Apply
 
-		mAnnotation.getView().updateView();
+		mAnnotation.setFont(textAnnotation1.getNewFont());
+		mAnnotation.setTextColor(textAnnotation1.getTextColor());
+		mAnnotation.setText(textAnnotation1.getText());
 
-		cyAnnotator.addAnnotation(mAnnotation);
-    	
-    	dispose();
-           
-    }
+	  mAnnotation.update();
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        //Cancel
+	  dispose();
+		   
+	}
 
-    	dispose();
-    }
-    
-    private javax.swing.JButton applyButton;
-    private javax.swing.JButton cancelButton;
-    private mTextAnnotationPanel textAnnotation1;  
-    
-    private TextAnnotation mAnnotation;
+	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
+		//Cancel
+
+	  dispose();
+	}
+	
+	private javax.swing.JButton applyButton;
+	private javax.swing.JButton cancelButton;
+	private mTextAnnotationPanel textAnnotation1;  
+	
+	private TextAnnotation mAnnotation;
 
 }
 
