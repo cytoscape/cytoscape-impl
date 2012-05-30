@@ -462,6 +462,16 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		return l;
 	}
 
+	// Used in virtual columns so that we don't create new rows in tables
+	// that are only being referenced. We expect it to return null.
+	CyRow getRowNoCreate(final Object key) {
+		checkKey(key);
+		
+		synchronized(this) {
+			return rows.get(key);
+		}
+	}
+
 	@Override
 	public CyRow getRow(final Object key) {
 		checkKey(key);
@@ -471,11 +481,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			row = rows.get(key);
 			if (row != null)
 				return row;
-			
-			
+
 			row = new InternalRow(key);
 			rows.put(key, row);
-
 		}
 
 		if (fireEvents)
@@ -921,7 +929,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			targetName = getUniqueColumnName(virtualColumnName);
 			final String normalizedTargetName = normalizeColumnName(targetName);
 			types.put(normalizedTargetName, targetColumn);
-			virtualColumnMap.put(normalizedTargetName, new VirtualColumn(sourceTable, sourceColumnName, this,
+			virtualColumnMap.put(normalizedTargetName, new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
 			                                                             sourceTable.getPrimaryKey().getName(), 
 			                                                             targetJoinKeyName));
 		}

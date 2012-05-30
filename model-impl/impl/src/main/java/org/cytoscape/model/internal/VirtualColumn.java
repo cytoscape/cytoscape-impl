@@ -43,13 +43,13 @@ import org.cytoscape.model.CyRow;
 
 
 final class VirtualColumn {
-	private final CyTable sourceTable;
+	private final CyTableImpl sourceTable;
 	private final CyColumn sourceColumn;
 	private final CyTableImpl targetTable;
 	private final CyColumn sourceJoinColumn;
 	private final CyColumn targetJoinColumn;
 
-	VirtualColumn(final CyTable sourceTable, final String sourceColumnName,
+	VirtualColumn(final CyTableImpl sourceTable, final String sourceColumnName,
 		      final CyTableImpl targetTable, final String sourceJoinColumnName,
 		      final String targetJoinColumnName)
 	{
@@ -100,7 +100,7 @@ final class VirtualColumn {
 		final Object joinKey = targetTable.getValue(targetKey, targetJoinColumn.getName());
 		if (joinKey == null)
 			return null;
-		return sourceTable.getRow(joinKey);
+		return sourceTable.getRowNoCreate(joinKey);
 		/*
 		final Collection<CyRow> sourceRows =
 			sourceTable.getMatchingRows(sourceJoinColumn.getName(),
