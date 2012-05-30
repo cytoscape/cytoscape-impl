@@ -8,6 +8,7 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask;
+import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -15,10 +16,6 @@ import org.cytoscape.work.TaskMonitor;
 
 abstract class AbstractLoadAttributesTask extends AbstractTask {
 
-	@ProvidesTitle
-	public String getTitle() {
-		return "Import Table";
-	}
 	
 	private final CyTableReaderManager mgr;
 	private final CyNetworkManager netMgr;
@@ -41,7 +38,7 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 
 		taskMonitor.setStatusMessage("Importing Data Table...");
 		
-		insertTasksAfterCurrentTask(reader , new MapTableToNetworkTablesTask(netMgr, reader), new AddImportedTableTask(tableMgr, reader), new FinalStatusMessageUpdateTask(reader));
+		insertTasksAfterCurrentTask(new CombineReaderAndMappingTask( reader, netMgr) , new AddImportedTableTask(tableMgr, reader));
 		
 	}
 }

@@ -165,8 +165,10 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			throw new IllegalStateException("Local table's primary key should be type String!");
 
 		final CyColumn trgCol = localTable.getColumn(CyNetwork.NAME);
-		if (trgCol != null)
+		if (trgCol != null){
 			localTable.addVirtualColumns(globalTable, CyNetwork.NAME, false);
+			//globalTable.setPublic(false);
+		}
 		else
 			logger.warn("Name column in the target table was not found!");
 	}
