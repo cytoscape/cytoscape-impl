@@ -90,6 +90,11 @@ public class WebQuerier {
 		public void setCount(int count) {
 			this.count = count;
 		}
+		
+		@Override
+		public String toString() {
+			return fullName + " (" + count + ")";
+		}
 	}
 	
 	public WebQuerier(StreamUtil streamUtil) {
@@ -166,7 +171,7 @@ public class WebQuerier {
 		String jsonResult = null;
 		try {
 			// Obtain information about the app from the website
-			jsonResult = query(APP_STORE_URL + "/backend/all_apps");
+			jsonResult = query(APP_STORE_URL + "backend/all_apps");
 			
 			// Parse the JSON result
 			JSONArray jsonArray = new JSONArray(jsonResult);
@@ -176,7 +181,7 @@ public class WebQuerier {
 				jsonObject = jsonArray.getJSONObject(index);
 				
 				WebApp webApp = new WebApp();
-				webApp.setName(jsonObject.get("name").toString());
+				webApp.setName(jsonObject.get("fullname").toString());
 				webApp.setFullName(jsonObject.get("fullname").toString());
 				webApp.setIconUrl(jsonObject.get("icon_url").toString());
 				webApp.setPageUrl(APP_STORE_URL.substring(0, APP_STORE_URL.length() - 1) 
