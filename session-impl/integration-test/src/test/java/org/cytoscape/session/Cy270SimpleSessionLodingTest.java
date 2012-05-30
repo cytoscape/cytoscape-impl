@@ -43,7 +43,7 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 
 	@Before
 	public void setup() throws Exception {
-		sessionFile = new File("./src/test/resources/testData/session2x/", "v270Session.cys");
+		sessionFile = new File("./src/test/resources/testData/session2x/", "v270session.cys");
 		checkBasicConfiguration();
 	}
 
