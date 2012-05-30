@@ -1680,7 +1680,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		if (dialogType == SIMPLE_ATTRIBUTE_IMPORT) {
 			//setTitle("Import Annotation File");
-			titleLabel.setText("Import Attribute from Table");
+			//titleLabel.setText("Import Attribute from Table");
 			annotationAndOntologyImportPanel.setVisible(false);
 			importAllCheckBox.setVisible(false);
 		} else if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
@@ -2457,7 +2457,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 											org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 									.add(basicPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 											org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-									.add(org.jdesktop.layout.GroupLayout.TRAILING,
+									/*.add(org.jdesktop.layout.GroupLayout.TRAILING,
 											layout.createSequentialGroup()
 													.add(titleIconLabel1)
 													.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -2470,13 +2470,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 															Short.MAX_VALUE)
 													.add(helpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 															org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-															org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-									.add(titleSeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 700,
-											Short.MAX_VALUE)).addContainerGap()));
+															org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))*/
+									//.add(titleSeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 700,
+									//		Short.MAX_VALUE)
+											).addContainerGap()));
 			layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(
 					layout.createSequentialGroup()
 							.addContainerGap()
-							.add(layout
+							/*.add(layout
 									.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
 									.add(layout
 											.createSequentialGroup()
@@ -2487,9 +2488,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 													.add(titleIconLabel1).add(titleIconLabel2).add(titleIconLabel3))
 											.add(2, 2, 2))
 									.add(layout.createSequentialGroup().add(titleLabel)
-											.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-							.add(titleSeparator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10,
-									org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))*/
+							//.add(titleSeparator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10,
+							//		org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
 							.add(basicPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 									org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
