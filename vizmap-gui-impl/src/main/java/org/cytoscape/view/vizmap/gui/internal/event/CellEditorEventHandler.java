@@ -292,17 +292,23 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		logger.debug("!! Current Mapping type: " + currentMapping);
 
 		if (currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType()) {
-
 			// Mapping does not exist. Need to create new one.
 			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(),
 					vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
 			if (factory.getMappingFunctionType() == ContinuousMapping.class) {
-				if (Number.class.isAssignableFrom(attributeDataType) == false) {
+				if (attributeDataType == null) {
+					JOptionPane.showMessageDialog(null,
+							"The current table does not have the selected column (\"" + controllingAttrName+ "\").\nPlease select another column.",
+							"Invalid Column!", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				
+				if (!Number.class.isAssignableFrom(attributeDataType)) {
 					JOptionPane.showMessageDialog(null,
 							"Selected column data type is not Number.\nPlease select numerical attributes.",
-							"Incompatible Column Type!", JOptionPane.INFORMATION_MESSAGE);
+							"Incompatible Column Type!", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 			}

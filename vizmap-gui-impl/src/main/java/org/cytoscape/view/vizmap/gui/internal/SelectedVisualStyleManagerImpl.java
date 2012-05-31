@@ -1,10 +1,8 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
-import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
-import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
@@ -14,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SelectedVisualStyleManagerImpl implements
-		SelectedVisualStyleManager, SelectedVisualStyleSwitchedListener, SetCurrentRenderingEngineListener {
+		SelectedVisualStyleManager, SelectedVisualStyleSwitchedListener, SetCurrentNetworkViewListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SelectedVisualStyleManagerImpl.class);
 	
@@ -25,7 +23,7 @@ public class SelectedVisualStyleManagerImpl implements
 	protected final VisualStyle defaultVS;
 	
 	public SelectedVisualStyleManagerImpl(final VisualMappingManager vmm) {
-		if(vmm == null)
+		if (vmm == null)
 			throw new NullPointerException("Visual Mapping Manager is missing.");
 		this.vmm = vmm;
 		
@@ -41,7 +39,8 @@ public class SelectedVisualStyleManagerImpl implements
 	@Override
 	public void handleEvent(SelectedVisualStyleSwitchedEvent e) {
 		final VisualStyle style = e.getNewVisualStyle();
-		if(style == null)
+		
+		if (style == null)
 			throw new NullPointerException("Tried to set selected Visual Style to null.");
 		
 		this.selectedStyle = style;
@@ -59,14 +58,16 @@ public class SelectedVisualStyleManagerImpl implements
 	}
 
 	@Override
-	public void handleEvent(SetCurrentRenderingEngineEvent e) {
-		logger.debug("Presentation switched: " + e.getRenderingEngine());
-		final RenderingEngine<CyNetwork> engine = e.getRenderingEngine();
-		final VisualStyle targetStyle = vmm.getVisualStyle((CyNetworkView) engine.getViewModel());
-		logger.debug("New Style ========= " + targetStyle.getTitle());
-		if(targetStyle != this.selectedStyle) {
-			selectedStyle = targetStyle;
-			logger.debug("Presentation switch ========= Selected Style Switched to " + selectedStyle.getTitle());
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		final CyNetworkView view = e.getNetworkView();
+		logger.debug("Presentation switched: " + view);
+		
+		final VisualStyle newStyle = view != null ? vmm.getVisualStyle(view) : null;
+		logger.debug("New Style ========= " + newStyle);
+		
+		if (newStyle != null && !newStyle.equals(selectedStyle)) {
+			selectedStyle = newStyle;
+			logger.debug("Presentation switch ========= Selected Style Switched to " + selectedStyle);
 		}
 	}
 }

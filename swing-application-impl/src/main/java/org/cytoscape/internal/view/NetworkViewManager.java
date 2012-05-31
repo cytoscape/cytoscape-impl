@@ -42,7 +42,6 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,8 +108,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
 	private final Properties props;
 
-	private CyNetworkView currentView;
-
 	// Supports multiple presentations
 	private final Map<String, RenderingEngineFactory<CyNetwork>> factories;
 	private RenderingEngineFactory<CyNetwork> currentRenderingEngineFactory;
@@ -125,6 +122,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final CyNetworkViewManager netViewMgr;
 	private final CyApplicationManager appMgr;
 	private final RenderingEngineManager renderingEngineMgr;
+	
+	private boolean ignoreInternalFrameActivated;
 
 	
 	public NetworkViewManager(final CyApplicationManager appMgr,
@@ -186,8 +185,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	/**
 	 * Desktop for JInternalFrames which contains actual network presentations.
-	 * 
-	 * @return DOCUMENT ME!
 	 */
 	public JDesktopPane getDesktopPane() {
 		return desktopPane;
@@ -222,17 +219,20 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 */
 	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
-		final CyNetworkView view = iFrameMap.get(e.getInternalFrame());
-		if (view == null)
+		if (ignoreInternalFrameActivated)
 			return;
-
-		final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
 		
-		if (netViewMgr.getNetworkViewSet().contains(view) && !view.equals(appMgr.getCurrentNetworkView()))
-			appMgr.setCurrentNetworkView(view);
-
-		if (currentEngine == null || currentEngine.getViewModel() != view)
-			appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+		final CyNetworkView view = iFrameMap.get(e.getInternalFrame());
+		
+		if (view != null) {
+			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
+			
+			if (netViewMgr.getNetworkViewSet().contains(view) && !view.equals(appMgr.getCurrentNetworkView()))
+				appMgr.setCurrentNetworkView(view);
+	
+			if (currentEngine == null || currentEngine.getViewModel() != view)
+				appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+		}
 	}
 
 	/**
@@ -247,8 +247,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		final CyNetworkView view = e.getNetworkView();
-		logger.debug("Attempting to set current network view: " + view);
-
 		// Do not use invokeLater() here! It cause all kinds of threading problem.
 		setFocus(view);
 	}
@@ -256,8 +254,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent e) {
 		final CyNetwork net = e.getNetwork();
-		logger.debug("Attempting to set current network: " + net);
-		
 		CyNetworkView view = null;
 		
 		if (net != null) {
@@ -266,15 +262,16 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			if (!views.isEmpty())
 				view = views.iterator().next();
 		}
-	
+		
 		// Do not use invokeLater() here! It cause all kinds of threading problem.
 		setFocus(view);
 	}
 
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
-		logger.info("Network view destroyed: View ID = " + nvde.getNetworkView());
+		logger.info("Network view destroyed: " + nvde.getNetworkView());
 		final CyNetworkView view = nvde.getNetworkView();
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -293,6 +290,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 		final String viewThresholdString = props.getProperty(VIEW_THRESHOLD);
 		int viewThreshold;
+		
 		try {
 			viewThreshold = Integer.parseInt(viewThresholdString);
 		} catch (Exception e) {
@@ -310,12 +308,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 					"(Current View Threshold = " + viewThreshold + ")");
 			// TODO: Should we cancel visualization?
 		}
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				render(networkView);
-			}
-		});
+		
+		ignoreInternalFrameActivated = true;
+		
+		try {
+			render(networkView);
+		} finally {
+			ignoreInternalFrameActivated = false;
+		}
 	}
 
 	private final void removeView(final CyNetworkView view) {
@@ -326,11 +326,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				logger.debug("Removing rendering engine: " + removed);
 				removed = null;
 				iFrameMap.remove(frame);
-				
-				synchronized (presentationContainerMap) {
-					presentationContainerMap.remove(view);
-				}
-				
 				frame.dispose();
 				frame = null;
 			}
@@ -347,7 +342,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	/**
 	 * Create a visualization container and add presentation to it.
-	 * 
 	 */
 	private final void render(final CyNetworkView view) {
 		// If already registered in this manager, do not render.
@@ -367,7 +361,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 					iframe.setLocation(originalPoint.x, 0);
 			}
 		});
-		
 
 		iframe.addInternalFrameListener(new InternalFrameAdapter() {
 			public void internalFrameClosing(InternalFrameEvent e) {
@@ -509,33 +502,30 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			frame.setSize(new Dimension(width, height));
 	}
 
-	private void setFocus(CyNetworkView targetViewModel) {
-		if ((currentView == null && targetViewModel == null)
-				|| (currentView != null && currentView.equals(targetViewModel))) {
-			logger.debug("Same as current focus.  No need to update focus view model: " + targetViewModel);
+	private void setFocus(CyNetworkView targetView) {
+		final CyNetworkView curView = getSelectedNetworkView();
+		
+		if ((curView == null && targetView == null) || (curView != null && curView.equals(targetView))) {
+			logger.debug("Same as current focus.  No need to update focus view model: " + targetView);
 			return;
 		}
 
-		currentView = targetViewModel;
-
 		// Reset focus on frames
-		synchronized (presentationContainerMap) {
-			for (JInternalFrame f : presentationContainerMap.values()) {
-				try {
-					f.setSelected(false);
-				} catch (PropertyVetoException pve) {
-					logger.error("Couldn't reset focus for internal frames.", pve);
-				}
+		for (JInternalFrame f : presentationContainerMap.values()) {
+			try {
+				f.setSelected(false);
+			} catch (PropertyVetoException pve) {
+				logger.error("Couldn't reset focus for internal frames.", pve);
 			}
 		}
 
 		// Set focus
-		if (targetViewModel != null) {
-			final JInternalFrame curr = presentationContainerMap.get(targetViewModel);
+		if (targetView != null) {
+			final JInternalFrame curr = presentationContainerMap.get(targetView);
 			
 			if (curr != null) {
 				try {
-					logger.debug("Updating JInternalFrame selection");
+					logger.debug("Selecting JInternalFrame of: " + targetView);
 	
 					curr.setIcon(false);
 					curr.show();
@@ -555,6 +545,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	public void handleEvent(final RowsSetEvent e) {
 		final Collection<RowSetRecord> records = e.getColumnRecords(CyNetwork.NAME);
 		final CyTable source = e.getSource();
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -573,5 +564,22 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				}
 			}
 		}
+	}
+	
+	private JInternalFrame getSelectedFrame() {
+		synchronized (presentationContainerMap) {
+			for (JInternalFrame f : presentationContainerMap.values()) {
+				if (f.isSelected())
+					return f;
+			}
+		}
+		
+		return null;
+	}
+	
+	private CyNetworkView getSelectedNetworkView() {
+		final JInternalFrame selectedFrame = getSelectedFrame();
+		
+		return iFrameMap.get(selectedFrame);
 	}
 }

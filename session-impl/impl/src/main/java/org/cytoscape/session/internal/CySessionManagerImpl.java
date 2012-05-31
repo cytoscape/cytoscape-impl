@@ -387,11 +387,16 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		final Map<CyNetworkView, String> viewStyleMap = sess.getViewVisualStyleMap();
 		
 		if (viewStyleMap != null) {
+			final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
+			
 			for (Entry<CyNetworkView, String> entry : viewStyleMap.entrySet()) {
 				final CyNetworkView netView = entry.getKey();
 				final String stName = entry.getValue();
-				final VisualStyle vs = stylesMap.get(stName);
+				VisualStyle vs = stylesMap.get(stName);
 
+				if (vs == null)
+					vs = defStyle;
+				
 				if (vs != null) {
 					vmMgr.setVisualStyle(vs, netView);
 					vs.apply(netView);

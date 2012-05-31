@@ -72,7 +72,6 @@ import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
 
 /**
@@ -82,8 +81,8 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  * functions are in the VizMapperMainPanel.
  * 
  */
-public abstract class AbstractVizMapperPanel extends JPanel implements
-		VizMapGUI {
+public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI {
+	
 	// Visual Properties which are not used in mapping now.
 	public static final String CATEGORY_UNUSED = "Unused Properties";
 
