@@ -9,15 +9,15 @@ import java.util.Map;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 
 public class TextAnnotationFactory implements AnnotationFactory {
 
 	public JFrame createAnnotationFrame(DGraphView view, Point2D location) {
-		return new cTextAnnotation(view, location);
+		return new TextAnnotationDialog(view, location);
 	}
 
 	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		System.out.println("TextAnnotationFactory");
 		if ( type.equals(TextAnnotationImpl.NAME) ) 
 			return new TextAnnotationImpl(cyAnnotator, view, argMap);
 		else 

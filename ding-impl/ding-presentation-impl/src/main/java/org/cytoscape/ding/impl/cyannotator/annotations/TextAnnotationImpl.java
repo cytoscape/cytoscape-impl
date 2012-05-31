@@ -15,7 +15,7 @@ import java.util.Map;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
-import org.cytoscape.ding.impl.cyannotator.modify.mTextAnnotation;
+import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	private String text;
@@ -36,7 +36,12 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
 
-	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { super(cyAnnotator, view); }
+	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { 
+		super(cyAnnotator, view); 
+		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float)initialFontSize;
+		this.text = "Text Annotation";
+	}
 
 	public TextAnnotationImpl(TextAnnotationImpl c) {
 		super(c);
@@ -52,6 +57,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
+		setSize(getAnnotationWidth(), getAnnotationHeight());
 		updateAnnotationAttributes();
 	}
 
@@ -63,6 +69,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.textColor = getColor(argMap.get(COLOR));
 		this.text = argMap.get(TEXT);
 		this.fontSize = font.getSize2D();
+		setSize(getAnnotationWidth(), getAnnotationHeight());
 		updateAnnotationAttributes();
 	}
 
@@ -155,7 +162,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	public JFrame getModifyDialog() {
-		return new mTextAnnotation(this);
+		return new TextAnnotationDialog(this);
 	}
 
 
@@ -179,11 +186,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		g2.setFont(font);
 
 		if(usedForPreviews) {
+			System.out.println("Printing preview text at: "+(getX()+(int)(getWidth()-getTextWidth(g2))/2)+","+(getY()+(int)(getHeight()+getTextHeight(g2))/2));
+			Thread.dumpStack();
 			g2.drawChars(getText().toCharArray(), 0, getText().length(),
 			             getX()+(int)(getWidth()-getTextWidth(g2))/2,
 			             getY()+(int)(getHeight()+getTextHeight(g2))/2 );
 			return;
 		}
+
 		g2.drawChars(getText().toCharArray(), 0, getText().length(),
 		             getX(), getY()+getTextHeight(g2));
 

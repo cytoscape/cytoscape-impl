@@ -32,7 +32,11 @@ public class SelectAnnotationTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if ( view instanceof DGraphView ) {
-			annotation.setSelected(true);
+			if (annotation.isSelected())
+				annotation.setSelected(false);
+			else
+				annotation.setSelected(true);
+			annotation.getCanvas().repaint();
 		}
 	}
 }

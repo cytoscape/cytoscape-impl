@@ -131,6 +131,8 @@ public class CyAnnotator {
 
 	public void update() { view.updateView(); }
 
+	public DGraphView getView() { return view; }
+
 	public Component getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		return cnvs.getComponentAt(x, y);
 	}
@@ -171,10 +173,6 @@ public class CyAnnotator {
 		updateNetworkAttributes(view.getModel());
 	}
 
-	public Task getReloadImagesTask() {
-		return new ReloadImagesTask(this);
-	}
-
 	public void setSelectedAnnotation(Annotation a, boolean selected) {
 		if (selected) 
 			selectedAnnotations.add(a);
@@ -182,10 +180,31 @@ public class CyAnnotator {
 			selectedAnnotations.remove(a);
 	}
 
+	public void clearSelectedAnnotations() {
+		boolean repaintForeGround = false;
+		boolean repaintBackGround = false;
+		for (Annotation a: selectedAnnotations) {
+			setSelectedAnnotation(a, false);
+			if (a.getCanvasName().equals(Annotation.FOREGROUND))
+				repaintForeGround = true;
+			else
+				repaintBackGround = true;
+		}
+		if (repaintForeGround)
+			foreGroundCanvas.repaint();
+		if (repaintBackGround)
+		backGroundCanvas.repaint();
+
+	}
+
 	public Set getSelectedAnnotations() { return selectedAnnotations; }
 
 	public void resizeShape(ShapeAnnotation shape) {
 		resizing = shape;
+	}
+
+	public Task getReloadImagesTask() {
+		return new ReloadImagesTask(this);
 	}
 
 	public ShapeAnnotation getResizeShape() {

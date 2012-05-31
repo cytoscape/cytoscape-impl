@@ -1,21 +1,37 @@
-package org.cytoscape.ding.impl.cyannotator.modify;
+package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JSlider;
 
 import java.awt.Component;
 
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation.ShapeType;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.create.SelectColor;
 
-public class mShapeAnnotationPanel extends javax.swing.JPanel {
+public class ShapeAnnotationPanel extends javax.swing.JPanel {
+	private int WIDTH = 500;
+	private int HEIGHT = 200;
+	private int TOP = 10;
+	private int LEFT = 10;
+	private int COLUMN1 = 175;
+	private int COLUMN2 = 305;
+	private int RIGHT = WIDTH-10;
 
 
-	public mShapeAnnotationPanel(ShapeAnnotation mAnnotation) {
+	public ShapeAnnotationPanel(ShapeAnnotation mAnnotation, PreviewPanel previewPanel, int width, int height) {
 		this.mAnnotation=mAnnotation;
+		this.previewPanel = previewPanel;
+		this.preview=(ShapeAnnotation)previewPanel.getPreviewAnnotation();
+		this.WIDTH = width;
+		this.HEIGHT = height;
 		initComponents();
+		setSize(width,height);
 	}
 
 	private void initComponents() {
@@ -28,18 +44,21 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 		eThickness = new javax.swing.JComboBox();
 		sECButton = new javax.swing.JButton();
 		sFCButton = new javax.swing.JButton();
-		jPanel1 = new javax.swing.JPanel();
 
-		setMaximumSize(new java.awt.Dimension(470, 400));
-		setMinimumSize(new java.awt.Dimension(470, 400));
+		setMaximumSize(new java.awt.Dimension(WIDTH, HEIGHT));
+		setMinimumSize(new java.awt.Dimension(WIDTH, HEIGHT));
 		setLayout(null);
 		setBorder(BorderFactory.createLoweredBevelBorder());
 
+		// Upper left components
+		//
+		// Shape label
 		jLabel5.setFont(new java.awt.Font("Tahoma", 1, 12));
 		jLabel5.setText("Shape:");
+		jLabel5.setBounds(TOP, LEFT, jLabel5.getPreferredSize().width, 15);
 		add(jLabel5);
-		jLabel5.setBounds(40, 39, jLabel5.getPreferredSize().width, 15);
 
+		// Shape list
 		sList.setModel(new javax.swing.AbstractListModel() {
 			ShapeType[] typeList = mAnnotation.getSupportedShapes();
 			public int getSize() { return typeList.length; }
@@ -47,30 +66,87 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 		});
 		sList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 		sList.setSelectedValue(mAnnotation.getShapeType(), true);
-		add(sList);
+		// add(sList);
 
 		jScrollPane4.setViewportView(sList);
 
+		jScrollPane4.setBounds(LEFT, TOP+25, 125, 150);
 		add(jScrollPane4);
-		jScrollPane4.setBounds(40, 65, 119, 87);
 
+		// Upper right components
+		int x = COLUMN1;
+		int y = TOP+25;
+
+		// Fill color
 		fillColor.setText("Fill Color");
-		if (mAnnotation.getFillColor() != null) fillColor.setSelected(true);
-			add(fillColor);
-		fillColor.setBounds(188, 50, fillColor.getPreferredSize().width, 23);
+		if (mAnnotation.getFillColor() != null) 
+			fillColor.setSelected(true);
 
-		// TODO: add opacity to the color
+		add(fillColor);
+		fillColor.setBounds(COLUMN1, y, fillColor.getPreferredSize().width, 20);
 
-		edgeColor.setText("Edge Color");
+		sFCButton.setText("Select Fill Color");
+		if(fillColor.isSelected())
+			sFCButton.setEnabled(true);
+		else
+			sFCButton.setEnabled(false);
+
+		add(sFCButton);
+		sFCButton.setBounds(COLUMN2, y, sFCButton.getPreferredSize().width, 20);
+
+		y = y+25;
+		JLabel fillOLabel = new JLabel("Fill Opacity");
+		fillOLabel.setBounds(COLUMN1, y, fillOLabel.getPreferredSize().width, 20);
+		add(fillOLabel);
+
+		fillOValue = new JSlider(0, 100);
+		fillOValue.setMajorTickSpacing(100);
+		fillOValue.setPaintTicks(true);
+		fillOValue.setPaintLabels(true);
+		fillOValue.setValue(100);
+		fillOValue.setBounds(COLUMN2, y, RIGHT-COLUMN2, fillOValue.getPreferredSize().height);
+		fillOValue.setEnabled(false);
+		add(fillOValue);
+
+
+		y = y+50;
+		// Border color
+		edgeColor.setText("Border Color");
 		if (mAnnotation.getBorderColor() != null) edgeColor.setSelected(true);
 
 		add(edgeColor);
-		edgeColor.setBounds(188, 88, edgeColor.getPreferredSize().width, 23);
+		edgeColor.setBounds(COLUMN1, y, edgeColor.getPreferredSize().width, 20);
+		// TODO: add opacity to the color
 
-		jLabel6.setText("Edge Thickness");
+		sECButton.setText("Select Edge Color");
+		if(edgeColor.isSelected())
+			sECButton.setEnabled(true);
+		else
+			sECButton.setEnabled(false);
+
+		add(sECButton);
+		sECButton.setBounds(COLUMN2, y, sECButton.getPreferredSize().width, 20);
+
+		y = y+25;
+		JLabel borderOLabel = new JLabel("Border Opacity");
+		borderOLabel.setBounds(COLUMN1, y, borderOLabel.getPreferredSize().width, 20);
+		add(borderOLabel);
+
+		borderOValue = new JSlider(0, 100);
+		borderOValue.setMajorTickSpacing(100);
+		borderOValue.setPaintTicks(true);
+		borderOValue.setPaintLabels(true);
+		borderOValue.setValue(100);
+		borderOValue.setBounds(COLUMN2, y, RIGHT-COLUMN2, borderOValue.getPreferredSize().height);
+		borderOValue.setEnabled(false);
+		add(borderOValue);
+
+		y = y+50;
+		jLabel6.setText("Border Thickness");
+		jLabel6.setBounds(COLUMN1, y, jLabel6.getPreferredSize().width, 14);
 		add(jLabel6);
-		jLabel6.setBounds(188, 135, jLabel6.getPreferredSize().width, 14);
 
+		// Border thickness
 		eThickness.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
 	
 		eThickness.setSelectedIndex(1);
@@ -83,41 +159,10 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 			}
 		}
 	
+		eThickness.setBounds(COLUMN2, y, 42, 20);
 		add(eThickness);
-		eThickness.setBounds(376, 132, 42, 20);
 
-		sECButton.setText("Select Edge Color");
-		if(edgeColor.isSelected())
-			sECButton.setEnabled(true);
-		else
-			sECButton.setEnabled(false);
-
-		add(sECButton);
-		sECButton.setBounds(296, 88, sECButton.getPreferredSize().width, 23);
-
-		sFCButton.setText("Select Fill Color");
-		if(fillColor.isSelected())
-			sFCButton.setEnabled(true);
-		else
-			sFCButton.setEnabled(false);
-
-		add(sFCButton);
-		sFCButton.setBounds(296, 39, sFCButton.getPreferredSize().width, 23);
-
-		jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Preview"));
-		jPanel1.setLayout(null);
-
-		add(jPanel1);
-		jPanel1.setBounds(30, 179, 415, 215);
-	
-		preview=new ShapeAnnotationImpl((ShapeAnnotationImpl)mAnnotation, 415, 215);
-		Component previewComponent = preview.getComponent();
-		preview.setUsedForPreviews(true);
-			    
-		jPanel1.add(previewComponent);
-		previewComponent.setBounds(1, 1, jPanel1.getWidth(), jPanel1.getHeight());
-	
-		iModifySAPreview();		
+		iModifySAPreview();	
 	
 		sFCButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -166,14 +211,14 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 		preview.setFillColor(mAnnotation.getFillColor());
 		preview.setBorderColor(mAnnotation.getBorderColor());
 	
-		jPanel1.repaint();
+		previewPanel.repaint();
 	}	
 	
 	public void modifySAPreview(){
 		preview.setBorderWidth( Integer.parseInt( (String)(eThickness.getModel().getSelectedItem()) ) );		    	        	      
 		preview.setShapeType((ShapeType)sList.getSelectedValue());
 	
-		jPanel1.repaint();
+		previewPanel.repaint();
 	}	    
 
 	private void sListValueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -183,10 +228,12 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 	private void fillColorActionPerformed(java.awt.event.ActionEvent evt) {
 	//fill Color
 
-		if(fillColor.isSelected())
+		if(fillColor.isSelected()) {
 			sFCButton.setEnabled(true);
-		else {
+			fillOValue.setEnabled(true);
+		} else {
 			sFCButton.setEnabled(false);
+			fillOValue.setEnabled(false);
 			preview.setFillColor(null);
 		}
 	}
@@ -194,11 +241,13 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 	private void edgeColorActionPerformed(java.awt.event.ActionEvent evt) {
 		//Edge Color
 
-		if(edgeColor.isSelected())
+		if(edgeColor.isSelected()) {
 			sECButton.setEnabled(true);
-		else {
+			borderOValue.setEnabled(true);
+		} else {
 			sECButton.setEnabled(false);
 			preview.setBorderColor(null);
+			borderOValue.setEnabled(false);
 		}
 	}
 
@@ -209,7 +258,14 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 
 	private void sECButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		//sECButton
-		SelectColor sASelectColor=new SelectColor(preview, 2, this.jPanel1, mAnnotation.getBorderColor());
+		final SelectColor sASelectColor=new SelectColor(mAnnotation.getBorderColor());
+		sASelectColor.setOKListener( new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				Color clr = sASelectColor.getColor();
+				preview.setBorderColor(mixColor(clr,borderOValue.getValue()));
+				previewPanel.repaint();
+			}
+		});
 	
 		sASelectColor.setVisible(true);
 		sASelectColor.setSize(435, 420);		
@@ -219,11 +275,24 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 	private void sFCButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		//Set Fill Color Button
 
-		SelectColor sASelectColor=new SelectColor(preview, 1, this.jPanel1, mAnnotation.getFillColor());
+		final SelectColor sASelectColor=new SelectColor(mAnnotation.getFillColor());
+		sASelectColor.setOKListener( new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				Color clr = sASelectColor.getColor();
+				preview.setFillColor(mixColor(clr,fillOValue.getValue()));
+				previewPanel.repaint();
+			}
+		});
 	
 		sASelectColor.setVisible(true);
 		sASelectColor.setSize(435, 420);
 		//1 -> FillColor
+	}
+
+	private Color mixColor(Color c, int value) {
+		if (c == null) return c;
+
+		return new Color(c.getRed(), c.getGreen(), c.getBlue(), value*255/100);
 	}
 
 	private javax.swing.JComboBox eThickness;
@@ -236,8 +305,11 @@ public class mShapeAnnotationPanel extends javax.swing.JPanel {
 	private javax.swing.JButton sECButton;
 	private javax.swing.JButton sFCButton;
 	private javax.swing.JList sList;
+	private JSlider fillOValue;
+	private JSlider borderOValue;
 
 	private ShapeAnnotation preview;
+	private PreviewPanel previewPanel;
 	
 	private ShapeAnnotation mAnnotation;
 }

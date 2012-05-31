@@ -17,7 +17,7 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation.ShapeType;
-import org.cytoscape.ding.impl.cyannotator.modify.mShapeAnnotation;
+import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 
 public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnnotation {
 	private ShapeType shapeType;
@@ -43,20 +43,18 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) {
 		super(cyAnnotator, view);
-		shapeWidth=width/2;
-		shapeHeight=height/3;
+		shapeWidth=width;
+		shapeHeight=height;
 		shapeType = ShapeType.RECTANGLE;
 	}
 
 	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height) {
 		super(c);
-		shapeWidth=width/2;
-		shapeHeight=height/3;
+		shapeWidth=width;
+		shapeHeight=height;
 		shapeType = c.getShapeType();
 		borderColor = c.getBorderColor();
 		borderWidth = c.getBorderWidth();
-		borderOpacity = c.getBorderOpacity();
-		fillOpacity = c.getFillOpacity();
 		fillColor = c.getFillColor();
 		shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
 	}
@@ -175,12 +173,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
   public void setBorderColor(Paint border) {borderColor = border;}
   public void setFillColor(Paint fill) {fillColor = fill;}
     
-  public double getBorderOpacity() {return borderOpacity;}
-  public double getFillOpacity() {return fillOpacity;}
-    
-  public void setBorderOpacity(double opacity) {borderOpacity = opacity;}
-  public void setFillOpacity(double opacity) {fillOpacity = opacity;}
-
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
 
@@ -198,9 +190,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		super.paint(g);
 
 		Point2D p1 = getLocation();
-		if (usedForPreviews) {
-			p1 = new Point2D.Double(p1.getX()+shapeWidth/2, p1.getY()+shapeHeight);
-		}
 		GraphicsUtilities.drawShape(g, (int)p1.getX(), (int)p1.getY(), shapeWidth, shapeHeight, this);
 	}
 
@@ -211,7 +200,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	public JFrame getModifyDialog() {
-		return new mShapeAnnotation(this);
+		return new ShapeAnnotationDialog(this);
 	}
 
 }

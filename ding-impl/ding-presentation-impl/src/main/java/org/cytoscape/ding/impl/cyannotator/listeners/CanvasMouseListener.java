@@ -21,11 +21,12 @@ public class CanvasMouseListener implements MouseListener {
 	}
 
 	public void mousePressed(MouseEvent e) {
+		// Let the InnerCanvas handle this event
 		networkCanvas.processMouseEvent(e);
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		//Let the InnerCanvas handle this event
+		// Let the InnerCanvas handle this event
 		networkCanvas.processMouseEvent(e);
 	}
 
@@ -41,32 +42,35 @@ public class CanvasMouseListener implements MouseListener {
 			return;
 		}
 
+
 		Annotation annotation = cyAnnotator.getAnnotation(new Point(e.getX(), e.getY()));
 		if (annotation == null) {
-			networkCanvas.processMouseEvent(e);
+			cyAnnotator.clearSelectedAnnotations();
+			if (!e.isConsumed()) {
+				networkCanvas.processMouseEvent(e);
+				e.consume();
+			}
 			return;
 		}
 
-		// System.out.println("click count = "+e.getClickCount());
-
-		if(e.getClickCount()==2) {
-			// System.out.println("Double-click");
+		if(e.getClickCount()==2 && !e.isConsumed()) {
+			e.consume();
 			//We have doubled clicked on an Annotation
 			if (annotation.isSelected()) {
 				annotation.setSelected(false);
-				return;
+			} else {
+				//This preVZoom value will help in resizing the selected Annotations
+				// double prevZoom=networkCanvas.getScaleFactor();
+
+				// annotation.setSpecificZoom(prevZoom);
+				annotation.setSelected(true);
+
+				//We request focus in this window, so that we can move these selected Annotations around using arrow keys
+				annotation.getCanvas().requestFocusInWindow();
 			}
-			//This preVZoom value will help in resizing the selected Annotations
-			double prevZoom=networkCanvas.getScaleFactor();
 
-			annotation.setSpecificZoom(prevZoom);
-			annotation.setSelected(true);
-
-			//We request focus in this window, so that we can move these selected Annotations around using arrow keys
-			annotation.getCanvas().requestFocusInWindow();
-
-			//Repaint the whole network. The selected annotations will have a yellow outline now
-			view.updateView();	
+			//Repaint the canvas
+			annotation.getCanvas().repaint();	
 		}
 	}
 

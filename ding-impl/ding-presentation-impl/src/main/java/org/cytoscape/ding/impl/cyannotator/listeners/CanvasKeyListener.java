@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -38,19 +39,40 @@ public class CanvasKeyListener implements KeyListener {
 			for (Annotation annotation: selectedAnnotations) {
 				Component c = annotation.getComponent();
 				int x=c.getX(), y=c.getY();
-				if (code == KeyEvent.VK_UP)
-					y-=move;
-				else if (code == KeyEvent.VK_DOWN)
-					y+=move;
-				else if (code == KeyEvent.VK_LEFT)
-					x-=move;
-				else if (code == KeyEvent.VK_RIGHT)
-					x+=move;
+				int shiftMask = e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK;
+				if (annotation instanceof ShapeAnnotation && 
+				    (shiftMask == KeyEvent.SHIFT_DOWN_MASK)) {
+					ShapeAnnotation sa = (ShapeAnnotation)annotation;
+					int width = c.getWidth(), height = c.getHeight();
+					if (code == KeyEvent.VK_UP) {
+						y-=move; height += move;
+					} else if (code == KeyEvent.VK_DOWN) {
+						height += move;
+					} else if (code == KeyEvent.VK_LEFT) {
+						x-=move; width += move;
+					} else if (code == KeyEvent.VK_RIGHT) {
+						width += move;
+					}
 
-				//Adjust the locations of the selected annotations
-				annotation.getComponent().setLocation(x,y);
+					//Adjust the locations of the selected annotations
+					sa.getComponent().setLocation(x,y);
+					// Adjust the size of the selected annotations
+					sa.setSize((double)width, (double)height);
+				} else {
+					if (code == KeyEvent.VK_UP)
+						y-=move;
+					else if (code == KeyEvent.VK_DOWN)
+						y+=move;
+					else if (code == KeyEvent.VK_LEFT)
+						x-=move;
+					else if (code == KeyEvent.VK_RIGHT)
+						x+=move;
+
+					//Adjust the locations of the selected annotations
+					annotation.getComponent().setLocation(x,y);
+				}
+				annotation.getCanvas().repaint();	
 			}
-			view.updateView();	
 		} else {
 			networkCanvas.keyPressed(e);
 		}

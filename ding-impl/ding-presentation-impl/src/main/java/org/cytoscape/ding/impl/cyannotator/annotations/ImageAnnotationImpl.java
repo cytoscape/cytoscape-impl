@@ -6,7 +6,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 
@@ -25,12 +28,13 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.modify.mImageAnnotation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnnotation {
+public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnnotation, ShapeAnnotation {
 	private BufferedImage image;
 	private	URL url = null;
 
@@ -41,8 +45,12 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 	
 	protected double imageWidth=0, imageHeight=0;
 	private BufferedImage resizedImage;
+	private float opacity = 1.0f;
 	private CyCustomGraphics cg = null;
 	protected CustomGraphicsManager customGraphicsManager;
+
+	private double borderWidth = 0.0;
+	private Paint borderColor = Color.BLACK;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
 
@@ -157,7 +165,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		this.imageWidth=this.image.getWidth();
 		this.imageHeight=this.image.getHeight();
 		resizedImage=resize(this.image, (int)resizedImage.getWidth(), (int)resizedImage.getHeight());
-		getCyAnnotator().update();
+		getCanvas().repaint();
 	}
 
 	public void setImage(URL url) {
@@ -165,8 +173,53 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		reloadImage();
 	}
 
+	public void setImageOpacity(float opacity) {
+		this.opacity = opacity;
+	}
+
+	public float getImageOpacity() { return this.opacity; }
+
+	// Shape annotation methods.  We add these so we can get resize functionality
+	public ShapeType[] getSupportedShapes() {
+		ShapeType[] types = {ShapeType.RECTANGLE};
+		return types;
+	}
+
+	public void setSize(double width, double height) {
+		this.imageWidth = width;
+		this.imageHeight = height;
+
+		// Resize the image
+		resizedImage=resize(this.image, (int)imageWidth, (int)imageHeight);
+		getCanvas().repaint();
+	}
+
+	public ShapeType getShapeType() {
+		return ShapeType.RECTANGLE;
+	}
+	public void setShapeType(ShapeType type) {}
+
+	public double getBorderWidth() {
+		return borderWidth;
+	}
+
+	public void setBorderWidth(double width) {
+		borderWidth = width;
+	}
+
+	public Paint getBorderColor() {return borderColor;}
+	public Paint getFillColor() {return null;}
+
+	public void setBorderColor(Paint border) {borderColor = border;}
+	public void setFillColor(Paint fill) {}
+
+	public Shape getShape() {
+		return new Rectangle2D.Double((double)getX(), (double)getY(), imageWidth, imageHeight);
+	}
+	
+
 	//Returns a resized high quality BufferedImage
-	private static BufferedImage resize(BufferedImage image, int width, int height)
+	private BufferedImage resize(BufferedImage image, int width, int height)
 	{
 		if (image == null) {
 			if (width == 0) width = 1;
@@ -181,11 +234,16 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 			width++;
 		BufferedImage resizedImage = new BufferedImage(width, height, type);
 		Graphics2D g = resizedImage.createGraphics();
-		g.setComposite(AlphaComposite.Src);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
+		if (borderWidth > 0.0 && borderColor != null) {
+			g.setPaint(borderColor);
+			g.setStroke(new BasicStroke((float)borderWidth));
+		}
+		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
+		g.setComposite(ac);
 		g.drawImage(image, 0, 0, width, height, null);
 		g.dispose();
 		return resizedImage;
