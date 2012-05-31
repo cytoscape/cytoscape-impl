@@ -184,6 +184,7 @@ public class WebQuerier {
 				webApp.setName(jsonObject.get("fullname").toString());
 				webApp.setFullName(jsonObject.get("fullname").toString());
 				webApp.setIconUrl(jsonObject.get("icon_url").toString());
+				
 				webApp.setPageUrl(APP_STORE_URL.substring(0, APP_STORE_URL.length() - 1) 
 						+ jsonObject.get("page_url").toString());
 				webApp.setDescription(jsonObject.get("description").toString());

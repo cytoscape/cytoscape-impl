@@ -9,7 +9,9 @@ import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +48,7 @@ import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.net.ResultsFilterer;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -65,6 +68,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	
 	private javax.swing.JPanel descriptionPanel;
     private javax.swing.JScrollPane descriptionScrollPane;
+    private javax.swing.JSplitPane descriptionSplitPane;
     private javax.swing.JTextPane descriptionTextPane;
     private javax.swing.JTextField filterTextField;
     private javax.swing.JButton installButton;
@@ -73,6 +77,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     private javax.swing.JTree resultsTree;
     private javax.swing.JLabel searchAppsLabel;
     private javax.swing.JScrollPane tagsScrollPane;
+    private javax.swing.JSplitPane tagsSplitPane;
     private javax.swing.JTree tagsTree;
     private javax.swing.JButton viewOnAppStoreButton;
 	
@@ -83,6 +88,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	private TaskManager taskManager;
 	private Container parent;
 	
+	private WebApp selectedApp;
+	private WebQuerier.AppTag currentSelectedAppTag;
+	
     public InstallFromStorePanel(final AppManager appManager, FileUtil fileUtil, TaskManager taskManager, Container parent) {
         this.appManager = appManager;
         this.fileUtil = fileUtil;
@@ -90,6 +98,24 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         this.parent = parent;
     	initComponents();
         
+    	tagsTree.addTreeSelectionListener(new TreeSelectionListener() {
+			
+			@Override
+			public void valueChanged(TreeSelectionEvent arg0) {
+				updateResultsTree();
+			}
+		});
+		
+		resultsTree.addTreeSelectionListener(new TreeSelectionListener() {
+			
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				updateDescriptionBox();
+			}
+		});
+		
+		setupTextFieldListener();
+    	
 		taskManager.execute(new TaskIterator(new Task() {
 			
 			// Obtain information for all available apps, then append tag information
@@ -136,25 +162,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 						// populateTree(appManager.getWebQuerier().getAllApps());
 						buildTagsTree();
 						
-						tagsTree.addTreeSelectionListener(new TreeSelectionListener() {
-							
-							@Override
-							public void valueChanged(TreeSelectionEvent arg0) {
-								updateResultsTree();
-							}
-						});
-						
-						resultsTree.addTreeSelectionListener(new TreeSelectionListener() {
-							
-							@Override
-							public void valueChanged(TreeSelectionEvent e) {
-								updateDescriptionBox();
-							}
-						});
-						
-						
-						// TODO: Set tree to be initially empty rather than use this call
-						resultsTree.setModel(new DefaultTreeModel(null));
+						fillResultsTree(null);
 					}
 					
 				});
@@ -186,15 +194,17 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	searchAppsLabel = new javax.swing.JLabel();
         installFromFileButton = new javax.swing.JButton();
         filterTextField = new javax.swing.JTextField();
+        descriptionSplitPane = new javax.swing.JSplitPane();
+        tagsSplitPane = new javax.swing.JSplitPane();
+        tagsScrollPane = new javax.swing.JScrollPane();
+        tagsTree = new javax.swing.JTree();
+        resultsScrollPane = new javax.swing.JScrollPane();
+        resultsTree = new javax.swing.JTree();
         descriptionPanel = new javax.swing.JPanel();
         descriptionScrollPane = new javax.swing.JScrollPane();
         descriptionTextPane = new javax.swing.JTextPane();
         installButton = new javax.swing.JButton();
         viewOnAppStoreButton = new javax.swing.JButton();
-        tagsScrollPane = new javax.swing.JScrollPane();
-        tagsTree = new javax.swing.JTree();
-        resultsScrollPane = new javax.swing.JScrollPane();
-        resultsTree = new javax.swing.JTree();
 
         searchAppsLabel.setText("Search:");
 
@@ -204,6 +214,22 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                 installFromFileButtonActionPerformed(evt);
             }
         });
+
+        descriptionSplitPane.setDividerLocation(421);
+
+        tagsSplitPane.setDividerLocation(160);
+
+        tagsTree.setRootVisible(false);
+        tagsScrollPane.setViewportView(tagsTree);
+
+        tagsSplitPane.setLeftComponent(tagsScrollPane);
+
+        resultsTree.setRootVisible(false);
+        resultsScrollPane.setViewportView(resultsTree);
+
+        tagsSplitPane.setRightComponent(resultsScrollPane);
+
+        descriptionSplitPane.setLeftComponent(tagsSplitPane);
 
         descriptionPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -220,28 +246,31 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         });
 
         viewOnAppStoreButton.setText("View on App Store");
+        viewOnAppStoreButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewOnAppStoreButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
         descriptionPanel.setLayout(descriptionPanelLayout);
         descriptionPanelLayout.setHorizontalGroup(
             descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
+            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
             .addComponent(installButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(viewOnAppStoreButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(viewOnAppStoreButton, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
         );
         descriptionPanelLayout.setVerticalGroup(
             descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(descriptionPanelLayout.createSequentialGroup()
-                .addComponent(descriptionScrollPane)
+                .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(installButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(viewOnAppStoreButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(viewOnAppStoreButton))
+                .addComponent(installButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        tagsScrollPane.setViewportView(tagsTree);
-
-        resultsScrollPane.setViewportView(resultsTree);
+        descriptionSplitPane.setRightComponent(descriptionPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -251,36 +280,28 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(searchAppsLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(filterTextField)
-                        .addGap(183, 183, 183))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(tagsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(resultsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(descriptionSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(installFromFileButton)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(searchAppsLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(filterTextField)
+                        .addGap(247, 247, 247))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(searchAppsLabel)
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(tagsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
-                    .addComponent(resultsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addComponent(descriptionSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(installFromFileButton)
-                .addContainerGap())
+                .addComponent(installFromFileButton))
         );
 
         // Make the JTextPane render HTML using the default UI font
@@ -294,7 +315,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }
     
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void installFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
     	// Setup a the file filter for the open file dialog
     	FileChooserFilter fileChooserFilter = new FileChooserFilter("Jar, Zip Files (*.jar, *.zip)",
     			new String[]{"jar", "zip"});
@@ -350,23 +371,39 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
     private void setupTextFieldListener() {
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
-			
+        	
+        	ResultsFilterer resultsFilterer = new ResultsFilterer();
+        	
+        	private void showFilteredApps() {
+        		SwingUtilities.invokeLater(new Runnable() {
+
+					@Override
+					public void run() {
+						if (currentSelectedAppTag == null) {
+						
+							fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
+								appManager.getWebQuerier().getAllApps()));
+						} else {
+							fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
+								appManager.getWebQuerier().getAppsByTag(currentSelectedAppTag.getName())));
+						}
+					}
+					
+				});
+        	}
+        	
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {
-				// TODO Auto-generated method stub
-				
+				showFilteredApps();
 			}
 			
 			@Override
 			public void insertUpdate(DocumentEvent arg0) {
-				// TODO Auto-generated method stub
-				
+				showFilteredApps();
 			}
 			
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-				// TODO Auto-generated method stub
-				
 			}
 		});
     }
@@ -376,12 +413,45 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
     }
     
-    private void installFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-    }
     
     private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+    	/*
+    	final WebQuerier webQuerier = appManager.getWebQuerier();
+        final WebApp appToDownload = selectedApp;
+        
+		taskManager.execute(new TaskIterator(new Task() {
+
+			@Override
+			public void run(TaskMonitor taskMonitor) throws Exception {
+				taskMonitor.setTitle("Installing App from App Store");
+				
+				double progress = 0;
+					
+				taskMonitor.setStatusMessage("Installing app: " + appToDownload.getFullName());
+				
+				// Download app
+        		File appFile = webQuerier.downloadApp(appToDownload.getName(), null, new File(appManager.getDownloadedAppsPath()));
+				
+        		if (appFile != null) {
+	        		// Parse app
+	        		App parsedApp = appManager.getAppParser().parseApp(appFile);
+	        		
+	        		// Install app
+					appManager.installApp(parsedApp);
+        		} else {
+        			// Log error: no download links were found for app
+        			DebugHelper.print("Unable to find download url for: " + appToDownload.getFullName());
+        		}
+	        		
+	        	taskMonitor.setProgress(1.0);
+			}
+
+			@Override
+			public void cancel() {
+			}
+			
+		}));
+		*/
     }
     
     private void buildTagsTree() {
@@ -410,8 +480,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	}
     	
     	tagsTree.setModel(new DefaultTreeModel(root));
-    	tagsTree.expandRow(1);
-    	tagsTree.setRootVisible(false);
+    	// tagsTree.expandRow(2);
+    	
+    	currentSelectedAppTag = null;
     }
  
     private void updateResultsTree() {
@@ -419,6 +490,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tagsTree.getSelectionPath().getLastPathComponent();
     	
 //    	DebugHelper.print(String.valueOf(selectedNode.getUserObject()));
+    	currentSelectedAppTag = null;
     	
     	// Check if the "all apps" node is selected
     	if (selectedNode.getLevel() == 1 
@@ -428,41 +500,32 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	} else if (selectedNode.getUserObject() instanceof WebQuerier.AppTag) {
     		WebQuerier.AppTag selectedTag = (WebQuerier.AppTag) selectedNode.getUserObject();
     		
-    		fillResultsTree(selectedTag);
+    		fillResultsTree(appManager.getWebQuerier().getAppsByTag(selectedTag.getName()));
+    		currentSelectedAppTag = selectedTag;
     	} else {
     		// Clear tree
     		resultsTree.setModel(new DefaultTreeModel(null));
     	}
     }
     
-    
-    // Use appTag == null to show all apps
-    private void fillResultsTree(WebQuerier.AppTag appTag) {
-    	WebQuerier webQuerier = appManager.getWebQuerier();
-    	Set<WebApp> appsToBeShown;
-    	
-    	if (appTag != null) {
-    		appsToBeShown = webQuerier.getAppsByTag(appTag.getName());
-    	} else {
-    		appsToBeShown = webQuerier.getAllApps();
+    private void fillResultsTree(Set<WebApp> webApps) {
+    	Set<WebApp> appsToShow = webApps;
+    	if (appsToShow == null) {
+    		appsToShow = appManager.getWebQuerier().getAllApps();
     	}
-    	
-    	// TODO: Consider sorting?
     	
     	DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     	
     	DefaultMutableTreeNode treeNode;
-    	for (WebApp webApp : appsToBeShown) {
+    	for (WebApp webApp : appsToShow) {
     		treeNode = new DefaultMutableTreeNode(webApp);
     		root.add(treeNode);
     	}
     	
     	resultsTree.setModel(new DefaultTreeModel(root));
-    	resultsTree.setRootVisible(false);
     }
     
     private void updateDescriptionBox() {
-    	
     	
     	TreePath selectedPath = resultsTree.getSelectionPath();
     	
@@ -484,13 +547,16 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		text += "<p> <b>" + selectedApp.getFullName() + "</b> </p>";
     		
     		// App description
-    		text += "<p>" + (selectedApp.getDescription() == null ? "App description not found." : selectedApp.getDescription()) + "</p>";
+    		text += "<p>" + (String.valueOf(selectedApp.getDescription()).equalsIgnoreCase("null") ? "App description not found." : selectedApp.getDescription()) + "</p>";
     		text += "</body> </html>";
     		descriptionTextPane.setText(text);
     		
+    		this.selectedApp = selectedApp;
+		
     	} else {
     		
     		descriptionTextPane.setText("App description is displayed here.");
+    		this.selectedApp = null;
     	}
     }
 
@@ -498,8 +564,24 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }
 
-    private void viewOnWebStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+    private void viewOnAppStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    	if (selectedApp == null) {
+    		return;
+    	}
+    	
+    	if (Desktop.isDesktopSupported()) {
+			Desktop desktop = Desktop.getDesktop();
+			
+			try {
+				desktop.browse((new URL(selectedApp.getPageUrl())).toURI());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
     }
     
     /**
