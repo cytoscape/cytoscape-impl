@@ -189,6 +189,13 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	public void paint(Graphics g) {
 		super.paint(g);
 
+		if (usedForPreviews()) {
+			// For previews, our size and position is managed by the surrounding component
+			GraphicsUtilities.drawShape(g, borderWidth/2, borderWidth/2, 
+			                            shapeWidth-borderWidth, shapeHeight-borderWidth, this);
+			return;
+		}
+
 		Point2D p1 = getLocation();
 		GraphicsUtilities.drawShape(g, (int)p1.getX(), (int)p1.getY(), shapeWidth, shapeHeight, this);
 	}

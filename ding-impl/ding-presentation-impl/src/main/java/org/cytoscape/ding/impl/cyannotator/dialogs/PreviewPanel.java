@@ -33,16 +33,6 @@ public class PreviewPanel extends javax.swing.JPanel {
 		repaint();
 	}
 
-	public void paint(Graphics g) {
-		super.paint(g);
-		// System.out.println("Preview paint");
-
-		// for (Component component: getComponents()) {
-			// System.out.println("Painting "+component);
-		// 	component.paint(g);
-		// }
-	}
-
 	public Annotation getPreviewAnnotation() {
 		return mAnnotation;
 	}

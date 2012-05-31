@@ -42,6 +42,7 @@ import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.LayerAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.MoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ResizeAnnotationTaskFactory;
@@ -256,6 +257,24 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, moveAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                moveAnnotationTaskFactoryProps);
 
+		LayerAnnotationTaskFactory pullAnnotationTaskFactory = new LayerAnnotationTaskFactory(true);
+		Properties pullAnnotationTaskFactoryProps = new Properties();
+		pullAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		pullAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.2");
+		pullAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		pullAnnotationTaskFactoryProps.setProperty(TITLE, "Pull Annotation to Foreground");
+		registerService(bc, pullAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                pullAnnotationTaskFactoryProps);
+
+		LayerAnnotationTaskFactory pushAnnotationTaskFactory = new LayerAnnotationTaskFactory(false);
+		Properties pushAnnotationTaskFactoryProps = new Properties();
+		pushAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		pushAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.2");
+		pushAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		pushAnnotationTaskFactoryProps.setProperty(TITLE, "Push Annotation to Background");
+		registerService(bc, pushAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                pushAnnotationTaskFactoryProps);
+
 		ResizeAnnotationTaskFactory resizeAnnotationTaskFactory = new ResizeAnnotationTaskFactory();
 		Properties resizeAnnotationTaskFactoryProps = new Properties();
 		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -270,7 +289,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		selectAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.3");
 		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
-		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select Annotation");
+		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select/Unselect Annotation");
 		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                selectAnnotationTaskFactoryProps);
 

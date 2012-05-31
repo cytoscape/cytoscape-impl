@@ -148,11 +148,15 @@ public class AbstractAnnotation extends Component implements Annotation {
 		// Remove ourselves from the current canvas
 		canvas.remove(this);
 
+		canvas.repaint();  // update the canvas
+
 		// Set the new canvas
 		setCanvas(cnvs);
 
 		// Add ourselves
 		canvas.add(this);
+
+		canvas.repaint();  // update the canvas
 	}
 
 	@Override

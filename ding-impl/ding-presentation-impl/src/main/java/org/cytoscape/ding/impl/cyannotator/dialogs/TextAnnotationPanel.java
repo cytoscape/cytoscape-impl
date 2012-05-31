@@ -216,7 +216,6 @@ public class TextAnnotationPanel extends javax.swing.JPanel {
 		preview.setFont(getNewFont());
 		preview.setText(annotationText.getText());	   
 
-		System.out.println("Calling repaint");
 		previewPanel.repaint();
 	}	  
 

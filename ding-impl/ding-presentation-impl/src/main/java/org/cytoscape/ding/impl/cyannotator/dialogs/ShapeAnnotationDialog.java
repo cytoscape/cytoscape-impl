@@ -67,14 +67,15 @@ public class ShapeAnnotationDialog extends javax.swing.JFrame {
 		else
 			setTitle("Modify Shape Annotation");
 
-		// setAlwaysOnTop(true);
 		setResizable(false);
 		getContentPane().setLayout(null);
 
 		getContentPane().add(shapeAnnotation1);
 		shapeAnnotation1.setBounds(5, 0, shapeAnnotation1.getWidth(), shapeAnnotation1.getHeight());
+
 		getContentPane().add(previewPanel);
 		previewPanel.setBounds(5, shapeAnnotation1.getHeight()+5, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+
 		int y = PREVIEW_HEIGHT+SHAPE_HEIGHT+10;
 
 		applyButton.setText("OK");

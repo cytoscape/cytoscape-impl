@@ -91,8 +91,10 @@ public class TextAnnotationDialog extends javax.swing.JFrame {
 				cancelButtonActionPerformed(evt);
 			}
 		});
+
 		getContentPane().add(cancelButton);
 		cancelButton.setBounds(370, y, cancelButton.getPreferredSize().width, 23);
+
 		pack();
 		setSize(TEXT_WIDTH+10, 510);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
