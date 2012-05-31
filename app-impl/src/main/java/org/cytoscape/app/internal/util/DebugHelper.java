@@ -5,7 +5,7 @@ package org.cytoscape.app.internal.util;
  */
 public class DebugHelper {
 	public static void print(String message) {
-		boolean debug = true;
+		boolean debug = false;
 		
 		if (debug) {
 			System.out.println(message);
