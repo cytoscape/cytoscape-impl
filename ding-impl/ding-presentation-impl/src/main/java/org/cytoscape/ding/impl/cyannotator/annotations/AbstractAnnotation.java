@@ -37,7 +37,7 @@ import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
 //A BasicAnnotation Class
 //
 
-public class AbstractAnnotation extends Component implements Annotation {
+public class AbstractAnnotation extends JComponent implements Annotation {
 	private static int nextAnnotationNumber = 0;
 
 	private boolean selected=false;
@@ -164,8 +164,8 @@ public class AbstractAnnotation extends Component implements Annotation {
 		return (JComponent)canvas;
 	}
 
-	public Component getComponent() {
-		return (Component)this;
+	public JComponent getComponent() {
+		return (JComponent)this;
 	}
     
 	@Override

@@ -25,7 +25,7 @@ public interface Annotation {
 	public void changeCanvas(String canvas);
 	public JComponent getCanvas();
 
-	public Component getComponent();
+	public JComponent getComponent();
 
 	public CyAnnotator getCyAnnotator();
 
