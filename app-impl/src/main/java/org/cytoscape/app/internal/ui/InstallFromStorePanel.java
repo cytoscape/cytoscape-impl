@@ -63,17 +63,18 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	/** Long serial version identifier required by the Serializable class */
 	private static final long serialVersionUID = -1208176142084829272L;
 	
-	private javax.swing.JTextField filterTextField;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextPane jTextPane1;
-    private javax.swing.JTree jTree1;
-    private javax.swing.JTree jTree2;
+	private javax.swing.JPanel descriptionPanel;
+    private javax.swing.JScrollPane descriptionScrollPane;
+    private javax.swing.JTextPane descriptionTextPane;
+    private javax.swing.JTextField filterTextField;
+    private javax.swing.JButton installButton;
+    private javax.swing.JButton installFromFileButton;
+    private javax.swing.JScrollPane resultsScrollPane;
+    private javax.swing.JTree resultsTree;
     private javax.swing.JLabel searchAppsLabel;
+    private javax.swing.JScrollPane tagsScrollPane;
+    private javax.swing.JTree tagsTree;
+    private javax.swing.JButton viewOnAppStoreButton;
 	
 	private JFileChooser fileChooser;
 	
@@ -135,7 +136,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 						// populateTree(appManager.getWebQuerier().getAllApps());
 						buildTagsTree();
 						
-						jTree1.addTreeSelectionListener(new TreeSelectionListener() {
+						tagsTree.addTreeSelectionListener(new TreeSelectionListener() {
 							
 							@Override
 							public void valueChanged(TreeSelectionEvent arg0) {
@@ -143,7 +144,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 							}
 						});
 						
-						jTree2.addTreeSelectionListener(new TreeSelectionListener() {
+						resultsTree.addTreeSelectionListener(new TreeSelectionListener() {
 							
 							@Override
 							public void valueChanged(TreeSelectionEvent e) {
@@ -153,7 +154,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 						
 						
 						// TODO: Set tree to be initially empty rather than use this call
-						jTree2.setModel(new DefaultTreeModel(null));
+						resultsTree.setModel(new DefaultTreeModel(null));
 					}
 					
 				});
@@ -183,100 +184,110 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     private void initComponents() {
 
     	searchAppsLabel = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        installFromFileButton = new javax.swing.JButton();
         filterTextField = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
-        jButton4 = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTree1 = new javax.swing.JTree();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTree2 = new javax.swing.JTree();
+        descriptionPanel = new javax.swing.JPanel();
+        descriptionScrollPane = new javax.swing.JScrollPane();
+        descriptionTextPane = new javax.swing.JTextPane();
+        installButton = new javax.swing.JButton();
+        viewOnAppStoreButton = new javax.swing.JButton();
+        tagsScrollPane = new javax.swing.JScrollPane();
+        tagsTree = new javax.swing.JTree();
+        resultsScrollPane = new javax.swing.JScrollPane();
+        resultsTree = new javax.swing.JTree();
 
         searchAppsLabel.setText("Search:");
 
-        jButton1.setText("Install from File...");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        installFromFileButton.setText("Install from File...");
+        installFromFileButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                installFromFileButtonActionPerformed(evt);
             }
         });
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        descriptionPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        //jTextPane1.setText("App hyperlink\n\nApp icon\n\n\nApp name\n\nApp description");
-        jTextPane1.setText("App information is displayed here.");
-        
-        jScrollPane3.setViewportView(jTextPane1);
+        descriptionTextPane.setContentType("text/html");
+        descriptionTextPane.setEditable(false);
+        descriptionTextPane.setText("<html>\n  <head>\n\n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      App description is displayed here.\n    </p>\n  </body>\n</html>\n");
+        descriptionScrollPane.setViewportView(descriptionTextPane);
 
-        jButton4.setText("Install");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        installButton.setText("Install");
+        installButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                installButtonActionPerformed(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jButton4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, Short.MAX_VALUE))
+        viewOnAppStoreButton.setText("View on App Store");
+
+        javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
+        descriptionPanel.setLayout(descriptionPanelLayout);
+        descriptionPanelLayout.setHorizontalGroup(
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
+            .addComponent(installButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(viewOnAppStoreButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        descriptionPanelLayout.setVerticalGroup(
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(descriptionPanelLayout.createSequentialGroup()
+                .addComponent(descriptionScrollPane)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(installButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(viewOnAppStoreButton))
         );
 
-        jScrollPane1.setViewportView(jTree1);
+        tagsScrollPane.setViewportView(tagsTree);
 
-        jScrollPane2.setViewportView(jTree2);
+        resultsScrollPane.setViewportView(resultsTree);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(searchAppsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField)
-                        .add(183, 183, 183))
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 182, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 171, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(searchAppsLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(filterTextField)
+                        .addGap(183, 183, 183))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tagsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(resultsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(jButton1)
-                        .add(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(installFromFileButton)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(searchAppsLabel)
-                    .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(searchAppsLabel)
+                    .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tagsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
+                    .addComponent(resultsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(installFromFileButton)
                 .addContainerGap())
         );
+
+        // Make the JTextPane render HTML using the default UI font
+        Font font = UIManager.getFont("Label.font");
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
+                "font-size: " + font.getSize() + "pt; }";
+        ((HTMLDocument) descriptionTextPane.getDocument()).getStyleSheet().addRule(bodyRule);
     }
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
@@ -365,11 +376,11 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
     }
     
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void installFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
     }
     
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
     }
     
@@ -398,14 +409,14 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		}
     	}
     	
-    	jTree1.setModel(new DefaultTreeModel(root));
-    	jTree1.expandRow(1);
-    	jTree1.setRootVisible(false);
+    	tagsTree.setModel(new DefaultTreeModel(root));
+    	tagsTree.expandRow(1);
+    	tagsTree.setRootVisible(false);
     }
  
     private void updateResultsTree() {
     	
-    	DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) jTree1.getSelectionPath().getLastPathComponent();
+    	DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tagsTree.getSelectionPath().getLastPathComponent();
     	
 //    	DebugHelper.print(String.valueOf(selectedNode.getUserObject()));
     	
@@ -420,7 +431,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		fillResultsTree(selectedTag);
     	} else {
     		// Clear tree
-    		jTree2.setModel(new DefaultTreeModel(null));
+    		resultsTree.setModel(new DefaultTreeModel(null));
     	}
     }
     
@@ -446,12 +457,41 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		root.add(treeNode);
     	}
     	
-    	jTree2.setModel(new DefaultTreeModel(root));
-    	jTree2.setRootVisible(false);
+    	resultsTree.setModel(new DefaultTreeModel(root));
+    	resultsTree.setRootVisible(false);
     }
     
     private void updateDescriptionBox() {
     	
+    	
+    	TreePath selectedPath = resultsTree.getSelectionPath();
+    	
+    	if (selectedPath != null) {
+    		DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) resultsTree.getSelectionPath().getLastPathComponent();
+    		WebApp selectedApp = (WebApp) selectedNode.getUserObject();
+        	
+    		String text = "";
+    		
+    		text += "<html> <head> </head> <body>";
+    		
+    		// App hyperlink to web store page
+    		// text += "<p style=\"margin-top: 0\"> <a href=\"" + selectedApp.getPageUrl() + "\">" + selectedApp.getPageUrl() + "</a> </p>";
+    		
+    		// App image
+    		text += "<img border=\"0\" src=\"" + appManager.getWebQuerier().getAppStoreUrl() + selectedApp.getIconUrl() + "\" alt=\"" + selectedApp.getFullName() + "\"/>";
+    		
+    		// App name
+    		text += "<p> <b>" + selectedApp.getFullName() + "</b> </p>";
+    		
+    		// App description
+    		text += "<p>" + (selectedApp.getDescription() == null ? "App description not found." : selectedApp.getDescription()) + "</p>";
+    		text += "</body> </html>";
+    		descriptionTextPane.setText(text);
+    		
+    	} else {
+    		
+    		descriptionTextPane.setText("App description is displayed here.");
+    	}
     }
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {
