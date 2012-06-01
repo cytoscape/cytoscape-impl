@@ -36,7 +36,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -804,7 +803,10 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     private void writeAttribute(final CyRow row, final String attName) throws IOException {
     	// create an attribute and its type:
 		final CyColumn column = row.getTable().getColumn(attName);
-		if (column == null) return;
+		
+		if (column == null || column.getVirtualColumnInfo().isVirtual())
+			return;
+		
 		final Class<?> attType = column.getType();
 
 		if (attType == Double.class) {
@@ -832,7 +834,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 
 				if (listAttr != null) {
 					depth++;
-					// interate through the list
+					// iterate through the list
 					for (Object obj : listAttr) {
 						// Protect tabs and returns (if necessary)
 						String sAttr = obj.toString();

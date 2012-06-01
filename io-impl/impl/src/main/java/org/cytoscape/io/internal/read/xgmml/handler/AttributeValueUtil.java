@@ -240,12 +240,16 @@ public class AttributeValueUtil {
         return parseState;
     }
     
-    private <T> void setAttribute(CyRow row, String name, Class<T> type, T value) {
+    private <T> void setAttribute(final CyRow row, final String name, final Class<T> type, final T value) {
         if (name != null) {
-            CyTable table = row.getTable();
+            final CyTable table = row.getTable();
+            final CyColumn column = table.getColumn(name);
             
-            if (table.getColumn(name) == null) {
+            if (column == null) {
             	table.createColumn(name, type, false);
+            } else if (column.getVirtualColumnInfo().isVirtual()) {
+            	logger.warn("Cannot set value to virtual column \"" + name + "\".");
+            	return;
             }
             
             if (value != null) {
