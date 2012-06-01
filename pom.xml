@@ -49,6 +49,7 @@
 		<module>search-impl</module>
 		<module>session-impl</module>
 		<module>help-impl</module>
+		<module>swing-util-impl</module>
 		<module>swing-application-impl</module>
 		<module>table-browser-impl</module>
 		<module>table-import-impl</module>
@@ -220,6 +221,8 @@
 				<artifactId>command-executor-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
+
+			<!-- test jars -->
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>core-task-api</artifactId>
