@@ -65,9 +65,6 @@ import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
-import org.cytoscape.internal.commands.ArgHandlerFactory;
-import org.cytoscape.internal.commands.ArgRecorder;
-import org.cytoscape.internal.commands.BasicArgHandlerFactory;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
 import org.cytoscape.internal.io.SessionStateIO;
@@ -128,6 +125,7 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
+import org.cytoscape.command.AvailableCommands;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -407,18 +405,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
 
-		BasicArgHandlerFactory argHandlerFactory = new BasicArgHandlerFactory();
-		registerService(bc,argHandlerFactory,ArgHandlerFactory.class,new Properties());
-
-		ArgRecorder argRec = new ArgRecorder();
-        registerServiceListener(bc,argRec,"addTunableHandlerFactory","removeTunableHandlerFactory",ArgHandlerFactory.class);
-        CommandListAction cla = new CommandListAction(cytoscapeDesktop, argRec);
+ 		AvailableCommands availableCommandsServiceRef = getService(bc,AvailableCommands.class);
+        CommandListAction cla = new CommandListAction(cytoscapeDesktop, availableCommandsServiceRef);
         registerService(bc,cla,CyAction.class,new Properties());
-        registerServiceListener(bc,cla,"addTaskFactory","removeTaskFactory",TaskFactory.class);
-        registerServiceListener(bc,cla,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
-        registerServiceListener(bc,cla,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
-        registerServiceListener(bc,cla,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
-
 	}
 
 	private boolean isMac() {

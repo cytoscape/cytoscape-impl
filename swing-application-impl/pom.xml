@@ -170,6 +170,10 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>datasource-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>command-executor-api</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.osgi</groupId>

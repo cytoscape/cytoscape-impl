@@ -4,9 +4,10 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.command.internal.CommandExecutorImpl;
-import org.cytoscape.command.internal.CommandExecutorTaskFactory;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.internal.tunables.*;
+import org.cytoscape.command.internal.available.*;
 
 import org.cytoscape.work.TaskFactory;
 
@@ -15,6 +16,7 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.util.*;
+import org.cytoscape.work.TunableSetter;
 
 import org.osgi.framework.BundleContext;
 
@@ -31,16 +33,18 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
+		TunableSetter tunableSetterServiceRef = getService(bc,TunableSetter.class);
 		CommandTunableInterceptorImpl interceptor = new CommandTunableInterceptorImpl();
 		
 		CommandExecutorImpl commandExecutorImpl = new CommandExecutorImpl(cyApplicationManagerServiceRef, interceptor);
-		CommandExecutorTaskFactory commandExecutorTaskFactory = new CommandExecutorTaskFactory(commandExecutorImpl);
+		CommandExecutorTaskFactoryImpl commandExecutorTaskFactory = new CommandExecutorTaskFactoryImpl(commandExecutorImpl,tunableSetterServiceRef);
 		
 		
 		Properties commandExecutorTaskFactoryProps = new Properties();
 		commandExecutorTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools");
 		commandExecutorTaskFactoryProps.setProperty(TITLE,"Run Commands...");
 		registerService(bc,commandExecutorTaskFactory,TaskFactory.class, commandExecutorTaskFactoryProps);
+		registerService(bc,commandExecutorTaskFactory,CommandExecutorTaskFactory.class, commandExecutorTaskFactoryProps);
 
 		registerServiceListener(bc,commandExecutorImpl,"addTaskFactory","removeTaskFactory",TaskFactory.class);
 		registerServiceListener(bc,commandExecutorImpl,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
@@ -77,6 +81,19 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,urlTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,listSingleTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,listMultipleTHF,StringTunableHandlerFactory.class,new Properties());
+
+        BasicArgHandlerFactory argHandlerFactory = new BasicArgHandlerFactory();
+		registerService(bc,argHandlerFactory,ArgHandlerFactory.class,new Properties());
+
+        ArgRecorder argRec = new ArgRecorder();
+        registerServiceListener(bc,argRec,"addTunableHandlerFactory","removeTunableHandlerFactory",ArgHandlerFactory.class);
+        AvailableCommandsImpl cla = new AvailableCommandsImpl(argRec);
+        registerService(bc,cla,AvailableCommands.class,new Properties());
+        registerServiceListener(bc,cla,"addTaskFactory","removeTaskFactory",TaskFactory.class);
+        registerServiceListener(bc,cla,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
+        registerServiceListener(bc,cla,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
+        registerServiceListener(bc,cla,"addNetworkViewCollectionTaskFactory","removeNetworkViewCollectionTaskFactory",NetworkViewCollectionTaskFactory.class);
+        registerServiceListener(bc,cla,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
 	}
 }
 

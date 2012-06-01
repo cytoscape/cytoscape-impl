@@ -1,13 +1,6 @@
 
 /*
-  Copyright (c) 2006, The Cytoscape Consortium (www.cytoscape.org)
-
-  The Cytoscape Consortium is:
-  - Institute for Systems Biology
-  - University of California San Diego
-  - Memorial Sloan-Kettering Cancer Center
-  - Institut Pasteur
-  - Agilent Technologies
+  Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
 
   This library is free software; you can redistribute it and/or modify it
   under the terms of the GNU Lesser General Public License as published
@@ -33,58 +26,45 @@
   along with this library; if not, write to the Free Software Foundation,
   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-
 package org.cytoscape.command.internal;
 
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 
-import java.io.BufferedReader;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import java.io.File;
-import java.io.FileReader;
+import java.util.List; 
+import java.util.Map; 
+import java.util.HashMap; 
+import java.util.Arrays; 
 
 
-import java.util.List;
-import java.util.ArrayList;
-
-
-public class CommandExecutorTask extends AbstractTask {
-
-	@Tunable(description="Select the command file:", params="input=true")
-	public File file;
+public class CommandExecutorTaskFactoryImpl extends AbstractTaskFactory implements CommandExecutorTaskFactory {
 
 	private final CommandExecutorImpl cei;
+	private final TunableSetter tunableSetter;
 
-	public CommandExecutorTask(CommandExecutorImpl cei) {
-		super();
+	public CommandExecutorTaskFactoryImpl(CommandExecutorImpl cei, TunableSetter tunableSetter) {
 		this.cei = cei;
+		this.tunableSetter = tunableSetter;
 	}
 
-	public void run(TaskMonitor tm) throws Exception {
-        if (file == null)
-            throw new NullPointerException("You must specify a non-null command file to load!");
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new CommandFileExecutorTask(cei));
+	} 
 
-		FileReader fin = null; 
-		BufferedReader bin = null; 
+	public TaskIterator createTaskIterator(File file) {
+        final Map<String, Object> m = new HashMap<String, Object>();
+        m.put("file", file);
+        return tunableSetter.createTaskIterator(this.createTaskIterator(), m);
+	} 
 
-		try {
+	public TaskIterator createTaskIterator(String ... commands) {
+		return createTaskIterator(Arrays.asList(commands));
+	} 
 
-			fin = new FileReader(file);
-			bin = new BufferedReader(fin);
-			List<String> lines = new ArrayList<String>();
-			String s;
-
-			while ((s = bin.readLine()) != null) 
-				lines.add( s.trim() );
-
-			cei.executeList(lines,tm);
-
-		} finally {
-			if ( bin != null )
-				bin.close();
-			if ( fin != null )
-				fin.close();
-		}
-	}
+	public TaskIterator createTaskIterator(List<String> commands) {
+		return new TaskIterator(new CommandStringsExecutorTask(commands,cei));
+	} 
 }

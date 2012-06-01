@@ -34,59 +34,57 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-package org.cytoscape.internal.actions;
+package org.cytoscape.command.internal;
 
-import java.awt.event.ActionEvent;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+
+
 import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.command.AvailableCommands;
+public class CommandFileExecutorTask extends AbstractTask {
 
-/**
- *
- */
-public class CommandListAction extends AbstractCyAction {
+	@Tunable(description="Select the command file:", params="input=true")
+	public File file;
 
-	private final CySwingApplication swingApp;
-	private final AvailableCommands availableCommands; 
+	private final CommandExecutorImpl cei;
 
-	public CommandListAction(CySwingApplication swingApp, AvailableCommands availableCommands) {
-		super("List All Commands...");
-		setPreferredMenu("Tools");
-	 	this.swingApp = swingApp;
-	 	this.availableCommands = availableCommands;
+	public CommandFileExecutorTask(CommandExecutorImpl cei) {
+		super();
+		this.cei = cei;
 	}
 
-	public void actionPerformed(ActionEvent ae) {
-		SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				StringBuilder sb = new StringBuilder();
-				for ( String namespace : availableCommands.getNamespaces() ) {
-					for ( String command : availableCommands.getCommands(namespace) ) {
-						sb.append(namespace);
-						sb.append(" ");
-						sb.append(command);
-						sb.append(" ");
-						for ( String arg : availableCommands.getArguments(namespace,command) ) {
-							sb.append(arg);
-							sb.append(" ");
-						}
-						sb.append(System.getProperty("line.separator"));
-					}
-				}
-				JOptionPane.showMessageDialog(swingApp.getJFrame(), sb.toString());
-			}
-		});
+	public void run(TaskMonitor tm) throws Exception {
+        if (file == null)
+            throw new NullPointerException("You must specify a non-null command file to load!");
+
+		FileReader fin = null; 
+		BufferedReader bin = null; 
+
+		try {
+
+			fin = new FileReader(file);
+			bin = new BufferedReader(fin);
+			List<String> lines = new ArrayList<String>();
+			String s;
+
+			while ((s = bin.readLine()) != null) 
+				lines.add( s.trim() );
+
+			cei.executeList(lines,tm);
+
+		} finally {
+			if ( bin != null )
+				bin.close();
+			if ( fin != null )
+				fin.close();
+		}
 	}
 }

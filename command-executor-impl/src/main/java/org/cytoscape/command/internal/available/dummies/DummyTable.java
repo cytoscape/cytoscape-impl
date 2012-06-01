@@ -1,5 +1,5 @@
 
-package org.cytoscape.internal.actions.dummies;
+package org.cytoscape.command.internal.available.dummies;
 
 import org.cytoscape.model.*;
 import static org.cytoscape.model.CyTable.* ;

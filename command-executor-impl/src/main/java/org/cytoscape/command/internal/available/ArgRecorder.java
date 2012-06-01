@@ -1,4 +1,4 @@
-package org.cytoscape.internal.commands;
+package org.cytoscape.command.internal.available;
 
 import java.util.*;
 

@@ -69,6 +69,8 @@
 		<module>gui-cmdline-parser-impl</module>
 		<module>edge-bundler-impl</module>
 		<module>scripting-impl</module>
+		<module>headless-application-impl</module>
+		<module>headless-cmdline-parser-impl</module>
   </modules>
 
 	<properties>
@@ -210,12 +212,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
-				<artifactId>biopax-api</artifactId>
+				<artifactId>datasource-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
-				<artifactId>datasource-api</artifactId>
+				<artifactId>command-executor-api</artifactId>
 				<version>${cytoscape.api.version}</version> 
 			</dependency>
 			<dependency>

@@ -2,6 +2,7 @@ package org.cytoscape.cmdline.headless.internal;
 
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
+import org.cytoscape.command.AvailableCommands;
 
 import java.util.Properties;
 
@@ -33,14 +34,14 @@ public class Parser {
 	private final CyShutdown shutdown; 
 	private final CyVersion version; 
 	private final StartupConfig startupConfig; 
-	private final Properties props; 
+	private final AvailableCommands availableCommands; 
 
-	public Parser(String[] args, CyShutdown shutdown, CyVersion version, StartupConfig startupConfig, Properties props) {
+	public Parser(String[] args, CyShutdown shutdown, CyVersion version, StartupConfig startupConfig, AvailableCommands availableCommands) {
 		this.args = args;
 		this.shutdown = shutdown;
 		this.version = version;
 		this.startupConfig = startupConfig;
-		this.props = props;
+		this.availableCommands = availableCommands;
 		options = initOptions(); 
 		parseCommandLine(args);
 	}
@@ -54,7 +55,7 @@ public class Parser {
 
 		opt.addOption(OptionBuilder
 		              .withLongOpt("command")
-		              .withDescription("Load a cytoscape command file.")
+		              .withDescription("Cytoscape command file to be executed.")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("c"));
 
@@ -71,39 +72,51 @@ public class Parser {
 		try {
 			line = parser.parse(options, args);
 		} catch (ParseException e) {
-			logger.error("Parsing command line failed: " + e.getMessage());
+			logger.error("Parsing command line failed.",e);
 			printHelp();
-			props.setProperty("tempHideWelcomeScreen","true");
 			shutdown.exit(1);
 			return;
 		}
 		
 		if (line.hasOption("h")) {
 			printHelp();
-			shutdown.exit(0);
-			props.setProperty("tempHideWelcomeScreen","true");
-			return;
-		}
-
-		if (line.hasOption("v")) {
-			logger.info("Cytoscape version: " + version.getVersion());
+		} else if (line.hasOption("v")) {
 			System.out.println("Cytoscape version: " + version.getVersion());
-			props.setProperty("tempHideWelcomeScreen","true");
-			shutdown.exit(0);
-			return;
-		}
-
-		// Either load the session ...
-		if (line.hasOption("c")) {
-			//startupConfig.setSession(line.getOptionValue("s"));
+		} else if (line.hasOption("c")) {
 			startupConfig.setCommandFile(line.getOptionValue("c"));
-
-		// ... or all the rest.
+		} else {
+			logger.error("No arguments specified! See usage for details.");
+			printHelp();
 		}
 	}
 
 	private void printHelp() {
 		HelpFormatter formatter = new HelpFormatter();
+		System.out.println();
 		formatter.printHelp("cytoscape.{sh|bat} [OPTIONS]", options);
+		printAvailableCommands();
+	}
+
+	private void printAvailableCommands() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(System.getProperty("line.separator"));
+		sb.append(" available commands:");
+		sb.append(System.getProperty("line.separator"));
+		sb.append(System.getProperty("line.separator"));
+		for ( String namespace : availableCommands.getNamespaces() ) {
+			for ( String command : availableCommands.getCommands(namespace) ) {
+				sb.append("  ");
+				sb.append(namespace);
+				sb.append(" ");
+				sb.append(command);
+				sb.append(" ");
+				for ( String arg : availableCommands.getArguments(namespace,command) ) {
+					sb.append(arg);
+					sb.append(" ");
+				}
+				sb.append(System.getProperty("line.separator"));
+			}
+		}
+		System.out.println(sb.toString());
 	}
 }

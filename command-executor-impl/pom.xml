@@ -76,5 +76,9 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>command-executor-api</artifactId>
+		</dependency>
 	</dependencies>
 </project>
