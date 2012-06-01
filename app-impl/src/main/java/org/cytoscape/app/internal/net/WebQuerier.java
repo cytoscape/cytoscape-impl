@@ -226,13 +226,6 @@ public class WebQuerier {
 						
 						// Sort releases by release date
 						Collections.sort(releases);
-						
-						/*
-						"release_download_url":"/apps/metanetter/download/0.1",
-				        "created_iso":"2012-05-11T10:32:58",
-				        "version":"0.1",
-				        "works_with":"3.0";
-				        */
 					}
 					
 					webApp.setReleases(releases);
@@ -244,10 +237,17 @@ public class WebQuerier {
 				// DebugHelper.print("Obtaining ImageIcon: " + iconUrlPrefix + webApp.getIconUrl());
 				// webApp.setImageIcon(new ImageIcon(new URL(iconUrlPrefix + webApp.getIconUrl())));
 
-				// Obtain tags associated with this app
-				processAppTags(webApp, jsonObject);
-
-				result.add(webApp);
+				
+				// Check the app for compatible releases
+				List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
+				
+				// Only add this app if it has compatible releases
+				if (compatibleReleases.size() > -1) {
+					// Obtain tags associated with this app
+					processAppTags(webApp, jsonObject);
+	
+					result.add(webApp);
+				}
 			}
 			
 		} catch (IOException e) {
@@ -342,22 +342,15 @@ public class WebQuerier {
 	 */
 	public File downloadApp(WebApp webApp, String version, File directory) throws AppDownloadException {
 	
-		List<WebApp.Release> compatibleReleases = new LinkedList<WebApp.Release>();
-		
-		for (WebApp.Release release : webApp.getReleases()) {
-			
-			// Get releases that are compatible with the current version of Cytoscape
-			if (release.getReleaseVersion().matches(COMPATIBLE_RELEASE_REGEX)) {
-				compatibleReleases.add(release);
-			}
-		}
-		
+		List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
 		
 		if (compatibleReleases.size() > 0) {
 			WebApp.Release releaseToDownload = null;
 			
 			if (version != null) {
 				for (WebApp.Release compatibleRelease : compatibleReleases) {
+					
+					// Check if the desired version is found in the list of available versions
 					if (compatibleRelease.getReleaseVersion().matches(
 							"(^\\s*|.*,)\\s*" + version + "\\s*(\\s*$|,.*)")) {
 						releaseToDownload = compatibleRelease;
@@ -412,66 +405,24 @@ public class WebQuerier {
 		
 		return null;
 	}
-	
-	
+
 	/**
-	 * Obtain the release URL for a given app and version by querying the app store.
-	 * 
-	 * This method assumes that the appName parameter corresponds to the name of an
-	 * app available on the web store.
-	 * 
-	 * @param appName The name of the app whose release URL is to be looked for
-	 * @param version The desired version of the app, or <code>null</code> to obtain
-	 * the the latest release 
-	 * @return The download URL of the app, or <code>null</code> if no release was
-	 * available, or a release with the given version was not found.
+	 * Returns the list of compatible releases, in chronological order starting with the earliest.
+	 * @param webApp
+	 * @return
 	 */
-	private String getReleaseUrl(String appName, String version) {
+	private List<WebApp.Release> getCompatibleReleases(WebApp webApp) {
+		List<WebApp.Release> compatibleReleases = new LinkedList<WebApp.Release>();
 		
-		try {
-			String jsonResult = query(APP_STORE_URL + "apps/" + appName);
+		for (WebApp.Release release : webApp.getReleases()) {
 			
-			JSONObject jsonObject = new JSONObject(jsonResult);
-		
-			JSONArray releases = jsonObject.getJSONArray("releases");
-			
-			DebugHelper.print("Releases for " + appName + ": " + releases.length());
-			
-			String latestReleaseUrl = null;
-			String latestReleaseDate = null;
-			String releaseDate;
-			
-			for (int index = 0; index < releases.length(); index++) {
-				JSONObject release = releases.getJSONObject(index);
-			
-				if (version != null) {
-					if (release.getString("version").equalsIgnoreCase(version)) {
-						latestReleaseUrl = APP_STORE_URL + release.getString("release_file_url");
-					}
-				} else {
-					// If version was null, look for the latest release
-					releaseDate = release.getString("created_iso");
-					if (latestReleaseDate == null || releaseDate.compareToIgnoreCase(latestReleaseDate) >= 0) {
-						latestReleaseUrl = APP_STORE_URL + release.getString("release_file_url");
-						latestReleaseDate = releaseDate;
-					}
-				}
+			// Get releases that are compatible with the current version of Cytoscape (version 3)
+			if (release.getReleaseVersion().matches(COMPATIBLE_RELEASE_REGEX)) {
+				compatibleReleases.add(release);
 			}
-			
-			return latestReleaseUrl;
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
-		
-		
-		return null;
-		
+		return compatibleReleases;
 	}
 	
 	
@@ -480,49 +431,5 @@ public class WebQuerier {
 		Set<WebApp> webApps = getAllApps();
 		
 		return appsByTagName.get(tagName);
-		
-		/*
-		 
-		// Construct a map used to quickly obtain references to WebApp objects given the app's name.
-		// The app's name is guaranteed to be unique by the app store website.
-		Map<String, WebApp> appMap = new HashMap<String, WebApp>();
-		for (WebApp webApp : webApps) {
-			appMap.put(webApp.getName(), webApp);
-		}
-		
-		Set<WebApp> result = new HashSet<WebApp>();
-		
-		// Query for apps that match the given tag
-		String jsonResult = null;
-		try {
-			// Obtain information about the app from the website
-			jsonResult = query(APP_STORE_URL + "apps/with_tag/" + tagName);
-			
-			// Parse the JSON result
-			JSONArray jsonArray = new JSONArray(jsonResult);
-			JSONObject jsonObject = null;
-			
-			for (int index = 0; index < jsonArray.length(); index++) {
-				jsonObject = jsonArray.getJSONObject(index);
-				
-				String appName = jsonObject.get("name").toString();
-
-				// Assume any app obtained by querying with the tag was
-				// already obtained by the query for all available apps
-				result.add(appMap.get(appName));
-			}
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			DebugHelper.print("Error parsing JSON: " + e.getMessage());
-			e.printStackTrace();
-		}
-		
-		return result;
-		
-		*/
 	}
 }

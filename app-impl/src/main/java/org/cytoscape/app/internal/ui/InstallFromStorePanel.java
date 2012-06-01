@@ -101,7 +101,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	tagsTree.addTreeSelectionListener(new TreeSelectionListener() {
 			
 			@Override
-			public void valueChanged(TreeSelectionEvent arg0) {
+			public void valueChanged(TreeSelectionEvent e) {
 				updateResultsTree();
 			}
 		});
@@ -127,32 +127,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 		    	
 				taskMonitor.setStatusMessage("Getting available apps");
 				Set<WebApp> availableApps = webQuerier.getAllApps();
-				
-				// Note: Code below not used because web store now returns tag information when
-				// returning all apps
-				
-				/* 
-		    	// Obtain available tags
-		    	Set<WebQuerier.AppTag> availableTags = webQuerier.getAllTags();
-		    	
-		    	double progress = 0;
-		    	
-		    	for (WebQuerier.AppTag appTag : availableTags) {
-
-		    		taskMonitor.setStatusMessage("Getting apps for tag: " + appTag.getFullName());
-		    		progress += 1.0 / availableTags.size();
-		    		taskMonitor.setProgress(progress);
-		    		
-		    		// Obtain apps for the current tag
-		    		Set<WebApp> tagApps = webQuerier.getAppsByTag(appTag.getName());
-		    		
-		    		// Assume the set of apps returned is a subset of all available apps
-		    		for (WebApp tagApp : tagApps) {
-		    			tagApp.getAppTags().add(appTag);
-		    		}
-		    	}
-				*/
-				
+			
 				// Once the information is obtained, update the tree
 				
 				SwingUtilities.invokeLater(new Runnable() {
@@ -174,19 +149,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 			}
 			
 		}));
-    	
-		/*
-		addTagInformation();
-        populateTree(appManager.getWebQuerier().getAllApps());
-        */
-		
-		/*
-        setupDescriptionListener();
-        setupHyperlinkListener();
-        setupTextFieldListener();
-        */
-		
-		
     }
 
     private void initComponents() {
@@ -339,38 +301,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	
         if (files != null) {
         	
-        	/*
-        	for (int index = 0; index < files.length; index++) {
-        		AppParser appParser = appManager.getAppParser();
-        		
-        		App app = null;
-        		
-        		// Attempt to parse each file as an App object
-        		try {
-					app = appParser.parseApp(files[index]);
-					
-				} catch (AppParsingException e) {
-					
-					// TODO: Replace DebugHelper.print() messages with exception or a pop-up message box
-					DebugHelper.print("Error parsing app: " + e.getMessage());
-					
-					JOptionPane.showMessageDialog(parent, "Error opening app: " + e.getMessage(),
-		                       "Error", JOptionPane.ERROR_MESSAGE);
-				} finally {
-					
-					// Install the app if parsing was successful
-					if (app != null) {
-						try {
-							appManager.installApp(app);
-						} catch (AppInstallException e) {
-							JOptionPane.showMessageDialog(parent, "Error installing app: " + e.getMessage(),
-				                       "Error", JOptionPane.ERROR_MESSAGE);
-						}
-					}
-				}
-        	}
-        	*/
-        	
         	taskManager.execute(new TaskIterator(new Task() {
 
     			@Override
@@ -423,9 +353,15 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 						
 							fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
 								appManager.getWebQuerier().getAllApps()));
+							
 						} else {
+							//fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
+							//	appManager.getWebQuerier().getAppsByTag(currentSelectedAppTag.getName())));
+							
 							fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
-								appManager.getWebQuerier().getAppsByTag(currentSelectedAppTag.getName())));
+									appManager.getWebQuerier().getAllApps()));
+							
+							tagsTree.clearSelection();
 						}
 					}
 					
@@ -447,12 +383,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 			}
 		});
     }
-    
-    
-    private void searchComboBoxPropertyChange(java.beans.PropertyChangeEvent evt) {
-
-    }
-    
     
     private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {
     	final WebQuerier webQuerier = appManager.getWebQuerier();
@@ -495,19 +425,22 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     private void buildTagsTree() {
     	WebQuerier webQuerier = appManager.getWebQuerier();
     	
-    	// Obtain available tags
+    	// Get all available apps and tags
+    	Set<WebApp> availableApps = webQuerier.getAllApps();
     	Set<WebQuerier.AppTag> availableTags = webQuerier.getAllTags();
-    	
-    	
     	
     	DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     	
     	DefaultMutableTreeNode allAppsTreeNode = new DefaultMutableTreeNode("all apps" 
-    			+ " (" + webQuerier.getAllApps().size() + ")");
+    			+ " (" + availableApps.size() + ")");
     	root.add(allAppsTreeNode);
     	
     	DefaultMutableTreeNode appsByTagTreeNode = new DefaultMutableTreeNode("apps by tag");
-    	root.add(appsByTagTreeNode);
+    	
+    	// Only show the "apps by tag" node if we have at least 1 app
+    	if (availableApps.size() > 0) {
+    		root.add(appsByTagTreeNode);
+    	}
     	
     	DefaultMutableTreeNode treeNode = null;
     	for (final WebQuerier.AppTag appTag : availableTags) {
@@ -525,24 +458,28 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
  
     private void updateResultsTree() {
     	
-    	DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tagsTree.getSelectionPath().getLastPathComponent();
+    	TreePath selectionPath = tagsTree.getSelectionPath();
     	
 //    	DebugHelper.print(String.valueOf(selectedNode.getUserObject()));
     	currentSelectedAppTag = null;
     	
-    	// Check if the "all apps" node is selected
-    	if (selectedNode.getLevel() == 1 
-    			&& String.valueOf(selectedNode.getUserObject()).startsWith("all apps")) {
-    		fillResultsTree(null);
-    		
-    	} else if (selectedNode.getUserObject() instanceof WebQuerier.AppTag) {
-    		WebQuerier.AppTag selectedTag = (WebQuerier.AppTag) selectedNode.getUserObject();
-    		
-    		fillResultsTree(appManager.getWebQuerier().getAppsByTag(selectedTag.getName()));
-    		currentSelectedAppTag = selectedTag;
-    	} else {
-    		// Clear tree
-    		resultsTree.setModel(new DefaultTreeModel(null));
+    	if (selectionPath != null) {
+    		DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selectionPath.getLastPathComponent();
+        	
+	    	// Check if the "all apps" node is selected
+	    	if (selectedNode.getLevel() == 1 
+	    			&& String.valueOf(selectedNode.getUserObject()).startsWith("all apps")) {
+	    		fillResultsTree(null);
+	    		
+	    	} else if (selectedNode.getUserObject() instanceof WebQuerier.AppTag) {
+	    		WebQuerier.AppTag selectedTag = (WebQuerier.AppTag) selectedNode.getUserObject();
+	    		
+	    		fillResultsTree(appManager.getWebQuerier().getAppsByTag(selectedTag.getName()));
+	    		currentSelectedAppTag = selectedTag;
+	    	} else {
+	    		// Clear tree
+	    		resultsTree.setModel(new DefaultTreeModel(null));	    		
+	    	}
     	}
     }
     
@@ -626,36 +563,5 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 				e.printStackTrace();
 			}
 		}
-    }
-    
-    /**
-     * Populate the current tree of results with the available apps from the web store.
-     */
-    /*
-    private void populateTreeOld() {
-    	WebQuerier webQuerier = appManager.getWebQuerier();
-    	
-    	DefaultMutableTreeNode root = new DefaultMutableTreeNode("Available Apps (" + webQuerier.getAllApps().size() + ")");
-    	
-    	// Obtain available tags
-    	Set<WebQuerier.AppTag> availableTags = webQuerier.getAllTags();
-    	
-    	for (WebQuerier.AppTag appTag : availableTags) {
-    		DefaultMutableTreeNode tagNode = new DefaultMutableTreeNode(appTag.getFullName() + " (" + appTag.getCount() + ")");
-    		
-    		// Obtain apps for the current tag
-    		DebugHelper.print("Getting apps for tag: " + appTag.getName());
-    		Set<WebApp> tagApps = webQuerier.getAppsByTag(appTag.getName());
-    		
-    		for (WebApp tagApp : tagApps) {
-    			tagNode.add(new DefaultMutableTreeNode(tagApp));
-    		}
-    		
-    		root.add(tagNode);
-    	}
-    	
-    	resultsTree.setModel(new DefaultTreeModel(root));
-    }
-    */
-    
+    }    
 }

@@ -95,15 +95,6 @@ public class WebApp {
 			this.compatibleCytoscapeVersions = compatibleCytoscapeVersions;
 		}
 
-		
-		
-		
-		/*
-		"release_download_url":"/apps/metanetter/download/0.1",
-        "created_iso":"2012-05-11T10:32:58",
-        "version":"0.1",
-        "works_with":"3.0";
-        */
 	}
 	
 	public WebApp() {
