@@ -23,6 +23,28 @@
 
 	<packaging>jar</packaging>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+				<configuration>
+					<systemProperties>
+						<property>
+							<name>cytoscape.api.version</name>
+							<value>${cytoscape.api.version}</value>
+						</property>
+						<property>
+							<name>cytoscape.impl.version</name>
+							<value>${project.version}</value>
+						</property>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 
 	<!-- Build minimal application to test session mechanism. -->
 	<dependencies>
