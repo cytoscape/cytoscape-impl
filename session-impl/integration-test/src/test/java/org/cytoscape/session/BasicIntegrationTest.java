@@ -22,6 +22,7 @@ import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.options;
 import static org.ops4j.pax.exam.CoreOptions.repository;
+import static org.ops4j.pax.exam.CoreOptions.frameworkStartLevel;
 
 import java.io.File;
 
@@ -121,8 +122,12 @@ public abstract class BasicIntegrationTest {
 
 		return options(
 				junitBundles(),
+
 				// Use Felix as runtime
 				felix(), 
+
+				// So that we actually start all of our bundles!
+				frameworkStartLevel(50),
 
 				// Specify all of our repositories
 				repository("http://code.cytoscape.org/nexus/content/repositories/snapshots/"),
@@ -130,65 +135,76 @@ public abstract class BasicIntegrationTest {
 				repository("http://code.cytoscape.org/nexus/content/repositories/thirdparty/"),
 
 				// Misc. bundles required to run minimal Cytoscape
-				mavenBundle().groupId("cytoscape-sun").artifactId("jhall").version("1.0"),
-				mavenBundle().groupId("com.googlecode.guava-osgi").artifactId("guava-osgi").version("9.0.0"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("parallelcolt").version("0.9.4"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("opencsv").version("2.1"),
-				mavenBundle().groupId("com.lowagie.text").artifactId("com.springsource.com.lowagie.text").version("2.0.8"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphicsio").version("2.1.3"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphicsio-svg").version("2.1.3"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphicsio-ps").version("2.1.3"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphics2d").version("2.1.3"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("l2fprod-common-shared").version("7.3"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("l2fprod-common-fontchooser").version("7.3"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("l2fprod-common-sheet").version("7.3"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("org.swinglabs.swingx").version("1.6.1"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-export").version("2.1.1"),
-				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-util").version("2.0.2"),
+				mavenBundle().groupId("cytoscape-sun").artifactId("jhall").version("1.0").startLevel(3),
+				mavenBundle().groupId("com.googlecode.guava-osgi").artifactId("guava-osgi").version("9.0.0").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("parallelcolt").version("0.9.4").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("opencsv").version("2.1").startLevel(3),
+				mavenBundle().groupId("com.lowagie.text").artifactId("com.springsource.com.lowagie.text").version("2.0.8").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphicsio").version("2.1.3").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphicsio-svg").version("2.1.3").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphicsio-ps").version("2.1.3").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-graphics2d").version("2.1.3").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("l2fprod-common-shared").version("7.3").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("l2fprod-common-fontchooser").version("7.3").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("l2fprod-common-sheet").version("7.3").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("org.swinglabs.swingx").version("1.6.1").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-export").version("2.1.1").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-util").version("2.0.2").startLevel(3),
 				
 				// API bundles
-				mavenBundle().groupId("org.cytoscape").artifactId("event-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("model-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("group-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("viewmodel-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("presentation-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("session-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("io-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("property-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("work-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("core-task-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("application-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("layout-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("datasource-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-gui-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("work-swing-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("swing-application-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("equations-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("swing-application-api").version(apiBundleVersion),
-				
-				mavenBundle().groupId("org.cytoscape").artifactId("service-api").version(apiBundleVersion),
+				mavenBundle().groupId("org.cytoscape").artifactId("event-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("model-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("group-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("viewmodel-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("presentation-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("session-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("io-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("property-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("work-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("core-task-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("application-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("layout-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("datasource-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-gui-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("work-swing-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("swing-application-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("equations-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("swing-application-api").version(apiBundleVersion).startLevel(5),
+				mavenBundle().groupId("org.cytoscape").artifactId("service-api").version(apiBundleVersion).startLevel(5),
 				
 				// Implementation bundles
-				mavenBundle().groupId("org.cytoscape").artifactId("property-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("datasource-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("equations-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("event-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("swing-util-api").version(apiBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("model-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("group-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("work-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("work-headless-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("layout-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("viewmodel-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("presentation-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("application-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("session-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("ding-presentation-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("io-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("core-task-impl").version(implBundleVersion),
-				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-gui-impl").version(implBundleVersion)
+				mavenBundle().groupId("org.cytoscape").artifactId("property-impl").version(implBundleVersion).startLevel(7),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("swing-util-api").version(apiBundleVersion).startLevel(8),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("datasource-impl").version(implBundleVersion).startLevel(9),
+				mavenBundle().groupId("org.cytoscape").artifactId("equations-impl").version(implBundleVersion).startLevel(9),
+				mavenBundle().groupId("org.cytoscape").artifactId("event-impl").version(implBundleVersion).startLevel(9),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("model-impl").version(implBundleVersion).startLevel(11),
+				mavenBundle().groupId("org.cytoscape").artifactId("group-impl").version(implBundleVersion).startLevel(11),
+				mavenBundle().groupId("org.cytoscape").artifactId("work-impl").version(implBundleVersion).startLevel(11),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("work-headless-impl").version(implBundleVersion).startLevel(11),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("presentation-impl").version(implBundleVersion).startLevel(13),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("layout-impl").version(implBundleVersion).startLevel(15),
+				mavenBundle().groupId("org.cytoscape").artifactId("viewmodel-impl").version(implBundleVersion).startLevel(15),
+				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-impl").version(implBundleVersion).startLevel(15),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("application-impl").version(implBundleVersion).startLevel(17),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("session-impl").version(implBundleVersion).startLevel(19),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("ding-presentation-impl").version(implBundleVersion).startLevel(21),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("io-impl").version(implBundleVersion).startLevel(23),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("core-task-impl").version(implBundleVersion).startLevel(25),
+
+				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-gui-impl").version(implBundleVersion).startLevel(27)
 		);
 	}
 	
