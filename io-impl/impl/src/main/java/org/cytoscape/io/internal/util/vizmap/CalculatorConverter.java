@@ -451,9 +451,14 @@ public class CalculatorConverter {
 		boolean b = false;
 
 		if (key != null) {
-			b |= key
-					.matches("(node|edge)AppearanceCalculator\\.[^\\.]+\\."
-							 + "(nodeSizeLocked|nodeLabelColorFromNodeColor|nodeCustomGraphicsSizeSync|arrowColorMatchesEdge)");
+			// We need to distinguish node dependencies from edge dependencies because in
+			// some old versions of vizmap.props (e.g. 2.5 era) we would see a dependency
+			// (e.g. nodeSizeLocked) listed under both nodeAppearanceCalculator and
+			// edgeAppearanceCalculator, which means two Dependency objects get mapped
+			// to the same "nodeSizeLocked" VisualPropertyDependency.
+			b |= key.matches("nodeAppearanceCalculator\\.[^\\.]+\\." + 
+			                 "(nodeSizeLocked|nodeLabelColorFromNodeColor|nodeCustomGraphicsSizeSync)");
+			b |= key.matches("edgeAppearanceCalculator\\.[^\\.]+\\.arrowColorMatchesEdge");
 		}
 
 		return b;
