@@ -1,6 +1,8 @@
 package org.cytoscape.app.internal.net;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.ImageIcon;
@@ -47,8 +49,66 @@ public class WebApp {
 	
 	private ImageIcon imageIcon;
 	
+	private List<Release> releases;
+	
+	public static class Release implements Comparable<Release> {
+		private String relativeUrl;
+		private String releaseDate;
+		private String releaseVersion;
+		private String compatibleCytoscapeVersions;
+		
+		@Override
+		public int compareTo(Release other) {
+			return releaseDate.compareToIgnoreCase(other.releaseDate);
+		}
+		
+		public String getRelativeUrl() {
+			return relativeUrl;
+		}
+		
+		public String getReleaseDate() {
+			return releaseDate;
+		}
+		
+		public String getReleaseVersion() {
+			return releaseVersion;
+		}
+		
+		public String getCompatibleCytoscapeVersions() {
+			return compatibleCytoscapeVersions;
+		}
+		
+		
+		public void setRelativeUrl(String relativeUrl) {
+			this.relativeUrl = relativeUrl;
+		}
+		
+		public void setReleaseDate(String releaseDate) {
+			this.releaseDate = releaseDate;
+		}
+		
+		public void setReleaseVersion(String releaseVersion) {
+			this.releaseVersion = releaseVersion;
+		}
+		
+		public void setCompatibleCytoscapeVersions(String compatibleCytoscapeVersions) {
+			this.compatibleCytoscapeVersions = compatibleCytoscapeVersions;
+		}
+
+		
+		
+		
+		/*
+		"release_download_url":"/apps/metanetter/download/0.1",
+        "created_iso":"2012-05-11T10:32:58",
+        "version":"0.1",
+        "works_with":"3.0";
+        */
+	}
+	
 	public WebApp() {
 		appTags = new HashSet<AppTag>();
+		releases = new LinkedList<Release>();
 	}
 	
 	/** 
@@ -144,6 +204,10 @@ public class WebApp {
 		return compatibleCytoscapeVersion;
 	}
 	
+	public List<Release> getReleases() {
+		return releases;
+	}
+	
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
@@ -192,8 +256,14 @@ public class WebApp {
 		this.imageIcon = imageIcon;
 	}
 	
+	public void setReleases(List<Release> releases) {
+		this.releases = releases;
+	}
+	
 	@Override
 	public String toString() {
 		return fullName;
 	}
+
+	
 }

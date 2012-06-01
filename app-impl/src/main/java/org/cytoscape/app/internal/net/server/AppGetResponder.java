@@ -82,6 +82,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 
 				String installStatus = "app-not-found";
 				boolean appFoundInStore = false;
+				WebApp appToDownload = null;
 				
 				// Check if the app is available on the app store
 				// TODO: Use a web query to do this?
@@ -89,6 +90,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 				for (WebApp webApp : appManager.getWebQuerier().getAllApps()) {
 					if (webApp.getName().equals(appName)) {
 						appFoundInStore = true;
+						appToDownload = webApp;
 						break;
 					}
 				}
@@ -97,7 +99,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 				
 				if (appFoundInStore) {
 					
-					File appFile = appManager.getWebQuerier().downloadApp(appName, version, new File(appManager.getDownloadedAppsPath()));
+					File appFile = appManager.getWebQuerier().downloadApp(appToDownload, version, new File(appManager.getDownloadedAppsPath()));
 					
 					if (appFile == null) {
 						installStatus = "version-not-found";

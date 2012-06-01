@@ -9,8 +9,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +37,11 @@ public class WebQuerier {
 	
 	private static final String REQUEST_JSON_HEADER_KEY = "X-Requested-With";
 	private static final String REQUEST_JSON_HEADER_VALUE = "XMLHttpRequest";
+	
+	/**
+	 * A regular expression for version lists that are compatible with the current version of Cytoscape.
+	 */
+	private static final String COMPATIBLE_RELEASE_REGEX = "(^\\s*|.*,)\\s*3(\\..*)?\\s*(\\s*$|,.*)";
 	
 	private StreamUtil streamUtil;
 	
@@ -196,6 +204,43 @@ public class WebQuerier {
 				} catch (NumberFormatException e) {
 				}
 				
+				try {
+					List<WebApp.Release> releases = new LinkedList<WebApp.Release>();
+					
+					if (jsonObject.has("releases")) {
+						JSONArray jsonReleases = jsonObject.getJSONArray("releases");
+						JSONObject jsonRelease;
+						
+						for (int releaseIndex = 0; releaseIndex < jsonReleases.length(); releaseIndex++) {
+							jsonRelease = jsonReleases.getJSONObject(releaseIndex);
+							
+							WebApp.Release release = new WebApp.Release();
+							
+							release.setRelativeUrl(jsonRelease.get("release_download_url").toString());
+							release.setReleaseDate(jsonRelease.get("created_iso").toString());
+							release.setReleaseVersion(jsonRelease.get("version").toString());
+							release.setCompatibleCytoscapeVersions(jsonRelease.get("works_with").toString());
+							
+							releases.add(release);
+						}
+						
+						// Sort releases by release date
+						Collections.sort(releases);
+						
+						/*
+						"release_download_url":"/apps/metanetter/download/0.1",
+				        "created_iso":"2012-05-11T10:32:58",
+				        "version":"0.1",
+				        "works_with":"3.0";
+				        */
+					}
+					
+					webApp.setReleases(releases);
+				} catch (JSONException e) {
+					DebugHelper.print("Error obtaining releases for app: " + webApp.getFullName() + ", " 
+							+ e.getMessage());
+				}
+				
 				// DebugHelper.print("Obtaining ImageIcon: " + iconUrlPrefix + webApp.getIconUrl());
 				// webApp.setImageIcon(new ImageIcon(new URL(iconUrlPrefix + webApp.getIconUrl())));
 
@@ -295,31 +340,55 @@ public class WebQuerier {
 	 * @param version The desired version, or <code>null</code> to obtain the latest release
 	 * @param directory The directory used to store the downloaded file
 	 */
-	public File downloadApp(String appName, String version, File directory) throws AppDownloadException {
-		Set<WebApp> apps = getAllApps();
+	public File downloadApp(WebApp webApp, String version, File directory) throws AppDownloadException {
+	
+		List<WebApp.Release> compatibleReleases = new LinkedList<WebApp.Release>();
 		
-		// Check that the app was found in the app store's current list of apps
-		boolean appFound = false;
-		for (WebApp webApp : apps) {
-			if (webApp.getName().equalsIgnoreCase(appName)) {
-				appFound = true;
-				break;
+		for (WebApp.Release release : webApp.getReleases()) {
+			
+			// Get releases that are compatible with the current version of Cytoscape
+			if (release.getReleaseVersion().matches(COMPATIBLE_RELEASE_REGEX)) {
+				compatibleReleases.add(release);
 			}
 		}
 		
-		if (appFound) {
-			try {
-
-				// Find the download url
-				String releaseUrl = getReleaseUrl(appName, version);
+		
+		if (compatibleReleases.size() > 0) {
+			WebApp.Release releaseToDownload = null;
+			
+			if (version != null) {
+				for (WebApp.Release compatibleRelease : compatibleReleases) {
+					if (compatibleRelease.getReleaseVersion().matches(
+							"(^\\s*|.*,)\\s*" + version + "\\s*(\\s*$|,.*)")) {
+						releaseToDownload = compatibleRelease;
+					}
+				}
 				
-				if (releaseUrl != null) {
-					URL downloadUrl = new URL(releaseUrl);
-					
+				if (releaseToDownload == null) {
+					throw new AppDownloadException("No release with the requested version " + version
+							+ " was found for the requested app " + webApp.getFullName());
+				}
+			} else {
+				releaseToDownload = compatibleReleases.get(compatibleReleases.size() - 1);
+			}
+			
+			URL downloadUrl = null;
+			try {
+				downloadUrl = new URL(APP_STORE_URL + releaseToDownload.getRelativeUrl());
+			} catch (MalformedURLException e) {
+				throw new AppDownloadException("Unable to obtain URL for version " + version 
+						+ " of the release for " + webApp.getFullName());
+			}
+			
+			if (downloadUrl != null) {
+				try {
+				
 					// Prepare to download
 					ReadableByteChannel readableByteChannel = Channels.newChannel(downloadUrl.openStream());
 					
-					File outputFile = new File(directory.getCanonicalPath() + File.separator + appName + ".jar");
+					// Output file has same name as app, but spaces are replaced with hyphens
+					File outputFile = new File(directory.getCanonicalPath() + File.separator 
+							+ webApp.getName().replaceAll("\\s", "-") + ".jar");
 					
 					if (outputFile.exists()) {
 						outputFile.delete();
@@ -331,15 +400,14 @@ public class WebQuerier {
 				    fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, 1 << 24);
 				    
 				    return outputFile;
+				} catch (IOException e) {
+					throw new AppDownloadException("Error while downloading app " + webApp.getFullName()
+							+ ": " + e.getMessage());
 				}
-			    
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-			
 		} else {
-			DebugHelper.print("No app with name " + appName + " found.");
+			throw new AppDownloadException("No available releases were found for the app " 
+					+ webApp.getFullName() + ".");
 		}
 		
 		return null;

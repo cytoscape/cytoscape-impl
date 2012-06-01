@@ -353,7 +353,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, appManager, AppManager.class, new Properties());
 		
 		// AbstractCyAction implementation for updated app manager
-		AppManagerAction appManagerAction2 = new AppManagerAction(appManager, cySwingApplicationRef, fileUtilServiceRef, taskManagerRef);
+		AppManagerAction appManagerAction2 = new AppManagerAction(appManager, cySwingApplicationRef, fileUtilServiceRef, dialogTaskManagerRef);
 		registerService(bc, appManagerAction2, CyAction.class, new Properties());
 	
 		Thread serverThread = new Thread() {
