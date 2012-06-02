@@ -29,6 +29,7 @@ public class PreviewPanel extends javax.swing.JPanel {
 		// Get the background paint for this view
 		Paint backgroundPaint = mAnnotation.getCyAnnotator().getView().getBackgroundPaint();
 		setBackground((Color)backgroundPaint); // Set our background to match
+		c.setBackground(new Color(255,255,255,0)); // Make our background transparent
 
 		// Border it
 		TitledBorder title = BorderFactory.createTitledBorder("Preview");

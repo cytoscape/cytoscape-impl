@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
 
 import java.util.Map;
@@ -29,12 +30,12 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-import org.cytoscape.ding.impl.cyannotator.modify.mImageAnnotation;
+import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnnotation, ShapeAnnotation {
+public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnnotation {
 	private BufferedImage image;
 	private	URL url = null;
 
@@ -42,15 +43,22 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 	private static final String URL="URL";
 	private static final String WIDTH="width";
 	private static final String HEIGHT="height";
+	private static final String OPACITY="opacity";
+	private static final String CONTRAST="contrast";
+	private static final String LIGHTNESS="brightness";
+
+	private static final float MAX_CONTRAST=4.0f;
 	
 	protected double imageWidth=0, imageHeight=0;
 	private BufferedImage resizedImage;
 	private float opacity = 1.0f;
+	private int brightness = 0;
+	private int contrast = 0;
 	private CyCustomGraphics cg = null;
 	protected CustomGraphicsManager customGraphicsManager;
 
 	private double borderWidth = 0.0;
-	private Paint borderColor = Color.BLACK;
+	private Paint borderColor = null;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
 
@@ -82,7 +90,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		imageWidth=image.getWidth();
 		imageHeight=image.getHeight();
 		this.url = url;
-		resizedImage=resize(image, (int)imageWidth, (int)imageHeight);
+		resizedImage=resizeImage((int)imageWidth, (int)imageHeight);
 		final Long id = customGraphicsManager.getNextAvailableID();
 		this.cg = new URLImageCustomGraphics(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
@@ -109,12 +117,21 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 				this.image = ImageUtil.toBufferedImage(cg.getRenderedImage());
 				customGraphicsManager.addCustomGraphics(cg, this.url);
 				customGraphicsManager.setUsedInCurrentSession(cg, true);
-				resizedImage=resize(image, (int)image.getWidth(), (int)image.getHeight());
+				resizedImage=resizeImage((int)image.getWidth(), (int)image.getHeight());
 			}
 		} catch (Exception e) {
 			logger.warn("Unable to restore image '"+argMap.get(URL)+"'",e);
 			return;
 		}
+		if (argMap.containsKey(OPACITY))
+			opacity = Float.parseFloat(argMap.get(OPACITY));
+
+		if (argMap.containsKey(LIGHTNESS))
+			brightness = Integer.parseInt(argMap.get(LIGHTNESS));
+
+		if (argMap.containsKey(CONTRAST))
+			contrast = Integer.parseInt(argMap.get(CONTRAST));
+
 		updateAnnotationAttributes();
 	}
 
@@ -124,6 +141,9 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		argMap.put(URL, url.toString());
 		argMap.put(WIDTH, Double.toString(imageWidth));
 		argMap.put(HEIGHT, Double.toString(imageHeight));
+		argMap.put(OPACITY, Float.toString(opacity));
+		argMap.put(LIGHTNESS, Integer.toString(brightness));
+		argMap.put(CONTRAST, Integer.toString(contrast));
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 
 		return argMap;
@@ -145,7 +165,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 			logger.warn("Unable to restore image '"+this.url+"'",e);
 			return;
 		}
-		resizedImage=resize(image, (int)imageWidth, (int)imageHeight);
+		resizedImage=resizeImage((int)imageWidth, (int)imageHeight);
 
 		updateAnnotationAttributes();
 	}
@@ -164,8 +184,16 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 
 		this.imageWidth=this.image.getWidth();
 		this.imageHeight=this.image.getHeight();
-		resizedImage=resize(this.image, (int)resizedImage.getWidth(), (int)resizedImage.getHeight());
-		getCanvas().repaint();
+		
+		int width = (int)this.image.getWidth();
+		int height = (int)this.image.getHeight();
+		if (resizedImage != null) {
+			width = (int)resizedImage.getWidth();
+			height = (int)resizedImage.getHeight();
+		}
+		resizedImage=resizeImage((int)width, (int)height);
+		if (!usedForPreviews())
+			getCanvas().repaint();
 	}
 
 	public void setImage(URL url) {
@@ -173,13 +201,29 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		reloadImage();
 	}
 
-	public void setImageOpacity(float opacity) {
-		this.opacity = opacity;
+	public URL getImageURL() {
+		return url;
 	}
 
+	public void setImageOpacity(float opacity) {
+		this.opacity = opacity;
+		resizedImage=null;
+	}
 	public float getImageOpacity() { return this.opacity; }
 
-	// Shape annotation methods.  We add these so we can get resize functionality
+	public void setImageBrightness(int brightness) {
+		this.brightness = brightness;
+		resizedImage=null;
+	}
+	public int getImageBrightness() { return this.brightness; }
+
+	public void setImageContrast(int contrast) {
+		this.contrast = contrast;
+		resizedImage=null;
+	}
+	public int getImageContrast() { return this.contrast; }
+
+	// Shape annotation methods.  We add these so we can get resizeImage functionality
 	public ShapeType[] getSupportedShapes() {
 		ShapeType[] types = {ShapeType.RECTANGLE};
 		return types;
@@ -190,8 +234,11 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		this.imageHeight = height;
 
 		// Resize the image
-		resizedImage=resize(this.image, (int)imageWidth, (int)imageHeight);
-		getCanvas().repaint();
+		resizedImage=resizeImage((int)imageWidth, (int)imageHeight);
+		if (!usedForPreviews())
+			getCanvas().repaint();
+
+		setSize((int)width, (int)height);
 	}
 
 	public ShapeType getShapeType() {
@@ -204,7 +251,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 	}
 
 	public void setBorderWidth(double width) {
-		borderWidth = width;
+		borderWidth = width*getZoom();
 	}
 
 	public Paint getBorderColor() {return borderColor;}
@@ -218,43 +265,73 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 	}
 	
 
-	//Returns a resized high quality BufferedImage
-	private BufferedImage resize(BufferedImage image, int width, int height)
+	//Returns a resizeImaged high quality BufferedImage
+	private BufferedImage resizeImage(int width, int height)
 	{
 		if (image == null) {
 			if (width == 0) width = 1;
 			if (height == 0) height = 1;
-			return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		}
 
-		int type = image.getType() == 0? BufferedImage.TYPE_INT_ARGB : image.getType();
+		int type = image.getType() == 0? BufferedImage.TYPE_INT_RGB : image.getType();
 		if(height==0)
 			height++;
 		if(width==0)
 			width++;
-		BufferedImage resizedImage = new BufferedImage(width, height, type);
-		Graphics2D g = resizedImage.createGraphics();
+
+		BufferedImage adjustedImage = image;
+
+		// Handle image adjustments
+		if (contrast != 0 || brightness != 0) {
+			BufferedImage source = image;
+			// This only works for RGB
+			if (type != BufferedImage.TYPE_INT_RGB) {
+				BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), 
+				                                           BufferedImage.TYPE_INT_RGB);
+				Graphics2D g = rgbImage.createGraphics();
+				g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), this);
+				source = rgbImage;
+			}
+			adjustedImage = new BufferedImage(image.getWidth(), image.getHeight(), 
+				                                BufferedImage.TYPE_INT_RGB);
+
+			// Do Brightness first...
+			// offset goes from -255 - 255 for RGB
+			float offset = (float)brightness*255.0f/100.0f;
+			RescaleOp op = new RescaleOp(1.0f, offset, null);
+			op.filter(source, adjustedImage);
+
+			float scaleFactor = 1.0f;
+			// scaleFactor goes from 0-4.0 with a 
+			if (contrast <= 0) {
+				scaleFactor = (1.0f + (float)contrast)/100.0f;
+			} else
+				scaleFactor = ((float)contrast)*4.0f/100.0f;
+		
+			op = new RescaleOp(scaleFactor, 0.0f, null);
+			op.filter(adjustedImage, adjustedImage);
+
+		}
+		BufferedImage newImage = new BufferedImage(width, height, type);
+		Graphics2D g = newImage.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
-		if (borderWidth > 0.0 && borderColor != null) {
-			g.setPaint(borderColor);
-			g.setStroke(new BasicStroke((float)borderWidth));
-		}
 		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
 		g.setComposite(ac);
-		g.drawImage(image, 0, 0, width, height, null);
+		g.drawImage(adjustedImage, 0, 0, width, height, this);
 		g.dispose();
-		return resizedImage;
+		return newImage;
 	}
 
 	public void dropImage() {
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
 	}
 
-	public JFrame getModifyDialog(Annotation annotation) {
-			return new mImageAnnotation(this);
+	public JFrame getModifyDialog() {
+			return new ImageAnnotationDialog(this);
 	}
 
 	@Override
@@ -265,7 +342,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 
 		int width = (int)Math.round(imageWidth*scaleFactor/getZoom());
 		int height = (int)Math.round(imageHeight*scaleFactor/getZoom());
-		BufferedImage newImage =resize(image, width, height);
+		BufferedImage newImage =resizeImage(width, height);
 		if (newImage == null) return;
 
 		boolean selected = isSelected();
@@ -280,9 +357,26 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 
 		Graphics2D g2=(Graphics2D)g;
 
-		if (resizedImage == null) return;
+		if (image == null)
+			return;
 
-		g2.drawImage(resizedImage, getX(), getY(), null);
+		if (resizedImage == null)
+			resizedImage = resizeImage((int)imageWidth, (int)imageHeight);
+
+		int x = getX();
+		int y = getY();
+
+		if (usedForPreviews()) {
+			x = 0; y = 0;
+		}
+
+		g2.drawImage(resizedImage, x, y, this);
+
+		if (borderColor != null && borderWidth > 0.0) {
+			g2.setPaint(borderColor);
+			g2.setStroke(new BasicStroke((float)borderWidth));
+			g2.drawRect(x, y, getAnnotationWidth(), getAnnotationHeight());
+		}
 		
 		if(isSelected()) {
 			g2.setColor(Color.YELLOW);
@@ -290,7 +384,6 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 			g2.drawRect(getX()-1, getY()-1, getAnnotationWidth()+1, getAnnotationHeight()+1);
 		}
 	}
-
 
 	@Override
 	public void setSpecificZoom(double newZoom) {
@@ -300,13 +393,12 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		imageWidth=imageWidth*factor;
 		imageHeight=imageHeight*factor;
 
-		resizedImage=resize(image, (int)Math.round(imageWidth), (int)Math.round(imageHeight));
+		resizedImage=resizeImage((int)Math.round(imageWidth), (int)Math.round(imageHeight));
 
 		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
 	   
 		super.setSpecificZoom(newZoom);		
 	}
-
 
 	@Override
 	public void setZoom(double newZoom) {
@@ -316,7 +408,9 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		imageWidth=imageWidth*factor;
 		imageHeight=imageHeight*factor;
 
-		resizedImage=resize(image, (int)Math.round(imageWidth), (int)Math.round(imageHeight));
+		borderWidth*=factor;
+
+		resizedImage=resizeImage((int)Math.round(imageWidth), (int)Math.round(imageHeight));
 
 		setBounds(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
 				

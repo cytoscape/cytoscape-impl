@@ -198,7 +198,7 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 			add(jLabel6);
 
 			eThickness = new javax.swing.JComboBox();
-			eThickness.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+			eThickness.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
 			eThickness.setSelectedIndex(1);
 			for(int i=0;i<eThickness.getModel().getSize();i++){
 				if( ((int)mAnnotation.getBorderWidth())==Integer.parseInt((String)eThickness.getModel().getElementAt(i)) ){

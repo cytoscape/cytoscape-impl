@@ -165,7 +165,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
   
   public double getBorderWidth() {return borderWidth;}
-  public void setBorderWidth(double width) { borderWidth = width; }
+  public void setBorderWidth(double width) { 
+		borderWidth = width*getZoom();
+	}
   
   public Paint getBorderColor() {return borderColor;}
   public Paint getFillColor() {return fillColor;}
