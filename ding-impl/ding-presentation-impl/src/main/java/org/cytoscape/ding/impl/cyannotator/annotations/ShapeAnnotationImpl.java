@@ -74,7 +74,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shapeWidth = width;
 		this.shapeHeight = height;
 		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
-    setSize((int)shapeWidth, (int)shapeHeight);
+    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
   }
 
   public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
@@ -103,7 +103,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
     this.shapeType = GraphicsUtilities.getShapeType(Integer.parseInt(argMap.get(SHAPETYPE)));
 		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
-    setSize((int)shapeWidth, (int)shapeHeight);
+    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
   }
 
 	public Map<String,String> getArgMap() {
@@ -137,7 +137,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeHeight*=factor;
 		// System.out.println("setZoom: size = "+shapeWidth+"x"+shapeHeight);
 		
-		setSize((int)shapeWidth, (int)shapeHeight);
+    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
 		super.setZoom(zoom);
 	}
 
@@ -148,7 +148,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeWidth*=factor;
 		shapeHeight*=factor;
 
-		setSize((int)shapeWidth, (int)shapeHeight);
+    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
 		super.setSpecificZoom(zoom);		
 	}
 
@@ -212,7 +212,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	public void setSize(double width, double height) {
 		shapeWidth = width;
 		shapeHeight = height;
-		setSize((int)shapeWidth, (int)shapeHeight);
+    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
 	}
 
 	public JFrame getModifyDialog() {

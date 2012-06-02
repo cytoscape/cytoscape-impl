@@ -50,7 +50,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
-		super.setSize(getTextWidth(null)+4, getTextHeight(null)+4);
+		super.setSize(getTextWidth((Graphics2D)this.getGraphics())+4, 
+		              getTextHeight((Graphics2D)this.getGraphics())+4);
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) { 
@@ -87,8 +88,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text = argMap.get(TEXT);
 		this.fontSize = font.getSize2D();
 		if (!argMap.containsKey(ShapeAnnotationImpl.WIDTH)) {
-			double width = getTextWidth(null)+8;
-			double height = getTextHeight(null)+8;
+			double width = getTextWidth((Graphics2D)this.getGraphics())+8;
+			double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 			super.setSize(width, height);
 		}
 	}
@@ -105,25 +106,27 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 
 	public void fitShapeToText() {
-		double width = getTextWidth(null)+8;
-		double height = getTextHeight(null)+8;
+		double width = getTextWidth((Graphics2D)this.getGraphics())+8;
+		double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 		shapeIsFit = true;
+
+		System.out.println("Fitting shape to text: "+width+"x"+height);
 
 		// Different depending on the type...
 		switch (getShapeType()) {
 		case ELLIPSE:
-			width = getTextWidth(null)*3/2+8;
-			height = getTextHeight(null)*2;
+			width = getTextWidth((Graphics2D)this.getGraphics())*3/2+8;
+			height = getTextHeight((Graphics2D)this.getGraphics())*2;
 			break;
 		case TRIANGLE:
-			width = getTextWidth(null)*3/2+8;
-			height = getTextHeight(null)*2;
+			width = getTextWidth((Graphics2D)this.getGraphics())*3/2+8;
+			height = getTextHeight((Graphics2D)this.getGraphics())*2;
 			break;
 		case PENTAGON:
 		case HEXAGON:
 		case STAR5:
 		case STAR6:
-			width = getTextWidth(null)*9/7+8;
+			width = getTextWidth((Graphics2D)this.getGraphics())*9/7+8;
 			height = width;
 			break;
 		}
@@ -146,11 +149,13 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		g2.setColor(textColor);
 		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
 		FontMetrics fontMetrics=g.getFontMetrics(tFont);
-		x = x + (getWidth()-getTextWidth(g2))/2;
-		y = y + (getHeight()-getTextHeight(g2))/2;
+		int halfWidth = ((int)(getWidth()*scaleFactor)-fontMetrics.stringWidth(text))/2;
+		// Note, this is + because we start at the baseline
+		int halfHeight = ((int)(getHeight()*scaleFactor)+fontMetrics.getHeight()/2)/2;
+		int xLoc = (int)(x*scaleFactor) + halfWidth;
+		int yLoc = (int)(y*scaleFactor) + halfHeight;
 		g2.setFont(tFont);
-		g2.drawChars(getText().toCharArray(), 0, getText().length(),
- 		             (int)(x*scaleFactor), (int)(y*scaleFactor));
+		g2.drawString(text, xLoc, yLoc);
 	}
 
 	@Override
@@ -161,16 +166,15 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		g2.setColor(textColor);
 		g2.setFont(font);
 
+		int halfWidth = (getWidth()-getTextWidth(g2))/2;
+		int halfHeight = (getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
+
 		if(usedForPreviews) {
-			g2.drawChars(getText().toCharArray(), 0, getText().length(),
-			             (int)(getWidth()-getTextWidth(g2))/2,
-			             (int)(getHeight())/2 );
+			g2.drawString(text, halfWidth, halfHeight);
 			return;
 		}
 
-		g2.drawChars(getText().toCharArray(), 0, getText().length(),
-			           getX()+(int)(getWidth()-getTextWidth(g2))/2,
-			           getY()+(int)(getHeight())/2 );
+		g2.drawString(text, getX()+halfWidth, getY()+halfHeight);
 	}
 
 	@Override
@@ -243,12 +247,17 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	public void setFont(Font font) { 
 		this.font = font; 
+		updateBounds();
 	}
 
 	private void updateBounds() {
+		if (shapeIsFit) {
+			fitShapeToText();
+			return;
+		}
 		// Our bounds should be the larger of the shape or the text
-		int xBound = Math.max(getTextWidth(null), (int)shapeWidth);
-		int yBound = Math.max(getTextHeight(null), (int)shapeHeight);
+		int xBound = Math.max(getTextWidth((Graphics2D)this.getGraphics()), (int)shapeWidth);
+		int yBound = Math.max(getTextHeight((Graphics2D)this.getGraphics()), (int)shapeHeight);
 		setSize(xBound+4, yBound+4);
 	}
 

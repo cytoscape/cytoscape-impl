@@ -60,6 +60,7 @@ public class BoundedTextAnnotationDialog extends javax.swing.JFrame {
 		preview = new BoundedTextAnnotationImpl(cyAnnotator, view);
 		preview.setUsedForPreviews(true);
 		preview.setText(mAnnotation.getText());
+		preview.setFont(mAnnotation.getFont());
 		preview.fitShapeToText();
 		
 		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);

@@ -166,9 +166,15 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		g2.setColor(textColor);
 		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
 		FontMetrics fontMetrics=g.getFontMetrics(tFont);
+
+		int halfWidth = ((int)(getWidth()*scaleFactor)-fontMetrics.stringWidth(text))/2;
+		// Note, this is + because we start at the baseline
+		int halfHeight = ((int)(getHeight()*scaleFactor)+fontMetrics.getHeight()/2)/2;
+		int xLoc = (int)(x*scaleFactor) + halfWidth;
+		int yLoc = (int)(y*scaleFactor) + halfHeight;
+
 		g2.setFont(tFont);
-		g2.drawChars(getText().toCharArray(), 0, getText().length(),
- 		             (int)(x*scaleFactor), (int)(y*scaleFactor)+fontMetrics.getHeight());
+		g2.drawString(text, xLoc, yLoc);
 	}
 
 	public Rectangle getBounds() {
@@ -182,15 +188,15 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		g2.setColor(textColor);
 		g2.setFont(font);
 
+		int halfWidth = (getWidth()-getTextWidth(g2))/2;
+		int halfHeight = (getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
+
 		if(usedForPreviews) {
-			g2.drawChars(getText().toCharArray(), 0, getText().length(),
-			             getX()+(int)(getWidth()-getTextWidth(g2))/2,
-			             getY()+(int)(getHeight()+getTextHeight(g2))/2 );
+			g2.drawString(text, halfWidth, halfHeight);
 			return;
 		}
 
-		g2.drawChars(getText().toCharArray(), 0, getText().length(),
-		             getX(), getY()+getTextHeight(g2));
+		g2.drawString(text, getX()+halfWidth, getY()+halfHeight);
 
 		if(isSelected()) {
       //Selected Annotations will have a yellow border
