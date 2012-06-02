@@ -193,20 +193,17 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	public double getZoom() { return globalZoom; }
 	public void setZoom(double zoom) { 
 		globalZoom = zoom; 
-		updateAnnotationAttributes(); 
 	}
       
 	public double getSpecificZoom() {return myZoom; }
 	public void setSpecificZoom(double zoom) {
 		myZoom = zoom; 
-		updateAnnotationAttributes(); 
 	}
 
 	public boolean isSelected() { return selected; }
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 		cyAnnotator.setSelectedAnnotation(this, selected);
-		updateAnnotationAttributes(); 
 	}
 
 	public void addArrow(ArrowAnnotation arrow) {
@@ -242,6 +239,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	}
 
 	public void update() {
+		updateAnnotationAttributes();
 		getCanvas().repaint();
 	}
 

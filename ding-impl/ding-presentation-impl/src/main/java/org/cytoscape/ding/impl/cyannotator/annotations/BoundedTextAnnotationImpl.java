@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
 	private String text;
+	private boolean shapeIsFit = false;
 
 	public static final String NAME="BOUNDED";
 	public static final String FONTCOLOR="fontColor";
@@ -44,6 +45,14 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
 	
+	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { 
+		super(cyAnnotator, view, 100, 100);
+		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float)initialFontSize;
+		this.text = "Text Annotation";
+		super.setSize(getTextWidth(null)+4, getTextHeight(null)+4);
+	}
+
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) { 
 		super(cyAnnotator, view, width, height);
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
@@ -51,8 +60,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text = "Text Annotation";
 	}
 
-	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c, double width, double height) { 
-		super(c, width, height);
+	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c) { 
+		super(c, 100, 100);
 		this.text = c.getText();
 		this.textColor = c.getTextColor();
 		this.fontSize = (float)c.getFontSize();
@@ -68,7 +77,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
-		updateAnnotationAttributes();
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
@@ -78,7 +86,11 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.textColor = getColor(argMap.get(COLOR));
 		this.text = argMap.get(TEXT);
 		this.fontSize = font.getSize2D();
-		updateAnnotationAttributes();
+		if (!argMap.containsKey(ShapeAnnotationImpl.WIDTH)) {
+			double width = getTextWidth(null)+8;
+			double height = getTextHeight(null)+8;
+			super.setSize(width, height);
+		}
 	}
 
 	public Map<String,String> getArgMap() {
@@ -90,6 +102,34 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		argMap.put(FONTSIZE,Integer.toString(this.font.getSize()));
 		argMap.put(FONTSTYLE,Integer.toString(this.font.getStyle()));
 		return argMap;
+	}
+
+	public void fitShapeToText() {
+		double width = getTextWidth(null)+8;
+		double height = getTextHeight(null)+8;
+		shapeIsFit = true;
+
+		// Different depending on the type...
+		switch (getShapeType()) {
+		case ELLIPSE:
+			width = getTextWidth(null)*3/2+8;
+			height = getTextHeight(null)*2;
+			break;
+		case TRIANGLE:
+			width = getTextWidth(null)*3/2+8;
+			height = getTextHeight(null)*2;
+			break;
+		case PENTAGON:
+		case HEXAGON:
+		case STAR5:
+		case STAR6:
+			width = getTextWidth(null)*9/7+8;
+			height = width;
+			break;
+		}
+
+		super.setSize(width, height);
+		setSize((int)width+2, (int)height+2);
 	}
 	
 	public JFrame getModifyDialog() {
@@ -123,14 +163,14 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 		if(usedForPreviews) {
 			g2.drawChars(getText().toCharArray(), 0, getText().length(),
-			             getX()+(int)(getWidth()-getTextWidth(g2))/2,
-			             getY()+(int)(getHeight()+getTextHeight(g2))/2 );
+			             (int)(getWidth()-getTextWidth(g2))/2,
+			             (int)(getHeight())/2 );
 			return;
 		}
 
 		g2.drawChars(getText().toCharArray(), 0, getText().length(),
 			           getX()+(int)(getWidth()-getTextWidth(g2))/2,
-			           getY()+(int)(getHeight()+getTextHeight(g2))/2 );
+			           getY()+(int)(getHeight())/2 );
 	}
 
 	@Override
@@ -148,7 +188,10 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setText(String text) {
 		this.text = text;
-		updateAnnotationAttributes();
+		if (shapeIsFit)
+			fitShapeToText();
+
+		updateBounds();
 	}
 
 	@Override
@@ -158,7 +201,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setTextColor(Color color) {
 		this.textColor = color;
-		updateAnnotationAttributes();
 	}
 
 	@Override
@@ -168,7 +210,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
-		updateAnnotationAttributes();
+		updateBounds();
 	}
 
 	@Override
@@ -179,7 +221,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public void setFontStyle(int style) {
 		font = font.deriveFont(style, fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
-		updateAnnotationAttributes();
 	}
 
 	@Override
@@ -191,7 +232,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
-		updateAnnotationAttributes();
 	}
 
 	@Override
@@ -203,6 +243,13 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	public void setFont(Font font) { 
 		this.font = font; 
+	}
+
+	private void updateBounds() {
+		// Our bounds should be the larger of the shape or the text
+		int xBound = Math.max(getTextWidth(null), (int)shapeWidth);
+		int yBound = Math.max(getTextHeight(null), (int)shapeHeight);
+		setSize(xBound+4, yBound+4);
 	}
 
 	int getTextWidth(Graphics2D g2) {

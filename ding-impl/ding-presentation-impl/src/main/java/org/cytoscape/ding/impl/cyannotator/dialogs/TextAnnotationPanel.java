@@ -221,8 +221,8 @@ public class TextAnnotationPanel extends javax.swing.JPanel {
 
 	public void iModifyTAPreview(){
 
-		preview.setFont(getNewFont());
-		preview.setText(annotationText.getText());	   
+		preview.setFont(mAnnotation.getFont());
+		preview.setText(mAnnotation.getText());	   
 		preview.setTextColor(mAnnotation.getTextColor());
 
 		previewPanel.repaint();

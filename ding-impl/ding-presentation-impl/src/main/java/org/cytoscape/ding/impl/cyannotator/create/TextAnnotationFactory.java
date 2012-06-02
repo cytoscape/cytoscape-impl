@@ -18,9 +18,11 @@ public class TextAnnotationFactory implements AnnotationFactory {
 	}
 
 	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		if ( type.equals(TextAnnotationImpl.NAME) ) 
-			return new TextAnnotationImpl(cyAnnotator, view, argMap);
-		else 
+		if ( type.equals(TextAnnotationImpl.NAME) ) {
+			Annotation a = new TextAnnotationImpl(cyAnnotator, view, argMap);
+			a.update();
+			return a;
+		} else 
 			return null;
 	}
 }

@@ -95,7 +95,6 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		this.cg = new URLImageCustomGraphics(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
-		updateAnnotationAttributes();
 	}
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
@@ -132,7 +131,6 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		if (argMap.containsKey(CONTRAST))
 			contrast = Integer.parseInt(argMap.get(CONTRAST));
 
-		updateAnnotationAttributes();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -166,8 +164,6 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 			return;
 		}
 		resizedImage=resizeImage((int)imageWidth, (int)imageHeight);
-
-		updateAnnotationAttributes();
 	}
 
 	public Image getImage() {

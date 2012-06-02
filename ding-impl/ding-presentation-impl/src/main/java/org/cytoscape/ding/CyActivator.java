@@ -37,7 +37,7 @@ import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.BoundedAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.BoundedTextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
@@ -225,7 +225,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
 		// Bounded Text annotation
-		AnnotationFactory boundedAnnotationFactory = new BoundedAnnotationFactory();
+		AnnotationFactory boundedAnnotationFactory = new BoundedTextAnnotationFactory();
 		annotationFactoryManager.addAnnotationFactory(boundedAnnotationFactory, null);
 		AddAnnotationTaskFactory addBoundedTextTaskFactory = 
 			new AddAnnotationTaskFactory(boundedAnnotationFactory);

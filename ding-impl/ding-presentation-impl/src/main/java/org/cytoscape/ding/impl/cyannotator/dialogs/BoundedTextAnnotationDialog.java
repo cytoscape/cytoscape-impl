@@ -32,7 +32,7 @@ public class BoundedTextAnnotationDialog extends javax.swing.JFrame {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
-		this.mAnnotation = new BoundedTextAnnotationImpl(cyAnnotator, view, 400, 400);
+		this.mAnnotation = new BoundedTextAnnotationImpl(cyAnnotator, view);
 		this.create = true;
 
 		initComponents();		        
@@ -57,9 +57,11 @@ public class BoundedTextAnnotationDialog extends javax.swing.JFrame {
 		int PREVIEW_HEIGHT = 220;
 
 		// Create the preview panel
-		preview = new BoundedTextAnnotationImpl(cyAnnotator, view, 150, 150);
+		preview = new BoundedTextAnnotationImpl(cyAnnotator, view);
 		preview.setUsedForPreviews(true);
-		preview.getComponent().setSize(150,150);
+		preview.setText(mAnnotation.getText());
+		preview.fitShapeToText();
+		
 		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
 		shapeAnnotation1 = new ShapeAnnotationPanel((ShapeAnnotation)mAnnotation, previewPanel, SHAPE_WIDTH, SHAPE_HEIGHT);
@@ -106,7 +108,7 @@ public class BoundedTextAnnotationDialog extends javax.swing.JFrame {
 		cancelButton.setBounds(430, y+20, cancelButton.getPreferredSize().width, 23);
 
 		pack();
-		setSize(520, 525);
+		setSize(520, y+80 );
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 

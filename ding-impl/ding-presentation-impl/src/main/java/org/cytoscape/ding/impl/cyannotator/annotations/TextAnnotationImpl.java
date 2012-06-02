@@ -59,7 +59,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		setSize(getAnnotationWidth(), getAnnotationHeight());
-		updateAnnotationAttributes();
 	}
 
 	// This constructor is used to construct a text annotation from an
@@ -71,7 +70,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.text = argMap.get(TEXT);
 		this.fontSize = font.getSize2D();
 		setSize(getAnnotationWidth(), getAnnotationHeight());
-		updateAnnotationAttributes();
 	}
 
 	public Map<String,String> getArgMap() {
@@ -104,7 +102,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setText(String text) {
 		this.text = text;
-		updateAnnotationAttributes();
 	}
 
 	@Override
@@ -114,7 +111,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setTextColor(Color color) {
 		this.textColor = color;
-		updateAnnotationAttributes();
 	}
 
 	@Override
@@ -124,7 +120,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
-		updateAnnotationAttributes();
 	}
 
 	@Override
@@ -135,7 +130,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontStyle(int style) {
 		font = font.deriveFont(style, fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
-		updateAnnotationAttributes();
 	}
 
 	@Override
@@ -147,7 +141,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
-		updateAnnotationAttributes();
 	}
 
 	@Override

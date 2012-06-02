@@ -23,9 +23,11 @@ public class ImageAnnotationFactory implements AnnotationFactory {
 	}
 
 	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		if ( type.equals(ImageAnnotationImpl.NAME) ) 
-			return new ImageAnnotationImpl(cyAnnotator, view,argMap,customGraphicsManager);
-		else 
+		if ( type.equals(ImageAnnotationImpl.NAME) ) {
+			Annotation a = new ImageAnnotationImpl(cyAnnotator, view,argMap,customGraphicsManager);
+			a.update();
+			return a;
+		} else 
 			return null;
 	}
 }

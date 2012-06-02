@@ -27,8 +27,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	private double borderOpacity = 100.0;
 	private double fillOpacity = 100.0;
 	private	Shape shape = null;
-	private double shapeWidth = 0.0;
-	private double shapeHeight = 0.0;
+	protected double shapeWidth = 0.0;
+	protected double shapeHeight = 0.0;
 
 	public static final String NAME="SHAPE";
 	protected static final String WIDTH="width";
@@ -75,7 +75,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shapeHeight = height;
 		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
     setSize((int)shapeWidth, (int)shapeHeight);
-    updateAnnotationAttributes();
   }
 
   public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
@@ -86,8 +85,17 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		if (argMap.containsKey(FILLOPACITY))
     	this.fillOpacity = Double.parseDouble(argMap.get(FILLOPACITY));
 
-    this.shapeWidth = Double.parseDouble(argMap.get(WIDTH));
-    this.shapeHeight = Double.parseDouble(argMap.get(HEIGHT));
+		// If this is an old bounded text, we might not (yet) have a width or height
+		if (argMap.containsKey(WIDTH))
+    	this.shapeWidth = Double.parseDouble(argMap.get(WIDTH));
+		else
+			this.shapeWidth = 100;
+
+		if (argMap.containsKey(HEIGHT))
+    	this.shapeHeight = Double.parseDouble(argMap.get(HEIGHT));
+		else
+			this.shapeHeight = 100;
+
     this.borderWidth = Double.parseDouble(argMap.get(EDGETHICKNESS));
 
 		if (argMap.containsKey(EDGEOPACITY))
@@ -96,7 +104,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.shapeType = GraphicsUtilities.getShapeType(Integer.parseInt(argMap.get(SHAPETYPE)));
 		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
     setSize((int)shapeWidth, (int)shapeHeight);
-    updateAnnotationAttributes();
   }
 
 	public Map<String,String> getArgMap() {

@@ -101,6 +101,8 @@ public class TextAnnotationDialog extends javax.swing.JFrame {
 	}
 			 
 	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
+		dispose();
+
 		//Apply
 		mAnnotation.setFont(textAnnotation1.getNewFont());
 		mAnnotation.setTextColor(textAnnotation1.getTextColor());
@@ -116,7 +118,6 @@ public class TextAnnotationDialog extends javax.swing.JFrame {
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
-		dispose();
 	}
 
 	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {

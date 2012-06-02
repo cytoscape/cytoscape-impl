@@ -5,6 +5,8 @@ import java.awt.Font;
 
 // NOTE: all implementations should implement TextAnnotation also
 public interface BoundedTextAnnotation extends ShapeAnnotation {
+	public void fitShapeToText();
+
 	public void setText(String text);
 	public String getText();
 

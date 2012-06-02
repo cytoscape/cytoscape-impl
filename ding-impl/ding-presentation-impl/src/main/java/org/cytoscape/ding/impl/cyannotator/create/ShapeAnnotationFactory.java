@@ -18,9 +18,11 @@ public class ShapeAnnotationFactory implements AnnotationFactory {
 	}
 
 	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		if ( type.equals(ShapeAnnotationImpl.NAME) ) 
-			return new ShapeAnnotationImpl(cyAnnotator, view,argMap);
-		else 
+		if ( type.equals(ShapeAnnotationImpl.NAME) ) {
+			Annotation a = new ShapeAnnotationImpl(cyAnnotator, view,argMap);
+			a.update();
+			return a;
+		} else 
 			return null;
 	}
 }
