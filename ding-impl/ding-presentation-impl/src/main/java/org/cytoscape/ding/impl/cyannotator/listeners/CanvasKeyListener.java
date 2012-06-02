@@ -40,22 +40,18 @@ public class CanvasKeyListener implements KeyListener {
 				Component c = annotation.getComponent();
 				int x=c.getX(), y=c.getY();
 				int shiftMask = e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK;
-				if (annotation instanceof ShapeAnnotation && 
-				    (shiftMask == KeyEvent.SHIFT_DOWN_MASK)) {
+				if (annotation instanceof ShapeAnnotation && e.isShiftDown()) {
 					ShapeAnnotation sa = (ShapeAnnotation)annotation;
 					int width = c.getWidth(), height = c.getHeight();
 					if (code == KeyEvent.VK_UP) {
-						y-=move; height += move;
+						height -= move;
 					} else if (code == KeyEvent.VK_DOWN) {
 						height += move;
 					} else if (code == KeyEvent.VK_LEFT) {
-						x-=move; width += move;
+						width -= move;
 					} else if (code == KeyEvent.VK_RIGHT) {
 						width += move;
 					}
-
-					//Adjust the locations of the selected annotations
-					sa.getComponent().setLocation(x,y);
 					// Adjust the size of the selected annotations
 					sa.setSize((double)width, (double)height);
 				} else {
