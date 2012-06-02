@@ -54,7 +54,7 @@ public class ShapeAnnotationDialog extends javax.swing.JFrame {
 		// Create the preview panel
 		preview = new ShapeAnnotationImpl(cyAnnotator, view, 150, 150);
 		preview.setUsedForPreviews(true);
-		preview.getComponent().setSize(150,150);
+		preview.getComponent().setSize(152,152);
 		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
 		shapeAnnotation1 = new ShapeAnnotationPanel(mAnnotation, previewPanel, SHAPE_WIDTH, SHAPE_HEIGHT);
