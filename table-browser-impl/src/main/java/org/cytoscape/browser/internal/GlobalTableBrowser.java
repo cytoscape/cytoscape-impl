@@ -17,13 +17,15 @@ import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.events.TablePrivacyChangedEvent;
+import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, TableAddedListener {
+public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, TableAddedListener, TablePrivacyChangedListener {
 
 	private static final long serialVersionUID = 2269984225983802421L;
 
@@ -104,6 +106,24 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 			if (tableChooser.getItemCount() != 0)
 				tableChooser.setEnabled(true);
 		}
+	}
+
+	@Override
+	public void handleEvent(TablePrivacyChangedEvent e) {
+
+		final CyTable table = e.getSource();
+		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+		if(!table.isPublic()){
+			comboBoxModel.removeItem(table);
+
+			if (comboBoxModel.getSize() == 0) {
+				tableChooser.setEnabled(false);
+				// The last table is deleted, refresh the browser table (this is a special case)
+				deleteTable(table);
+			}
+		}else
+			comboBoxModel.addAndSetSelectedItem(table);
+		
 	}
 
 	

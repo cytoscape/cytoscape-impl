@@ -2,6 +2,11 @@ package org.cytoscape.model;
 
 
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
+import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.junit.Before;
 import org.junit.After;
 
@@ -29,6 +34,12 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 		table = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		table2 = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		attrs = table.getRow(1l);
+		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), new CyNetworkManagerImpl(eventHelper));
+		tblMgr.addTable(table);
+		((CyTableImpl)table).handleEvent(new TableAddedEvent(tblMgr, table));
+		tblMgr.addTable(table2);
+		((CyTableImpl)table2).handleEvent(new TableAddedEvent(tblMgr, table2));
+
 	}
 
 	@After

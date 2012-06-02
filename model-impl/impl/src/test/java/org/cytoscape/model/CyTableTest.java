@@ -42,8 +42,12 @@ import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable.SavePolicy;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
+import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.TableAddedEvent;
 
 import static org.junit.Assert.*;
 import org.junit.After;
@@ -63,6 +67,13 @@ public class CyTableTest extends AbstractCyTableTest {
 		attrs = table.getRow(1L);
 		table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					 eventHelper, interpreter, 1000);
+		
+		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), new CyNetworkManagerImpl(eventHelper));
+		tblMgr.addTable(table);
+		((CyTableImpl)table).handleEvent(new TableAddedEvent(tblMgr, table));
+		tblMgr.addTable(table2);
+		((CyTableImpl)table2).handleEvent(new TableAddedEvent(tblMgr, table2));
+
 	}
 
 	@After

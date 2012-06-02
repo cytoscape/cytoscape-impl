@@ -373,4 +373,9 @@ public final class CyTableProjection implements CyTable {
 	public void swap(final CyTable otherTable) {
 		underlyingTable.swap(otherTable);
 	}
+
+	@Override
+	public void setPublic(boolean isPublic) {
+		throw new UnsupportedOperationException("setPublic(boolean isPublic) method not supported!");		
+	}
 }

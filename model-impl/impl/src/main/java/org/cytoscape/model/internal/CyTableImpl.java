@@ -52,6 +52,8 @@ import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.events.TablePrivacyChangedEvent;
+import org.cytoscape.model.events.TableTitleChangedEvent;
 
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.HashMultimap;
@@ -119,7 +121,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		this.eventHelper = eventHelper;
 		this.interpreter = interpreter;
 		this.savePolicy = savePolicy;
-		this.fireEvents = !pub;
+		this.fireEvents = false;
 		this.defaultInitSize = defaultInitSize;
 
 		currentlyActiveAttributes = new HashSet<String>();
@@ -258,6 +260,16 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	@Override
+	public void setPublic(boolean isPublic) {
+
+		if(pub != isPublic){
+			pub = isPublic;
+			if( fireEvents)
+				eventHelper.fireEvent(new TablePrivacyChangedEvent(this));
+		}
+	}
+	
+	@Override
 	public synchronized CyTable.Mutability getMutability() {
 		if (isImmutable)
 			return Mutability.PERMANENTLY_IMMUTABLE;
@@ -274,7 +286,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	synchronized public void setTitle(String title) {
-		this.title = title;
+		if(!this.title.equals(title)){
+			String oldTitle = this.title;
+			this.title = title;
+			if(fireEvents)
+				eventHelper.fireEvent(new TableTitleChangedEvent(this, oldTitle));
+		}
 	}
 
 	@Override
