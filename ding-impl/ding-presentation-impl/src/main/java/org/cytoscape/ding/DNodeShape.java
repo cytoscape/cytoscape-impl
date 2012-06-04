@@ -83,6 +83,11 @@ public class DNodeShape implements NodeShape {
 	}
 
 	@Override
+	public String toString() {
+		return displayName;
+	}
+
+	@Override
 	public String getSerializableString() {
 		return serializableString;
 	}
