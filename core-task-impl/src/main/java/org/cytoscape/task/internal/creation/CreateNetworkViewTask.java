@@ -86,12 +86,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		taskMonitor.setProgress(0.0);
 		taskMonitor.setTitle("Creating Network View");
 		taskMonitor.setStatusMessage("Creating network view...");
-		System.out.println("entering create view");
 
 		int i = 0;
 		int viewCount = networks.size();
 		for (final CyNetwork n : networks) {
-			System.out.println("checking network " + n.toString());
 			if (networkViewManager.getNetworkViews(n).isEmpty()) {
 				createView(n);
 				taskMonitor.setStatusMessage("Network view successfully created for:  "
@@ -105,7 +103,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 	}
 
 	private final void createView(CyNetwork network) throws Exception {	
-		System.out.println("actually creating view " + network.toString());
 
 		final long start = System.currentTimeMillis();
 
