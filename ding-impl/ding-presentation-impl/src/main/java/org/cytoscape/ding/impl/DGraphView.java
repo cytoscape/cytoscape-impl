@@ -1072,30 +1072,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param zoom
-	 *            DOCUMENT ME!
-	 */
-	public void setZoom(final double zoom, final boolean updateView) {
-		synchronized (m_lock) {
-			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
-			m_viewportChanged = true;
-		}
-
-		if (updateView) {
-			this.updateView();
-		}
-	}
-	
-	/**
 	 * Set the zoom level and redraw the view.
 	 */
 	@Override
 	public void setZoom(final double zoom) {
-		setZoom(zoom, /* updateView = */ true);
+		synchronized (m_lock) {
+			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
+			m_viewportChanged = true;
+		}
 	}
-
+	
 	private void fitContent(final boolean updateView) {
 		cyEventHelper.flushPayloadEvents();
 
@@ -2069,7 +2055,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		originalSize = m_networkCanvas.getSize();
 		m_networkCanvas.setSize(width, height);
 		fitContent(/* updateView = */ false);
-		setZoom(getZoom() * shrink, /* updateView = */ false);
+		setZoom(getZoom() * shrink);
 		m_networkCanvas.paint(g);
 		// Restore network to original size
 		m_networkCanvas.setSize(originalSize);
