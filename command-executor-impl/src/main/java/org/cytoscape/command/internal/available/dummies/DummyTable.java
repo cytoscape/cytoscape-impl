@@ -2,7 +2,6 @@
 package org.cytoscape.command.internal.available.dummies;
 
 import org.cytoscape.model.*;
-import static org.cytoscape.model.CyTable.* ;
 import java.util.Collection;
 import java.util.List;
 
@@ -10,6 +9,7 @@ public class DummyTable implements CyTable {
 
 	public Long getSUID() { return null; }
 	public boolean isPublic() { return false; }
+	public void setPublic(boolean isPublic) {}
 	public Mutability getMutability() { return null; }
 	public String getTitle() { return null; }
 	public void setTitle(String title) {}
