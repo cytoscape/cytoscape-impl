@@ -92,6 +92,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		if (targetServices == null)
 			throw new NullPointerException("Target service set is null");
 
+		// Switch task type based on the user option.
 		if(toCluster) {
 			final CyNetwork network = client.importClusteredNetwork(query, targetServices, mode, taskMonitor);
 			result = new HashMap<String, CyNetwork>();
@@ -105,7 +106,6 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			return;
 		}
 			
-
 		final Date date = new Date();
 		final SimpleDateFormat timestamp = new SimpleDateFormat("yyyy/MM/dd K:mm:ss a, z");
 		final String suffix = "(" + timestamp.format(date) + ")";

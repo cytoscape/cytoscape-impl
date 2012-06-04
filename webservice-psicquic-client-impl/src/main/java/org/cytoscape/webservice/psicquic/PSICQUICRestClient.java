@@ -23,10 +23,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.webservice.psicquic.mapper.ClusteredNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.webservice.psicquic.simpleclient.PSICQUICSimpleClient;
 import org.cytoscape.work.TaskMonitor;
@@ -41,11 +42,12 @@ import uk.ac.ebi.enfin.mi.cluster.InteractionCluster;
  * Light-weight REST client based on SimpleClient by EBI team.
  * 
  */
-public class PSICQUICRestClient {
+public final class PSICQUICRestClient {
+
 	private static final Logger logger = LoggerFactory.getLogger(PSICQUICRestClient.class);
 
-	// Static list of ID.
-	private static final String allMappingNames = "flybase,mgd/mgi,sgd,entrez gene/locuslink,uniprotkb,intact,ddbj/embl/genbank,chebi,irefindex,hgnc,ensembl";
+	// Static list of ID. The oreder is important!
+	private static final String MAPPING_NAMES = "uniprotkb,chebi,ddbj/embl/genbank,ensembl,irefindex";
 
 	public enum SearchMode {
 		MIQL("Search by Query (MIQL)"), INTERACTOR("Search by gene/protein ID list");
@@ -62,10 +64,12 @@ public class PSICQUICRestClient {
 		}
 	}
 
-	private static final Long ERROR_CODE = -1l;
+	public static final Long ERROR_SEARCH_FAILED = -1l;
+	public static final Long ERROR_TIMEOUT = -2l;
+	public static final Long ERROR_CANCEL = -3l;
 
 	// Timeout for search
-	private static final long SEARCH_TIMEOUT = 20000;
+	private static final long SEARCH_TIMEOUT = 5000;
 	private static final long IMPORT_TIMEOUT = 1000;
 
 	private final CyNetworkFactory factory;
@@ -260,10 +264,10 @@ public class PSICQUICRestClient {
 
 		InteractionCluster iC = new InteractionCluster();
 		iC.setBinaryInteractionIterator(binaryInteractions.iterator());
-		iC.setMappingIdDbNames(allMappingNames);
+		iC.setMappingIdDbNames(MAPPING_NAMES);
 		iC.runService();
 
-		ClusteredNetworkBuilder builder = new ClusteredNetworkBuilder(factory);
+		MergedNetworkBuilder builder = new MergedNetworkBuilder(factory);
 
 		return builder.buildNetwork(iC);
 	}
@@ -299,14 +303,19 @@ public class PSICQUICRestClient {
 				final SearchTask task = taskItr.next();
 				final String source = task.getURL();
 				try {
-					resultMap.put(source, future.get());
+					resultMap.put(source, future.get(SEARCH_TIMEOUT, TimeUnit.MILLISECONDS));
 					logger.debug(source + " : Got response = " + resultMap.get(source));
 				} catch (ExecutionException e) {
 					logger.warn("Error occured in search: " + source, e);
-					resultMap.put(source, ERROR_CODE);
+					resultMap.put(source, ERROR_SEARCH_FAILED);
 					continue;
 				} catch (CancellationException ce) {
-					logger.warn("Operation timeout for " + source, ce);
+					resultMap.put(source, ERROR_CANCEL);
+					logger.warn("Operation canceled for " + source, ce);
+					continue;
+				} catch (TimeoutException te) {
+					resultMap.put(source, ERROR_TIMEOUT);
+					logger.warn("Operation timeout for " + source, te);
 					continue;
 				}
 				completed += increment;

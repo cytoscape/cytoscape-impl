@@ -1,12 +1,9 @@
 package org.cytoscape.webservice.psicquic;
 
-import static org.junit.Assert.*;
-
 import java.net.URI;
 
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.AbstractWebServiceClientTest;

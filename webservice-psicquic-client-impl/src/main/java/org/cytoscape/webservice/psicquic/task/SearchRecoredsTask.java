@@ -3,8 +3,6 @@ package org.cytoscape.webservice.psicquic.task;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.swing.JOptionPane;
-
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.work.AbstractTask;

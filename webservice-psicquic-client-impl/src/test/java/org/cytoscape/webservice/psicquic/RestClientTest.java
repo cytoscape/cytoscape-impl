@@ -1,13 +1,5 @@
 package org.cytoscape.webservice.psicquic;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.util.Collection;
-import java.util.Map;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.NetworkTestSupport;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -26,7 +26,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
@@ -109,6 +108,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 		searchPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.X_AXIS));
 		searchButton = new JButton("Search");
+		searchButton.setFont(new Font("SansSerif", Font.BOLD, 12));
 		searchButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -186,6 +186,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 		queryBuilderPanel.add(helpButton);
 
 		final JPanel basePanel = new JPanel();
+		basePanel.setBackground(Color.WHITE);
 		basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
 		basePanel.add(queryBuilderPanel);
 		basePanel.add(searchPanel);
@@ -266,11 +267,14 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 			statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, result,
 					taskManager, mode, createViewTaskFactory);
 			add(statesPanel, BorderLayout.SOUTH);
+			
+			statesPanel.sort();
 
 			Window parentWindow = ((Window) getRootPane().getParent());
 			parentWindow.pack();
 			repaint();
 
+			
 			parentWindow.toFront();
 		}
 	}

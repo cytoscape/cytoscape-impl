@@ -197,7 +197,6 @@ public class RegistryManager {
 				tagList.add(item.getFirstChild().getNodeValue());
 				tagMap.put(serviceName, tagList);
 			}
-				
 			
 			walk(n, serviceName);
 		}

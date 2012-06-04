@@ -2,19 +2,25 @@ package org.cytoscape.webservice.psicquic.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.LayoutStyle;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -28,6 +34,7 @@ import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.junit.runner.manipulation.Sorter;
 
 public class SourceStatusPanel extends JPanel {
 
@@ -42,13 +49,13 @@ public class SourceStatusPanel extends JPanel {
 	private final String query;
 	private final CyNetworkManager networkManager;
 
-	private final TaskManager<?,?> taskManager;
+	private final TaskManager<?, ?> taskManager;
 
 	private final SearchMode mode;
 
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
-	
-	private volatile boolean enableItem = true;
+
+	private int interactionsFound = 0;
 
 	/**
 	 * Creates new form PSICQUICResultDialog
@@ -68,18 +75,25 @@ public class SourceStatusPanel extends JPanel {
 		setTableModel(result);
 		initComponents();
 		setCoumnWidth();
+
+		// Set number of items:
+		if (interactionsFound > 0) {
+			this.titleLabel.setText("Binary Interactions Found: " + interactionsFound);
+			this.titleLabel.setForeground(Color.GREEN);
+			this.titleLabel.setEnabled(true);
+			this.titleLabel.repaint();
+		}
 	}
-	
+
 	public void enableComponents(final boolean enable) {
 		this.clearButtonActionPerformed(null);
-		
+
 		this.resultTable.setEnabled(enable);
 		this.resultScrollPane.setEnabled(enable);
 		this.selectAllButton.setEnabled(enable);
 		this.importNetworkButton.setEnabled(enable);
 		this.clearSelectionButton.setEnabled(enable);
 		this.setEnabled(enable);
-		this.enableItem = enable;
 	}
 
 	public Set<String> getSelected() {
@@ -91,6 +105,8 @@ public class SourceStatusPanel extends JPanel {
 		TableModel model = this.resultTable.getModel();
 		for (int i = 0; i < model.getRowCount(); i++) {
 			Boolean selected = (Boolean) model.getValueAt(i, 0);
+			if (selected == null)
+				selected = false;
 
 			if (selected)
 				selectedService.add(model.getValueAt(i, 1).toString());
@@ -104,20 +120,22 @@ public class SourceStatusPanel extends JPanel {
 		resultTable.getTableHeader().setReorderingAllowed(false);
 		resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		// Checkbox
-		resultTable.getColumnModel().getColumn(0).setPreferredWidth(70);
+		resultTable.getColumnModel().getColumn(0).setPreferredWidth(60);
 		// Name
 		resultTable.getColumnModel().getColumn(1).setPreferredWidth(150);
-		// Number of result
-		resultTable.getColumnModel().getColumn(2).setPreferredWidth(100);
-		// Status
+		// Tags
+		resultTable.getColumnModel().getColumn(2).setPreferredWidth(250);
+		// Found
 		resultTable.getColumnModel().getColumn(3).setPreferredWidth(100);
+		resultTable.getColumnModel().getColumn(4).setPreferredWidth(150);
 
 		resultTable.setSelectionBackground(SELECTED_ROW);
 		resultTable.setDefaultRenderer(String.class, new StringCellRenderer());
-
+		resultTable.setDefaultRenderer(Number.class, new NumberCellRenderer());
 	}
 
 	private void setTableModel(final Map<String, Long> result) {
+
 		final StatusTableModel model = new StatusTableModel();
 		model.addColumn("Import");
 		model.addColumn("Data Source Name");
@@ -125,7 +143,11 @@ public class SourceStatusPanel extends JPanel {
 		model.addColumn("Records Found");
 		model.addColumn("Status");
 
+		// Reset counter
+		this.interactionsFound = 0;
+
 		for (final String serviceName : manager.getAllServiceNames()) {
+			Integer errorID = null;
 			final Object[] rowValues = new Object[5];
 
 			rowValues[1] = serviceName;
@@ -133,34 +155,56 @@ public class SourceStatusPanel extends JPanel {
 			if (result != null) {
 				final String targetURL = manager.getActiveServices().get(serviceName);
 				if (targetURL != null) {
-					Integer count = result.get(targetURL).intValue();
-					if (count < 0)
+					Long targetResult = result.get(targetURL);
+					if (targetResult == null)
 						rowValues[3] = 0;
-					else
-						rowValues[3] = count;
+					else {
+						final Integer count = targetResult.intValue();
+						if (count > 0)
+							interactionsFound = interactionsFound + count;
+						else if (count < 0)
+							errorID = count;
+
+						if (count < 0)
+							rowValues[3] = 0;
+						else
+							rowValues[3] = count;
+					}
 				} else
 					rowValues[3] = 0;
 			} else {
 				rowValues[3] = 0;
 			}
 
-			if (manager.isActive(serviceName)) {
-				rowValues[4] = "Active";
-				if (((Integer) rowValues[3]) != 0)
-					rowValues[0] = true;
-				else
-					rowValues[0] = false;
+			if (errorID != null) {
+				if (errorID == PSICQUICRestClient.ERROR_CANCEL.intValue())
+					rowValues[4] = "Operation canceled";
+				else if (errorID == PSICQUICRestClient.ERROR_TIMEOUT.intValue()) {
+					rowValues[4] = "Timeout.  Try again later.";
+				} else if (errorID == PSICQUICRestClient.ERROR_SEARCH_FAILED.intValue()) {
+					rowValues[4] = "Server returns error.  Try again later.";
+				} else {
+					rowValues[4] = "Unknown error.  Try again later.";
+				}
 			} else {
-				rowValues[0] = false;
-				rowValues[4] = "Inactive";
+				if (manager.isActive(serviceName)) {
+					rowValues[4] = "Active";
+					if (((Integer) rowValues[3]) != 0)
+						rowValues[0] = true;
+					else
+						rowValues[0] = false;
+				} else {
+					rowValues[0] = false;
+					rowValues[4] = "Inactive";
+				}
 			}
 			model.addRow(rowValues);
 
 		}
 		this.resultTable = new JTable(model);
+		this.resultTable.setAutoCreateRowSorter(true);
 		model.fireTableDataChanged();
 		repaint();
-		updateUI();
 	}
 
 	/**
@@ -180,19 +224,20 @@ public class SourceStatusPanel extends JPanel {
 		cancelButton = new javax.swing.JButton();
 		clearSelectionButton = new JButton();
 		selectAllButton = new JButton();
-		clusterResultCheckBox = new JCheckBox("Mearge Networks (Cluster Result)");
+		clusterResultCheckBox = new JCheckBox("Merge results into one network");
 
 		titlePanel.setBackground(java.awt.Color.white);
 
-		titleLabel.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
-		titleLabel.setText("Data Service Status");
+		titleLabel.setFont(new java.awt.Font("SansSerif", Font.BOLD, 14)); // NOI18N
+		titleLabel.setEnabled(false);
+		titleLabel.setText("Binary Interactions Found: -");
 
 		GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
 		titlePanel.setLayout(titlePanelLayout);
 		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addGroup(
 						titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
-								.addContainerGap(200, Short.MAX_VALUE)));
+								.addContainerGap(40, Short.MAX_VALUE)));
 		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
 				titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
 						.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
@@ -203,6 +248,7 @@ public class SourceStatusPanel extends JPanel {
 		buttonPanel.setBackground(java.awt.Color.white);
 
 		importNetworkButton.setText("Import");
+		importNetworkButton.setFont(new Font("SansSerif", Font.BOLD, 12));
 		importNetworkButton.setPreferredSize(new java.awt.Dimension(70, 28));
 		importNetworkButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -230,7 +276,7 @@ public class SourceStatusPanel extends JPanel {
 				selectAllButtonActionPerformed(evt);
 			}
 		});
-		
+
 		clusterResultCheckBox.setToolTipText("<html><h3>Cluster to single network</h3></html>");
 
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
@@ -240,9 +286,9 @@ public class SourceStatusPanel extends JPanel {
 						GroupLayout.Alignment.TRAILING,
 						buttonPanelLayout.createSequentialGroup().addComponent(clearSelectionButton)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(selectAllButton)
-								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(clusterResultCheckBox)
-								.addContainerGap(100, Short.MAX_VALUE).addComponent(cancelButton)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+								.addComponent(clusterResultCheckBox).addContainerGap(100, Short.MAX_VALUE)
+								.addComponent(cancelButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 								.addComponent(importNetworkButton).addContainerGap()));
 		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addGroup(
@@ -297,11 +343,11 @@ public class SourceStatusPanel extends JPanel {
 				networkManager, manager, sourceURLs, mode, createViewTaskFactory, toBeClustered);
 
 		taskManager.execute(new TaskIterator(networkTask));
-		
+
 		Window parentWindow = ((Window) getRootPane().getParent());
 		parentWindow.pack();
 		repaint();
-		
+
 		parentWindow.toFront();
 	}
 
@@ -314,9 +360,12 @@ public class SourceStatusPanel extends JPanel {
 			resultTable.setValueAt(Boolean.FALSE, i, 0);
 	}
 
+	/**
+	 * Select all check box
+	 */
 	private void selectAllButtonActionPerformed(ActionEvent evt) {
 		for (int i = 0; i < resultTable.getRowCount(); i++) {
-			if (((Number) resultTable.getValueAt(i, 2)).intValue() == 0)
+			if (((Number) resultTable.getValueAt(i, 3)).intValue() == 0)
 				resultTable.setValueAt(Boolean.FALSE, i, 0);
 			else
 				resultTable.setValueAt(Boolean.TRUE, i, 0);
@@ -379,24 +428,86 @@ public class SourceStatusPanel extends JPanel {
 			}
 
 			final String serviceName = (String) table.getValueAt(row, 1);
+			final String statusString = (String) table.getValueAt(row, 4);
 
 			this.setText(value.toString());
 
-			if (!manager.isActive(serviceName))
+			if (!manager.isActive(serviceName) || statusString.equals("Active") == false) {
 				this.setForeground(Color.red);
+				this.setEnabled(false);
+			} else {
+				this.setForeground(table.getForeground());
+				this.setEnabled(true);
+			}
+			if (isSelected)
+				this.setBackground(table.getSelectionBackground());
 			else
+				this.setBackground(table.getBackground());
+
+			if(column == 4) {
+				this.setHorizontalAlignment(SwingConstants.LEFT);
+			} else {
+				this.setHorizontalAlignment(SwingConstants.CENTER);
+			}
+			return this;
+		}
+	}
+
+	private final class NumberCellRenderer extends DefaultTableCellRenderer {
+
+		private static final long serialVersionUID = 6889007019721032218L;
+
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+				boolean hasFocus, int row, int column) {
+
+			if (value == null || value instanceof Number == false) {
+				this.setEnabled(false);
+				return this;
+			}
+			this.setEnabled(true);
+
+			Integer count;
+			try {
+				count = Integer.valueOf(value.toString());
+			} catch (Exception e) {
+				count = 0;
+			}
+
+			final String serviceName = (String) table.getValueAt(row, 1);
+			final String statusString = (String) table.getValueAt(row, 4);
+
+			this.setText(count.toString());
+
+			if (!manager.isActive(serviceName) || statusString.equals("Active") == false) {
+				this.setForeground(Color.red);
+				this.setEnabled(false);
+			} else if (count == 0) {
+				this.setForeground(Color.LIGHT_GRAY);
+				this.setEnabled(false);
+			} else
 				this.setForeground(table.getForeground());
 
 			if (isSelected)
 				this.setBackground(table.getSelectionBackground());
 			else
 				this.setBackground(table.getBackground());
-
-			this.setHorizontalAlignment(SwingConstants.CENTER);
 			
-			this.setEnabled(enableItem);
-
 			return this;
+		}
+	}
+
+	
+	/**
+	 * Force to sort row
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	void sort() {
+		RowSorter<? extends TableModel> sorter = this.resultTable.getRowSorter();
+		if (sorter instanceof DefaultRowSorter) {
+			List list = new ArrayList<Object>();
+			list.add(new RowSorter.SortKey(3, SortOrder.DESCENDING));
+			sorter.setSortKeys(list);
+			((DefaultRowSorter) sorter).sort();
 		}
 	}
 
