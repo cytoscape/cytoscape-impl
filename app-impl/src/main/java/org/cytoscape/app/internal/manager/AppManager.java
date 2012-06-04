@@ -499,22 +499,25 @@ public class AppManager {
 		
 		File appDirectory = getBaseAppPath();
 		if (!appDirectory.exists()) {
-			created = created && appDirectory.mkdir();
+			created = created && appDirectory.mkdirs();
+			DebugHelper.print("Creating " + appDirectory + ". Success? " + created);
 		}
 		
 		File installedDirectory = new File(getInstalledAppsPath());
 		if (!installedDirectory.exists()) {
-			created = created && installedDirectory.mkdir();
+			created = created && installedDirectory.mkdirs();
+			DebugHelper.print("Creating " + installedDirectory + ". Success? " + created);
 		}
 		
 		File uninstalledDirectory = new File(getUninstalledAppsPath());
 		if (!uninstalledDirectory.exists()) {
-			created = created && uninstalledDirectory.mkdir();
+			created = created && uninstalledDirectory.mkdirs();
+			DebugHelper.print("Creating " + uninstalledDirectory + ". Success? " + created);
 		}
 		
 		File downloadedDirectory = new File(getDownloadedAppsPath());
 		if (!downloadedDirectory.exists()) {
-			created = created && downloadedDirectory.mkdir();
+			created = created && downloadedDirectory.mkdirs();
 		}
 		
 		if (!created) {
