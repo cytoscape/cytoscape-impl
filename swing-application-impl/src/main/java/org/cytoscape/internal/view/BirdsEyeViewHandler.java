@@ -122,24 +122,31 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	}
 
 	private final void updateBEV(final RenderingEngine<CyNetwork> newEngine) {
-		final CyNetworkView newViewModel = (CyNetworkView) newEngine.getViewModel();
-
-		JPanel presentationPanel = presentationMap.get(newViewModel);
-
-		if (presentationPanel == null) {
-			logger.debug("Creating new BEV for network SUID: " + newViewModel.getModel().getSUID());
-			presentationPanel = new JPanel();
-			viewToEngineMap.put(newViewModel, bevFactory.createRenderingEngine(presentationPanel, newViewModel));
-			presentationMap.put((CyNetworkView) newViewModel, presentationPanel);
+		JPanel presentationPanel = null;
+		
+		if (newEngine != null) {
+			final CyNetworkView newViewModel = (CyNetworkView) newEngine.getViewModel();
+			presentationPanel = presentationMap.get(newViewModel);
+	
+			if (presentationPanel == null) {
+				logger.debug("Creating new BEV for network SUID: " + newViewModel.getModel().getSUID());
+				presentationPanel = new JPanel();
+				viewToEngineMap.put(newViewModel, bevFactory.createRenderingEngine(presentationPanel, newViewModel));
+				presentationMap.put((CyNetworkView) newViewModel, presentationPanel);
+			}
+			
+			final Dimension currentPanelSize = bevPanel.getSize();
+			bevPanel.setLayout(new BorderLayout());
+			presentationPanel.setSize(currentPanelSize);
+			presentationPanel.setPreferredSize(currentPanelSize);
 		}
-		final Dimension currentPanelSize = bevPanel.getSize();
-		bevPanel.setLayout(new BorderLayout());
-		presentationPanel.setSize(currentPanelSize);
-		presentationPanel.setPreferredSize(currentPanelSize);
 
 		bevPanel.removeAll();
-		bevPanel.add(presentationPanel, BorderLayout.CENTER);
-		bevPanel.updateUI();
+		
+		if (presentationPanel != null)
+			bevPanel.add(presentationPanel, BorderLayout.CENTER);
+		
+		bevPanel.repaint();
 	}
 
 	@Override
