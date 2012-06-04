@@ -580,10 +580,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				listener.graphViewChanged(new GraphViewNodesUnselectedEvent(
 						this, makeNodeList(unselectedNodes, this)));
 			}
-
-			// Update the view after listener events are fired because listeners
-			// may change something in the graph.
-			updateView();
 		}
 	}
 
@@ -2541,6 +2537,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		if (value == null) 
 			return;
+
+		//  
+		//  WARNING!!!!!!!
+		//  
+		//  No calls to other methods from this method should trigger calls to updateView().
+		//  Allowing this can cause deadlocks!  The expectation is that anyone using
+		//  setVisualProperty() should call updateView() themselves.
+		//  
 		
 		final VisualProperty<?> vp = vpOriginal;
 		
@@ -2568,19 +2572,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				setCenter(m_networkCanvas.m_xCenter, y);
 		} else if (vp == BasicVisualLexicon.NETWORK_SCALE_FACTOR) {
 			setZoom(((Double) value).doubleValue());
-		}
-	}
-
-	@Override
-	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		if (vp == BasicVisualLexicon.NETWORK_WIDTH) {
+		} else if (vp == BasicVisualLexicon.NETWORK_WIDTH) {
 			m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
 		} else if (vp == BasicVisualLexicon.NETWORK_HEIGHT) {
 			m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
 		}
-		super.setVisualProperty(vp, value);
 	}
-	
+
 	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
 		Object value = null;
