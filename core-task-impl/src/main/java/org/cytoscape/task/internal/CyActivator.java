@@ -455,7 +455,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryProps.setProperty(ENABLE_FOR,"selectedNodesOrEdges");
 		selectFirstNeighborsTaskFactoryProps.setProperty(PREFERRED_MENU,"Select.Nodes.First Neighbors of Selected Nodes");
 		selectFirstNeighborsTaskFactoryProps.setProperty(MENU_GRAVITY,"6.0");
-		selectFirstNeighborsTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"9.1");
+		selectFirstNeighborsTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"9.15");
 		selectFirstNeighborsTaskFactoryProps.setProperty(ACCELERATOR,"cmd 6");
 		selectFirstNeighborsTaskFactoryProps.setProperty(TITLE,"Undirected");
 		selectFirstNeighborsTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/select_firstneighbors.png").toString());
