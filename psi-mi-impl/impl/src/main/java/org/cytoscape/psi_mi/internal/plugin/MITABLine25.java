@@ -27,51 +27,52 @@ import java.util.ArrayList;
 // For a better description see: http://wiki.reactome.org/index.php/PSI-MITAB_interactions
 //
 
-
 /**
  * This class quickly reads a single line of PSI-MI Tab delimited format into a data
  * structure for easy processing. 
+ * 
+ * This is a PSIMITAB 25 format.
  */
-public class MITABLine {
+public class MITABLine25 {
 
-	final char COLON = ':';
-	final char PIPE = '|';
-	final char TAB = '	';
-	final char QUOTE = '"';
+	private static final char COLON = ':';
+	private static final char PIPE = '|';
+	private static final char TAB = '	';
+	private static final char QUOTE = '"';
 
 	String sourceRawID = "";
 	String targetRawID = "";
 
-	List<String> srcAliases = new ArrayList<String>(10);
-	List<String> srcDBs = new ArrayList<String>(10);
+	final List<String> srcAliases = new ArrayList<String>(10);
+	final List<String> srcDBs = new ArrayList<String>(10);
 
-	List<String> tgtAliases = new ArrayList<String>(10);
-	List<String> tgtDBs = new ArrayList<String>(10);
+	final List<String> tgtAliases = new ArrayList<String>(10);
+	final List<String> tgtDBs = new ArrayList<String>(10);
 
-	List<String> authors = new ArrayList<String>(5);
+	final List<String> authors = new ArrayList<String>(5);
 
-	List<String> detectionMethods = new ArrayList<String>(5);
-	List<String> detectionDBs = new ArrayList<String>(5);
+	final List<String> detectionMethods = new ArrayList<String>(5);
+	final List<String> detectionDBs = new ArrayList<String>(5);
 
-	List<String> publicationValues = new ArrayList<String>(5);
-	List<String> publicationDBs = new ArrayList<String>(5);
+	final List<String> publicationValues = new ArrayList<String>(5);
+	final List<String> publicationDBs = new ArrayList<String>(5);
 
-	List<String> srcTaxonDBs = new ArrayList<String>(5);
-	List<String> srcTaxonIDs = new ArrayList<String>(5);
+	final List<String> srcTaxonDBs = new ArrayList<String>(5);
+	final List<String> srcTaxonIDs = new ArrayList<String>(5);
 
-	List<String> tgtTaxonDBs = new ArrayList<String>(5);
-	List<String> tgtTaxonIDs = new ArrayList<String>(5);
+	final List<String> tgtTaxonDBs = new ArrayList<String>(5);
+	final List<String> tgtTaxonIDs = new ArrayList<String>(5);
 
-	List<String> sourceIDs = new ArrayList<String>(5);
-	List<String> sourceDBs = new ArrayList<String>(5);
+	final List<String> sourceIDs = new ArrayList<String>(5);
+	final List<String> sourceDBs = new ArrayList<String>(5);
 
-	List<String> interactionTypes = new ArrayList<String>(5);
-	List<String> interactionTypeDBs = new ArrayList<String>(5);
+	final List<String> interactionTypes = new ArrayList<String>(5);
+	final List<String> interactionTypeDBs = new ArrayList<String>(5);
 
-	List<String> edgeScoreTypes = new ArrayList<String>(5);
-	List<String> edgeScoreStrings = new ArrayList<String>(5);
+	final List<String> edgeScoreTypes = new ArrayList<String>(5);
+	final List<String> edgeScoreStrings = new ArrayList<String>(5);
 
-	List<String> interactionIDs = new ArrayList<String>(5);
+	final List<String> interactionIDs = new ArrayList<String>(5);
 	List<String> interactionDBs = new ArrayList<String>(5);
 
 	private int colon = 0; 
@@ -110,7 +111,7 @@ public class MITABLine {
 	}
 
 
-	public void readLine(String line) {
+	public void readLine(final String line) {
 		init();
 
 		// column 0
@@ -219,7 +220,7 @@ public class MITABLine {
 		System.out.println();
 	}
 
-	private String nextString(String line) {
+	private String nextString(final String line) {
 		end = nextIndex(line,begin);
 		if ( (begin > end) || (begin > line.length() - 1))
 			return "";
@@ -249,15 +250,6 @@ public class MITABLine {
 	}
 
 	private void addNextPairs(String desc, List<String> dbs, List<String> values, String line) {
-	
-		//System.out.println("starting: " + desc);
-		//int peekEnd = peekNextIndex(line,begin);
-		//if ( (begin <= peekEnd) && (begin >= 0) && (peekEnd >= 0) )
-		//	System.out.println("  for: " + line.substring(begin,peekEnd));
-		//else
-		//	System.out.println("  weird begin: " + begin + " end: " + peekEnd);
-	
-	
 		do {
 			String db = nextString(line);
 			//System.out.println("      next db string: '" + db + "'");

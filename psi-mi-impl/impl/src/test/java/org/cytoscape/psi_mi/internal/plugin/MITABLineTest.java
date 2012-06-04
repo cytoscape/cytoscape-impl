@@ -31,7 +31,7 @@ public class MITABLineTest {
 // #ID Interactor A    ID Interactor B Alt IDs Interactor A    Alt IDs Interactor B    Aliases Interactor A    Aliases Interactor B    Interaction Detection Method    Publication 1st Author  Publication Identifiers Taxid Interactor A  Taxid Interactor B  Interaction Types   Source Database Interaction Identifiers Confidence Values
 //	entrez gene/locuslink:280906|GRID:158296    entrez gene/locuslink:281119|GRID:158481    entrez gene/locuslink:RB1   entrez gene/locuslink:DNMT1|entrez gene/locuslink:BOS_7601  -   entrez gene/locuslink:DNMT(gene name synonym)   psi-mi:"MI:0004"(affinity chromatography technology)    "Robertson KD (2000)"   pubmed:10888886 taxid:9913  taxid:9913  psi-mi:"MI:0915"(physical association)  psi-mi:"MI:0463"(GRID)  GRID:261841 -
 	public void testMITABLine() throws Exception {
-		MITABLine mline = new MITABLine();
+		MITABLine25 mline = new MITABLine25();
 		
 		String line;
 
@@ -70,7 +70,7 @@ public class MITABLineTest {
 // #ID Interactor A    ID Interactor B Alt IDs Interactor A    Alt IDs Interactor B    Aliases Interactor A    Aliases Interactor B    Interaction Detection Method    Publication 1st Author  Publication Identifiers Taxid Interactor A  Taxid Interactor B  Interaction Types   Source Database Interaction Identifiers Confidence Values
 //entrez gene/locuslink:326601|GRID:160074    entrez gene/locuslink:819210|GRID:4545  entrez gene/locuslink:H3F3A|entrez gene/locuslink:BOS_15646 entrez gene/locuslink:BRM|entrez gene/locuslink:At2g46020   entrez gene/locuslink:H3F3B(gene name synonym)  entrez gene/locuslink:ARABIDOPSIS THALIANA BRAHMA(gene name synonym)|entrez gene/locuslink:T3F17.33(gene name synonym)|entrez gene/locuslink:CHA2(gene name synonym)|entrez gene/locuslink:CHROMATIN REMODELING 2(gene name synonym)|entrez gene/locuslink:ATBRM(gene name synonym)|entrez gene/locuslink:BRAHMA(gene name synonym)|entrez gene/locuslink:CHR2(gene name synonym)   psi-mi:"MI:0047"(far western blotting)  "Farrona S (2007)"  pubmed:17825834 taxid:9913  taxid:3702  psi-mi:"MI:0407"(direct interaction)    psi-mi:"MI:0463"(GRID)  GRID:271838 -
 	public void testMITABLine3() throws Exception {
-		MITABLine mline = new MITABLine();
+		MITABLine25 mline = new MITABLine25();
 		
 		String line;
 

@@ -16,9 +16,13 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
-
+	
+//	@Tunable(description="Import all columns in the data file")
+//	public Boolean importFull;
+	
 	private InputStream inputStream;
 
 	private final CyNetworkViewFactory cyNetworkViewFactory;
@@ -26,13 +30,12 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 
 	private final PsiMiTabParser parser;
 	private CyNetwork network;
-	
+
 	private TaskMonitor parentTaskMonitor;
 	private final CyProperty<Properties> prop;
-	
-	public PsiMiTabReader(InputStream is,
-			CyNetworkViewFactory cyNetworkViewFactory,
-			CyNetworkFactory cyNetworkFactory, final CyLayoutAlgorithmManager layouts, final CyProperty<Properties> prop) {
+
+	public PsiMiTabReader(InputStream is, CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
+			final CyLayoutAlgorithmManager layouts, final CyProperty<Properties> prop) {
 		if (is == null)
 			throw new NullPointerException("Input stream is null");
 		this.inputStream = is;
@@ -57,33 +60,33 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 	}
 
 	private void createNetwork(TaskMonitor taskMonitor) throws IOException {
-
 		taskMonitor.setTitle("Loading PSIMI-TAB File");
 		taskMonitor.setStatusMessage("Loading PSI-MI-TAB25 file.");
 		taskMonitor.setProgress(0.01d);
-		
+
 		network = parser.parse(taskMonitor);
-		
+
 		taskMonitor.setProgress(1.0d);
 	}
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		return new CyNetwork[] {network};
+		return new CyNetwork[] { network };
 	}
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 
 		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
-		
+
 		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
-		if(prop != null) 
+		if (prop != null)
 			pref = prop.getProperties().getProperty("preferredLayoutAlgorithm", pref);
 
 		final CyLayoutAlgorithm layout = layouts.getLayout(pref);
 		// Force to run this task here to avoid concurrency problem.
-		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
+		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
+				CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
 		Task nextTask = itr.next();
 		try {
 			nextTask.run(parentTaskMonitor);
@@ -93,7 +96,7 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 
 		return view;
 	}
-	
+
 	@Override
 	public void cancel() {
 		parser.cancel();
