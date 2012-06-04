@@ -202,17 +202,16 @@ public class FilterSettingPanel extends JPanel {
 	private Class<?> getAttributeDataType(CyNetwork network, String pAttribute, int pType) {
 		CyTable table = null;
 		
-		if (pType == QuickFind.INDEX_NODES && network.getNodeCount() > 0) {
-			table = network.getDefaultNodeTable();
-		} else if (pType == QuickFind.INDEX_EDGES && network.getEdgeCount() > 0) {
-			table = network.getDefaultEdgeTable();
-		} else {
-			return null;
+		if (network != null) {
+			if (pType == QuickFind.INDEX_NODES && network.getNodeCount() > 0) {
+				table = network.getDefaultNodeTable();
+			} else if (pType == QuickFind.INDEX_EDGES && network.getEdgeCount() > 0) {
+				table = network.getDefaultEdgeTable();
+			}
 		}
 		
-		return table.getColumn(pAttribute).getType();
+		return table != null ? table.getColumn(pAttribute).getType() : null;
 	}
-
 	
 	private JComboBox getTextIndexComboBox(StringFilter pFilter){
 		TextIndexComboBox comboBox = null;
