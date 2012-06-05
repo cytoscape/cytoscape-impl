@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class PSICQUICClientTest extends AbstractWebServiceClientTest {
+public class PSICQUICClientTest {
 
 	@Mock
 	private OpenBrowser openBrowser;
@@ -30,11 +30,11 @@ public class PSICQUICClientTest extends AbstractWebServiceClientTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		final String uriString = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry";
-		this.locationUri = new URI(uriString);
-		this.description = "PSICUIC Web Service Client";
-		this.displayName = "PSICQUIC";
-		this.queryObject = "brca1 AND brca2";
+//		final String uriString = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry";
+//		this.locationUri = new URI(uriString);
+//		this.description = "PSICUIC Web Service Client";
+//		this.displayName = "PSICQUIC";
+//		this.queryObject = "brca1 AND brca2";
 		
 		// Enable this test only when you need to actual connection to the registry.
 //		client = new PSICQUICWebServiceClient(uriString, displayName, description, cyNetworkFactoryServiceRef,
