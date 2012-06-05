@@ -165,8 +165,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         descriptionPanel = new javax.swing.JPanel();
         descriptionScrollPane = new javax.swing.JScrollPane();
         descriptionTextPane = new javax.swing.JTextPane();
-        installButton = new javax.swing.JButton();
         viewOnAppStoreButton = new javax.swing.JButton();
+        installButton = new javax.swing.JButton();
 
         searchAppsLabel.setText("Search:");
 
@@ -179,7 +179,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
         descriptionSplitPane.setDividerLocation(421);
 
-        tagsSplitPane.setDividerLocation(160);
+        tagsSplitPane.setDividerLocation(175);
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         javax.swing.tree.DefaultMutableTreeNode treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("all apps (0)");
@@ -208,13 +208,18 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         descriptionTextPane.setText("<html>\n  <head>\n\n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      App description is displayed here.\n    </p>\n  </body>\n</html>\n");
         descriptionScrollPane.setViewportView(descriptionTextPane);
 
-        installButton.setText("Install");
-        installButton.setEnabled(false);
-        installButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installButtonActionPerformed(evt);
-            }
-        });
+        javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
+        descriptionPanel.setLayout(descriptionPanelLayout);
+        descriptionPanelLayout.setHorizontalGroup(
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+        );
+        descriptionPanelLayout.setVerticalGroup(
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+        );
+
+        descriptionSplitPane.setRightComponent(descriptionPanel);
 
         viewOnAppStoreButton.setText("View on App Store");
         viewOnAppStoreButton.setEnabled(false);
@@ -224,25 +229,13 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
             }
         });
 
-        javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
-        descriptionPanel.setLayout(descriptionPanelLayout);
-        descriptionPanelLayout.setHorizontalGroup(
-            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
-            .addComponent(installButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(viewOnAppStoreButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        descriptionPanelLayout.setVerticalGroup(
-            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(descriptionPanelLayout.createSequentialGroup()
-                .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(viewOnAppStoreButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(installButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        descriptionSplitPane.setRightComponent(descriptionPanel);
+        installButton.setText("Install");
+        installButton.setEnabled(false);
+        installButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                installButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -256,6 +249,10 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(installFromFileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(installButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(viewOnAppStoreButton)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(searchAppsLabel)
@@ -273,7 +270,10 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(descriptionSplitPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(installFromFileButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(installFromFileButton)
+                    .addComponent(viewOnAppStoreButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(installButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         // Make the JTextPane render HTML using the default UI font
@@ -349,20 +349,11 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
 					@Override
 					public void run() {
-						if (currentSelectedAppTag == null) {
 						
-							fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
+						tagsTree.clearSelection();
+						
+						fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
 								appManager.getWebQuerier().getAllApps()));
-							
-						} else {
-							//fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
-							//	appManager.getWebQuerier().getAppsByTag(currentSelectedAppTag.getName())));
-							
-							fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
-									appManager.getWebQuerier().getAllApps()));
-							
-							tagsTree.clearSelection();
-						}
 					}
 					
 				});
