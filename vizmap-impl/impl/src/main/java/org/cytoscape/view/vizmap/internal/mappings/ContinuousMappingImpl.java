@@ -142,14 +142,14 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	 *            the type-parameter of the View
 	 */
 	private void doMap(final CyRow row, final View<? extends CyIdentifiable> view) {
-		if (row.isSet(attrName)) {
+		if (row.isSet(columnName)) {
 			// skip Views where source attribute is not defined;
 			// ViewColumn will automatically substitute the per-VS or global
 			// default, as appropriate
 
 			// In all cases, attribute value should be a number for continuous
 			// mapping.
-			final K attrValue = row.get(attrName, attrType);
+			final K attrValue = row.get(columnName, columnType);
 			final V value = getRangeValue(attrValue);
 			view.setVisualProperty(vp, value);
 		}

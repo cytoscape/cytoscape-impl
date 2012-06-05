@@ -48,9 +48,9 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 	 * dataType is the type of the _attribute_ !! currently we force that to be
 	 * the same as the VisualProperty; FIXME: allow different once? but how to coerce?
 	 */
-	public PassthroughMappingImpl(final String attrName, final Class<K> attrType, final CyTable table,
+	public PassthroughMappingImpl(final String columnName, final Class<K> columnType, final CyTable table,
 			final VisualProperty<V> vp) {
-		super(attrName, attrType, table, vp);
+		super(columnName, columnType, table, vp);
 	}
 
 	@Override
@@ -65,20 +65,18 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 
 		V value = null;
 		
-		if (attrName.equals(CyIdentifiable.SUID)) {
-			// Special case: SUID
-			value = (V) view.getModel().getSUID();
-		} else if (row.isSet(attrName)) {
-			// skip Views where source attribute is not defined;
-			// ViewColumn will automatically substitute the per-VS or
-			// global default, as appropriate
-			final CyColumn column = row.getTable().getColumn(attrName);
-			final Class<?> attrClass = column.getType();
-			K tempValue = null;
+		if (columnName.equals(CyIdentifiable.SUID)) {
+			// Special case: SUID.  Value is type Long.  This always exists.
+			value = (V) view.getModel().getSUID().toString();
+		} else if (row.isSet(columnName)) {
+			final CyColumn column = row.getTable().getColumn(columnName);
+			final Class<?> columnClass = column.getType();
 			
-			if (attrClass.isAssignableFrom(List.class)) {
-				List<?> list = row.getList(attrName, column.getListElementType());
-				StringBuffer sb = new StringBuffer();
+			Object tempValue = null;
+			if (columnClass.isAssignableFrom(List.class)) {
+				// Special handler for List column.  String is only supported one.
+				final List<?> list = row.getList(columnName, column.getListElementType());
+				final StringBuffer sb = new StringBuffer();
 				
 				if (list != null && !list.isEmpty()) {
 					for (Object item : list)
@@ -87,24 +85,24 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 					sb.deleteCharAt(sb.length() - 1);
 				}
 				
-				tempValue = (K) sb.toString();
+				tempValue = sb.toString();
 			} else {
-				tempValue = row.get(attrName, (Class<? extends K>) attrClass);
+				// Regular column.
+				tempValue = row.get(columnName, columnType);
 			}
 
-			value = convertToValue(tempValue);
+			try {
+				value = vp.getRange().getType().cast(tempValue);
+			} catch(ClassCastException ex) {
+				// Invalid.  Try if it's a String
+				if(vp.getRange().getType() == String.class)
+					value=(V) tempValue.toString();
+				else
+					value = null;
+			}
 		}
 		
 		if (value != null)
 			view.setVisualProperty(vp, value);
-	}
-
-	// TODO: make this converter pluggable
-	private V convertToValue(final K key) {
-		try {
-			return (V) key;
-		} catch (Exception e) {
-			return null;
-		}
 	}
 }

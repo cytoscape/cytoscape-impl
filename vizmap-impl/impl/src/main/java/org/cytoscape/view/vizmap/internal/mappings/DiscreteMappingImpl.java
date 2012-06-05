@@ -77,20 +77,20 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 		if (row != null && view != null) {
 			V value = null;
 	
-			if (attrName.equals(CyIdentifiable.SUID)) {
+			if (columnName.equals(CyIdentifiable.SUID)) {
 				// Special case: SUID
 				Object key = Long.valueOf(view.getModel().getSUID());
 				
 				if (key != null)
 					value = attribute2visualMap.get(key);
-			} else if (row.isSet(attrName)) {
+			} else if (row.isSet(columnName)) {
 				// skip Views where source attribute is not defined;
 				// ViewColumn will automatically substitute the per-VS or global default, as appropriate
-				final CyColumn column = row.getTable().getColumn(attrName);
+				final CyColumn column = row.getTable().getColumn(columnName);
 				final Class<?> attrClass = column.getType();
 	
 				if (attrClass.isAssignableFrom(List.class)) {
-					List<?> list = row.getList(attrName, column.getListElementType());
+					List<?> list = row.getList(columnName, column.getListElementType());
 	
 					if (list != null) {
 						for (Object item : list) {
@@ -103,7 +103,7 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 						}
 					}
 				} else {
-					Object key = row.get(attrName, attrType);
+					Object key = row.get(columnName, columnType);
 	
 					if (key != null)
 						value = attribute2visualMap.get(key);
