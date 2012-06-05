@@ -109,7 +109,7 @@ public class AppManager {
 		this.webQuerier = webQuerier;
 		
 		apps = new HashSet<App>();
-		
+
 		appParser = new AppParser();
 		
 		initializeAppsDirectories();
@@ -124,6 +124,8 @@ public class AppManager {
 		apps.addAll(uninstalledApps);
 
 		setupAlterationMonitor();
+		
+		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
 	}
 	
 	
@@ -183,7 +185,7 @@ public class AppManager {
 				try {
 					parsedApp = appParser.parseApp(file);
 					installApp(parsedApp);
-					
+
 					DebugHelper.print("Installed: " + parsedApp.getAppName());
 				} catch (AppParsingException e) {
 					DebugHelper.print("Failed to parse: " + file.getName());

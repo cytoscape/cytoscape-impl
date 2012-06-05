@@ -417,7 +417,7 @@ public class WebQuerier {
 		for (WebApp.Release release : webApp.getReleases()) {
 			
 			// Get releases that are compatible with the current version of Cytoscape (version 3)
-			if (release.getReleaseVersion().matches(COMPATIBLE_RELEASE_REGEX)) {
+			if (release.getCompatibleCytoscapeVersions().matches(COMPATIBLE_RELEASE_REGEX)) {
 				compatibleReleases.add(release);
 			}
 		}
