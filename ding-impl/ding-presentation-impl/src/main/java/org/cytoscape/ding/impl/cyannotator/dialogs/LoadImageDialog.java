@@ -1,6 +1,8 @@
-package org.cytoscape.ding.impl.cyannotator.create;
+package org.cytoscape.ding.impl.cyannotator.dialogs;
 
 import java.awt.Container;
+import java.awt.Point;
+import java.awt.Robot;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -22,16 +24,16 @@ import org.slf4j.LoggerFactory;
 
 //Provides a way to create ImageAnnotations
 
-public class cImageAnnotation extends javax.swing.JFrame {
+public class LoadImageDialog extends javax.swing.JFrame {
 
 	private final DGraphView view;
 	private final CyAnnotator cyAnnotator; 
 	private final CustomGraphicsManager cgm;
 	private final Point2D startingLocation;
 
-	private static final Logger logger = LoggerFactory.getLogger(cImageAnnotation.class);
+	private static final Logger logger = LoggerFactory.getLogger(LoadImageDialog.class);
 
-	public cImageAnnotation(DGraphView view, Point2D location, CustomGraphicsManager cgm) {
+	public LoadImageDialog(DGraphView view, Point2D location, CustomGraphicsManager cgm) {
 		this.view = view;
 		this.cgm = cgm;
 		this.cyAnnotator = view.getCyAnnotator();
@@ -48,7 +50,7 @@ public class cImageAnnotation extends javax.swing.JFrame {
 		setAlwaysOnTop(true);
 		setResizable(false);
 
-		setMinimumSize(new java.awt.Dimension(615, 440));
+		setMinimumSize(new java.awt.Dimension(625, 440));
 
 		pane.setLayout(null);
 
@@ -73,7 +75,7 @@ public class cImageAnnotation extends javax.swing.JFrame {
 		});
 		
 		pane.add(jButton1);
-		jButton1.setBounds(530, 340, 70, (int)jButton1.getPreferredSize().getHeight());
+		jButton1.setBounds(540, 335, 70, (int)jButton1.getPreferredSize().getHeight());
 
 		jButton2 = new javax.swing.JButton();
 
@@ -85,7 +87,7 @@ public class cImageAnnotation extends javax.swing.JFrame {
 		});
 
 		pane.add(jButton2);
-		jButton2.setBounds(530, 370, 70, (int)jButton2.getPreferredSize().getHeight());			   
+		jButton2.setBounds(540, 365, 70, (int)jButton2.getPreferredSize().getHeight());			   
 		pack();
 	}
 
@@ -102,7 +104,18 @@ public class cImageAnnotation extends javax.swing.JFrame {
  			                                               view.getZoom(),cgm);
 
 			cyAnnotator.getForeGroundCanvas().add(newOne.getComponent());
-			view.updateView();
+			cyAnnotator.addAnnotation(newOne);
+			newOne.getCanvas().repaint();
+
+			// Set this shape to be resized
+			cyAnnotator.resizeShape(newOne);
+
+			try {
+				// Warp the mouse to the starting location (if supported)
+				Point start = newOne.getComponent().getLocationOnScreen();
+				Robot robot = new Robot();
+				robot.mouseMove((int)start.getX()+100, (int)start.getY()+100);
+			} catch (Exception e) {}
 
 			this.dispose();
 		} catch(Exception ex){

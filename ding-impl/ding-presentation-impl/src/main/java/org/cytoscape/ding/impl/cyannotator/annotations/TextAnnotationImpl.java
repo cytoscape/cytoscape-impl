@@ -196,13 +196,15 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			return;
 		}
 
-		g2.drawString(text, getX()+halfWidth, getY()+halfHeight);
+		// g2.drawString(text, getX()+halfWidth, getY()+halfHeight);
+		g2.drawString(text, halfWidth, halfHeight);
 
 		if(isSelected()) {
       //Selected Annotations will have a yellow border
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f));
-			g2.drawRect(getX()-4, getY()-4, getTextWidth(g2)+8, getTextHeight(g2)+8);
+			// g2.drawRect(getX()-4, getY()-4, getTextWidth(g2)+8, getTextHeight(g2)+8);
+			g2.drawRect(0, 0, getTextWidth(g2), getTextHeight(g2));
 		}
 	}
 

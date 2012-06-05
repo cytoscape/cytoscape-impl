@@ -284,15 +284,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, resizeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                resizeAnnotationTaskFactoryProps);
 
-		SelectAnnotationTaskFactory selectAnnotationTaskFactory = new SelectAnnotationTaskFactory();
-		Properties selectAnnotationTaskFactoryProps = new Properties();
-		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		selectAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.3");
-		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
-		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select/Unselect Annotation");
-		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
-		                selectAnnotationTaskFactoryProps);
-
 		// Annotation delete
 		RemoveAnnotationTaskFactory removeAnnotationTaskFactory = new RemoveAnnotationTaskFactory();
 		Properties removeAnnotationTaskFactoryProps = new Properties();
@@ -302,6 +293,15 @@ public class CyActivator extends AbstractCyActivator {
 		removeAnnotationTaskFactoryProps.setProperty(TITLE, "Remove Annotation");
 		registerService(bc, removeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                removeAnnotationTaskFactoryProps);
+
+		SelectAnnotationTaskFactory selectAnnotationTaskFactory = new SelectAnnotationTaskFactory();
+		Properties selectAnnotationTaskFactoryProps = new Properties();
+		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		selectAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
+		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Select");
+		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select/Unselect Annotation");
+		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                selectAnnotationTaskFactoryProps);
 
 		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",
 				NodeViewTaskFactory.class);

@@ -181,6 +181,12 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		canvas.modifyComponentLocation(x, y, this);
 	}
 
+	public boolean contains(int x, int y) {
+		if (x > getX() && y > getY() && x-getX() < getWidth() && y-getY() < getHeight())
+			return true;
+		return false;
+	}
+
 	public void removeAnnotation() {
 		canvas.remove(this);
 		cyAnnotator.removeAnnotation(this);
@@ -248,7 +254,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 
-		// Set up all of our anti-aliasing, etc. here to avoid doing it redundantly
+		/* Set up all of our anti-aliasing, etc. here to avoid doing it redundantly */
 		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 		                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);

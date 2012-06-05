@@ -284,10 +284,13 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 
 			// now paint children
 			if (m_isVisible){
+				/*
 				int num=this.getComponentCount();
 				for(int i=0;i<num;i++){
 					this.getComponent(i).paint(image2D);
 				}
+				*/
+				this.paintChildren(image2D);
 			}
 			image2D.dispose();
 			// render image

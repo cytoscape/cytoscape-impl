@@ -9,6 +9,7 @@ import java.util.Map;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 
 public class ImageAnnotationFactory implements AnnotationFactory {
@@ -19,7 +20,7 @@ public class ImageAnnotationFactory implements AnnotationFactory {
 	}
 
 	public JFrame createAnnotationFrame(DGraphView view, Point2D location) {
-		return new cImageAnnotation(view, location, customGraphicsManager);
+		return new LoadImageDialog(view, location, customGraphicsManager);
 	}
 
 	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {

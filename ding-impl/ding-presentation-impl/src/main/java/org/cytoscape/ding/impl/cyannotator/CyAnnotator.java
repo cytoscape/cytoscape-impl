@@ -133,22 +133,37 @@ public class CyAnnotator {
 
 	public DGraphView getView() { return view; }
 
-	public Component getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
-		return cnvs.getComponentAt(x, y);
+	/**
+ 	 * Find all of our annotations that are at this point.  Return the top annotation
+ 	 * (the one with the lowest Z value) if there are more than one.
+ 	 *
+ 	 * @param cnvs the Canvas we're looking at
+ 	 * @param x the x value of the point
+ 	 * @param y the y value of the point
+ 	 * @return the component
+ 	 */
+	public Annotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+		Annotation top = null;
+		for (Annotation a: annotationMap.keySet()) {
+			if (a.getComponent().contains(x, y)) {
+				// System.out.println("Found component "+a.toString()+".  Z-order = "+cnvs.getComponentZOrder(a.getComponent()));
+				if ((top == null) || 
+				    (cnvs.getComponentZOrder(top.getComponent()) >
+             cnvs.getComponentZOrder(a.getComponent()))) {
+						top = a;
+				}
+			}
+		}
+		return top;
 	}
 
 	public Annotation getAnnotation(Point2D position) {
-		Component c = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
-		if (c != null && c instanceof Annotation) {
-			return (Annotation)c;
+		Annotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
+		if (a != null) {
+			return a;
 		}
 
-		c = getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
-		if (c != null && c instanceof Annotation) {
-			return (Annotation)c;
-		}
-
-		return null;
+		return a = getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
 	}
 
 	public InnerCanvas getNetworkCanvas() {

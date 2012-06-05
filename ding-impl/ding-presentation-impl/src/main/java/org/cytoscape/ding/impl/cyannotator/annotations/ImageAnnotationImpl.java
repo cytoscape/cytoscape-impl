@@ -301,14 +301,14 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 			float scaleFactor = 1.0f;
 			// scaleFactor goes from 0-4.0 with a 
 			if (contrast <= 0) {
-				scaleFactor = (1.0f + (float)contrast)/100.0f;
+				scaleFactor = 1.0f + ((float)contrast)/100.0f;
 			} else
-				scaleFactor = ((float)contrast)*4.0f/100.0f;
+				scaleFactor = 1.0f + ((float)contrast)*3.0f/100.0f;
 		
 			op = new RescaleOp(scaleFactor, 0.0f, null);
 			op.filter(adjustedImage, adjustedImage);
-
 		}
+
 		BufferedImage newImage = new BufferedImage(width, height, type);
 		Graphics2D g = newImage.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -359,8 +359,10 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		if (resizedImage == null)
 			resizedImage = resizeImage((int)imageWidth, (int)imageHeight);
 
-		int x = getX();
-		int y = getY();
+		// int x = getX();
+		// int y = getY();
+		int x = 0;
+		int y = 0;
 
 		if (usedForPreviews()) {
 			x = 0; y = 0;
@@ -377,7 +379,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		if(isSelected()) {
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f));
-			g2.drawRect(getX()-1, getY()-1, getAnnotationWidth()+1, getAnnotationHeight()+1);
+			g2.drawRect(x, y, getAnnotationWidth(), getAnnotationHeight());
 		}
 	}
 
