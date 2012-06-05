@@ -37,7 +37,7 @@ package org.cytoscape.io.internal.write.session;
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
+import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_EXT;
@@ -49,8 +49,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -64,20 +62,18 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.util.session.CyTableSessionStateSerializer;
 import org.cytoscape.io.internal.util.session.SessionUtil;
-import org.cytoscape.io.internal.util.session.VirtualColumnSerializer;
 import org.cytoscape.io.internal.write.xgmml.XGMMLWriter;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.CyTableMetadata;
-import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
@@ -201,46 +197,12 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	}
 	
 	private void zipVirtualColumns() throws IOException {
-		zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + CYTABLE_METADATA_FILE));
-		PrintWriter writer = new PrintWriter(new OutputStreamWriter(zos, "UTF-8"));
+		zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + CYTABLE_STATE_FILE));
 		
+		CyTableSessionStateSerializer serializer = new CyTableSessionStateSerializer();
 		try {
-			for (CyTableMetadata metadata : session.getTables()) {
-				CyTable table = metadata.getTable();
-				String targetTable = tableFilenamesBySUID.get(table.getSUID());
-				
-				if (targetTable == null) {
-					continue;
-				}
-				
-				for (CyColumn column : table.getColumns()) {
-					VirtualColumnInfo info = column.getVirtualColumnInfo();
-					
-					if (!info.isVirtual()) {
-						continue;
-					}
-					
-					String sourceTable = tableFilenamesBySUID.get(info.getSourceTable().getSUID());
-					
-					if (sourceTable == null) {
-						logger.warn("Cannot serialize virtual column \"" + column.getName() + "\" of \"" + targetTable
-								+ "\" because the source table is null.");
-						continue;
-					}
-					
-					VirtualColumnSerializer serializer = new VirtualColumnSerializer(
-						column.getName(),
-						sourceTable,
-						targetTable,
-						info.getSourceColumn(),
-						info.getSourceJoinKey(),
-						info.getTargetJoinKey(),
-						info.isImmutable());
-					serializer.serialize(writer);
-				}
-			}
+			serializer.serialize(zos, tableFilenamesBySUID, session);
 		} finally {
-			writer.flush();
 			zos.closeEntry();
 		}
 	}

@@ -85,6 +85,51 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <groupId>com.dyuproject.protostuff</groupId>
+                <artifactId>protostuff-maven-plugin</artifactId>
+                <version>1.0.7</version>
+                <configuration>
+                    <protoModules>
+                        <protoModule>
+                            <source>src/main/protobuf/CyTableSessionState.proto</source>
+                            <outputDir>target/generated-sources/proto</outputDir>
+                            <output>java_bean</output>
+                            <encoding>UTF-8</encoding>
+                            <options>
+                            	<property>
+                            		<name>separate_schema</name>
+                            	</property>
+                            	<property>
+                            		<name>generate_field_map</name>
+                            	</property>
+                            </options>
+                        </protoModule>
+                    </protoModules>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
+	
+	<dependencies>
+        <dependency>
+            <groupId>cytoscape-temp</groupId>
+            <artifactId>protostuff-core-json-osgi</artifactId>
+            <version>1.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-lgpl</artifactId>
+            <version>1.9.7</version>
+        </dependency>
+    </dependencies>
 </project>

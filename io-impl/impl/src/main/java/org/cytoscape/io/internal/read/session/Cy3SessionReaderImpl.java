@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.session;
 
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_METADATA_FILE;
+import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
@@ -59,10 +60,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.io.internal.model.CyTableSessionState;
+import org.cytoscape.io.internal.model.CyTableSessionState.VirtualColumn;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
 import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkViewReader;
 import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.session.CyTableSessionStateSerializer;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.internal.util.session.VirtualColumnSerializer;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -95,6 +99,7 @@ import org.cytoscape.work.TaskMonitor;
  * @see org.cytoscape.io.internal.read.session.Cy2SessionReaderImpl
  * @see org.cytoscape.io.internal.write.session.SessionWriterImpl
  */
+@SuppressWarnings("deprecation")
 public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	
 	private static final String TEMP_DIR = "java.io.tmpdir";
@@ -120,7 +125,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private Map<String, CyTable> filenameTableMap;
 	private Map<CyTableMetadataBuilder, String> builderFilenameMap;
 
-	private List<VirtualColumnSerializer> virtualColumns;
+	private List<VirtualColumn> virtualColumns;
 	private boolean networksExtracted;
 
 
@@ -176,7 +181,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			} else if (entryName.endsWith(TABLE_EXT)) {
 				extractTable(is, entryName);
 			} else if (entryName.endsWith(CYTABLE_METADATA_FILE)) {
-				extractCyTableMetadata(is, entryName);
+				// This provides support for sessions made using M4 and
+				// earlier.  We should remove it eventually.
+				extractLegacyCyTableMetadata(is, entryName);
+			} else if (entryName.endsWith(CYTABLE_STATE_FILE)) {
+				extractCyTableSessionState(is, entryName);
 			} else if (!entryName.endsWith(VERSION_EXT)) {
 				logger.warn("Unknown entry found in session zip file!\n" + entryName);
 			}
@@ -223,14 +232,29 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		objectMap.put(CyEdge.class, cache.getEdgeByIdMap());
 	}
 	
-	private void extractCyTableMetadata(InputStream tmpIs, String entryName) throws IOException {
+	private void extractCyTableSessionState(InputStream is, String entryName) throws IOException {
+		CyTableSessionStateSerializer serializer = new CyTableSessionStateSerializer();
+		CyTableSessionState state = serializer.parse(is);
+		virtualColumns = state.getVirtualColumnsList();
+	}
+
+	@Deprecated
+	private void extractLegacyCyTableMetadata(InputStream tmpIs, String entryName) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(tmpIs, "UTF-8"));
-		virtualColumns = new ArrayList<VirtualColumnSerializer>();
+		virtualColumns = new ArrayList<VirtualColumn>();
 		
 		try {
 			String line = reader.readLine();
 			while (line != null) {
-				virtualColumns.add(new VirtualColumnSerializer(line));
+				VirtualColumnSerializer serializer = new VirtualColumnSerializer(line);
+				virtualColumns.add(new VirtualColumn(
+					serializer.getName(),
+					serializer.getSourceColumn(),
+					serializer.getSourceTable(),
+					serializer.getSourceJoinKey(),
+					serializer.getTargetTable(),
+					serializer.getTargetJoinKey(),
+					serializer.isImmutable()));
 				line = reader.readLine();
 			}
 		} finally {
@@ -436,7 +460,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			return;
 		}
 		
-		for (VirtualColumnSerializer columnData : virtualColumns) {
+		for (VirtualColumn columnData : virtualColumns) {
 			CyTable targetTable = filenameTableMap.get(columnData.getTargetTable());
 			
 			if (targetTable.getColumn(columnData.getName()) == null) {
@@ -445,7 +469,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 											 columnData.getSourceColumn(),
 											 sourceTable,
 											 columnData.getTargetJoinKey(),
-											 columnData.isImmutable());
+											 columnData.getIsImmutable());
 			}
 		}
 	}

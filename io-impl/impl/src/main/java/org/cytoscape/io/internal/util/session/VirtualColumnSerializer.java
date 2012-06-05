@@ -2,7 +2,7 @@ package org.cytoscape.io.internal.util.session;
 
 import java.io.PrintWriter;
 
-
+@Deprecated
 public class VirtualColumnSerializer {
 	String name;
 	String sourceTable;
