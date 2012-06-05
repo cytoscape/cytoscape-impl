@@ -33,7 +33,7 @@ public class CyActivator extends AbstractCyActivator {
 		ContinuousMappingFactory continuousMappingFactory = new ContinuousMappingFactory();
 		PassthroughMappingFactory passthroughMappingFactory = new PassthroughMappingFactory();
 
-		registerService(bc, visualMappingManager, VisualMappingManager.class, new Properties());
+		registerAllServices(bc, visualMappingManager, new Properties());
 		registerService(bc, visualStyleFactory, VisualStyleFactory.class, new Properties());
 
 		Properties discreteMappingFactoryProps = new Properties();
