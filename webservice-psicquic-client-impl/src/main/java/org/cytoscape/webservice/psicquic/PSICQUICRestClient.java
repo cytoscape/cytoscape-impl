@@ -68,8 +68,10 @@ public final class PSICQUICRestClient {
 	public static final Long ERROR_TIMEOUT = -2l;
 	public static final Long ERROR_CANCEL = -3l;
 
-	// Timeout for search
-	private static final long SEARCH_TIMEOUT = 5000;
+	// Timeout for search.  TODO: Make public as property.
+	private static final long SEARCH_TIMEOUT_MSEC = 7000;
+	
+	// Timeout for import.  TODO: Make public as property.
 	private static final long IMPORT_TIMEOUT = 1000;
 
 	private final CyNetworkFactory factory;
@@ -288,9 +290,7 @@ public final class PSICQUICRestClient {
 
 		List<Future<Long>> futures;
 		try {
-			futures = exe.invokeAll(tasks, SEARCH_TIMEOUT, TimeUnit.MILLISECONDS);
-
-			logger.debug("Task submitted!");
+			futures = exe.invokeAll(tasks, SEARCH_TIMEOUT_MSEC, TimeUnit.MILLISECONDS);
 
 			final Iterator<SearchTask> taskItr = tasks.iterator();
 
@@ -303,7 +303,7 @@ public final class PSICQUICRestClient {
 				final SearchTask task = taskItr.next();
 				final String source = task.getURL();
 				try {
-					resultMap.put(source, future.get(SEARCH_TIMEOUT, TimeUnit.MILLISECONDS));
+					resultMap.put(source, future.get(SEARCH_TIMEOUT_MSEC, TimeUnit.MILLISECONDS));
 					logger.debug(source + " : Got response = " + resultMap.get(source));
 				} catch (ExecutionException e) {
 					logger.warn("Error occured in search: " + source, e);

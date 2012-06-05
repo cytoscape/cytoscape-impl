@@ -39,7 +39,9 @@ public class RegistryManager {
 	// Tag definitions
 	private static final String REST_URL = "restUrl";
 	private static final String TAG = "tag";
+	private static final String COUNT = "count";
 	private static final String IS_ACTIVE = "active";
+
 	private static final String DEF_SERVICE_URL = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry";
 
 	// Defines action command
@@ -48,45 +50,63 @@ public class RegistryManager {
 	}
 
 	private final String serviceURLString;
-	
+
 	private final Map<String, String> activeServiceMap;
 	private final Map<String, String> inactiveServiceMap;
 	private final Map<String, String> source2NameMap;
 	private final SortedSet<String> allServiceNames;
-	
+
 	private final Map<String, Boolean> statusMap;
 	private final Map<String, String> urlMap;
 	private final Map<String, List<String>> tagMap;
-	
-	
+	private final Map<String, Long> countMap;
+
 	/**
 	 * Constructor to use default registry location.
 	 */
 	public RegistryManager() {
-		this(null);
+		this(DEF_SERVICE_URL);
 	}
-	
-	
+
 	/**
 	 * Use custom registry location.
 	 * 
-	 * @param regLocaiton URL of the registry
+	 * @param regLocaiton
+	 *            URL of the registry
 	 */
 	public RegistryManager(String regLocaiton) {
-		if(regLocaiton == null || regLocaiton.trim().length() == 0)
+		if (regLocaiton == null || regLocaiton.trim().length() == 0)
 			serviceURLString = DEF_SERVICE_URL;
-		else	
+		else
 			serviceURLString = regLocaiton;
-		
+
 		activeServiceMap = new HashMap<String, String>();
 		inactiveServiceMap = new HashMap<String, String>();
 		source2NameMap = new HashMap<String, String>();
 		statusMap = new HashMap<String, Boolean>();
 		urlMap = new HashMap<String, String>();
 		tagMap = new HashMap<String, List<String>>();
+		countMap = new HashMap<String, Long>();
+
 		invoke();
-		
+
 		allServiceNames = new TreeSet<String>(activeServiceMap.keySet());
+		allServiceNames.addAll(inactiveServiceMap.keySet());
+	}
+	
+	public void refresh() {
+		activeServiceMap.clear();
+		inactiveServiceMap.clear();
+		source2NameMap.clear();
+		statusMap.clear();
+		urlMap.clear();
+		tagMap.clear();
+		countMap.clear();
+
+		invoke();
+
+		allServiceNames.clear();
+		allServiceNames.addAll(activeServiceMap.keySet());
 		allServiceNames.addAll(inactiveServiceMap.keySet());
 	}
 
@@ -97,24 +117,28 @@ public class RegistryManager {
 	public Map<String, String> getInactiveServices() {
 		return inactiveServiceMap;
 	}
-	
+
 	public Map<String, List<String>> getTagMap() {
 		return this.tagMap;
 	}
-	
+
+	public Map<String, Long> getCountMap() {
+		return this.countMap;
+	}
+
 	public SortedSet<String> getAllServiceNames() {
 		return this.allServiceNames;
 	}
-	
+
 	public Map<String, String> getSource2NameMap() {
 		// Lazy instantiation.
-		if(source2NameMap.size() == 0) {
-			for(String name: activeServiceMap.keySet())
+		if (source2NameMap.size() == 0) {
+			for (String name : activeServiceMap.keySet())
 				source2NameMap.put(activeServiceMap.get(name), name);
-			for(String name: inactiveServiceMap.keySet())
+			for (String name : inactiveServiceMap.keySet())
 				source2NameMap.put(inactiveServiceMap.get(name), name);
 		}
-		
+
 		return source2NameMap;
 	}
 
@@ -126,7 +150,7 @@ public class RegistryManager {
 			logger.error("Could not initialize PSICQUIC registory manager.");
 		}
 		setMap();
-		
+
 		logger.info("Found " + activeServiceMap.size() + " active PSICQUIC services.");
 	}
 
@@ -141,7 +165,7 @@ public class RegistryManager {
 		connection.connect();
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-		StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder();
 
 		String next;
 		while ((next = reader.readLine()) != null)
@@ -192,50 +216,59 @@ public class RegistryManager {
 				statusMap.put(serviceName, Boolean.parseBoolean(item.getFirstChild().getNodeValue()));
 			else if (tag.equals(TAG)) {
 				List<String> tagList = tagMap.get(serviceName);
-				if(tagList == null)
+				if (tagList == null)
 					tagList = new ArrayList<String>();
 				tagList.add(item.getFirstChild().getNodeValue());
 				tagMap.put(serviceName, tagList);
+			} else if (tag.equals(COUNT)) {
+				String entry = item.getFirstChild().getNodeValue();
+				Long numberOfRecoreds = 0l;
+				try {
+					numberOfRecoreds = Long.parseLong(entry);
+				} catch (Exception ex) {
+					logger.warn("Could not get count", ex);
+				}
+				countMap.put(serviceName, numberOfRecoreds);
 			}
-			
+
 			walk(n, serviceName);
 		}
 	}
 
 	private void setMap() {
-		for(final String serviceName : statusMap.keySet()) {
+		for (final String serviceName : statusMap.keySet()) {
 			if (statusMap.get(serviceName) == true)
 				activeServiceMap.put(serviceName, urlMap.get(serviceName));
 			else
 				inactiveServiceMap.put(serviceName, urlMap.get(serviceName));
 		}
 	}
-	
+
 	public boolean isActive(final String serviceName) {
-		if(serviceName == null)
+		if (serviceName == null)
 			throw new NullPointerException("Service Name is null.");
-		
-		if(this.inactiveServiceMap.keySet().contains(serviceName))
+
+		if (this.inactiveServiceMap.keySet().contains(serviceName))
 			return false;
 		else
 			return true;
 	}
-	
+
 	public String getRestURL(final String serviceName) {
-		if(serviceName == null)
+		if (serviceName == null)
 			throw new NullPointerException("Service Name is null.");
-		
-		if(allServiceNames.contains(serviceName) == false) {
+
+		if (allServiceNames.contains(serviceName) == false) {
 			throw new IllegalArgumentException("Could not find the service in the registry: " + serviceName);
 		}
-		
+
 		String serviceURLString = activeServiceMap.get(serviceName);
-		if(serviceURLString == null)
+		if (serviceURLString == null)
 			serviceURLString = inactiveServiceMap.get(serviceName);
-		
-		if(serviceURLString == null)
+
+		if (serviceURLString == null)
 			throw new IllegalStateException("Could not find REST service URL for " + serviceName);
-		
+
 		return serviceURLString;
 	}
 }

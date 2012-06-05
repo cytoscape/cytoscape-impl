@@ -39,9 +39,4 @@ public class PSICQUICClientTest extends AbstractWebServiceClientTest {
 		client = new PSICQUICWebServiceClient(uriString, displayName, description, cyNetworkFactoryServiceRef,
 				cyNetworkManagerServiceRef, tm, createViewTaskFactoryServiceRef, openBrowser);
 	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
 }

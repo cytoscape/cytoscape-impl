@@ -15,11 +15,13 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -41,7 +43,7 @@ import org.cytoscape.work.TaskMonitor;
 public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 
 	private static final long serialVersionUID = 3163269742016489767L;
-	
+
 	private static final String MIQL_REFERENCE_PAGE_URL = "http://code.google.com/p/psicquic/wiki/MiqlReference";
 
 	// Color Scheme
@@ -54,8 +56,11 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 	private static final String MIQL_MODE = "Query Text (MIQL)";
 	private static final String INTERACTOR_ID_LIST = "List of Interactors (gene/protein/compound ID)";
 
-	private static final String MIQL_QUERY_AREA_MESSAGE_STRING = "Please enter search query (MIQL) here.  \nIf you need help, please click Syntax Help button below.";
-	private static final String INTERACTOR_LIST_AREA_MESSAGE_STRING = "Please enter list of genes/proteins/compounds, separated by space.";
+	private static final String MIQL_QUERY_AREA_MESSAGE_STRING = "Please enter search query (MIQL) here.  "
+			+ "Currently the result table shows number of all binary interactions available in the database.  "
+			+ "\nIf you need help, please click Syntax Help button below.";
+	private static final String INTERACTOR_LIST_AREA_MESSAGE_STRING = "Please enter list of genes/proteins/compounds, separated by space.  "
+			+ "Currently the result table shows number of all binary interactions available in the database.";
 
 	private final RegistryManager regManager;
 	private final PSICQUICRestClient client;
@@ -63,7 +68,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 	private final CyNetworkManager networkManager;
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 
-	private JTextArea queryArea;
+	private JEditorPane queryArea;
 	private SourceStatusPanel statesPanel;
 	private JScrollPane scrollPane;
 
@@ -71,6 +76,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 	private JLabel modeLabel;
 	private JButton helpButton;
 	private JButton searchButton;
+	private JButton refreshButton;
 
 	private JPanel queryBuilderPanel;
 
@@ -83,9 +89,9 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 	private boolean firstClick = true;
 
 	private final OpenBrowser openBrowserUtil;
-	
+
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
-			final PSICQUICRestClient client, final TaskManager<?,?> tmManager,
+			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
 			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowserUtil) {
 		this.regManager = regManager;
 		this.client = client;
@@ -116,6 +122,15 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 				statesPanel.enableComponents(true);
 			}
 		});
+
+		refreshButton = new JButton("Refresh");
+		refreshButton.setPreferredSize(new java.awt.Dimension(70, 28));
+		refreshButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				refreshButtonActionPerformed();
+			}
+		});
+
 		modeLabel = new JLabel("Query Type:");
 		JRadioButton miqlMode = new JRadioButton(SearchMode.MIQL.toString(), true);
 		miqlMode.setActionCommand(SearchMode.MIQL.toString());
@@ -138,12 +153,12 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 		searchPanel.add(miqlMode);
 		searchPanel.add(idListMode);
 		searchPanel.add(searchButton);
+		searchPanel.add(refreshButton);
 
 		// Query Panel
-		queryArea = new JTextArea();
+		queryArea = new JEditorPane();
 		queryArea.setText(MIQL_QUERY_AREA_MESSAGE_STRING);
 		queryArea.addMouseListener(new MouseAdapter() {
-
 			@Override
 			public void mousePressed(MouseEvent ev) {
 				if (firstClick) {
@@ -152,6 +167,8 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 				}
 			}
 		});
+
+		queryArea.setPreferredSize(new Dimension(400, 100));
 
 		this.queryBuilderPanel = new JPanel();
 		queryBuilderPanel.setBackground(Color.white);
@@ -162,11 +179,11 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 		this.helpButton = new JButton("Syntax Help");
 		helpButton.setToolTipText("Show MIQL Syntax Reference in Web Browser...");
 		helpButton.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openBrowserUtil.openURL(MIQL_REFERENCE_PAGE_URL);
-				
+
 			}
 		});
 
@@ -195,14 +212,14 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 
 		scrollPane = new JScrollPane();
 		scrollPane.setBackground(Color.white);
-		
+
 		final TitledBorder border = new TitledBorder(searchAreaTitle);
 		border.setTitleColor(MIQL_COLOR);
 		border.setTitleFont(STRONG_FONT);
 		scrollPane.setBorder(border);
 		scrollPane.setBorder(border);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setPreferredSize(new Dimension(150, 150));
+		scrollPane.setPreferredSize(new Dimension(500, 150));
 		scrollPane.setViewportView(queryArea);
 		this.add(scrollPane, BorderLayout.NORTH);
 
@@ -211,20 +228,32 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 				createViewTaskFactory);
 		this.add(statesPanel, BorderLayout.SOUTH);
 		statesPanel.enableComponents(false);
+
+		queryBuilderPanel.setMaximumSize(new Dimension(950, 60));
+	}
+
+	private void refreshButtonActionPerformed() {
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				regManager.refresh();
+				stateChanged(null);
+			}
+		});
 	}
 
 	private void addSpeciesQuery() {
-		
+
 		final Object selectedItem = speciesSelector.getSelectedItem();
 		final Species species = (Species) selectedItem;
 
 		String currentQuery = this.queryArea.getText();
-		if(currentQuery.contains(MIQL_QUERY_AREA_MESSAGE_STRING)) {
+		if (currentQuery.contains(MIQL_QUERY_AREA_MESSAGE_STRING)) {
 			currentQuery = "";
 			queryArea.setText("");
 		}
-		
-		
+
 		final String newQuery;
 		if (species == Species.ALL) {
 			newQuery = currentQuery.replaceAll("species:\".+\"", "");
@@ -267,14 +296,13 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 			statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, result,
 					taskManager, mode, createViewTaskFactory);
 			add(statesPanel, BorderLayout.SOUTH);
-			
+
 			statesPanel.sort();
 
 			Window parentWindow = ((Window) getRootPane().getParent());
 			parentWindow.pack();
 			repaint();
 
-			
 			parentWindow.toFront();
 		}
 	}
@@ -305,16 +333,16 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 		border.setTitleColor(borderColor);
 		border.setTitleFont(STRONG_FONT);
 		scrollPane.setBorder(border);
-		
+
 		remove(statesPanel);
-		statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, null,
-				taskManager, mode, createViewTaskFactory);
+		statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, null, taskManager,
+				mode, createViewTaskFactory);
 		add(statesPanel, BorderLayout.SOUTH);
 		Window parentWindow = ((Window) getRootPane().getParent());
 		parentWindow.pack();
 		repaint();
-		
+
 		statesPanel.enableComponents(false);
-		
+
 	}
 }

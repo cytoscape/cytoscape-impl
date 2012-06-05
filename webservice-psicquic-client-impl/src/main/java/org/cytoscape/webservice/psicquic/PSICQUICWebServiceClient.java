@@ -34,7 +34,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private static final Logger logger = LoggerFactory.getLogger(PSICQUICWebServiceClient.class);
 
 	// Timeout value for registry manager.
-	private static final Long TIMEOUT = 30l;
+	private static final Long TIMEOUT_IN_SECCONDS = 30l;
 
 	private PSICQUICRestClient client;
 	private RegistryManager regManager;
@@ -73,7 +73,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 		List<Future<RegistryManager>> futures = null;
 		try {
-			futures = exe.invokeAll(tasks, TIMEOUT, TimeUnit.SECONDS);
+			futures = exe.invokeAll(tasks, TIMEOUT_IN_SECCONDS, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			logger.error("Initialization interrupted.", e);
 			return;
@@ -83,22 +83,22 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 			try {
 				regManager = future.get();
 			} catch (ExecutionException e) {
-				logger.error("Error initialize regManager: ", e);
-				return;
+				throw new IllegalStateException("PSICQUIC Reg manager could not be initialized.", e);
 			} catch (CancellationException ce) {
-				logger.warn("Initialization operation timeout", ce);
-				return;
-			} catch (InterruptedException e) {
-				logger.error("Initialization interrupted.", e);
-				return;
+				throw new IllegalStateException("Timeout error.", ce);
+			} catch (InterruptedException ie) {
+				throw new IllegalStateException("PSICQUIC Reg manager initialization interrupted.", ie);
 			}
 		}
+		
+		if(regManager == null)
+			throw new IllegalStateException("PSICQUIC Reg manager could not be initialized.");
 		
 		client = new PSICQUICRestClient(factory, regManager);
 		
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
-		logger.info("RegistryManager initialized in " + sec + " sec.");
+		logger.info("Registry Manager initialized in " + sec + " sec.");
 	}
 
 	public TaskIterator createTaskIterator(Object query) {

@@ -22,6 +22,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -34,7 +35,6 @@ import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.junit.runner.manipulation.Sorter;
 
 public class SourceStatusPanel extends JPanel {
 
@@ -73,6 +73,11 @@ public class SourceStatusPanel extends JPanel {
 		this.createViewTaskFactory = createViewTaskFactory;
 
 		setTableModel(result);
+		
+		refreshGUI();
+	}
+	
+	private void refreshGUI() {
 		initComponents();
 		setCoumnWidth();
 
@@ -93,6 +98,7 @@ public class SourceStatusPanel extends JPanel {
 		this.selectAllButton.setEnabled(enable);
 		this.importNetworkButton.setEnabled(enable);
 		this.clearSelectionButton.setEnabled(enable);
+		this.clusterResultCheckBox.setEnabled(enable);
 		this.setEnabled(enable);
 	}
 
@@ -173,7 +179,7 @@ public class SourceStatusPanel extends JPanel {
 				} else
 					rowValues[3] = 0;
 			} else {
-				rowValues[3] = 0;
+				rowValues[3] = manager.getCountMap().get(serviceName).intValue();
 			}
 
 			if (errorID != null) {

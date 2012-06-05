@@ -25,7 +25,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		CreateNetworkViewTaskFactory createViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
 
-		PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
+		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "PSICQUIC Universal Client",
 				"REST version of PSICQUIC web service client.", cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
 				tm, createViewTaskFactoryServiceRef, openBrowser);
