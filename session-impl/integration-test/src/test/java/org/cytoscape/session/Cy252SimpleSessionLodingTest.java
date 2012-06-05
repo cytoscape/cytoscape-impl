@@ -50,10 +50,10 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 	public void testLoadSession() throws Exception {
 		final TaskIterator ti = openSessionTF.createTaskIterator(sessionFile);
 		tm.execute(ti);
+		confirm();
 	}
 
-	@After
-	public void confirm() {
+	private void confirm() {
 		// test overall status of current session.
 		checkGlobalStatus();
 

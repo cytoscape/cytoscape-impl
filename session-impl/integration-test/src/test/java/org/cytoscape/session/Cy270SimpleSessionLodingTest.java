@@ -34,7 +34,7 @@ import org.cytoscape.model.CyTable;
 
 
 /**
- * Test for sample file in Cytoscape 2.5.2 distribution
+ * Test for sample file in Cytoscape 2.7.0 distribution
  * 
  */
 @RunWith(JUnit4TestRunner.class)
@@ -51,10 +51,10 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 	public void testLoadSession() throws Exception {
 		final TaskIterator ti = openSessionTF.createTaskIterator(sessionFile);
 		tm.execute(ti);
+		confirm();
 	}
 
-	@After
-	public void confirm() {
+	private void confirm() {
 		// test overall status of current session.
 		checkGlobalStatus();
 
