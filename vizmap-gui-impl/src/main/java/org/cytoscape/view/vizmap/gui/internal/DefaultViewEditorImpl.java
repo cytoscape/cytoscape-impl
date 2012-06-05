@@ -116,19 +116,19 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	private final EditorManager editorFactory;
 	private final VisualMappingManager vmm;
 	private final SelectedVisualStyleManager selectedManager;
-
 	private final VizMapperUtil util;
-
 	private final DefaultViewPanelImpl mainView;
-
 	private final CyEventHelper cyEventHelper;
 
 	private DependencyTable depTable;
 
-	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView, final EditorManager editorFactory,
-			final CyApplicationManager cyApplicationManager, final VisualMappingManager vmm,
-			final SelectedVisualStyleManager selectedManager, final VizMapperUtil util,
-			final CyEventHelper cyEventHelper) {
+	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView,
+								 final EditorManager editorFactory,
+								 final CyApplicationManager cyApplicationManager,
+								 final VisualMappingManager vmm,
+								 final SelectedVisualStyleManager selectedManager,
+								 final VizMapperUtil util,
+								 final CyEventHelper cyEventHelper) {
 		super();
 
 		if (mainView == null)
@@ -449,14 +449,9 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	 * Populate the list model based on current lexicon tree structure.
 	 */
 	private void buildList() {
-
 		final VisualPropCellRenderer renderer = new VisualPropCellRenderer();
-		final RenderingEngine<CyNetwork> currentEngine = this.cyApplicationManager.getCurrentRenderingEngine();
-		if (currentEngine == null)
-			return;
-
-		final VisualLexicon lex = currentEngine.getVisualLexicon();
-		
+		final RenderingEngine<CyNetwork> engine = mainView.getRenderingEngine();
+		final VisualLexicon lex = engine.getVisualLexicon();
 		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
 
 		for (Class<? extends CyIdentifiable> key : vpSets.keySet()) {
@@ -533,7 +528,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 			if (value instanceof VisualProperty<?>) {
 				vp = (VisualProperty<Object>) value;
 
-				final RenderingEngine<?> presentation = cyApplicationManager.getCurrentRenderingEngine();
+				final RenderingEngine<?> presentation = mainView.getRenderingEngine();
 
 				if (presentation != null) {
 					final Object defValue = selectedStyle.getDefaultValue(vp);
