@@ -150,6 +150,8 @@ public abstract class BasicIntegrationTest {
 				mavenBundle().groupId("cytoscape-temp").artifactId("org.swinglabs.swingx").version("1.6.1").startLevel(3),
 				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-export").version("2.1.1").startLevel(3),
 				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-util").version("2.0.2").startLevel(3),
+				mavenBundle().groupId("cytoscape-temp").artifactId("protostuff-core-json-osgi").version("1.0.7").startLevel(3),
+				mavenBundle().groupId("org.codehaus.jackson").artifactId("jackson-core-lgpl").version("1.9.7").startLevel(3),
 				
 				// API bundles
 				mavenBundle().groupId("org.cytoscape").artifactId("event-api").version(apiBundleVersion).startLevel(5),
