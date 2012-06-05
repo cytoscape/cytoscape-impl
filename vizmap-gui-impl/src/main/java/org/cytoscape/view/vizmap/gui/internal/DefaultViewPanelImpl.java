@@ -51,16 +51,14 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 
 /**
  * Container to embed the default presentation.
@@ -71,15 +69,13 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	private final static long serialVersionUID = 1202339876691085L;
 
 	private static final Dimension MIN_SIZE = new Dimension(250, 150);
-	
+
 	// Space around view.
 	private static final int PADDING = 20;
 
-	private final RenderingEngineManager renderingEngineManager;
-	
 	// Dummy network and its view
 	private final RenderingEngine<CyNetwork> renderingEngine;
-	private final SelectedVisualStyleManager selectedManager;
+	private final VisualMappingManager vmm;
 
 	// For padding.
 	private final JPanel innerPanel;
@@ -94,10 +90,9 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	 */
 	public DefaultViewPanelImpl(final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkViewFactory cyNetworkViewFactory,
-			final RenderingEngineFactory<CyNetwork> presentationFactory,
-			final SelectedVisualStyleManager selectedManager, final RenderingEngineManager renderingEngineManager) {
+			final RenderingEngineFactory<CyNetwork> presentationFactory, final VisualMappingManager vmm) {
 
-		this.renderingEngineManager = renderingEngineManager;
+		this.vmm = vmm;
 		this.innerPanel = new JPanel();
 		this.innerPanel.setBorder(new EmptyBorder(PADDING, PADDING, PADDING, PADDING));
 
@@ -116,12 +111,6 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		if (presentationFactory == null)
 			throw new NullPointerException("RenderingEngineFactory is null.");
 
-		if (selectedManager == null)
-			throw new NullPointerException(
-					"SelectedVisualStyleManager is null.");
-
-		this.selectedManager = selectedManager;
-
 		// Create dummy view.
 		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables();
 
@@ -135,8 +124,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		dummyNet.getRow(edge).set(CyNetwork.NAME, "Source (interaction) Target");
 
 		dummyNet.getRow(dummyNet).set(CyNetwork.NAME, "Default Appearance");
-		final CyNetworkView dummyview = cyNetworkViewFactory
-				.createNetworkView(dummyNet);
+		final CyNetworkView dummyview = cyNetworkViewFactory.createNetworkView(dummyNet);
 
 		// Set node locations
 		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
@@ -144,28 +132,28 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 150d);
 		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 20d);
 
-		final VisualStyle currentStyle = selectedManager.getCurrentVisualStyle();
+		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
 		currentStyle.apply(dummyview);
 
-		this.innerPanel.setBackground((Color) currentStyle.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
+		this.innerPanel
+				.setBackground((Color) currentStyle.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
 		// Render it in this panel
 		renderingEngine = presentationFactory.createRenderingEngine(innerPanel, dummyview);
-		
+
 		// Register it to the manager.
-		//renderingEngineManager.addRenderingEngine(renderingEngine);
+		// renderingEngineManager.addRenderingEngine(renderingEngine);
 		dummyview.fitContent();
-		
+
 		// Remove unnecessary mouse listeners.
 		final int compCount = innerPanel.getComponentCount();
-		for(int i=0; i<compCount; i++) {
+		for (int i = 0; i < compCount; i++) {
 			final Component comp = innerPanel.getComponent(i);
 			final MouseListener[] listeners = comp.getMouseListeners();
-			for(MouseListener ml: listeners)
+			for (MouseListener ml : listeners)
 				comp.removeMouseListener(ml);
 		}
 	}
 
-	
 	void updateView(final VisualStyle vs) {
 		final CyNetworkView viewModel = (CyNetworkView) renderingEngine.getViewModel();
 		vs.apply(viewModel);
@@ -173,9 +161,9 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		// This is necessary to adjust the size of default image.
 		viewModel.fitContent();
 	}
-	
+
 	void updateView() {
-		updateView(selectedManager.getCurrentVisualStyle());
+		updateView(vmm.getCurrentVisualStyle());
 	}
 
 	@Override

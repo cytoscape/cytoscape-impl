@@ -3,7 +3,6 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -19,22 +18,18 @@ public class CopyVisualStyleTask extends AbstractTask {
 	@Tunable(description = "Name of copied Visual Style:")
 	public String vsName;
 
-	private final SelectedVisualStyleManager manager;
 	private final VisualMappingManager vmm;
 
 	private final VisualStyleFactory factory;
 
-	public CopyVisualStyleTask(final VisualMappingManager vmm, final VisualStyleFactory factory,
-			final SelectedVisualStyleManager manager) {
-
-		this.manager = manager;
+	public CopyVisualStyleTask(final VisualMappingManager vmm, final VisualStyleFactory factory) {
 		this.factory = factory;
 		this.vmm = vmm;
 	}
 
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-		final VisualStyle originalStyle = manager.getCurrentVisualStyle();
+		final VisualStyle originalStyle = vmm.getCurrentVisualStyle();
 
 		// Ignore if user does not enter new name.
 		if (vsName == null)

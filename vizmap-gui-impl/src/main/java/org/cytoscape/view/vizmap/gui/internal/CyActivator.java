@@ -93,8 +93,7 @@ public class CyActivator extends AbstractCyActivator {
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc,RenderingEngineManager.class);
 		
 		AttributeSetManager attributeSetManager = new AttributeSetManager(cyNetworkTableManagerServiceRef);
-		SelectedVisualStyleManagerImpl selectedVisualStyleManager = new SelectedVisualStyleManagerImpl(vmmServiceRef);
-		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef,selectedVisualStyleManager);
+		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef);
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl(editorManager);
 		PropertySheetPanel propertySheetPanel = new PropertySheetPanel();
 		
@@ -106,10 +105,10 @@ public class CyActivator extends AbstractCyActivator {
 		StringValueEditor stringValueEditor = new StringValueEditor();
 		BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		
-		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
-		NumberVisualPropertyEditor doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
-		NumberVisualPropertyEditor integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
-		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,selectedVisualStyleManager,editorManager,vmmServiceRef);
+		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
+		NumberVisualPropertyEditor doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
+		NumberVisualPropertyEditor integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
+		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
 		
 		StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor();
 		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
@@ -118,22 +117,22 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ColorManager colorMgr = new ColorManager();
 		IconManager iconManager = new IconManager();
-		VizMapperMenuManager menuManager = new VizMapperMenuManager(dialogTaskManagerServiceRef,propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
-		DefaultViewPanelImpl defaultViewPanel = new DefaultViewPanelImpl(cyNetworkFactoryServiceRef,graphViewFactoryServiceRef,presentationFactoryServiceRef,selectedVisualStyleManager, renderingEngineManagerServiceRef);
+		VizMapperMenuManager menuManager = new VizMapperMenuManager(dialogTaskManagerServiceRef,propertySheetPanel,vmmServiceRef, cyApplicationManagerServiceRef);
+		DefaultViewPanelImpl defaultViewPanel = new DefaultViewPanelImpl(cyNetworkFactoryServiceRef,graphViewFactoryServiceRef,presentationFactoryServiceRef, vmmServiceRef);
 		VizMapperUtil vizMapperUtil = new VizMapperUtil(vmmServiceRef);
-		DefaultViewEditorImpl defViewEditor = new DefaultViewEditorImpl(defaultViewPanel,editorManager,cyApplicationManagerServiceRef,vmmServiceRef,selectedVisualStyleManager,vizMapperUtil,cyEventHelperServiceRef);
+		DefaultViewEditorImpl defViewEditor = new DefaultViewEditorImpl(defaultViewPanel,editorManager,cyApplicationManagerServiceRef,vmmServiceRef,vizMapperUtil,cyEventHelperServiceRef);
 		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,vmmServiceRef);
-		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(vmmServiceRef,selectedVisualStyleManager);
+		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(vmmServiceRef);
 		ImportDefaultVizmapTaskFactory importDefaultVizmapTaskFactory = new ImportDefaultVizmapTaskFactory(vizmapReaderManagerServiceRef,vmmServiceRef,cyApplicationConfigurationServiceRef, cyEventHelperServiceRef);
 		VizMapPropertySheetBuilder vizMapPropertySheetBuilder = new VizMapPropertySheetBuilder(menuManager,cyNetworkManagerServiceRef,propertySheetPanel,editorManager,defaultViewPanel,cyTableManagerServiceRef,vizMapperUtil,vmmServiceRef);
 		EditorWindowManager editorWindowManager = new EditorWindowManager(editorManager,propertySheetPanel);
 		
 		SetViewModeAction viewModeAction = new SetViewModeAction();
-		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef,viewModeAction );
-		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(selectedVisualStyleManager, vmmServiceRef);
-		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager);
-		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(selectedVisualStyleManager,cyApplicationManagerServiceRef, vmmServiceRef);
-		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);
+		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef,viewModeAction );
+		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(vmmServiceRef);
+		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef);
+		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(cyApplicationManagerServiceRef, vmmServiceRef);
+		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(propertySheetPanel,vmmServiceRef, cyApplicationManagerServiceRef);
 		
 		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
 		RainbowOscColorMappingGenerator rainbowOscGenerator = new RainbowOscColorMappingGenerator(Color.class);
@@ -143,20 +142,19 @@ public class CyActivator extends AbstractCyActivator {
 		
 		DefaultTableCellRenderer emptyBoxRenderer = new DefaultTableCellRenderer();
 		DefaultTableCellRenderer filledBoxRenderer = new DefaultTableCellRenderer();
-		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(selectedVisualStyleManager,editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
-		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager,selectedVisualStyleManager);
+		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(vmmServiceRef, editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
+		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager, vmmServiceRef);
 		
 		// Context menu for edge bend
 		BendFactory bf = getService(bc, BendFactory.class);
 		
 		final Properties clearBendProp = new Properties();
 		clearBendProp.put(ServiceProperties.PREFERRED_MENU, "Clear Bend");
-		final ClearBendTaskFactory clearBendTaskFactory = new ClearBendTaskFactory(selectedVisualStyleManager, bf);
+		final ClearBendTaskFactory clearBendTaskFactory = new ClearBendTaskFactory(vmmServiceRef, bf);
 		registerService(bc, clearBendTaskFactory, EdgeViewTaskFactory.class, clearBendProp);
 		
 		registerAllServices(bc,viewModeAction, new Properties());
 		
-		registerAllServices(bc,selectedVisualStyleManager, new Properties());
 		registerAllServices(bc,attributeSetManager, new Properties());
 		registerAllServices(bc,vizMapperMainPanel, new Properties());
 		registerAllServices(bc,defViewEditor, new Properties());
@@ -246,7 +244,7 @@ public class CyActivator extends AbstractCyActivator {
 		randomNumberGeneratorProps.setProperty("menu","context");
 		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
 				
-		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, selectedVisualStyleManager, propertySheetPanel);
+		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, propertySheetPanel, vmmServiceRef);
 		Properties editSelectedProps = new Properties();
 		editSelectedProps.setProperty("service.type","vizmapUI.contextMenu");
 		editSelectedProps.setProperty("title","Edit Selected");

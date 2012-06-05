@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -32,7 +31,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 
 package org.cytoscape.view.vizmap.gui.internal.action;
 
@@ -41,8 +40,8 @@ import java.awt.event.ActionEvent;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -61,20 +60,19 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 	private static final long serialVersionUID = 7640977428847967990L;
 
 	private static final Logger logger = LoggerFactory.getLogger(EditSelectedCellAction.class);
-	
-	private final SelectedVisualStyleManager selectedVSManager;
+
 	private final EditorManager editorManager;
-	
-	public EditSelectedCellAction(final EditorManager editorManager, final CyApplicationManager appManager, final SelectedVisualStyleManager selectedVSManager, final PropertySheetPanel propertySheetPanel) {
+	private final VisualMappingManager vmm;
+
+	public EditSelectedCellAction(final EditorManager editorManager, final CyApplicationManager appManager,
+			final PropertySheetPanel propertySheetPanel, final VisualMappingManager vmm) {
 		super("Edit all selected cells", appManager, propertySheetPanel);
-		this.selectedVSManager = selectedVSManager;
 		this.editorManager = editorManager;
+		this.vmm = vmm;
 	}
-	
 
 	/**
-	 * Edit all selected cells at once.
-	 * This is for Discrete Mapping only.
+	 * Edit all selected cells at once. This is for Discrete Mapping only.
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -93,14 +91,14 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 
 		if ((prop == null) || (prop.getParentProperty() == null))
 			return;
-		
+
 		Object internalVal = prop.getInternalValue();
-		if(internalVal == null || internalVal instanceof DiscreteMapping == false)
+		if (internalVal == null || internalVal instanceof DiscreteMapping == false)
 			return;
 		final DiscreteMapping dm = (DiscreteMapping) internalVal;
 		final VisualProperty<Object> vp = dm.getVisualProperty();
 
-		final VisualStyle currentStyle = selectedVSManager.getCurrentVisualStyle();
+		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
 		Object newValue = null;
 
 		try {
@@ -113,7 +111,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 		if (newValue == null)
 			return;
 
-		final Class<?> keyClass =dm.getMappingColumnType();
+		final Class<?> keyClass = dm.getMappingColumnType();
 		for (int i = 0; i < selected.length; i++) {
 			final Item currentItem = ((Item) propertySheetPanel.getTable().getValueAt(selected[i], 0));
 			// First, update property sheet
@@ -138,7 +136,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 
 			dm.putMapValue(key, newValue);
 		}
-		
+
 		table.repaint();
 		CyNetworkView curView = applicationManager.getCurrentNetworkView();
 		if (curView != null) {

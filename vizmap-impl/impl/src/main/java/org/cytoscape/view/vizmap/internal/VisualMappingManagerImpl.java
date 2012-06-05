@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
@@ -47,6 +49,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleListener;
 import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
@@ -56,7 +60,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class VisualMappingManagerImpl implements VisualMappingManager {
+public class VisualMappingManagerImpl implements VisualMappingManager, SetCurrentVisualStyleListener, SetCurrentNetworkViewListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(VisualMappingManagerImpl.class);
 	
@@ -74,6 +78,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	private static final Color EDGE_LABEL_COLOR = Color.BLACK;
 
 	private VisualStyle defaultStyle;
+	private volatile VisualStyle currentStyle;
 
 	private final Map<CyNetworkView, VisualStyle> network2VisualStyleMap;
 	private final Set<VisualStyle> visualStyles;
@@ -94,6 +99,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 
 		this.defaultStyle = buildGlobalDefaultStyle(factory);
 		this.visualStyles.add(defaultStyle);
+		this.currentStyle = defaultStyle;
 	}
 	
 	
@@ -229,5 +235,30 @@ public class VisualMappingManagerImpl implements VisualMappingManager {
 	@Override
 	public Set<VisualLexicon> getAllVisualLexicon() {
 		return lexManager.getAllVisualLexicon();
+	}
+
+
+	@Override
+	public VisualStyle getCurrentVisualStyle() {
+		return currentStyle;
+	}
+
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		final CyNetworkView view = e.getNetworkView();
+		if(view == null)
+			return;
+		
+		final VisualStyle newStyle = this.getVisualStyle(view);
+		if(newStyle != null)
+			this.currentStyle = newStyle;
+	}
+
+
+	@Override
+	public void handleEvent(SetCurrentVisualStyleEvent e) {
+		final VisualStyle newStyle = e.getVisualStyle();
+		if(newStyle != null)
+			this.currentStyle = newStyle;
 	}
 }

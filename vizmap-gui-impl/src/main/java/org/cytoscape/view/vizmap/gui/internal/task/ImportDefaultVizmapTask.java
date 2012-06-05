@@ -10,7 +10,7 @@ import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedEvent;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -94,7 +94,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 				}
 
 				final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
-				helper.fireEvent(new SelectedVisualStyleSwitchedEvent(this, null, defStyle));
+				helper.fireEvent(new SetCurrentVisualStyleEvent(this, defStyle));
 			}
 		}
 	}

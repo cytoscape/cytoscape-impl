@@ -41,10 +41,10 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 
 /**
  * Moulse Listener for the default view panel.
@@ -54,14 +54,13 @@ public class DefaultViewMouseListener extends MouseAdapter {
 	// Singleton managed by DI container.
 	private final DefaultViewEditor defViewEditor;
 	private final VizMapperMainPanel vizMapperMainPanel;
-	private final SelectedVisualStyleManager manager;
+	private final VisualMappingManager vmm;
 
-	public DefaultViewMouseListener(final DefaultViewEditor defViewEditor,
-			final VizMapperMainPanel vizMapperMainPanel,
-			SelectedVisualStyleManager manager) {
+	public DefaultViewMouseListener(final DefaultViewEditor defViewEditor, final VizMapperMainPanel vizMapperMainPanel,
+			final VisualMappingManager vmm) {
 		this.defViewEditor = defViewEditor;
 		this.vizMapperMainPanel = vizMapperMainPanel;
-		this.manager = manager;
+		this.vmm = vmm;
 	}
 
 	/**
@@ -78,18 +77,15 @@ public class DefaultViewMouseListener extends MouseAdapter {
 		if (SwingUtilities.isLeftMouseButton(e)) {
 
 			defViewEditor.showEditor(vizMapperMainPanel);
-			
-			final Dimension panelSize = vizMapperMainPanel.getDefaultViewPanel().getSize();
-			final int newWidth = ((Number)(panelSize.width * 0.8)).intValue();
-			final int newHeight = ((Number)(panelSize.height * 0.8)).intValue();
 
-			vizMapperMainPanel.updateDefaultImage(manager
-					.getCurrentVisualStyle(), ((DefaultViewPanel) defViewEditor
-					.getDefaultView(manager.getCurrentVisualStyle()))
+			final Dimension panelSize = vizMapperMainPanel.getDefaultViewPanel().getSize();
+			final int newWidth = ((Number) (panelSize.width * 0.8)).intValue();
+			final int newHeight = ((Number) (panelSize.height * 0.8)).intValue();
+
+			final VisualStyle style = vmm.getCurrentVisualStyle();
+			vizMapperMainPanel.updateDefaultImage(style, ((DefaultViewPanel) defViewEditor.getDefaultView(style))
 					.getRenderingEngine(), new Dimension(newWidth, newHeight));
-			final VisualStyle style = manager.getCurrentVisualStyle();
-			vizMapperMainPanel.setDefaultViewImagePanel(vizMapperMainPanel
-					.getDefaultImageManager().get(style), style);
+			vizMapperMainPanel.setDefaultViewImagePanel(vizMapperMainPanel.getDefaultImageManager().get(style), style);
 		}
 	}
 }

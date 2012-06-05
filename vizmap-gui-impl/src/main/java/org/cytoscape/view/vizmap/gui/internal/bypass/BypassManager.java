@@ -14,7 +14,7 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.work.ServiceProperties;
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Creates Visual Style Bypass menu.
- *
+ * 
  */
 public final class BypassManager {
 
@@ -33,13 +33,13 @@ public final class BypassManager {
 
 	private final CyServiceRegistrar registrar;
 	private final EditorManager editorManager;
-	private final SelectedVisualStyleManager selectedManager;
+	private final VisualMappingManager vmm;
 
 	public BypassManager(final CyServiceRegistrar registrar, final EditorManager editorManager,
-			final SelectedVisualStyleManager selectedManager) {
+			final VisualMappingManager vmm) {
 		this.registrar = registrar;
 		this.editorManager = editorManager;
-		this.selectedManager = selectedManager;
+		this.vmm = vmm;
 	}
 
 	public void addBypass(RenderingEngineFactory<?> factory, Map props) {
@@ -55,11 +55,11 @@ public final class BypassManager {
 		// Tree traversal
 		final VisualLexiconNode nodeRootNode = lexicon.getVisualLexiconNode(nodeRoot);
 		final VisualLexiconNode edgeRootNode = lexicon.getVisualLexiconNode(edgeRoot);
-		
+
 		depthFirst(PARENT_MENU_ITEM, nodeRootNode);
 		depthFirst(PARENT_MENU_ITEM, edgeRootNode);
 	}
-	
+
 	public void removeBypass(RenderingEngineFactory<?> factory, Map props) {
 		// TODO: implement this
 	}
@@ -68,11 +68,11 @@ public final class BypassManager {
 		final Collection<VisualLexiconNode> children = node.getChildren();
 		for (VisualLexiconNode child : children) {
 			final VisualProperty<?> vp = child.getVisualProperty();
-			
+
 			// Ignore incompatible VP
-			if(PropertySheetUtil.isCompatible(vp) == false)
+			if (PropertySheetUtil.isCompatible(vp) == false)
 				continue;
-			
+
 			final String newMenu = menuText + "." + vp.getDisplayName();
 			if (child.getChildren().size() == 0) {
 				// Leaf
@@ -83,11 +83,11 @@ public final class BypassManager {
 
 				if (vp.getTargetDataType().equals(CyNode.class)) {
 					final NodeViewTaskFactory ntf = new NodeBypassMenuTaskFactory(null, vp,
-							editorManager.getValueEditor(vp.getRange().getType()), selectedManager);
+							editorManager.getValueEditor(vp.getRange().getType()), vmm);
 					registrar.registerService(ntf, NodeViewTaskFactory.class, vpProp);
 				} else if (vp.getTargetDataType().equals(CyEdge.class)) {
 					final EdgeViewTaskFactory etf = new EdgeBypassMenuTaskFactory(null, vp,
-							editorManager.getValueEditor(vp.getRange().getType()), selectedManager);
+							editorManager.getValueEditor(vp.getRange().getType()), vmm);
 					registrar.registerService(etf, EdgeViewTaskFactory.class, vpProp);
 				}
 				logger.debug("Bypass context menu registered: " + vp.getDisplayName());
@@ -96,7 +96,5 @@ public final class BypassManager {
 			}
 		}
 	}
-
-	
 
 }

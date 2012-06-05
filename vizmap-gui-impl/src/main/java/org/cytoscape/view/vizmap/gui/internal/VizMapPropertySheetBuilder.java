@@ -66,7 +66,7 @@ public class VizMapPropertySheetBuilder {
 	private final VizMapperMenuManager menuMgr;
 	private final VizMapperUtil util;
 	private final VisualMappingManager vmm;
-	
+
 	/*
 	 * Keeps Properties in the browser.
 	 */
@@ -75,8 +75,8 @@ public class VizMapPropertySheetBuilder {
 	private List<VisualProperty<?>> unusedVisualPropType;
 
 	public VizMapPropertySheetBuilder(final VizMapperMenuManager menuMgr, CyNetworkManager cyNetworkManager,
-			PropertySheetPanel propertySheetPanel, EditorManager editorManager,
-			DefaultViewPanel defViewPanel, CyTableManager tableMgr, final VizMapperUtil util, final VisualMappingManager vmm) {
+			PropertySheetPanel propertySheetPanel, EditorManager editorManager, DefaultViewPanel defViewPanel,
+			CyTableManager tableMgr, final VizMapperUtil util, final VisualMappingManager vmm) {
 
 		this.menuMgr = menuMgr;
 		this.propertySheetPanel = propertySheetPanel;
@@ -88,7 +88,6 @@ public class VizMapPropertySheetBuilder {
 		propertyMap = new HashMap<VisualStyle, List<Property>>();
 		vizMapPropertyBuilder = new VizMapPropertyBuilder(cyNetworkManager, editorManager, tableMgr);
 	}
-
 
 	/**
 	 * Create new properties.
@@ -102,7 +101,7 @@ public class VizMapPropertySheetBuilder {
 		// Remove all.
 		for (Property item : propertySheetPanel.getProperties())
 			propertySheetPanel.removeProperty(item);
-		
+
 		final List<Property> propRecord = getPropertyListFromVisualStyle(style);
 
 		// Save it for later use.
@@ -125,10 +124,9 @@ public class VizMapPropertySheetBuilder {
 		 */
 		propertySheetPanel.setMode(PropertySheetPanel.VIEW_AS_CATEGORIES);
 
-
 		// TODO: fix listener
 		propertySheetPanel.getTable().addMouseListener(
-				new VizMapPropertySheetMouseAdapter(this.menuMgr, this, propertySheetPanel, style, editorManager));
+				new VizMapPropertySheetMouseAdapter(this.menuMgr, this, propertySheetPanel, editorManager, vmm));
 
 		final PropertySheetTable table = propertySheetPanel.getTable();
 
@@ -156,8 +154,9 @@ public class VizMapPropertySheetBuilder {
 
 		final Collection<VisualProperty<?>> nodeVP = util.getVisualPropertySet(CyNode.class);
 		final Collection<VisualProperty<?>> edgeVP = util.getVisualPropertySet(CyEdge.class);
-		//final Collection<VisualProperty<?>> networkVP = style.getVisualLexicon().getVisualLexiconNode(TwoDVisualLexicon.NETWORK).getChildren();
-		
+		// final Collection<VisualProperty<?>> networkVP =
+		// style.getVisualLexicon().getVisualLexiconNode(TwoDVisualLexicon.NETWORK).getChildren();
+
 		Collection<VisualProperty<?>> nodeVPSelected = new ArrayList<VisualProperty<?>>();
 		Collection<VisualProperty<?>> edgeVPSelected = new ArrayList<VisualProperty<?>>();
 
@@ -176,25 +175,24 @@ public class VizMapPropertySheetBuilder {
 					edgeVPSelected.add(vp);
 			}
 		}
-		
-		
+
 		final List<Property> nodeProps = getProps(style, BasicVisualLexicon.NODE.getDisplayName(), nodeVPSelected);
 		final List<Property> edgeProps = getProps(style, BasicVisualLexicon.EDGE.getDisplayName(), edgeVPSelected);
-		//final List<Property> networkProps = setProps(style, TwoDVisualLexicon.NETWORK);
-		
+		// final List<Property> networkProps = setProps(style,
+		// TwoDVisualLexicon.NETWORK);
+
 		final List<Property> result = new ArrayList<Property>();
-		
-		
+
 		result.addAll(nodeProps);
 		result.addAll(edgeProps);
-		//result.addAll(networkProps);
-		
+		// result.addAll(networkProps);
+
 		return result;
 
 	}
 
-	
-	private List<Property> getProps(final VisualStyle style, final String categoryName, final Collection<VisualProperty<?>> vpSet) {
+	private List<Property> getProps(final VisualStyle style, final String categoryName,
+			final Collection<VisualProperty<?>> vpSet) {
 
 		final List<Property> props = new ArrayList<Property>();
 		final Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
@@ -205,41 +203,37 @@ public class VizMapPropertySheetBuilder {
 			// execute the following only if category matches.
 			if (vpSet.contains(targetVP) == false)
 				continue;
-			
+
 			logger.debug("This is a leaf VP: " + targetVP.getDisplayName());
 
-			CyComboBoxPropertyEditor mappingSelector = (CyComboBoxPropertyEditor) editorManager.getDefaultComboBoxEditor("mappingTypeEditor");
+			CyComboBoxPropertyEditor mappingSelector = (CyComboBoxPropertyEditor) editorManager
+					.getDefaultComboBoxEditor("mappingTypeEditor");
 			Set<Object> factories = mappingSelector.getAvailableValues();
-			
+
 			VisualMappingFunctionFactory vmfFactory = null;
-			for(Object f: factories) {
+			for (Object f : factories) {
 				VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) f;
-				Class<?> type = factory.getMappingFunctionType();				
-				if(type.isAssignableFrom(mapping.getClass())) {
+				Class<?> type = factory.getMappingFunctionType();
+				if (type.isAssignableFrom(mapping.getClass())) {
 					vmfFactory = factory;
 					break;
 				}
 			}
-			
-			final VizMapperProperty<?, String, ?> calculatorTypeProp = vizMapPropertyBuilder
-					.buildProperty(mapping, categoryName, propertySheetPanel, vmfFactory);
+
+			final VizMapperProperty<?, String, ?> calculatorTypeProp = vizMapPropertyBuilder.buildProperty(mapping,
+					categoryName, propertySheetPanel, vmfFactory);
 
 			logger.debug("Built new PROP: " + calculatorTypeProp.getDisplayName());
-			
-			
+
 			PropertyEditor editor = ((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory())
 					.getEditor(calculatorTypeProp);
-			
-			
-			
-			if ((editor == null)
-					&& (calculatorTypeProp.getCategory().equals(
-							"Unused Properties") == false)) {
-				
-				((PropertyEditorRegistry) this.propertySheetPanel
-						.getTable().getEditorFactory())
-						.registerEditor(calculatorTypeProp, editorManager
-								.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) targetVP.getTargetDataType()));
+
+			if ((editor == null) && (calculatorTypeProp.getCategory().equals("Unused Properties") == false)) {
+
+				((PropertyEditorRegistry) this.propertySheetPanel.getTable().getEditorFactory()).registerEditor(
+						calculatorTypeProp, editorManager
+								.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) targetVP
+										.getTargetDataType()));
 			}
 			props.add(calculatorTypeProp);
 		}
@@ -251,7 +245,8 @@ public class VizMapPropertySheetBuilder {
 		buildList(style);
 
 		for (VisualProperty<?> type : getUnusedVisualPropType()) {
-			VizMapperProperty<VisualProperty<?>, String, ?> prop = new VizMapperProperty<VisualProperty<?>, String, Object>(CellType.UNUSED, type, String.class);
+			VizMapperProperty<VisualProperty<?>, String, ?> prop = new VizMapperProperty<VisualProperty<?>, String, Object>(
+					CellType.UNUSED, type, String.class);
 			prop.setCategory(AbstractVizMapperPanel.CATEGORY_UNUSED);
 			prop.setDisplayName(type.getDisplayName());
 			prop.setValue("Double-Click to create...");
@@ -267,47 +262,48 @@ public class VizMapPropertySheetBuilder {
 		VisualMappingFunction<?, ?> mapping = null;
 
 		final Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
-		for(VisualLexicon lex: lexSet) {
+		for (VisualLexicon lex : lexSet) {
 
 			for (final VisualProperty<?> vp : lex.getAllVisualProperties()) {
-				
-				if(PropertySheetUtil.isCompatible(vp) == false)
+
+				if (PropertySheetUtil.isCompatible(vp) == false)
 					continue;
-				
+
 				if (PropertySheetUtil.isAdvancedMode() == false) {
 					if (PropertySheetUtil.isBasic(vp) == false)
 						continue;
 				}
-				
+
 				mapping = style.getVisualMappingFunction(vp);
-	
+
 				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
 				if (mapping == null) {
-					if(treeNode.getChildren().size() == 0)
+					if (treeNode.getChildren().size() == 0)
 						unusedVisualPropType.add(vp);
-//					else if(treeNode.isDepend()) {
-//						final VisualProperty<?> parentVP = treeNode.getParent().getVisualProperty();
-//						if(unusedVisualPropType.contains(parentVP) == false)
-//							unusedVisualPropType.add(parentVP);
-//					}
+					// else if(treeNode.isDepend()) {
+					// final VisualProperty<?> parentVP =
+					// treeNode.getParent().getVisualProperty();
+					// if(unusedVisualPropType.contains(parentVP) == false)
+					// unusedVisualPropType.add(parentVP);
+					// }
 				}
-				
+
 				// Override dependency
 				final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
-				for(VisualPropertyDependency<?> dep: dependencies) {
-					if(dep.isDependencyEnabled()) {
+				for (VisualPropertyDependency<?> dep : dependencies) {
+					if (dep.isDependencyEnabled()) {
 						final Set<?> vpGroup = dep.getVisualProperties();
 						VisualProperty<?> firstVP = (VisualProperty<?>) vpGroup.iterator().next();
 						final VisualLexiconNode node = lex.getVisualLexiconNode(firstVP);
 						final VisualProperty<?> parentVP = node.getParent().getVisualProperty();
-						if(unusedVisualPropType.contains(parentVP) == false)
+						if (unusedVisualPropType.contains(parentVP) == false)
 							unusedVisualPropType.add(parentVP);
 						// Remove group
-						for(Object toBeRemoved: vpGroup)
+						for (Object toBeRemoved : vpGroup)
 							unusedVisualPropType.remove(toBeRemoved);
 					}
 				}
-				
+
 				mapping = null;
 			}
 		}
@@ -358,23 +354,22 @@ public class VizMapPropertySheetBuilder {
 			}
 		}
 	}
-	
+
 	public List<Property> getPropertyList(final VisualStyle style) {
 		List<Property> list = propertyMap.get(style);
 		if (list != null) {
 			return list;
 		}
-		
+
 		final List<Property> newList = new ArrayList<Property>();
 		propertyMap.put(style, newList);
 		return newList;
 	}
-	
+
 	public void removePropertyList(final VisualStyle style) {
 		propertyMap.remove(style);
 	}
-	
-	
+
 	public void removeProperty(final Property prop, final VisualStyle style) {
 
 		final List<Property> props = propertyMap.get(style);
@@ -382,9 +377,9 @@ public class VizMapPropertySheetBuilder {
 			return;
 
 		final List<Property> targets = new ArrayList<Property>();
-		
+
 		for (Property p : props) {
-			if(p.getDisplayName() == null)
+			if (p.getDisplayName() == null)
 				continue;
 			if (p.getDisplayName().equals(prop.getDisplayName()))
 				targets.add(p);
@@ -393,7 +388,6 @@ public class VizMapPropertySheetBuilder {
 		for (Property p : targets)
 			props.remove(p);
 	}
-
 
 	public VizMapPropertyBuilder getPropertyBuilder() {
 		return this.vizMapPropertyBuilder;

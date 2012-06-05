@@ -70,8 +70,6 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 	private final V FIRST_LOCATION = (V) new Double(10f);
 	private final V SECOND_LOCATION = (V) new Double(30f);
 	
-	private SpinnerNumberModel propertySpinnerModel;
-
 
 	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<Double, V> mapping, final CyTable attr,
 			final CyApplicationManager appManager, final VisualMappingManager vmm) {

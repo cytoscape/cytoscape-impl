@@ -8,8 +8,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
@@ -26,20 +26,15 @@ public class GenerateValuesTask extends AbstractTask {
 	private final DiscreteMappingGenerator<?> generator;
 
 	private final PropertySheetPanel table;
-	private final SelectedVisualStyleManager manager;
 	private final CyApplicationManager appManager;
+	private final VisualMappingManager vmm;
 
-	// private final CyTableManager tableManager;
-
-	public GenerateValuesTask(final DiscreteMappingGenerator<?> generator,
-			final PropertySheetPanel table,
-			final SelectedVisualStyleManager manager,
-			final CyApplicationManager appManager) {
+	public GenerateValuesTask(final DiscreteMappingGenerator<?> generator, final PropertySheetPanel table,
+			final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		this.generator = generator;
 		this.appManager = appManager;
-		this.manager = manager;
 		this.table = table;
-
+		this.vmm = vmm;
 	}
 
 	@Override
@@ -60,7 +55,7 @@ public class GenerateValuesTask extends AbstractTask {
 				final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
 				final Class<?> vpValueType = vp.getRange().getType();
 				final Class<?> generatorType = generator.getDataType();
-				
+
 				// TODO: is this safe?
 				if (generatorType.isAssignableFrom(vpValueType) || vpValueType.isAssignableFrom(generatorType))
 					generateMapping(prop, prop.getValue().toString(), vp);
@@ -70,13 +65,12 @@ public class GenerateValuesTask extends AbstractTask {
 		value.toggle();
 	}
 
-	private void generateMapping(final VizMapperProperty<?, ?, ?> prop,
-			final String attrName, final VisualProperty<?> vp) {
+	private void generateMapping(final VizMapperProperty<?, ?, ?> prop, final String attrName,
+			final VisualProperty<?> vp) {
 
 		final Property[] subProps = prop.getSubProperties();
-		final VisualStyle style = manager.getCurrentVisualStyle();
-		final VisualMappingFunction<?, ?> mapping = style
-				.getVisualMappingFunction(vp);
+		final VisualStyle style = vmm.getCurrentVisualStyle();
+		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 
 		if (mapping == null)
 			return;

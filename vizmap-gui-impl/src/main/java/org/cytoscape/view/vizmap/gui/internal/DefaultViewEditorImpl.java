@@ -69,13 +69,12 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleListener;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
-import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedEvent;
-import org.cytoscape.view.vizmap.gui.event.SelectedVisualStyleSwitchedListener;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.jdesktop.swingx.JXList;
@@ -98,7 +97,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  * 
  */
-public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor, SelectedVisualStyleSwitchedListener,
+public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor, SetCurrentVisualStyleListener,
 		LexiconStateChangedListener {
 
 	private final static long serialVersionUID = 1202339876675416L;
@@ -115,20 +114,18 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 	private final EditorManager editorFactory;
 	private final VisualMappingManager vmm;
-	private final SelectedVisualStyleManager selectedManager;
+
 	private final VizMapperUtil util;
+
 	private final DefaultViewPanelImpl mainView;
+
 	private final CyEventHelper cyEventHelper;
 
 	private DependencyTable depTable;
 
-	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView,
-								 final EditorManager editorFactory,
-								 final CyApplicationManager cyApplicationManager,
-								 final VisualMappingManager vmm,
-								 final SelectedVisualStyleManager selectedManager,
-								 final VizMapperUtil util,
-								 final CyEventHelper cyEventHelper) {
+	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView, final EditorManager editorFactory,
+			final CyApplicationManager cyApplicationManager, final VisualMappingManager vmm, final VizMapperUtil util,
+			final CyEventHelper cyEventHelper) {
 		super();
 
 		if (mainView == null)
@@ -141,7 +138,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 		this.vmm = vmm;
 		this.util = util;
-		this.selectedManager = selectedManager;
 		vpSets = new HashMap<Class<? extends CyIdentifiable>, Set<VisualProperty<?>>>();
 		listMap = new HashMap<Class<? extends CyIdentifiable>, JList>();
 
@@ -220,7 +216,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 	private void updateDependencyTable() {
 
-		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
+		final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 		final Set<VisualPropertyDependency<?>> dependencies = selectedStyle.getAllVisualPropertyDependencies();
 		final DependencyTableModel depTableModel = new DependencyTableModel();
 
@@ -395,7 +391,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		final VisualProperty<V> vp = (VisualProperty<V>) list.getSelectedValue();
 
 		if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
-			final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
+			final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 			final V defaultVal = selectedStyle.getDefaultValue(vp);
 			try {
 				if (defaultVal != null)
@@ -418,7 +414,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	}
 
 	private void applyNewStyle(final CyNetworkView view) {
-		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
+		final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 
 		vmm.setVisualStyle(selectedStyle, view);
 		selectedStyle.apply(view);
@@ -449,10 +445,15 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	 * Populate the list model based on current lexicon tree structure.
 	 */
 	private void buildList() {
+
 		final VisualPropCellRenderer renderer = new VisualPropCellRenderer();
-		final RenderingEngine<CyNetwork> engine = mainView.getRenderingEngine();
-		final VisualLexicon lex = engine.getVisualLexicon();
-		final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
+		final RenderingEngine<CyNetwork> currentEngine = this.cyApplicationManager.getCurrentRenderingEngine();
+		if (currentEngine == null)
+			return;
+
+		final VisualLexicon lex = currentEngine.getVisualLexicon();
+
+		final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 
 		for (Class<? extends CyIdentifiable> key : vpSets.keySet()) {
 			final DefaultListModel model = new DefaultListModel();
@@ -482,7 +483,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
 				if (treeNode != null)
 					model.addElement(vp);
-				
+
 				// Override dependency
 				final Set<VisualPropertyDependency<?>> dependencies = selectedStyle.getAllVisualPropertyDependencies();
 				for (VisualPropertyDependency<?> dep : dependencies) {
@@ -491,7 +492,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 						final VisualProperty<?> parentVP = dep.getParentVisualProperty();
 						if (model.contains(parentVP) == false)
 							model.addElement(parentVP);
-						
+
 						for (VisualProperty<?> prop : props)
 							model.removeElement(prop);
 					}
@@ -520,7 +521,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
 				boolean cellHasFocus) {
 
-			final VisualStyle selectedStyle = selectedManager.getCurrentVisualStyle();
+			final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 
 			Icon icon = null;
 			VisualProperty<Object> vp = null;
@@ -528,7 +529,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 			if (value instanceof VisualProperty<?>) {
 				vp = (VisualProperty<Object>) value;
 
-				final RenderingEngine<?> presentation = mainView.getRenderingEngine();
+				final RenderingEngine<?> presentation = cyApplicationManager.getCurrentRenderingEngine();
 
 				if (presentation != null) {
 					final Object defValue = selectedStyle.getDefaultValue(vp);
@@ -569,9 +570,9 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		return mainView;
 	}
 
-	public void handleEvent(SelectedVisualStyleSwitchedEvent e) {
+	public void handleEvent(SetCurrentVisualStyleEvent e) {
 
-		final VisualStyle selectedStyle = e.getNewVisualStyle();
+		final VisualStyle selectedStyle = e.getVisualStyle();
 		setTitle("Default Appearance for " + selectedStyle.getTitle());
 
 	}

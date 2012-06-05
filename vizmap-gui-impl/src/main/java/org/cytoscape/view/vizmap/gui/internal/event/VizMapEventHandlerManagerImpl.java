@@ -11,7 +11,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandlerManager;
@@ -34,9 +34,6 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 	private Map<String, VizMapEventHandler> eventHandlers;
 
 	private final EditorManager editorManager;
-
-	private final SelectedVisualStyleManager manager;
-
 	private VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
 
 	private final CyNetworkTableManager tableMgr;
@@ -45,8 +42,9 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 	private final AttributeSetManager attrManager;
 
 	private final VizMapperUtil util;
-	
-	public VizMapEventHandlerManagerImpl(final SelectedVisualStyleManager manager, final EditorManager editorManager,
+	private final VisualMappingManager vmm;
+
+	public VizMapEventHandlerManagerImpl(final VisualMappingManager vmm, final EditorManager editorManager,
 			final VizMapPropertySheetBuilder vizMapPropertySheetBuilder, final PropertySheetPanel propertySheetPanel,
 			final VizMapperMainPanel gui, final CyNetworkTableManager tableMgr,
 			final CyApplicationManager applicationManager, final AttributeSetManager attrManager,
@@ -55,9 +53,9 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 		this.editorManager = editorManager;
 		this.tableMgr = tableMgr;
 		this.applicationManager = applicationManager;
-		this.manager = manager;
 		this.attrManager = attrManager;
 		this.util = util;
+		this.vmm = vmm;
 
 		registerCellEditorListeners();
 
@@ -73,8 +71,8 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 		eventHandlers.put(EditorManager.EDITOR_WINDOW_OPENED, windowEventHandler);
 
 		// Create handler for local property editor event.
-		eventHandlers.put(VALUE, new CellEditorEventHandler(manager, propertySheetPanel, tableMgr, applicationManager,
-				vizMapPropertySheetBuilder, attrManager, util));
+		eventHandlers.put(VALUE, new CellEditorEventHandler(propertySheetPanel, tableMgr, applicationManager,
+				vizMapPropertySheetBuilder, attrManager, util, vmm));
 	}
 
 	/*
@@ -104,7 +102,6 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 		// TODO implement this
 	}
 
-	
 	@Override
 	public VizMapEventHandler getHandler(final String name) {
 		return eventHandlers.get(name);

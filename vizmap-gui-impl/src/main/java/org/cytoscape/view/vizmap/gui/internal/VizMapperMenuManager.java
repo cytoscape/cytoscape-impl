@@ -10,7 +10,7 @@ import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.internal.task.generators.GenerateValuesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
@@ -41,37 +41,27 @@ public class VizMapperMenuManager {
 
 	// Context menu
 	private final JPopupMenu rightClickMenu;
-	
+
 	// Context Menu Preset items
 	private final JMenu edit;
 	private final JMenu generateValues;
 
-	private IconManager iconManager;
-
-	// Injected from resource file.
-	private String generateMenuLabel;
-	private String generateIconId;
-
-	private String modifyMenuLabel;
-	private String modifyIconId;
-
-	private JMenu modifyValues;
-
 	private final TaskManager taskManager;
-	
-	private final PropertySheetPanel panel;
-	private final SelectedVisualStyleManager manager;
-	private final CyApplicationManager appManager;
 
-	public VizMapperMenuManager(final TaskManager taskManager, final PropertySheetPanel panel, final SelectedVisualStyleManager manager, final CyApplicationManager appManager) {
+	private final PropertySheetPanel panel;
+	private final CyApplicationManager appManager;
+	private final VisualMappingManager vmm;
+
+	public VizMapperMenuManager(final TaskManager taskManager, final PropertySheetPanel panel,
+			final VisualMappingManager vmm, final CyApplicationManager appManager) {
 
 		if (taskManager == null)
 			throw new NullPointerException("TaskManager is null.");
 
 		this.taskManager = taskManager;
 		this.appManager = appManager;
-		this.manager = manager;
 		this.panel = panel;
+		this.vmm = vmm;
 
 		// Will be shown under the button next to Visual Style Name
 		mainMenu = new JPopupMenu();
@@ -83,18 +73,6 @@ public class VizMapperMenuManager {
 		this.generateValues = new JMenu("Mapping Value Generators");
 		this.rightClickMenu.add(generateValues);
 
-	}
-
-	public void setIconManager(IconManager iconManager) {
-		this.iconManager = iconManager;
-	}
-
-	public void setGenerateMenuLabel(String generateMenuLabel) {
-		this.generateMenuLabel = generateMenuLabel;
-	}
-
-	public void setGenerateIconId(String generateIconId) {
-		this.generateIconId = generateIconId;
 	}
 
 	public JPopupMenu getMainMenu() {
@@ -111,12 +89,11 @@ public class VizMapperMenuManager {
 	 */
 	public void onBind(final CyAction action, Map properties) {
 		final Object serviceType = properties.get("service.type");
-		if (serviceType != null
-				&& serviceType.toString().equals("vizmapUI.contextMenu")) {
+		if (serviceType != null && serviceType.toString().equals("vizmapUI.contextMenu")) {
 			Object menuTitle = properties.get("title");
-			if(menuTitle == null)
+			if (menuTitle == null)
 				throw new NullPointerException("Title is missing for a menu item");
-			
+
 			final JMenuItem menuItem = new JMenuItem(menuTitle.toString());
 			menuItem.addActionListener(action);
 			edit.add(menuItem);
@@ -133,12 +110,12 @@ public class VizMapperMenuManager {
 	 * @param taskFactory
 	 * @param properties
 	 */
-	public void addTaskFactory(final TaskFactory taskFactory,
-			@SuppressWarnings("rawtypes") Map properties) {
+	public void addTaskFactory(final TaskFactory taskFactory, @SuppressWarnings("rawtypes") Map properties) {
 
 		// first filter the service...
 		final Object serviceType = properties.get("service.type");
-		if ( serviceType == null || !(serviceType instanceof String) || !((String)serviceType).equals("vizmapUI.taskFactory") )
+		if (serviceType == null || !(serviceType instanceof String)
+				|| !((String) serviceType).equals("vizmapUI.taskFactory"))
 			return;
 
 		final Object menuDef = properties.get(METADATA_MENU_KEY);
@@ -160,24 +137,20 @@ public class VizMapperMenuManager {
 			}
 		});
 
-		if(menuDef.toString().equals(MAIN_MENU))
+		if (menuDef.toString().equals(MAIN_MENU))
 			mainMenu.add(menuItem);
-		else if(menuDef.toString().equals(CONTEXT_MENU))
+		else if (menuDef.toString().equals(CONTEXT_MENU))
 			edit.add(menuItem);
-	}
-	
-	private void executeTask() {
-		
 	}
 
 	public void removeTaskFactory(final TaskFactory taskFactory, Map properties) {
 	}
-	
-	public void addMappingGenerator(final DiscreteMappingGenerator<?> generator, @SuppressWarnings("rawtypes") Map properties) {
+
+	public void addMappingGenerator(final DiscreteMappingGenerator<?> generator,
+			@SuppressWarnings("rawtypes") Map properties) {
 		final Object serviceType = properties.get(METADATA_MENU_KEY);
 		if (serviceType == null)
-			throw new NullPointerException(
-					"Service Type metadata is null.  This value is required.");
+			throw new NullPointerException("Service Type metadata is null.  This value is required.");
 
 		// This is a menu item for Main Command Button.
 		final Object title = properties.get(METADATA_TITLE_KEY);
@@ -185,8 +158,8 @@ public class VizMapperMenuManager {
 			throw new NullPointerException("Title metadata is missing.");
 
 		// Create mapping generator task factory
-		final GenerateValuesTaskFactory taskFactory = new GenerateValuesTaskFactory(generator, panel, manager, appManager);
-		
+		final GenerateValuesTaskFactory taskFactory = new GenerateValuesTaskFactory(generator, panel, vmm, appManager);
+
 		// Add new menu to the pull-down
 		final JMenuItem menuItem = new JMenuItem(title.toString());
 		// menuItem.setIcon(iconManager.getIcon(iconId));
@@ -198,10 +171,11 @@ public class VizMapperMenuManager {
 		});
 
 		generateValues.add(menuItem);
-		
+
 	}
-	
-	public void removeMappingGenerator(final DiscreteMappingGenerator<?> generator, @SuppressWarnings("rawtypes") Map properties) {
+
+	public void removeMappingGenerator(final DiscreteMappingGenerator<?> generator,
+			@SuppressWarnings("rawtypes") Map properties) {
 		// FIXME
 	}
 

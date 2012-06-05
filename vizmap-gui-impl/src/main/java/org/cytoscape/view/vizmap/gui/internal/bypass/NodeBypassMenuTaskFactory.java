@@ -7,7 +7,7 @@ import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.work.TaskIterator;
 
@@ -17,19 +17,18 @@ public class NodeBypassMenuTaskFactory extends AbstractNodeViewTaskFactory {
 	private final ValueEditor<?> editor;
 
 	private final Component parent;
-
-	private final SelectedVisualStyleManager selectedManager;
+	private final VisualMappingManager vmm;
 
 	NodeBypassMenuTaskFactory(final Component parent, final VisualProperty<?> vp, final ValueEditor<?> editor,
-			final SelectedVisualStyleManager selectedManager) {
+			final VisualMappingManager vmm) {
 		this.vp = vp;
 		this.editor = editor;
 		this.parent = parent;
-		this.selectedManager = selectedManager;
+		this.vmm = vmm;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
-		return new TaskIterator(new BypassTask<CyNode>(parent, editor, vp, nodeView, netView, selectedManager));
+		return new TaskIterator(new BypassTask<CyNode>(parent, editor, vp, nodeView, netView, vmm));
 	}
 }

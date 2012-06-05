@@ -9,7 +9,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -29,25 +29,24 @@ public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 
 	private final Component parent;
 	private final CyNetworkView networkView;
-
-	private final SelectedVisualStyleManager selectedManager;
+	private final VisualMappingManager vmm;
 
 	@SuppressWarnings("unchecked")
 	BypassTask(Component parent, ValueEditor<?> editor, final VisualProperty<?> vp, final View<T> view,
-			final CyNetworkView networkView, final SelectedVisualStyleManager selectedManager) {
+			final CyNetworkView networkView, final VisualMappingManager vmm) {
 		this.view = view;
 		this.vp = (VisualProperty<Object>) vp;
 		this.editor = (ValueEditor<Object>) editor;
 		this.parent = parent;
+		this.vmm = vmm;
 
 		this.networkView = networkView;
-		this.selectedManager = selectedManager;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		final boolean lock = view.isValueLocked(vp);
-		
+
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -55,9 +54,8 @@ public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 			}
 		});
 
-		
 	}
-	
+
 	private final void update(final boolean lock) {
 		if (!lock) {
 			final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
@@ -68,7 +66,7 @@ public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 		}
 
 		final CyRow row = networkView.getModel().getRow(view.getModel());
-		selectedManager.getCurrentVisualStyle().apply(row, view);
+		vmm.getCurrentVisualStyle().apply(row, view);
 		networkView.updateView();
 	}
 }

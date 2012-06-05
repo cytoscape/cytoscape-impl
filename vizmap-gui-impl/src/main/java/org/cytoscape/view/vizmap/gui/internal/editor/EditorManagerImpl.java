@@ -48,10 +48,10 @@ import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.Range;
@@ -59,7 +59,6 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
@@ -83,7 +82,7 @@ import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 public class EditorManagerImpl implements EditorManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(EditorManagerImpl.class);
-	
+
 	private static final PropertyEditorRegistry REGISTRY = new PropertyEditorRegistry();
 
 	private final Map<Class<?>, VisualPropertyEditor<?>> editors;
@@ -99,20 +98,17 @@ public class EditorManagerImpl implements EditorManager {
 	private final CyApplicationManager appManager;
 
 	private final CyNetworkTableManager tableManager;
-	private final SelectedVisualStyleManager selectedManager;
 	private final VisualMappingManager vmm;
 
 	/**
 	 * Creates a new EditorFactory object.
 	 */
 	public EditorManagerImpl(final CyApplicationManager appManager, final AttributeSetManager attrManager,
-			final VisualMappingManager vmm, final CyNetworkTableManager tableManager,
-			final SelectedVisualStyleManager selectedManager) {
+			final VisualMappingManager vmm, final CyNetworkTableManager tableManager) {
 
 		this.appManager = appManager;
 		this.tableManager = tableManager;
 		this.vmm = vmm;
-		this.selectedManager = selectedManager;
 
 		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
 
@@ -198,11 +194,10 @@ public class EditorManagerImpl implements EditorManager {
 				message = message + ": " + ((ContinuousRange) type.getRange()).getMin() + " to "
 						+ ((ContinuousRange) type.getRange()).getMax();
 			JOptionPane.showMessageDialog(parentComponent, message, "Invalid Value", JOptionPane.ERROR_MESSAGE);
-			
+
 			return initialValue;
 		}
 	}
-
 
 	@SuppressWarnings("unchecked")
 	public <V> VisualPropertyEditor<V> getVisualPropertyEditor(final VisualProperty<V> vp) {
@@ -271,16 +266,17 @@ public class EditorManagerImpl implements EditorManager {
 		for (final VisualProperty<?> vp : vps) {
 			Range<?> range = vp.getRange();
 
-			// If data type is basic (String, Boolean, etc.) not custom editor is not necessary.
+			// If data type is basic (String, Boolean, etc.) not custom editor
+			// is not necessary.
 			final Class<?> targetDataType = range.getType();
-			if(REGISTRY.getEditor(targetDataType) != null)
+			if (REGISTRY.getEditor(targetDataType) != null)
 				continue;
-			
+
 			if (range instanceof DiscreteRange<?>) {
 				// Visual Property Editor.
 				final Set<?> values = ((DiscreteRange<?>) range).values();
 				VisualPropertyEditor<?> vpEditor = new DiscreteValuePropertyEditor(range.getType(), values,
-						tableManager, appManager, selectedManager, this, vmm);
+						tableManager, appManager, this, vmm);
 				this.addVisualPropertyEditor(vpEditor, null);
 
 				if (this.getValueEditor(range.getType()) == null) {
@@ -304,14 +300,14 @@ public class EditorManagerImpl implements EditorManager {
 	@Override
 	public PropertyEditor getContinuousEditor(final VisualProperty<?> vp) {
 		final ContinuousEditorType editorType = this.getVisualPropertyEditor(vp).getContinuousEditorType();
-		
-		if(editorType == ContinuousEditorType.COLOR)
-			return new GradientEditor(tableManager, appManager, selectedManager, this, vmm);
-		else if(editorType == ContinuousEditorType.CONTINUOUS)
-			return new C2CEditor(tableManager, appManager, selectedManager, this, vmm);
-		else if(editorType == ContinuousEditorType.DISCRETE)
-			return new C2DEditor(tableManager, appManager, selectedManager, this, vmm);
-		
+
+		if (editorType == ContinuousEditorType.COLOR)
+			return new GradientEditor(tableManager, appManager, this, vmm);
+		else if (editorType == ContinuousEditorType.CONTINUOUS)
+			return new C2CEditor(tableManager, appManager, this, vmm);
+		else if (editorType == ContinuousEditorType.DISCRETE)
+			return new C2DEditor(tableManager, appManager, this, vmm);
+
 		return null;
 	}
 

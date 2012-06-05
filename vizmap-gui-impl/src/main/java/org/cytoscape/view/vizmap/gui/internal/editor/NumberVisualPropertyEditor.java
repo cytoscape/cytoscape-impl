@@ -39,7 +39,6 @@ import javax.swing.table.TableCellRenderer;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.gui.SelectedVisualStyleManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -52,14 +51,14 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 	 * Creates a new DiscreteNumber object.
 	 */
 	public NumberVisualPropertyEditor(Class<T> type, final CyNetworkTableManager manager,
-			final CyApplicationManager appManager, final SelectedVisualStyleManager selectedManager,
-			final EditorManager editorManager, final VisualMappingManager vmm) {
+			final CyApplicationManager appManager, final EditorManager editorManager, final VisualMappingManager vmm) {
 		super(type, new CyNumberPropertyEditor<T>(type, null), ContinuousEditorType.CONTINUOUS);
 		discreteTableCellRenderer = REG.getRenderer(type);
 	}
 
 	@Override
-	public TableCellRenderer getContinuousTableCellRenderer(ContinuousMappingEditor<? extends Number, T> continuousMappingEditor) {
+	public TableCellRenderer getContinuousTableCellRenderer(
+			ContinuousMappingEditor<? extends Number, T> continuousMappingEditor) {
 		return new NumberContinuousCellRenderer((ContinuousMappingEditor<?, ?>) continuousMappingEditor);
 	}
 
