@@ -1,0 +1,32 @@
+package org.cytoscape.io.internal.read.xgmml.handler;
+
+import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+public class HandleGraphGraphics extends AbstractHandler {
+
+	@Override
+	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
+		if (atts == null)
+			return current;
+		
+		manager.attState = current;
+		ParseState nextState = current;
+
+		if (tag.equals("graphics")) {
+        	manager.addGraphicsAttributes(manager.getCurrentNetwork(), atts);
+        } else if (tag.equals("att")) {
+			String name = atts.getValue(AttributeValueUtil.ATTR_NAME);
+            String value = atts.getValue(AttributeValueUtil.ATTR_VALUE);
+            
+            if (name != null && value != null)
+            	manager.addGraphicsAttribute(manager.getCurrentNetwork(), name, value);
+        }
+
+		if (nextState != ParseState.NONE)
+			return nextState;
+
+		return current;
+	}
+}

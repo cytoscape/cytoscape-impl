@@ -116,7 +116,7 @@ public class XGMMLNetworkReader extends AbstractXGMMLReader {
 		final Map<String, String> atts = readDataMgr.getGraphicsAttributes(edge);
 		setVisualProperties(netView, edgeView, atts);
 		
-		// TODO Edge bend
+		// TODO 2.x edge bends
 //		if (readDataMgr.getAttributeNS(attr, "curved", CY_NAMESPACE) != null) {
 //			String value = readDataMgr.getAttributeNS(attr, "curved", CY_NAMESPACE);
 //			if (value.equals("STRAIGHT_LINES")) {

@@ -32,6 +32,7 @@ import org.cytoscape.io.internal.read.xgmml.handler.HandleEdgeHandleList;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleGraph;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleGraphAttribute;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleGraphDone;
+import org.cytoscape.io.internal.read.xgmml.handler.HandleGraphGraphics;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleListAttribute;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleListAttributeDone;
 import org.cytoscape.io.internal.read.xgmml.handler.HandleNode;
@@ -111,10 +112,12 @@ public class HandlerFactory {
 			final Object[][] tbl = {
 					// Initial state. It's all noise until we see our <graph> tag
 					{ NONE, "graph", GRAPH, new HandleGraph() },
+					{ GRAPH, "graphics", NET_GRAPHICS, new HandleGraphGraphics() },
+					{ NET_GRAPHICS, "att", NET_GRAPHICS, new HandleGraphGraphics() },
 					{ GRAPH, "att", NET_ATT, new HandleGraphAttribute() },
+					// RDF
 					{ NET_ATT, "rdf", RDF, null },
-					// RDF tags -- most of the data for the RDF tags comes from the
-					// CData
+					// RDF tags -- most of the data for the RDF tags comes from the CData
 					{ RDF, "description", RDF_DESC, new HandleRDF() },
 					{ RDF_DESC, "type", RDF_DESC, null },
 					{ RDF_DESC, "description", RDF_DESC, null },
@@ -125,7 +128,7 @@ public class HandlerFactory {
 					{ RDF_DESC, "format", RDF_DESC, null },
 					// Sub-graphs
 					{ NET_ATT, "graph", GRAPH, new HandleGraph() },
-					// Handle nodes
+					// Nodes
 					{ GRAPH, "node", NODE, new HandleNode() },
 					{ NODE_GRAPH, "node", NODE, new HandleNode() },
 					{ NODE, "graphics", NODE_GRAPHICS, new HandleNodeGraphics() },
@@ -133,7 +136,7 @@ public class HandlerFactory {
 					{ NODE_ATT, "graph", NODE_GRAPH, new HandleNodeGraph() },
 					{ NODE_GRAPH, "att", NET_ATT, new HandleGraphAttribute() },
 					{ NODE_GRAPHICS, "att", NODE_GRAPHICS, new HandleNodeGraphics() },
-					// Handle edges
+					// Edges
 					{ GRAPH, "edge", EDGE, new HandleEdge() },
 					{ NODE_GRAPH, "edge", EDGE, new HandleEdge() },
 					{ EDGE, "att", EDGE_ATT, new HandleEdgeAttribute() },
