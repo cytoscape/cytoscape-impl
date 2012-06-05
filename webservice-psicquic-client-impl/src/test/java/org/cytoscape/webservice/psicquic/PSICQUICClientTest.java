@@ -36,7 +36,8 @@ public class PSICQUICClientTest extends AbstractWebServiceClientTest {
 		this.displayName = "PSICQUIC";
 		this.queryObject = "brca1 AND brca2";
 		
-		client = new PSICQUICWebServiceClient(uriString, displayName, description, cyNetworkFactoryServiceRef,
-				cyNetworkManagerServiceRef, tm, createViewTaskFactoryServiceRef, openBrowser);
+		// Enable this test only when you need to actual connection to the registry.
+//		client = new PSICQUICWebServiceClient(uriString, displayName, description, cyNetworkFactoryServiceRef,
+//				cyNetworkManagerServiceRef, tm, createViewTaskFactoryServiceRef, openBrowser);
 	}
 }
