@@ -264,14 +264,17 @@ public final class PSICQUICRestClient {
 			sourceSet.clear();
 		}
 
+		tm.setStatusMessage("Merging results...");
 		InteractionCluster iC = new InteractionCluster();
 		iC.setBinaryInteractionIterator(binaryInteractions.iterator());
 		iC.setMappingIdDbNames(MAPPING_NAMES);
 		iC.runService();
 
-		MergedNetworkBuilder builder = new MergedNetworkBuilder(factory);
-
-		return builder.buildNetwork(iC);
+		final MergedNetworkBuilder builder = new MergedNetworkBuilder(factory);
+		final CyNetwork network = builder.buildNetwork(iC);
+		
+		tm.setProgress(1.0d);
+		return network;
 	}
 
 	public Map<String, Long> search(final String query, final Collection<String> targetServices, final SearchMode mode,
