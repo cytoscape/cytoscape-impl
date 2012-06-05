@@ -25,7 +25,7 @@ public class DeleteVisualStyleTask extends AbstractTask {
 
 		final VisualStyle currentStyle = manager.getCurrentVisualStyle();
 
-		if (currentStyle.equals(manager.getDefaultStyle()))
+		if (currentStyle.equals(this.vmm.getDefaultVisualStyle()))
 			throw new IllegalArgumentException("You cannot delete the default style.");
 
 		vmm.removeVisualStyle(currentStyle);

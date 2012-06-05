@@ -266,7 +266,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		}
 
 		// Switch back to the original style.
-		switchVS(manager.getDefaultStyle());
+		switchVS(this.vmm.getDefaultVisualStyle());
 
 		// Sync check box and actual lock state
 		spcs.firePropertyChange("UPDATE_LOCK", null, true);
@@ -414,7 +414,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 
 		// Switch to the default style if necessary
 		if (toBeRemoved.equals(selectedStyle)) {
-			final VisualStyle defaultStyle = manager.getDefaultStyle();
+			final VisualStyle defaultStyle = this.vmm.getDefaultVisualStyle();
 			switchVS(defaultStyle);
 			
 			// Apply to the current view

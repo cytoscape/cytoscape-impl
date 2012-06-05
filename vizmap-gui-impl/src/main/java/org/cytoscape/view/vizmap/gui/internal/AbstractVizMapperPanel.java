@@ -248,7 +248,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 	
 	private void initializeVisualStyleComboBox() {
 		vsComboBoxModel = new DefaultComboBoxModel();
-		final VisualStyle defaultVS = manager.getDefaultStyle();
+		final VisualStyle defaultVS = this.vmm.getDefaultVisualStyle();
 		final Set<VisualStyle> styles = vmm.getAllVisualStyles();
 		
 		for(VisualStyle style: styles)

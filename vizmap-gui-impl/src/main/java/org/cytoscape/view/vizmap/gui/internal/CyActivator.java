@@ -130,7 +130,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SetViewModeAction viewModeAction = new SetViewModeAction();
 		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,cyEventHelperServiceRef,selectedVisualStyleManager,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef,viewModeAction );
-		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(selectedVisualStyleManager);
+		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(selectedVisualStyleManager, vmmServiceRef);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(vmmServiceRef,visualStyleFactoryServiceRef,selectedVisualStyleManager);
 		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(selectedVisualStyleManager,cyApplicationManagerServiceRef, vmmServiceRef);
 		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(propertySheetPanel,selectedVisualStyleManager,cyApplicationManagerServiceRef);

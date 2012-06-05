@@ -20,21 +20,14 @@ public class SelectedVisualStyleManagerImpl implements
 	
 	private VisualStyle selectedStyle;
 	
-	protected final VisualStyle defaultVS;
-	
 	public SelectedVisualStyleManagerImpl(final VisualMappingManager vmm) {
 		if (vmm == null)
 			throw new NullPointerException("Visual Mapping Manager is missing.");
 		this.vmm = vmm;
 		
-		this.defaultVS = vmm.getDefaultVisualStyle();
-		this.selectedStyle = this.defaultVS;
+		this.selectedStyle = this.vmm.getDefaultVisualStyle();
 	}
 
-	public VisualStyle getDefaultVisualStyle() {
-		return defaultVS;
-	}
-	
 
 	@Override
 	public void handleEvent(SelectedVisualStyleSwitchedEvent e) {
@@ -52,10 +45,6 @@ public class SelectedVisualStyleManagerImpl implements
 		return selectedStyle;
 	}
 
-	@Override
-	public VisualStyle getDefaultStyle() {
-		return defaultVS;
-	}
 
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
