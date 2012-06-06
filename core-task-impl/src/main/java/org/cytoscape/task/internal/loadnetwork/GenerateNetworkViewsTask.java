@@ -39,6 +39,7 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -66,6 +67,7 @@ class GenerateNetworkViewsTask extends AbstractTask {
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
 
+		final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the views!
 		final CyNetwork[] networks = viewReader.getNetworks();
 		double numNets = (double)(networks.length);
 		int i = 0;
@@ -87,8 +89,8 @@ class GenerateNetworkViewsTask extends AbstractTask {
 			if (numGraphObjects < viewThreshold) {
 				final CyNetworkView view = viewReader.buildCyNetworkView(network);
 				networkViewManager.addNetworkView(view);
-				vmm.setVisualStyle(vmm.getCurrentVisualStyle(), view);
-				vmm.getCurrentVisualStyle().apply(view);
+				vmm.setVisualStyle(style, view);
+				style.apply(view);
 				view.fitContent();
 			}
 
