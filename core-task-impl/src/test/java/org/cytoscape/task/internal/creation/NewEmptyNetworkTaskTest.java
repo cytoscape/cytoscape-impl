@@ -1,11 +1,8 @@
 package org.cytoscape.task.internal.creation;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -15,6 +12,8 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,28 +29,30 @@ public class NewEmptyNetworkTaskTest {
 	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
 
 	@Mock
-	private CyNetworkManager netmgr;
+	private CyNetworkManager netMgr;
 	@Mock
-	private CyNetworkViewManager networkViewManager;
+	private CyNetworkViewManager netViewMgr;
 	@Mock
 	private CyNetworkNaming namingUtil;
 	@Mock
-	private CyApplicationManager appManager;
+	private VisualMappingManager vmm;
+	@Mock
+	private VisualStyle currentStyle;
 
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
+		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
 	}
 
 	@Test
 	public void testNewEmptyNetworkTask() throws Exception {
-
-		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(cnf, cnvf, netmgr, networkViewManager, namingUtil, appManager);
+		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, netViewMgr, namingUtil, vmm);
 		final TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		task.run(taskMonitor);
 
-		verify(netmgr, times(1)).addNetwork(any(CyNetwork.class));
-		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));
+		verify(netMgr, times(1)).addNetwork(any(CyNetwork.class));
+		verify(netViewMgr, times(1)).addNetworkView(any(CyNetworkView.class));
+		verify(vmm, times(1)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));
 	}
-
 }

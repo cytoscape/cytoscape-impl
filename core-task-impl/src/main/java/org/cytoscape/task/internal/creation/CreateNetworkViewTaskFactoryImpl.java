@@ -39,6 +39,7 @@ import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -50,18 +51,21 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 	private final CyNetworkViewFactory viewFactory;
 	private final CyLayoutAlgorithmManager layouts;
 	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmm;
 
 	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport,
 	                             final CyNetworkViewFactory viewFactory,
 	                             final CyNetworkViewManager networkViewManager,
 	                             final CyLayoutAlgorithmManager layouts,
-	                             final CyEventHelper eventHelper)
+	                             final CyEventHelper eventHelper,
+	                             final VisualMappingManager vmm)
 	{
 		this.undoSupport        = undoSupport;
 		this.viewFactory        = viewFactory;
 		this.networkViewManager = networkViewManager;
 		this.layouts            = layouts;
 		this.eventHelper        = eventHelper;
+		this.vmm                = vmm;
 	}
 
 
@@ -70,10 +74,10 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		// Create visualization + layout (optional)
 		if (layouts == null)
 			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
-					layouts, eventHelper));
+					layouts, eventHelper, vmm));
 		else
 			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
-					layouts, eventHelper));
+					layouts, eventHelper, vmm));
 	}
 
 }

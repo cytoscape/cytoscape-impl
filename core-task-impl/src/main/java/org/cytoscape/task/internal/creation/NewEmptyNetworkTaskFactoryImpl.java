@@ -29,7 +29,6 @@
  */
 package org.cytoscape.task.internal.creation;  
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
@@ -37,6 +36,7 @@ import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
@@ -48,25 +48,25 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	private final CyNetworkViewManager networkViewMgr;
 	private final CyNetworkNaming namingUtil;
 	private final SynchronousTaskManager<?> syncTaskMgr;
-	private final CyApplicationManager appMgr;
+	private final VisualMappingManager vmm;
 
 	private NewEmptyNetworkTask task;
 
 	public NewEmptyNetworkTaskFactoryImpl(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, 
 			final CyNetworkManager netMgr, final CyNetworkViewManager networkViewManager, 
 			final CyNetworkNaming namingUtil, final SynchronousTaskManager<?> syncTaskMgr,
-			final CyApplicationManager appMgr) {
+			final VisualMappingManager vmm) {
 		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.netMgr = netMgr;
 		this.networkViewMgr = networkViewManager;
 		this.namingUtil = namingUtil;
 		this.syncTaskMgr = syncTaskMgr;
-		this.appMgr = appMgr;
+		this.vmm = vmm;
 	}
 
 	public TaskIterator createTaskIterator() {
-		task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, appMgr);
+		task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, vmm);
 		return new TaskIterator(task);
 	} 
 

@@ -42,6 +42,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
@@ -61,8 +62,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
 			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager networkViewManager,
-			final CyLayoutAlgorithmManager layouts, final CyEventHelper eventHelper) {
-		this(undoSupport, networks, viewFactory, networkViewManager, layouts, eventHelper, null, null);
+			final CyLayoutAlgorithmManager layouts, final CyEventHelper eventHelper, final VisualMappingManager vmm) {
+		this(undoSupport, networks, viewFactory, networkViewManager, layouts, eventHelper, vmm, null);
 	}
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
@@ -82,7 +83,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-
 		taskMonitor.setProgress(0.0);
 		taskMonitor.setTitle("Creating Network View");
 		taskMonitor.setStatusMessage("Creating network view...");
@@ -103,17 +103,23 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 	}
 
 	private final void createView(CyNetwork network) throws Exception {	
-
 		final long start = System.currentTimeMillis();
 
 		try {
 			// By calling this task, actual view will be created even if it's a
 			// large network.
 			final CyNetworkView view = viewFactory.createNetworkView(network);
+			final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the view!
 			networkViewManager.addNetworkView(view);
+			
+			// Apply visual style
+			if (style != null) {
+				vmm.setVisualStyle(style, view);
+				style.apply(view);
+				view.fitContent();
+			}
 
-			// If a source view has been provided, use that to set the X/Y
-			// positions of the
+			// If a source view has been provided, use that to set the X/Y positions of the
 			// nodes along with the visual style.
 			if (sourceView != null)
 				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, view, sourceView, null));
@@ -132,8 +138,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 		if (undoSupport != null)
 			undoSupport.postEdit(new CreateNetworkViewEdit(eventHelper, network, viewFactory, networkViewManager));
-
-		
 
 		logger.info("Network view creation finished in " + (System.currentTimeMillis() - start) + " msec.");
 	}

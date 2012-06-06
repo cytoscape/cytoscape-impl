@@ -30,22 +30,21 @@
 package org.cytoscape.task.internal.creation;
 
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 
 /**
  * Create an empty network with view.
- *
  */
 public class NewEmptyNetworkTask extends AbstractTask {
 
@@ -54,20 +53,21 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	private final CyNetworkNaming namingUtil; 
 	private final CyNetworkManager networkManager;
 	private final CyNetworkViewManager networkViewManager;
-	private final CyApplicationManager appManager; 
-	private boolean cancel = false;
-
+	private final VisualMappingManager vmm;
+	
+	private boolean cancel;
 	private CyNetworkView view;
+	
 
 	public NewEmptyNetworkTask(CyNetworkFactory cnf, CyNetworkViewFactory cnvf, CyNetworkManager netmgr,
 				   final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil,
-				   final CyApplicationManager appManager) {
+				   final VisualMappingManager vmm) {
 		this.networkManager = netmgr;
 		this.networkViewManager = networkViewManager;
 		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.namingUtil = namingUtil;
-		this.appManager = appManager;
+		this.vmm = vmm;
 	}
 
 	public void run(TaskMonitor tm) {
@@ -80,7 +80,10 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		tm.setProgress(0.6);
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.8);
+		final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the view!
 		networkViewManager.addNetworkView(view);
+		tm.setProgress(0.9);
+		applyVisualStyle(style);
 		tm.setProgress(1.0);
 	}
 
@@ -91,5 +94,13 @@ public class NewEmptyNetworkTask extends AbstractTask {
 
 	public CyNetworkView getView() {
 		return view;
+	}
+	
+	private void applyVisualStyle(final VisualStyle style) {
+		if (style != null) {
+			vmm.setVisualStyle(style, view);
+			style.apply(view);
+			view.updateView();
+		}
 	}
 }

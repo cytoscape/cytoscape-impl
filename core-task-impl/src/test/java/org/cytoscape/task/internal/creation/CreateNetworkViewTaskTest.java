@@ -14,6 +14,8 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
@@ -31,10 +33,13 @@ public class CreateNetworkViewTaskTest {
 	@Mock private UndoSupport undoSupport;
 	@Mock private TaskMonitor tm;
 	@Mock private CyEventHelper eventHelper;
+	@Mock private VisualMappingManager vmm;
+	@Mock private VisualStyle currentStyle;
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
 	}
 	
 	@Test
@@ -42,7 +47,7 @@ public class CreateNetworkViewTaskTest {
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(support.getNetwork());
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper);
+				networkViewManager, null, eventHelper, vmm);
 
 		task.run(tm);
 		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));
@@ -57,10 +62,10 @@ public class CreateNetworkViewTaskTest {
 		when(networkViewManager.getNetworkViews(view.getModel())).thenReturn(Arrays.asList(new CyNetworkView[]{ view }));
 		
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper);
+				networkViewManager, null, eventHelper, vmm);
 		
 		task.run(tm);
 		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));
+		verify(vmm, times(1)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));
 	}
-
 }
