@@ -43,10 +43,11 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
  */
 public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<K, V> implements
 		PassthroughMapping<K, V> {
-	
+
 	/**
 	 * dataType is the type of the _attribute_ !! currently we force that to be
-	 * the same as the VisualProperty; FIXME: allow different once? but how to coerce?
+	 * the same as the VisualProperty; FIXME: allow different once? but how to
+	 * coerce?
 	 */
 	public PassthroughMappingImpl(final String columnName, final Class<K> columnType, final CyTable table,
 			final VisualProperty<V> vp) {
@@ -64,44 +65,50 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 			return;
 
 		V value = null;
-		
+
 		if (columnName.equals(CyIdentifiable.SUID)) {
-			// Special case: SUID.  Value is type Long.  This always exists.
-			value = (V) view.getModel().getSUID().toString();
+			// Special case: SUID. Value is type Long. This always exists.
+			value = (V) view.getModel().getSUID();
 		} else if (row.isSet(columnName)) {
 			final CyColumn column = row.getTable().getColumn(columnName);
 			final Class<?> columnClass = column.getType();
-			
+
 			Object tempValue = null;
 			if (columnClass.isAssignableFrom(List.class)) {
-				// Special handler for List column.  String is only supported one.
+				// Special handler for List column. String is only supported
+				// one.
 				final List<?> list = row.getList(columnName, column.getListElementType());
 				final StringBuffer sb = new StringBuffer();
-				
+
 				if (list != null && !list.isEmpty()) {
 					for (Object item : list)
 						sb.append(item.toString() + "\n");
-					
+
 					sb.deleteCharAt(sb.length() - 1);
 				}
-				
+
 				tempValue = sb.toString();
 			} else {
 				// Regular column.
-				tempValue = row.get(columnName, columnType);
+				// Error check
+				final Class<?> actualType = row.getTable().getColumn(columnName).getType();
+				if (actualType.equals(columnType))
+					tempValue = row.get(columnName, columnType);
+				else
+					tempValue = row.get(columnName, actualType);
 			}
 
 			try {
 				value = vp.getRange().getType().cast(tempValue);
-			} catch(ClassCastException ex) {
-				// Invalid.  Try if it's a String
-				if(vp.getRange().getType() == String.class)
-					value=(V) tempValue.toString();
+			} catch (ClassCastException ex) {
+				// Invalid. Try if it's a String
+				if (vp.getRange().getType() == String.class)
+					value = (V) tempValue.toString();
 				else
 					value = null;
 			}
 		}
-		
+
 		if (value != null)
 			view.setVisualProperty(vp, value);
 	}
