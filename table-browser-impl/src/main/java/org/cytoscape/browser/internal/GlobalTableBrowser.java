@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.TableChooser.GlobalTableComboBoxModel;
 import org.cytoscape.equations.EquationCompiler;
@@ -84,6 +86,12 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 				tableChooser.setEnabled(false);
 				// The last table is deleted, refresh the browser table (this is a special case)
 				deleteTable(cyTable);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						showSelectedTable();
+					}
+				});
 			}
 		}
 	}
