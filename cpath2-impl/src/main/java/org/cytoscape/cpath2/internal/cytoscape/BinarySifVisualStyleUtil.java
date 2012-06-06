@@ -14,6 +14,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 
 /**
@@ -126,7 +127,7 @@ public class BinarySifVisualStyleUtil {
 		// to a particular node color
 		style.setDefaultValue(BasicVisualLexicon.EDGE_PAINT, Color.BLACK);
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
-				.createVisualMappingFunction("interaction", String.class, null,
+				.createVisualMappingFunction(CyEdge.INTERACTION, String.class, null,
 						BasicVisualLexicon.EDGE_PAINT);
 		
 		function.putMapValue(PARTICIPATES_CONVERSION,
