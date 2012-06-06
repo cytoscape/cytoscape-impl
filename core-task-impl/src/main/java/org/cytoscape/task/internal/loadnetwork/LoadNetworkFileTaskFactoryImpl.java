@@ -41,6 +41,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
@@ -58,10 +59,11 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 	
 	private CyNetworkNaming cyNetworkNaming;
 	private final TunableSetter tunableSetter;
+	private final VisualMappingManager vmm;
 
 	public LoadNetworkFileTaskFactoryImpl(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, CyProperty<Properties> cyProp,
-			CyNetworkNaming cyNetworkNaming, TunableSetter tunableSetter) {
+			CyNetworkNaming cyNetworkNaming, TunableSetter tunableSetter, final VisualMappingManager vmm) {
 		
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -69,11 +71,12 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.props = cyProp.getProperties();
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.tunableSetter = tunableSetter;
+		this.vmm = vmm;
 	}
 	
 	public TaskIterator createTaskIterator() {
 		// Load, visualize, and layout.
-		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming));
+		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, vmm));
 	}
 
 	@Override

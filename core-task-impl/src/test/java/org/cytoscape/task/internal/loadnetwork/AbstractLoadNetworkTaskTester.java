@@ -52,6 +52,8 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.SynchronousTaskManager;
 
 public class AbstractLoadNetworkTaskTester {
@@ -70,9 +72,14 @@ public class AbstractLoadNetworkTaskTester {
 
 	CyNetwork[] networks;
 	CyNetworkReader reader;
+	VisualMappingManager vmm;
+	VisualStyle style;
 
 	public void setUp() throws Exception {
 		CyRow attrs = mock(CyRow.class);
+		vmm=mock(VisualMappingManager.class);
+		style=mock(VisualStyle.class);
+		when(vmm.getCurrentVisualStyle()).thenReturn(style);
 
 		net = mock(CyNetwork.class);
 		when(net.getNodeCount()).thenReturn(2);

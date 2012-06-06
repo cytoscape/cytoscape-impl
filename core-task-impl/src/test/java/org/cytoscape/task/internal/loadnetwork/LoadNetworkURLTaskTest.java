@@ -63,7 +63,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 		TunableSetter ts = mock(TunableSetter.class);
 
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager,ts);
+				streamUtil, synchronousTaskManager,ts, vmm);
 		assertNotNull(networkViewManager);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -91,7 +91,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 		TunableSetter ts = mock(TunableSetter.class);
 
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager,ts);
+				streamUtil, synchronousTaskManager,ts, vmm);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
@@ -113,7 +113,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 		TunableSetter ts = mock(TunableSetter.class);
 
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager,ts);
+				streamUtil, synchronousTaskManager,ts, vmm);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;

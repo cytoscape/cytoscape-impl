@@ -44,6 +44,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
@@ -65,14 +66,16 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	
 	private final SynchronousTaskManager<?> syncTaskManager;
 	
-	private final TunableSetter tunableSetter; 
+	private final TunableSetter tunableSetter;
+	
+	private final VisualMappingManager vmm;
 
 	public LoadNetworkURLTaskFactoryImpl(CyNetworkReaderManager mgr,
 					     CyNetworkManager netmgr,
 					     final CyNetworkViewManager networkViewManager,
 					     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
 					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager,
-						 TunableSetter tunableSetter)
+						 TunableSetter tunableSetter, final VisualMappingManager vmm)
 	{
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -82,11 +85,12 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.streamUtil = streamUtil;
 		this.tunableSetter = tunableSetter;
 		this.syncTaskManager = syncTaskManager;
+		this.vmm = vmm;
 	}
 
 	public TaskIterator createTaskIterator() {
 		// Usually we need to create view, so expected number is 2.
-		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil));
+		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil, vmm));
 	}
 	
 	@Override

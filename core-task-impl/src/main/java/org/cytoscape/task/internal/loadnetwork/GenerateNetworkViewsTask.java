@@ -35,10 +35,10 @@ import java.text.NumberFormat;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -49,16 +49,18 @@ class GenerateNetworkViewsTask extends AbstractTask {
 	private final CyNetworkViewManager networkViewManager;
 	private final CyNetworkNaming namingUtil;
 	private final int viewThreshold;
+	private final VisualMappingManager vmm;
 
 	public GenerateNetworkViewsTask(final String name, final CyNetworkReader viewReader,
 				final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager,
-				final CyNetworkNaming namingUtil, final int viewThreshold) {
+				final CyNetworkNaming namingUtil, final int viewThreshold, final VisualMappingManager vmm) {
 		this.name = name;
 		this.viewReader = viewReader;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.namingUtil = namingUtil;
-		this.viewThreshold = viewThreshold;		
+		this.viewThreshold = viewThreshold;
+		this.vmm = vmm;
 	}
 
 	public void run(final TaskMonitor taskMonitor) throws Exception {
@@ -85,6 +87,8 @@ class GenerateNetworkViewsTask extends AbstractTask {
 			if (numGraphObjects < viewThreshold) {
 				final CyNetworkView view = viewReader.buildCyNetworkView(network);
 				networkViewManager.addNetworkView(view);
+				vmm.setVisualStyle(vmm.getCurrentVisualStyle(), view);
+				vmm.getCurrentVisualStyle().apply(view);
 				view.fitContent();
 			}
 

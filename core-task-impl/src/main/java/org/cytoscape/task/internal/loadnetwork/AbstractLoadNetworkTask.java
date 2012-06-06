@@ -43,6 +43,7 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -72,14 +73,16 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	protected CyNetworkViewManager networkViewManager;
 	protected Properties props;
 	protected CyNetworkNaming namingUtil;
+	protected final VisualMappingManager vmm;
 
 	public AbstractLoadNetworkTask(final CyNetworkReaderManager mgr, final CyNetworkManager networkManager,
-			final CyNetworkViewManager networkViewManager, final Properties props, final CyNetworkNaming namingUtil) {
+			final CyNetworkViewManager networkViewManager, final Properties props, final CyNetworkNaming namingUtil, final VisualMappingManager vmm) {
 		this.mgr = mgr;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.props = props;
 		this.namingUtil = namingUtil;
+		this.vmm = vmm;
 		
 		this.viewThreshold = getViewThreshold();
 	}
@@ -94,7 +97,7 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 		}
 		insertTasksAfterCurrentTask(viewReader, new GenerateNetworkViewsTask(name, viewReader, networkManager,
-				networkViewManager, namingUtil, viewThreshold));
+				networkViewManager, namingUtil, viewThreshold, vmm));
 		
 		if (taskMonitor != null)
 			taskMonitor.setProgress(1.0);
