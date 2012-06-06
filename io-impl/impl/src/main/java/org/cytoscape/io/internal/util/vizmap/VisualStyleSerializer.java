@@ -373,11 +373,24 @@ public class VisualStyleSerializer {
 				if (vpModel.getPassthroughMapping() != null) {
 					org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping pmModel = vpModel
 							.getPassthroughMapping();
-					String attrName = pmModel.getAttributeName();
-
+					final String attrName = pmModel.getAttributeName();
+					final AttributeType attrType = pmModel.getAttributeType();
+					final Class<?> columnDataType;
+					if(attrType==AttributeType.BOOLEAN)
+						columnDataType = Boolean.class;
+					else if(attrType==AttributeType.FLOAT)
+						columnDataType = Double.class;
+					else if(attrType==AttributeType.INTEGER)
+						columnDataType = Integer.class;
+					else if(attrType==AttributeType.LIST)
+						columnDataType = List.class;
+					else {
+						columnDataType = String.class;
+					}
+					
 					try {
 						PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) passthroughMappingFactory
-								.createVisualMappingFunction(attrName, String.class, null, vp);
+								.createVisualMappingFunction(attrName, columnDataType, null, vp);
 
 						vs.addVisualMappingFunction(pm);
 
