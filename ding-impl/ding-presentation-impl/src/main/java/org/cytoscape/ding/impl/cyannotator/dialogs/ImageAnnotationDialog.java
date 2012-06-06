@@ -126,7 +126,7 @@ public class ImageAnnotationDialog extends javax.swing.JFrame {
 
 		mAnnotation.setImage(preview.getImageURL());
 		mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
-		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).add(mAnnotation.getComponent());
+		mAnnotation.addComponent(null);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

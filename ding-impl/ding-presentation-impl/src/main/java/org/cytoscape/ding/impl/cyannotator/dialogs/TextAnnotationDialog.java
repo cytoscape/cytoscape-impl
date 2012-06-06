@@ -114,7 +114,7 @@ public class TextAnnotationDialog extends javax.swing.JFrame {
 		}
 
 		//Apply
-		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).add(mAnnotation.getComponent());
+		mAnnotation.addComponent(null);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

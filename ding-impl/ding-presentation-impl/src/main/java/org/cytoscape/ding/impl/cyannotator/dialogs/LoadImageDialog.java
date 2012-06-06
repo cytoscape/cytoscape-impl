@@ -103,7 +103,7 @@ public class LoadImageDialog extends javax.swing.JFrame {
 			                                               url, image, 
  			                                               view.getZoom(),cgm);
 
-			cyAnnotator.getForeGroundCanvas().add(newOne.getComponent());
+			newOne.addComponent(null);
 			cyAnnotator.addAnnotation(newOne);
 			newOne.getCanvas().repaint();
 

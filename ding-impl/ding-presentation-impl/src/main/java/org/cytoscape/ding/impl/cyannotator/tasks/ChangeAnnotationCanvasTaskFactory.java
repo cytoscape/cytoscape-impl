@@ -4,8 +4,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.awt.geom.Point2D;
 import java.awt.datatransfer.Transferable;
 
-import javax.swing.JComponent;
-
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -16,21 +14,20 @@ import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
-public class LayerAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
+public class ChangeAnnotationCanvasTaskFactory implements NetworkViewLocationTaskFactory {
 	private CyAnnotator cyAnnotator;
 	private Annotation annotation;
-	private int offset;
-	private int newZorder;
+	private String canvas;
 
-	public LayerAnnotationTaskFactory(int offset) {
-		this.offset = offset;
+	public ChangeAnnotationCanvasTaskFactory(String canvas) {
+		this.canvas = canvas;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		this.cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
 		annotation = cyAnnotator.getAnnotation(javaPt);
-		return new TaskIterator(new LayerAnnotationTask(networkView, annotation, newZorder));
+		return new TaskIterator(new ChangeAnnotationCanvasTask(networkView, annotation, canvas));
 
 	}
 
@@ -40,19 +37,8 @@ public class LayerAnnotationTaskFactory implements NetworkViewLocationTaskFactor
 		annotation = cyAnnotator.getAnnotation(javaPt);
 		if (annotation == null) return false;
 
-		JComponent canvas = annotation.getCanvas();
-		int zorder = canvas.getComponentZOrder(annotation.getComponent());
-
-		if ((offset < 0 && zorder > 0) || 
-		    (offset > 0 && zorder < canvas.getComponentCount()-1)) {
-			this.newZorder = zorder + offset;
-			if (this.newZorder < 0) 
-				this.newZorder = 0;
-			else if (this.newZorder > canvas.getComponentCount()-1)
-				this.newZorder = canvas.getComponentCount()-1;
-
+		if (!annotation.getCanvasName().equals(canvas))
 			return true;
-		}
 		return false;
 	}
 }

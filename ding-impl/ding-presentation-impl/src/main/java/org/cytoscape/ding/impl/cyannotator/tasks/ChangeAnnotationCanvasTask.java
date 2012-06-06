@@ -4,7 +4,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -19,23 +18,23 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LayerAnnotationTask extends AbstractNetworkViewTask {
+public class ChangeAnnotationCanvasTask extends AbstractNetworkViewTask {
 	private final Annotation annotation; 
-	private final int zorder;
+	private final String canvas;
 
 	private static final Logger logger = LoggerFactory.getLogger(ResizeAnnotationTask.class);
 	
 	
-	public LayerAnnotationTask(CyNetworkView view, Annotation annotation, int zorder) {
+	public ChangeAnnotationCanvasTask(CyNetworkView view, Annotation annotation, String canvas) {
 		super(view);
 		this.annotation = annotation;
-		this.zorder = zorder;
+		this.canvas = canvas;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		JComponent canvas = annotation.getCanvas();
-		canvas.setComponentZOrder(annotation.getComponent(), zorder);
-		canvas.repaint();
+		if ( view instanceof DGraphView) {
+			annotation.changeCanvas(canvas);
+		}
 	}
 }

@@ -8,6 +8,7 @@ import java.awt.geom.Rectangle2D;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -26,6 +27,9 @@ public interface Annotation {
 	public JComponent getCanvas();
 
 	public JComponent getComponent();
+	public void addComponent(JComponent canvas);
+
+	public UUID getUUID();
 
 	public CyAnnotator getCyAnnotator();
 

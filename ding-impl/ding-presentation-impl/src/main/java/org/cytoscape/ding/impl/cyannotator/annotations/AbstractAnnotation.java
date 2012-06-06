@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -51,6 +52,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	private CyAnnotator cyAnnotator;
 	private DGraphView view;
 	private int annotationNumber;
+	private UUID uuid = UUID.randomUUID();
 
 	private Set<ArrowAnnotation> arrowList;
 
@@ -60,6 +62,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	protected static final String Y="y";
 	protected static final String CANVAS="canvas";
 	protected static final String TYPE="type";
+	protected static final String ANNOTATION_ID="uuid";
 
 	public AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view) {
 		this.view = view;
@@ -107,8 +110,10 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		}
 		arrowList = new HashSet<ArrowAnnotation>();
 		setLocation((int)coords.getX(), (int)coords.getY());
+		if (argMap.containsKey(ANNOTATION_ID))
+			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
 		this.annotationNumber = nextAnnotationNumber++;
-		// super.setBackground(Color.YELLOW);
+		
 	}
 
 	public String toString() {
@@ -166,6 +171,25 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 
 	public JComponent getComponent() {
 		return (JComponent)this;
+	}
+
+	public UUID getUUID() {
+		return uuid;
+	}
+
+	@Override
+	public void addComponent(JComponent cnvs) {
+		if (cnvs == null && canvas != null) {
+		} else if (cnvs == null) {
+			setCanvas(FOREGROUND);
+		} else {
+			if (cnvs.equals(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS)))
+				setCanvas(BACKGROUND);
+			else
+				setCanvas(FOREGROUND);
+		}
+		canvas.add(this.getComponent());
+		canvas.setComponentZOrder(this, 0);
 	}
     
 	@Override
@@ -229,6 +253,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 			argMap.put(CANVAS, BACKGROUND);
 		else
 			argMap.put(CANVAS, FOREGROUND);
+		argMap.put(ANNOTATION_ID, this.uuid.toString());
 
 		return argMap;
 	}
