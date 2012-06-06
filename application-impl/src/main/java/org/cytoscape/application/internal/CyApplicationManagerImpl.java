@@ -276,6 +276,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	@Override
 	public void setCurrentRenderingEngine(RenderingEngine<CyNetwork> engine) {
 		boolean changed = (engine == null && currentRenderer != null)
+				|| (engine != null && currentRenderer == null)
 				|| (engine != null && !engine.equals(currentRenderer));
 		
 		this.currentRenderer = engine;

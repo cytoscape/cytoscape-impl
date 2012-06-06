@@ -123,8 +123,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final CyApplicationManager appMgr;
 	private final RenderingEngineManager renderingEngineMgr;
 	
-	private boolean ignoreInternalFrameActivated;
-
 	
 	public NetworkViewManager(final CyApplicationManager appMgr,
 							  final CyNetworkViewManager netViewMgr,
@@ -219,9 +217,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 */
 	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
-		if (ignoreInternalFrameActivated)
-			return;
-		
 		final CyNetworkView view = iFrameMap.get(e.getInternalFrame());
 		
 		if (view != null) {
@@ -309,13 +304,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			// TODO: Should we cancel visualization?
 		}
 		
-		ignoreInternalFrameActivated = true;
-		
-		try {
-			render(networkView);
-		} finally {
-			ignoreInternalFrameActivated = false;
-		}
+		render(networkView);
 	}
 
 	private final void removeView(final CyNetworkView view) {
@@ -437,8 +426,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		// Display it and add listeners
-		iframe.setVisible(true);
 		iframe.addInternalFrameListener(this);
+		iframe.setVisible(true);
 	}
 	
 	@Override

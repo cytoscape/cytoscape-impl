@@ -351,12 +351,22 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		logger.debug("Restoring network views...");
 		Set<CyNetworkView> netViews = sess.getNetworkViews();
 		
+		List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+		for (CyNetworkView nv : netViews) {
+			CyNetwork network = nv.getModel();
+			if (network.getRow(network).get(CyNetwork.SELECTED, Boolean.class)) {
+				selectedViews.add(nv);
+			}
+		}
+		
 		if (netViews != null) {
 			for (CyNetworkView nv : netViews) {
 				if (nv != null)
 					nvMgr.addNetworkView(nv);
 			}
 		}
+
+		appMgr.setSelectedNetworkViews(selectedViews);
 	}
 
 	private void restoreTables(CySession sess) {
