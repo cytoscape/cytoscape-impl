@@ -76,6 +76,11 @@ public class OpenPanel extends JPanel {
 			fileLabel.setFont(FILE_NAME_FONT);
 			fileLabel.setBorder(padLine);
 			fileLabel.setHorizontalAlignment(SwingConstants.LEFT);
+			try {
+				fileLabel.setToolTipText(target.toURI().toString());				
+			}
+			catch(Exception e){
+			}
 			fileLabel.addMouseListener(new MouseAdapter() {
 
 				@Override
