@@ -1,7 +1,3 @@
-//Written by Gregory Hannum
-//May 2012
-//Based on Holten and Wijk. Force-directed edge bundling for graph visualization. Eurographics/IEEE-VGTC Symposium on Visualization. 2009
-
 package org.cytoscape.edge.bundler.internal;
 
 import java.awt.geom.Point2D;
@@ -31,6 +27,13 @@ import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Based on Holten and Wijk. Force-directed edge bundling for graph
+ * visualization. Eurographics/IEEE-VGTC Symposium on Visualization. 2009
+ * 
+ * @author Gregory Hannum
+ * May 2012 
+ */
 public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(EdgeBundlerTask.class);
@@ -228,7 +231,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	private final void render(final Collection<View<CyEdge>> edges) {
 		// Create new discrete mapping for edge SUID to Edge Bend
 		final DiscreteMapping<Long, Bend> function = (DiscreteMapping<Long, Bend>) discreteFactory
-				.createVisualMappingFunction(CyTable.SUID, Long.class, null, EDGE_BEND);
+				.createVisualMappingFunction(CyTable.SUID, Long.class, EDGE_BEND);
 
 		int ei = 0;
 		for (final View<CyEdge> edge : edges) {

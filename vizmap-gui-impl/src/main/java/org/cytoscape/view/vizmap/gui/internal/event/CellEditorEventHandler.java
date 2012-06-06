@@ -210,7 +210,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			if (factory == null)
 				return;
 
-			mapping = factory.createVisualMappingFunction(ctrAttrName, dataType, attrForTest, vp);
+			mapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
 			currentStyle.addVisualMappingFunction(mapping);
 		}
 
@@ -223,7 +223,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		VisualMappingFunction<K, V> newMapping = null;
 		if (mapping instanceof PassthroughMapping) {
 			// Create new Passthrough mapping and register to current style.
-			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, attrForTest, vp);
+			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
 			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
 					+ newMapping.getMappingColumnName());
@@ -238,7 +238,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			}
 
 		} else if (mapping instanceof DiscreteMapping) {
-			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, attrForTest, vp);
+			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
 			currentStyle.addVisualMappingFunction(newMapping);
 			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
 					+ newMapping.getMappingColumnName());
@@ -311,7 +311,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				}
 			}
 
-			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, null, vp);
+			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
 			style.addVisualMappingFunction(newMapping);
 		} else
 			newMapping = currentMapping;

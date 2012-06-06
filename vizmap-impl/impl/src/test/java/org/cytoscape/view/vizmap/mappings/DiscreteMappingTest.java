@@ -17,22 +17,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class DiscreteMappingTest {
-	
-	@Mock
-	private CyTable table;
 
-	@Before
-	public void initMocks() {
-		MockitoAnnotations.initMocks(this);
-	}
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
 
 	@Test
 	public void testDiscreteMapping() {
@@ -59,12 +44,12 @@ public class DiscreteMappingTest {
 	}
 
 	private DiscreteMapping<String, Paint> createDiscreteMapping(final String attrName) {
-		
+
 		final Class<String> type = String.class;
 
 		final DiscreteMapping<String, Paint> mapping = new DiscreteMappingImpl<String, Paint>(attrName, type,
-				table, BasicVisualLexicon.NODE_FILL_COLOR);
-		
+				BasicVisualLexicon.NODE_FILL_COLOR);
+
 		return mapping;
 	}
 }

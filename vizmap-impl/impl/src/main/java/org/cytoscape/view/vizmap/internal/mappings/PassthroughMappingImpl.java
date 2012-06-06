@@ -31,9 +31,8 @@ package org.cytoscape.view.vizmap.internal.mappings;
 import java.util.List;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
@@ -49,9 +48,8 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 	 * the same as the VisualProperty; FIXME: allow different once? but how to
 	 * coerce?
 	 */
-	public PassthroughMappingImpl(final String columnName, final Class<K> columnType, final CyTable table,
-			final VisualProperty<V> vp) {
-		super(columnName, columnType, table, vp);
+	public PassthroughMappingImpl(final String columnName, final Class<K> columnType, final VisualProperty<V> vp) {
+		super(columnName, columnType, vp);
 	}
 
 	@Override

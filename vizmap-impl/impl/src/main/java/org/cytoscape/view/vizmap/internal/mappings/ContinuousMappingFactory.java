@@ -1,6 +1,5 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
-import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -14,7 +13,7 @@ public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 
 	@Override
 	public <K, V> VisualMappingFunction<K, V> createVisualMappingFunction(final String attributeName, 
-			Class<K> attrValueType, final CyTable table, VisualProperty<V> vp) {
+			Class<K> attrValueType, VisualProperty<V> vp) {
 		
 		logger.debug("Trying to create Continuous mapping.  Data Type is " + attrValueType);
 		
@@ -22,7 +21,7 @@ public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 		if(Number.class.isAssignableFrom(attrValueType) == false)
 			throw new IllegalArgumentException("ContinuousMapping can be used for numerical attributes only.");
 		
-		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, table, vp);
+		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, vp);
 	}
 	
 	@Override public String toString() {

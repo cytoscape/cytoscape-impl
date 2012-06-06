@@ -32,8 +32,6 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Rendering-engine specific style can be created from this style by adding 
  * extra properties, such as Shape.
- * 
- * @author kono
  *
  */
 public class DefaultVisualStyleBuilder {
@@ -109,9 +107,9 @@ public class DefaultVisualStyleBuilder {
 		
 		// Create label mappings
 		final PassthroughMapping<String, String> labelMapping = (PassthroughMapping) passthroughMappingFactory
-				.createVisualMappingFunction(NAME, String.class, null, NODE_LABEL);
+				.createVisualMappingFunction(NAME, String.class, NODE_LABEL);
 		final PassthroughMapping<String, String> edgeLabelMapping = (PassthroughMapping) passthroughMappingFactory
-				.createVisualMappingFunction(INTERACTION, String.class, null, EDGE_LABEL);
+				.createVisualMappingFunction(INTERACTION, String.class, EDGE_LABEL);
 
 		newStyle.addVisualMappingFunction(labelMapping);
 		newStyle.addVisualMappingFunction(edgeLabelMapping);

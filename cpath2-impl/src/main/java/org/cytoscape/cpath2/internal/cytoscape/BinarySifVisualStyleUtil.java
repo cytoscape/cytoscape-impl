@@ -102,7 +102,7 @@ public class BinarySifVisualStyleUtil {
 		// Complexes are Hexagons.
 		DiscreteMapping<String, NodeShape> function = (DiscreteMapping<String, NodeShape>) discreteFactory
 				.createVisualMappingFunction(
-						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class, null,
+						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class,
 						BasicVisualLexicon.NODE_SHAPE);
 		function.putMapValue("Complex", NodeShapeVisualProperty.HEXAGON);
 		style.addVisualMappingFunction(function);
@@ -116,7 +116,7 @@ public class BinarySifVisualStyleUtil {
 		Color lightBlue = new Color(153, 153, 255);
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction(
-						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class, null,
+						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class,
 						BasicVisualLexicon.NODE_FILL_COLOR);
 		function.putMapValue("Complex", lightBlue);
 		style.addVisualMappingFunction(function);
@@ -127,7 +127,7 @@ public class BinarySifVisualStyleUtil {
 		// to a particular node color
 		style.setDefaultValue(BasicVisualLexicon.EDGE_PAINT, Color.BLACK);
 		DiscreteMapping<String, Paint> function = (DiscreteMapping<String, Paint>) discreteFactory
-				.createVisualMappingFunction(CyEdge.INTERACTION, String.class, null,
+				.createVisualMappingFunction(CyEdge.INTERACTION, String.class,
 						BasicVisualLexicon.EDGE_PAINT);
 		
 		function.putMapValue(PARTICIPATES_CONVERSION,
@@ -156,7 +156,7 @@ public class BinarySifVisualStyleUtil {
 		DiscreteMapping<String, ArrowShape> discreteMapping = 
 				(DiscreteMapping<String, ArrowShape>) discreteFactory
 					.createVisualMappingFunction(
-							INTERACTION, String.class, null,
+							INTERACTION, String.class,
 							BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
 
 			discreteMapping.putMapValue(COMPONENT_OF, ArrowShapeVisualProperty.ARROW);
@@ -170,7 +170,7 @@ public class BinarySifVisualStyleUtil {
 	private void createNodeLabel(VisualStyle style) {
 		// create pass through mapper for node labels
 		style.addVisualMappingFunction(passthroughFactory
-				.createVisualMappingFunction(CyNetwork.NAME, String.class, null,
+				.createVisualMappingFunction(CyNetwork.NAME, String.class,
 						BasicVisualLexicon.NODE_LABEL));
 	}
 }

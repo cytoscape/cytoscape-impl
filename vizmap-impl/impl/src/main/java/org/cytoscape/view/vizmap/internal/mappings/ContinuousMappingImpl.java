@@ -35,9 +35,8 @@ import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.internal.mappings.interpolators.FlatInterpolator;
@@ -70,8 +69,8 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	// Contains List of Data Points
 	private List<ContinuousMappingPoint<K, V>> points;
 
-	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final CyTable table, final VisualProperty<V> vp) {
-		super(attrName, attrType, table, vp);
+	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp) {
+		super(attrName, attrType, vp);
 		
 		// Validate type.  K is always a number.
 		if (Number.class.isAssignableFrom(attrType) == false)

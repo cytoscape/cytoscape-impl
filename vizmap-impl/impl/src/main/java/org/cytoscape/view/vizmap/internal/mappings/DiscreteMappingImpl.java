@@ -34,15 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implements a lookup table mapping data to values of a particular class. The
@@ -51,19 +48,19 @@ import org.slf4j.LoggerFactory;
  */
 public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, V> implements DiscreteMapping<K, V> {
 
-	private static final Logger logger = LoggerFactory.getLogger(DiscreteMapping.class);
-
 	// contains the actual map elements (sorted)
 	private final Map<K, V> attribute2visualMap;
 
+	
 	/**
 	 * Constructor.
 	 * 
-	 * @param defObj
-	 *            Default Object.
+	 * @param attrName
+	 * @param attrType
+	 * @param vp
 	 */
-	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final CyTable table, final VisualProperty<V> vp) {
-		super(attrName, attrType, table, vp);
+	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp) {
+		super(attrName, attrType, vp);
 		attribute2visualMap = new HashMap<K, V>();
 	}
 

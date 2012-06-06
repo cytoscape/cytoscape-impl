@@ -90,8 +90,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<K> colType = originalMapping.getMappingColumnType();
 
-		final PassthroughMapping<K, V> copyMapping = new PassthroughMappingImpl(attrName, colType,
-				originalMapping.getMappingTable(), originalMapping.getVisualProperty());
+		final PassthroughMapping<K, V> copyMapping = new PassthroughMappingImpl(attrName, colType, originalMapping.getVisualProperty());
 		return copyMapping;
 	}
 
@@ -100,8 +99,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<?> colType = originalMapping.getMappingColumnType();
 		
-		final ContinuousMapping<K,V> copyMapping = new ContinuousMappingImpl(attrName, colType,
-				originalMapping.getMappingTable(), originalMapping.getVisualProperty());
+		final ContinuousMapping<K,V> copyMapping = new ContinuousMappingImpl(attrName, colType, originalMapping.getVisualProperty());
 		List<ContinuousMappingPoint<K, V>> points = originalMapping.getAllPoints();
 		for(ContinuousMappingPoint<K, V> point: points)
 			 copyMapping.addPoint(point.getValue(), point.getRange());
@@ -114,8 +112,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<K> colType = originalMapping.getMappingColumnType();
 
-		final DiscreteMapping<K, V> copyMapping = new DiscreteMappingImpl(attrName, colType,
-				originalMapping.getMappingTable(), originalMapping.getVisualProperty());
+		final DiscreteMapping<K, V> copyMapping = new DiscreteMappingImpl(attrName, colType, originalMapping.getVisualProperty());
 		
 		copyMapping.putAll(originalMapping.getAll());
 		return copyMapping;
