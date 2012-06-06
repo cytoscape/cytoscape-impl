@@ -37,11 +37,14 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
@@ -120,6 +123,10 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			newNet.addEdge(edge);
 		tm.setProgress(0.5);
 
+		addVirtualColumns(parentNetwork.getDefaultNodeTable(), newNet.getDefaultNodeTable() );
+		addVirtualColumns(parentNetwork.getDefaultEdgeTable(), newNet.getDefaultEdgeTable() );
+		addVirtualColumns(parentNetwork.getDefaultNetworkTable(), newNet.getDefaultNetworkTable());
+		
 		newNet.getRow(newNet).set(CyNetwork.NAME, cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork));
 
 		networkManager.addNetwork(newNet);
@@ -133,5 +140,24 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		insertTasksAfterCurrentTask(createViewTask);
 
 		tm.setProgress(1.0);
+	}
+
+	private void addVirtualColumns(CyTable parentTable, CyTable subTable) {
+	
+		for (CyColumn col:  parentTable.getColumns()){
+			VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
+			if (colInfo.isVirtual()){
+				CyColumn checkCol= subTable.getColumn(col.getName());
+				if(checkCol == null)
+					subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+
+				else
+					if(!checkCol.getVirtualColumnInfo().isVirtual() ||
+							!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
+							!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
+						subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+
+			}
+		}
 	}
 }

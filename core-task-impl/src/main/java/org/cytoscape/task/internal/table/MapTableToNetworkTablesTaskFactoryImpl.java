@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
+import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask.TableType;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.util.ListMultipleSelection;
@@ -34,9 +35,13 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyTable globalTable, List<CyNetwork> networksList, String tableType) {
-		ListSingleSelection<String> tableTypes = new ListSingleSelection<String>(tableType);
-		tableTypes.setSelectedValue(tableType);
+	public TaskIterator createTaskIterator(CyTable globalTable, boolean selectedNetworksOnly, List<CyNetwork> networksList,  Class<? extends CyIdentifiable> type ) {
+		
+		TableType tableType = getTableType(type);
+		if(tableType == null)
+			throw new IllegalArgumentException("The specified type " + type + " is not acceptable!");
+		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
+		tableTypes.setSelectedValue( tableType);
 		
 		List<String> networkNames = new ArrayList<String>();
 		for(CyNetwork net: networksList){
@@ -45,8 +50,6 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 	
 		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<String>(networkNames);
 		networksListTunable.setSelectedValues(networkNames);
-
-		boolean selectedNetworksOnly = true;
 		
 		final Map<String, Object> m = new HashMap<String, Object>();
 		
@@ -56,6 +59,18 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 		
 		return tunableSetter.createTaskIterator(createTaskIterator(globalTable), m);
 		
+	}
+
+	private TableType getTableType( Class<? extends CyIdentifiable> type) {
+		if (type.equals(TableType.GLOBAL.getType()))
+			return TableType.GLOBAL;
+		if (type.equals(TableType.EDGE_ATTR.getType()))
+			return TableType.EDGE_ATTR;
+		if (type.equals(TableType.NETWORK_ATTR.getType()))
+			return TableType.NETWORK_ATTR;
+		if (type.equals(TableType.NODE_ATTR.getType()))
+			return TableType.NODE_ATTR;
+		return null;
 	}
 
 

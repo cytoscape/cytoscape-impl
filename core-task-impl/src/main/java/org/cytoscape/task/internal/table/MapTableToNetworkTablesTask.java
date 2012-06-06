@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 
 public final class MapTableToNetworkTablesTask extends AbstractTask {
 	
-	private static enum TableType {
-		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class), GLOBAL("Other Tables", CyTable.class);
+	enum TableType {
+		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class), GLOBAL("Unassigned Tables", CyTable.class);
 
 		private final String name;
 		private final  Class<? extends CyIdentifiable> type;
@@ -39,7 +39,8 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			return this.type;
 		}
 		
-		@Override public String toString() {
+		@Override 
+		public String toString() {
 			return name;
 		}
 	};
@@ -57,7 +58,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	public ListSingleSelection<TableType> dataTypeOptions;
 	
 	//******* we couldnt use the enum to check the dependency! So, update this line if you change the GLOBAL enum string 
-	@Tunable(description = "Apply to Selected Networks Only",groups="Network Options", dependsOn="dataTypeOptions!=Other Tables", params="displayState=collapsed")
+	@Tunable(description = "Apply to Selected Networks Only",groups="Network Options", dependsOn="dataTypeOptions!=Unassigned Tables", params="displayState=collapsed")
 	public boolean selectedNetworksOnly = false;
 	
 	@Tunable(description = "Network List",groups="Network Options",dependsOn="selectedNetworksOnly=true", params="displayState=collapsed")
@@ -167,7 +168,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		final CyColumn trgCol = localTable.getColumn(CyNetwork.NAME);
 		if (trgCol != null){
 			localTable.addVirtualColumns(globalTable, CyNetwork.NAME, false);
-			//globalTable.setPublic(false);
+			globalTable.setPublic(false);
 		}
 		else
 			logger.warn("Name column in the target table was not found!");

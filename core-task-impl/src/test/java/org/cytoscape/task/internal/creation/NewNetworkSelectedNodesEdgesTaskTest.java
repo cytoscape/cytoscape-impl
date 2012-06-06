@@ -3,33 +3,45 @@ package org.cytoscape.task.internal.creation;
 
 import static org.mockito.Mockito.mock;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 
 public class NewNetworkSelectedNodesEdgesTaskTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 
 	private CyNetwork net = support.getNetwork();
-	private CyRootNetworkManager cyroot = mock(CyRootNetworkManager.class);
+	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
 	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
-	private CyNetworkManager netmgr = mock(CyNetworkManager.class);
+	CyEventHelper eventHelper = new DummyCyEventHelper();
+	private CyNetworkManager netmgr = new CyNetworkManagerImpl(eventHelper);
 	private CyNetworkViewManager networkViewManager = mock(CyNetworkViewManager.class);
 	private CyNetworkNaming cyNetworkNaming = mock(CyNetworkNaming.class);
 	private VisualMappingManager vmm = mock(VisualMappingManager.class);
@@ -42,25 +54,32 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 	@Test
 	public void testNewNetworkSelectedNodesEdgesTask() throws Exception {
 		final UndoSupport undoSupport = mock(UndoSupport.class);
-
+		
+		netmgr.addNetwork(net);
 		final CyNode node1 = net.addNode();
 		final CyNode node2 = net.addNode();
 		final CyNode node3 = net.addNode();
+	
+		final CyEdge edge1 = net.addEdge(node1, node2, true);
+		final CyEdge edge2 = net.addEdge(node2, node3, true);
 		
-		final CyTable nodeTable = net.getDefaultNodeTable();
 		net.getRow(node1).set(CyNetwork.SELECTED, true);
-
-		CyEventHelper eventHelper = mock(CyEventHelper.class);
-
+		//net.getRow(node2).set(CyNetwork.SELECTED, true);
+		net.getRow(edge1).set(CyNetwork.SELECTED, true);
+		
 		final NewNetworkSelectedNodesEdgesTask task =
 			new NewNetworkSelectedNodesEdgesTask(undoSupport, net, cyroot, cnvf, netmgr,
 			                                     networkViewManager, cyNetworkNaming,
 			                                     vmm, appManager, eventHelper);
 		
-		TaskMonitor tm = mock(TaskMonitor.class);
+		assertNotNull("task is null!" , task);
+		task.setTaskIterator(new TaskIterator(task));
+		task.run(mock(TaskMonitor.class));
 		
-		// TODO how can we test this?
-		//task.run(tm);
+		assertEquals(2, netmgr.getNetworkSet().size());
+		List<CyNetwork> networkList = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
+		assertEquals(2, networkList.get(1).getNodeList().size());
+		assertEquals(1, networkList.get(1).getEdgeList().size());
 	}
 
 }
