@@ -1,10 +1,17 @@
 package org.cytoscape.task.internal.loadvizmap;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -51,6 +58,12 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		return task.getStyles();
 	}
 
+	public Set<VisualStyle> loadStyles(InputStream is) {
+		//Save the contents of inputStream in a tmp file
+		File f = this.getFileFromStream(is);
+		return this.loadStyles(f);
+	}
+
 	@Override
 	public TaskIterator createTaskIterator(File file) {
 
@@ -59,4 +72,57 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
+	
+	// Read the inputStream and save the content in a tmp file
+	private File getFileFromStream(InputStream is){
+
+		File returnFile = null;
+		
+		// Get the contents from inputStream
+		ArrayList<String> list = new ArrayList<String>();
+
+		BufferedReader bf = null;
+		String line;
+
+		try {
+			bf = new BufferedReader(new InputStreamReader(is));	
+			while (null != (line = bf.readLine())) {
+				list.add(line);
+			}
+		}
+		catch (IOException e){
+		}
+		finally {
+			try {
+				if (bf != null) bf.close();
+			}
+			catch (IOException e) {
+			}
+		}
+
+		if (list.size()==0){
+			return null;
+		}
+
+		// Save the content to a tmp file
+		Writer output;
+		try {
+			returnFile = File.createTempFile("visualStyles", ".props", new File(System.getProperty("java.io.tmpdir")));
+			returnFile.deleteOnExit();
+			
+			//use buffering
+			output = new BufferedWriter(new FileWriter(returnFile));
+			//FileWriter always assumes default encoding is OK!
+			for (int i=0; i< list.size(); i++){
+				output.write( list.get(i)+ "\n");				
+			}
+		    output.close();
+		}
+		catch(IOException ioe){
+			ioe.printStackTrace();
+		}
+
+		return returnFile;
+	}
+
 }
