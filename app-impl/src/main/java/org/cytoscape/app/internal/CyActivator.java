@@ -343,6 +343,7 @@ public class CyActivator extends AbstractCyActivator {
                  );
 		
 		registerService(bc,cyAppAdapter,CyAppAdapter.class, new Properties());
+		registerService(bc,cyAppAdapter,CySwingAppAdapter.class, new Properties());
 		
 		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef);
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
