@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
+import java.util.Iterator;
+
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -9,8 +11,10 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.cytoscape.work.TunableValidator;
+import java.io.IOException;
 
-public class CreateNewVisualStyleTask extends AbstractTask {
+public class CreateNewVisualStyleTask extends AbstractTask implements TunableValidator {
 
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewVisualStyleTask.class);
 	
@@ -40,5 +44,24 @@ public class CreateNewVisualStyleTask extends AbstractTask {
 		final VisualStyle newStyle = vsFactory.createVisualStyle(vsName);
 		vmm.addVisualStyle(newStyle);
 		logger.info("CreateNewVisualStyleTask created new Visual Style: " + newStyle.getTitle());
+	}
+	
+	
+	public ValidationState getValidationState(final Appendable errMsg){
+		
+		Iterator<VisualStyle> it = this.vmm.getAllVisualStyles().iterator();
+		while(it.hasNext()){
+			VisualStyle exist_vs = it.next();
+			if (exist_vs.getTitle().equalsIgnoreCase(vsName)){
+				try {
+					errMsg.append("Visual style "+ vsName +" already existed!");
+					return ValidationState.INVALID;
+				}
+				catch (IOException e){
+				}
+			}
+		}
+		
+		return ValidationState.OK;
 	}
 }
