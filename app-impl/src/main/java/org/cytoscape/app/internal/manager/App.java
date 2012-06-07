@@ -15,6 +15,7 @@ import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 
 /**
  * This class represents an app, and contains all needed information about the app such as its name, version, 
@@ -99,7 +100,7 @@ public abstract class App {
 	 * @throws AppInstanceException If there was an error while instancing the app, such as not being able to
 	 * locate the class to be instanced.
 	 */
-	public abstract Object createAppInstance(CyAppAdapter appAdapter) throws AppInstanceException;
+	public abstract Object createAppInstance(CySwingAppAdapter appAdapter) throws AppInstanceException;
 	
 	/**
 	 * Installs this app by creating an instance of its class that extends AbstractCyApp, copying itself
@@ -286,7 +287,7 @@ public abstract class App {
 		if (this.getAppInstance() == null) {
 			Object appInstance;
 			try {
-				appInstance = createAppInstance(appManager.getAppAdapter());
+				appInstance = createAppInstance(appManager.getSwingAppAdapter());
 			} catch (AppInstanceException e) {
 				throw new AppInstallException("Unable to create app instance: " + e.getMessage());
 			}

@@ -11,11 +11,12 @@ import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 
 public class SimpleApp extends App {
 
 	@Override
-	public Object createAppInstance(CyAppAdapter appAdapter) throws AppInstanceException {
+	public Object createAppInstance(CySwingAppAdapter appAdapter) throws AppInstanceException {
 		
 		File appFile = this.getAppFile();
 		URL appURL = null;
@@ -42,14 +43,27 @@ public class SimpleApp extends App {
 		// Attempt to obtain the constructor
 		Constructor<?> constructor = null;
 		try {
-			constructor = appEntryClass.getConstructor(CyAppAdapter.class);
-		} catch (SecurityException e) {
-			throw new AppInstanceException("Access to the constructor for " + appEntryClass + " denied.");
-		} catch (NoSuchMethodException e) {
-			throw new AppInstanceException("Unable to find a constructor for " + appEntryClass + " that takes a CyAppAdapter as its argument.");
+			try {
+				constructor = appEntryClass.getConstructor(CyAppAdapter.class);
+			} catch (SecurityException e) {
+				throw new AppInstanceException("Access to the constructor for " + appEntryClass + " denied.");
+			} catch (NoSuchMethodException e) {
+				throw new AppInstanceException("Unable to find a constructor for " + appEntryClass 
+						+ " that takes a CyAppAdapter as its argument.");
+			}
+		} catch (AppInstanceException e) {
+			try {
+				constructor = appEntryClass.getConstructor(CySwingAppAdapter.class);
+			} catch (SecurityException e2) {
+				throw new AppInstanceException("Access to the constructor for " + appEntryClass 
+						+ " taking a CySwingAppAdapter as its argument denied.");
+			} catch (NoSuchMethodException e2) {
+				throw new AppInstanceException("Unable to find an accessible constructor that takes either" 
+						+ " a CyAppAdapter or a CySwingAppAdapter as its argument.");
+			}
 		}
 		
-		// Attempt to instantiate the app's class that extends AbstractCyActivator.
+		// Attempt to instantiate the app's class that extends AbstractCyApp or AbstractCySwingApp.
 		Object appInstance = null;
 		try {
 			appInstance = constructor.newInstance(appAdapter);

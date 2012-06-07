@@ -28,6 +28,7 @@ import org.cytoscape.application.CyApplicationConfiguration;
 
 import org.cytoscape.app.internal.net.server.LocalHttpServer;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 
 /**
  * This class represents an App Manager, which is capable of maintaining a list of all currently installed and available apps. The class
@@ -72,9 +73,9 @@ public class AppManager {
 	private CyApplicationConfiguration applicationConfiguration;
 	
 	/**
-	 * The {@link CyAppAdapter} service reference provided to the constructor of the app's {@link AbstractCyApp}-implementing class.
+	 * The {@link CySwingAppAdapter} service reference provided to the constructor of the app's {@link AbstractCyApp}-implementing class.
 	 */
-	private CyAppAdapter appAdapter;
+	private CySwingAppAdapter swingAppAdapter;
 	
 	private FileAlterationMonitor fileAlterationMonitor;
 	
@@ -103,9 +104,9 @@ public class AppManager {
 		
 	}
 	
-	public AppManager(CyAppAdapter appAdapter, CyApplicationConfiguration applicationConfiguration, final WebQuerier webQuerier) {
+	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, final WebQuerier webQuerier) {
 		this.applicationConfiguration = applicationConfiguration;
-		this.appAdapter = appAdapter;
+		this.swingAppAdapter = swingAppAdapter;
 		this.webQuerier = webQuerier;
 		
 		apps = new HashSet<App>();
@@ -295,8 +296,8 @@ public class AppManager {
 		}
 	}
 	
-	public CyAppAdapter getAppAdapter() {
-		return appAdapter;
+	public CySwingAppAdapter getSwingAppAdapter() {
+		return swingAppAdapter;
 	}
 	
 	public AppParser getAppParser() {

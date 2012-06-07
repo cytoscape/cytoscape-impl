@@ -6,6 +6,7 @@ import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -13,7 +14,7 @@ import org.osgi.framework.BundleException;
 public class BundleApp extends App {
 
 	@Override
-	public Object createAppInstance(CyAppAdapter appAdapter)
+	public Object createAppInstance(CySwingAppAdapter appAdapter)
 			throws AppInstanceException {
 		
 		BundleContext bundleContext = null;
