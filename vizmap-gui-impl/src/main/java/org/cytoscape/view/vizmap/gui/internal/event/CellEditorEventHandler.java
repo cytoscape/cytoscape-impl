@@ -34,6 +34,7 @@ import javax.swing.JOptionPane;
 import javax.swing.event.TableModelListener;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -198,10 +199,13 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		 */
 		@SuppressWarnings("unchecked")
 		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) editor.getTargetObjectType();
-		final CyTable attrForTest = tableMgr.getTable(applicationManager.getCurrentNetwork(), type,
-				CyNetwork.DEFAULT_ATTRS);
+		final CyTable attrForTest = tableMgr.getTable(applicationManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 
-		final Class<K> dataType = (Class<K>) attrForTest.getColumn(ctrAttrName).getType();
+		final CyColumn column = attrForTest.getColumn(ctrAttrName);
+		if (column == null)
+			return;
+
+		final Class<K> dataType = (Class<K>) column.getType();
 
 		if (mapping == null) {
 			// Need to create new one

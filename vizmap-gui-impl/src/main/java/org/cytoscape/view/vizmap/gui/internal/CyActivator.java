@@ -90,10 +90,9 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		VizmapReaderManager vizmapReaderManagerServiceRef = getService(bc,VizmapReaderManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
-		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc,RenderingEngineManager.class);
 		
 		AttributeSetManager attributeSetManager = new AttributeSetManager(cyNetworkTableManagerServiceRef);
-		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef);
+		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef);
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl(editorManager);
 		PropertySheetPanel propertySheetPanel = new PropertySheetPanel();
 		

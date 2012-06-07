@@ -50,6 +50,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.ContinuousRange;
@@ -104,7 +105,8 @@ public class EditorManagerImpl implements EditorManager {
 	 * Creates a new EditorFactory object.
 	 */
 	public EditorManagerImpl(final CyApplicationManager appManager, final AttributeSetManager attrManager,
-			final VisualMappingManager vmm, final CyNetworkTableManager tableManager) {
+			final VisualMappingManager vmm, final CyNetworkTableManager tableManager,
+			final CyNetworkManager networkManager) {
 
 		this.appManager = appManager;
 		this.tableManager = tableManager;
@@ -116,11 +118,11 @@ public class EditorManagerImpl implements EditorManager {
 		attrComboBoxEditors = new HashMap<Class<?>, ListEditor>();
 
 		final AttributeComboBoxPropertyEditor nodeAttrEditor = new AttributeComboBoxPropertyEditor(CyNode.class,
-				attrManager, appManager);
+				attrManager, appManager, networkManager);
 		final AttributeComboBoxPropertyEditor edgeAttrEditor = new AttributeComboBoxPropertyEditor(CyEdge.class,
-				attrManager, appManager);
+				attrManager, appManager, networkManager);
 		final AttributeComboBoxPropertyEditor networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class,
-				attrManager, appManager);
+				attrManager, appManager, networkManager);
 		attrComboBoxEditors.put(nodeAttrEditor.getTargetObjectType(), nodeAttrEditor);
 		attrComboBoxEditors.put(edgeAttrEditor.getTargetObjectType(), edgeAttrEditor);
 		attrComboBoxEditors.put(networkAttrEditor.getTargetObjectType(), networkAttrEditor);

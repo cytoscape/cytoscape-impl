@@ -1,19 +1,27 @@
 package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
@@ -21,28 +29,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Holds list of attributes. By default, three instances of this should be
+ * Tracking the list of columns. By default, three instances of this should be
  * created (for NODE, EDGE, and NETWORK).
  * 
  * Export this as an OSGi service!
  */
-public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor implements ListEditor,
-		SetCurrentNetworkViewListener {
+public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor implements ListEditor {
 
 	private static final Logger logger = LoggerFactory.getLogger(AttributeComboBoxPropertyEditor.class);
 
-	private final Class<? extends CyIdentifiable> type;
+	private final Class<? extends CyIdentifiable> graphObjectType;
 	private final AttributeSetManager attrManager;
+	private final CyNetworkManager networkManager;
+
+	private Map<String, Class<?>> currentColumnMap;
 
 	public AttributeComboBoxPropertyEditor(final Class<? extends CyIdentifiable> type,
-			final AttributeSetManager attrManager, final CyApplicationManager appManager) {
+			final AttributeSetManager attrManager, final CyApplicationManager appManager,
+			final CyNetworkManager networkManager) {
 		super();
 		this.attrManager = attrManager;
-		this.type = type;
+		this.graphObjectType = type;
+		this.networkManager = networkManager;
+		currentColumnMap = new HashMap<String, Class<?>>();
 
 		final JComboBox comboBox = (JComboBox) editor;
+		comboBox.setRenderer(new AttributeComboBoxCellRenderer());
 		comboBox.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				updateComboBox(appManager.getCurrentNetwork());
@@ -52,23 +65,30 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 
 	@Override
 	public Class<?> getTargetObjectType() {
-		return type;
+		return graphObjectType;
 	}
 
 	private void updateComboBox(final CyNetwork currentNetwork) {
+		final AttributeSet compatibleColumns = attrManager.getAttributeSet(currentNetwork, graphObjectType);
+		currentColumnMap = compatibleColumns.getAttrMap();
+		final Set<CyNetwork> networks = networkManager.getNetworkSet();
+
 		final JComboBox box = (JComboBox) editor;
 		final Object selected = box.getSelectedItem();
 		box.removeAllItems();
 
 		if (currentNetwork != null) {
-			final AttributeSet targetSet = this.attrManager.getAttributeSet(currentNetwork, type);
+			final AttributeSet targetSet = this.attrManager.getAttributeSet(currentNetwork, graphObjectType);
 
 			final SortedSet<String> sortedName = new TreeSet<String>();
 			if (targetSet == null)
 				return;
-			
-			for (String attrName : targetSet.getAttrMap().keySet())
-				sortedName.add(attrName);
+
+			for (CyNetwork net : networks) {
+				final AttributeSet currentSet = this.attrManager.getAttributeSet(net, graphObjectType);
+				for (String attrName : currentSet.getAttrMap().keySet())
+					sortedName.add(attrName);
+			}
 
 			for (final String attrName : sortedName)
 				box.addItem(attrName);
@@ -76,23 +96,45 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 			// Add new name if not in the list.
 			box.setSelectedItem(selected);
 
-			logger.debug(type + " attribute Combobox Updated: New Names = " + targetSet.getAttrMap().keySet());
+			logger.debug(graphObjectType + " attribute Combobox Updated: New Names = "
+					+ targetSet.getAttrMap().keySet());
 		}
 	}
 
-	@Override
-	public void handleEvent(final SetCurrentNetworkViewEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				final CyNetworkView networkView = e.getNetworkView();
-				if (networkView == null) {
-					logger.debug("Current network view switched to null");
-					updateComboBox(null);
-				} else {
-					logger.debug("Current network view switched to " + networkView.getModel());
-					updateComboBox(networkView.getModel());
-				}
+	private final class AttributeComboBoxCellRenderer extends BasicComboBoxRenderer {
+
+		private static final long serialVersionUID = 6828337202195089669L;
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
+			if (value == null)
+				return this;
+
+			this.setText(value.toString());
+
+			if (isSelected) {
+				this.setForeground(Color.RED);
+				this.setBackground(list.getSelectionBackground());
+			} else {
+				this.setForeground(Color.BLACK);
+				this.setBackground(list.getBackground());
 			}
-		});
+
+			final Set<String> keys = currentColumnMap.keySet();
+			String valueString = value.toString();
+			if (keys != null && keys.contains(valueString) == false) {
+				this.setEnabled(false);
+				this.setFocusable(false);
+				this.setForeground(Color.LIGHT_GRAY);
+				this.setToolTipText("This column does not exist in current network's table.");
+			} else {
+				this.setEnabled(true);
+				this.setFocusable(true);
+				this.setToolTipText("Column Data Type: " + currentColumnMap.get(valueString).getSimpleName());
+			}
+
+			return this;
+		}
 	}
 }

@@ -1,6 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,11 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener, NetworkAddedListener {
-	
-	private static final Logger logger = LoggerFactory.getLogger(AttributeSetManager.class);
 
 	private static final Set<Class<? extends CyIdentifiable>> GRAPH_OBJECTS;
-	
+
 	static {
 		GRAPH_OBJECTS = new HashSet<Class<? extends CyIdentifiable>>();
 		GRAPH_OBJECTS.add(CyNode.class);
@@ -40,7 +39,7 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 
 	private final Map<CyNetwork, Map<Class<? extends CyIdentifiable>, AttributeSet>> attrSets;
 	private final Map<CyNetwork, Map<Class<? extends CyIdentifiable>, Set<CyTable>>> tableSets;
-
+	
 	public AttributeSetManager(final CyNetworkTableManager tableMgr) {
 		this.tableMgr = tableMgr;
 
