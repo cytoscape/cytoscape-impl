@@ -484,7 +484,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// Clear undo stack
 		undo.reset();
 		
-		// Reset current table
+		// Reset current table and rendering engine
 		appMgr.setCurrentTable(null);
+		appMgr.setCurrentRenderingEngine(null);
 	}
 }

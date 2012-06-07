@@ -77,6 +77,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	private final JPanel bevPanel;
 	private final Map<CyNetworkView, RenderingEngine<?>> viewToEngineMap;
 	private final CyApplicationManager appManager;
+	private final CyNetworkViewManager netViewManager;
 	private final Map<CyNetworkView, JPanel> presentationMap;
 
 	/**
@@ -86,13 +87,16 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	 * @param defaultFactory
 	 */
 	public BirdsEyeViewHandler(final CyApplicationManager appManager,
-			final RenderingEngineFactory<CyNetwork> defaultFactory) {
+							   final RenderingEngineFactory<CyNetwork> defaultFactory,
+							   final CyNetworkViewManager netViewManager) {
 
 		this.appManager = appManager;
+		this.netViewManager = netViewManager;
 		this.viewToEngineMap = new WeakHashMap<CyNetworkView, RenderingEngine<?>>();
-		presentationMap = new WeakHashMap<CyNetworkView, JPanel>();
+		this.presentationMap = new WeakHashMap<CyNetworkView, JPanel>();
 
 		this.bevPanel = new JPanel();
+		this.bevPanel.setLayout(new BorderLayout());
 		this.bevPanel.setPreferredSize(DEF_PANEL_SIZE);
 		this.bevPanel.setSize(DEF_PANEL_SIZE);
 		this.bevPanel.setBackground(DEF_BACKGROUND_COLOR);
@@ -112,7 +116,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	@Override
 	public void handleEvent(final SetCurrentRenderingEngineEvent e) {
 		final RenderingEngine<CyNetwork> newEngine = e.getRenderingEngine();
-
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -121,37 +125,10 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 		});
 	}
 
-	private final void updateBEV(final RenderingEngine<CyNetwork> newEngine) {
-		JPanel presentationPanel = null;
-		
-		if (newEngine != null) {
-			final CyNetworkView newViewModel = (CyNetworkView) newEngine.getViewModel();
-			presentationPanel = presentationMap.get(newViewModel);
-	
-			if (presentationPanel == null) {
-				logger.debug("Creating new BEV for network SUID: " + newViewModel.getModel().getSUID());
-				presentationPanel = new JPanel();
-				viewToEngineMap.put(newViewModel, bevFactory.createRenderingEngine(presentationPanel, newViewModel));
-				presentationMap.put((CyNetworkView) newViewModel, presentationPanel);
-			}
-			
-			final Dimension currentPanelSize = bevPanel.getSize();
-			bevPanel.setLayout(new BorderLayout());
-			presentationPanel.setSize(currentPanelSize);
-			presentationPanel.setPreferredSize(currentPanelSize);
-		}
-
-		bevPanel.removeAll();
-		
-		if (presentationPanel != null)
-			bevPanel.add(presentationPanel, BorderLayout.CENTER);
-		
-		bevPanel.repaint();
-	}
-
 	@Override
 	public void handleEvent(final NetworkViewDestroyedEvent e) {
 		final CyNetworkViewManager manager = e.getSource();
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -159,19 +136,50 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 			}
 		});
 	}
+	
+	private final void updateBEV(final RenderingEngine<CyNetwork> newEngine) {
+		JPanel presentationPanel = null;
+		
+		if (newEngine != null) {
+			final CyNetworkView newView = (CyNetworkView) newEngine.getViewModel();
+			
+			if (netViewManager.getNetworkViewSet().contains(newView)) {
+				presentationPanel = presentationMap.get(newView);
+		
+				if (presentationPanel == null) {
+					logger.debug("Creating new BEV for: " + newView);
+					presentationPanel = new JPanel();
+					viewToEngineMap.put(newView, bevFactory.createRenderingEngine(presentationPanel, newView));
+					presentationMap.put((CyNetworkView) newView, presentationPanel);
+				}
+				
+				final Dimension currentPanelSize = bevPanel.getSize();
+				presentationPanel.setSize(currentPanelSize);
+				presentationPanel.setPreferredSize(currentPanelSize);
+			}
+		}
+
+		bevPanel.removeAll();
+		
+		if (presentationPanel != null) {
+			bevPanel.add(presentationPanel, BorderLayout.CENTER);
+			bevPanel.revalidate(); // without this, the BEV might not be updated right away
+		}
+		
+		bevPanel.repaint();
+	}
 
 	private final void removeView(final CyNetworkViewManager manager) {
 		Set<CyNetworkView> toBeRemoved = new HashSet<CyNetworkView>();
-		for (CyNetworkView view : this.presentationMap.keySet()) {
+		
+		for (CyNetworkView view : presentationMap.keySet()) {
 			if (manager.getNetworkViewSet().contains(view) == false)
 				toBeRemoved.add(view);
 		}
 
 		for (CyNetworkView view : toBeRemoved) {
-			JPanel panel = presentationMap.remove(view);
-			RenderingEngine<?> engine = viewToEngineMap.remove(view);
-			panel = null;
-			engine = null;
+			presentationMap.remove(view);
+			viewToEngineMap.remove(view);
 		}
 
 		toBeRemoved.clear();

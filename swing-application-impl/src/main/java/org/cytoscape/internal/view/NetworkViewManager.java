@@ -222,11 +222,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (view != null) {
 			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
 			
-			if (netViewMgr.getNetworkViewSet().contains(view) && !view.equals(appMgr.getCurrentNetworkView()))
-				appMgr.setCurrentNetworkView(view);
+			if (netViewMgr.getNetworkViewSet().contains(view)) {
+				if (!view.equals(appMgr.getCurrentNetworkView()))
+					appMgr.setCurrentNetworkView(view);
 	
-			if (currentEngine == null || currentEngine.getViewModel() != view)
-				appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+				if (currentEngine == null || currentEngine.getViewModel() != view)
+					appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+			}
 		}
 	}
 
