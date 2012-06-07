@@ -56,6 +56,7 @@ import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Iterator;
 
 /**
  *
@@ -208,6 +209,12 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 			return;
 		}
 		
+		if (hasDuplicatedTitle(vs)){
+			String newTitle = getSuggestedTitle(vs.getTitle());
+			//Update the title
+			vs.setTitle(newTitle);
+		}
+		
 		this.visualStyles.add(vs);
 		logger.info("New visual Style registered to VMM: " + vs.getTitle());
 		logger.info("Total Number of VS in VMM = " + visualStyles.size());
@@ -217,6 +224,55 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		cyEventHelper.fireEvent(new VisualStyleAddedEvent(this, vs));
 	}
 
+	private String getSuggestedTitle(String title){
+		int i=0;		
+		String suggesteTitle = title;
+		
+		while (true){
+			suggesteTitle = title + "_"+(new Integer(i).toString());
+			
+			boolean duplicated = false;
+			
+			Iterator<VisualStyle> it = this.getAllVisualStyles().iterator();
+			while(it.hasNext()){
+				VisualStyle exist_vs = it.next();
+				if (exist_vs.getTitle().equalsIgnoreCase(suggesteTitle)){
+					duplicated = true;
+					break;
+				}
+			}
+
+			if (duplicated){
+				i++;
+				continue;
+			}
+			
+			break;
+		}
+		
+		return suggesteTitle;
+	}
+	
+	
+	private boolean hasDuplicatedTitle(VisualStyle vs){
+	
+		if (this.getAllVisualStyles().size() == 0){
+			return false;
+		}
+		Iterator<VisualStyle> it = this.getAllVisualStyles().iterator();
+		while(it.hasNext()){
+			VisualStyle exist_vs = it.next();
+			if (exist_vs.getTitle() == null || vs.getTitle() == null){
+				continue;
+			}
+			if (exist_vs.getTitle().equalsIgnoreCase(vs.getTitle())){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
