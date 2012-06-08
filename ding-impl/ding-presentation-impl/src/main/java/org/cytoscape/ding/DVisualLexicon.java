@@ -415,21 +415,38 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 	private void createLookupMap() {
 		// XGMML:
-		addIdentifierMapping(CyEdge.class, "sourceArrowColor",
-				EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
-		addIdentifierMapping(CyEdge.class, "targetArrowColor",
-				EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+		addIdentifierMapping(CyEdge.class, "sourceArrowColor", EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
+		addIdentifierMapping(CyEdge.class, "targetArrowColor", EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 
 		// 2.x VizMap Properties:
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics1", NODE_CUSTOMGRAPHICS_1);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics2", NODE_CUSTOMGRAPHICS_2);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics3", NODE_CUSTOMGRAPHICS_3);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics4", NODE_CUSTOMGRAPHICS_4);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics5", NODE_CUSTOMGRAPHICS_5);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics6", NODE_CUSTOMGRAPHICS_6);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics7", NODE_CUSTOMGRAPHICS_7);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics8", NODE_CUSTOMGRAPHICS_8);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphics9", NODE_CUSTOMGRAPHICS_9);
+		
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition1", NODE_CUSTOMGRAPHICS_POSITION_1);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition2", NODE_CUSTOMGRAPHICS_POSITION_2);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition3", NODE_CUSTOMGRAPHICS_POSITION_3);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition4", NODE_CUSTOMGRAPHICS_POSITION_4);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition5", NODE_CUSTOMGRAPHICS_POSITION_5);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition6", NODE_CUSTOMGRAPHICS_POSITION_6);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition7", NODE_CUSTOMGRAPHICS_POSITION_7);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition8", NODE_CUSTOMGRAPHICS_POSITION_8);
+		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition9", NODE_CUSTOMGRAPHICS_POSITION_9);
+		
+		
 		// TODO: missing node properties
 		// addIdentifierMapping(CyNode.class,"nodeLabelOpacity",NODE_LABEL_TRANSPARENCY);
 		// addIdentifierMapping(CyNode.class,"nodeBorderOpacity",NODE_BORDER_TRANSPARENCY);
 		// addIdentifierMapping(CyNode.class,"nodeLabelWidth",NODE_LABEL_WIDTH);
-		
-		addIdentifierMapping(CyEdge.class, "edgeSourceArrowColor",
-				EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
-		addIdentifierMapping(CyEdge.class, "edgeTargetArrowColor",
-				EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+
+		addIdentifierMapping(CyEdge.class, "edgeSourceArrowColor", EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
+		addIdentifierMapping(CyEdge.class, "edgeTargetArrowColor", EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 		// TODO: missing edge properties
 		// addIdentifierMapping(CyEdge.class,"edgeLabelOpacity",EDGE_LABEL_TRANSPARENCY);
 		// addIdentifierMapping(CyEdge.class,"edgeLabelWidth",EDGE_LABEL_WIDTH);

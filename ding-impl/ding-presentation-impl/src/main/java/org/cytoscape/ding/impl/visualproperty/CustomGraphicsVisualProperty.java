@@ -23,9 +23,10 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 	@Override
 	public CyCustomGraphics<CustomGraphic> parseSerializableString(String value) {
 		// Return dummy if something is assigned.  This should be replaced after loading session.
-		if(NullCustomGraphics.getNullObject().toString().equals(value)) {
+		if(NullCustomGraphics.getNullObject().toString().equals(value) || value.contains("NullCustomGraphics")) {
 			return NullCustomGraphics.getNullObject();
 		} else {
+			System.out.println("CG String = " + value);
 			final String[] parts = value.split(",");
 			return new DummyCustomGraphics(Long.parseLong(parts[1]), parts[2]);
 		}
