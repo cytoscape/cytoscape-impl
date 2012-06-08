@@ -6,6 +6,7 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
@@ -31,10 +32,11 @@ public class CyActivator extends AbstractCyActivator {
 		LoadNetworkURLTaskFactory networkURLLoader = getService(bc, LoadNetworkURLTaskFactory.class);
 		LoadVizmapFileTaskFactory visualStylesLoader = getService(bc, LoadVizmapFileTaskFactory.class);
 		TaskManager <?,?> taskManager = getService(bc, TaskManager.class);
-
+		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
+		
 		CyProperty<Properties> props = (CyProperty<Properties>)getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 
-		StartupConfig sc = new StartupConfig(props.getProperties(),streamUtil, loadSession, networkFileLoader, networkURLLoader, visualStylesLoader, taskManager);
+		StartupConfig sc = new StartupConfig(props.getProperties(),streamUtil, loadSession, networkFileLoader, networkURLLoader, visualStylesLoader, taskManager, registrar);
 
 
 		Parser p = new Parser(args.getArgs(), cyShutdown, cyVersion, sc,props.getProperties());

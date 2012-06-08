@@ -11,7 +11,7 @@ import org.cytoscape.work.TaskIterator;
 
 public class EdgeLinkoutTaskFactory extends AbstractEdgeViewTaskFactory {
 
-	private final String link;
+	private String link;
 	private final OpenBrowser browser;
 
 	public EdgeLinkoutTaskFactory(OpenBrowser browser, String link) {
@@ -22,5 +22,12 @@ public class EdgeLinkoutTaskFactory extends AbstractEdgeViewTaskFactory {
 
 	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView netView) {
 		return new TaskIterator(new LinkoutTask(link, browser, netView.getModel(), edgeView.getModel().getSource(), edgeView.getModel().getTarget(), edgeView.getModel()));
+	}
+	
+	public String getLink(){
+		return link;
+	}
+	public void setLink (String link){
+		this.link = link;
 	}
 }

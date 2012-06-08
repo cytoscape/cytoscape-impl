@@ -33,6 +33,10 @@ package org.cytoscape.cmdline.gui.internal;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyTable.SavePolicy;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.task.read.LoadTableURLTaskFactory;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
@@ -76,6 +80,9 @@ public class StartupConfig {
 	private LoadTableFileTaskFactory attributesFileLoader;
 	private final TaskManager taskManager;
 	
+	
+	private final CyServiceRegistrar registrar;
+	
 	private File sessionName;
 	private ArrayList<File> networkFiles;
 	private ArrayList<URL> networkURLs;
@@ -85,7 +92,8 @@ public class StartupConfig {
 
 	public StartupConfig(Properties globalProps, StreamUtil streamUtil, 
 			OpenSessionTaskFactory loadSession, LoadNetworkFileTaskFactory networkFileLoader,
-			LoadNetworkURLTaskFactory networkURLLoader, LoadVizmapFileTaskFactory visualStylesLoader, TaskManager taskManager) {
+			LoadNetworkURLTaskFactory networkURLLoader, LoadVizmapFileTaskFactory visualStylesLoader, TaskManager taskManager,
+			CyServiceRegistrar registrar) {
 		this.globalProps = globalProps;
 		this.streamUtil = streamUtil;
 		this.loadSession = loadSession;
@@ -93,6 +101,8 @@ public class StartupConfig {
 		this.networkURLLoader = networkURLLoader;
 		this.visualStylesLoader = visualStylesLoader;
 		this.taskManager = taskManager;
+		
+		this.registrar = registrar;
 		networkFiles= new ArrayList<File>();
 		networkURLs = new ArrayList<URL>();
 		vizmapFiles = new ArrayList<File>();
@@ -214,8 +224,14 @@ public class StartupConfig {
 	public void start() {
 		// set the properties
 		// no need to do this in a task since it's so fast
-		globalProps.putAll(localProps);
-
+		//globalProps.putAll(localProps);
+		
+		CyProperty<Properties> commandline = new SimpleCyProperty<Properties>("commandline", localProps,
+				Properties.class, CyProperty.SavePolicy.DO_NOT_SAVE);
+		Properties cmdlnProps = new Properties();
+		cmdlnProps.setProperty("cyPropertyName","commandline.props");
+		registrar.registerService(commandline, CyProperty.class, cmdlnProps);
+		
 		// Only proceed if we've specified tasks for execution
 		// on the command line.
 		if ( !taskStart )

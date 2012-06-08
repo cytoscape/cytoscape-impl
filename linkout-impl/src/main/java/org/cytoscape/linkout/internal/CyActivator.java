@@ -6,6 +6,7 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.linkout.internal.LinkOut;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 
 import org.osgi.framework.BundleContext;
@@ -38,6 +39,9 @@ public class CyActivator extends AbstractCyActivator {
 		Properties linkoutPropsProps = new Properties();
 		linkoutPropsProps.setProperty("cyPropertyName","linkout");
 		registerService(bc,linkoutProps,CyProperty.class, linkoutPropsProps);
+		registerService(bc, linkout, PropertyUpdatedListener.class, linkoutPropsProps);
+		registerServiceListener(bc, linkout, "addCommanLineLinkOut", "removeCommanLineLinkOut", CyProperty.class);
+		
 	}
 }
 
