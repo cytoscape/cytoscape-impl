@@ -34,10 +34,11 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.write.SaveSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory {
+public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements SaveSessionTaskFactory{
 
 	private final CySessionManager sessionMgr;
 	private final CySessionWriterManager writerMgr;
