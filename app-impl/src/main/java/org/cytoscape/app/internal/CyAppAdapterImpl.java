@@ -106,6 +106,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsListener;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -206,6 +207,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private AbstractWebServiceClient abstractWebServiceClient;
 	private DataImportFinishedEvent dataImportFinishedEvent;
 	private AbstractCyApp cyApp;
+	private BasicVisualLexicon basicVisualLexicon; 
 	private final VisualMappingFunctionFactory visualMappingFunctionContinuousFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory;
