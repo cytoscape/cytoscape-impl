@@ -67,6 +67,9 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		//net.getRow(node2).set(CyNetwork.SELECTED, true);
 		net.getRow(edge1).set(CyNetwork.SELECTED, true);
 		
+		int numberOfNetsBeforeTask = netmgr.getNetworkSet().size();
+		List<CyNetwork> netListbeforeTask = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
+		
 		final NewNetworkSelectedNodesEdgesTask task =
 			new NewNetworkSelectedNodesEdgesTask(undoSupport, net, cyroot, cnvf, netmgr,
 			                                     networkViewManager, cyNetworkNaming,
@@ -76,10 +79,14 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(mock(TaskMonitor.class));
 		
-		assertEquals(2, netmgr.getNetworkSet().size());
+		int numberOfNetsAfterTask = netmgr.getNetworkSet().size();
+
+		assertEquals(1, numberOfNetsAfterTask - numberOfNetsBeforeTask);
+	
 		List<CyNetwork> networkList = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
-		assertEquals(2, networkList.get(1).getNodeList().size());
-		assertEquals(1, networkList.get(1).getEdgeList().size());
+		networkList.removeAll(netListbeforeTask);
+		assertEquals(2, networkList.get(0).getNodeList().size());
+		assertEquals(1, networkList.get(0).getEdgeList().size());
 	}
 
 }

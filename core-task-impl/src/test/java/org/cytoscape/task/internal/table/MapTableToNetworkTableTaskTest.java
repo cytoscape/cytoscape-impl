@@ -79,7 +79,7 @@ public class MapTableToNetworkTableTaskTest {
 		mapping(table1, net1, false);
 		
 		assertNotNull(net1.getDefaultNodeTable().getColumn("col1"));
-		assertEquals("col1 row1", net1.getDefaultNodeTable().getRow(node1.getSUID()).get("col1", String.class) );
+		assertEquals("col1 row1", net1.getRow(node1).get("col1", String.class) );
 
 	}
 	

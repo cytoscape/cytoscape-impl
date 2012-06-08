@@ -97,9 +97,11 @@ public class MappingIntegrationTest {
 		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyNetwork.NAME, node2Name);
 		
 		netMgr.addNetwork(net1);
-	
 		((CySubNetworkImpl) net1).handleEvent(new NetworkAddedEvent(netMgr, net1));
-	
+
+		
+		List<CyNetwork> firstnetlist = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
 				CyTable.SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
@@ -126,10 +128,14 @@ public class MappingIntegrationTest {
 		newNetTask.setTaskIterator(new TaskIterator(newNetTask));
 		newNetTask.run(mock(TaskMonitor.class));
 		
-		assertEquals(2, netMgr.getNetworkSet().size());
 		
-		List<CyNetwork> newNetList = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
-		subnet1 = newNetList.get(1);
+		List<CyNetwork> secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		secondNetList.removeAll(firstnetlist);
+		assertEquals(1, secondNetList.size());
+
+		subnet1 = secondNetList.get(0);
+		secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		
 		((CySubNetworkImpl) subnet1).handleEvent(new NetworkAddedEvent(netMgr, subnet1));
 		
 		assertEquals(2, subnet1.getNodeList().size());
@@ -137,7 +143,7 @@ public class MappingIntegrationTest {
 		assertNotNull(subnet1.getDefaultNodeTable().getColumn(table1sCol));
 		//these two tests are failing because the required table update when creating the subnetwork is not handled
 		//hence the nodes are there but the related rows in the table are empty
-		assertEquals(table1sRow1, subnet1.getDefaultNodeTable().getRow(subnet1.getNodeList().get(0).getSUID()).get(table1sCol, String.class) );
+		assertEquals(table1sRow1, subnet1.getRow(node1).get(table1sCol, String.class) );
 				
 		//creating another table to map to the net1 only
 		table2 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
@@ -165,10 +171,13 @@ public class MappingIntegrationTest {
 		newNetTask2.setTaskIterator(new TaskIterator(newNetTask2));
 		newNetTask2.run(mock(TaskMonitor.class));
 		
-		assertEquals(3, netMgr.getNetworkSet().size());
+	
 		
-		newNetList = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
-		subnet2 = newNetList.get(0);
+		
+		List<CyNetwork> thirdNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		thirdNetList.removeAll(secondNetList);
+		assertEquals(1, thirdNetList.size());
+		subnet2 = thirdNetList.get(0);		
 		((CySubNetworkImpl) subnet2).handleEvent(new NetworkAddedEvent(netMgr, subnet2));
 		
 		
@@ -180,8 +189,8 @@ public class MappingIntegrationTest {
 
 		//these two tests are failing because the required table update when creating the subnetwork is not handled
 		//hence the nodes are there but the related rows in the table are empty
-		assertEquals(table1sRow1, subnet2.getDefaultNodeTable().getRow(subnet2.getNodeList().get(0).getSUID()).get(table1sCol, String.class) );
-		assertEquals(table2sRow1, subnet2.getDefaultNodeTable().getRow(subnet2.getNodeList().get(0).getSUID()).get(table2sCol, String.class) );
+		assertEquals(table1sRow1, subnet2.getRow(node1).get(table1sCol, String.class) );
+		assertEquals(table2sRow1, subnet2.getRow(node1).get(table2sCol, String.class) );
 	
 	}
 	
