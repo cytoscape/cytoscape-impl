@@ -510,7 +510,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	public CyProperty<Properties> getCoreProperties() { return cyProperty; }
 	public CyPropertyReaderManager getCyPropertyReaderManager() { return cyPropertyReaderManager; }
 	public CyPropertyWriterManager getCyPropertyWriterManager() { return cyPropertyWriterManager; }
-	public CyRootNetworkManager getCyRootNetworkFactory() { return cyRootNetworkFactory; } 
+	public CyRootNetworkManager getCyRootNetworkManager() { return cyRootNetworkFactory; } 
 	public CyServiceRegistrar getCyServiceRegistrar() { return cyServiceRegistrar; }
 	public CySessionManager getCySessionManager() { return cySessionManager; } 
 	public CySessionReaderManager getCySessionReaderManager() { return cySessionReaderManager; }
