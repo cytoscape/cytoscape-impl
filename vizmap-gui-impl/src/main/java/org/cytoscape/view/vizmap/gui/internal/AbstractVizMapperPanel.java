@@ -326,7 +326,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 		listSplitPane.setRightComponent(bottomPanel);
 
 		mainSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-		defaultViewImagePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Defaults",
+		defaultViewImagePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Defaults (Click to edit)",
 				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
 				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("SansSerif", 1, 12),
 				java.awt.Color.darkGray));
