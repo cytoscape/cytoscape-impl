@@ -69,10 +69,12 @@ public class SaveSessionTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
 		
-		final File file = new File(fileName);
+		File file = new File(fileName);
 		insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));
 		
 		// Add this session file URL as the most recent file.
+		if ( !CySessionWriter.HasFileExtension(file.getName()))
+			file = new File(file.getPath() + ".cys");
 		tracker.add(file.toURI().toURL());
 		
 		taskMonitor.setProgress(1.0);

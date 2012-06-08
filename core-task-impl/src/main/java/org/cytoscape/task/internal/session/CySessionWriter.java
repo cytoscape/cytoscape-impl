@@ -64,7 +64,7 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 		insertTasksAfterCurrentTask( writer );
 	}
 
-	private static boolean HasFileExtension(final String pathName) {
+	static boolean HasFileExtension(final String pathName) {
 		final int lastDotPos = pathName.lastIndexOf('.');
 		final int lastSlashPos = pathName.lastIndexOf(File.separatorChar);
 		return lastSlashPos < lastDotPos; // Yes, this also works if one or both of lastSlashPos and lastDotPos are -1!
