@@ -73,7 +73,7 @@ public class SaveSessionTask extends AbstractTask {
 		insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));
 		
 		// Add this session file URL as the most recent file.
-		if ( !CySessionWriter.HasFileExtension(file.getName()))
+		if ( !file.getName().endsWith(".cys"))
 			file = new File(file.getPath() + ".cys");
 		tracker.add(file.toURI().toURL());
 		

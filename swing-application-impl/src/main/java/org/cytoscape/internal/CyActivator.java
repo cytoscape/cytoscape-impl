@@ -109,6 +109,7 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -176,6 +177,8 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
+		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
+		
 		
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
 		RedoAction redoAction = new RedoAction(undoSupportServiceRef);
@@ -219,7 +222,8 @@ public class CyActivator extends AbstractCyActivator {
 														   synchronousTaskManagerServiceRef,
 														   saveTaskFactoryServiceRef,
 														   sessStateIO,
-														   cySessionManagerServiceRef);
+														   cySessionManagerServiceRef,
+														   fileUtilServiceRef);
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cytoscapePropertiesServiceRef);
 		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,

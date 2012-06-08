@@ -66,6 +66,8 @@ import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.slf4j.Logger;
@@ -83,7 +85,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private final SaveSessionAsTaskFactory saveTaskFactory;
 	private final SessionStateIO sessionStateIO;
 	private final CySessionManager sessionManager;
-	
+	private final FileUtil fileUtil;
 	private final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<String, CytoPanelName>();
 	
 	private static final Logger logger = LoggerFactory.getLogger(SessionHandler.class);
@@ -93,7 +95,8 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 						  final NetworkViewManager netViewMgr,
 						  final SynchronousTaskManager<?> syncTaskMgr,
 						  final SaveSessionAsTaskFactory saveTaskFactory,
-						  final SessionStateIO sessionStateIO, final CySessionManager sessionManager) {
+						  final SessionStateIO sessionStateIO, final CySessionManager sessionManager,
+						  final FileUtil fileUtil) {
 		this.desktop = desktop;
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
@@ -101,6 +104,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		this.saveTaskFactory = saveTaskFactory;
 		this.sessionStateIO = sessionStateIO;
 		this.sessionManager = sessionManager;
+		this.fileUtil = fileUtil;
 		
 		CYTOPANEL_NAMES.put("CytoPanel1", CytoPanelName.WEST);
 		CYTOPANEL_NAMES.put("CytoPanel2", CytoPanelName.SOUTH);
@@ -126,7 +130,16 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			return;
 		} else if (n == JOptionPane.YES_OPTION) {
 			final String sessionFileName = sessionManager.getCurrentSessionFileName();
-			syncTaskMgr.execute(saveTaskFactory.createTaskIterator(new File(sessionFileName)));
+			File file;
+			if (sessionFileName == null || sessionFileName.isEmpty() ){
+				FileChooserFilter filter = new FileChooserFilter("Session File" , "cys");
+				List<FileChooserFilter> filterCollection = new ArrayList<FileChooserFilter>(1);
+				filterCollection.add(filter);
+				file = fileUtil.getFile(desktop, "Save Session File", FileUtil.SAVE, filterCollection );
+			}
+			else
+				file = new File(sessionFileName);
+			syncTaskMgr.execute(saveTaskFactory.createTaskIterator(file));
 			return;
 		} else {
 			e.abortShutdown("User canceled the shutdown request.");

@@ -79,7 +79,7 @@ public class SaveSessionAsTask extends AbstractTask {
 		cyEventHelper.fireEvent(new SessionSavedEvent(this, session, file.getAbsolutePath()));
 	
 		// Add this session file URL as the most recent file.
-		if ( !CySessionWriter.HasFileExtension(file.getName()))
+		if ( !file.getName().endsWith(".cys"))
 			file = new File(file.getPath() + ".cys");
 	
 		tracker.add(file.toURI().toURL());

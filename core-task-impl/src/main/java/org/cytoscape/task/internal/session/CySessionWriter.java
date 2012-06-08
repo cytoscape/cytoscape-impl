@@ -8,6 +8,9 @@ import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.AbstractTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.List;
 
@@ -21,6 +24,7 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	private final CySessionWriterManager writerMgr; 
 	private File outputFile; 
 
+	Logger logger = LoggerFactory.getLogger(CySessionWriter.class);
 	/**
 	 * Constructs this CySessionWriter.
 	 * @param writerMgr The {@link org.cytoscape.io.write.CySessionWriterManager} contains single expected
@@ -54,8 +58,10 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 		if ( filters.size() > 1 )
 			throw new IllegalArgumentException("Found too many session filters!");
 
-		if (!HasFileExtension(outputFile.getName()))
+		if (!outputFile.getName().endsWith(".cys")){
 			outputFile = new File(outputFile.getPath() + ".cys");
+			logger.warn("File name is changed to " + outputFile.getName());
+		}
 
 		CyWriter writer = writerMgr.getWriter(session,filters.get(0),outputFile); 
 		if ( writer == null )
