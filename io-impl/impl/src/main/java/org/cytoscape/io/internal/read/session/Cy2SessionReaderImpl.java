@@ -36,11 +36,14 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
 import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
 import static org.cytoscape.model.CyNetwork.SELECTED;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,6 +102,11 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
+	private static final String TEMP_DIR = "java.io.tmpdir";
+	
+	// In 3, CG Manager is treated as a regular app.  This is a unique name for it.
+	private static final String DING_CG_MANAGER_NAME = "org.cytoscape.ding.customgraphicsmgr";
+	
 	public static final String CY2_PARENT_NETWORK_COLUMN = "Cytoscape2 Parent Network";
 	
 	public static final String CY_PROPS_FILE = "session_cytoscape.props";
@@ -152,7 +160,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	}
 	
 	@Override
-	protected void handleEntry(InputStream is, String entryName) throws Exception {
+	protected void handleEntry(InputStream is, String entryName) throws Exception {		
 		if (entryName.contains("/" + PLUGINS_FOLDER)) {
 			extractPluginEntry(is, entryName);
 		} else if (entryName.endsWith(CYSESSION_FILE)) {
@@ -173,7 +181,9 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			}
 		} else if (entryName.endsWith(BOOKMARKS_FILE)) {
 			extractBookmarks(is, entryName);
-		} else if (!entryName.contains("/" + IMAGES_FOLDER)) {
+		} else if (entryName.contains("/" + IMAGES_FOLDER)) {
+			extractImages(is, entryName);
+		} else {
 			logger.warn("Unknown entry found in session zip file!\n" + entryName);
 		}
 	}
@@ -423,6 +433,43 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		final CyProperty<Bookmarks> cyProps = new SimpleCyProperty<Bookmarks>("bookmarks", bookmarks, Bookmarks.class,
 				CyProperty.SavePolicy.SESSION_FILE);
 		properties.add(cyProps);
+	}
+	
+	private void extractImages(final InputStream is, final String entryName) {
+		final String[] items = entryName.split("/");
+
+		if (items.length < 3) {
+			// It's a directory name, not a file name
+			return;
+		}
+
+		final String fileName = items[items.length - 1];		
+		final String tmpDir = System.getProperty(TEMP_DIR);
+		final File theFile = new File(tmpDir, fileName);
+
+		try {
+			// Write input stream into temp file (Use binary streams to support images/movies/etc.)
+			final BufferedInputStream bin = new BufferedInputStream(is);
+			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(theFile));
+			final byte buf[] = new byte[256];
+			
+			int len;
+			while ((len = bin.read(buf)) != -1)
+				output.write(buf, 0, len);
+			
+			output.flush();
+			output.close();
+			bin.close();
+
+		} catch (IOException e) {
+			logger.error("Error: read from zip: " + entryName, e);
+			return;
+		}
+
+		// Put the file into appFileListMap
+		if (!appFileListMap.containsKey(DING_CG_MANAGER_NAME)) appFileListMap.put(DING_CG_MANAGER_NAME, new ArrayList<File>());
+		List<File> fileList = appFileListMap.get(DING_CG_MANAGER_NAME);
+		fileList.add(theFile);
 	}
 
 	private void extractSessionState(InputStream is, String entryName) throws Exception {
