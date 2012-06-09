@@ -132,6 +132,7 @@ import org.cytoscape.view.model.events.FitSelectedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
@@ -402,6 +403,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final AnnotationFactoryManager annMgr;
 
 	private boolean annotationsLoaded = false;
+	
+	private final VisualMappingManager vmm;
 
 	/**
 	 * Create presentation from View Model
@@ -415,10 +418,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			DialogTaskManager manager,
 			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
-			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD) {
+			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, 
-				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD);
+				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm);
 	}
 
 	
@@ -445,9 +448,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			DialogTaskManager manager,
 			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
-			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD) {
+			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm) {
 		super(model);
 		this.props = new Properties();
+		this.vmm = vmm;
 		
 		long start = System.currentTimeMillis();
 		logger.debug("Phase 1: rendering start.");
@@ -815,7 +819,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		m_drawPersp.addNode(node);
 
-		final DNodeView dNodeView = new DNodeView(dingLexicon, this, nodeInx, node);
+		final DNodeView dNodeView = new DNodeView(dingLexicon, this, nodeInx, node, vmm);
 
 		m_nodeViewMap.put(node, dNodeView);
 		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, m_defaultNodeXMax, m_defaultNodeYMax);

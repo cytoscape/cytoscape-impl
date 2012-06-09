@@ -76,6 +76,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
 /**
  * DING implementation of View Model and Presentation.
@@ -193,8 +195,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// Visual Properties used in this node view.
 	private final VisualLexicon lexicon;
 
+	private final VisualMappingManager vmm;
 	
-	public DNodeView(final VisualLexicon lexicon, final DGraphView graphView, long inx, final CyNode model) {
+	public DNodeView(final VisualLexicon lexicon, final DGraphView graphView, long inx, final CyNode model, final VisualMappingManager vmm) {
 		super(model);
 		
 		if (graphView == null)
@@ -203,6 +206,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			throw new NullPointerException("Lexicon must never be null!");
 
 		this.lexicon = lexicon;
+		this.vmm = vmm;
 		this.labelPosition = new ObjectPositionImpl();
 
 		// Initialize custom graphics pool.
@@ -1256,8 +1260,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		// Check dependency. Sync size or not.
 		final VisualProperty<?> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
-		final VisualLexiconNode sizeTreeNode = lexicon.getVisualLexiconNode(cgSizeVP);
-		//boolean sync = sizeTreeNode.isDepend();
+		Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
+		boolean sync = false;
+		for(VisualPropertyDependency dep:dependencies) {
+			if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
+				sync = dep.isDependencyEnabled();
+				break;
+			}
+		}
 
 		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
 		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
@@ -1267,12 +1277,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			CustomGraphic newCG = layer.getLayerObject();
 			CustomGraphic finalCG = newCG;
 			
-			//FIXME
-//			if (sync) {
-//				// Size is locked to node size.
-//				finalCG = syncSize(customGraphics, newCG, lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE_WIDTH)
-//						.isDepend());
-//			}
+			if (sync) {
+				// Size is locked to node size.
+				finalCG = syncSize(customGraphics, newCG);
+			}
 			finalCG = moveCustomGraphicsToNewPosition(finalCG, positionValue);
 
 			addCustomGraphic(finalCG);
@@ -1318,7 +1326,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.cgMap.put(parent, currentCG);
 	}
 
-	private CustomGraphic syncSize(CyCustomGraphics<?> graphics, final CustomGraphic cg, final boolean whLock) {
+	private CustomGraphic syncSize(CyCustomGraphics<?> graphics, final CustomGraphic cg) {
 
 		final double nodeW = this.getWidth();
 		final double nodeH = this.getHeight();
@@ -1335,16 +1343,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final AffineTransform scale;
 		final float fit = graphics.getFitRatio();
 
-		if (whLock || graphics instanceof VectorCustomGraphics) {
-			scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * nodeH / cgH);
+		// Case 1: node height value is larger than width
+		if (nodeW >= nodeH) {
+			scale = AffineTransform.getScaleInstance(fit * (nodeW / cgW) * (nodeH / nodeW), fit * nodeH / cgH);
 		} else {
-			// Case 1: node height value is larger than width
-			if (nodeW >= nodeH) {
-				scale = AffineTransform.getScaleInstance(fit * (nodeW / cgW) * (nodeH / nodeW), fit * nodeH / cgH);
-			} else {
-				scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * (nodeH / cgH) * (nodeW / nodeH));
-			}
-
+			scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * (nodeH / cgH) * (nodeW / nodeH));
 		}
 		return new CustomGraphic(scale.createTransformedShape(originalShape), cg.getPaintFactory());
 	}

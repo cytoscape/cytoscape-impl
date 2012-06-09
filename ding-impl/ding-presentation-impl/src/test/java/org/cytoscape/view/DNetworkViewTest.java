@@ -23,6 +23,7 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.AbstractCyNetworkViewTest;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
@@ -61,6 +62,9 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 	@Mock
 	private DingGraphLOD dingGRaphLOD;
 	
+	@Mock
+	private VisualMappingManager vmm;
+	
 	private final TableTestSupport tableSupport = new TableTestSupport();
 	private final NetworkTestSupport netSupport = new NetworkTestSupport();
 
@@ -78,7 +82,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
 				dropEmptySpaceTFs, */
-				manager, eventHelper, tableMgr,annMgr, dingGRaphLOD);
+				manager, eventHelper, tableMgr,annMgr, dingGRaphLOD, vmm);
 	}
 	
 	@Override

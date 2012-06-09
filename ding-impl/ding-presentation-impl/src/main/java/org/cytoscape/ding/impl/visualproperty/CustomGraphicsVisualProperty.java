@@ -26,7 +26,6 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 		if(NullCustomGraphics.getNullObject().toString().equals(value) || value.contains("NullCustomGraphics")) {
 			return NullCustomGraphics.getNullObject();
 		} else {
-			System.out.println("CG String = " + value);
 			final String[] parts = value.split(",");
 			return new DummyCustomGraphics(Long.parseLong(parts[1]), parts[2]);
 		}

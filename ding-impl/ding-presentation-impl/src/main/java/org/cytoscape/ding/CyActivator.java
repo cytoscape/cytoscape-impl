@@ -102,6 +102,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void startPresentationImpl(BundleContext bc) {
 
+		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		CyApplicationManager applicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CustomGraphicsManager customGraphicsManagerServiceRef = getService(bc, CustomGraphicsManager.class);
@@ -138,7 +139,7 @@ public class CyActivator extends AbstractCyActivator {
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
 				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
-				vtfListener, annotationFactoryManager, dingGraphLOD);
+				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
 				cyServiceRegistrarServiceRef, dVisualLexicon, renderingEngineManagerServiceRef,
 				applicationManagerServiceRef);
@@ -152,7 +153,7 @@ public class CyActivator extends AbstractCyActivator {
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,
 				cyRootNetworkFactoryServiceRef, undoSupportServiceRef, spacialIndex2DFactoryServiceRef, dVisualLexicon,
 				dialogTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
-				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD);
+				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef);
 
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,
@@ -406,8 +407,9 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 				CyApplicationConfiguration.class);
 		CyEventHelper eventHelperServiceRef = getService(bc, CyEventHelper.class);
-		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 
+		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
+		
 		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,
 				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef,
 				vmmServiceRef, cyApplicationManagerServiceRef, getdefaultImageURLs(bc));

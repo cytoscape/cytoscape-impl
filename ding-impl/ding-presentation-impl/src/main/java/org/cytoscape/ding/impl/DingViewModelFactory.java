@@ -14,6 +14,7 @@ import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
@@ -37,13 +38,14 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final AnnotationFactoryManager annMgr;
 	
 	private final DingGraphLOD dingGraphLOD;
+	private final VisualMappingManager vmm;
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkManager,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
 			DialogTaskManager dialogTaskManager,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
 			ViewTaskFactoryListener vtfListener,
-			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD) {
+			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm) {
 
 		this.dataTableFactory = dataTableFactory;
 		this.rootNetworkManager = rootNetworkManager;
@@ -57,6 +59,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.vtfListener = vtfListener;
 		this.annMgr = annMgr;
 		this.dingGraphLOD = dingGraphLOD;
+		this.vmm=vmm;
 	}
 
 	@Override
@@ -65,7 +68,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				vtfListener, dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD);
+				vtfListener, dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm);
 
 		registrar.registerAllServices(dgv, new Properties());
 
