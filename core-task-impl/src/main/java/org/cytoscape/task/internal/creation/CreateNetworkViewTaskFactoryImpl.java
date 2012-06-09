@@ -80,4 +80,12 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 					layouts, eventHelper, vmm));
 	}
 
+	@Override
+	public boolean isReady(final Collection<CyNetwork> networks) {
+        for ( CyNetwork n : networks ) 
+            if ( !networkViewManager.getNetworkViews(n).isEmpty() ) 
+                return false;
+        return true;
+	}
+
 }

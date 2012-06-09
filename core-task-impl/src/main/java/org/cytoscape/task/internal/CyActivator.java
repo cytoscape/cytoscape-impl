@@ -762,7 +762,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties createNetworkViewTaskFactoryProps = new Properties();
 		createNetworkViewTaskFactoryProps.setProperty(ID,"createNetworkViewTaskFactory");
-		createNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,"networkWithoutView");
+		// No ENABLE_FOR because that is handled by the isReady() methdod of the task factory.
 		createNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		createNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create View");

@@ -99,10 +99,13 @@ public class CytoscapeMenuPopulator {
 
 	public void addTaskFactory(TaskFactory factory, Map props) {
 		String pref = (String)(props.get("preferredTaskManager"));
-		if (pref != null && pref.equals("panel"))
-			addFactory(new CytoPanelTaskFactoryTunableAction(factory, null, panelTaskManager, props, appManager, networkViewManager, registrar), factory, props);
-		else
-			addFactory(new TaskFactoryTunableAction(dialogTaskManager, factory, props, appManager, networkViewManager), factory, props);
+		if (pref != null && pref.equals("panel")) {
+			addAction(new CytoPanelTaskFactoryTunableAction(factory, null, panelTaskManager, 
+			                                                props, appManager, networkViewManager, registrar), 
+			                                                factory);
+		} else {
+			addFactory(factory, props);
+		}
 	}
 
 	public void removeTaskFactory(TaskFactory factory, Map props) {
@@ -112,7 +115,7 @@ public class CytoscapeMenuPopulator {
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(new TaskFactoryTunableAction(dialogTaskManager, provisioner, props, appManager, networkViewManager), provisioner, props);
+		addFactory(provisioner, props);
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map props) {
@@ -125,7 +128,7 @@ public class CytoscapeMenuPopulator {
 			return;
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(new TaskFactoryTunableAction(dialogTaskManager, provisioner, props, appManager, networkViewManager), provisioner, props);
+		addFactory(provisioner, props);
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map props) {
@@ -135,7 +138,7 @@ public class CytoscapeMenuPopulator {
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(new TaskFactoryTunableAction(dialogTaskManager, provisioner, props, appManager, networkViewManager), provisioner, props);
+		addFactory(provisioner, props);
 	}
 
 	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
@@ -145,7 +148,7 @@ public class CytoscapeMenuPopulator {
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(new TaskFactoryTunableAction(dialogTaskManager, provisioner, props, appManager, networkViewManager), provisioner, props);
+		addFactory(provisioner, props);
 	}
 
 	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
@@ -155,14 +158,24 @@ public class CytoscapeMenuPopulator {
 	public void addTableTaskFactory(TableTaskFactory factory, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
-		addFactory(new TaskFactoryTunableAction(dialogTaskManager, provisioner, props, appManager, networkViewManager), provisioner, props);
+		addFactory(provisioner, props);
 	}
 	
 	public void removeTableTaskFactory(TableTaskFactory factory, Map props) {
 		removeFactory(provisionerMap.get(factory), props);
 	}
 	
-	private <F extends TaskFactory> void addFactory(CyAction action, F factory, Map props) {
+	private void addFactory(TaskFactory factory, Map props) {
+		CyAction action;
+		if ( props.containsKey("enableFor") )
+			action = new TaskFactoryTunableAction(dialogTaskManager, factory, props, appManager, networkViewManager);
+		else	
+			action = new TaskFactoryTunableAction(dialogTaskManager, factory, props);
+
+		addAction(action,factory);
+	}
+
+	private void addAction(CyAction action, TaskFactory factory) {
 		taskMap.put(factory,action);
 		app.addAction(action);
 	}

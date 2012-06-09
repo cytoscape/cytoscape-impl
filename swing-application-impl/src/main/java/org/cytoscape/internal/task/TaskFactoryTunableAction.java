@@ -48,13 +48,30 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 
 	final protected TaskFactory factory;
 	final protected DialogTaskManager manager;
-	final protected CyApplicationManager applicationManager;
 
-	public TaskFactoryTunableAction(final DialogTaskManager manager, final TaskFactory factory,
-			final Map<String, String> serviceProps, final CyApplicationManager applicationManager, final CyNetworkViewManager networkViewManager) {
+	/**
+	 * This constructor forces the action to use the TaskFactory.isReady() method
+	 * to determine whether the action should be enabled.
+	 */
+	public TaskFactoryTunableAction(final DialogTaskManager manager, 
+	                                final TaskFactory factory,
+	                                final Map<String, String> serviceProps) {
+		super(serviceProps, factory);
+		this.manager = manager;
+		this.factory = factory;
+	}
+
+	/**
+	 * This constructor forces the action to use the "enableFor" property in serviceProps 
+	 * to determine whether the action should be enabled.
+	 */
+	public TaskFactoryTunableAction(final DialogTaskManager manager, 
+	                                final TaskFactory factory,
+	                                final Map<String, String> serviceProps, 
+	                                final CyApplicationManager applicationManager, 
+	                                final CyNetworkViewManager networkViewManager) {
 		super(serviceProps, applicationManager, networkViewManager, factory);
 		this.manager = manager;
-		this.applicationManager = applicationManager;
 		this.factory = factory;
 	}
 
