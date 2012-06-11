@@ -38,17 +38,20 @@ import java.net.URL;
 import java.util.Collection;
 
 import org.cytoscape.cpath2.internal.CPath2Factory;
-import org.cytoscape.cpath2.internal.task.LoadNetworkFromUrlTaskFactory;
+import org.cytoscape.cpath2.internal.task.LoadNetworkFromUrlTask;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * This is a network utilities class.
  *
- * @author Benjamin Gross.
+ * @author Benjamin Gross; refactored by rodche
  */
-public class NetworkUtil extends Thread {
+public class NetworkUtil implements Task {
 
     /**
      * Stores web services url
@@ -113,8 +116,8 @@ public class NetworkUtil extends Thread {
     /**
      * Our implementation of run.
      */
-    public void run() {
-
+    @Override
+    public void run(TaskMonitor taskMonitor) throws Exception {
         try {
             URL cpathURL = new URL(cPathRequest);
 
@@ -131,8 +134,8 @@ public class NetworkUtil extends Thread {
                 if (networkTitle != null && networkTitle.length() > 0) {
                     System.setProperty("biopax.network_view_title", networkTitle);
                 }
-                LoadNetworkFromUrlTaskFactory taskFactory = new LoadNetworkFromUrlTaskFactory(cpathURL, factory);
-                factory.getTaskManager().execute(taskFactory.createTaskIterator());
+                TaskIterator iterator = new TaskIterator(new LoadNetworkFromUrlTask(cpathURL, factory));
+                factory.getTaskManager().execute(iterator);
                 postProcess(factory.getCyApplicationManager().getCurrentNetwork(), false);
             }
         }
@@ -196,25 +199,8 @@ public class NetworkUtil extends Thread {
                 cpathRequest.substring(0, indexOfArg) +
                         cpathRequest.substring(endIndexOfValue);
 
-        // outta here
         return value;
     }
-
-// TODO: Port this?
-//    /**
-//     * Method to setup cytoscape task
-//     */
-//    private JTaskConfig setupTask() {
-//
-//        // configure JTask Dialog Pop-Up Box
-//        JTaskConfig jTaskConfig = new JTaskConfig();
-//        jTaskConfig.setOwner(Cytoscape.getDesktop());
-//        jTaskConfig.displayStatus(true);
-//        jTaskConfig.setAutoDispose(true);
-//
-//        // outta here
-//        return jTaskConfig;
-//    }
 
     /**
      * Method for any post processing of recently loaded network.
@@ -253,5 +239,10 @@ public class NetworkUtil extends Thread {
 
         // set focus current
         factory.getCyApplicationManager().setCurrentNetworkView(view);
+	}
+
+    
+	@Override
+	public void cancel() {
 	}
 }

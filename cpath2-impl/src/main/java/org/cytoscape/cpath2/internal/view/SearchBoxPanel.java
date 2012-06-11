@@ -29,11 +29,12 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import org.cytoscape.cpath2.internal.CPath2Factory;
-import org.cytoscape.cpath2.internal.task.ExecutePhysicalEntitySearchTaskFactory;
-import org.cytoscape.cpath2.internal.task.ExecutePhysicalEntitySearchTaskFactory.ResultHandler;
+import org.cytoscape.cpath2.internal.task.ExecutePhysicalEntitySearch;
+import org.cytoscape.cpath2.internal.task.ExecutePhysicalEntitySearch.ResultHandler;
 import org.cytoscape.cpath2.internal.view.model.Organism;
 import org.cytoscape.cpath2.internal.web_service.CPathProperties;
 import org.cytoscape.cpath2.internal.web_service.CPathWebService;
+import org.cytoscape.work.TaskIterator;
 
 /**
  * Search Box Panel.
@@ -203,9 +204,9 @@ public class SearchBoxPanel extends JPanel {
                     }
         		}
         	};
-            ExecutePhysicalEntitySearchTaskFactory search = new ExecutePhysicalEntitySearchTaskFactory
-                    (webApi, keyword.trim(), ncbiTaxonomyId, handler);
-            factory.getTaskManager().execute(search.createTaskIterator());
+            
+    		TaskIterator iterator = new TaskIterator(new ExecutePhysicalEntitySearch(webApi, keyword.trim(), ncbiTaxonomyId, handler));
+            factory.getTaskManager().execute(iterator);
         }
     }
 

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.cytoscape.cpath2.internal.schemas.search_response.ExtendedRecordType;
 import org.cytoscape.cpath2.internal.schemas.search_response.SearchResponseType;
-import org.cytoscape.cpath2.internal.task.ExecutePhysicalEntitySearchTaskFactory.ResultHandler;
 import org.cytoscape.cpath2.internal.web_service.CPathException;
 import org.cytoscape.cpath2.internal.web_service.CPathProperties;
 import org.cytoscape.cpath2.internal.web_service.CPathWebService;
@@ -18,7 +17,12 @@ import org.cytoscape.work.TaskMonitor;
  * @author Ethan Cerami.
  */
 public class ExecutePhysicalEntitySearch implements Task {
-    private CPathWebService webApi;
+	
+	public static interface ResultHandler {
+		void finished(int matchesFound) throws Exception;
+	}
+	
+	private CPathWebService webApi;
     private String keyword;
     private int ncbiTaxonomyId;
 	private ResultHandler result;

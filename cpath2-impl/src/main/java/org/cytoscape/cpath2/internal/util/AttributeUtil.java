@@ -12,37 +12,46 @@ import org.cytoscape.model.CyNetwork;
 public class AttributeUtil {
 	
 	public static void set(CyNetwork network, CyIdentifiable entry, String name, Object value, Class<?> type) {
-		set(network, entry, null, name, value, type);
+		set(network, entry, CyNetwork.DEFAULT_ATTRS, name, value, type);
 	}
 
-	public static void copyAttributes(CyNetwork network, CyIdentifiable source, CyIdentifiable target) {
-		CyRow sourceRow = network.getRow(source);
+	public static void copyAttributes(CyNetwork srcNetwork, CyIdentifiable source, CyNetwork tgtNetwork, CyIdentifiable target) {
+		CyRow sourceRow = srcNetwork.getRow(source);
 		for (Entry<String, Object> entry : sourceRow.getAllValues().entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			CyColumn column = sourceRow.getTable().getColumn(key);
-			Class<?> type;
-			if (value instanceof List) {
-				type = column.getListElementType();
-			} else {
-				type = column.getType();
+			if (!column.getVirtualColumnInfo().isVirtual()) { //skip virtual cols
+				Class<?> type;
+				if (value instanceof List) {
+					type = column.getListElementType();
+				} else {
+					type = column.getType();
+				}
+
+				set(tgtNetwork, target, key, value, type);
 			}
-			set(network, target, key, value, type);
 		}
 	}
 	
 	
 	public static void set(CyNetwork network, CyIdentifiable entry, String tableName, String name, Object value, Class<?> type) {
-		CyRow row = (tableName==null) ? network.getRow(entry) : network.getRow(entry,tableName);
+		CyRow row = network.getRow(entry, tableName);
 		CyTable table = row.getTable();
 		CyColumn column = table.getColumn(name);
-		if (column == null) {
-			if (value instanceof List) {
-				table.createListColumn(name, type, false);
-			} else { 
-				table.createColumn(name, type, false);
+		
+		if(column != null && column.getVirtualColumnInfo().isVirtual())
+			return; //skip TODO ?
+		
+		if (value != null) {
+			if (column == null) {
+				if (value instanceof List) {
+					table.createListColumn(name, type, false);
+				} else {
+					table.createColumn(name, type, false);
+				}
 			}
+			row.set(name, value);
 		}
-		row.set(name, value);
 	}
 }

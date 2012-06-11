@@ -72,10 +72,6 @@ public class CPathPlugIn2 {
 
         // create our http server and start its thread
         new HTTPServer(HTTPServer.DEFAULT_PORT, factory.createMapCPathToCytoscape(), debug).start();
-
-        //  Register Web Service
-//        // TODO: Wire this up with OSGi
-//        WebServiceClientManager.registerClient(CytoscapeCPathWebService.getClient());
     }
 
     private void initProperties() throws IOException {

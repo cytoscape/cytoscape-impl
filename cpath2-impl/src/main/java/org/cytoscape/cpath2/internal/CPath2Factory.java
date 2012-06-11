@@ -40,6 +40,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.AbstractCyEdit;
@@ -164,7 +165,7 @@ public class CPath2Factory {
 		return naming;
 	}
 
-	public Thread createNetworkUtil(String cpathRequest, CyNetwork network, boolean merging) {
+	public Task createNetworkUtil(String cpathRequest, CyNetwork network, boolean merging) {
 		return new NetworkUtil(cpathRequest, network, merging, this);
 	}
 

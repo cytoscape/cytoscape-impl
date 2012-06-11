@@ -6,13 +6,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.biopax.paxtools.controller.ModelUtils;
@@ -171,6 +171,9 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			cPathFactory.getCyNetworkManager().addNetwork(cyNetwork);
 			cPathFactory.getCyNetworkViewManager().addNetworkView(view);
 
+			// Add Links Back to cPath Instance
+			addLinksToCPathInstance(cyNetwork);
+			
 			// Branch, based on download mode.
 			if (format == CPathResponseFormat.BINARY_SIF) {
 				postProcessingBinarySif(view, taskMonitor);
@@ -195,10 +198,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			// Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null,
 			// ret_val);
 			// }
-
-			// Add Links Back to cPath Instance
-			addLinksToCPathInstance(cyNetwork);
-
+			
 			if (taskMonitor != null) {
 				taskMonitor.setStatusMessage("Done");
 				taskMonitor.setProgress(1.0);
@@ -243,8 +243,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	/**
 	 * Execute Post-Processing on BINARY SIF Network.
 	 * 
-	 * @param cyNetwork
-	 *            Cytoscape Network Object.
+	 * @param cyNetwork Cytoscape Network Object.
 	 */
 	private void postProcessingBinarySif(final CyNetworkView view, TaskMonitor taskMonitor) {
 		final CyNetwork cyNetwork = view.getModel();
@@ -262,9 +261,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			if (mergedNetwork != null) {
 				mergeNetworks(cyNetwork, taskMonitor);
 			} else {
-				// } else if (cyNetwork.getNodeCount() <
-				// Integer.parseInt(CytoscapeInit.getProperties()
-				// .getProperty("viewThreshold"))) {
 				if (taskMonitor != null) {
 					taskMonitor.setStatusMessage("Creating Network View...");
 					taskMonitor.setProgress(0);
@@ -283,19 +279,13 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 					}
 				});
 			}
-		} else {
-			// If we have requested a halt, and we have a network, destroy it.
-			// if (cyNetwork != null) {
-			// Cytoscape.destroyNetwork(cyNetwork);
-			// }
 		}
 	}
 
 	/**
 	 * Execute Post-Processing on BioPAX Network.
 	 * 
-	 * @param cyNetwork
-	 *            Cytoscape Network Object.
+	 * @param cyNetwork Cytoscape Network Object.
 	 */
 	private void postProcessingBioPAX(final CyNetworkView view, TaskMonitor taskMonitor) {
 		final CyNetwork cyNetwork = view.getModel();
@@ -343,12 +333,12 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	}
 
 	private void mergeNetworks(CyNetwork cyNetwork, TaskMonitor taskMonitor) {
-		// TODO: Do we need to clone nodes/edges when merging?
 		taskMonitor.setStatusMessage("Merging Network...");
 		Map<String, CyNode> nodes = new HashMap<String, CyNode>();
 		for (CyNode node : cyNetwork.getNodeList()) {
-			CyNode newNode = mergedNetwork.addNode();
-			AttributeUtil.copyAttributes(mergedNetwork, node, newNode);
+			CyNode newNode;
+			newNode = mergedNetwork.addNode();
+			AttributeUtil.copyAttributes(cyNetwork, node, mergedNetwork, newNode);
 			String name = cyNetwork.getRow(node).get(CyNetwork.NAME, String.class);
 			nodes.put(name, newNode);
 		}
@@ -359,15 +349,17 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			CyNode source = nodes.get(sourceName);
 			CyNode target = nodes.get(targetName);
 			CyEdge newEdge = mergedNetwork.addEdge(source, target, true);
-			AttributeUtil.copyAttributes(mergedNetwork, edge, newEdge);
+			AttributeUtil.copyAttributes(cyNetwork, edge, mergedNetwork, newEdge);
 			edges.add(newEdge);
 		}
 
-		// // Select this view
-		// final CyNetworkView networkView =
-		// viewManager.getNetworkView((mergedNetwork.getSUID());
-		// Cytoscape.setCurrentNetwork(mergedNetwork.getIdentifier());
-		// Cytoscape.setCurrentNetworkView(mergedNetwork.getIdentifier());
+		// Select this view
+		Collection<CyNetworkView> networkViews =
+				 cPathFactory.getCyNetworkViewManager().getNetworkViews(mergedNetwork);
+		if(!networkViews.isEmpty()) {
+			cPathFactory.getCyApplicationManager().setCurrentNetwork(mergedNetwork);
+			cPathFactory.getCyApplicationManager().setCurrentNetworkView(networkViews.iterator().next());
+		}
 
 		// Select only the new nodes
 		SelectUtil.unselectAllNodes(mergedNetwork);
@@ -376,14 +368,14 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		SelectUtil.setSelectedEdgeState(mergedNetwork,edges, true);
 
 		// Delete the temp network.
-		// Cytoscape.destroyNetwork(cyNetwork);
+		cPathFactory.getCyNetworkManager().destroyNetwork(cyNetwork);
 
 		// Apply Layout
-		Object[] options = { "Yes", "No" };
-		int n = JOptionPane.showOptionDialog(cPathFactory.getCySwingApplication().getJFrame(),
-				"Would you like to layout the modified network?", "Adjust Layout?", JOptionPane.YES_NO_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-		if (n == 0) {
+//		Object[] options = { "Yes", "No" };
+//		int n = JOptionPane.showOptionDialog(cPathFactory.getCySwingApplication().getJFrame(),
+//				"Would you like to layout the modified network?", "Adjust Layout?", JOptionPane.YES_NO_CANCEL_OPTION,
+//				JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+//		if (n == 0) {
 			// SwingUtilities.invokeLater(new Runnable() {
 			// public void run() {
 			// LayoutUtil layoutAlgorithm = new LayoutUtil();
@@ -391,7 +383,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			// networkView.fitContent();
 			// }
 			// });
-		}
+//		}
 	}
 
 	/**

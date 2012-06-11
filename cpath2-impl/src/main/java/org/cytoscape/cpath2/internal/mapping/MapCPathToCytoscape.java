@@ -42,6 +42,8 @@ import org.cytoscape.cpath2.internal.http.HTTPServerListener;
 import org.cytoscape.cpath2.internal.util.NetworkMergeUtil;
 import org.cytoscape.cpath2.internal.view.model.NetworkWrapper;
 import org.cytoscape.cpath2.internal.web_service.CPathProperties;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
 
 /**
  * This class listens for requests from cPath instance
@@ -105,16 +107,21 @@ public class MapCPathToCytoscape implements HTTPServerListener {
         int downloadMode = cPathProperties.getDownloadMode();
         cPathProperties.setDownloadMode(CPathProperties.DOWNLOAD_FULL_BIOPAX);
         NetworkMergeUtil mergeUtil = factory.getNetworkMergeUtil();
+        Task task = null;
         if (mergeUtil.mergeNetworksExist()) {
             NetworkWrapper networkWrapper = mergeUtil.promptForNetworkToMerge();
             if (networkWrapper != null && networkWrapper.getNetwork() != null) {
-                factory.createNetworkUtil(cpathRequest, networkWrapper.getNetwork(), true).start();
+                task = factory.createNetworkUtil(cpathRequest, networkWrapper.getNetwork(), true);
             } else {
-                factory.createNetworkUtil(cpathRequest, null, false).start();
+                task = factory.createNetworkUtil(cpathRequest, null, false);
             }
         } else {
-            factory.createNetworkUtil(cpathRequest, null, false).start();
+            task = factory.createNetworkUtil(cpathRequest, null, false);
         }
+        
+        TaskIterator iterator = new TaskIterator(task);
+        factory.getTaskManager().execute(iterator);
+        
         cPathProperties.setDownloadMode(downloadMode);
     }
 }

@@ -58,6 +58,8 @@ import org.cytoscape.work.TaskMonitor;
  * Task to load a new network from a URL.
  *
  * Modified version of the original LoadNetworkTask from cytoscape code.
+ * 
+ * TODO 
  */
 public class LoadNetworkFromUrlTask implements Task {
 	private final URL url;

@@ -92,9 +92,7 @@ public class MergeNetworkTask implements Task {
     public void cancel() {
     }
     
-    /**
-     * Our implementation of Task.run().
-     */
+
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
         // read the network from cpath instance
@@ -117,10 +115,10 @@ public class MergeNetworkTask implements Task {
         Set<CyEdge> newEdges = new HashSet<CyEdge>();
 
         // add new nodes and edges to existing network
-        // tbd: worry about networks that exceed # node/edge threshold
+        // TODO tbd: worry about networks that exceed # node/edge threshold
         for (CyNode node : network.getNodeList()) {
             CyNode mergedNode = mergedNetwork.addNode();
-            AttributeUtil.copyAttributes(mergedNetwork, node, mergedNode);
+            AttributeUtil.copyAttributes(network, node, mergedNetwork, mergedNode);
             String name = network.getRow(mergedNode).get(CyNetwork.NAME, String.class);
             newNodes.put(name, mergedNode);
         }
@@ -130,7 +128,7 @@ public class MergeNetworkTask implements Task {
         	CyNode source = newNodes.get(sourceName);
         	CyNode target = newNodes.get(targetName);
             CyEdge mergedEdge = mergedNetwork.addEdge(source, target, true);
-            AttributeUtil.copyAttributes(mergedNetwork, edge, mergedEdge);
+            AttributeUtil.copyAttributes(network, edge, mergedNetwork, mergedEdge);
             newEdges.add(mergedEdge);
         }
 
