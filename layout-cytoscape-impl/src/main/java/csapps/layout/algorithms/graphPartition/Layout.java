@@ -44,8 +44,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import java.util.HashMap;
 import java.util.Map;
-// import cern.colt.map.OpenIntDoubleHashMap;
-// import cern.colt.map.tlong.OpenLongDoubleHashMap;
 import cern.colt.map.PrimeFinder;
 
 /**

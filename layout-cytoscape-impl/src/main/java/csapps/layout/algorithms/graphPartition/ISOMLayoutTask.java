@@ -15,11 +15,11 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.work.undo.UndoSupport;
 
 import cern.colt.list.tlong.LongArrayList;
-import cern.colt.map.OpenLongObjectHashMap;
+import cern.colt.map.tobject.OpenLongObjectHashMap;
 import cern.colt.map.PrimeFinder;
 import cern.colt.map.tlong.OpenLongIntHashMap;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.impl.DenseDoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
 
 public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 
