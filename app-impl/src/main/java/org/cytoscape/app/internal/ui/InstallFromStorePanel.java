@@ -177,7 +177,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
             }
         });
 
-        descriptionSplitPane.setDividerLocation(421);
+        descriptionSplitPane.setDividerLocation(390);
 
         tagsSplitPane.setDividerLocation(175);
 
@@ -361,7 +361,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         	
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {
-				showFilteredApps();
+				if (filterTextField.getText().length() != 0) {
+					showFilteredApps();
+				}
 			}
 			
 			@Override
@@ -501,13 +503,18 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         	
     		String text = "";
     		
-    		text += "<html> <head> </head> <body>";
+    		text += "<html> <head> </head> <body hspace=\"8\" vspace=\"8\">";
     		
     		// App hyperlink to web store page
     		// text += "<p style=\"margin-top: 0\"> <a href=\"" + selectedApp.getPageUrl() + "\">" + selectedApp.getPageUrl() + "</a> </p>";
     		
     		// App image
-    		text += "<img border=\"0\" src=\"" + appManager.getWebQuerier().getAppStoreUrl() + selectedApp.getIconUrl() + "\" alt=\"" + selectedApp.getFullName() + "\"/>";
+    		//text += "<div style=\"text-align: center;\">";
+    		text += "<img border=\"0\" ";
+    		text += "src=\"" + appManager.getWebQuerier().getAppStoreUrl() 
+    			+ selectedApp.getIconUrl() + "\" alt=\"" + selectedApp.getFullName() + "\"/>";
+    		
+    		//text += "</div>";
     		
     		// App name
     		text += "<p> <b>" + selectedApp.getFullName() + "</b> </p>";
