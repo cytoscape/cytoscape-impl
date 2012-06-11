@@ -62,12 +62,12 @@ import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -118,7 +118,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	                            final CySwingApplication desktop,
 	                            final CyApplicationManager appMgr,
 	                            final PanelTaskManager taskManager,
-	                            final CyProperty cytoscapePropertiesServiceRef)
+	                            final CyProperty cytoscapePropertiesServiceRef,
+	                            DynamicTaskFactoryProvisioner factoryProvisioner)
 	{
 		super(desktop.getJFrame(), "Layout Settings", false);
 
@@ -131,7 +132,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.appMgr = appMgr;
 		this.taskManager = taskManager;
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
-		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
+		this.factoryProvisioner = factoryProvisioner;
 		
 		selectedTunable = new SelectedTunable();
 		

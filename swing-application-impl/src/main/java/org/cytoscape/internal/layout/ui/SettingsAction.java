@@ -36,6 +36,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.PanelTaskManager;
@@ -55,7 +56,7 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 	private LayoutSettingsDialog settingsDialog;
 
 	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager,
-			final PanelTaskManager tm, CyProperty cytoscapePropertiesServiceRef)
+			final PanelTaskManager tm, CyProperty cytoscapePropertiesServiceRef, DynamicTaskFactoryProvisioner factoryProvisioner)
 	{
 		super("Settings...",appMgr,"networkAndView", networkViewManager);
 		this.appMgr = appMgr;
@@ -66,7 +67,7 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 		this.tm = tm;
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
 		
-		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, tm, this.cytoscapePropertiesServiceRef);
+		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, tm, this.cytoscapePropertiesServiceRef, factoryProvisioner );
 	}
 
 	public void actionPerformed(ActionEvent e) {

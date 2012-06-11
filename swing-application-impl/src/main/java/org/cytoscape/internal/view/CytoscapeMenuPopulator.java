@@ -39,9 +39,9 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.task.CytoPanelTaskFactoryTunableAction;
-import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
@@ -83,7 +83,8 @@ public class CytoscapeMenuPopulator {
 	 */
 	public CytoscapeMenuPopulator(final CySwingApplication app, final DialogTaskManager dialogTaskManager,
 	                  final PanelTaskManager panelTaskManager,
-				      final CyApplicationManager appManager, final CyNetworkViewManager networkViewManager, final CyServiceRegistrar registrar)
+				      final CyApplicationManager appManager, final CyNetworkViewManager networkViewManager, final CyServiceRegistrar registrar,
+				      DynamicTaskFactoryProvisioner factoryProvisioner)
 	{
 		this.app = app;
 		this.networkViewManager = networkViewManager;
@@ -91,7 +92,7 @@ public class CytoscapeMenuPopulator {
 		this.panelTaskManager = panelTaskManager;
 		this.appManager = appManager;
 		this.registrar = registrar;
-		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appManager);
+		this.factoryProvisioner = factoryProvisioner;
 
 		taskMap = new HashMap<TaskFactory,CyAction>();
 		provisionerMap = new IdentityHashMap<Object, TaskFactory>();

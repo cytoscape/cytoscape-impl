@@ -69,7 +69,6 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.internal.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -84,6 +83,7 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
@@ -150,7 +150,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 						final CyNetworkManager netMgr,
 						final CyNetworkViewManager netViewMgr,
 						final BirdsEyeViewHandler bird,
-						final DialogTaskManager taskMgr) {
+						final DialogTaskManager taskMgr,
+						DynamicTaskFactoryProvisioner factoryProvisioner) {
 		super();
 
 		this.treeNodeMap = new HashMap<Long, NetworkTreeNode>();
@@ -159,7 +160,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
 		this.taskMgr = taskMgr;
-		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
+		this.factoryProvisioner = factoryProvisioner;
 
 		root = new NetworkTreeNode("Network Root", null);
 		treeTableModel = new NetworkTreeTableModel(this, root);

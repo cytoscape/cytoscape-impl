@@ -14,6 +14,7 @@ import org.cytoscape.work.TaskFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
@@ -33,9 +34,9 @@ public class CommandExecutorImpl {
 
 	private final DynamicTaskFactoryProvisioner factoryProvisioner;
 	
-	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor) {
+	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor, DynamicTaskFactoryProvisioner factoryProvisioner) {
 		this.appMgr = appMgr;
-		this.factoryProvisioner = new DynamicTaskFactoryProvisioner(appMgr);
+		this.factoryProvisioner = factoryProvisioner;
 		this.interceptor = interceptor;
 	}
 
