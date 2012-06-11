@@ -21,7 +21,7 @@ public class AttributeUtil {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			CyColumn column = sourceRow.getTable().getColumn(key);
-			if (!column.getVirtualColumnInfo().isVirtual()) { //skip virtual cols
+			if (!column.getVirtualColumnInfo().isVirtual()) { //skip virtual cols! (bug fixed)
 				Class<?> type;
 				if (value instanceof List) {
 					type = column.getListElementType();
@@ -39,9 +39,6 @@ public class AttributeUtil {
 		CyRow row = network.getRow(entry, tableName);
 		CyTable table = row.getTable();
 		CyColumn column = table.getColumn(name);
-		
-		if(column != null && column.getVirtualColumnInfo().isVirtual())
-			return; //skip TODO ?
 		
 		if (value != null) {
 			if (column == null) {

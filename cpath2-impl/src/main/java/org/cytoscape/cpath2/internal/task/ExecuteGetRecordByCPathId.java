@@ -172,6 +172,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			cPathFactory.getCyNetworkViewManager().addNetworkView(view);
 
 			// Add Links Back to cPath Instance
+			// addLinksToCPathInstance call must be before any postProcessing* call,
+			// which may (when merging) delete 'cyNetwork'!
 			addLinksToCPathInstance(cyNetwork);
 			
 			// Branch, based on download mode.
