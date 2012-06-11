@@ -309,4 +309,14 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 		return selectedNetworks;
 	}
+
+	@Override
+	public void reset() {
+
+		this.selectedNetworkViews.clear();
+		this.currentNetwork = null;
+		this.currentNetworkView = null;
+		this.currentRenderer = null;
+		this.currentTable = null;
+	}
 }
