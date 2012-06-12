@@ -194,7 +194,7 @@ public class BioPaxMapper {
 		//  default Quick Find Index
 		AttributeUtil.set(network, network, "quickfind.default_index", CyNetwork.NAME, String.class);
 
-		// (converted to L3, processed) RDF/XML data
+		// Serialize and Save the BioPAX L3 model as RDF+XML (OWL) 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			convertToOWL(model, baos);
