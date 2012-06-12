@@ -6,7 +6,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
 import org.cytoscape.io.internal.util.cytables.model.CyTables;
-import org.cytoscape.io.internal.util.cytables.model.ObjectFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
