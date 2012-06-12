@@ -220,12 +220,11 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
-		if (networkViews == null)
-			return;
-
 		synchronized (this) {
 			selectedNetworkViews.clear();
-			selectedNetworkViews.addAll(networkViews);
+			
+			if (networkViews != null)
+				selectedNetworkViews.addAll(networkViews);
 
 			CyNetworkView cv = getCurrentNetworkView();
 
@@ -312,11 +311,10 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void reset() {
-
-		this.selectedNetworkViews.clear();
-		this.currentNetwork = null;
-		this.currentNetworkView = null;
-		this.currentRenderer = null;
-		this.currentTable = null;
+		setCurrentNetwork(null);
+		setCurrentNetworkView(null);
+		setSelectedNetworkViews(null);
+		setCurrentRenderingEngine(null);
+		setCurrentTable(null);
 	}
 }
