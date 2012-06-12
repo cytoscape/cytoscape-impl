@@ -56,13 +56,7 @@ public class SessionUtil {
 	public static final String CYSESSION_FILE = "cysession.xml";
 	public static final String VIZMAP_PROPS_FILE = "vizmap.props";
 	public static final String VIZMAP_XML_FILE = "vizmap.xml";
-	public static final String CYTABLE_STATE_FILE = "cytables.json";
-	
-	@Deprecated
-	/**
-	 * Replaced by CYTABLE_STATE_FILE.
-	 */
-	public static final String CYTABLE_METADATA_FILE = "cytable.metadata";
+	public static final String CYTABLE_STATE_FILE = "cytables.xml";
 	
 	public static final String PROPERTIES_EXT = ".props";
 	public static final String TABLE_EXT = ".cytable";

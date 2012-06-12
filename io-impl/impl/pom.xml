@@ -83,88 +83,25 @@
 							<forceRegenerate>true</forceRegenerate>
 						</configuration>
 					</execution>
+					<execution>
+						<id>cytables</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+							<schemaIncludes>
+								<include>cytables.xsd</include>
+							</schemaIncludes>
+							<generatePackage>org.cytoscape.io.internal.util.cytables.model</generatePackage>
+							<verbose>true</verbose>
+							<encoding>UTF-8</encoding>
+							<removeOldOutput>false</removeOldOutput>
+							<forceRegenerate>true</forceRegenerate>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>com.dyuproject.protostuff</groupId>
-                <artifactId>protostuff-maven-plugin</artifactId>
-                <version>1.0.7</version>
-                <configuration>
-                    <protoModules>
-                        <protoModule>
-                            <source>src/main/protobuf/CyTableSessionState.proto</source>
-                            <outputDir>target/generated-sources/proto</outputDir>
-                            <output>java_bean</output>
-                            <encoding>UTF-8</encoding>
-                            <options>
-                            	<property>
-                            		<name>separate_schema</name>
-                            	</property>
-                            	<property>
-                            		<name>generate_field_map</name>
-                            	</property>
-                            </options>
-                        </protoModule>
-                    </protoModules>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>generate-sources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.dyuproject.protostuff
-										</groupId>
-										<artifactId>
-											protostuff-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.0.7,)
-										</versionRange>
-										<goals>
-											<goal>compile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
-	
-	<dependencies>
-        <dependency>
-            <groupId>cytoscape-temp</groupId>
-            <artifactId>protostuff-core-json-osgi</artifactId>
-            <version>1.0.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-lgpl</artifactId>
-            <version>1.9.7</version>
-        </dependency>
-    </dependencies>
 </project>

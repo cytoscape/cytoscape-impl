@@ -62,7 +62,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.util.session.CyTableSessionStateSerializer;
+import org.cytoscape.io.internal.write.datatable.CyTablesXMLWriter;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.internal.write.xgmml.XGMMLWriter;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
@@ -172,7 +172,8 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		taskMonitor.setStatusMessage("Zip tables...");
 		zipTables();
 		taskMonitor.setProgress(0.5);
-		zipVirtualColumns();
+		taskMonitor.setStatusMessage("Zip table properties...");
+		zipTableProperties();
 		taskMonitor.setProgress(0.6);
 		taskMonitor.setStatusMessage("Zip Vizmap...");
 		zipVizmap();
@@ -196,17 +197,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		zos.closeEntry();
 	}
 	
-	private void zipVirtualColumns() throws IOException {
-		zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + CYTABLE_STATE_FILE));
-		
-		CyTableSessionStateSerializer serializer = new CyTableSessionStateSerializer();
-		try {
-			serializer.serialize(zos, tableFilenamesBySUID, session);
-		} finally {
-			zos.closeEntry();
-		}
-	}
-
 	/**
 	 * Writes the vizmap.props file to the session zip.
 	 */
@@ -402,6 +392,16 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 			} finally {
 				zos.closeEntry();
 			}
+		}
+	}
+	
+	private void zipTableProperties() throws Exception {
+		zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + CYTABLE_STATE_FILE));
+		try {
+			CyTablesXMLWriter writer = new CyTablesXMLWriter(session.getTables(), tableFilenamesBySUID, zos);
+			writer.run(taskMonitor);
+		} finally {
+			zos.closeEntry();
 		}
 	}
 }

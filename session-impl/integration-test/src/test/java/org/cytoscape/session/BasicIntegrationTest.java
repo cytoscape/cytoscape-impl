@@ -17,6 +17,7 @@ package org.cytoscape.session;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 import static org.ops4j.pax.exam.CoreOptions.felix;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
@@ -121,6 +122,7 @@ public abstract class BasicIntegrationTest {
 		String implBundleVersion = System.getProperty("cytoscape.impl.version");
 
 		return options(
+				systemProperty("org.osgi.framework.system.packages.extra").value("com.sun.xml.internal.bind"),
 				junitBundles(),
 
 				// Use Felix as runtime
@@ -150,8 +152,10 @@ public abstract class BasicIntegrationTest {
 				mavenBundle().groupId("cytoscape-temp").artifactId("org.swinglabs.swingx").version("1.6.1").startLevel(3),
 				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-export").version("2.1.1").startLevel(3),
 				mavenBundle().groupId("cytoscape-temp").artifactId("freehep-util").version("2.0.2").startLevel(3),
-				mavenBundle().groupId("cytoscape-temp").artifactId("protostuff-core-json-osgi").version("1.0.7").startLevel(3),
-				mavenBundle().groupId("org.codehaus.jackson").artifactId("jackson-core-lgpl").version("1.9.7").startLevel(3),
+				mavenBundle().groupId("org.apache.servicemix.specs").artifactId("org.apache.servicemix.specs.jaxb-api-2.1").version("1.2.0").startLevel(3),
+				mavenBundle().groupId("org.apache.servicemix.bundles").artifactId("org.apache.servicemix.bundles.jaxb-impl").version("2.1.6_1").startLevel(3),
+				mavenBundle().groupId("javax.activation").artifactId("com.springsource.javax.activation").version("1.1.1").startLevel(3),
+				mavenBundle().groupId("javax.xml.stream").artifactId("com.springsource.javax.xml.stream").version("1.0.1").startLevel(3),
 				
 				// API bundles
 				mavenBundle().groupId("org.cytoscape").artifactId("event-api").version(apiBundleVersion).startLevel(5),

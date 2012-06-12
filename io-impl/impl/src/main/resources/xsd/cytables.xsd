@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="cyTables">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="virtualColumns"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="virtualColumns">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="virtualColumn"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="virtualColumn">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:string"/>
+      <xs:attribute name="sourceColumn" use="required" type="xs:string"/>
+      <xs:attribute name="sourceTable" use="required" type="xs:string"/>
+      <xs:attribute name="sourceJoinKey" use="required" type="xs:string"/>
+      <xs:attribute name="targetTable" use="required" type="xs:string"/>
+      <xs:attribute name="targetJoinKey" use="required" type="xs:string"/>
+      <xs:attribute name="immutable" use="required" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
