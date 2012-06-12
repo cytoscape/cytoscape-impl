@@ -120,6 +120,7 @@ import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -406,6 +407,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	
 	private final VisualMappingManager vmm;
 
+	private final CyNetworkViewManager netViewMgr; 
+
 	/**
 	 * Create presentation from View Model
 	 * 
@@ -418,10 +421,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			DialogTaskManager manager,
 			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
-			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm) {
+			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
+			final CyNetworkViewManager netViewMgr) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, 
-				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm);
+				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr);
 	}
 
 	
@@ -448,7 +452,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			DialogTaskManager manager,
 			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
-			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm) {
+			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
+			final CyNetworkViewManager netViewMgr) {
 		super(model);
 		this.props = new Properties();
 		this.vmm = vmm;
@@ -464,6 +469,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.cyEdgeViewContextMenuFactory = vtfl.cyEdgeViewContextMenuFactory;
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
 		
+		this.netViewMgr = netViewMgr;
 		this.manager = manager;
 		this.cyEventHelper = cyEventHelper;
 		this.annMgr = annMgr;
@@ -819,7 +825,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		m_drawPersp.addNode(node);
 
-		final DNodeView dNodeView = new DNodeView(dingLexicon, this, nodeInx, node, vmm);
+		final DNodeView dNodeView = new DNodeView(dingLexicon, this, nodeInx, node, vmm, netViewMgr);
 
 		m_nodeViewMap.put(node, dNodeView);
 		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, m_defaultNodeXMax, m_defaultNodeYMax);

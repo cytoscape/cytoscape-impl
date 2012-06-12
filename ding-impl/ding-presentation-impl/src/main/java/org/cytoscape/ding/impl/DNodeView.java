@@ -41,6 +41,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +70,8 @@ import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -197,7 +200,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	private final VisualMappingManager vmm;
 	
-	public DNodeView(final VisualLexicon lexicon, final DGraphView graphView, long inx, final CyNode model, final VisualMappingManager vmm) {
+	private final CyNetworkViewManager netViewMgr; 
+	
+	public DNodeView(final VisualLexicon lexicon, final DGraphView graphView, long inx, final CyNode model, final VisualMappingManager vmm,
+			final CyNetworkViewManager netViewMgr) {
 		super(model);
 		
 		if (graphView == null)
@@ -209,6 +215,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.vmm = vmm;
 		this.labelPosition = new ObjectPositionImpl();
 
+		this.netViewMgr = netViewMgr;
+		
 		// Initialize custom graphics pool.
 		cgMap = new HashMap<VisualProperty<?>, Set<CustomGraphic>>();
 
@@ -1065,13 +1073,15 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 							IMAGE_HEIGHT);
 					return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
 				}
-				if (nestedNetworkView != null) {
+				//if (nestedNetworkView == null) //to avoid performance penalty
+					setNestedNetworkView();
+				if (nestedNetworkView != null) {					
 					final double scaleFactor = graphView.getGraphLOD().getNestedNetworkImageScaleFactor();
 					return nestedNetworkView.getSnapshot(IMAGE_WIDTH * scaleFactor, IMAGE_HEIGHT * scaleFactor);
 				} else {
 					if (DEFAULT_NESTED_NETWORK_IMAGE == null)
 						return null;
-
+					
 					final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH,
 							IMAGE_HEIGHT);
 					return new TexturePaint(DEFAULT_NESTED_NETWORK_IMAGE, rect);
@@ -1082,8 +1092,18 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	public void setNestedNetworkView(final DGraphView nestedNetworkView) {
-		this.nestedNetworkView = nestedNetworkView;
+	public void setNestedNetworkView() {
+
+		if(this.getModel().getNetworkPointer() == null)
+			this.nestedNetworkView = null;
+		else{
+			List<CyNetworkView> netviews = new ArrayList<CyNetworkView>(netViewMgr.getNetworkViews(this.getModel().getNetworkPointer()) );
+			if (netviews!= null && !netviews.isEmpty() ) 
+				this.nestedNetworkView = (DGraphView) netviews.get(netviews.size() -1 );
+			else
+				this.nestedNetworkView = null;
+		}
+		
 	}
 
 	/**

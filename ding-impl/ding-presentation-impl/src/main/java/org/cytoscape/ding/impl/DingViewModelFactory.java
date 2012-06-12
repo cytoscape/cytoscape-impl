@@ -13,6 +13,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -40,12 +41,15 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final DingGraphLOD dingGraphLOD;
 	private final VisualMappingManager vmm;
 
+	private final CyNetworkViewManager netViewMgr; 
+
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkManager,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
 			DialogTaskManager dialogTaskManager,
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
 			ViewTaskFactoryListener vtfListener,
-			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm) {
+			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
+			final CyNetworkViewManager netViewMgr) {
 
 		this.dataTableFactory = dataTableFactory;
 		this.rootNetworkManager = rootNetworkManager;
@@ -60,6 +64,8 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.annMgr = annMgr;
 		this.dingGraphLOD = dingGraphLOD;
 		this.vmm=vmm;
+		
+		this.netViewMgr = netViewMgr;
 	}
 
 	@Override
@@ -68,7 +74,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				vtfListener, dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm);
+				vtfListener, dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr);
 
 		registrar.registerAllServices(dgv, new Properties());
 

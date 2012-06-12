@@ -18,6 +18,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -51,6 +52,8 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	private DingGraphLOD dingGraphLOD;
 	private final VisualMappingManager vmm;
 	
+	private final CyNetworkViewManager netViewMgr; 
+
 	public DingRenderingEngineFactory(CyTableFactory dataTableFactory,
 			CyRootNetworkManager rootNetworkManager, UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
@@ -59,7 +62,8 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			CyNetworkTableManager tableMgr,
 			CyEventHelper eventHelper,
 			ViewTaskFactoryListener vtfListener,
-			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm) {
+			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
+			final CyNetworkViewManager netViewMgr) {
 		
 		this.dataTableFactory = dataTableFactory;
 		this.rootNetworkManager = rootNetworkManager;
@@ -73,6 +77,8 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		this.annMgr = annMgr;
 		this.vmm=vmm;
 
+		this.netViewMgr = netViewMgr;
+		
 		this.vtfListener = vtfListener;
 		
 		this.dingGraphLOD = dingGraphLOD;
@@ -114,7 +120,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			else
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
-					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm);
+					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());
