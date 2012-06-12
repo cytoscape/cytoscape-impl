@@ -32,7 +32,6 @@ package org.cytoscape.task.internal.session;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.write.SaveSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -54,10 +53,6 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 	}
 
 	public TaskIterator createTaskIterator() {
-		final CySession session = sessionMgr.getCurrentSession();
-		if (session == null)
-			throw new NullPointerException("Could not find current session.");
-		
 		// Check session file name is set or not.
 		final String sessionFileName = sessionMgr.getCurrentSessionFileName();		
 		
@@ -65,6 +60,6 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 		if (sessionFileName == null)
 			return new TaskIterator(new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 		else
-			return new TaskIterator(new SaveSessionTask(writerMgr, session, sessionFileName, tracker));
+			return new TaskIterator(new SaveSessionTask(writerMgr, sessionMgr, tracker));
 	}
 }

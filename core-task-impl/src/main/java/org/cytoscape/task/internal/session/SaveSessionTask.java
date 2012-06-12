@@ -34,6 +34,7 @@ import java.io.File;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -41,42 +42,41 @@ public class SaveSessionTask extends AbstractTask {
 
 	private final CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
-	
-	private final CySession session;
-	private final String fileName;
+	private final CySessionManager sessionMgr;
 
 	/**
 	 * setAcceleratorCombo(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
 	 */
 	public SaveSessionTask(final CySessionWriterManager writerMgr,
-			final CySession session, final String fileName, final RecentlyOpenedTracker tracker) {
+						   final CySessionManager sessionMgr,
+						   final RecentlyOpenedTracker tracker) {
 		super();
 
 		if (writerMgr == null)
 			throw new NullPointerException("CySessionWriterManager is null.");
-		if (fileName == null)
-			throw new NullPointerException("Session file name is null.");
-		if (session == null)
-			throw new NullPointerException("CySession is null.");
+		if (sessionMgr == null)
+			throw new NullPointerException("CySessionManager is null.");
 		
 		this.writerMgr = writerMgr;
+		this.sessionMgr = sessionMgr;
 		this.tracker = tracker;
-		this.session = session;
-		this.fileName = fileName;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
+		taskMonitor.setProgress(0.05);
+
+		final CySession session = sessionMgr.getCurrentSession();
+		final String fileName = sessionMgr.getCurrentSessionFileName();
 		
 		File file = new File(fileName);
 		insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));
 		
 		// Add this session file URL as the most recent file.
-		if ( !file.getName().endsWith(".cys"))
+		if (!file.getName().endsWith(".cys"))
 			file = new File(file.getPath() + ".cys");
-		tracker.add(file.toURI().toURL());
 		
+		tracker.add(file.toURI().toURL());
 		taskMonitor.setProgress(1.0);
 	}
 }

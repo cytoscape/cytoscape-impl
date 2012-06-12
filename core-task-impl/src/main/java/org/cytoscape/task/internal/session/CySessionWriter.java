@@ -3,7 +3,6 @@ package org.cytoscape.task.internal.session;
 
 import org.cytoscape.session.CySession;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CySessionWriterFactory;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.work.TaskMonitor;

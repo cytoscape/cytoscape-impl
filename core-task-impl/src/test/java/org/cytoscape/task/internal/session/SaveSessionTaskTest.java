@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.session;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
@@ -14,22 +15,19 @@ import org.mockito.MockitoAnnotations;
 public class SaveSessionTaskTest {
 	
 	@Mock private TaskMonitor tm;
-
-	private CySession session;
-	private String fileNameString = "testFile";
+	@Mock private CySessionManager mgr;
 	@Mock private CySessionWriterManager writerMgr;
 	@Mock private RecentlyOpenedTracker tracker;
-	
+	private CySession session;
 	
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
 	}
 
-
 	@Test(expected=NullPointerException.class)
 	public void testSaveSessionTask() throws Exception {
-		final SaveSessionTask t = new SaveSessionTask(writerMgr, session, fileNameString, tracker);
+		final SaveSessionTask t = new SaveSessionTask(writerMgr, mgr, tracker);
 		t.setTaskIterator(new TaskIterator(t));
 		
 		t.run(tm);
