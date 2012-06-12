@@ -34,23 +34,24 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class HandleEdgeGraphics extends AbstractHandler {
+	private static final String EDGE_BEND = "edgeBend";
 
 	@Override
-    public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-        if (tag.equals("graphics")) {
-        	manager.addGraphicsAttributes(manager.getCurrentEdge(), atts);
-        } else if (tag.equals("att")) {
-            // Handle special edge graphics attributes
-            String name = atts.getValue("name");
-            
-            if (name != null && name.equals("edgeBend")) {
-                manager.handleList = new ArrayList<String>();
-                return ParseState.EDGE_BEND;
-            } else if (name != null && !name.equals("cytoscapeEdgeGraphicsAttributes")) {
-            	manager.addGraphicsAttribute(manager.getCurrentEdge(), name, atts.getValue("value"));
-            }
-        }
-        
-        return current;
-    }
+	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
+		if (tag.equals("graphics")) {
+			manager.addGraphicsAttributes(manager.getCurrentEdge(), atts);
+		} else if (tag.equals("att")) {
+			// Handle special edge graphics attributes
+			final String name = atts.getValue("name");
+
+			if (name != null && name.equals(EDGE_BEND)) {
+				manager.handleList = new ArrayList<String>();
+				return ParseState.EDGE_BEND;
+			} else if (name != null && !name.equals("cytoscapeEdgeGraphicsAttributes")) {
+				manager.addGraphicsAttribute(manager.getCurrentEdge(), name, atts.getValue("value"));
+			}
+		}
+
+		return current;
+	}
 }

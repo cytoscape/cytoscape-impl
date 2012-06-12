@@ -73,8 +73,6 @@ public class BendImpl implements Bend {
 	
 	public static Bend parseSerializableString(String strRepresentation) {
 		
-		//System.out.println("Parsing String: " + strRepresentation);
-		
 		final Bend bend = new BendImpl();
 		// Validate
 		if (strRepresentation == null)
@@ -85,12 +83,9 @@ public class BendImpl implements Bend {
 		for(int i=0; i<parts.length; i++) {
 			final String str = parts[i];
 			final Handle handle = HandleImpl.parseSerializableString(str);
-			//System.out.println("Got handle: " + handle);
 			if(handle != null)
 				bend.insertHandleAt(i, handle);
 		}
-
-		//System.out.println("Got Bend: " + bend.toString());
 		return bend;
 	}
 }

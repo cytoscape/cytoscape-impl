@@ -53,12 +53,17 @@ import org.xml.sax.SAXException;
  */
 public class HandleEdgeHandle extends AbstractHandler {
 	
+	private static final String HANDLE = "handle";
+
+	
 	@Override
 	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
 
+		final String name = attributeValueUtil.getAttribute(atts, "name");
+		
 		if (manager.getDocumentVersion() == 1.0) {
 			// This is the outer "handle" attribute
-			if (!attributeValueUtil.getAttribute(atts, "name").equals("handle")) {
+			if (!name.equals(HANDLE)) {
 				// OK, this is one of our "data" attributes
 				if (attributeValueUtil.getAttributeValue(atts, "x") != null) {
 					manager.edgeBendX = attributeValueUtil.getAttributeValue(atts, "x");

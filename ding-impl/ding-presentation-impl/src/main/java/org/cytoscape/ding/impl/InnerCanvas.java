@@ -465,7 +465,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		int chosenEdgeSelected = 0;
 		
 		// Set Edge Bend.
-		if (e.isControlDown() && ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
+		if (e.isMetaDown() && ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
 			
 			m_view.m_selectedAnchors.empty();
 			m_ptBuff[0] = m_lastXMousePos;

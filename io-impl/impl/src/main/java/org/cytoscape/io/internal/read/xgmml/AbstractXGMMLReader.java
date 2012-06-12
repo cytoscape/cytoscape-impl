@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.xgmml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +52,10 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,23 +189,32 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 			Set<String> attSet = atts.keySet();
 
 			for (String attName : attSet) {
-				VisualProperty vp = visualLexicon.lookup(type, attName);
 				String attValue = atts.get(attName);
-
+				VisualProperty vp = visualLexicon.lookup(type, attName);
+				
 				if (vp != null) {
 					if (isXGMMLTransparency(attName))
 						attValue = convertXGMMLTransparencyValue(attValue);
+					
+					final Object parsedValue = vp.parseSerializableString(attValue);
 
-					Object value = vp.parseSerializableString(attValue);
-
-					if (value != null) {
+					if (parsedValue != null) {
 						if (isLockedVisualProperty(model, attName))
-							view.setLockedValue(vp, value);
+							view.setLockedValue(vp, parsedValue);
 						else
-							view.setVisualProperty(vp, value);
+							view.setVisualProperty(vp, parsedValue);
 					}
 				} else {
 					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, attName, attValue);
+				}
+			}
+			
+			// For 2.x compatibility
+			final Bend bend = view.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
+			if (bend != null && bend != EdgeBendVisualProperty.DEFAULT_EDGE_BEND) {
+				final List<Handle> handles = bend.getAllHandles();
+				for (Handle handle : handles) {
+					handle.defineHandle(netView, (View<CyEdge>) view, Double.NaN, Double.NaN);
 				}
 			}
 		}

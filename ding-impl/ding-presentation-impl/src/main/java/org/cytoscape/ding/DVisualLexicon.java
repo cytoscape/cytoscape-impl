@@ -447,6 +447,8 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 		addIdentifierMapping(CyEdge.class, "edgeSourceArrowColor", EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 		addIdentifierMapping(CyEdge.class, "edgeTargetArrowColor", EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+		addIdentifierMapping(CyEdge.class, "edgeHandleList", EDGE_BEND);
+		
 		// TODO: missing edge properties
 		// addIdentifierMapping(CyEdge.class,"edgeLabelOpacity",EDGE_LABEL_TRANSPARENCY);
 		// addIdentifierMapping(CyEdge.class,"edgeLabelWidth",EDGE_LABEL_WIDTH);
