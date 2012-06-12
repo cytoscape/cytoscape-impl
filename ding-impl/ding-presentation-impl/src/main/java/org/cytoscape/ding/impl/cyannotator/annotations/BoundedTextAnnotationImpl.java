@@ -147,13 +147,21 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		// want to add other options
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(textColor);
+
+		int width = (int)((double)getWidth()*scaleFactor/getZoom());
+		int height = (int)((double)getHeight()*scaleFactor/getZoom());
 		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
 		FontMetrics fontMetrics=g.getFontMetrics(tFont);
-		int halfWidth = ((int)(getWidth()*scaleFactor)-fontMetrics.stringWidth(text))/2;
+
+		int halfWidth = (width-(int)(fontMetrics.stringWidth(text)))/2;
+
 		// Note, this is + because we start at the baseline
-		int halfHeight = ((int)(getHeight()*scaleFactor)+fontMetrics.getHeight()/2)/2;
+		// int halfHeight = ((int)(getHeight()*scaleFactor)+fontMetrics.getHeight()/2)/2;
+		int halfHeight = (height+fontMetrics.getHeight()/2)/2;
+
 		int xLoc = (int)(x*scaleFactor) + halfWidth;
 		int yLoc = (int)(y*scaleFactor) + halfHeight;
+
 		g2.setFont(tFont);
 		g2.drawString(text, xLoc, yLoc);
 	}
