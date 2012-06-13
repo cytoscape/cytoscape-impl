@@ -102,8 +102,8 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		super(cyAnnotator, view, argMap);
 		this.customGraphicsManager = customGraphicsManager;
 
-		imageWidth = Double.parseDouble(argMap.get(WIDTH));
-		imageHeight = Double.parseDouble(argMap.get(HEIGHT));
+		imageWidth = getDouble(argMap, WIDTH, 100.0);
+		imageHeight = getDouble(argMap, HEIGHT, 100.0);
 
 		this.image = null;
 		this.resizedImage = null;
@@ -122,15 +122,10 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 			logger.warn("Unable to restore image '"+argMap.get(URL)+"'",e);
 			return;
 		}
-		if (argMap.containsKey(OPACITY))
-			opacity = Float.parseFloat(argMap.get(OPACITY));
 
-		if (argMap.containsKey(LIGHTNESS))
-			brightness = Integer.parseInt(argMap.get(LIGHTNESS));
-
-		if (argMap.containsKey(CONTRAST))
-			contrast = Integer.parseInt(argMap.get(CONTRAST));
-
+		opacity = getFloat(argMap, OPACITY, 1.0f);
+		brightness = getInteger(argMap, LIGHTNESS, 0);
+		contrast = getInteger(argMap, CONTRAST, 0);
 	}
 
 	public Map<String,String> getArgMap() {

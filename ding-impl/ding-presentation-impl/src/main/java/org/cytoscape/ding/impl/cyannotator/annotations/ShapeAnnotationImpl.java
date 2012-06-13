@@ -79,30 +79,20 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
   public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
     super(cyAnnotator, view, argMap);
-    this.borderColor = getColor(argMap.get(EDGECOLOR));
-    this.fillColor = getColor(argMap.get(FILLCOLOR));
+    this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
+    this.fillColor = getColor(argMap, FILLCOLOR, null);
     setFillColor(fillColor);
-		if (argMap.containsKey(FILLOPACITY))
-    	this.fillOpacity = Double.parseDouble(argMap.get(FILLOPACITY));
+    this.fillOpacity = getDouble(argMap, FILLOPACITY, 100.0);
 
-		// If this is an old bounded text, we might not (yet) have a width or height
-		if (argMap.containsKey(WIDTH))
-    	this.shapeWidth = Double.parseDouble(argMap.get(WIDTH));
-		else
-			this.shapeWidth = 100;
+    // If this is an old bounded text, we might not (yet) have a width or height
+    this.shapeWidth = getDouble(argMap, WIDTH, 100.0);
+    this.shapeHeight = getDouble(argMap, HEIGHT, 100.0);
 
-		if (argMap.containsKey(HEIGHT))
-    	this.shapeHeight = Double.parseDouble(argMap.get(HEIGHT));
-		else
-			this.shapeHeight = 100;
+    this.borderWidth = getDouble(argMap, EDGETHICKNESS, 0.0);
+    this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
-    this.borderWidth = Double.parseDouble(argMap.get(EDGETHICKNESS));
-
-		if (argMap.containsKey(EDGEOPACITY))
-	    this.borderOpacity = Double.parseDouble(argMap.get(EDGEOPACITY));
-
-    this.shapeType = GraphicsUtilities.getShapeType(Integer.parseInt(argMap.get(SHAPETYPE)));
-		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
+    this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
+    this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
     setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
   }
 

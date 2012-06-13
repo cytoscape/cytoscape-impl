@@ -66,7 +66,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
 		this.font = getArgFont(argMap);
-		this.textColor = getColor(argMap.get(COLOR));
+    this.textColor = getColor(argMap, COLOR, Color.BLACK);
 		this.text = argMap.get(TEXT);
 		this.fontSize = font.getSize2D();
 		setSize(getAnnotationWidth(), getAnnotationHeight());

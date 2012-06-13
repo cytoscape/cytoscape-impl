@@ -21,7 +21,7 @@ public class SelectAnnotationTaskFactory implements NetworkViewLocationTaskFacto
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		this.cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		annotation = cyAnnotator.getAnnotation(javaPt);
+		annotation = cyAnnotator.getAnnotationAt(javaPt);
 		return new TaskIterator(new SelectAnnotationTask(networkView, annotation));
 
 	}
@@ -29,7 +29,7 @@ public class SelectAnnotationTaskFactory implements NetworkViewLocationTaskFacto
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		this.cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		annotation = cyAnnotator.getAnnotation(javaPt);
+		annotation = cyAnnotator.getAnnotationAt(javaPt);
 		if (annotation != null)
 			return true;
 		return false;

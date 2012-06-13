@@ -34,7 +34,7 @@ public class AddArrowTaskFactory implements NetworkViewLocationTaskFactory {
 
 		// We need to be over an annotation
 		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		Annotation annotation = cyAnnotator.getAnnotation(javaPt);
+		Annotation annotation = cyAnnotator.getAnnotationAt(javaPt);
 		if (annotation == null || annotation instanceof ArrowAnnotation) 
 			return false;
 

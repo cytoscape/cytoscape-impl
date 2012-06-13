@@ -10,6 +10,7 @@ public interface ArrowAnnotation extends Annotation {
 	public enum ArrowType {
 		CIRCLE ("Circle"),
 		CLOSED ("Closed Arrow"),
+		CONCAVE ("Concave Arrow"),
 		DIAMOND ("Diamond"),
 		OPEN ("Open Arrow"),
 		NONE ("No Arrow"),

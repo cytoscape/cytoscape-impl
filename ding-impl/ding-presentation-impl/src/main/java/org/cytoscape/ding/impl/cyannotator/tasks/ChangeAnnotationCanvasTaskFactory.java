@@ -26,7 +26,7 @@ public class ChangeAnnotationCanvasTaskFactory implements NetworkViewLocationTas
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		this.cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		annotation = cyAnnotator.getAnnotation(javaPt);
+		annotation = cyAnnotator.getAnnotationAt(javaPt);
 		return new TaskIterator(new ChangeAnnotationCanvasTask(networkView, annotation, canvas));
 
 	}
@@ -34,7 +34,7 @@ public class ChangeAnnotationCanvasTaskFactory implements NetworkViewLocationTas
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		this.cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		annotation = cyAnnotator.getAnnotation(javaPt);
+		annotation = cyAnnotator.getAnnotationAt(javaPt);
 		if (annotation == null) return false;
 
 		if (!annotation.getCanvasName().equals(canvas))

@@ -14,6 +14,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
+import java.util.Map;
+
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation.ShapeType;
 
@@ -30,7 +32,7 @@ class GraphicsUtilities {
 	};
 
 	protected static final ArrowType supportedArrows[] = {
-		ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.DIAMOND, ArrowType.OPEN, 
+		ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE, ArrowType.DIAMOND, ArrowType.OPEN, 
 		ArrowType.NONE, ArrowType.TRIANGLE, ArrowType.TSHAPE
 	};
 
@@ -62,6 +64,17 @@ class GraphicsUtilities {
 				return type;
 		}
 		return ShapeType.RECTANGLE; // If we can't do anything else...
+	}
+
+	static public ShapeType getShapeType(Map<String, String> argMap, String key, ShapeType defValue) {
+		if (!argMap.containsKey(key) || argMap.get(key) == null)
+			return defValue;
+		int shapeNumber = Integer.parseInt(argMap.get(key));
+		for (ShapeType type: supportedShapes) {
+			if (shapeNumber == type.ordinal())
+				return type;
+		}
+		return defValue;
 	}
 
 	static public ShapeType[] getSupportedShapes() {
@@ -113,6 +126,7 @@ class GraphicsUtilities {
 		switch(arrowType) {
 			case CIRCLE: return circleArrow(size);
 			case CLOSED: return closedArrow(size);
+			case CONCAVE: return concaveArrow(size);
 			case DIAMOND: return diamondArrow(size);
 			case OPEN: return openArrow(size);
 			case TRIANGLE: return triangleArrow(size);
@@ -137,12 +151,26 @@ class GraphicsUtilities {
 		return ArrowType.NONE; // If we can't do anything else...
 	}
 
+	static public ArrowType getArrowType(Map<String, String> argMap, String key, ArrowType defValue) {
+		if (!argMap.containsKey(key) || argMap.get(key) == null)
+			return defValue;
+		int arrowNumber = Integer.parseInt(argMap.get(key));
+		for (ArrowType type: supportedArrows) {
+			if (arrowNumber == type.ordinal())
+				return type;
+		}
+		return defValue;
+	}
+
 	static public ArrowType[] getSupportedArrowTypes() {
 		return supportedArrows;
 	}
 
 	static public void drawArrow(Graphics g, Line2D line, ArrowEnd end, Paint paint, double size, 
 	                             ArrowType type) {
+		if (line == null)
+			return;
+
 		// Get the shape
 		Shape arrow = getArrowShape(type, size);
 
@@ -254,18 +282,29 @@ class GraphicsUtilities {
 	// Create a shape with a 30 degree arrow
 	static Shape openArrow(double size) {
 		Path2D path = new Path2D.Double();
-		path.moveTo(-size*1.7, -size);
+		path.moveTo(-size*1.7, -size/2.0);
 		path.lineTo(0.0, 0.0);
-		path.lineTo(-size*1.7,size);
+		path.lineTo(-size*1.7,size/2.0);
+		return path;
+	}
+
+	// Create a shape with a filled 30 degree arrow
+	static Shape closedArrow(double size) {
+		Path2D path = new Path2D.Double();
+		path.moveTo(-size*1.7, -size/2.0);
+		path.lineTo(0.0, 0.0);
+		path.lineTo(-size*1.7,size/2.0);
+		path.closePath();
 		return path;
 	}
 
 	// Create a shape with a 30 degree arrow
-	static Shape closedArrow(double size) {
+	static Shape concaveArrow(double size) {
 		Path2D path = new Path2D.Double();
-		path.moveTo(-size*1.7, -size);
+		path.moveTo(-size, 0.0);
+		path.lineTo(-size*1.7, -size/2.0);
 		path.lineTo(0.0, 0.0);
-		path.lineTo(-size*1.7,size);
+		path.lineTo(-size*1.7,size/2.0);
 		path.closePath();
 		return path;
 	}

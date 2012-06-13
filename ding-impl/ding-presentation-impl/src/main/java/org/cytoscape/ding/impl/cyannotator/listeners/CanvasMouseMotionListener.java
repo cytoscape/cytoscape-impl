@@ -8,6 +8,7 @@ import java.awt.geom.Point2D;
 import org.cytoscape.model.CyNode;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
@@ -76,7 +77,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 
 			// See what's under our mouse
 			// Annotation?
-			Annotation a = cyAnnotator.getAnnotation(mousePoint);
+			Annotation a = cyAnnotator.getAnnotationAt(mousePoint);
 			if (a != null && !(a instanceof ArrowAnnotation)) {
 				repositionAnnotation.setTarget(a);
 
@@ -95,10 +96,13 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 	}
 
 	private boolean overNode(Point2D mousePoint) {
+		if (view.getPickedNodeView(mousePoint) != null)
+			return true;
 		return false;
 	}
 
 	private CyNode getNodeAtLocation(Point2D mousePoint) {
-		return null;
+		DNodeView nv = (DNodeView)view.getPickedNodeView(mousePoint);
+		return nv.getModel();
 	}
 }

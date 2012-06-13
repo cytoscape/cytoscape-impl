@@ -48,7 +48,7 @@ public class CanvasMouseListener implements MouseListener {
 		}
 
 
-		Annotation annotation = cyAnnotator.getAnnotation(new Point(e.getX(), e.getY()));
+		Annotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		if (annotation == null) {
 			cyAnnotator.clearSelectedAnnotations();
 			if (!e.isConsumed()) {

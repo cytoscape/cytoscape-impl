@@ -15,10 +15,12 @@ import java.awt.geom.Rectangle2D;
 import javax.swing.JFrame;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.cytoscape.model.CyNode;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
@@ -28,7 +30,6 @@ import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 
 public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnnotation {
 	private Paint lineColor = Color.BLACK; // These are paint's so we can do gradients
-	private double lineOpacity = 100.0;
 	private float lineWidth = 1.0f;
 
 	private Annotation source = null;
@@ -53,10 +54,15 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	public static final String NAME="ARROW";
 	protected static final String ARROWCOLOR = "lineColor";
 	protected static final String ARROWTHICKNESS = "lineThickness";
-	protected static final String ARROWOPACITY = "lineOpacity";
+
+	protected static final String SOURCEANN = "sourceAnnotation";
 	protected static final String SOURCETYPE = "sourceType";
 	protected static final String SOURCESIZE = "sourceSize";
 	protected static final String SOURCECOLOR = "sourceColor";
+
+	protected static final String TARGETPOINT = "targetPoint";
+	protected static final String TARGETANN = "targetAnnotation";
+	protected static final String TARGETNODE = "targetNode";
 
 	protected static final String TARGETTYPE = "targetType";
 	protected static final String TARGETSIZE = "targetSize";
@@ -67,25 +73,117 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		super(cyAnnotator, view);
 	}
 
-	public ArrowAnnotationImpl(ShapeAnnotationImpl c) {
+	public ArrowAnnotationImpl(ArrowAnnotationImpl c) {
 		super(c);
+
+		// Line parameters
+		this.lineColor = c.lineColor;
+		this.lineWidth = c.lineWidth;
+
+		// Source arrow parameters
+		this.source = c.source;
+		this.sourceType = c.sourceType;
+		this.sourceColor = c.sourceColor;
+		this.sourceSize = c.sourceSize;
+
+		// Target arrow parameters
+		this.target = c.target;
+		this.targetType = c.targetType;
+		this.targetColor = c.targetColor;
+		this.targetSize = c.targetSize;
 	}
 
   public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view,
-	                           Annotation source, Object target,
-	                           ArrowType arrowType, Paint arrowColor,
-	                           float arrowThickness) {
+	                           Annotation source, Object target, float lineWidth,
+	                           Paint lineColor, 
+	                           ArrowType sourceType, Paint sourceColor, float sourceSize,
+	                           ArrowType targetType, Paint targetColor, float targetSize) {
 		// super(cyAnnotator, view, view.getZoom());
 		super(cyAnnotator, view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom());
+
+		// Line parameters
+		this.lineColor = lineColor;
+		this.lineWidth = lineWidth;
+
+		// Source arrow parameters
+		this.source = source;
+		this.sourceType = sourceType;
+		this.sourceColor = sourceColor;
+		this.sourceSize = sourceSize;
+
+		// Target arrow parameters
+		this.target = target;
+		this.targetType = targetType;
+		this.targetColor = targetColor;
+		this.targetSize = targetSize;
+
+		updateBounds();
   }
 
   public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
     super(cyAnnotator, view, argMap);
+
+    this.lineColor = getColor(argMap, ARROWCOLOR, Color.BLACK);
+		this.lineWidth = getFloat(argMap, ARROWTHICKNESS, 1.0f);
+
+		// Source
+		if (argMap.containsKey(SOURCEANN)) {
+			UUID uuid = UUID.fromString(argMap.get(SOURCEANN));
+			source = cyAnnotator.getAnnotation(uuid);
+		}
+
+		// Source Arrow
+    this.sourceType = GraphicsUtilities.getArrowType(argMap, SOURCETYPE, ArrowType.NONE);
+    this.sourceSize = getDouble(argMap, SOURCESIZE, 5.0);
+    this.sourceColor = getColor(argMap, SOURCECOLOR, null); // A null color = line color
+
+		// Target Arrow
+    this.targetType = GraphicsUtilities.getArrowType(argMap, TARGETTYPE, ArrowType.NONE);
+    this.targetSize = getDouble(argMap, TARGETSIZE, 5.0);
+    this.targetColor = getColor(argMap, TARGETCOLOR, null); // A null color = line color
+
+		// Figure out the target
+		if (argMap.containsKey(TARGETPOINT)) {
+			String point = argMap.get(TARGETPOINT);
+			String[] xy = point.split(",");
+			double[] nextLocn = new double[2];
+			nextLocn[0] = Double.parseDouble(xy[0]);
+			nextLocn[1] = Double.parseDouble(xy[1]);
+			view.xformNodeToComponentCoords(nextLocn);
+			target = new Point2D.Double(nextLocn[0], nextLocn[1]);
+		} else if (argMap.containsKey(TARGETANN)) {
+			UUID uuid = UUID.fromString(argMap.get(TARGETANN));
+			target = cyAnnotator.getAnnotation(uuid);
+		} else if (argMap.containsKey(TARGETNODE)) {
+		}
   }
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,NAME);
+		if (this.lineColor != null)
+			argMap.put(ARROWCOLOR,convertColor(this.lineColor));
+		argMap.put(ARROWTHICKNESS, Float.toString(this.lineWidth));
+
+		argMap.put(SOURCEANN, source.getUUID().toString());
+
+		argMap.put(SOURCETYPE, Integer.toString(this.sourceType.ordinal()));
+		argMap.put(SOURCESIZE, Double.toString(this.sourceSize));
+		if (this.sourceColor != null)
+			argMap.put(SOURCECOLOR,convertColor(this.sourceColor));
+
+		if (target instanceof Point2D) {
+			Point2D xy = getNodeCoordinates(((Point2D)target).getX(), ((Point2D)target).getY());
+			argMap.put(TARGETPOINT,Double.toString(xy.getX())+","+Double.toString(xy.getY()));
+		} else if (target instanceof Annotation) {
+			argMap.put(TARGETANN,((Annotation)target).getUUID().toString());
+		} else if (target instanceof CyNode) {
+		}
+
+		argMap.put(TARGETTYPE, Integer.toString(this.targetType.ordinal()));
+		argMap.put(TARGETSIZE, Double.toString(this.targetSize));
+		if (this.targetColor != null)
+			argMap.put(TARGETCOLOR,convertColor(this.targetColor));
 		return argMap;
 	}
 
@@ -197,7 +295,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		g2.setStroke(new BasicStroke(border));
 		
 		Line2D relativeLine = getRelativeLine(arrowLine, scaleFactor);
-		g2.draw(relativeLine);
+		if (relativeLine != null)
+			g2.draw(relativeLine);
 
 		// Add the head
 		if (sourceType != ArrowType.NONE) {
@@ -265,7 +364,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	private Line2D getRelativeLine(Line2D line, double scaleFactor) {
-		if (usedForPreviews) 
+		if (usedForPreviews || line == null) 
 			return line;
 
 		double x1 = line.getX1();
@@ -335,6 +434,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			targetPoint = findFace(sourceCenter, targetBounds);
 		} else if (target instanceof CyNode) {
 			// get the target point from ding
+			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
+			Rectangle2D nodeBounds = getNodeBounds(nv);
+			targetPoint = findFace(sourceCenter, nodeBounds);
 		}
 
 		Rectangle sourceBounds = source.getComponent().getBounds();
@@ -399,5 +501,39 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 					return right;
 			}
 		}
+	}
+
+	private Rectangle2D getNodeBounds(DNodeView nv) {
+		double[] nextLocn = new double[2];
+
+		// First, get our starting and ending points in node coordinates
+		double xCenter = nv.getXPosition();
+		double yCenter = nv.getYPosition();
+
+		double width = nv.getWidth();
+		double height = nv.getHeight();
+
+		double xStart = xCenter-width/2.0;
+		double yStart = yCenter-height/2.0;
+
+		double xEnd = xStart+width;
+		double yEnd = yStart+height;
+
+		// Now convert to component coordinates
+		nextLocn[0] = xStart;
+		nextLocn[1] = yStart;
+		view.xformNodeToComponentCoords(nextLocn);
+
+		double x = nextLocn[0];
+		double y = nextLocn[1];
+
+		nextLocn[0] = xEnd;
+		nextLocn[1] = yEnd;
+		view.xformNodeToComponentCoords(nextLocn);
+
+		width = nextLocn[0]-x;
+		height = nextLocn[1]-y;
+
+		return new Rectangle2D.Double(x, y, width, height);
 	}
 }

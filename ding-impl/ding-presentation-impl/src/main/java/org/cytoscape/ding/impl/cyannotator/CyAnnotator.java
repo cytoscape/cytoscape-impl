@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -92,8 +93,6 @@ public class CyAnnotator {
 
 		List<String> annotations = network.getRow(network).
 		                                          getList(ANNOTATION_ATTRIBUTE,String.class);
-		Map<Integer, Annotation> idMap = 
-		    new HashMap<Integer, Annotation>(); // Keep a map of the original annotation ID's
 
 		List<Map<String,String>> arrowList = 
 		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
@@ -104,30 +103,42 @@ public class CyAnnotator {
 				Annotation annotation = null;
 				String type = argMap.get("type");
 				if (type == null)
-	                continue;
+					continue;
+
+				if (type.equals("ARROW")) {
+					arrowList.add(argMap);
+					continue;
+				}
 	
 				annotation = annotationFactoryManager.getAnnotation(type,this,view,argMap);
 	
 				if (annotation != null) {
-					foreGroundCanvas.add(annotation.getComponent());
+					if (annotation.getCanvas() != null)
+						annotation.getCanvas().add(annotation.getComponent());
+					else
+						foreGroundCanvas.add(annotation.getComponent());
+				}
+			}
+
+			// Now, handle all of our arrows
+			for (Map<String,String> argMap: arrowList) {
+				String type = argMap.get("type");
+				Annotation annotation = annotationFactoryManager.getAnnotation(type,this,view,argMap);
+				if (annotation instanceof ArrowAnnotation) {
+					ArrowAnnotation arrow = (ArrowAnnotation)annotation;
+					arrow.getSource().addArrow(arrow);
+					arrow.getCanvas().add(arrow.getComponent());
 				}
 			}
 		}
-		
-/*
-		// OK, now we add the arrows, if we have any
-		for (Map<String, String>argMap: arrowList) {
-			// Create the arrow annotation
-			ArrowAnnotation arrow = new ArrowAnnotation(this,view,argMap);
-			// Find the source
-			Integer source = arrow.getSource();
-			Annotation annotation = idMap.get(source);
-			if (annotation != null) {
-				annotation.addArrow(arrow);
-				arrow.setSource(annotation.getComponentNumber());
-			}
+	}
+
+	public Annotation getAnnotation(UUID annotationID) {
+		for (Annotation a: annotationMap.keySet()) {
+			if (a.getUUID().equals(annotationID))
+				return a;
 		}
-*/
+		return null;
 	}
 
 	public void update() { view.updateView(); }
@@ -158,7 +169,7 @@ public class CyAnnotator {
 		return top;
 	}
 
-	public Annotation getAnnotation(Point2D position) {
+	public Annotation getAnnotationAt(Point2D position) {
 		Annotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
 		if (a != null) {
 			return a;

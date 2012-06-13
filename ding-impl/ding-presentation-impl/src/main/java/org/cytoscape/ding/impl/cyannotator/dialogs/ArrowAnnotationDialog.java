@@ -31,7 +31,7 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
 		this.mAnnotation = new ArrowAnnotationImpl(cyAnnotator, view);
-		this.source = cyAnnotator.getAnnotation(start);
+		this.source = cyAnnotator.getAnnotationAt(start);
 		this.create = true;
 
 		initComponents();		        

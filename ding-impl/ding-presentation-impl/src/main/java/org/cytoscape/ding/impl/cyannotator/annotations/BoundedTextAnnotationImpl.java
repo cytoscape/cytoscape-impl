@@ -84,7 +84,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	                                 Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
 		this.font = getArgFont(argMap);
-		this.textColor = getColor(argMap.get(COLOR));
+    this.textColor = getColor(argMap, COLOR, Color.BLACK);
 		this.text = argMap.get(TEXT);
 		this.fontSize = font.getSize2D();
 		if (!argMap.containsKey(ShapeAnnotationImpl.WIDTH)) {

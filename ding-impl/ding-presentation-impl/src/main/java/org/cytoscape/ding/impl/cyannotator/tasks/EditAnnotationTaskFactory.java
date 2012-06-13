@@ -20,7 +20,7 @@ public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		this.cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		annotation = cyAnnotator.getAnnotation(javaPt);
+		annotation = cyAnnotator.getAnnotationAt(javaPt);
 		return new TaskIterator(new EditAnnotationTask(networkView, annotation, javaPt));
 
 	}
@@ -28,7 +28,7 @@ public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		this.cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		annotation = cyAnnotator.getAnnotation(javaPt);
+		annotation = cyAnnotator.getAnnotationAt(javaPt);
 		if (annotation != null)
 			return true;
 		return false;

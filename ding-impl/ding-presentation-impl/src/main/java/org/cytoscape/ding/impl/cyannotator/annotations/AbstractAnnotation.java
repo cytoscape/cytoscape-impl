@@ -45,16 +45,16 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
-	protected boolean usedForPreviews=false;
 
 	private ArbitraryGraphicsCanvas canvas;
 	private DGraphView.Canvas canvasName;
 	private CyAnnotator cyAnnotator;
-	private DGraphView view;
-	private int annotationNumber;
 	private UUID uuid = UUID.randomUUID();
 
 	private Set<ArrowAnnotation> arrowList;
+
+	protected boolean usedForPreviews=false;
+	protected DGraphView view;
 
 	protected static final String ID="id";
 	protected static final String ZOOM="zoom";
@@ -70,7 +70,6 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		arrowList = new HashSet<ArrowAnnotation>();
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-		this.annotationNumber = nextAnnotationNumber++;
 		this.globalZoom = view.getZoom();
 	}
 
@@ -80,7 +79,6 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		arrowList = new HashSet<ArrowAnnotation>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
-		this.annotationNumber = nextAnnotationNumber++;
 	}
 
 	public AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, 
@@ -93,7 +91,6 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		arrowList = new HashSet<ArrowAnnotation>();
 		// super.setBackground(Color.BLUE);
 		setLocation((int)x, (int)y);
-		this.annotationNumber = nextAnnotationNumber++;
 	}
 
 	public AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
@@ -113,12 +110,11 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		setLocation((int)coords.getX(), (int)coords.getY());
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
-		this.annotationNumber = nextAnnotationNumber++;
 		
 	}
 
 	public String toString() {
-		return "annotation "+annotationNumber+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
+		return "annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
 	}
 
 	@Override
@@ -328,6 +324,30 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 			return null;
 		return new Color(Integer.parseInt(strColor));
   }
+
+  protected Color getColor(Map<String, String> argMap, String key, Color defValue) {
+		if (!argMap.containsKey(key) || argMap.get(key) == null)
+			return defValue;
+		return new Color(Integer.parseInt(argMap.get(key)));
+	}
+
+  protected Float getFloat(Map<String, String> argMap, String key, float defValue) {
+		if (!argMap.containsKey(key) || argMap.get(key) == null)
+			return defValue;
+		return Float.parseFloat(argMap.get(key));
+	}
+
+  protected Integer getInteger(Map<String, String> argMap, String key, int defValue) {
+		if (!argMap.containsKey(key) || argMap.get(key) == null)
+			return defValue;
+		return Integer.parseInt(argMap.get(key));
+	}
+
+  protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
+		if (!argMap.containsKey(key) || argMap.get(key) == null)
+			return defValue;
+		return Double.parseDouble(argMap.get(key));
+	}
 
 	// Private methods
 	private void addNodeCoordinates(Map<String, String> argMap) {

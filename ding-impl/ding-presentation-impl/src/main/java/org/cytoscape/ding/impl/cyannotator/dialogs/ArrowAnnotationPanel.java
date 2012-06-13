@@ -142,7 +142,7 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 			add(jLabel6);
 
 			final JComboBox eThickness = new JComboBox();
-			eThickness.setModel(new DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+			eThickness.setModel(new DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" }));
 			eThickness.setSelectedIndex(1);
 			for(int i=0;i<eThickness.getModel().getSize();i++){
 				if( ((int)mAnnotation.getLineWidth())==Integer.parseInt((String)eThickness.getModel().getElementAt(i)) ){
@@ -156,7 +156,7 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 						previewPanel.repaint();
 				}
 			});	 
-			eThickness.setBounds(COLUMN2, y, 42, 20);
+			eThickness.setBounds(COLUMN2, y, 48, 20);
 			add(eThickness);
 		}
 
@@ -208,7 +208,7 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 						previewPanel.repaint();
 				}
 			});		    
-			arrowList.setBounds(COLUMN2, arrowY, 125, 20);
+			arrowList.setBounds(COLUMN2, arrowY, 140, 20);
 			arrowPanel.add(arrowList);
 		}
 
@@ -288,7 +288,7 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 			arrowPanel.add(jLabel6);
 
 			final JComboBox aSize = new JComboBox();
-			aSize.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+			aSize.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" }));
 			aSize.setSelectedIndex(1);
 			for(int i=0;i<aSize.getModel().getSize();i++){
 				if( ((int)mAnnotation.getArrowSize(end))==Integer.parseInt((String)aSize.getModel().getElementAt(i)) ){
@@ -302,7 +302,7 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 						previewPanel.repaint();
 				}
 			});	 
-			aSize.setBounds(COLUMN2, arrowY, 42, 20);
+			aSize.setBounds(COLUMN2, arrowY, 48, 20);
 			arrowPanel.add(aSize);
 		}
 
