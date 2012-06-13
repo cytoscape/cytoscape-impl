@@ -42,6 +42,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.VirtualColumnInfo;
@@ -113,19 +114,25 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 		// create subnetwork and add selected nodes and appropriate edges
 		final CySubNetwork newNet = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
-		tm.setProgress(0.3);
 
-		for (final CyNode node : selectedNodes)
+		addColumns(parentNetwork.getDefaultNodeTable(), newNet.getDefaultNodeTable() );
+		addColumns(parentNetwork.getDefaultEdgeTable(), newNet.getDefaultEdgeTable() );
+		addColumns(parentNetwork.getDefaultNetworkTable(), newNet.getDefaultNetworkTable());
+
+		tm.setProgress(0.3);
+		
+		for (final CyNode node : selectedNodes){
 			newNet.addNode(node);
+			cloneRow(parentNetwork.getRow(node), newNet.getRow(node));
+		}
 
 		tm.setProgress(0.4);
-		for (final CyEdge edge : getEdges(parentNetwork, selectedNodes))
+		for (final CyEdge edge : getEdges(parentNetwork, selectedNodes)){
 			newNet.addEdge(edge);
+			cloneRow(parentNetwork.getRow(edge), newNet.getRow(edge));
+		}
 		tm.setProgress(0.5);
 
-		addVirtualColumns(parentNetwork.getDefaultNodeTable(), newNet.getDefaultNodeTable() );
-		addVirtualColumns(parentNetwork.getDefaultEdgeTable(), newNet.getDefaultEdgeTable() );
-		addVirtualColumns(parentNetwork.getDefaultNetworkTable(), newNet.getDefaultNetworkTable());
 		
 		newNet.getRow(newNet).set(CyNetwork.NAME, cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork));
 
@@ -142,22 +149,44 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(1.0);
 	}
 
-	private void addVirtualColumns(CyTable parentTable, CyTable subTable) {
-	
+	private void addColumns(CyTable parentTable, CyTable subTable) {
+
 		for (CyColumn col:  parentTable.getColumns()){
 			VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
-			if (colInfo.isVirtual()){
-				CyColumn checkCol= subTable.getColumn(col.getName());
-				if(checkCol == null)
-					subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
-
-				else
-					if(!checkCol.getVirtualColumnInfo().isVirtual() ||
-							!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
-							!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
-						subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
-
-			}
+			if (colInfo.isVirtual())
+				addVirtualColumn(col, subTable);
+			else
+				if (subTable.getColumn(col.getName()) == null)		
+					copyColumn(col, subTable);
 		}
 	}
+
+	private void addVirtualColumn (CyColumn col, CyTable subTable){
+		VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
+		CyColumn checkCol= subTable.getColumn(col.getName());
+		if(checkCol == null)
+			subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+
+		else
+			if(!checkCol.getVirtualColumnInfo().isVirtual() ||
+					!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
+					!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
+				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+	}
+
+	private void copyColumn(CyColumn col, CyTable subTable) {
+		if (List.class.isAssignableFrom(col.getType()))
+			subTable.createListColumn(col.getName(), col.getListElementType(), false);
+		else
+			subTable.createColumn(col.getName(), col.getType(), false);	
+	}
+	
+
+	private void cloneRow(final CyRow from, final CyRow to) {
+		for (final CyColumn column : from.getTable().getColumns()){
+			if (!column.getVirtualColumnInfo().isVirtual())
+				to.set(column.getName(), from.getRaw(column.getName()));
+		}
+	}
+
 }
