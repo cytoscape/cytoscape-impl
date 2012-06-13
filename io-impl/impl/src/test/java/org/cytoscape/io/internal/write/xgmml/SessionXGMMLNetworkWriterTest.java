@@ -13,7 +13,7 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SessionXGMMLNetworkWriterTest extends GenericXGMMLWriterTest {
+public class SessionXGMMLNetworkWriterTest extends AbstractXGMMLWriterTest {
 
 	@Before
 	public void init(){

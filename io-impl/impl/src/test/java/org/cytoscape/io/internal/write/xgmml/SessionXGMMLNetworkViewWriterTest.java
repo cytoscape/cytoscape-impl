@@ -17,7 +17,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SessionXGMMLNetworkViewWriterTest extends GenericXGMMLWriterTest {
+public class SessionXGMMLNetworkViewWriterTest extends AbstractXGMMLWriterTest {
 
 	private VisualStyle style;
 	
