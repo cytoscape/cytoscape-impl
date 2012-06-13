@@ -152,12 +152,13 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	private void addColumns(CyTable parentTable, CyTable subTable) {
 
 		for (CyColumn col:  parentTable.getColumns()){
-			VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
-			if (colInfo.isVirtual())
-				addVirtualColumn(col, subTable);
-			else
-				if (subTable.getColumn(col.getName()) == null)		
+			if (subTable.getColumn(col.getName()) == null){
+				VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
+				if (colInfo.isVirtual())
+					addVirtualColumn(col, subTable);
+				else
 					copyColumn(col, subTable);
+			}
 		}
 	}
 

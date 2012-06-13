@@ -45,6 +45,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -112,10 +113,10 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		final CyTable nodeTable = newNet.getDefaultNodeTable();
 		final CyTable edgeTable = newNet.getDefaultEdgeTable();
 		final CyTable networkTable = newNet.getDefaultNetworkTable();
-			// copy default columns
-			cloneColumns(origNet.getDefaultNodeTable(), nodeTable);
-			cloneColumns(origNet.getDefaultEdgeTable(), edgeTable);
-			cloneColumns(origNet.getDefaultNetworkTable(), networkTable);
+		// copy default columns
+		addColumns(origNet.getDefaultNodeTable(), nodeTable);
+		addColumns(origNet.getDefaultEdgeTable(), edgeTable);
+		addColumns(origNet.getDefaultNetworkTable(), networkTable);
 
 			cloneNodes(origNet, newNet);
 			cloneEdges(origNet, newNet);
@@ -124,7 +125,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 					naming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyNetwork.NAME, String.class)));
 		return newNet;
 	}
-
+	
 	private void cloneNodes(CyNetwork origNet, CyNetwork newNet) {
 		orig2NewNodeMap = new WeakHashMap<CyNode, CyNode>();
 		new2OrigNodeMap = new WeakHashMap<CyNode, CyNode>();
@@ -146,28 +147,43 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
-	private void cloneColumns(final CyTable from, final CyTable to) {
-		for (final CyColumn fromColumn : from.getColumns()) {
-			final CyColumn toColumn = to.getColumn(fromColumn.getName());
-			
-			if (toColumn == null) {
-				if (List.class.isAssignableFrom(fromColumn.getType()))
-					to.createListColumn(fromColumn.getName(), fromColumn.getListElementType(), false);
+	private void addColumns(CyTable parentTable, CyTable subTable) {
+		for (CyColumn col:  parentTable.getColumns()){
+			if (subTable.getColumn(col.getName()) == null){
+				VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
+				if (colInfo.isVirtual())
+					addVirtualColumn(col, subTable);
 				else
-					to.createColumn(fromColumn.getName(), fromColumn.getType(), false);
-			} else if (toColumn.getType() == fromColumn.getType()) {
-				continue;
-			} else {
-				throw new IllegalArgumentException("column of same name: " + fromColumn.getName()
-						+ "but types don't match (orig): " + fromColumn.getType().getName() + " (new): "
-						+ toColumn.getType().getName());
+					copyColumn(col, subTable);
 			}
 		}
 	}
 
+	private void addVirtualColumn (CyColumn col, CyTable subTable){
+		VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
+		CyColumn checkCol= subTable.getColumn(col.getName());
+		if(checkCol == null)
+			subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+
+		else
+			if(!checkCol.getVirtualColumnInfo().isVirtual() ||
+					!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
+					!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
+				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+	}
+
+	private void copyColumn(CyColumn col, CyTable subTable) {
+		if (List.class.isAssignableFrom(col.getType()))
+			subTable.createListColumn(col.getName(), col.getListElementType(), false);
+		else
+			subTable.createColumn(col.getName(), col.getType(), false);	
+	}
+	
 	private void cloneRow(final CyRow from, final CyRow to) {
-		for (final CyColumn column : from.getTable().getColumns())
-			to.set(column.getName(), from.getRaw(column.getName()));
+		for (final CyColumn column : from.getTable().getColumns()){
+			if (!column.getVirtualColumnInfo().isVirtual())
+				to.set(column.getName(), from.getRaw(column.getName()));
+		}
 	}
 
 }
