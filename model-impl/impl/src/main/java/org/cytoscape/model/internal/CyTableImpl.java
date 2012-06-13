@@ -945,10 +945,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(true, sourceTable, sourceColumnName, 
 			                                                          sourceTable.getPrimaryKey().getName(), 
 			                                                          targetJoinKeyName, isImmutable);
-			final CyColumn targetColumn = new CyColumnImpl(this, virtualColumnName, sourceColumn.getType(),
+			targetName = getUniqueColumnName(virtualColumnName);
+
+			final CyColumn targetColumn = new CyColumnImpl(this, targetName, sourceColumn.getType(),
 			                                               sourceColumn.getListElementType(), virtualInfo,
 			                                               /* isPrimaryKey = */ false, isImmutable, null);
-			targetName = getUniqueColumnName(virtualColumnName);
 			final String normalizedTargetName = normalizeColumnName(targetName);
 			types.put(normalizedTargetName, targetColumn);
 			virtualColumnMap.put(normalizedTargetName, new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
