@@ -62,10 +62,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.write.datatable.CyTablesXMLWriter;
 import org.cytoscape.io.internal.util.session.SessionUtil;
-import org.cytoscape.io.internal.write.xgmml.XGMMLWriter;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.io.internal.write.datatable.CyTablesXMLWriter;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.CyWriter;
@@ -106,38 +105,36 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
 	private final OutputStream outputStream;
 	private final CySession session;
-	private final CyNetworkViewWriterManager networkViewWriterMgr;
 	private final CyPropertyWriterManager propertyWriterMgr;
 	private final CyTableWriterManager tableWriterMgr;
 	private final VizmapWriterManager vizmapWriterMgr;
 	private final CyRootNetworkManager rootNetworkManager;
-	private final CyFileFilter xgmmlFilter;
+	private final CyNetworkViewWriterFactory networkViewWriterFactory;
 	private final CyFileFilter bookmarksFilter;
 	private final CyFileFilter propertiesFilter;
 	private final CyFileFilter tableFilter;
 	private final CyFileFilter vizmapFilter;
 	private Map<Long, String> tableFilenamesBySUID;
+	private Map<String, VisualStyle> tableVisualStylesByName;
 
 	public SessionWriterImpl(final OutputStream outputStream, 
 	                         final CySession session, 
-	                         final CyNetworkViewWriterManager networkViewWriterMgr,
-	                         final CyRootNetworkManager rootNetworkManager,
+	                         final CyRootNetworkManager rootNetworkMgr,
 	                         final CyPropertyWriterManager propertyWriterMgr,
 	                         final CyTableWriterManager tableWriterMgr,
 	                         final VizmapWriterManager vizmapWriterMgr,
-	                         final CyFileFilter xgmmlFilter, 
+	                         final CyNetworkViewWriterFactory networkViewWriterFactory,
 	                         final CyFileFilter bookmarksFilter,
 	                         final CyFileFilter propertiesFilter,
 	                         final CyFileFilter tableFilter,
 	                         final CyFileFilter vizmapFilter) {
 		this.outputStream = outputStream;
 		this.session = session;
-		this.networkViewWriterMgr = networkViewWriterMgr;
-		this.rootNetworkManager = rootNetworkManager;
+		this.rootNetworkManager = rootNetworkMgr;
 		this.propertyWriterMgr = propertyWriterMgr;
 		this.tableWriterMgr = tableWriterMgr;
 		this.vizmapWriterMgr = vizmapWriterMgr;
-		this.xgmmlFilter = xgmmlFilter;
+		this.networkViewWriterFactory = networkViewWriterFactory;
 		this.bookmarksFilter = bookmarksFilter;
 		this.propertiesFilter = propertiesFilter;
 		this.tableFilter = tableFilter;
@@ -148,7 +145,12 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		String now = df.format(new Date());
 
 		cysessionDocId = "CytoscapeSession-" + now;
-		sessionDir = cysessionDocId + "/"; 
+		sessionDir = cysessionDocId + "/";
+		
+		tableVisualStylesByName = new HashMap<String, VisualStyle>();
+		
+		for (final VisualStyle vs : session.getVisualStyles())
+			tableVisualStylesByName.put(vs.getTitle(), vs);
 	}
 
 	/**
@@ -262,13 +264,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 			String xgmmlFile = SessionUtil.getXGMMLFilename(rn);
 			zos.putNextEntry(new ZipEntry(sessionDir + NETWORKS_FOLDER + xgmmlFile) );
 			
-			CyWriter writer = networkViewWriterMgr.getWriter(rn, xgmmlFilter, zos);
-			
-			// Write the XGMML file *without* graphics attributes--let the Vizmap handle those
-			if (writer instanceof XGMMLWriter) {
-				((XGMMLWriter) writer).setSessionFormat(true);
-			}
-			
+			CyWriter writer = networkViewWriterFactory.createWriter(zos, rn);
 			writer.run(taskMonitor);
 	
 			zos.closeEntry();
@@ -287,19 +283,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 			String xgmmlFile = SessionUtil.getXGMMLFilename(view);
 			zos.putNextEntry(new ZipEntry(sessionDir + NETWORK_VIEWS_FOLDER + xgmmlFile) );
 			
-			CyWriter writer = networkViewWriterMgr.getWriter(view, xgmmlFilter, zos);
-			
-			// Write the XGMML file for the CYS file
-			if (writer instanceof XGMMLWriter) {
-				// TODO: there should be a better way of doing that without having to cast the writer. 
-				((XGMMLWriter) writer).setSessionFormat(true);
-				
-				final String visualStyleName = session.getViewVisualStyleMap().get(view);
-				
-				if (visualStyleName != null)
-					((XGMMLWriter) writer).setVisualStyleName(visualStyleName);
-			}
-			
+			CyWriter writer = networkViewWriterFactory.createWriter(zos, view);
 			writer.run(taskMonitor);
 	
 			zos.closeEntry();

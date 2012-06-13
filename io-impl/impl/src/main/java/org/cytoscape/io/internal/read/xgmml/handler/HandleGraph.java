@@ -96,10 +96,12 @@ public class HandleGraph extends AbstractHandler {
 	
 	private ParseState handleCy3Model(String tag, Attributes atts, ParseState current) throws SAXException {
 		final CyNetwork currentNet;
+		boolean register = isRegistered(atts);
 		
 		if (manager.graphCount == 1) {
 			// Root graph == CyRootNetwork 
 			currentNet = manager.createRootNetwork();
+			register = false;
 		} else if (manager.graphCount == 2) {
 			// First nested graph == base-network
 			final CyRootNetwork rootNet = manager.getRootNetwork();
@@ -111,7 +113,7 @@ public class HandleGraph extends AbstractHandler {
 		}
 		
 		final Object id = getId(atts);
-		addCurrentNetwork(id, currentNet, atts, true);
+		addCurrentNetwork(id, currentNet, atts, register);
 		
 		return current;
 	}
@@ -139,10 +141,10 @@ public class HandleGraph extends AbstractHandler {
 	 * @param oldId The original Id of the graph element. If null, one will be created.
 	 * @param net Can be null if just adding an XLink to an existing network
 	 * @param atts The attributes of the graph tag
-	 * @param isRegistered Should be true for networks that must be registered.
+	 * @param register Should be true for networks that must be registered.
 	 * @return The string identifier of the network
 	 */
-	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts, boolean isRegistered) {
+	protected Object addCurrentNetwork(Object oldId, CyNetwork net, Attributes atts, boolean register) {
 		if (oldId == null)
 			oldId = String.format("_graph%s_%s", manager.graphCount, net.getSUID());
 		
@@ -150,7 +152,7 @@ public class HandleGraph extends AbstractHandler {
 		manager.getNetworkIDStack().push(oldId);
 		
 		if (net != null) {
-			manager.addNetwork(oldId, net, isRegistered);
+			manager.addNetwork(oldId, net, register);
 			
 			if (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0)
 				setNetworkName(net, atts);

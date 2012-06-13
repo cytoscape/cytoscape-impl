@@ -34,25 +34,29 @@ import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskIterator;
 
-public class XGMMLNetworkViewReaderFactory extends AbstractNetworkReaderFactory {
+public class SessionXGMMLNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
+	private final CyRootNetworkManager cyRootNetworkManager;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final XGMMLParser parser;
 	private final ReadDataManager readDataMgr;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 
-	public XGMMLNetworkViewReaderFactory(final CyFileFilter filter,
-										 final CyNetworkViewFactory cyNetworkViewFactory,
-										 final CyNetworkFactory cyNetworkFactory,
-										 final RenderingEngineManager renderingEngineMgr,
-										 final ReadDataManager readDataMgr,
-										 final XGMMLParser parser,
-										 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
+	public SessionXGMMLNetworkReaderFactory(final CyFileFilter filter,
+											final CyNetworkViewFactory cyNetworkViewFactory,
+											final CyNetworkFactory cyNetworkFactory,
+											final CyRootNetworkManager cyRootNetworkManager,
+											final RenderingEngineManager renderingEngineMgr,
+											final ReadDataManager readDataMgr,
+											final XGMMLParser parser,
+											final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
+		this.cyRootNetworkManager = cyRootNetworkManager;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
@@ -61,7 +65,7 @@ public class XGMMLNetworkViewReaderFactory extends AbstractNetworkReaderFactory 
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new XGMMLNetworkViewReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr));
+		return new TaskIterator(new SessionXGMMLNetworkReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
+				renderingEngineMgr, cyRootNetworkManager, readDataMgr, parser, unrecognizedVisualPropertyMgr));
 	}
 }

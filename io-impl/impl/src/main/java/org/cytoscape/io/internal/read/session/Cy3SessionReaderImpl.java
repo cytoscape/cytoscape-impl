@@ -60,7 +60,7 @@ import java.util.regex.Pattern;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.datatable.CyTablesXMLReader;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
-import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkViewReader;
+import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewReader;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -121,7 +121,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 	private List<VirtualColumn> virtualColumns;
 	private boolean networksExtracted;
-
 
 
 	public Cy3SessionReaderImpl(final InputStream sourceInputStream,
@@ -332,8 +331,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				networkViews.add(view);
 				
 				// Get its visual style name
-				if (reader instanceof XGMMLNetworkViewReader) {
-					final String vsName = ((XGMMLNetworkViewReader) reader).getVisualStyleName();
+				if (reader instanceof SessionXGMMLNetworkViewReader) {
+					final String vsName = ((SessionXGMMLNetworkViewReader) reader).getVisualStyleName();
 					
 					if (vsName != null && !vsName.isEmpty())
 						this.visualStyleMap.put(view, vsName);

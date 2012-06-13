@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBException;
 
-import org.cytoscape.io.internal.read.xgmml.XGMMLNetworkReader;
+import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkReader;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.model.Child;
 import org.cytoscape.io.internal.util.session.model.Cysession;
@@ -292,8 +292,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		final CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 
 		if (parent != null) {
-			if (reader instanceof XGMMLNetworkReader) {
-				((XGMMLNetworkReader) reader).setParent(parent);
+			if (reader instanceof SessionXGMMLNetworkReader) {
+				((SessionXGMMLNetworkReader) reader).setParent(parent);
 			} else {
 				logger.error("CyNetworkReader should be an instance of XGMMLNetworkReader! "
 						+ "Cannot extract network as sub-nertwork of: " + entryName);

@@ -30,42 +30,41 @@ package org.cytoscape.io.internal.read.xgmml;
 import java.io.InputStream;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.util.StreamUtil;
 
 /**
  * Filters XGMML files that are used to save CyNetworkViews as part of a session file. 
  */
-public class XGMMLNetworkViewFileFilter extends XGMMLFileFilter {
+public class SessionXGMMLNetworkViewFileFilter extends GenericXGMMLFileFilter {
 
-	public XGMMLNetworkViewFileFilter(Set<String> extensions, Set<String> contentTypes,
+	protected static final Pattern SESSION_XGMML_VIEW_PATTERN = Pattern.compile("cy:view=[\\'\"](1|true)[\\'\"]");
+	
+	public SessionXGMMLNetworkViewFileFilter(Set<String> extensions, Set<String> contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
 
-	public XGMMLNetworkViewFileFilter(String[] extensions, String[] contentTypes,
+	public SessionXGMMLNetworkViewFileFilter(String[] extensions, String[] contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
 	
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-		// Check data category
-		if (category != this.category)
+		if (category != this.category || !SessionUtil.isReadingSessionFile())
 			return false;
 		
-		final String header = this.getHeader(stream, 20);
-		Matcher matcher = XGMML_HEADER_PATTERN.matcher(header);
+		final String root = getXGMMLRootElement(stream);
 		
-		if (matcher.find()) {
-			// It looks like an XGMML graph tag
-			final String graph = matcher.group(0);
+		if (root != null) {
+			// It looks like an XGMML file, but it also needs to have the 'cy:view="1"' flag
+			final Matcher matcher = SESSION_XGMML_VIEW_PATTERN.matcher(root);
 			
-			// But it also needs to have the 'cy:view="1"' flag:
-			matcher = XGMML_VIEW_ATTRIBUTE_PATTERN.matcher(graph);
-			
-			return (matcher.find());
+			return matcher.find();
 		}
 		
 		return false;

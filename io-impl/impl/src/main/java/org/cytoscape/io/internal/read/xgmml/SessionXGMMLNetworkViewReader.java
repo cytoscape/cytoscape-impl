@@ -33,9 +33,9 @@ import java.util.Map;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -45,17 +45,17 @@ import org.cytoscape.work.TaskMonitor;
 /**
  * This reader handles XGMML files that serialize CyNetworkViews in Cy3 session files.
  */
-public class XGMMLNetworkViewReader extends AbstractXGMMLReader {
+public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 
 	private boolean settingLockedVisualProperties;
 	
-	public XGMMLNetworkViewReader(final InputStream inputStream,
-								  final CyNetworkViewFactory cyNetworkViewFactory,
-								  final CyNetworkFactory cyNetworkFactory,
-								  final RenderingEngineManager renderingEngineMgr,
-								  final ReadDataManager readDataMgr,
-								  final XGMMLParser parser,
-								  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
+	public SessionXGMMLNetworkViewReader(final InputStream inputStream,
+										 final CyNetworkViewFactory cyNetworkViewFactory,
+										 final CyNetworkFactory cyNetworkFactory,
+										 final RenderingEngineManager renderingEngineMgr,
+										 final ReadDataManager readDataMgr,
+										 final XGMMLParser parser,
+										 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
 		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, renderingEngineMgr, readDataMgr, parser,
 				unrecognizedVisualPropertyMgr);
 	}

@@ -35,7 +35,7 @@ import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.junit.Before;
 import org.junit.Test;
 
-public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
+public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 
 	CyNetworkViewFactory networkViewFactory;
 	CyNetworkFactory networkFactory;
@@ -46,7 +46,7 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	ReadCache readCache;
 	UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	XGMMLParser parser;
-	XGMMLNetworkReader reader;
+	GenericXGMMLReader reader;
 
 	@Before
 	public void setUp() throws Exception {
@@ -173,8 +173,8 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 
 	@Test
 	public void testIsLockedVisualProperty() throws Exception {
-		reader = new XGMMLNetworkReader(new ByteArrayInputStream("".getBytes("UTF-8")), viewFactory, netFactory,
-				renderingEngineMgr, rootNetworkMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
+		reader = new GenericXGMMLReader(new ByteArrayInputStream("".getBytes("UTF-8")), viewFactory, netFactory,
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
 		
 		CyNetwork network = mock(CyNetwork.class);
 		assertFalse(reader.isLockedVisualProperty(network, "GRAPH_VIEW_ZOOM"));
@@ -212,10 +212,41 @@ public class XGMMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		assertTrue(reader.isLockedVisualProperty(edge, BasicVisualLexicon.EDGE_WIDTH.getIdString()));
 	}
 
+	@Test
+	public void testIsXGMMLTransparency() {
+		assertTrue(GenericXGMMLReader.isXGMMLTransparency("nodeTransparency"));
+		assertTrue(GenericXGMMLReader.isXGMMLTransparency("edgeTransparency"));
+	}
+
+	@Test
+	public void testIsOldFont() {
+		assertTrue(GenericXGMMLReader.isOldFont("nodeLabelFont"));
+		assertTrue(GenericXGMMLReader.isOldFont("cy:nodeLabelFont"));
+		assertTrue(GenericXGMMLReader.isOldFont("edgeLabelFont"));
+		assertTrue(GenericXGMMLReader.isOldFont("cy:edgeLabelFont"));
+	}
+
+	@Test
+	public void testConvertXGMMLTransparencyValue() {
+		assertEquals("0", GenericXGMMLReader.convertXGMMLTransparencyValue("0"));
+		assertEquals("0", GenericXGMMLReader.convertXGMMLTransparencyValue("0.0"));
+		assertEquals("255", GenericXGMMLReader.convertXGMMLTransparencyValue("1.0"));
+		assertEquals("26", GenericXGMMLReader.convertXGMMLTransparencyValue("0.1"));
+		assertEquals("128", GenericXGMMLReader.convertXGMMLTransparencyValue("0.5"));
+	}
+
+	@Test
+	public void testConvertOldFontValue() {
+		assertEquals("ACaslonPro,bold,18", GenericXGMMLReader.convertOldFontValue("ACaslonPro-Bold-0-18"));
+		assertEquals("SansSerif,plain,12", GenericXGMMLReader.convertOldFontValue("SansSerif-0-12.1"));
+		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif.bold-0.0-12.0"));
+		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif,bold,12"));
+	}
+	
 	private List<CyNetworkView> getViews(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
-		reader = new XGMMLNetworkReader(new FileInputStream(f), viewFactory, netFactory,
-				renderingEngineMgr, rootNetworkMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
+		reader = new GenericXGMMLReader(new FileInputStream(f), viewFactory, netFactory,
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr);
 		reader.run(taskMonitor);
 
 		final CyNetwork[] networks = reader.getNetworks();

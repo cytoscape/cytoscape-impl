@@ -36,59 +36,59 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.util.StreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class XGMMLFileFilter extends BasicCyFileFilter {
+public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 	
 	public static final Pattern XGMML_HEADER_PATTERN = Pattern
 			.compile("<graph[^<>]+[\\'\"]http://www.cs.rpi.edu/XGMML[\\'\"][^<>]*>");
 	
-	public static final Pattern XGMML_VIEW_ATTRIBUTE_PATTERN = Pattern.compile("cy:view=[\\'\"](1|true)[\\'\"]");
-	
-	private static final Logger logger = LoggerFactory.getLogger(XGMMLFileFilter.class);
+	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLFileFilter.class);
 	
 
-	public XGMMLFileFilter(Set<String> extensions, Set<String> contentTypes,
+	public GenericXGMMLFileFilter(Set<String> extensions, Set<String> contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
 
-	public XGMMLFileFilter(String[] extensions, String[] contentTypes,
+	public GenericXGMMLFileFilter(String[] extensions, String[] contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
 
 	@Override
-	public boolean accepts(InputStream stream, DataCategory category) {
-		// Check data category
-		if (category != this.category)
+	public boolean accepts(final InputStream stream, final DataCategory category) {
+		if (category != this.category || SessionUtil.isReadingSessionFile())
 			return false;
 		
-		final String header = this.getHeader(stream, 20);
-		Matcher matcher = XGMML_HEADER_PATTERN.matcher(header);
-		
-		if (matcher.find()) {
-			// It looks like an XGMML graph tag
-			final String graph = matcher.group(0);
-			// But we still have to check if it is NOT the session-view type:
-			matcher = XGMML_VIEW_ATTRIBUTE_PATTERN.matcher(graph);
-			
-			if (!matcher.find())
-				return true;
-		}
-		
-		return false;
+		return getXGMMLRootElement(stream) != null;
 	}
 
 	@Override
-	public boolean accepts(URI uri, DataCategory category) {
+	public boolean accepts(final URI uri, final DataCategory category) {
 		try {
 			return accepts(uri.toURL().openStream(), category);
 		} catch (IOException e) {
 			logger.error("Error while opening stream: " + uri, e);
 			return false;
 		}
+	}
+	
+	/**
+	 * @param stream
+	 * @return null if not an XGMML file
+	 */
+	protected String getXGMMLRootElement(final InputStream stream) {
+		final String header = this.getHeader(stream, 20);
+		final Matcher matcher = XGMML_HEADER_PATTERN.matcher(header);
+		String root = null;
+		
+		if (matcher.find())
+			root = matcher.group(0);
+		
+		return root;
 	}
 }

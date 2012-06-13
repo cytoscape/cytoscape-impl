@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -64,6 +65,9 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -98,7 +102,10 @@ enum ObjectType {
     }
 }
 
-public class XGMMLWriter extends AbstractTask implements CyWriter {
+/**
+ * This writer serializes CyNetworks and CyNetworkViews as standard XGMML files.
+ */
+public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 
     // XML preamble information
     public static final String ENCODING = "UTF-8";
@@ -121,50 +128,56 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 
     public static final String ENCODE_PROPERTY = "cytoscape.encode.xgmml.attributes";
 
-    private final OutputStream outputStream;
-    private final CyNetwork network;
-    private final CyRootNetwork rootNetwork;
-    private Set<CySubNetwork> subNetworks;
-    private CyNetworkView networkView;
-    private String visualStyleName;
-    private final VisualLexicon visualLexicon;
-    private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
-    private final CyNetworkManager networkMgr;
-    private final CyRootNetworkManager rootNetworkMgr;
+    protected final OutputStream outputStream;
+    protected final CyNetwork network;
+    protected final CyRootNetwork rootNetwork;
+    protected Set<CySubNetwork> subNetworks;
+    protected CyNetworkView networkView;
+    protected VisualStyle visualStyle;
+    protected final VisualLexicon visualLexicon;
+    protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
+    protected final CyNetworkManager networkMgr;
+    protected final CyRootNetworkManager rootNetworkMgr;
 
-    private final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<CyNode, CyNode>();
-    private final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
-    private final Map<CyNetwork, CyNetwork> writtenNetMap = new WeakHashMap<CyNetwork, CyNetwork>();
+    protected final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<CyNode, CyNode>();
+    protected final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
+    protected final Map<CyNetwork, CyNetwork> writtenNetMap = new WeakHashMap<CyNetwork, CyNetwork>();
 
-    private int depth = 0;
+    protected int depth = 0;
     private String indentString = "";
-    private Writer writer = null;
+    private Writer writer;
 
     private boolean doFullEncoding;
-    private boolean sessionFormat;
+	private final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap;
+	private Set<VisualProperty<?>> disabledVisualProperties;
 
-    public XGMMLWriter(final OutputStream outputStream,
-                       final RenderingEngineManager renderingEngineMgr,
-                       final CyNetworkView networkView,
-                       final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-                       final CyNetworkManager networkMgr,
-                       final CyRootNetworkManager rootNetworkMgr) {
+	public GenericXGMMLWriter(final OutputStream outputStream,
+							  final RenderingEngineManager renderingEngineMgr,
+							  final CyNetworkView networkView,
+							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
+							  final CyNetworkManager networkMgr,
+							  final CyRootNetworkManager rootNetworkMgr,
+							  final VisualMappingManager vmMgr) {
 		this(outputStream, renderingEngineMgr, networkView.getModel(), unrecognizedVisualPropertyMgr, networkMgr,
 				rootNetworkMgr);
 		this.networkView = networkView;
+		
+		setVisualStyle(vmMgr.getVisualStyle(networkView));
     }
     
-    public XGMMLWriter(final OutputStream outputStream,
-                       final RenderingEngineManager renderingEngineMgr,
-                       final CyNetwork network,
-                       final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-                       final CyNetworkManager networkMgr,
-                       final CyRootNetworkManager rootNetworkMgr) {
+	public GenericXGMMLWriter(final OutputStream outputStream,
+							  final RenderingEngineManager renderingEngineMgr,
+							  final CyNetwork network,
+							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
+							  final CyNetworkManager networkMgr,
+							  final CyRootNetworkManager rootNetworkMgr) {
 		this.outputStream = outputStream;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.networkMgr = networkMgr;
 		this.rootNetworkMgr = rootNetworkMgr;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
+		this.dependencyMap = new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
+		this.disabledVisualProperties = new HashSet<VisualProperty<?>>();
 		
 		if (network instanceof CyRootNetwork) {
 			this.network = this.rootNetwork = (CyRootNetwork) network;
@@ -187,7 +200,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     	taskMonitor.setProgress(0.0);
         writer = new OutputStreamWriter(outputStream);
 
-        writePreamble();
+        writeRootElement();
         taskMonitor.setProgress(0.2);
         depth++;
         
@@ -210,61 +223,18 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         writer.flush();
         taskMonitor.setProgress(1.0);
     }
-
-	/**
-     * To tell the writer whether or not the XGMML file will be saved as part of a Cytoscape session file.
-     * @param sessionFormat
-     */
-	public void setSessionFormat(boolean sessionFormat) {
-		this.sessionFormat = sessionFormat;
-	}
-
-	/**
-	 * Used when saving the view-type XGMML. 
-	 * @param visualStyleName
-	 */
-	public void setVisualStyleName(String visualStyleName) {
-		this.visualStyleName = visualStyleName;
-	}
-
+	
 	/**
      * Output the XML preamble.  This includes the XML line as well as the initial
      * &lt;graph&gt; element, along with all of our namespaces.
      *
      * @throws IOException
      */
-    private void writePreamble() throws IOException {
+    protected void writeRootElement() throws IOException {
     	writeElement(XML_STRING + "\n");
         writeElement("<graph");
         
-        long id = network.getSUID();
-        
-        if (sessionFormat && networkView != null) {
-        	// Saving a network view into a CYS file?
-        	id = networkView.getSUID();
-        }
-        
-        writeAttributePair("id", id);
-        
-        // Save the label to make it more human readable
-        String label = networkView != null ? getLabel(networkView) : getLabel(network, network);
-        writeAttributePair("label", label);
-        
-        // Is is a network view serialization?
-        if (sessionFormat) {
-        	writeAttributePair("cy:view",  ObjectTypeMap.toXGMMLBoolean(networkView != null));
-        	
-        	if (networkView != null) {
-        		writeAttributePair("cy:networkId", network.getSUID());
-        		writeAttributePair("cy:visualStyle", visualStyleName);
-        	} else {
-        		writeAttributePair("cy:registered", ObjectTypeMap.toXGMMLBoolean(isRegistered(network)));
-        	}
-        } else {
-        	// Only if exporting to standard XGMML
-        	writeAttributePair("directed", getDirectionality());
-        }
-        
+        writeRootElementAtributes();
         writeAttributePair(DOCUMENT_VERSION_NAME, VERSION);
         
         for (int ns = 0; ns < NAMESPACES.length; ns++)
@@ -274,40 +244,26 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         
         writtenNetMap.put(network, network);
     }
-
-    /**
-     * Output the network metadata.  This includes our format version and our RDF data.
-     *
-     * @throws IOException
-     */
-    private void writeMetadata() throws IOException {
-    	if (!sessionFormat) {
-			writeElement("<att name=\"networkMetadata\">\n");
-			depth++;
-			writeRDF();
-			depth--;
-	        writeElement("</att>\n");
-    	}
+    
+    protected void writeRootElementAtributes() throws IOException {
+        writeAttributePair("id", network.getSUID());
+        
+        String label = networkView != null ? getLabel(networkView) : getLabel(network, network);
+        writeAttributePair("label", label);
+    	
+    	writeAttributePair("directed", getDirectionality());
     }
 
     /**
-     * Output the RDF information for this network.
-     *     <rdf:RDF>
-     *         <rdf:Description rdf:about="http://www.cytoscape.org/">
-     *             <dc:type>Protein-Protein Interaction</dc:type>
-     *             <dc:description>N/A</dc:description>
-     *             <dc:identifier>N/A</dc:identifier>
-     *             <dc:date>2007-01-16 13:29:50</dc:date>
-     *             <dc:title>Amidohydrolase Superfamily--child</dc:title>
-     *             <dc:source>http://www.cytoscape.org/</dc:source>
-     *             <dc:format>Cytoscape-XGMML</dc:format>
-     *         </rdf:Description>
-     *     </rdf:RDF>
-     *
+     * Output the network metadata.  This includes our format version and our RDF data.
      * @throws IOException
      */
-    private void writeRDF() throws IOException {
-    	String title = networkView != null ? getLabel(networkView) : getLabel(network, network);
+    protected void writeMetadata() throws IOException {
+		writeElement("<att name=\"networkMetadata\">\n");
+		depth++;
+		
+		// Write RDF
+		String title = networkView != null ? getLabel(networkView) : getLabel(network, network);
     	Date now = new Date();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     	
@@ -326,6 +282,9 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         writeElement("</rdf:Description>\n");
         depth--;
         writeElement("</rdf:RDF>\n");
+		
+		depth--;
+        writeElement("</att>\n");
     }
 
     /**
@@ -335,25 +294,15 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      *
      * @throws IOException
      */
-	private void writeRootGraphAttributes() throws IOException {
-		// Handle all of the other network attributes, but only if exporting to XGMML directly
+	protected void writeRootGraphAttributes() throws IOException {
 		writeAttributes(network.getRow(network));
-
-		// Write sub-graphs first, but only if the XGMML is for a CYS file
-		if (sessionFormat) {
-			for (CySubNetwork subNet : subNetworks) {
-				if (!writtenNetMap.containsKey(subNet)) {
-					writeSubGraph(subNet);
-				}
-			}
-		}
-
-		// Root-network's graphics attributes
-		if (networkView != null)
-			writeGraphics(networkView);
+		writeGraphics(networkView, false);
 	}
 
-	private void writeSubGraph(final CyNetwork net) throws IOException {
+	protected void writeSubGraph(final CyNetwork net) throws IOException {
+		if (net == null)
+			return;
+		
 		if (writtenNetMap.containsKey(net)) {
 			// This sub-network has already been written
 			writeSubGraphReference(net);
@@ -388,15 +337,14 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 				writeElement("</graph>\n");
 				depth--;
 				writeElement("</att>\n");
-			} else if (sessionFormat) {
-				// This network belongs to another XGMML file, but that's ok because this XGMML is part of a CYS file,
-				// which means that both files will be saved.
-				writeSubGraphReference(net);
 			}
 		}
 	}
 	
-	private void writeSubGraphReference(CyNetwork net) throws IOException {
+	protected void writeSubGraphReference(CyNetwork net) throws IOException {
+		if (net == null)
+			return;
+		
 		String href = "#" + net.getSUID();
 		final CyRootNetwork otherRoot = rootNetworkMgr.getRootNetwork(net);
 		final boolean sameRoot = rootNetwork.equals(otherRoot);
@@ -421,17 +369,11 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	 * Output Cytoscape nodes as XGMML
 	 * @throws IOException
 	 */
-	private void writeNodes() throws IOException {
-		if (sessionFormat && networkView != null) {
-			for (View<CyNode> view : networkView.getNodeViews()) {
-				writeNodeView(networkView.getModel(), view);
-			}
-		} else {
-			for (CyNode node : network.getNodeList()) {
-				// Only if not already written inside a nested graph
-				if (!writtenNodeMap.containsKey(node))
-					writeNode(network, node);
-			}
+	protected void writeNodes() throws IOException {
+		for (CyNode node : network.getNodeList()) {
+			// Only if not already written inside a nested graph
+			if (!writtenNodeMap.containsKey(node))
+				writeNode(network, node);
 		}
 	}
 	
@@ -439,18 +381,12 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * Output Cytoscape edges as XGMML
      * @throws IOException
      */
-    private void writeEdges() throws IOException {
-    	if (sessionFormat && networkView != null) {
-	    	for (View<CyEdge> view : networkView.getEdgeViews()) {
-				writeEdgeView(networkView.getModel(), view);
-			}
-    	} else {
-    		for (CyEdge edge : network.getEdgeList()) {
-    			// Only if not already written inside a nested graph
-    			if (!writtenEdgeMap.containsKey(edge))
-    				writeEdge(network, edge);
-	        }
-		}
+    protected void writeEdges() throws IOException {
+		for (CyEdge edge : network.getEdgeList()) {
+			// Only if not already written inside a nested graph
+			if (!writtenEdgeMap.containsKey(edge))
+				writeEdge(network, edge);
+        }
     }
 
     /**
@@ -459,7 +395,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param node the node to output
      * @throws IOException
      */
-	private void writeNode(final CyNetwork net, final CyNode node) throws IOException {
+	protected void writeNode(final CyNetwork net, final CyNode node) throws IOException {
 		boolean written = writtenNodeMap.containsKey(node);
 		
 		// Output the node
@@ -476,69 +412,30 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			// Write the actual node with its properties
 			writeAttributePair("id", node.getSUID());
 			writeAttributePair("label", getLabel(net, node));
+			write(">\n");
+			depth++;
 			
-			final CyNetwork netPointer = node.getNetworkPointer();
+			// Output the node attributes
+			writeAttributes(net.getRow(node));
+			// Write node's sub-graph
+			writeSubGraph(node.getNetworkPointer());
 			
-			if (sessionFormat && networkView == null && netPointer == null) {
-				write("/>\n");
-			} else {
-				write(">\n");
-				depth++;
-				
-				// Output the node attributes
-				writeAttributes(net.getRow(node));
-				
-				// Write node's sub-graph:
-				if (netPointer != null) {
-					if (sessionFormat && this.subNetworks.contains(netPointer)) {
-						// Because this network is registered (is also a child network), just write the reference.
-						// The content will be saved later, under the root graph
-						// (it's important to save the child network graphs in the correct order).
-						writeSubGraphReference(netPointer);
-					} else {
-						writeSubGraph(netPointer);
-					}
-				}
-				
-		        // Output the node graphics if we have a view and it is a simple XGMML export
-				if (!sessionFormat && networkView != null)
-					writeGraphics(networkView.getNodeView(node));
-				
-				depth--;
-				writeElement("</node>\n");
-			}
+	        // Output the node graphics if we have a view
+			if (networkView != null)
+				writeGraphics(networkView.getNodeView(node), false);
+			
+			depth--;
+			writeElement("</node>\n");
 		}
 	}
 	
-	/**
-     * Output a single node view as XGMML
-     *
-     * @param view the node view to output
-     * @throws IOException
-     */
-	private void writeNodeView(CyNetwork network, View<CyNode> view) throws IOException {
-		// Output as a node tag
-		writeElement("<node");
-		writeAttributePair("id", view.getSUID());
-		writeAttributePair("label", getLabel(network, view.getModel()));
-		writeAttributePair("cy:nodeId", view.getModel().getSUID());
-		write(">\n");
-        depth++;
-        
-        // Output the node graphics if we have a view and it is a simple XGMML export
-		writeGraphics(view);
-
-		depth--;
-		writeElement("</node>\n");
-	}
-
     /**
      * Output a Cytoscape edge as XGMML
      *
      * @param edge the edge to output
      * @throws IOException
      */
-	private void writeEdge(CyNetwork net, CyEdge edge) throws IOException {
+	protected void writeEdge(CyNetwork net, CyEdge edge) throws IOException {
 		writeElement("<edge");
 		boolean written = writtenEdgeMap.containsKey(edge);
 		
@@ -556,62 +453,33 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 			writeAttributePair("target", edge.getTarget().getSUID());
 			writeAttributePair("cy:directed",  ObjectTypeMap.toXGMMLBoolean(edge.isDirected()));
 			
-			if (sessionFormat && networkView == null) {
-				write("/>\n");
-			} else {
-				write(">\n");
-				depth++;
-	
-				// Write the edge attributes
-				writeAttributes(net.getRow(edge));
-		
-				// Write the edge graphics
-				if (networkView != null)
-					writeGraphics(networkView.getEdgeView(edge));
-	
-				depth--;
-				writeElement("</edge>\n");
-			}
-		}
-	}
-	
-	/**
-     * Output a Cytoscape edge view as XGMML
-     *
-     * @param view the edge view to output
-     * @throws IOException
-     */
-	private void writeEdgeView(CyNetwork network, View<CyEdge> view) throws IOException {
-		// It is not necessary to write edges that have no locked visual properties
-		boolean hasLockedVisualProps = false;
-		Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(BasicVisualLexicon.EDGE);
-		
-		for (VisualProperty<?> vp : visualProperties) {
-			if (view.isValueLocked(vp)) {
-				hasLockedVisualProps = true;
-				break;
-			}
-		}
-		
-		if (hasLockedVisualProps) {
-			writeElement("<edge");
-			writeAttributePair("id", view.getSUID());
-			writeAttributePair("label", getLabel(network, view.getModel()));
-			writeAttributePair("cy:edgeId", view.getModel().getSUID());
 			write(">\n");
 			depth++;
+
+			// Write the edge attributes
+			writeAttributes(net.getRow(edge));
 	
 			// Write the edge graphics
-			writeGraphics(view);
-	
+			if (networkView != null)
+				writeGraphics(networkView.getEdgeView(edge), false);
+
 			depth--;
 			writeElement("</edge>\n");
 		}
 	}
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-	private void writeGraphics(View<? extends CyIdentifiable> view) throws IOException {
-        if (view == null) return;
+	
+    /**
+     * Writes a graphics tag under graph, node, edge.
+     * @param view
+     * @param groupLockedProperties Whether or not locked visual properties must be grouped under a list-type att tag.
+     * @throws IOException
+     */
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	protected void writeGraphics(View<? extends CyIdentifiable> view, final boolean groupLockedProperties)
+			throws IOException {
+        if (view == null)
+        	return;
+        
         writeElement("<graphics");
         
         CyIdentifiable element = view.getModel();
@@ -624,58 +492,72 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         else
         	root = BasicVisualLexicon.NETWORK;
         
-        Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(root);
-        List<VisualProperty<?>> cyProperties = new ArrayList<VisualProperty<?>>();
-        List<VisualProperty<?>> lockedProperties = new ArrayList<VisualProperty<?>>();
-
+        final Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(root);
+        final List<VisualProperty<?>> attProperties = new ArrayList<VisualProperty<?>>(); // To be written as att tags
+        final List<VisualProperty<?>> lockedProperties = new ArrayList<VisualProperty<?>>();
+        final Set<String> writtenKeys = new HashSet<String>();
+        
         for (VisualProperty vp : visualProperties) {
-        	if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class) {
-        		// If network, ignore node and edge visual properties (they are also returned as NETWORK's descendants).
+        	// If network, ignore node and edge visual properties,
+        	// because they are also returned as NETWORK's descendants
+        	if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class)
         		continue;
-        	}
+        	
+        	if (disabledVisualProperties.contains(vp)) 
+        		continue;
         		
             Object value = view.getVisualProperty(vp);
-
-            if (value != null && view.isValueLocked(vp)) {
+            
+            if (value == null)
+            	continue;
+            
+            final VisualPropertyDependency<?> dep = dependencyMap.get(vp);
+            
+            if (dep != null && !dep.isDependencyEnabled()) {
+            	// The property is the parent of a dependency, but the dependency is not enabled.
+            	// So ignore this visual property, because the child properties should be used instead.
+            	continue;
+            }
+            
+            if (groupLockedProperties && view.isValueLocked(vp)) {
             	lockedProperties.add(vp);
             	continue;
             }
             
-            // Use XGMML graphics attribute names for some visual properties
-            String key = getGraphicsKey(vp);
+        	// Use XGMML graphics attribute names for some visual properties
+            final String[] keys = getGraphicsKey(vp);
             
-            if (key != null && value != null && !ignoreGraphicsAttribute(element, key)) {
+            if (keys != null && keys.length > 0) {
             	// XGMML graphics attributes...
-                if (key.toLowerCase().contains("transparency") && value instanceof Integer) {
-                    // Cytoscape's XGMML specifies transparency as between 0-1.0 when it is a <graphics> attribute!
-                    float transparency  = ((Integer) value).floatValue();
-                    value = transparency / 255;
-                } else {
-                    value = vp.toSerializableString(value);
-                }
-                
-                if (value != null)
-                	writeAttributePair(key, value);
-            } else {
-            	// No XGMML correspondent--write as inner att tags...
-            	key = vp.getIdString();
+            	value = vp.toSerializableString(value);
             	
-            	if (!ignoreGraphicsAttribute(element, key))
-            		cyProperties.add(vp);
+            	if (value != null) {
+            		for (int i = 0; i < keys.length; i++) {
+            			final String k = keys[i];
+            			
+            			if (!writtenKeys.contains(k)) {
+            				writeAttributePair(k, value);
+            				writtenKeys.add(k); // to avoid writing the same key twice, because of dependencies!
+            			}
+            		}
+            	}
+            } else if (!ignoreGraphicsAttribute(element, vp.getIdString())) {
+            	// So it can be written as nested att tags
+            	attProperties.add(vp);
             }
         }
         
 		Map<String, String> unrecognizedMap = unrecognizedVisualPropertyMgr
 				.getUnrecognizedVisualProperties(networkView, view);
 
-		if (cyProperties.isEmpty() && lockedProperties.isEmpty() && unrecognizedMap.isEmpty()) {
+		if (attProperties.isEmpty() && lockedProperties.isEmpty() && unrecognizedMap.isEmpty()) {
 			write("/>\n");
 		} else {
 			write(">\n");
 			depth++;
             
 			// write Cy3-specific properties 
-			for (VisualProperty vp : cyProperties) {
+			for (VisualProperty vp : attProperties) {
             	writeVisualPropertyAtt(view, vp);
             }
 			
@@ -746,50 +628,37 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 	 * @param attName
 	 * @return
 	 */
-    private boolean ignoreGraphicsAttribute(final CyIdentifiable element, String attName) {
-    	// If a session format, only those visual properties that belong to the view
-    	// (not a visual style) should be saved in the XGMML file.
-    	boolean b = (sessionFormat && (element instanceof CyNode) && !attName.matches("x|y|z"));
-		b = b || (sessionFormat && (element instanceof CyEdge));
-		b = b || (sessionFormat && (element instanceof CyNetwork) && 
-				  attName.matches(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT.getIdString()));
-		
-		return b;
+    protected boolean ignoreGraphicsAttribute(final CyIdentifiable element, String attName) {
+		return false;
 	}
     
-    private String getGraphicsKey(VisualProperty<?> vp) {
-        //Nodes
-        if (vp.equals(BasicVisualLexicon.NODE_X_LOCATION)) return "x";
-        if (vp.equals(BasicVisualLexicon.NODE_Y_LOCATION)) return "y";
-        if (vp.equals(BasicVisualLexicon.NODE_Z_LOCATION)) return "z";
-        if (vp.equals(BasicVisualLexicon.NODE_WIDTH)) return "w";
-        if (vp.equals(BasicVisualLexicon.NODE_HEIGHT)) return "h";
-        if (vp.equals(BasicVisualLexicon.NODE_FILL_COLOR)) return "fill";
-        if (vp.equals(BasicVisualLexicon.NODE_SHAPE)) return "type";
-        if (vp.equals(BasicVisualLexicon.NODE_BORDER_WIDTH)) return "width";
-        if (vp.equals(BasicVisualLexicon.NODE_BORDER_PAINT)) return "outline";
-        if (vp.equals(BasicVisualLexicon.NODE_TRANSPARENCY)) return "cy:nodeTransparency";
-        if (vp.equals(BasicVisualLexicon.NODE_BORDER_LINE_TYPE)) return "cy:borderLineType";
-        if (vp.equals(BasicVisualLexicon.NODE_LABEL)) return "cy:nodeLabelFont";
+    private String[] getGraphicsKey(VisualProperty<?> vp) {
+    	//Nodes
+        if (vp.equals(BasicVisualLexicon.NODE_X_LOCATION)) return new String[]{"x"};
+        if (vp.equals(BasicVisualLexicon.NODE_Y_LOCATION)) return new String[]{"y"};
+        if (vp.equals(BasicVisualLexicon.NODE_Z_LOCATION)) return new String[]{"z"};
+        if (vp.equals(BasicVisualLexicon.NODE_SIZE)) return new String[]{"w", "h"};
+        if (vp.equals(BasicVisualLexicon.NODE_WIDTH)) return new String[]{"w"};
+        if (vp.equals(BasicVisualLexicon.NODE_HEIGHT)) return new String[]{"h"};
+        if (vp.equals(BasicVisualLexicon.NODE_FILL_COLOR)) return new String[]{"fill"};
+        if (vp.equals(BasicVisualLexicon.NODE_SHAPE)) return new String[]{"type"};
+        if (vp.equals(BasicVisualLexicon.NODE_BORDER_WIDTH)) return new String[]{"width"};
+        if (vp.equals(BasicVisualLexicon.NODE_BORDER_PAINT)) return new String[]{"outline"};
 
         // Edges
-        if (vp.equals(BasicVisualLexicon.EDGE_WIDTH)) return "width";
-        if (vp.equals(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)) return "fill";
-        if (vp.equals(BasicVisualLexicon.EDGE_LABEL)) return "cy:edgeLabelFont";
-        if (vp.equals(BasicVisualLexicon.EDGE_LINE_TYPE)) return "cy:edgeLineType";
+        if (vp.equals(BasicVisualLexicon.EDGE_WIDTH)) return new String[]{"width"};
+        if (vp.equals(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)) return new String[]{"fill"};
 
-        return null;
+        return new String[]{};
     }
+    
+    protected void writeAttributes(CyRow row) throws IOException {
+		// If it is a Cy Session XGMML, writing the CyRows would be redundant,
+		// because they are already serialized in .cytable files.
+    	CyTable table = row.getTable();
 
-    private void writeAttributes(CyRow row) throws IOException {
-    	if (!sessionFormat) {
-    		// If it is a Cy Session XGMML, writing the CyRows would be redundant,
-    		// because they are already serialized in .cytable files.
-	    	CyTable table = row.getTable();
-	
-			for (final CyColumn column : table.getColumns())
-				writeAttribute(row, column.getName());
-    	}
+		for (final CyColumn column : table.getColumns())
+			writeAttribute(row, column.getName());
     }
     
     /**
@@ -800,7 +669,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @return att Att to return (gets written into xgmml file - CAN BE NULL)
      * @throws IOException
      */
-    private void writeAttribute(final CyRow row, final String attName) throws IOException {
+    protected void writeAttribute(final CyRow row, final String attName) throws IOException {
     	// create an attribute and its type:
 		final CyColumn column = row.getTable().getColumn(attName);
 		
@@ -861,7 +730,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param end is a flag to tell us if the attribute should include a tag end
      * @throws IOException
      */
-    private void writeAttributeXML(String name, ObjectType type, Object value, boolean end) throws IOException {
+    protected void writeAttributeXML(String name, ObjectType type, Object value, boolean end) throws IOException {
         if (name == null && type == null)
             writeElement("</att>\n");
         else {
@@ -887,7 +756,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param str
      * @throws IOException
      */
-    private void write(String str) throws IOException {
+    protected void write(String str) throws IOException {
         writer.write(str);
     }
     
@@ -898,7 +767,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param value is the value of the attribute we're outputting
      * @throws IOException
      */
-    private void writeAttributePair(String name, Object value) throws IOException {
+    protected void writeAttributePair(String name, Object value) throws IOException {
         write(" " + name + "=" + quote(value.toString()));
     }
 
@@ -908,7 +777,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
      * @param line is the element string to output
      * @throws IOException
      */
-    private void writeElement(String line) throws IOException {
+    protected void writeElement(String line) throws IOException {
         while (depth * 2 > indentString.length() - 1)
             indentString = indentString + "                        ";
         writer.write(indentString, 0, depth * 2);
@@ -935,7 +804,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         }
     }
 
-    private String getLabel(CyNetwork network, CyIdentifiable entry) {
+    protected String getLabel(CyNetwork network, CyIdentifiable entry) {
         String label = encode(network.getRow(entry).get(CyNetwork.NAME, String.class));
         
         if (label == null || label.isEmpty())
@@ -944,7 +813,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
         return label;
     }
     
-    private String getLabel(CyNetworkView view) {
+    protected String getLabel(CyNetworkView view) {
     	String label = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
         
     	if (label == null || label.isEmpty())
@@ -1008,6 +877,29 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
     private String quote(String str) {
         return '"' + encode(str) + '"';
     }
+
+	/**
+	 * Used when saving the view-type XGMML. 
+	 * @param visualStyleName
+	 */
+	private void setVisualStyle(final VisualStyle visualStyle) {
+		this.visualStyle = visualStyle;
+		dependencyMap.clear();
+		disabledVisualProperties.clear();
+		
+		if (visualStyle != null) {
+	    	final Set<VisualPropertyDependency<?>> dependencies = visualStyle.getAllVisualPropertyDependencies();
+			
+			for (final VisualPropertyDependency<?> dep : dependencies) {
+				dependencyMap.put(dep.getParentVisualProperty(), dep);
+				
+				if (dep.isDependencyEnabled()) {
+					final Set<VisualProperty<?>> descendants = dep.getVisualProperties();
+					disabledVisualProperties.addAll(descendants);
+				}
+			}
+	    }
+	}
     
     /**
      * @param rootNet
@@ -1030,7 +922,7 @@ public class XGMMLWriter extends AbstractTask implements CyWriter {
 		return registeredSubNetSet;
 	}
     
-    private boolean isRegistered(CyNetwork net) {
+    protected boolean isRegistered(CyNetwork net) {
     	return networkMgr.networkExists(net.getSUID());
     }
 }

@@ -64,16 +64,16 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.ParserAdapter;
 
-public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
+public class GenericXGMMLReader extends AbstractNetworkReader {
 
 	protected final ReadDataManager readDataMgr;
 	protected final XGMMLParser parser;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	protected final VisualLexicon visualLexicon;
 	
-	private static final Logger logger = LoggerFactory.getLogger(AbstractXGMMLReader.class);
+	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
 	
-	public AbstractXGMMLReader(final InputStream inputStream,
+	public GenericXGMMLReader(final InputStream inputStream,
 							   final CyNetworkViewFactory cyNetworkViewFactory,
 							   final CyNetworkFactory cyNetworkFactory,
 							   final RenderingEngineManager renderingEngineMgr,
@@ -126,6 +126,7 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 	
 	protected void init(TaskMonitor tm) {
 		readDataMgr.init();
+		readDataMgr.setViewFormat(false); // TODO: refactor readDataMgr and delete this line
 	}
 	
 	protected void complete(TaskMonitor tm) {
@@ -170,11 +171,29 @@ public abstract class AbstractXGMMLReader extends AbstractNetworkReader {
 		}
 	}
 	
-	abstract void setNetworkViewProperties(CyNetworkView netView);
+	protected void setNetworkViewProperties(CyNetworkView netView) {
+		final CyNetwork network = netView.getModel();
+		
+		String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		
+		if (name != null)
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, name);
+		
+		Map<String, String> atts = readDataMgr.getGraphicsAttributes(network);
+		setVisualProperties(netView, netView, atts);
+	}
 	
-	abstract void setNodeViewProperties(CyNetworkView netView, View<CyNode> nodeView);
-	
-	abstract void setEdgeViewProperties(CyNetworkView netView, View<CyEdge> edgeView);
+	protected void setNodeViewProperties(CyNetworkView netView, View<CyNode> nodeView) {
+		final CyNode node = nodeView.getModel();
+		final Map<String, String> atts = readDataMgr.getGraphicsAttributes(node);
+		setVisualProperties(netView, nodeView, atts);
+	}
+
+	protected void setEdgeViewProperties(CyNetworkView netView, View<CyEdge> edgeView) {
+		final CyEdge edge = edgeView.getModel();
+		final Map<String, String> atts = readDataMgr.getGraphicsAttributes(edge);
+		setVisualProperties(netView, edgeView, atts);
+	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void setVisualProperties(final CyNetworkView netView, final View<? extends CyIdentifiable> view,
