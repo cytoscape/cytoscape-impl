@@ -29,17 +29,18 @@
  */
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
@@ -57,8 +58,7 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 	                                       final UndoSupport undoSupport, 
 	                                       final CyNetworkViewManager networkViewManager,
 	                                       final VisualMappingManager visualMappingManager, 
-	                                       final CyEventHelper eventHelper)
-	{
+	                                       final CyEventHelper eventHelper) {
 		this.network              = network;
 		this.undoSupport          = undoSupport;
 		this.networkViewManager   = networkViewManager;
@@ -68,7 +68,6 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-
 		if (network == null)
 			return;
 
@@ -79,6 +78,7 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 		taskMonitor.setProgress(0.1);
 		final Set<CyEdge> selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
 		taskMonitor.setProgress(0.2);
+		
 		// Make sure we're not loosing any edges for a possible undo!
 		for (CyNode selectedNode : selectedNodes)
 			selectedEdges.addAll(network.getAdjacentEdgeList(selectedNode, CyEdge.Type.ANY));
@@ -93,6 +93,14 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 		network.removeNodes(selectedNodes);
 		taskMonitor.setProgress(0.7);
 		network.removeEdges(selectedEdges);
+		taskMonitor.setProgress(0.9);
+		
+		// Update network views
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		
+		for (final CyNetworkView netView : views)
+			netView.updateView();
+		
 		taskMonitor.setProgress(1.0);
 	}
 }
