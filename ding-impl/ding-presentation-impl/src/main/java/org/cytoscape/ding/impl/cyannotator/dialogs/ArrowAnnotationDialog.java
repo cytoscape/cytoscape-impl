@@ -8,7 +8,10 @@ import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
+import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
+import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 
 public class ArrowAnnotationDialog extends javax.swing.JFrame {
@@ -20,6 +23,7 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 	private final Point2D startingLocation;
 	private final ArrowAnnotation mAnnotation;
 	private ArrowAnnotation preview;
+	private Annotation source = null;
 	private final boolean create;
 		
 	public ArrowAnnotationDialog(DGraphView view, Point2D start) {
@@ -27,6 +31,7 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
 		this.mAnnotation = new ArrowAnnotationImpl(cyAnnotator, view);
+		this.source = cyAnnotator.getAnnotation(start);
 		this.create = true;
 
 		initComponents();		        
@@ -43,7 +48,7 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 	}
     
 	private void initComponents() {
-		int ARROW_HEIGHT = 220;
+		int ARROW_HEIGHT = 475;
 		int ARROW_WIDTH = 500;
 		int PREVIEW_WIDTH = 500;
 		int PREVIEW_HEIGHT = 220;
@@ -51,10 +56,11 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 		// Create the preview panel
 		preview = new ArrowAnnotationImpl(cyAnnotator, view);
 		preview.setUsedForPreviews(true);
-		preview.getComponent().setSize(152,152);
+		preview.getComponent().setLocation(10,10);
+		((ArrowAnnotationImpl)preview).setSize(400.0,200.0);
 		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-		// arrowAnnotation1 = new ArrowAnnotationPanel(mAnnotation, previewPanel, SHAPE_WIDTH, SHAPE_HEIGHT);
+		JPanel arrowAnnotation1 = new ArrowAnnotationPanel(mAnnotation, previewPanel, ARROW_WIDTH, ARROW_HEIGHT);
 
 		applyButton = new javax.swing.JButton();
 		cancelButton = new javax.swing.JButton();
@@ -67,11 +73,11 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 		setResizable(false);
 		getContentPane().setLayout(null);
 
-		// getContentPane().add(shapeAnnotation1);
-		// shapeAnnotation1.setBounds(5, 0, shapeAnnotation1.getWidth(), shapeAnnotation1.getHeight());
+		getContentPane().add(arrowAnnotation1);
+		arrowAnnotation1.setBounds(5, 0, arrowAnnotation1.getWidth(), arrowAnnotation1.getHeight());
 
 		getContentPane().add(previewPanel);
-		// previewPanel.setBounds(5, shapeAnnotation1.getHeight()+5, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+		previewPanel.setBounds(5, arrowAnnotation1.getHeight()+5, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
 		int y = PREVIEW_HEIGHT+ARROW_HEIGHT+10;
 
@@ -95,7 +101,7 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 		cancelButton.setBounds(430, y+20, cancelButton.getPreferredSize().width, 23);
 
 		pack();
-		setSize(520, 525);
+		setSize(520, PREVIEW_HEIGHT+ARROW_HEIGHT+80);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 
@@ -103,26 +109,30 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 		dispose();           
 		//Apply
 
-/*
-		mAnnotation.setArrowType(preview.getShapeType());
-		mAnnotation.setFillColor(preview.getFillColor());
-		mAnnotation.setBorderColor(preview.getBorderColor());
-		mAnnotation.setBorderWidth((int)preview.getBorderWidth());
-*/
+		mAnnotation.setLineColor(preview.getLineColor());
+		mAnnotation.setLineWidth(preview.getLineWidth());
+		mAnnotation.setArrowType(ArrowEnd.SOURCE, preview.getArrowType(ArrowEnd.SOURCE));
+		mAnnotation.setArrowColor(ArrowEnd.SOURCE, preview.getArrowColor(ArrowEnd.SOURCE));
+		mAnnotation.setArrowSize(ArrowEnd.SOURCE, preview.getArrowSize(ArrowEnd.SOURCE));
+		mAnnotation.setArrowType(ArrowEnd.TARGET, preview.getArrowType(ArrowEnd.TARGET));
+		mAnnotation.setArrowColor(ArrowEnd.TARGET, preview.getArrowColor(ArrowEnd.TARGET));
+		mAnnotation.setArrowSize(ArrowEnd.TARGET, preview.getArrowSize(ArrowEnd.TARGET));
 
 		if (!create) {
 			mAnnotation.update(); 
 			return;
 		}
 
-		mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
+		// mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
 		mAnnotation.addComponent(null);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
 
+		mAnnotation.setSource(this.source);
+
 		// Set this shape to be resized
-		// cyAnnotator.positionArrow(mAnnotation);
+		cyAnnotator.positionArrow(mAnnotation);
 
 		try {
 			// Warp the mouse to the starting location (if supported)

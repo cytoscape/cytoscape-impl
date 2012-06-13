@@ -71,6 +71,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		this.annotationNumber = nextAnnotationNumber++;
+		this.globalZoom = view.getZoom();
 	}
 
 	public AbstractAnnotation(AbstractAnnotation c) {
@@ -196,8 +197,12 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	public CyAnnotator getCyAnnotator() {return cyAnnotator;}
     
 	public void moveAnnotation(Point2D location) {
-		setLocation((int)location.getX(), (int)location.getY());
-		cyAnnotator.moveAnnotation(this);
+		if (!(this instanceof ArrowAnnotation)) {
+			setLocation((int)location.getX(), (int)location.getY());
+			cyAnnotator.moveAnnotation(this);
+		} else {
+			cyAnnotator.positionArrow((ArrowAnnotation)this);
+		}
 	}
 
 	public void setLocation(int x, int y) {
@@ -238,7 +243,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 
 	public void addArrow(ArrowAnnotation arrow) {
 		arrowList.add(arrow);
-	};
+	}
 	public void removeArrow(ArrowAnnotation arrow) {
 		arrowList.remove(arrow);
 	}
@@ -289,9 +294,9 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 			// We need to control composite ourselves for previews...
 			g2.setComposite(AlphaComposite.Src);
 
-			for (ArrowAnnotation arrow: arrowList) {
-				arrow.paint(g);
-			}
+			// for (ArrowAnnotation arrow: arrowList) {
+			// 	arrow.drawArrow(g);
+			// }
 		}
 	}
 
@@ -331,7 +336,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		argMap.put(Y,Double.toString(xy.getY()));
 	}
 
-	private Point2D getComponentCoordinates(Map<String, String> argMap) {
+	protected Point2D getComponentCoordinates(Map<String, String> argMap) {
 		// Get our current transform
 		double[] nextLocn = new double[2];
 		nextLocn[0] = Double.parseDouble(argMap.get(X));
@@ -342,12 +347,22 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 
-	private Point2D getNodeCoordinates(double x, double y) {
+	protected Point2D getNodeCoordinates(double x, double y) {
     // Get our current transform
 		double[] nextLocn = new double[2];
 		nextLocn[0] = x;
 		nextLocn[1] = y;
 		view.xformComponentToNodeCoords(nextLocn);
+		return new Point2D.Double(nextLocn[0], nextLocn[1]);
+	}
+
+	protected Point2D getComponentCoordinates(double x, double y) {
+		double[] nextLocn = new double[2];
+		nextLocn[0] = x;
+		nextLocn[1] = y;
+
+		view.xformNodeToComponentCoords(nextLocn);
+		
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 

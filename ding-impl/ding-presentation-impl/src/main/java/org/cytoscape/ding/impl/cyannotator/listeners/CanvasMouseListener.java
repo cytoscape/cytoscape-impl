@@ -37,6 +37,11 @@ public class CanvasMouseListener implements MouseListener {
 			return;
 		}
 
+		if (cyAnnotator.getRepositioningArrow() != null) {
+			cyAnnotator.positionArrow(null);
+			return;
+		}
+
 		if (cyAnnotator.getMovingAnnotation() != null) {
 			cyAnnotator.moveAnnotation(null);
 			return;

@@ -188,11 +188,14 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		int width = (int)(shapeWidth*scaleFactor/getZoom());
 		int height = (int)(shapeHeight*scaleFactor/getZoom());
 
+		double savedBorder = borderWidth;
+		borderWidth = borderWidth*scaleFactor/getZoom();
 		boolean selected = isSelected();
 		setSelected(false);
 		GraphicsUtilities.drawShape(g, (int)(x*scaleFactor), (int)(y*scaleFactor),
 		                            width, height, this);
 		setSelected(selected);
+		borderWidth = savedBorder;
 	}
 
 	public void paint(Graphics g) {

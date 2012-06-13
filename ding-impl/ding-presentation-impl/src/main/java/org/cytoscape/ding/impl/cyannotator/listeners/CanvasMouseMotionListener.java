@@ -3,11 +3,15 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Point2D;
+
+import org.cytoscape.model.CyNode;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
 public class CanvasMouseMotionListener implements MouseMotionListener{
@@ -29,7 +33,8 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 	public void mouseMoved(MouseEvent e) {
 		ShapeAnnotation resizeAnnotation = cyAnnotator.getResizeShape();
 		Annotation moveAnnotation = cyAnnotator.getMovingAnnotation();
-		if (resizeAnnotation == null && moveAnnotation == null) {
+		ArrowAnnotation repositionAnnotation = cyAnnotator.getRepositioningArrow();
+		if (resizeAnnotation == null && moveAnnotation == null && repositionAnnotation == null) {
 			networkCanvas.mouseMoved(e);
 			return;
 		}
@@ -40,33 +45,60 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		if (moveAnnotation != null) {
 			moveAnnotation.getComponent().setLocation(mouseX, mouseY);
 			moveAnnotation.getCanvas().repaint();
-			return;
-		}
+		} else if (resizeAnnotation != null) {
+			Component resizeComponent = resizeAnnotation.getComponent();
+			int cornerX1 = resizeComponent.getX();
+			int cornerY1 = resizeComponent.getY();
+			int cornerX2 = cornerX1 + resizeComponent.getWidth();
+			int cornerY2 = cornerY1 + resizeComponent.getHeight();
 
-		Component resizeComponent = resizeAnnotation.getComponent();
-		int cornerX1 = resizeComponent.getX();
-		int cornerY1 = resizeComponent.getY();
-		int cornerX2 = cornerX1 + resizeComponent.getWidth();
-		int cornerY2 = cornerY1 + resizeComponent.getHeight();
+			int width = mouseX-cornerX1;
+			int height = mouseY-cornerY1;
 
-		int width = mouseX-cornerX1;
-		int height = mouseY-cornerY1;
-
-		if (width <= 0 || height <= 0) {
-			if (width <= 0) {
-				cornerX1 = cornerX1+width;
-				width = cornerX2-cornerX1;
+			if (width <= 0 || height <= 0) {
+				if (width <= 0) {
+					cornerX1 = cornerX1+width;
+					width = cornerX2-cornerX1;
+				}
+				if (height <= 0) {
+					cornerY1 = cornerY1+height;
+					height = cornerY2-cornerY1;
+				}
+				resizeComponent.setLocation(cornerX1, cornerY1);
 			}
-			if (height <= 0) {
-				cornerY1 = cornerY1+height;
-				height = cornerY2-cornerY1;
-			}
-			resizeComponent.setLocation(cornerX1, cornerY1);
-		}
 
-		if (width == 0) width = 2;
-		if (height == 0) height = 2;
-		resizeAnnotation.setSize((double)width, (double)height);
-		resizeAnnotation.getCanvas().repaint();
+			if (width == 0) width = 2;
+			if (height == 0) height = 2;
+			resizeAnnotation.setSize((double)width, (double)height);
+			resizeAnnotation.getCanvas().repaint();
+		} else if (repositionAnnotation != null) {
+			Point2D mousePoint = new Point2D.Double(mouseX, mouseY);
+
+			// See what's under our mouse
+			// Annotation?
+			Annotation a = cyAnnotator.getAnnotation(mousePoint);
+			if (a != null && !(a instanceof ArrowAnnotation)) {
+				repositionAnnotation.setTarget(a);
+
+			// Node?
+			} else if (overNode(mousePoint)) {
+				CyNode overNode = getNodeAtLocation(mousePoint);
+				repositionAnnotation.setTarget(overNode);
+
+			// Nope, just set the point
+			} else {
+				repositionAnnotation.setTarget(mousePoint);
+			}
+
+			repositionAnnotation.getCanvas().repaint();
+		}
+	}
+
+	private boolean overNode(Point2D mousePoint) {
+		return false;
+	}
+
+	private CyNode getNodeAtLocation(Point2D mousePoint) {
+		return null;
 	}
 }

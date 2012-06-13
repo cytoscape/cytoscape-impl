@@ -12,6 +12,7 @@ public interface ArrowAnnotation extends Annotation {
 		CLOSED ("Closed Arrow"),
 		DIAMOND ("Diamond"),
 		OPEN ("Open Arrow"),
+		NONE ("No Arrow"),
 		TRIANGLE ("Triangular Head"),
 		TSHAPE ("T-Shape");
 
@@ -24,7 +25,7 @@ public interface ArrowAnnotation extends Annotation {
 		public String toString() { return this.name; }
 	}
 
-	public enum ArrowDirection { FORWARD, BACKWARD; }
+	public enum ArrowEnd { SOURCE, TARGET; }
 
 	public Annotation getSource();
 	public void setSource(Annotation source);
@@ -37,17 +38,19 @@ public interface ArrowAnnotation extends Annotation {
 	public double getLineWidth();
 	public void setLineWidth(double width);
 
-	public double getArrowSize();
-	public void setArrowSize(double width);
+	public Paint getLineColor();
+	public void setLineColor(Paint color);
 
-	public Paint getArrowColor();
-	public void setArrowColor(Paint color);
+	public double getArrowSize(ArrowEnd end);
+	public void setArrowSize(ArrowEnd end, double width);
 
-	public ArrowType getArrowType();
-	public void setArrowType(ArrowType type);
+	public Paint getArrowColor(ArrowEnd end);
+	public void setArrowColor(ArrowEnd end, Paint color);
 
-	public ArrowDirection getArrowDirection();
-	public void setArrowDirection(ArrowDirection direction);
+	public ArrowType getArrowType(ArrowEnd end);
+	public void setArrowType(ArrowEnd end, ArrowType type);
+
+	public ArrowType[] getSupportedArrows();
 
 	public void drawArrow(Graphics g);
 }

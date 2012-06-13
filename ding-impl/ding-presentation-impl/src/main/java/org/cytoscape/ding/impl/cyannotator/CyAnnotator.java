@@ -44,6 +44,7 @@ public class CyAnnotator {
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private MyViewportChangeListener myViewportChangeListener=null;
 	private ShapeAnnotation resizing = null;
+	private ArrowAnnotation repositioning = null;
 	private Annotation moving = null;
 
 	private Map<Annotation, Map<String,String>> annotationMap = 
@@ -218,12 +219,20 @@ public class CyAnnotator {
 		resizing = shape;
 	}
 
-	public Task getReloadImagesTask() {
-		return new ReloadImagesTask(this);
-	}
-
 	public ShapeAnnotation getResizeShape() {
 		return resizing;
+	}
+
+	public void positionArrow(ArrowAnnotation arrow) {
+		repositioning = arrow;
+	}
+
+	public ArrowAnnotation getRepositioningArrow() {
+		return repositioning;
+	}
+
+	public Task getReloadImagesTask() {
+		return new ReloadImagesTask(this);
 	}
 
 	public void moveAnnotation(Annotation annotation) {
