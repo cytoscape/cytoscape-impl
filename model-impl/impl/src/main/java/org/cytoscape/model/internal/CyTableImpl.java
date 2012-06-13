@@ -283,6 +283,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	synchronized public String getTitle() {
 		return title;
 	}
+	
+	@Override
+	public String toString() {
+		return title;
+	}
 
 	@Override
 	synchronized public void setTitle(String title) {
