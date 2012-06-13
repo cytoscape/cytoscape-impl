@@ -39,9 +39,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.biopax.paxtools.controller.AbstractTraverser;
-import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.controller.ObjectPropertyEditor;
 import org.biopax.paxtools.controller.PropertyEditor;
 import org.biopax.paxtools.controller.SimpleEditorMap;
@@ -57,7 +57,6 @@ import org.biopax.paxtools.model.level3.EntityReference;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.Level3Element;
 import org.biopax.paxtools.model.level3.Named;
-import org.biopax.paxtools.model.level3.Pathway;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.biopax.paxtools.model.level3.Provenance;
 import org.biopax.paxtools.model.level3.PublicationXref;
@@ -177,22 +176,17 @@ public final class BioPaxUtil {
 		}
 				
 		String nodeName = getShortName(bpe);
-
-		if ((nodeName != null) && (nodeName.length() > 0)) {
-			return nodeName;
+		if (nodeName == null || nodeName.length()== 0) {
+			nodeName = getStandardName(bpe);
+			if (nodeName == null || nodeName.length() == 0) {
+				Collection<String> names = getSynonymList(bpe);
+				if (!names.isEmpty())
+					nodeName = getTheShortestString(names);
+			}
 		}
 
-		nodeName = getStandardName(bpe);
-		if ((nodeName != null) && (nodeName.length() > 0)) {
-			return nodeName;
-		}
-
-		Collection<String> names = getSynonymList(bpe);
-		if (names != null && !names.isEmpty()) {
-			return getTheShortestString(names);
-		}
-
-		return bpe.getRDFId();
+		return (nodeName == null || nodeName.length() == 0)
+				? bpe.getRDFId() : StringEscapeUtils.unescapeHtml(nodeName);
 	}
 	
 	
@@ -446,41 +440,6 @@ public final class BioPaxUtil {
 		
 		return subclasses;
 	}
-
-
-	/**
-	 * Creates a name for to the BioPAX model
-	 * using its top-level process name(s). 
-	 * 
-	 * @param model
-	 * @return
-	 */
-	public static String getName(Model model) {		
-		StringBuffer modelName = new StringBuffer();
-		
-		ModelUtils mu = new ModelUtils(model);
-		
-		Collection<Pathway> pws = mu.getRootElements(Pathway.class);
-		for(Pathway pw: pws) {
-				modelName.append(" ").append(getNodeName(pw)); 
-		}
-		
-		if(modelName.length()==0) {
-			Collection<Interaction> itrs = mu.getRootElements(Interaction.class);
-			for(Interaction it: itrs) {
-				modelName.append(" ").append(getNodeName(it));
-			}	
-		}
-		
-		if(modelName.length()==0) {
-			modelName.append(model.getXmlBase());
-		}
-		
-		String name = modelName.toString().trim();
-
-		return name;
-	}
-
 	
 	/**
 	 * Gets all the objects of provided BioPAX types.

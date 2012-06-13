@@ -19,6 +19,7 @@ import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
+import org.cytoscape.biopax.internal.util.BioPaxUtil.StaxHack;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.util.ExternalLink;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
@@ -691,7 +692,7 @@ public class BioPaxMapper {
 		// add a piece of the BioPAX (RDF/XML without parent|child elements)
 		
 		String owl = BioPaxUtil.toOwl(element); // (requires common-lang-2.4 bundle to be started)
-		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS,BioPaxUtil.BIOPAX_DATA, owl, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BioPaxUtil.BIOPAX_DATA, owl, String.class);
 		
 		String name = BioPaxUtil.truncateLongStr(BioPaxUtil.getNodeName(element) + "");
 		

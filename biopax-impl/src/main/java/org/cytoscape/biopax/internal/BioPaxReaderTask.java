@@ -2,6 +2,7 @@ package org.cytoscape.biopax.internal;
 
 import java.io.InputStream;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.model.Model;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
@@ -89,10 +90,9 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		
 		//normalize/infer properties: displayName, cellularLocation, organism, dartaSource
 		BioPaxUtil.fixDisplayName(model);
-		ModelUtils mu = new ModelUtils(model);
-		mu.inferPropertyFromParent("dataSource");
-		mu.inferPropertyFromParent("organism");
-		mu.inferPropertyFromParent("cellularLocation");
+		ModelUtils.inferPropertyFromParent(model, "dataSource");
+		ModelUtils.inferPropertyFromParent(model, "organism");
+		ModelUtils.inferPropertyFromParent(model, "cellularLocation");
 		
 		// Map BioPAX Data to Cytoscape Nodes/Edges (run as task)
 		BioPaxMapper mapper = new BioPaxMapper(model, networkFactory, taskMonitor);
@@ -121,7 +121,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		}
 		
 		// Take appropriate adjustments, if name already exists
-		name = naming.getSuggestedNetworkTitle(name);
+		name = naming.getSuggestedNetworkTitle(StringEscapeUtils.unescapeHtml(name));
 		
 		if(log.isDebugEnabled())
 			log.debug("New BioPAX network name is: " + name);

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.controller.SimpleEditorMap;
 import org.biopax.paxtools.converter.OneTwoThree;
@@ -58,10 +59,11 @@ import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.cytoscape.biopax.internal.BioPaxMapper;
-import org.cytoscape.biopax.internal.StaxHack;
 import org.cytoscape.model.CyNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.ctc.wstx.stax.WstxInputFactory;
 
 /**
  * BioPax Utility Class - is a BioPAX Model Adapter 
@@ -86,6 +88,19 @@ public final class BioPaxUtil {
 	 * BioPAX Class:  protein phosphorylated
 	 */
 	public static final String PROTEIN_PHOSPHORYLATED = "Protein-phosphorylated";
+
+	public static class StaxHack {
+		public static final void runWithHack(Runnable runnable) {
+			Thread thread = Thread.currentThread();
+			ClassLoader loader = thread.getContextClassLoader();
+			try {
+				thread.setContextClassLoader(WstxInputFactory.class.getClassLoader());
+				runnable.run();
+			} finally {
+				thread.setContextClassLoader(loader);
+			}
+		}
+	}
 	
 	// private Constructor
 	private BioPaxUtil() {}
@@ -164,22 +179,17 @@ public final class BioPaxUtil {
 		}
 				
 		String nodeName = getShortName(bpe);
-
-		if ((nodeName != null) && (nodeName.length() > 0)) {
-			return nodeName;
+		if (nodeName == null || nodeName.length()== 0) {
+			nodeName = getStandardName(bpe);
+			if (nodeName == null || nodeName.length() == 0) {
+				Collection<String> names = getSynonymList(bpe);
+				if (!names.isEmpty())
+					nodeName = getTheShortestString(names);
+			}
 		}
 
-		nodeName = getStandardName(bpe);
-		if ((nodeName != null) && (nodeName.length() > 0)) {
-			return nodeName;
-		}
-
-		Collection<String> names = getSynonymList(bpe);
-		if (names != null && !names.isEmpty()) {
-			return getTheShortestString(names);
-		}
-
-		return bpe.getRDFId();
+		return (nodeName == null || nodeName.length() == 0)
+				? bpe.getRDFId() : StringEscapeUtils.unescapeHtml(nodeName);
 	}
 	
 	
@@ -445,15 +455,13 @@ public final class BioPaxUtil {
 	public static String getName(Model model) {		
 		StringBuffer modelName = new StringBuffer();
 		
-		ModelUtils mu = new ModelUtils(model);
-		
-		Collection<Pathway> pws = mu.getRootElements(Pathway.class);
+		Collection<Pathway> pws = ModelUtils.getRootElements(model, Pathway.class);
 		for(Pathway pw: pws) {
 				modelName.append(" ").append(getNodeName(pw)); 
 		}
 		
 		if(modelName.length()==0) {
-			Collection<Interaction> itrs = mu.getRootElements(Interaction.class);
+			Collection<Interaction> itrs = ModelUtils.getRootElements(model, Interaction.class);
 			for(Interaction it: itrs) {
 				modelName.append(" ").append(getNodeName(it));
 			}	
