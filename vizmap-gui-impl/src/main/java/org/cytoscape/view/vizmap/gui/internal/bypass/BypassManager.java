@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.bypass;
 
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
@@ -20,6 +22,10 @@ import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.work.ServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Vector;
 
 /**
  * Creates Visual Style Bypass menu.
@@ -65,7 +71,38 @@ public final class BypassManager {
 	}
 
 	private void depthFirst(String menuText, final VisualLexiconNode node) {
+		
+		double menu_gravity = 1.0;		
+		HashMap<String, String> vpMap = new HashMap<String, String>();
+		Vector<String> vp_names = new Vector<String>();
+		
 		final Collection<VisualLexiconNode> children = node.getChildren();
+		
+		//get the list of VP
+		for (VisualLexiconNode child : children) {
+			final VisualProperty<?> vp = child.getVisualProperty();
+
+			// Ignore incompatible VP
+			if (PropertySheetUtil.isCompatible(vp) == false)
+				continue;
+
+			if (child.getChildren().size() == 0) {
+				// Leaf
+				vp_names.add(vp.getDisplayName());
+			}
+		}	
+		
+		// do sorting
+		Object[] names = vp_names.toArray();
+		java.util.Arrays.sort(names);
+		
+		//Assign the menu_gravity for each VP
+		for (int i =0; i< names.length; i++){
+			menu_gravity += 1.0;
+			vpMap.put(names[i].toString(), Double.toString(menu_gravity));
+		}
+		
+		//
 		for (VisualLexiconNode child : children) {
 			final VisualProperty<?> vp = child.getVisualProperty();
 
@@ -80,7 +117,8 @@ public final class BypassManager {
 				vpProp.put(ServiceProperties.PREFERRED_MENU, newMenu);
 				vpProp.put("useCheckBoxMenuItem", "true");
 				vpProp.put("targetVP", vp.getIdString());
-
+				vpProp.put(MENU_GRAVITY, vpMap.get(vp.getDisplayName()));
+				
 				if (vp.getTargetDataType().equals(CyNode.class)) {
 					final NodeViewTaskFactory ntf = new NodeBypassMenuTaskFactory(null, vp,
 							editorManager.getValueEditor(vp.getRange().getType()), vmm);
@@ -90,6 +128,7 @@ public final class BypassManager {
 							editorManager.getValueEditor(vp.getRange().getType()), vmm);
 					registrar.registerService(etf, EdgeViewTaskFactory.class, vpProp);
 				}
+				
 				logger.debug("Bypass context menu registered: " + vp.getDisplayName());
 			} else {
 				depthFirst(newMenu, child);
