@@ -36,8 +36,14 @@ public class AppParser {
 	 * The name of the key in the app jar's manifest file indicating the major versions of
 	 * Cytoscape that the app is known to be compatible with in comma-delimited form
 	 */
-	private static final String APP_COMPATIBLE_TAG = "Cytoscape-App-Works-With";
+	private static final String APP_COMPATIBLE_TAG = "Cytoscape-App-Compatibility";
 	
+	/**
+	 * An alternative name of the key in the app jar's manifest file indicating the major versions of
+	 * Cytoscape that the app is known to be compatible with
+	 */
+	private static final String APP_COMPATIBLE_ALTERNATIVE_TAG = "Cytoscape-App-Works-With";
+
 	/**
 	 * A regular expression representing valid app versions, which are in the format major.minor[.patch][-tag],
 	 * eg. 3.0.0-SNAPSHOT, or 3.0.
@@ -114,12 +120,21 @@ public class AppParser {
 		
 		String compatibleVersions = manifest.getMainAttributes().getValue(APP_COMPATIBLE_TAG);
 		if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
-			throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
+			compatibleVersions = manifest.getMainAttributes().getValue(APP_COMPATIBLE_ALTERNATIVE_TAG);
+			
+			if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
+				throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
+			} else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
+				throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"
+						+ " key " + APP_COMPATIBLE_ALTERNATIVE_TAG + " does not match the form of a comma-delimited list of"
+						+ " versions of the form major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
+			}
 		} else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
 			throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"
 					+ " key " + APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
 					+ " major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
 		}
+		
 		
 		parsedApp.setAppFile(file);
 		parsedApp.setEntryClassName(entryClassName);
