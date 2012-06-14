@@ -114,18 +114,18 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 	private final EditorManager editorFactory;
 	private final VisualMappingManager vmm;
-
 	private final VizMapperUtil util;
-
 	private final DefaultViewPanelImpl mainView;
-
 	private final CyEventHelper cyEventHelper;
 
 	private DependencyTable depTable;
 
-	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView, final EditorManager editorFactory,
-			final CyApplicationManager cyApplicationManager, final VisualMappingManager vmm, final VizMapperUtil util,
-			final CyEventHelper cyEventHelper) {
+	public DefaultViewEditorImpl(final DefaultViewPanelImpl mainView,
+								 final EditorManager editorFactory,
+								 final CyApplicationManager cyApplicationManager,
+								 final VisualMappingManager vmm,
+								 final VizMapperUtil util,
+								 final CyEventHelper cyEventHelper) {
 		super();
 
 		if (mainView == null)
@@ -215,7 +215,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	}
 
 	private void updateDependencyTable() {
-
 		final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 		final Set<VisualPropertyDependency<?>> dependencies = selectedStyle.getAllVisualPropertyDependencies();
 		final DependencyTableModel depTableModel = new DependencyTableModel();
@@ -445,14 +444,13 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	 * Populate the list model based on current lexicon tree structure.
 	 */
 	private void buildList() {
-
 		final VisualPropCellRenderer renderer = new VisualPropCellRenderer();
-		final RenderingEngine<CyNetwork> currentEngine = this.cyApplicationManager.getCurrentRenderingEngine();
-		if (currentEngine == null)
+		final RenderingEngine<CyNetwork> engine = mainView.getRenderingEngine();
+		
+		if (engine == null)
 			return;
-
-		final VisualLexicon lex = currentEngine.getVisualLexicon();
-
+		
+		final VisualLexicon lex = engine.getVisualLexicon();
 		final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 
 		for (Class<? extends CyIdentifiable> key : vpSets.keySet()) {
@@ -483,7 +481,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 				final VisualLexiconNode treeNode = lex.getVisualLexiconNode(vp);
 				if (treeNode != null)
 					model.addElement(vp);
-
+				
 				// Override dependency
 				final Set<VisualPropertyDependency<?>> dependencies = selectedStyle.getAllVisualPropertyDependencies();
 				for (VisualPropertyDependency<?> dep : dependencies) {
@@ -492,12 +490,13 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 						final VisualProperty<?> parentVP = dep.getParentVisualProperty();
 						if (model.contains(parentVP) == false)
 							model.addElement(parentVP);
-
+						
 						for (VisualProperty<?> prop : props)
 							model.removeElement(prop);
 					}
 				}
 			}
+			
 			list.setCellRenderer(renderer);
 		}
 	}
@@ -529,7 +528,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 			if (value instanceof VisualProperty<?>) {
 				vp = (VisualProperty<Object>) value;
 
-				final RenderingEngine<?> presentation = cyApplicationManager.getCurrentRenderingEngine();
+				final RenderingEngine<?> presentation = mainView.getRenderingEngine();
 
 				if (presentation != null) {
 					final Object defValue = selectedStyle.getDefaultValue(vp);
@@ -570,11 +569,10 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		return mainView;
 	}
 
+	@Override
 	public void handleEvent(SetCurrentVisualStyleEvent e) {
-
 		final VisualStyle selectedStyle = e.getVisualStyle();
 		setTitle("Default Appearance for " + selectedStyle.getTitle());
-
 	}
 
 	private static class VisualPropertyComparator implements Comparator<VisualProperty<?>> {
@@ -586,7 +584,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 			return name1.compareTo(name2);
 		}
-
 	}
 
 	@Override
@@ -596,6 +593,5 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 		mainView.updateView();
 		mainView.repaint();
-
 	}
 }
