@@ -1,6 +1,8 @@
 package org.cytoscape.biopax.internal;
 
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.controller.ModelUtils;
@@ -89,10 +91,12 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 				+ " BioPAX elements");
 		
 		//normalize/infer properties: displayName, cellularLocation, organism, dartaSource
-		BioPaxUtil.fixDisplayName(model);
-		ModelUtils.inferPropertyFromParent(model, "dataSource");
-		ModelUtils.inferPropertyFromParent(model, "organism");
-		ModelUtils.inferPropertyFromParent(model, "cellularLocation");
+		// a hack to skip running property reasoner for already normalized data... TODO generalize
+		if(model.getXmlBase() == null || !model.getXmlBase().contains("pathwaycommons")) {
+			BioPaxUtil.fixDisplayName(model);
+			ModelUtils.inferPropertiesFromParent(model, 
+					new HashSet<String>(Arrays.asList("dataSource", "organism", "cellularLocation")));
+		}
 		
 		// Map BioPAX Data to Cytoscape Nodes/Edges (run as task)
 		BioPaxMapper mapper = new BioPaxMapper(model, networkFactory, taskMonitor);

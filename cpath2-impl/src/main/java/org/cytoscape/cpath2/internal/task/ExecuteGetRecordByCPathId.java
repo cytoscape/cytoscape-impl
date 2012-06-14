@@ -425,9 +425,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				}
 				//normalize/infer properties: displayName, organism, dataSource
 				fixDisplayName(model);
-				ModelUtils mu = new ModelUtils(model);
-				mu.inferPropertyFromParent("dataSource");
-				mu.inferPropertyFromParent("organism");
+				ModelUtils.inferPropertyFromParent(model, "dataSource");
+				ModelUtils.inferPropertyFromParent(model, "organism");
 				//map biopax properties to Cy attributes for SIF nodes
 				for (BioPAXElement e : model.getObjects()) {
 					if(e instanceof EntityReference 

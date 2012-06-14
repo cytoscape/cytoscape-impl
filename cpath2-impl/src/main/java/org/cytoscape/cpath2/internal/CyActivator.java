@@ -6,6 +6,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyApplicationManager;
@@ -38,7 +39,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CySwingApplication cySwingApplicationRef = getService(bc,CySwingApplication.class);
-		TaskManager<?, ?> taskManagerRef = getService(bc,TaskManager.class);
+		TaskManager taskManagerRef = getService(bc,DialogTaskManager.class);
 		OpenBrowser openBrowserRef = getService(bc,OpenBrowser.class);
 		CyNetworkManager cyNetworkManagerRef = getService(bc,CyNetworkManager.class);
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);

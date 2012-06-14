@@ -291,7 +291,11 @@ public class ExternalLinkUtil {
 
 		//  Reactome
 		url = "http://reactome.org/cgi-bin/eventbrowser?DB=gk_current&ID=";
+//		dbMap.put("REACTOME", url);
+		dbMap.put("REACTOME DATABASE ID", url);
+		url = "http://www.reactome.org/cgi-bin/eventbrowser_st_id?FROM_REACTOME=1&amp;ST_ID=";
 		dbMap.put("REACTOME", url);
+		dbMap.put("REACTOME STABLE ID", url);
 
 		//  PDB
 		url = "http://www.rcsb.org/pdb/cgi/explore.cgi?pdbId=";
