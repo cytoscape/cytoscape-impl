@@ -115,10 +115,16 @@ public class MergedNetworkBuilder {
 		final Collection<CrossReference> speciesSource = interaction.getOrganismsA();
 		final Collection<CrossReference> speciesTarget = interaction.getOrganismsB();
 
-//		CrossReference speciesSourceFirst = speciesSource.iterator().next();
-//		CrossReference speciesTargetFirst = speciesTarget.iterator().next();
-//		processSpecies(sourceRow, speciesSourceFirst);
-//		processSpecies(targetRow, speciesTargetFirst);
+		// Add Species names
+		if(speciesSource.size() != 0) {
+			CrossReference speciesSourceFirst = speciesSource.iterator().next();
+			processSpecies(sourceRow, speciesSourceFirst);
+		}
+		if(speciesTarget.size() != 0) {
+			CrossReference speciesTargetFirst = speciesTarget.iterator().next();
+			processSpecies(targetRow, speciesTargetFirst);
+		}
+		
 	}
 
 	private void processNames(CyRow row, final Map<String, String> accs) {
