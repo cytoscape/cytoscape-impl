@@ -1,10 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.legend;
 
-import java.io.File;
-
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 
 public class ExportLegendTask implements Task {
 	

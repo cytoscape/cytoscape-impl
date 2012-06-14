@@ -3,8 +3,10 @@ package org.cytoscape.view.vizmap.gui.internal.bypass;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Vector;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
@@ -22,10 +24,6 @@ import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.work.ServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Arrays;
-import java.util.Vector;
 
 /**
  * Creates Visual Style Bypass menu.

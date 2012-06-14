@@ -30,10 +30,7 @@ import org.cytoscape.view.vizmap.gui.internal.legend.PassthroughLegend;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import org.freehep.graphicsio.exportchooser.ImageExportFileType;
 import org.freehep.graphicsio.gif.GIFExportFileType;
-import org.freehep.graphicsio.ppm.PPMExportFileType;
-import org.freehep.graphicsio.ps.EPSExportFileType;
 import org.freehep.graphicsio.svg.SVGExportFileType;
 import org.freehep.util.export.ExportDialog;
 

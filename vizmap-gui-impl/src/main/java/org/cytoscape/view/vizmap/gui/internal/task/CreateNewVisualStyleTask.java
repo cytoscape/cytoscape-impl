@@ -1,5 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -9,10 +10,9 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.work.TunableValidator;
-import java.io.IOException;
 
 public class CreateNewVisualStyleTask extends AbstractTask implements TunableValidator {
 

@@ -1,7 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,8 +20,6 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener, NetworkAddedListener {
 

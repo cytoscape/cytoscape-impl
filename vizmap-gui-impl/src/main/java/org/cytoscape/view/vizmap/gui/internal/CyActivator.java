@@ -21,7 +21,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -53,6 +52,7 @@ import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorMappingGenerator;
@@ -138,6 +138,7 @@ public class CyActivator extends AbstractCyActivator {
 		RandomColorMappingGenerator randomColorGenerator = new RandomColorMappingGenerator(Color.class);
 		NumberSeriesMappingGenerator<Number> seriesGenerator = new NumberSeriesMappingGenerator<Number>(Number.class);
 		RandomNumberMappingGenerator randomNumberGenerator = new RandomNumberMappingGenerator();
+		FitLabelMappingGenerator<Number> fitLabelMappingGenerator = new FitLabelMappingGenerator<Number>(Number.class, cyApplicationManagerServiceRef, vmmServiceRef);
 		
 		DefaultTableCellRenderer emptyBoxRenderer = new DefaultTableCellRenderer();
 		DefaultTableCellRenderer filledBoxRenderer = new DefaultTableCellRenderer();
@@ -242,6 +243,12 @@ public class CyActivator extends AbstractCyActivator {
 		randomNumberGeneratorProps.setProperty("title","Random Numbers");
 		randomNumberGeneratorProps.setProperty("menu","context");
 		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
+		
+		Properties fitLabelGeneratorProps = new Properties();
+		fitLabelGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		fitLabelGeneratorProps.setProperty("title","Fit label width (SUID to Node Width)");
+		fitLabelGeneratorProps.setProperty("menu","context");
+		registerService(bc, fitLabelMappingGenerator, DiscreteMappingGenerator.class, fitLabelGeneratorProps);
 				
 		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, propertySheetPanel, vmmServiceRef);
 		Properties editSelectedProps = new Properties();

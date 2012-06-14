@@ -3,7 +3,6 @@ package org.cytoscape.view.vizmap.gui.internal.editor;
 
 
 import java.awt.Font;
-import java.beans.PropertyEditor;
 
 import javax.swing.table.TableCellRenderer;
 
