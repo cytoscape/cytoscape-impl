@@ -378,4 +378,9 @@ public final class CyTableProjection implements CyTable {
 	public void setPublic(boolean isPublic) {
 		throw new UnsupportedOperationException("setPublic(boolean isPublic) method not supported!");		
 	}
+	
+	@Override
+	public boolean deleteRows(Collection<?> primaryKeys) {
+		throw new UnsupportedOperationException("deleteRows() method not supported!");		
+	}
 }

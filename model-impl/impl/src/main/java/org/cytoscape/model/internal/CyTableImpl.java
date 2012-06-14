@@ -1049,6 +1049,38 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		return name;
 	}
 	
+	@Override
+	public boolean deleteRows(Collection<?> primaryKeys) {
+		boolean changed = false;
+		synchronized(this) {
+			for (Object key : primaryKeys) {
+				checkKey(key);
+		
+				CyRow row = rows.remove(key);
+				if (row != null) {
+					changed = true;
+				}
+
+				for (CyColumn col : getColumns()) {
+		            final String normalizedColName = normalizeColumnName(col.getName());
+		            final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+		            if (keyToValueMap != null) {
+		                Object val = keyToValueMap.remove(key);
+		                SetMultimap<Object,Object> valueToKeysMap = reverse.get(normalizedColName);
+		                if (valueToKeysMap != null) {
+		                    Set<Object> keys = valueToKeysMap.get(val);
+		                    if (keys != null) {
+		                        keys.remove(key);
+		                    }
+		                }
+		            }
+				}
+	        }
+		}
+		
+		return changed;
+	}
+	
 	private final class InternalRow implements CyRow {
 		private final Object key;
 

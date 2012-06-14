@@ -30,6 +30,8 @@ package org.cytoscape.model.internal;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -169,5 +171,34 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 			return InitialTableSize.SMALL;
 	}
 
-
+	@Override
+	protected boolean removeNodesInternal(Collection<CyNode> nodes) {
+		boolean result = super.removeNodesInternal(nodes);
+		if (!result)
+			return false;
+		
+		removeRows(nodes, CyNode.class);
+		return result;
+	}
+	
+	@Override
+	protected boolean removeEdgesInternal(Collection<CyEdge> edges) {
+		boolean result = super.removeEdgesInternal(edges);
+		if (!result)
+			return false;
+		
+		removeRows(edges, CyEdge.class);
+		return result;
+	}
+	
+	private <T extends CyIdentifiable> void removeRows(Collection<T> items, Class<? extends T> type) {
+		Collection<Long> primaryKeys = new ArrayList<Long>();
+		for (T item : items) {
+			primaryKeys.add(item.getSUID());
+		}
+		
+		for (CyTable table : networkTableManager.getTables(networkRef.get(), type).values()) {
+			table.deleteRows(primaryKeys);
+		}
+	}
 }

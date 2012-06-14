@@ -33,4 +33,5 @@ public class DummyTable implements CyTable {
 	public SavePolicy getSavePolicy() { return null; }
 	public void setSavePolicy(SavePolicy policy) {}
 	public void swap(CyTable otherTable) {}
+	public boolean deleteRows(Collection<?> primaryKeys) { return false; }
 }
