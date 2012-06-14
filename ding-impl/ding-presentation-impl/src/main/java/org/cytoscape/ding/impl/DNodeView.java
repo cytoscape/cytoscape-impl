@@ -1051,16 +1051,16 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	TexturePaint getNestedNetworkTexturePaint() {
 		synchronized (graphView.m_lock) {
 			++nestedNetworkPaintingDepth;
-			
+
 			try {
 				if (nestedNetworkPaintingDepth > 1 || getModel().getNetworkPointer() == null || !nestedNetworkVisible)
 					return null;
 
 				final Boolean netImgVisible = getVisualProperty(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
-				
+
 				if (!Boolean.TRUE.equals(netImgVisible))
 					return null;
-				
+
 				final double IMAGE_WIDTH = getWidth() * NESTED_IMAGE_SCALE_FACTOR;
 				final double IMAGE_HEIGHT = getHeight() * NESTED_IMAGE_SCALE_FACTOR;
 
@@ -1073,15 +1073,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 							IMAGE_HEIGHT);
 					return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
 				}
-				//if (nestedNetworkView == null) //to avoid performance penalty
-					setNestedNetworkView();
+				setNestedNetworkView();
 				if (nestedNetworkView != null) {					
 					final double scaleFactor = graphView.getGraphLOD().getNestedNetworkImageScaleFactor();
 					return nestedNetworkView.getSnapshot(IMAGE_WIDTH * scaleFactor, IMAGE_HEIGHT * scaleFactor);
 				} else {
 					if (DEFAULT_NESTED_NETWORK_IMAGE == null)
 						return null;
-					
+
 					final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH,
 							IMAGE_HEIGHT);
 					return new TexturePaint(DEFAULT_NESTED_NETWORK_IMAGE, rect);
@@ -1097,9 +1096,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if(this.getModel().getNetworkPointer() == null)
 			this.nestedNetworkView = null;
 		else{
-			List<CyNetworkView> netviews = new ArrayList<CyNetworkView>(netViewMgr.getNetworkViews(this.getModel().getNetworkPointer()) );
-			if (netviews!= null && !netviews.isEmpty() ) 
-				this.nestedNetworkView = (DGraphView) netviews.get(netviews.size() -1 );
+			final Iterator<CyNetworkView> viewIterator =  netViewMgr.getNetworkViews(this.getModel().getNetworkPointer()).iterator();
+			if (viewIterator.hasNext() ) 
+				this.nestedNetworkView = (DGraphView) viewIterator.next();
 			else
 				this.nestedNetworkView = null;
 		}
