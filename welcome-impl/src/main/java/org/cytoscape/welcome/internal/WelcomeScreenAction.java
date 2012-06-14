@@ -93,6 +93,11 @@ public class WelcomeScreenAction extends AbstractCyAction {
 			final String tempHideString = this.cyProps.getProperties().getProperty(TEMP_DO_NOT_DISPLAY_PROP_NAME);
 			hide = parseBoolean(tempHideString);
 		}
+
+		if (!hide) {
+			final String systemHideString = System.getProperty(DO_NOT_DISPLAY_PROP_NAME);
+			hide = parseBoolean(systemHideString);
+		}
 		
 		// remove this property regardless!
 		this.cyProps.getProperties().remove(TEMP_DO_NOT_DISPLAY_PROP_NAME);
