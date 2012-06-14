@@ -22,9 +22,9 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
-import org.cytoscape.work.internal.tunables.utils.CollapsablePanel;
 import org.cytoscape.work.internal.tunables.utils.XorPanel;
 import org.cytoscape.work.swing.GUITunableHandler;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +50,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableHandler> implements TunableMutator<GUITunableHandler,JPanel> {
+public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableHandler> 
+	implements TunableMutator<GUITunableHandler,JPanel> {
+
 	private Map<List<GUITunableHandler>, JPanel> panelMap;
 	
 	/** A reference to the parent <code>JPanel</code>, if any. */
@@ -76,7 +78,8 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		if ( tPanel instanceof JPanel )
 			this.tunablePanel = (JPanel)tPanel;
 		else
-			throw new IllegalArgumentException("this tunable mutator only works with JPanels - set the configuration context to a JPanel");
+			throw new IllegalArgumentException("this tunable mutator only works with JPanels - " +
+			                                   "set the configuration context to a JPanel");
 	}
 	
 	/** {@inheritDoc} */
@@ -234,46 +237,49 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 	/**
 	 * Creation of a JPanel that will contain panels of <code>GUITunableHandler</code>
-	 * This panel will have special features like, ability to collapse, ability to be displayed depending on another panel
-	 * A layout will be set for this <i>"container"</i> of panels (horizontally or vertically), and a title (displayed or not)
+	 * This panel will have special features like, ability to collapse, ability to be displayed 
+	 * depending on another panel.  A layout will be set for this <i>"container"</i> of panels 
+	 * (horizontally or vertically), and a title (displayed or not)
 	 *
 	 *
 	 * @param title of the panel
-	 * @param gh provides access to <code>Tunable</code> annotations : see if this panel can be collapsable, and if its content will switch between different <code>GUITunableHandler</code> panels(depending on <code>xorKey</code>)
+	 * @param gh provides access to <code>Tunable</code> annotations : see if this panel 
+	 * can be collapsable, and if its content will switch between different 
+	 * <code>GUITunableHandler</code> panels(depending on <code>xorKey</code>)
 	 * @param alignment the way the panels will be set in this <i>"container</i> panel
 	 * @param groupTitle parameter to choose whether or not the title of the panel has to be displayed
 	 *
-	 * @return a container for <code>GUITunableHandler</code>' panels with special features if it is requested, or a simple one if not
+	 * @return a container for <code>GUITunableHandler</code>' panels with special features 
+	 * if it is requested, or a simple one if not
 	 */
-	private JPanel createJPanel(final String title, final GUITunableHandler gh, final Boolean vertical, final Boolean displayed) {
+	private JPanel createJPanel(final String title, final GUITunableHandler gh, 
+	                            final Boolean vertical, final Boolean displayed) {
 		if (gh == null)
 			return createSimplePanel(title, vertical, displayed);
 
 		// See if we need to create an XOR panel
 		if (gh.controlsMutuallyExclusiveNestedChildren()) {
-			JPanel p = new XorPanel(title, gh);
-			return p;
+			return new XorPanel(title, gh);
 		} else {
 			// Figure out if the collapsable flag is set
 			final String displayState = gh.getParams().getProperty("displayState");
 			if (displayState != null) {
-				if (displayState.equalsIgnoreCase("collapsed"))
-					return new CollapsablePanel(title, false);
-				else if (displayState.equalsIgnoreCase("uncollapsed"))
-					return new CollapsablePanel(title, true);
-				else
-					System.err.println("*** in GUITunableInterceptorImpl: invalid \"displayState\": \""
-					                   + displayState + "\"!");
-			}
+				BasicCollapsiblePanel cp = new BasicCollapsiblePanel(title);
+				if (displayState.equalsIgnoreCase("uncollapsed"))
+					cp.setCollapsed(false);	
+				return cp;
 
 			// We're not collapsable, so return a normal jpanel
-			return createSimplePanel(title, vertical, displayed);
+			} else {
+				return createSimplePanel(title, vertical, displayed);
+			}
 		}
 	}
 
 	/**
 	 * Creation of a JPanel that will contain panels of <code>GUITunableHandler</code>
-	 * A layout will be set for this <i>"container"</i> of panels (horizontally or vertically), and a title (displayed or not)
+	 * A layout will be set for this <i>"container"</i> of panels (horizontally or vertically), 
+	 * and a title (displayed or not)
 	 *
 	 * @param title of the panel
 	 * @param alignment the way the panels will be set in this <i>"container</i> panel
