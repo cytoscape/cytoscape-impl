@@ -41,6 +41,9 @@ import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -241,6 +244,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 
 		// get list of child components
 		Component[] components = getComponents();
+		zSort(components); // Since we're doing this because we're doing the draw on our own
 
 		// no components, outta here
 		if (components.length == 0)
@@ -284,12 +288,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 
 			// now paint children
 			if (m_isVisible){
-				/*
-				int num=this.getComponentCount();
-				for(int i=0;i<num;i++){
-					this.getComponent(i).paint(image2D);
-				}
-				*/
 				this.paintChildren(image2D);
 			}
 			image2D.dispose();
@@ -386,4 +384,26 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		if (lis != null)
 			lis.contentChanged();
 	}
+
+	// Sort the components by z order
+	private void zSort(Component[] components) {
+		Arrays.sort(components, new ZComparator());
+		return;
+	}
+
+	class ZComparator implements Comparator<Component> {
+		public int compare(Component o1, Component o2) {
+			if (getComponentZOrder(o1) > getComponentZOrder(o2))
+				return -1;
+			else if (getComponentZOrder(o1) < getComponentZOrder(o2))
+				return 1;
+			else
+				return 0;
+		}
+
+		public boolean equals(Component o1, Component o2) {
+			return (getComponentZOrder(o1) == getComponentZOrder(o2));
+		}
+	}
+
 }

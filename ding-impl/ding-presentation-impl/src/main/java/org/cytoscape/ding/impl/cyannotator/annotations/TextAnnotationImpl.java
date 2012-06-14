@@ -179,8 +179,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		int yLoc = (int)(y*scaleFactor + halfHeight);
 
 		g2.setFont(tFont);
-		// g2.drawString(text, xLoc, yLoc);
-		g2.drawString(text, (int)x, (int)y);
+		g2.drawString(text, xLoc, yLoc);
 	}
 
 	public Rectangle getBounds() {
@@ -202,7 +201,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			return;
 		}
 
-		// g2.drawString(text, getX()+halfWidth, getY()+halfHeight);
 		g2.drawString(text, halfWidth, halfHeight);
 
 		if(isSelected()) {

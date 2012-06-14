@@ -123,13 +123,12 @@ public class ArrowAnnotationDialog extends javax.swing.JFrame {
 			return;
 		}
 
-		// mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
 		mAnnotation.addComponent(null);
+		mAnnotation.setSource(this.source);
+		mAnnotation.update();
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
-
-		mAnnotation.setSource(this.source);
 
 		// Set this shape to be resized
 		cyAnnotator.positionArrow(mAnnotation);

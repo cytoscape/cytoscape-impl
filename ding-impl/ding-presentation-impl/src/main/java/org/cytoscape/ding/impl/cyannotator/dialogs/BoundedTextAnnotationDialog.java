@@ -131,6 +131,7 @@ public class BoundedTextAnnotationDialog extends javax.swing.JFrame {
 
 		mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
 		mAnnotation.addComponent(null);
+		mAnnotation.update();
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

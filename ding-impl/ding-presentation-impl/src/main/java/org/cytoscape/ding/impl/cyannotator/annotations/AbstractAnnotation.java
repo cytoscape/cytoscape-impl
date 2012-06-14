@@ -177,6 +177,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	@Override
 	public void addComponent(JComponent cnvs) {
 		if (cnvs == null && canvas != null) {
+
 		} else if (cnvs == null) {
 			setCanvas(FOREGROUND);
 		} else {

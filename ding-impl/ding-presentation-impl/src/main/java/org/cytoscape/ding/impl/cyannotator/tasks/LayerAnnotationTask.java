@@ -37,5 +37,6 @@ public class LayerAnnotationTask extends AbstractNetworkViewTask {
 		JComponent canvas = annotation.getCanvas();
 		canvas.setComponentZOrder(annotation.getComponent(), zorder);
 		canvas.repaint();
+		annotation.contentChanged(); // We need to do this to update the Bird's Eye View
 	}
 }

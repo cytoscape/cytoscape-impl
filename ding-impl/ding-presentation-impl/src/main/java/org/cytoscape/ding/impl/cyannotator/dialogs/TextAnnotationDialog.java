@@ -115,6 +115,13 @@ public class TextAnnotationDialog extends javax.swing.JFrame {
 
 		//Apply
 		mAnnotation.addComponent(null);
+		mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
+
+		// We need to have bounds or it won't render
+		mAnnotation.getComponent().setBounds(mAnnotation.getComponent().getBounds());
+
+		mAnnotation.update();
+		mAnnotation.contentChanged();
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

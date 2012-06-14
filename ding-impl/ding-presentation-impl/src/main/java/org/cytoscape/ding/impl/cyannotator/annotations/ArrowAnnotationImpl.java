@@ -353,6 +353,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
+	@Override
+	public void update() {
+		updateBounds();
+		super.update();
+	}
+
 	public void setSize(double width, double height) {
 		shapeWidth = width;
 		shapeHeight = height;

@@ -58,6 +58,7 @@ public interface Annotation {
 	public void setUsedForPreviews(boolean v);
 
 	public void update();
+	public void contentChanged();
 
 	public JFrame getModifyDialog();
 

@@ -33,20 +33,22 @@ public class CanvasMouseListener implements MouseListener {
 	public void mouseClicked(MouseEvent e) {
 		// Check to see if we're resizing
 		if (cyAnnotator.getResizeShape() != null) {
+			cyAnnotator.getResizeShape().contentChanged();
 			cyAnnotator.resizeShape(null);
 			return;
 		}
 
 		if (cyAnnotator.getRepositioningArrow() != null) {
+			cyAnnotator.getRepositioningArrow().contentChanged();
 			cyAnnotator.positionArrow(null);
 			return;
 		}
 
 		if (cyAnnotator.getMovingAnnotation() != null) {
+			cyAnnotator.getMovingAnnotation().contentChanged();
 			cyAnnotator.moveAnnotation(null);
 			return;
 		}
-
 
 		Annotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		if (annotation == null) {
