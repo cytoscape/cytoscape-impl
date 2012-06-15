@@ -33,6 +33,7 @@ import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 // Annotation api
+import org.cytoscape.ding.impl.customgraphics.CustomGraphicsTranslator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
@@ -85,6 +86,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
@@ -389,7 +391,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Register the factory
 		dVisualLexicon.addBendFactory(bendFactory, new HashMap());
-
+		
+		// Translator for Passthrough
+		final CustomGraphicsTranslator cgTranslator = new CustomGraphicsTranslator(customGraphicsManagerServiceRef);
+		registerService(bc, cgTranslator, ValueTranslator.class, new Properties());
 		
 		// Factories for Visual Property Dependency
 		final NodeSizeDependencyFactory nodeSizeDependencyFactory = new NodeSizeDependencyFactory(dVisualLexicon);
