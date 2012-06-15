@@ -1,20 +1,14 @@
 package org.cytoscape.view.vizmap.mappings;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.awt.Color;
 import java.awt.Paint;
 
-import org.cytoscape.model.CyTable;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
-import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 public class DiscreteMappingTest {
 

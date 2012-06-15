@@ -5,15 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingImpl;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
-import org.cytoscape.view.vizmap.internal.mappings.PassthroughMappingImpl;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -23,10 +22,13 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	private final VisualLexiconManager lexManager;
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private final VisualMappingFunctionFactory passThroughFactory;
 
-	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar) {
+	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar, final VisualMappingFunctionFactory passThroughFactory) {
 		this.lexManager = lexManager;
 		this.serviceRegistrar = serviceRegistrar;
+		this.passThroughFactory = passThroughFactory;
 	}
 
 	@Override
@@ -90,7 +92,8 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<K> colType = originalMapping.getMappingColumnType();
 
-		final PassthroughMapping<K, V> copyMapping = new PassthroughMappingImpl(attrName, colType, originalMapping.getVisualProperty());
+		final PassthroughMapping<K, V> copyMapping = (PassthroughMapping<K, V>) passThroughFactory
+				.createVisualMappingFunction(attrName, colType, originalMapping.getVisualProperty());
 		return copyMapping;
 	}
 

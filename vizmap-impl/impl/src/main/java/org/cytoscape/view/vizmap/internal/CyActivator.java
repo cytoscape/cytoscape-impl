@@ -7,11 +7,11 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingFactory;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingFactory;
 import org.cytoscape.view.vizmap.internal.mappings.PassthroughMappingFactory;
+import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -24,15 +24,17 @@ public class CyActivator extends AbstractCyActivator {
 		final CyServiceRegistrar serviceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 
-		VisualLexiconManager visualLexiconManager = new VisualLexiconManager();
-		VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(visualLexiconManager,
-				serviceRegistrarServiceRef);
-		VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(cyEventHelperServiceRef,
-				visualStyleFactory, visualLexiconManager);
+		// Mapping Factories
 		DiscreteMappingFactory discreteMappingFactory = new DiscreteMappingFactory();
 		ContinuousMappingFactory continuousMappingFactory = new ContinuousMappingFactory();
 		PassthroughMappingFactory passthroughMappingFactory = new PassthroughMappingFactory();
-
+		
+		VisualLexiconManager visualLexiconManager = new VisualLexiconManager();
+		VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(visualLexiconManager,
+				serviceRegistrarServiceRef, passthroughMappingFactory);
+		VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(cyEventHelperServiceRef,
+				visualStyleFactory, visualLexiconManager);
+		
 		registerAllServices(bc, visualMappingManager, new Properties());
 		registerService(bc, visualStyleFactory, VisualStyleFactory.class, new Properties());
 
@@ -54,5 +56,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, visualLexiconManager, "addRenderingEngineFactory", "removeRenderingEngineFactory",
 				RenderingEngineFactory.class);
+		
+		registerServiceListener(bc,passthroughMappingFactory,"addValueTranslator","removeValueTranslator", ValueTranslator.class);
 	}
 }

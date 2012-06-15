@@ -1,6 +1,6 @@
 package org.cytoscape.view.vizmap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,11 +11,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
-
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
@@ -72,7 +69,8 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		when(lexManager.getAllVisualLexicon()).thenReturn(lexSet);
 
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar);
+		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, ptFactory);
 		originalTitle = "Style 1";
 		newTitle = "Style 2";
 		style = visualStyleFactory.createVisualStyle(originalTitle);
