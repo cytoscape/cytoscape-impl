@@ -143,7 +143,7 @@ public class CyActivator extends AbstractCyActivator {
 		DefaultTableCellRenderer emptyBoxRenderer = new DefaultTableCellRenderer();
 		DefaultTableCellRenderer filledBoxRenderer = new DefaultTableCellRenderer();
 		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(vmmServiceRef, editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
-		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager, vmmServiceRef);
+		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager, vmmServiceRef, cyApplicationManagerServiceRef);
 		
 		// Context menu for edge bend
 		BendFactory bf = getService(bc, BendFactory.class);

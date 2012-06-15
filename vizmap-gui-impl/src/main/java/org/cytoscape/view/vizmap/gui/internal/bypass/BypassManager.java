@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
@@ -38,12 +40,14 @@ public final class BypassManager {
 	private final CyServiceRegistrar registrar;
 	private final EditorManager editorManager;
 	private final VisualMappingManager vmm;
+	private final CyApplicationManager appManager;
 
 	public BypassManager(final CyServiceRegistrar registrar, final EditorManager editorManager,
-			final VisualMappingManager vmm) {
+			final VisualMappingManager vmm, final CyApplicationManager appManager) {
 		this.registrar = registrar;
 		this.editorManager = editorManager;
 		this.vmm = vmm;
+		this.appManager = appManager;
 	}
 
 	public void addBypass(RenderingEngineFactory<?> factory, Map props) {
@@ -60,12 +64,31 @@ public final class BypassManager {
 		final VisualLexiconNode nodeRootNode = lexicon.getVisualLexiconNode(nodeRoot);
 		final VisualLexiconNode edgeRootNode = lexicon.getVisualLexiconNode(edgeRoot);
 
+		
+		registerResetTask(CyNode.class);
+		registerResetTask(CyEdge.class);
 		depthFirst(PARENT_MENU_ITEM, nodeRootNode);
 		depthFirst(PARENT_MENU_ITEM, edgeRootNode);
+		
+		
 	}
 
 	public void removeBypass(RenderingEngineFactory<?> factory, Map props) {
 		// TODO: implement this
+	}
+	
+	private void registerResetTask(Class<? extends CyIdentifiable> type) {
+		final Properties vpProp = new Properties();
+		
+		if (type.equals(CyNode.class)) {
+			vpProp.put(ServiceProperties.PREFERRED_MENU, PARENT_MENU_ITEM + ".Reset All Node Bypass");
+			final NodeViewTaskFactory ntf = new ResetNodeBypassTaskFactory(appManager);
+			registrar.registerService(ntf, NodeViewTaskFactory.class, vpProp);
+		} else if (type.equals(CyEdge.class)) {
+			vpProp.put(ServiceProperties.PREFERRED_MENU, PARENT_MENU_ITEM + ".Reset All Edge Bypass");
+			final EdgeViewTaskFactory etf = new ResetEdgeBypassTaskFactory(appManager);
+			registrar.registerService(etf, EdgeViewTaskFactory.class, vpProp);
+		}
 	}
 
 	private void depthFirst(String menuText, final VisualLexiconNode node) {
