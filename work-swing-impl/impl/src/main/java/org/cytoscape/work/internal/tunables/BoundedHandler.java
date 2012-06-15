@@ -86,7 +86,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 				slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
 				                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict());
 				slider.addChangeListener(this);
-				panel.add(slider,BorderLayout.EAST);
+				panel.add(slider,BorderLayout.CENTER);
 			} else {
 				final JLabel label =
 					new JLabel(title + " (max: " + bounded.getLowerBound().toString()
@@ -97,7 +97,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 				                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 				                                  bounded.isUpperBoundStrict());
 				panel.add(label, BorderLayout.WEST);
-				panel.add(boundedField, BorderLayout.EAST);
+				panel.add(boundedField, BorderLayout.CENTER);
 				boundedField.addActionListener(this);
 			}
 		} catch (Exception e) {

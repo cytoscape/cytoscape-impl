@@ -88,7 +88,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 
 		//use a JscrollPane to visualize the items
 		JScrollPane scrollpane = new JScrollPane(itemsContainerList);
-		panel.add(scrollpane,BorderLayout.EAST);
+		panel.add(scrollpane,BorderLayout.CENTER);
 	}
 
 	public void update(){

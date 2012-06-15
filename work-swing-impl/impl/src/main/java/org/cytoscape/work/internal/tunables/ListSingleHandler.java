@@ -81,7 +81,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 		combobox.setPreferredSize(DEF_COMBOBOX_SIZE);
 		combobox.setFont(COMBOBOX_FONT);
 		combobox.addActionListener(this);
-		panel.add(combobox, BorderLayout.EAST);
+		panel.add(combobox, BorderLayout.CENTER);
 		
 		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
 	}
