@@ -832,7 +832,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		// feedback panel
 		pnlFeedBack.setLayout(new GridBagLayout());
 		pnlFeedBack.setBorder(BorderFactory.createTitledBorder(""));
-		pnlFeedBack.setMinimumSize(new Dimension(pnlFeedBack.getWidth(), 44));
+		pnlFeedBack.setMinimumSize(new Dimension(pnlFeedBack.getWidth(), 55));
 		//pnlFeedBack.setMinimumSize(new java.awt.Dimension(300,52));
         
 		pnlScroll.setViewportView(tblFeedBack);
