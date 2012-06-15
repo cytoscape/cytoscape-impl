@@ -85,12 +85,16 @@ public class AttributeLineParser {
 		final String primaryKey = parts[mapping.getKeyIndex()].trim();
 		final int partsLen = parts.length;
 
-		for (int i = 0; i < partsLen; i++) {
-			if ((i != mapping.getKeyIndex()) && mapping.getImportFlag()[i]) {
-				if (parts[i] == null) {
-					continue;
-				} else {
-					mapAttribute(table, primaryKey, parts[i].trim(), i);
+		if (partsLen==1)
+			table.getRow(parts[0]);
+		else{
+			for (int i = 0; i < partsLen; i++) {
+				if ((i != mapping.getKeyIndex()) && mapping.getImportFlag()[i]) {
+					if (parts[i] == null) {
+						continue;
+					} else {
+						mapAttribute(table, primaryKey, parts[i].trim(), i);
+					}
 				}
 			}
 		}
