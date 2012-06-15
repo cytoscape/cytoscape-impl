@@ -117,13 +117,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	//  for turning selection rectangle on and off
 	private boolean selecting = true;
 
+	private boolean enablePopupMenu = true;
+
 	private UndoSupport m_undo;
 
 	private int m_currMouseButton = 0;
 	private int m_lastXMousePos = 0;
 	private int m_lastYMousePos = 0;
 	private boolean m_button1NodeDrag = false;
-
+	
 	private final MousePressedDelegator mousePressedDelegator;
 	private final MouseReleasedDelegator mouseReleasedDelegator;
 	private final MouseDraggedDelegator mouseDraggedDelegator;
@@ -861,6 +863,20 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return !(this.NodeMovement);
 	}
 
+	
+	public void enablePopupMenu(){
+		this.enablePopupMenu = true;
+	}
+	
+	public void disablePopupMenu(){
+		this.enablePopupMenu = false;
+	}
+	
+	public boolean isPopupMenuDisabled(){
+		return !(this.enablePopupMenu);
+	}
+
+	
 	/**
 	 *  @param setLastRenderDetail if true, "m_lastRenderDetail" will be updated, otherwise it will not be updated.
 	 */
@@ -961,7 +977,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			xformPt.setLocation(loc[0],loc[1]); 
 			String action = "Edge";
 			NodeView nview = m_view.getPickedNodeView(rawPt);
-			if ( nview != null ) 
+			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled()) 
 				popup.createNodeViewMenu(m_view.m_drawPersp, nview, e.getX(), e.getY(), action);
 		}
 	}
@@ -1101,11 +1117,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_lastYMousePos = e.getY();
 		
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
-			if (nview != null) {
+			if (nview != null && !InnerCanvas.this.isPopupMenuDisabled()) {
 				popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),null);
 			} else {
 				EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
-				if (edgeView != null) {
+				if (edgeView != null && !InnerCanvas.this.isPopupMenuDisabled()) {
 					popup.createEdgeViewMenu(m_view.m_drawPersp,edgeView,e.getX(),e.getY(),null);
 				} else {
 					// Clicked on empty space...
@@ -1116,7 +1132,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					m_view.xformComponentToNodeCoords(loc);
 					Point xformPt = new Point();
 					xformPt.setLocation(loc[0],loc[1]); 
-					popup.createEmptySpaceMenu(rawPt, xformPt, "NEW");
+					if (!InnerCanvas.this.isPopupMenuDisabled()){
+						popup.createEmptySpaceMenu(rawPt, xformPt, "NEW");						
+					}
 				}
 			}
 		}
@@ -1125,7 +1143,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		void doubleLeftClick(MouseEvent e) {
 			//System.out.println("MousePressed ----> doubleLeftClick");
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
-			if ( nview != null )
+			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled())
 				popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),"OPEN");
 			else {
 				Point rawPt = e.getPoint();
@@ -1135,7 +1153,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_view.xformComponentToNodeCoords(loc);
 				Point xformPt = new Point();
 				xformPt.setLocation(loc[0],loc[1]); 
-				popup.createEmptySpaceMenu(rawPt, xformPt, "OPEN");
+				if (!InnerCanvas.this.isPopupMenuDisabled()){
+					popup.createEmptySpaceMenu(rawPt, xformPt, "OPEN");
+				}
 			}
 		}
 	}

@@ -33,6 +33,7 @@ import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.ding.impl.InnerCanvas;
 
 public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
@@ -135,6 +136,9 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		final RenderingEngine<CyNetwork> renderingEngine = presentationFactory.createRenderingEngine(innerPanel, dummyview);
 		dummyview.fitContent();
 		
+		InnerCanvas innerCanvas = (InnerCanvas)innerPanel.getComponent(0);
+		innerCanvas.disablePopupMenu();
+				
 		final JPanel buttonPanel = new JPanel();
 		final BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
 		buttonPanel.setLayout(buttonLayout);
