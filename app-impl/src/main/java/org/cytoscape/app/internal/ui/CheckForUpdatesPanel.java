@@ -63,7 +63,9 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
                 "App Name", "Version"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
+			private static final long serialVersionUID = 5428723339522445073L;
+			
+			boolean[] canEdit = new boolean [] {
                 false, false
             };
 

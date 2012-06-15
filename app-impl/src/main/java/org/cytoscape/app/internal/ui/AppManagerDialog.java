@@ -60,39 +60,5 @@ public class AppManagerDialog extends javax.swing.JDialog {
         );
 
         pack();
-        
-        /*
-        // Older code generated from NetBeans using an external Swing extension library to generate the layout
-         
-    	mainTabbedPane = new javax.swing.JTabbedPane();
-        installNewAppsPanel1 = new InstallFromStorePanel(appManager, fileUtil, taskManager, this);
-        currentlyInstalledAppsPanel1 = new CurrentlyInstalledAppsPanel(appManager);
-        checkForUpdatesPanel1 = new CheckForUpdatesPanel();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
-        mainTabbedPane.addTab("Install Apps", installNewAppsPanel1);
-        mainTabbedPane.addTab("Currently Installed", currentlyInstalledAppsPanel1);
-        mainTabbedPane.addTab("Check for Updates", checkForUpdatesPanel1);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(mainTabbedPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 640, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(mainTabbedPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 490, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        
-        pack();
-        */
     }
 }

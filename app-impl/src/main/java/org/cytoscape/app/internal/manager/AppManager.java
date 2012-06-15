@@ -131,6 +131,8 @@ public class AppManager {
 	
 	
 	private void setupAlterationMonitor() {
+		// Set up the FileAlterationMonitor to install/uninstall apps when apps are moved in/out of the 
+		// installed/uninstalled app directories
 		fileAlterationMonitor = new FileAlterationMonitor(600);
 		
 		File installedAppsPath = new File(getInstalledAppsPath());

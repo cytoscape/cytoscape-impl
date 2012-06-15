@@ -282,12 +282,12 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                 "font-size: " + font.getSize() + "pt; }";
         ((HTMLDocument) descriptionTextPane.getDocument()).getStyleSheet().addRule(bodyRule);
     }
-
-    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
-        // TODO add your handling code here:
-    }
     
-    private void installFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
+	    // TODO add your handling code here:
+	}
+
+	private void installFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
     	// Setup a the file filter for the open file dialog
     	FileChooserFilter fileChooserFilter = new FileChooserFilter("Jar, Zip Files (*.jar, *.zip)",
     			new String[]{"jar", "zip"});
@@ -509,12 +509,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		// text += "<p style=\"margin-top: 0\"> <a href=\"" + selectedApp.getPageUrl() + "\">" + selectedApp.getPageUrl() + "</a> </p>";
     		
     		// App image
-    		//text += "<div style=\"text-align: center;\">";
     		text += "<img border=\"0\" ";
     		text += "src=\"" + appManager.getWebQuerier().getAppStoreUrl() 
     			+ selectedApp.getIconUrl() + "\" alt=\"" + selectedApp.getFullName() + "\"/>";
-    		
-    		//text += "</div>";
     		
     		// App name
     		text += "<p> <b>" + selectedApp.getFullName() + "</b> </p>";

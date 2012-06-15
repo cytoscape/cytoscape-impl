@@ -348,7 +348,7 @@ public class CyActivator extends AbstractCyActivator {
 		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef);
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
 		
-		// Attempt to instantiate new manager
+		// Instantiate new manager
 		final AppManager appManager = new AppManager(
 				cyAppAdapter, cyApplicationConfigurationServiceRef, webQuerier);
 		registerService(bc, appManager, AppManager.class, new Properties());
@@ -357,6 +357,8 @@ public class CyActivator extends AbstractCyActivator {
 		AppManagerAction appManagerAction2 = new AppManagerAction(appManager, cySwingApplicationRef, fileUtilServiceRef, dialogTaskManagerRef);
 		registerService(bc, appManagerAction2, CyAction.class, new Properties());
 	
+		// Start thread for local server that reports app installation status to the app store when requested,
+		// also able to install an app when told by the app store
 		Thread serverThread = new Thread() {
 			
 			private LocalHttpServer server;
@@ -369,15 +371,11 @@ public class CyActivator extends AbstractCyActivator {
 				server.run();
 			}
 		};
-		
 		serverThread.setDaemon(true);
-
 		Executors.newSingleThreadExecutor().execute(serverThread);
 		
-		// fire event "start up mostly finished"
+		// Fire event "start up mostly finished". This seems to close the Cytoscape splash screen and show the actual UI.
 		cyEventHelperRef.fireEvent(new CyStartEvent(this));
-		
-		
 	}
 }
 

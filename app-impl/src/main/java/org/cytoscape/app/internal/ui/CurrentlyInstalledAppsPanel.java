@@ -59,6 +59,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         descriptionScrollPane = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JTextArea();
 
+        // The table of apps has a hidden first column that contains a reference to the actual App object
         appsAvailableTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -67,7 +68,10 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
                 "App", "Name", "Author", "Version", "Status"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
+
+			private static final long serialVersionUID = 919039586559362963L;
+			
+			boolean[] canEdit = new boolean [] {
                 false, false, false, false, false
             };
 

@@ -53,8 +53,6 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 				String status = "not-found";
 				String version = "not-found";
 				
-				// throw new Exception("Missing value for app name under the key \"" + STATUS_QUERY_APP_NAME + "\"");
-				
 				// Searches web apps first. If not found, searches other apps using manifest name field.
 				for (App app : appManager.getApps()) {
 					if (app.getAppName().equalsIgnoreCase(appName)) {
@@ -72,7 +70,9 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 				responseData.put("status", status);
 				responseData.put("version", version);
 			}
+		// Are we being told to install an app remotely?
 		} else if (urlRequestPrefix.equalsIgnoreCase(INSTALL_QUERY_URL)) {
+			
 			String appName = parsed.get(INSTALL_QUERY_APP_NAME);
 			String version = parsed.get(INSTALL_QUERY_APP_VERSION);
 			
@@ -94,13 +94,15 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 						break;
 					}
 				}
-				
 				responseData.put("name", appName);
 				
 				if (appFoundInStore) {
 					
-					File appFile = appManager.getWebQuerier().downloadApp(appToDownload, version, new File(appManager.getDownloadedAppsPath()));
+					// Download app
+					File appFile = appManager.getWebQuerier().downloadApp(
+							appToDownload, version, new File(appManager.getDownloadedAppsPath()));
 					
+					// Attempt to install app
 					if (appFile == null) {
 						installStatus = "version-not-found";
 					} else {
@@ -110,8 +112,6 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 						
 						installStatus = "success";
 					}
-					
-					
 				}
 				
 				responseData.put("install_status", installStatus);
@@ -172,7 +172,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 	}
 	
 	/**
-	 * Returns the request prefix for a URL encoded according to the application/x-www-form-urlencoded specification, ie.
+	 * Returns the request prefix for a URL encoded in the application/x-www-form-urlencoded form, ie.
 	 * returns "installed" for "http://127.0.0.1:2608/installed?appname=3d&version=1.0.0"
 	 */
 	private String getUrlRequestPrefix(String url) {
