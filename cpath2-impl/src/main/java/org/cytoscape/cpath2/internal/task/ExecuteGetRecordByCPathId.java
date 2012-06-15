@@ -423,10 +423,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				if(BioPAXLevel.L2.equals(model.getLevel())) { // 
 					model = (new OneTwoThree()).filter(model);
 				}
-				//normalize/infer properties: displayName, organism, dataSource
-				fixDisplayName(model);
-				ModelUtils.inferPropertyFromParent(model, "dataSource");
-				ModelUtils.inferPropertyFromParent(model, "organism");
 				//map biopax properties to Cy attributes for SIF nodes
 				for (BioPAXElement e : model.getObjects()) {
 					if(e instanceof EntityReference 

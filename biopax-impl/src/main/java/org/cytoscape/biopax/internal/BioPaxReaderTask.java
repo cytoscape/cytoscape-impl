@@ -90,13 +90,14 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		log.info("Model contains " + model.getObjects().size()
 				+ " BioPAX elements");
 		
-		//normalize/infer properties: displayName, cellularLocation, organism, dartaSource
-		// a hack to skip running property reasoner for already normalized data... TODO generalize
-		if(model.getXmlBase() == null || !model.getXmlBase().contains("pathwaycommons")) {
-			BioPaxUtil.fixDisplayName(model);
-			ModelUtils.inferPropertiesFromParent(model, 
-					new HashSet<String>(Arrays.asList("dataSource", "organism", "cellularLocation")));
-		}
+// giving up this expensive normalization...
+//		//normalize/infer properties: displayName, cellularLocation, organism, dartaSource
+//		// a hack to skip running property reasoner for already normalized data... TODO generalize
+//		if(model.getXmlBase() == null || !model.getXmlBase().contains("pathwaycommons")) {
+//			BioPaxUtil.fixDisplayName(model);
+//			ModelUtils.inferPropertiesFromParent(model, 
+//					new HashSet<String>(Arrays.asList("dataSource", "organism", "cellularLocation")));
+//		}
 		
 		// Map BioPAX Data to Cytoscape Nodes/Edges (run as task)
 		BioPaxMapper mapper = new BioPaxMapper(model, networkFactory, taskMonitor);
