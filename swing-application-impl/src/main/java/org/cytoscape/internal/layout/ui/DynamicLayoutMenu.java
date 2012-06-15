@@ -32,11 +32,9 @@ package org.cytoscape.internal.layout.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.UnexpectedException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Collections;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -52,7 +50,7 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 
@@ -194,9 +192,11 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
                 return CyLayoutAlgorithm.ALL_NODE_VIEWS;
 
             Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
-            for ( CyNode n : selectedNodes )
-            	nodeViews.add( view.getNodeView(n));
-            
+            for ( CyNode n : selectedNodes ) {
+            	View<CyNode> nodeView = view.getNodeView(n);
+            	if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE))
+            		nodeViews.add(nodeView);
+            }
             return nodeViews;
         }
     }

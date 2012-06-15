@@ -30,7 +30,6 @@
 package org.cytoscape.internal.layout.ui;
 
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -73,6 +72,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
@@ -492,7 +492,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
 			CyNetwork network = networkView.getModel();
 			for (View<CyNode> view : networkView.getNodeViews()) {
-				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class)) {
+				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class) &&
+						view.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)) {
 					nodeViews.add(view);
 				}
 			}
