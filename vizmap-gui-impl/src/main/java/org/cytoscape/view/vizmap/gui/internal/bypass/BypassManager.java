@@ -64,22 +64,20 @@ public final class BypassManager {
 		final VisualLexiconNode nodeRootNode = lexicon.getVisualLexiconNode(nodeRoot);
 		final VisualLexiconNode edgeRootNode = lexicon.getVisualLexiconNode(edgeRoot);
 
-		
 		registerResetTask(CyNode.class);
 		registerResetTask(CyEdge.class);
 		depthFirst(PARENT_MENU_ITEM, nodeRootNode);
 		depthFirst(PARENT_MENU_ITEM, edgeRootNode);
-		
-		
+
 	}
 
 	public void removeBypass(RenderingEngineFactory<?> factory, Map props) {
 		// TODO: implement this
 	}
-	
+
 	private void registerResetTask(Class<? extends CyIdentifiable> type) {
 		final Properties vpProp = new Properties();
-		
+
 		if (type.equals(CyNode.class)) {
 			vpProp.put(ServiceProperties.PREFERRED_MENU, PARENT_MENU_ITEM + ".Reset All Node Bypass");
 			final NodeViewTaskFactory ntf = new ResetNodeBypassTaskFactory(appManager);
@@ -92,14 +90,14 @@ public final class BypassManager {
 	}
 
 	private void depthFirst(String menuText, final VisualLexiconNode node) {
-		
-		double menu_gravity = 1.0;		
+
+		double menu_gravity = 1.0;
 		HashMap<String, String> vpMap = new HashMap<String, String>();
 		Vector<String> vp_names = new Vector<String>();
-		
+
 		final Collection<VisualLexiconNode> children = node.getChildren();
-		
-		//get the list of VP
+
+		// get the list of VP
 		for (VisualLexiconNode child : children) {
 			final VisualProperty<?> vp = child.getVisualProperty();
 
@@ -111,18 +109,18 @@ public final class BypassManager {
 				// Leaf
 				vp_names.add(vp.getDisplayName());
 			}
-		}	
-		
+		}
+
 		// do sorting
 		Object[] names = vp_names.toArray();
 		java.util.Arrays.sort(names);
-		
-		//Assign the menu_gravity for each VP
-		for (int i =0; i< names.length; i++){
+
+		// Assign the menu_gravity for each VP
+		for (int i = 0; i < names.length; i++) {
 			menu_gravity += 1.0;
 			vpMap.put(names[i].toString(), Double.toString(menu_gravity));
 		}
-		
+
 		//
 		for (VisualLexiconNode child : children) {
 			final VisualProperty<?> vp = child.getVisualProperty();
@@ -131,28 +129,45 @@ public final class BypassManager {
 			if (PropertySheetUtil.isCompatible(vp) == false)
 				continue;
 
-			final String newMenu = menuText + "." + vp.getDisplayName();
+			final String baseString = menuText + "." + vp.getDisplayName();
 			if (child.getChildren().size() == 0) {
+				final String newMenu = baseString + ".Set Value";
+				final String clearMenu = baseString + ".Clear";
 				// Leaf
 				final Properties vpProp = new Properties();
 				vpProp.put(ServiceProperties.PREFERRED_MENU, newMenu);
 				vpProp.put("useCheckBoxMenuItem", "true");
 				vpProp.put("targetVP", vp.getIdString());
 				vpProp.put(MENU_GRAVITY, vpMap.get(vp.getDisplayName()));
-				
+
+				final Properties clearProp = new Properties();
+				clearProp.put(ServiceProperties.PREFERRED_MENU, clearMenu);
+				// clearProp.put("useCheckBoxMenuItem", "true");
+				clearProp.put("targetVP", vp.getIdString());
+				clearProp.put(MENU_GRAVITY, vpMap.get(vp.getDisplayName()));
+
 				if (vp.getTargetDataType().equals(CyNode.class)) {
 					final NodeViewTaskFactory ntf = new NodeBypassMenuTaskFactory(null, vp,
-							editorManager.getValueEditor(vp.getRange().getType()), vmm);
+							editorManager.getValueEditor(vp.getRange().getType()), vmm, false);
 					registrar.registerService(ntf, NodeViewTaskFactory.class, vpProp);
+
+					final NodeViewTaskFactory clearNtf = new NodeBypassMenuTaskFactory(null, vp,
+							editorManager.getValueEditor(vp.getRange().getType()), vmm, true);
+					registrar.registerService(clearNtf, NodeViewTaskFactory.class, clearProp);
+
 				} else if (vp.getTargetDataType().equals(CyEdge.class)) {
 					final EdgeViewTaskFactory etf = new EdgeBypassMenuTaskFactory(null, vp,
-							editorManager.getValueEditor(vp.getRange().getType()), vmm);
+							editorManager.getValueEditor(vp.getRange().getType()), vmm, false);
 					registrar.registerService(etf, EdgeViewTaskFactory.class, vpProp);
+
+					final EdgeViewTaskFactory clearEtf = new EdgeBypassMenuTaskFactory(null, vp,
+							editorManager.getValueEditor(vp.getRange().getType()), vmm, true);
+					registrar.registerService(clearEtf, EdgeViewTaskFactory.class, clearProp);
 				}
-				
+
 				logger.debug("Bypass context menu registered: " + vp.getDisplayName());
 			} else {
-				depthFirst(newMenu, child);
+				depthFirst(baseString, child);
 			}
 		}
 	}

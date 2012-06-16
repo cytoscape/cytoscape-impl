@@ -18,17 +18,22 @@ public class EdgeBypassMenuTaskFactory extends AbstractEdgeViewTaskFactory {
 
 	private final Component parent;
 	private final VisualMappingManager vmm;
+	private final boolean clearOnly;
 
 	public EdgeBypassMenuTaskFactory(final Component parent, final VisualProperty<?> vp, final ValueEditor<?> editor,
-			final VisualMappingManager vmm) {
+			final VisualMappingManager vmm, final boolean clearOnly) {
 		this.vp = vp;
 		this.editor = editor;
 		this.parent = parent;
 		this.vmm = vmm;
+		this.clearOnly = clearOnly;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView netView) {
-		return new TaskIterator(new BypassTask<CyEdge>(parent, editor, vp, edgeView, netView, vmm));
+		if(clearOnly)
+			return new TaskIterator(new ClearBypassTask(vp, edgeView, netView));
+		else
+			return new TaskIterator(new BypassTask<CyEdge>(parent, editor, vp, edgeView, netView, vmm));
 	}
 }

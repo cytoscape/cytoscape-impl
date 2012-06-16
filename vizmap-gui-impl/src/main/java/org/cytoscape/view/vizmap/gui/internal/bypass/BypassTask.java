@@ -1,17 +1,26 @@
 package org.cytoscape.view.vizmap.gui.internal.bypass;
 
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+
 import java.awt.Component;
+import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskMonitor;
 
 /**
@@ -57,14 +66,8 @@ public class BypassTask<T extends CyIdentifiable> extends AbstractTask {
 	}
 
 	private final void update(final boolean lock) {
-		if (!lock) {
-			final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
-			view.setLockedValue(vp, newValue);
-		} else {
-			// Unlock it
-			view.clearValueLock(vp);
-		}
-
+		final Object newValue = editor.showEditor(parent, view.getVisualProperty(vp));
+		view.setLockedValue(vp, newValue);
 		final CyRow row = networkView.getModel().getRow(view.getModel());
 		vmm.getCurrentVisualStyle().apply(row, view);
 		networkView.updateView();
