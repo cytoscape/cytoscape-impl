@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.ArrayList;
+import java.util.Collection;
 
 
 /**
@@ -59,8 +60,12 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	 * @return a file format description from {@link CyFileFilter}.
 	 */
 	abstract protected String getExportFileFormat();
-	/** A Map that maps description strings to {@link CyFileFilter}s*/
-	protected final Map<String,CyFileFilter> descriptionFilterMap;
+
+	/** A Map that maps file filter description strings to {@link CyFileFilter}s*/
+	private final Map<String,CyFileFilter> descriptionFilterMap;
+
+	/** A Map that maps file filter extension strings to {@link CyFileFilter}s*/
+	private final Map<String,CyFileFilter> extensionFilterMap;
 
 	/**
 	 * The CyWriterManager specified in the constructor.
@@ -78,8 +83,13 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 		this.writerManager = writerManager;
 
 		descriptionFilterMap = new TreeMap<String,CyFileFilter>();
-		for (CyFileFilter f : writerManager.getAvailableWriterFilters())
+		extensionFilterMap = new TreeMap<String,CyFileFilter>();
+		for (CyFileFilter f : writerManager.getAvailableWriterFilters()) {
 			descriptionFilterMap.put(f.getDescription(), f);
+			for ( String ext : f.getExtensions() ) {
+				extensionFilterMap.put(ext.toLowerCase(),f);
+			}
+		}
 	}
 
 	/**
@@ -95,7 +105,7 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 		if (desc == null)
 			throw new NullPointerException("No file type has been specified!");
 
-		final CyFileFilter filter = descriptionFilterMap.get(desc);
+		final CyFileFilter filter = getFileFilter(desc);
 		if (filter == null)
 			throw new NullPointerException("No file filter found for specified file type!");
 		
@@ -107,12 +117,42 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	}
 
 	/**
-	 * Should return a {@link org.cytoscape.io.write.CyWriter} object for writing the specified file of the specified type.
+	 * Should return a {@link org.cytoscape.io.write.CyWriter} object for writing 
+	 * the specified file of the specified type.
 	 * @param filter The specific type of file to be written.
 	 * @param out The file that will be written.
-	 * @return a {@link org.cytoscape.io.write.CyWriter} object for writing the specified file of the specified type.
+	 * @return a {@link org.cytoscape.io.write.CyWriter} object for writing the specified file 
+	 * of the specified type.
 	 * @throws Exception 
 	 */
 	protected abstract CyWriter getWriter(CyFileFilter filter, File out) throws Exception;
 
+	/**
+	 * Returns a collection of human readable descriptions of all of the file filters 
+	 * available for this writer.
+	 * @return a collection of human readable descriptions of all of the file filters 
+	 * available for this writer.
+	 */
+	protected final Collection<String> getFileFilterDescriptions() {
+		return descriptionFilterMap.keySet();
+	}
+
+	/**
+	 * Returns a CyFileFilter that matches the specifed description where the description
+	 * is either the human readable text returned from #getFileFilterDescriptions or a
+	 * valid extension for the CyFileFilter.  Duplicate file extensions (e.g. xml) will
+	 * return an arbitrary filter.
+	 * @param description A human readable description or file extension string.
+	 * @returns a CyFileFilter matching the description or extension.
+	 */
+	protected final CyFileFilter getFileFilter(String description) {
+		if (description == null)
+			return null;
+
+		CyFileFilter f = descriptionFilterMap.get(description);
+		if ( f != null )
+			return f;
+		else
+			return extensionFilterMap.get(description.toLowerCase());
+	}
 }

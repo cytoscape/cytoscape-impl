@@ -42,7 +42,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 	 */
 	public TunableAbstractCyWriter(T writerManager) {
 		super(writerManager);
-		options = new ListSingleSelection<String>(new ArrayList<String>(descriptionFilterMap.keySet()));
+		options = new ListSingleSelection<String>(new ArrayList<String>(getFileFilterDescriptions()));
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 		if (exportFileFormat == null)
 			return true;
 
-		final CyFileFilter filter = descriptionFilterMap.get(exportFileFormat);
+		final CyFileFilter filter = getFileFilter(exportFileFormat);
 		if (filter == null)
 			return true;
 
@@ -106,7 +106,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 	}
 
 	protected final File addOrReplaceExtension(final File file) {
-		final CyFileFilter filter = descriptionFilterMap.get(getExportFileFormat());
+		final CyFileFilter filter = getFileFilter(getExportFileFormat());
 		if (filter == null)
 			return file;
 
