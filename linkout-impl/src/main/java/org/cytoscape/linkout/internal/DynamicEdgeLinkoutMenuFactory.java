@@ -26,7 +26,7 @@ public class DynamicEdgeLinkoutMenuFactory implements CyEdgeViewContextMenuFacto
 	public CyMenuItem createMenuItem(CyNetworkView netView,
 			View<CyEdge> edgeView) {
 			DynamicSupport support = new DynamicSupport(browser, synTaskManager);
-			CyMenuItem menuItem = new CyMenuItem(new JMenuItem("LiknOut Dynamic"), 0);
+			CyMenuItem menuItem = new CyMenuItem(new JMenuItem("LinkOut Dynamic"), 0);
 			support.createSubMenus(menuItem, netView.getModel(),edgeView.getModel());
 			return menuItem;
 	}

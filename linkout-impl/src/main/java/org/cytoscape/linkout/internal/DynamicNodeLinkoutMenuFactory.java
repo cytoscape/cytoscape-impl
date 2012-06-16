@@ -26,7 +26,7 @@ public class DynamicNodeLinkoutMenuFactory implements CyNodeViewContextMenuFacto
 	public CyMenuItem createMenuItem(CyNetworkView netView,
 			View<CyNode> nodeView) {
 		DynamicSupport support = new DynamicSupport(browser, synTaskManager);
-		CyMenuItem menuItem = new CyMenuItem(new JMenu("LiknOut Dynamic"), 0);
+		CyMenuItem menuItem = new CyMenuItem(new JMenu("LinkOut Dynamic"), 0);
 		support.createSubMenus(menuItem, netView.getModel(),nodeView.getModel());
 		return menuItem;
 	}
