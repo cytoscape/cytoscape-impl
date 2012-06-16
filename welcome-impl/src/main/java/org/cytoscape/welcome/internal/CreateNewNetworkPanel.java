@@ -132,7 +132,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		ImageIcon databaseIcon = new ImageIcon(databaseIconImg);
 
 		this.layout = new JCheckBox();
-		layout.setText("Apply default layout");
+		layout.setText("Apply preferred layout");
 		layout.setToolTipText("Note: This option may take minutes to finish for large networks!");
 
 		this.loadNetwork = new JLabel("From file...");
