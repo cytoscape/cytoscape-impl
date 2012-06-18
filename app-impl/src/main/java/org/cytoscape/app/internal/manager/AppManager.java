@@ -428,7 +428,7 @@ public class AppManager {
 			
 			return path.getCanonicalPath();
 		} catch (IOException e) {
-			// TODO: Record error in logger
+			logger.warn("Failed to obtain path to installed apps directory");
 			return null;
 		}
 	}
@@ -449,7 +449,7 @@ public class AppManager {
 			
 			return path.getCanonicalPath();
 		} catch (IOException e) {
-			// TODO: Record error in logger
+			logger.warn("Failed to obtain path to uninstalled apps directory");
 			return null;
 		}
 	}
@@ -471,7 +471,7 @@ public class AppManager {
 			
 			return path.getCanonicalPath();
 		} catch (IOException e) {
-			// TODO: Record in logger
+			logger.warn("Failed to obtain path to downloaded apps directory");
 			return null;
 		}
 	}
@@ -502,7 +502,7 @@ public class AppManager {
 			try {
 				installApp(parsedApp);
 			} catch (AppInstallException e) {
-				DebugHelper.print("Unable to install app: " + e.getMessage());
+				logger.warn("Unable to install app from installed apps directory: " + e.getMessage());
 			}
 		}
 		

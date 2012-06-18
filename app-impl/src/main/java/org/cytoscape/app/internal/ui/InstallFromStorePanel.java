@@ -13,9 +13,12 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,6 +39,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -106,6 +110,10 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 			}
 		});
 		
+    	DefaultTreeCellRenderer tagsTreeCellRenderer = new DefaultTreeCellRenderer();
+		tagsTreeCellRenderer.setLeafIcon(tagsTreeCellRenderer.getDefaultClosedIcon());
+		tagsTree.setCellRenderer(tagsTreeCellRenderer);
+    	
 		resultsTree.addTreeSelectionListener(new TreeSelectionListener() {
 			
 			@Override
@@ -137,7 +145,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 						// populateTree(appManager.getWebQuerier().getAllApps());
 						buildTagsTree();
 						
-						fillResultsTree(null);
+						fillResultsTree(appManager.getWebQuerier().getAllApps());
 					}
 					
 				});
@@ -422,6 +430,17 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	Set<WebApp> availableApps = webQuerier.getAllApps();
     	Set<WebQuerier.AppTag> availableTags = webQuerier.getAllTags();
     	
+    	List<WebQuerier.AppTag> sortedTags = new LinkedList<WebQuerier.AppTag>(availableTags);
+    	
+    	Collections.sort(sortedTags, new Comparator<WebQuerier.AppTag>() {
+
+			@Override
+			public int compare(AppTag tag, AppTag other) {
+				return other.getCount() - tag.getCount();
+			}
+    	});
+    	
+    	
     	DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     	
     	DefaultMutableTreeNode allAppsTreeNode = new DefaultMutableTreeNode("all apps" 
@@ -436,7 +455,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	}
     	
     	DefaultMutableTreeNode treeNode = null;
-    	for (final WebQuerier.AppTag appTag : availableTags) {
+    	for (final WebQuerier.AppTag appTag : sortedTags) {
     		if (appTag.getCount() > 0) {
     			treeNode = new DefaultMutableTreeNode(appTag);
     			appsByTagTreeNode.add(treeNode);
@@ -462,7 +481,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	    	// Check if the "all apps" node is selected
 	    	if (selectedNode.getLevel() == 1 
 	    			&& String.valueOf(selectedNode.getUserObject()).startsWith("all apps")) {
-	    		fillResultsTree(null);
+	    		fillResultsTree(appManager.getWebQuerier().getAllApps());
 	    		
 	    	} else if (selectedNode.getUserObject() instanceof WebQuerier.AppTag) {
 	    		WebQuerier.AppTag selectedTag = (WebQuerier.AppTag) selectedNode.getUserObject();
@@ -478,14 +497,21 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     
     private void fillResultsTree(Set<WebApp> webApps) {
     	Set<WebApp> appsToShow = webApps;
-    	if (appsToShow == null) {
-    		appsToShow = appManager.getWebQuerier().getAllApps();
-    	}
+    	List<WebApp> sortedApps = new LinkedList<WebApp>(appsToShow);
+    	
+    	// Sort apps by alphabetical order
+    	Collections.sort(sortedApps, new Comparator<WebApp>() {
+			@Override
+			public int compare(WebApp webApp, WebApp other) {
+				
+				return (webApp.getName().compareToIgnoreCase(other.getName()));
+			}
+    	});
     	
     	DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     	
     	DefaultMutableTreeNode treeNode;
-    	for (WebApp webApp : appsToShow) {
+    	for (WebApp webApp : sortedApps) {
     		treeNode = new DefaultMutableTreeNode(webApp);
     		root.add(treeNode);
     	}
