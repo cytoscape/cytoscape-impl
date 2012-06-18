@@ -40,7 +40,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 			if ( readVS != OK )
 				return readVS;
 		}
-
+		
 		// If MapTableToNetworkTablesTask implemented TunableValidator, then
 		// this is what we'd do:
 		// return mappingTask.getValidationState(errMsg);
@@ -50,17 +50,8 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		readerTask.run(taskMonitor);		
-		checkTable();
+		readerTask.run(taskMonitor);
 		mappingTask.run(taskMonitor);
-	}
-
-	private void checkTable() {
-
-		for(CyTable table: readerTask.getTables())
-			if (table.getColumns().size() <= 1)
-				throw new IllegalArgumentException("Imported table requires to have two or more columns!" +
-				"Check the selected delimiters and columns.");
 	}
 
 }

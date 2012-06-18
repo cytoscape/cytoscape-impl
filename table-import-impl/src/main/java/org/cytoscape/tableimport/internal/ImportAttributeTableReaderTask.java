@@ -175,6 +175,16 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			}
 			return ValidationState.INVALID;
 		}
+		
+		if (amp.getColumnCount() < 2){
+			try {
+				errMsg.append("Table should have more than one column! Please check the selected delimeters and columns.");
+			} catch (IOException e) {
+				e.printStackTrace();
+				return ValidationState.INVALID;
+			}
+			return ValidationState.INVALID;
+		}
 			return ValidationState.OK;
 	}
 	
