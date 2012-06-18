@@ -8,8 +8,7 @@ public class StringTranslator implements ValueTranslator<Object, String>{
 
 	@Override
 	public String translate(final Object inputValue) {
-
-		if(inputValue != null) {
+		if (inputValue != null) {
 			if (inputValue instanceof List) {
 				// Special handler for List column.
 				final List<?> list = (List<?>)inputValue;
@@ -21,16 +20,18 @@ public class StringTranslator implements ValueTranslator<Object, String>{
 
 					sb.deleteCharAt(sb.length() - 1);
 				}
+				
 				return sb.toString();
-			} else
+			} else {
 				return inputValue.toString();
-		} else
+			}
+		} else {
 			return null;
+		}
 	}
 
 	@Override
 	public Class<String> getTranslatedValueType() {
 		return String.class;
 	}
-
 }

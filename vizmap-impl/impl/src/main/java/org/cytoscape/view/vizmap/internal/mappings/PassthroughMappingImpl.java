@@ -66,11 +66,11 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 			return;
 
 		K tableValue = null;
-
+		
 		// Special case
-		if (columnName.equals(CyIdentifiable.SUID))
+		if (columnName.equals(CyIdentifiable.SUID)) {
 			tableValue = (K) view.getModel().getSUID();
-		else {
+		} else {
 			// Value is not set. Ignore.
 			if (row.isSet(columnName) == false)
 				return;
@@ -85,10 +85,17 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 				return;
 			}
 		}
-
-		V value = translator.translate(tableValue);
-
-		if (value != null)
-			view.setVisualProperty(vp, value);
+		
+		Object value = translator.translate(tableValue);
+		
+		if (value instanceof String)
+			value = vp.parseSerializableString((String) value);
+		
+		if (value != null) {
+			try {
+				view.setVisualProperty(vp, (V) value);
+			} catch (ClassCastException cce) {
+			}
+		}
 	}
 }

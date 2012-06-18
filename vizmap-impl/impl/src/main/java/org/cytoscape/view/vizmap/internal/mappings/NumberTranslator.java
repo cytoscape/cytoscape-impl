@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.internal.mappings;
 
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 
+//TODO: DELETE?
 public class NumberTranslator<T extends Number> implements ValueTranslator<Object, T> {
 
 	private final Class<T> translatedValueType;

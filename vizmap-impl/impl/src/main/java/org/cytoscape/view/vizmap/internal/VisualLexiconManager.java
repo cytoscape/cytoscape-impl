@@ -44,17 +44,12 @@ public class VisualLexiconManager {
 
 	
 	public void addRenderingEngineFactory(RenderingEngineFactory<?> factory, Map props) {
-		
-		lexiconSet.add(factory.getVisualLexicon());
-		
 		final VisualLexicon lexicon = factory.getVisualLexicon();
+		lexiconSet.add(lexicon);
 		
-		// Node-related Visual Properties are linked as a children of NODE
-		// VP.
+		// Node-related Visual Properties are linked as a children of NODE VP.
 		nodeVPs.addAll(lexicon.getAllDescendants(BasicVisualLexicon.NODE));
-
-		// Node-related Visual Properties are linked as a children of NODE
-		// VP.
+		// Node-related Visual Properties are linked as a children of NODE VP.
 		edgeVPs.addAll(lexicon.getAllDescendants(BasicVisualLexicon.EDGE));
 
 		for (VisualProperty<?> vp : lexicon.getAllVisualProperties()) {
