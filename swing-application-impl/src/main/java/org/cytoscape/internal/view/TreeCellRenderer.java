@@ -18,8 +18,8 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 
 	private final static long serialVersionUID = 1213748836751014L;
 	
-	private static final String NETWORK_ICON = "/images/network_32.png";
-	private static final String NETWORK_LEAF_ICON = "/images/network_l_32.png";
+	private static final String NETWORK_ICON = "/images/network_16.png";
+	private static final String NETWORK_LEAF_ICON = "/images/blank_icon_16.png";
 
 	private static final Font TABLE_FONT = new Font("SansSerif", Font.PLAIN, 12);
 	private static final Font TABLE_FONT_SELECTED = new Font("SansSerif", Font.BOLD, 12);
@@ -33,6 +33,8 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 		
 		final Image iconImage = Toolkit.getDefaultToolkit().getImage(getClass().getResource(NETWORK_ICON));
 		final ImageIcon icon = new ImageIcon(iconImage);
+
+		// If we don't provide a leaf Icon, a default one will be used.
 		final Image iconImageLeaf = Toolkit.getDefaultToolkit().getImage(getClass().getResource(NETWORK_LEAF_ICON));
 		final ImageIcon iconLeaf = new ImageIcon(iconImageLeaf);
 		

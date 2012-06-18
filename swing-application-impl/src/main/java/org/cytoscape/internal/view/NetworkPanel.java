@@ -109,7 +109,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
 
 	static final Color FONT_COLOR = new Color(20, 20, 20);
-	private static final int TABLE_ROW_HEIGHT = 32;
+	private static final int TABLE_ROW_HEIGHT = 16;
 	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
 
 	private final JTreeTable treeTable;
