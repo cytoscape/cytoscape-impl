@@ -672,23 +672,20 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			maybeShowPopup(e);
 		}
 
+		// On Windows, popup is triggered by mouse release, not press 
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+
 		/**
 		 * if the mouse press is of the correct type, this function will maybe
 		 * display the popup
 		 */
 		private final void maybeShowPopup(final MouseEvent e) {
 
-			// Note: e.isPopupTrigger() always returns false on Windows, so we make Windows OS an exception
-			boolean isWinOS = false;
-			boolean isRightClick_WinOS = false;
-			if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0){
-				isWinOS = true;
-			}
-			if ((isWinOS && e.getButton() != MouseEvent.BUTTON3))
-				return;
-
 			// Ignore if not valid trigger.
-			if (!e.isPopupTrigger() && !isWinOS)
+			if (!e.isPopupTrigger())
 				return;
 
 			// get the row where the mouse-click originated
