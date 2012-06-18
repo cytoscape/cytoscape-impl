@@ -155,15 +155,6 @@ public abstract class App {
 		
 		for (App app : appManager.getApps()) {
 			if (this.heuristicEquals(app) && this != app) {
-				/*
-				DebugHelper.print("Install aborted: heuristic finds app already installed");
-				DebugHelper.print("conflict app status: " + app.getStatus());
-				DebugHelper.print("conflict app name: " + app.getAppName());
-				DebugHelper.print("conflict app file: " + app.getAppFile().getAbsolutePath());
-				DebugHelper.print("conflict app: " + app);
-				DebugHelper.print("this app file: " + getAppFile());
-				DebugHelper.print("this app: " + this);
-				*/
 				
 				// If we already have an App object registered to the app manager
 				// that represents this app, re-use that app object
@@ -403,7 +394,7 @@ public abstract class App {
 					// Delete the source file after the copy operation
 					String fileName = this.getAppFile().getName();
 					this.getAppFile().delete();
-					this.setAppFile(new File(uninstalledAppsPath + File.separator + fileName));				
+					this.setAppFile(new File(uninstalledAppsPath + File.separator + fileName));
 				}
 			} catch (IOException e) {
 				throw new AppUninstallException("Unable to obtain path: " + e.getMessage());

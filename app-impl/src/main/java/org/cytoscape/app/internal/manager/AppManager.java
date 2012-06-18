@@ -29,12 +29,17 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.app.internal.net.server.LocalHttpServer;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents an App Manager, which is capable of maintaining a list of all currently installed and available apps. The class
  * also provides functionalities for installing and uninstalling apps.
  */
 public class AppManager {
+	
+	private static final Logger logger = LoggerFactory.getLogger(AppManager.class);
+	
 	/** Only files with these extensions are checked when looking for apps in a given subdirectory.
 	 */
 	private static final String[] APP_EXTENSIONS = {"jar"};
@@ -113,6 +118,7 @@ public class AppManager {
 
 		appParser = new AppParser();
 		
+		purgeTemporaryDirectories();
 		initializeAppsDirectories();
 		
 		this.appListeners = new HashSet<AppsChangedListener>();
@@ -123,7 +129,7 @@ public class AppManager {
 		// Load apps from the "uninstalled apps" directory
 		Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()));
 		apps.addAll(uninstalledApps);
-
+		
 		setupAlterationMonitor();
 		
 		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
@@ -143,6 +149,7 @@ public class AppManager {
 		FileAlterationObserver uninstallAlterationObserver = new FileAlterationObserver(
 				uninstalledAppsPath, new SingleLevelFileFilter(uninstalledAppsPath), IOCase.SYSTEM);
 		
+		// Listen for events on the "installed apps" folder
 		installAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileDelete(File file) {
@@ -156,26 +163,19 @@ public class AppManager {
 						
 						if (appFile != null 
 								&& appFile.getCanonicalPath().equals(canonicalPath)) {
-							// app.setStatus(AppStatus.TO_BE_UNINSTALLED);
-							
-							// TODO: call app.setFile(null), prevent re-installation of this app
-							// as the file has been moved
-							
-							// app.setAppFile(null);
+
 							app.setAppFile(new File(getUninstalledAppsPath() + File.separator + appFile.getName()));
 							
 							try {
 								uninstallApp(app);
 							} catch (AppUninstallException e) {
-								// TODO Auto-generated catch block
+
 								e.printStackTrace();
 							}
-							
-							// fireAppsChangedEvent();
 						}
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 			}
@@ -200,14 +200,14 @@ public class AppManager {
 			
 			@Override
 			public void onFileChange(File file) {
-				DebugHelper.print("Install directory file changed");
 			}
 		});
 		
+		
+		/*
 		uninstallAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileDelete(File file) {
-				DebugHelper.print("Uninstall directory file deleted");
 				
 				try {
 					String canonicalPath = file.getCanonicalPath();
@@ -238,8 +238,6 @@ public class AppManager {
 					}
 					
 					for (App appToBeRemoved : appsToBeRemoved) {
-						DebugHelper.print("Removing app: " + appToBeRemoved.getAppName());
-						
 						removeApp(appToBeRemoved);
 					}
 					
@@ -281,16 +279,15 @@ public class AppManager {
 			
 			@Override
 			public void onFileChange(File file) {
-				DebugHelper.print("Uninstall directory file changed");
 			}
 		});
-		
+		*/
 		
 		try {
 			installAlterationObserver.initialize();
 			uninstallAlterationObserver.initialize();
-			fileAlterationMonitor.addObserver(installAlterationObserver);
-			fileAlterationMonitor.addObserver(uninstallAlterationObserver);
+			// fileAlterationMonitor.addObserver(installAlterationObserver);
+			// fileAlterationMonitor.addObserver(uninstallAlterationObserver);
 			fileAlterationMonitor.start();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -348,7 +345,15 @@ public class AppManager {
 	 */
 	public void installApp(App app) throws AppInstallException {
 		
-		app.install(this);
+		try {
+			app.install(this);
+		} catch (AppInstallException e) {
+			if (app.getAppFile() != null) {
+				app.getAppFile().delete();
+			}
+			
+			throw new AppInstallException(e.getMessage());
+		}
 		
 		// Let the listeners know that an app has been installed
 		fireAppsChangedEvent();
@@ -413,7 +418,15 @@ public class AppManager {
 	 */
 	public String getInstalledAppsPath() {
 		try {
-			return getBaseAppPath().getCanonicalPath() + File.separator + INSTALLED_APPS_DIRECTORY_NAME;
+			// Create the directory if it doesn't exist
+			File path = new File(getBaseAppPath() + File.separator + INSTALLED_APPS_DIRECTORY_NAME);
+			
+			if (!path.exists()) {
+				path.mkdirs();
+				System.out.println("Remaking installed dir");
+			}
+			
+			return path.getCanonicalPath();
 		} catch (IOException e) {
 			// TODO: Record error in logger
 			return null;
@@ -427,7 +440,14 @@ public class AppManager {
 	 */
 	public String getUninstalledAppsPath() {
 		try {
-			return getBaseAppPath().getCanonicalPath() + File.separator + UNINSTALLED_APPS_DIRECTORY_NAME;
+			// Create the directory if it doesn't exist
+			File path = new File(getBaseAppPath() + File.separator + UNINSTALLED_APPS_DIRECTORY_NAME);
+			
+			if (!path.exists()) {
+				path.mkdirs();
+			}
+			
+			return path.getCanonicalPath();
 		} catch (IOException e) {
 			// TODO: Record error in logger
 			return null;
@@ -442,10 +462,33 @@ public class AppManager {
 	 */
 	public String getDownloadedAppsPath() {
 		try {
-			return getBaseAppPath().getCanonicalPath() + File.separator + DOWNLOADED_APPS_DIRECTORY_NAME;
+			// Create the directory if it doesn't exist
+			File path = new File(getBaseAppPath() + File.separator + DOWNLOADED_APPS_DIRECTORY_NAME);
+			
+			if (!path.exists()) {
+				path.mkdirs();
+			}
+			
+			return path.getCanonicalPath();
 		} catch (IOException e) {
 			// TODO: Record in logger
 			return null;
+		}
+	}
+	
+	/**
+	 * Removes the temporary app download directory and the directory used to store uninstalled apps.
+	 */
+	public void purgeTemporaryDirectories() {
+		File downloaded = new File(getDownloadedAppsPath());
+		File uninstalled = new File(getUninstalledAppsPath());
+		
+		try {
+			FileUtils.deleteDirectory(downloaded);
+			FileUtils.deleteDirectory(uninstalled);
+			
+		} catch (IOException e) {
+			logger.warn("Unable to completely remove temporary directories for downloaded and uninstalled apps.");
 		}
 	}
 	

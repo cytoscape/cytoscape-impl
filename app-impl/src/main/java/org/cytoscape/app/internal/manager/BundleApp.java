@@ -36,7 +36,7 @@ public class BundleApp extends App {
 	public void install(AppManager appManager) throws AppInstallException {
 		// Use the default installation procedure consisting of copying over
 		// the file, creating an instance, and registering with the app manager.
-		defaultInstall(appManager);
+		// defaultInstall(appManager);
 	}
 
 	@Override
@@ -44,9 +44,7 @@ public class BundleApp extends App {
 		
 		// Use the default uninstallation procedure consisting of moving the app file
 		// to the uninstalled apps directory
-		defaultUninstall(appManager);
-		
-		// Now, we need to unregister the bundle
+		// defaultUninstall(appManager);
 	}
 
 }

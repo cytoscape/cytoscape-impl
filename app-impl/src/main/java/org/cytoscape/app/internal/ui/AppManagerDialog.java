@@ -37,7 +37,8 @@ public class AppManagerDialog extends javax.swing.JDialog {
         checkForUpdatesPanel1 = new CheckForUpdatesPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
+        setTitle("App Manager");
+        
         mainTabbedPane.addTab("Install from App Store", installNewAppsPanel1);
         mainTabbedPane.addTab("Currently Installed", currentlyInstalledAppsPanel1);
         mainTabbedPane.addTab("Check for Updates", checkForUpdatesPanel1);
