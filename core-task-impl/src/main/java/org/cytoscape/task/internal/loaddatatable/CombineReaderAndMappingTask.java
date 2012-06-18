@@ -8,8 +8,10 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableValidator;
+import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 
-public class CombineReaderAndMappingTask extends AbstractTask{
+public class CombineReaderAndMappingTask extends AbstractTask implements TunableValidator {
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -28,6 +30,22 @@ public class CombineReaderAndMappingTask extends AbstractTask{
 	public CombineReaderAndMappingTask(CyTableReader readerTask , CyNetworkManager networkManager){
 		this.readerTask = readerTask;
 		this.mappingTask = new MapTableToNetworkTablesTask(networkManager, readerTask);
+	}
+
+	@Override
+	public ValidationState getValidationState(Appendable errMsg) {
+		if ( readerTask instanceof TunableValidator ) {
+			ValidationState readVS = ((TunableValidator)readerTask).getValidationState(errMsg);
+
+			if ( readVS != OK )
+				return readVS;
+		}
+
+		// If MapTableToNetworkTablesTask implemented TunableValidator, then
+		// this is what we'd do:
+		// return mappingTask.getValidationState(errMsg);
+
+		return OK;
 	}
 
 	@Override
