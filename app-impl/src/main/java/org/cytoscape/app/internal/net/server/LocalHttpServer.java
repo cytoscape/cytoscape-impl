@@ -250,13 +250,21 @@ public class LocalHttpServer implements Runnable {
             final String method = request.getRequestLine().getMethod().toLowerCase();
             DebugHelper.print("Request received. Method: " + method);
 
-	    if (method.equals("options")) {
-		    httpResponse.addHeader("Access-Control-Allow-Origin", "*");
-		    httpResponse.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-		    httpResponse.addHeader("Access-Control-Max-Age", "1");
-		    httpResponse.addHeader("Access-Control-Allow-Headers", "origin, x-csrftoken, accept");
-		    return;
-	    }
+            /*
+            System.out.println("Headers: ");
+            for (int i = 0; i < request.getAllHeaders().length; i++) {
+            	System.out.println("Header name: " + request.getAllHeaders()[i].getName());
+            	System.out.println("Header value: " + request.getAllHeaders()[i].getValue());
+            }
+            */
+            
+		    if (method.equals("options")) {
+			    httpResponse.addHeader("Access-Control-Allow-Origin", "*");
+			    httpResponse.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+			    httpResponse.addHeader("Access-Control-Max-Age", "1");
+			    httpResponse.addHeader("Access-Control-Allow-Headers", "origin, x-csrftoken, accept");
+			    return;
+		    }
 	        
 		    // loop thru responders and see if any of them produce a response
 		    Response response = null;

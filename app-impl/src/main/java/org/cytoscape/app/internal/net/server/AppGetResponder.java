@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.app.internal.exception.AppDownloadException;
+import org.cytoscape.app.internal.exception.AppInstallException;
+import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
@@ -99,18 +102,28 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 				if (appFoundInStore) {
 					
 					// Download app
-					File appFile = appManager.getWebQuerier().downloadApp(
+					File appFile = null;
+					try {
+						appFile = appManager.getWebQuerier().downloadApp(
 							appToDownload, version, new File(appManager.getDownloadedAppsPath()));
+					} catch (AppDownloadException e) {
+					}
 					
 					// Attempt to install app
 					if (appFile == null) {
 						installStatus = "version-not-found";
 					} else {
-						App app = appManager.getAppParser().parseApp(appFile);
-						
-						appManager.installApp(app);
-						
 						installStatus = "success";
+						
+						try {
+							App app = appManager.getAppParser().parseApp(appFile);
+	
+							appManager.installApp(app);
+						} catch (AppParsingException e) {
+							installStatus = "install-failed";
+						} catch (AppInstallException e) {
+							installStatus = "install-failed";
+						}
 					}
 				}
 				
