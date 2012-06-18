@@ -109,10 +109,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 				updateResultsTree();
 			}
 		});
-		
-    	DefaultTreeCellRenderer tagsTreeCellRenderer = new DefaultTreeCellRenderer();
-		tagsTreeCellRenderer.setLeafIcon(tagsTreeCellRenderer.getDefaultClosedIcon());
-		tagsTree.setCellRenderer(tagsTreeCellRenderer);
     	
 		resultsTree.addTreeSelectionListener(new TreeSelectionListener() {
 			
@@ -289,6 +285,31 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         String bodyRule = "body { font-family: " + font.getFamily() + "; " +
                 "font-size: " + font.getSize() + "pt; }";
         ((HTMLDocument) descriptionTextPane.getDocument()).getStyleSheet().addRule(bodyRule);
+        
+        // Setup the TreeCellRenderer to make the app tags use the folder icon instead of the default leaf icon, 
+        // and have it use the opened folder icon when selected
+    	DefaultTreeCellRenderer tagsTreeCellRenderer = new DefaultTreeCellRenderer() {
+
+			private static final long serialVersionUID = 3311980250590351751L;
+    		
+			@Override
+			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, 
+					boolean expanded, boolean leaf, int row, boolean hasFocus) {
+				
+				Component defaultResult = super.getTreeCellRendererComponent(tree, value, selected, 
+						expanded, leaf, row, hasFocus);
+				
+				// Make leaves use the open folder icon when selected
+				if (selected && leaf && row > 0) {
+					setIcon(getOpenIcon());
+				}
+				
+				return defaultResult;
+			}
+    	};
+    	
+		tagsTreeCellRenderer.setLeafIcon(tagsTreeCellRenderer.getDefaultClosedIcon());
+		tagsTree.setCellRenderer(tagsTreeCellRenderer);
     }
     
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
