@@ -366,6 +366,16 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		return attributeNames.length;
 	}
 	
+	public int getSelectedColumnCount(){
+		if (attributeNames == null)
+			return -1;
+		int count = 0;
+		for (boolean b : importFlag)
+			if (b)
+				count++;
+		return count;
+	}
+
 	protected Map<String, String> getnetworkTitleMap() {
 		return networkTitle2ID;
 	}
