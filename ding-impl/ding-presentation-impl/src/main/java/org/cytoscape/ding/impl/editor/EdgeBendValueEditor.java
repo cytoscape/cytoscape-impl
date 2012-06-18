@@ -80,7 +80,12 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
 		// Create Dummy View for this editor
 		JPanel innerPanel = new JPanel();
-		innerPanel.setBorder(new TitledBorder("CTRL-Click to add new Edge Handle / Drag Handles to adjust Bend"));
+		final String osName = System.getProperty("os.name").toLowerCase();
+		if(osName.contains("mac"))
+			innerPanel.setBorder(new TitledBorder("Command-click to add new Edge Handle / Drag Handles to adjust Bend"));
+		else
+			innerPanel.setBorder(new TitledBorder("Alt-Click to add new Edge Handle / Drag Handles to adjust Bend"));
+
 		setPreferredSize(DEF_PANEL_SIZE);
 		setLayout(new BorderLayout());
 		add(innerPanel, BorderLayout.CENTER);
