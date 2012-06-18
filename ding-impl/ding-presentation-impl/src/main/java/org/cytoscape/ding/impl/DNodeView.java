@@ -1295,9 +1295,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			// Assume it's a Ding layer
 			CustomGraphic newCG = layer.getLayerObject();
 			CustomGraphic finalCG = newCG;
-			
+
 			if (sync) {
-				// Size is locked to node size.
+				// Size is locked to node size.				
 				finalCG = syncSize(customGraphics, newCG);
 			}
 			finalCG = moveCustomGraphicsToNewPosition(finalCG, positionValue);
@@ -1310,11 +1310,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	private void applyCustomGraphicsPosition(final VisualProperty<?> vp, final ObjectPosition position) {
-		
+
 		// No need to modify
 		if (position == null)
 			return;
-		
+
 		// Use dependency to retrieve its parent.
 		final VisualLexiconNode lexNode = lexicon.getVisualLexiconNode(vp);
 		final Collection<VisualLexiconNode> leavs = lexNode.getParent().getChildren();
@@ -1362,11 +1362,16 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final AffineTransform scale;
 		final float fit = graphics.getFitRatio();
 
-		// Case 1: node height value is larger than width
-		if (nodeW >= nodeH) {
-			scale = AffineTransform.getScaleInstance(fit * (nodeW / cgW) * (nodeH / nodeW), fit * nodeH / cgH);
+		// Case 1: if custom graphic is a vector fit width and length
+		if (graphics instanceof VectorCustomGraphics) {
+			scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * nodeH / cgH);
 		} else {
-			scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * (nodeH / cgH) * (nodeW / nodeH));
+			// Case 2: node height value is larger than width
+			if (nodeW >= nodeH) {
+				scale = AffineTransform.getScaleInstance(fit * (nodeW / cgW) * (nodeH / nodeW), fit * nodeH / cgH);
+			} else {
+				scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * (nodeH / cgH) * (nodeW / nodeH));
+			}
 		}
 		return new CustomGraphic(scale.createTransformedShape(originalShape), cg.getPaintFactory());
 	}
