@@ -48,4 +48,9 @@ public final class DeleteColumnTaskFactoryImpl extends AbstractTableColumnTaskFa
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory!");
 		return new TaskIterator(new DeleteColumnTask(undoSupport, column));
 	}
+
+	@Override
+	public boolean isReady(CyColumn column) {
+		return !column.isImmutable();
+	}
 }

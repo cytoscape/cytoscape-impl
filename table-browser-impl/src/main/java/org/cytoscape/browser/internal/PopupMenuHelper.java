@@ -106,14 +106,15 @@ public class PopupMenuHelper {
 	 * in the service properties.
 	 */
 	private void createMenuItem(final TaskFactory tf, final PopupMenuGravityTracker tracker,
-				    final Map props)
+			final Map props)
 	{
 		String menuLabel = (String)(props.get("title"));
 		if (menuLabel == null)
 			menuLabel = "Unidentified Task: " + Integer.toString(tf.hashCode());
 
-		tracker.addMenuItem(new JMenuItem(new PopupAction(tf, menuLabel)),
-				    GravityTracker.USE_ALPHABETIC_ORDER);
+		if (tf.isReady())
+			tracker.addMenuItem(new JMenuItem(new PopupAction(tf, menuLabel)),
+					GravityTracker.USE_ALPHABETIC_ORDER);
 	}
 
 	public void addTableColumnTaskFactory(final TableColumnTaskFactory newFactory,
