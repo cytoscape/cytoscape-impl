@@ -37,6 +37,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -47,12 +49,17 @@ import java.util.TreeSet;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -79,9 +86,12 @@ import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.jdesktop.swingx.JXList;
 import org.jdesktop.swingx.JXPanel;
+import org.jdesktop.swingx.JXTitledPanel;
 import org.jdesktop.swingx.border.DropShadowBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
 
 /**
  * Dialog for editing default visual property values.<br>
@@ -98,7 +108,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor, SetCurrentVisualStyleListener,
-		LexiconStateChangedListener {
+		LexiconStateChangedListener, PropertyChangeListener {
 
 	private final static long serialVersionUID = 1202339876675416L;
 
@@ -117,6 +127,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	private final VizMapperUtil util;
 	private final DefaultViewPanelImpl mainView;
 	private final CyEventHelper cyEventHelper;
+	private final SetViewModeAction viewModeAction;
 
 	private DependencyTable depTable;
 
@@ -125,7 +136,8 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 								 final CyApplicationManager cyApplicationManager,
 								 final VisualMappingManager vmm,
 								 final VizMapperUtil util,
-								 final CyEventHelper cyEventHelper) {
+								 final CyEventHelper cyEventHelper,
+								 final SetViewModeAction viewModeAction) {
 		super();
 
 		if (mainView == null)
@@ -145,6 +157,9 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		this.setModal(true);
 		this.mainView = mainView;
 		this.editorFactory = editorFactory;
+		
+		this.viewModeAction = viewModeAction;
+		viewModeAction.addPropertyChangeListener(this);
 
 		updateVisualPropertyLists();
 
@@ -158,7 +173,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 				mainView.updateView();
 			}
 		});
-
 	}
 
 	private void updateVisualPropertyLists() {
@@ -233,16 +247,16 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 	private void initComponents() {
 		jXPanel1 = new JXPanel();
-		jXTitledPanel1 = new org.jdesktop.swingx.JXTitledPanel();
-		defaultObjectTabbedPane = new javax.swing.JTabbedPane();
-		nodeScrollPane = new javax.swing.JScrollPane();
-		dependencyScrollPane = new javax.swing.JScrollPane();
+		jXTitledPanel1 = new JXTitledPanel();
+		defaultObjectTabbedPane = new JTabbedPane();
+		nodeScrollPane = new JScrollPane();
+		dependencyScrollPane = new JScrollPane();
 
 		nodeList = new JXList();
 		edgeList = new JXList();
-		edgeScrollPane = new javax.swing.JScrollPane();
-		globalScrollPane = new javax.swing.JScrollPane();
-		applyButton = new javax.swing.JButton();
+		edgeScrollPane = new JScrollPane();
+		globalScrollPane = new JScrollPane();
+		applyButton = new JButton();
 
 		networkList = new JXList();
 
@@ -250,8 +264,27 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		listMap.put(CyEdge.class, edgeList);
 		listMap.put(CyNetwork.class, networkList);
 
-		cancelButton = new javax.swing.JButton();
+		cancelButton = new JButton();
+		cancelButton.setText("Cancel");
 		cancelButton.setVisible(false);
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
+			}
+		});
+
+		showAllVPButton = new JToggleButton();
+		showAllVPButton.setText("Show All");
+		showAllVPButton.setToolTipText("Show all Visual Properties");
+		showAllVPButton.setUI(new BlueishButtonUI());
+		showAllVPButton.setSelected(PropertySheetUtil.isAdvancedMode());
+		showAllVPButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				viewModeAction.menuSelected(null);
+				viewModeAction.actionPerformed(null);
+			}
+		});
 
 		nodeList.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -271,14 +304,14 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 			}
 		});
 
-		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		jXTitledPanel1.setTitle("Default Visual Properties");
 
-		jXTitledPanel1.setTitleFont(new java.awt.Font("SansSerif", 1, 12));
-		jXTitledPanel1.setMinimumSize(new java.awt.Dimension(300, 27));
-		jXTitledPanel1.setPreferredSize(new java.awt.Dimension(300, 27));
-		defaultObjectTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+		jXTitledPanel1.setTitleFont(new Font("SansSerif", 1, 12));
+		jXTitledPanel1.setMinimumSize(new Dimension(300, 27));
+		jXTitledPanel1.setPreferredSize(new Dimension(300, 27));
+		defaultObjectTabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
 
 		nodeScrollPane.setViewportView(nodeList);
 		edgeScrollPane.setViewportView(edgeList);
@@ -308,14 +341,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 			}
 		});
 
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				// TODO Auto-generated method stub
-				dispose();
-			}
-		});
-
 		GroupLayout jXPanel1Layout = new GroupLayout(jXPanel1);
 		jXPanel1.setLayout(jXPanel1Layout);
 		jXPanel1Layout.setHorizontalGroup(jXPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
@@ -331,6 +356,11 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 														.addComponent(cancelButton)
 														.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 														.addComponent(applyButton))
+														.addGroup(
+																GroupLayout.Alignment.TRAILING,
+																jXPanel1Layout.createSequentialGroup()
+																	.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+																	.addComponent(showAllVPButton))
 										.addComponent(mainView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
 												Short.MAX_VALUE))
 						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -363,7 +393,8 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 																						.createParallelGroup(
 																								GroupLayout.Alignment.BASELINE)
 																						.addComponent(cancelButton)
-																						.addComponent(applyButton))))
+																						.addComponent(applyButton)
+																						.addComponent(showAllVPButton))))
 										.addContainerGap()));
 
 		GroupLayout layout = new GroupLayout(getContentPane());
@@ -421,22 +452,23 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	}
 
 	// Variables declaration - do not modify
-	private javax.swing.JButton applyButton;
-	private javax.swing.JButton cancelButton;
-	private javax.swing.JScrollPane nodeScrollPane;
-	private javax.swing.JScrollPane edgeScrollPane;
-	private javax.swing.JScrollPane globalScrollPane;
+	private JButton applyButton;
+	private JButton cancelButton;
+	private JToggleButton showAllVPButton;
+	private JScrollPane nodeScrollPane;
+	private JScrollPane edgeScrollPane;
+	private JScrollPane globalScrollPane;
 
 	// New from 3.0
-	private javax.swing.JScrollPane dependencyScrollPane;
+	private JScrollPane dependencyScrollPane;
 
-	private javax.swing.JTabbedPane defaultObjectTabbedPane;
+	private JTabbedPane defaultObjectTabbedPane;
 	private JXList nodeList;
 	private JXList edgeList;
 	private JXList networkList;
-	private org.jdesktop.swingx.JXPanel jXPanel1;
+	private JXPanel jXPanel1;
 
-	private org.jdesktop.swingx.JXTitledPanel jXTitledPanel1;
+	private JXTitledPanel jXTitledPanel1;
 
 	// End of variables declaration
 
@@ -575,6 +607,33 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		setTitle("Default Appearance for " + selectedStyle.getTitle());
 	}
 
+	/**
+	 * Handles local property change event. This will be used to switch view mode: show all VPs or basic VPs only.
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent fromSetViewMode) {
+		// Need to update property sheet.
+		if (fromSetViewMode.getPropertyName().equals(SetViewModeAction.VIEW_MODE_CHANGED)) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					showAllVPButton.setSelected(PropertySheetUtil.isAdvancedMode());
+				}
+			});
+			
+			buildList();
+		}
+	}
+	
+	@Override
+	public void handleEvent(LexiconStateChangedEvent e) {
+		logger.debug("Def editor got Lexicon update event.");
+		buildList();
+
+		mainView.updateView();
+		mainView.repaint();
+	}
+	
 	private static class VisualPropertyComparator implements Comparator<VisualProperty<?>> {
 
 		@Override
@@ -584,14 +643,5 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 			return name1.compareTo(name2);
 		}
-	}
-
-	@Override
-	public void handleEvent(LexiconStateChangedEvent e) {
-		logger.debug("Def editor got Lexicon update event.");
-		buildList();
-
-		mainView.updateView();
-		mainView.repaint();
 	}
 }

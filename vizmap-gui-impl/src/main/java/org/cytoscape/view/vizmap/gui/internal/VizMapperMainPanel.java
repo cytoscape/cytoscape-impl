@@ -81,6 +81,7 @@ import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.internal.task.ImportDefaultVizmapTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,13 +126,21 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	 * @param menuMgr
 	 * @param editorFactory
 	 */
-	public VizMapperMainPanel(final VisualStyleFactory vsFactory, final DefaultViewEditor defViewEditor,
-			final IconManager iconMgr, final ColorManager colorMgr, final VisualMappingManager vmm,
-			final VizMapperMenuManager menuMgr, final EditorManager editorFactory,
-			final PropertySheetPanel propertySheetPanel, final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
-			final EditorWindowManager editorWindowManager, final CyApplicationManager applicationManager,
-			final CyEventHelper eventHelper, final ImportDefaultVizmapTaskFactory taskFactory,
-			final TaskManager<?, ?> tManager, final SetViewModeAction viewModeAction) {
+	public VizMapperMainPanel(final VisualStyleFactory vsFactory,
+							  final DefaultViewEditor defViewEditor,
+							  final IconManager iconMgr,
+							  final ColorManager colorMgr,
+							  final VisualMappingManager vmm,
+							  final VizMapperMenuManager menuMgr,
+							  final EditorManager editorFactory,
+							  final PropertySheetPanel propertySheetPanel,
+							  final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
+							  final EditorWindowManager editorWindowManager,
+							  final CyApplicationManager applicationManager,
+							  final CyEventHelper eventHelper,
+							  final ImportDefaultVizmapTaskFactory taskFactory,
+							  final TaskManager<?, ?> tManager,
+							  final SetViewModeAction viewModeAction) {
 		super(vsFactory, defViewEditor, iconMgr, colorMgr, vmm, menuMgr, editorFactory, propertySheetPanel,
 				vizMapPropertySheetBuilder, editorWindowManager, applicationManager, eventHelper, viewModeAction);
 
@@ -356,6 +365,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		}
 
 		vsComboBoxModel.addElement(newStyle);
+		visualStyleComboBox.setSelectedItem(newStyle);
 	}
 
 	@Override
@@ -365,7 +375,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		final VisualStyle curStyle = vmm.getCurrentVisualStyle();
 
 		if (viewStyle == null) {
-			System.out.println("%% NULL style for " + view);
 			vmm.setVisualStyle(curStyle, view);
 			curStyle.apply(view);
 			view.updateView();
@@ -469,6 +478,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 				@Override
 				public void run() {
 					switchVS(vmm.getCurrentVisualStyle());
+					showAllVPButton.setSelected(PropertySheetUtil.isAdvancedMode());
 				}
 			});
 		}
@@ -488,6 +498,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		final Object currentSelected = visualStyleComboBox.getSelectedItem();
 
 		if (newStyle != null && !newStyle.equals(currentSelected))
-			this.visualStyleComboBox.setSelectedItem(newStyle);
+			visualStyleComboBox.setSelectedItem(newStyle);
 	}
 }

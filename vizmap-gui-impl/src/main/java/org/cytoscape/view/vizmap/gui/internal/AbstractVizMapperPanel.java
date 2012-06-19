@@ -28,10 +28,13 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeSupport;
@@ -52,6 +55,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -67,6 +71,7 @@ import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.AttributeCom
 import org.cytoscape.view.vizmap.gui.internal.theme.ColorManager;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
+import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
@@ -150,17 +155,24 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 
 	protected final VisualStyleFactory vsFactory;
 
-	private JToggleButton showAllVPButton;
+	protected JToggleButton showAllVPButton;
 	private final SetViewModeAction viewModeAction;
 
 	protected static final long serialVersionUID = -6839011300709287662L;
 
-	public AbstractVizMapperPanel(final VisualStyleFactory vsFactory, DefaultViewEditor defViewEditor,
-			IconManager iconMgr, ColorManager colorMgr, VisualMappingManager vmm, VizMapperMenuManager menuMgr,
-			EditorManager editorFactory, PropertySheetPanel propertySheetPanel,
-			VizMapPropertySheetBuilder vizMapPropertySheetBuilder, EditorWindowManager editorWindowManager,
-			CyApplicationManager applicationManager, CyEventHelper eventHelper, final SetViewModeAction viewModeAction) {
-
+	public AbstractVizMapperPanel(final VisualStyleFactory vsFactory,
+								  final DefaultViewEditor defViewEditor,
+								  final IconManager iconMgr,
+								  final ColorManager colorMgr,
+								  final VisualMappingManager vmm,
+								  final VizMapperMenuManager menuMgr,
+								  final EditorManager editorFactory,
+								  final PropertySheetPanel propertySheetPanel,
+								  final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
+								  final EditorWindowManager editorWindowManager,
+								  final CyApplicationManager applicationManager,
+								  final CyEventHelper eventHelper,
+								  final SetViewModeAction viewModeAction) {
 		if (menuMgr == null)
 			throw new NullPointerException("Menu manager is missing.");
 
@@ -197,10 +209,11 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 	private void addButtonToPropertySheetPanel() {
 		showAllVPButton = new JToggleButton();
 		showAllVPButton.setText("Show All");
-		// This is a hack: get private component and add button.
-		Field[] fields = PropertySheetPanel.class.getDeclaredFields();
+		showAllVPButton.setToolTipText("Show all Visual Properties");
+		showAllVPButton.setSelected(PropertySheetUtil.isAdvancedMode());
+		showAllVPButton.setUI(new BlueishButtonUI());
+		
 		showAllVPButton.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				viewModeAction.menuSelected(null);
@@ -208,9 +221,9 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 			}
 		});
 
-		showAllVPButton.setUI(new BlueishButtonUI());
-		showAllVPButton.setToolTipText("Show all Visual Properties");
-
+		// This is a hack: get private component and add button.
+		Field[] fields = PropertySheetPanel.class.getDeclaredFields();
+		
 		for (Field f : fields) {
 			if (f.getName().equals("actionPanel")) {
 				f.setAccessible(true);
@@ -245,26 +258,25 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 		visualStyleComboBox.setSelectedItem(defaultVS);
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
-		mainSplitPane = new javax.swing.JSplitPane();
+		mainSplitPane = new JSplitPane();
 		mainSplitPane.setBorder(BorderFactory.createEmptyBorder());
-		listSplitPane = new javax.swing.JSplitPane();
+		listSplitPane = new JSplitPane();
 		listSplitPane.setBorder(BorderFactory.createEmptyBorder());
 
-		bottomPanel = new javax.swing.JPanel();
+		bottomPanel = new JPanel();
 
-		defaultViewImagePanel = new javax.swing.JPanel();
+		defaultViewImagePanel = new JPanel();
 		propertySheetPanel.setTable(new VizMapPropertySheetTable());
 
-		vsSelectPanel = new javax.swing.JPanel();
+		vsSelectPanel = new JPanel();
 
-		buttonPanel = new javax.swing.JPanel();
+		buttonPanel = new JPanel();
 
 		initializeVisualStyleComboBox();
 
 		optionButton = new DropDownMenuButton(new AbstractAction() {
-			private final static long serialVersionUID = 1213748836776579L;
-
 			public void actionPerformed(ActionEvent ae) {
 				DropDownMenuButton b = (DropDownMenuButton) ae.getSource();
 				menuMgr.getMainMenu().show(b, 0, b.getHeight());
@@ -279,7 +291,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 		constraints.gridwidth = 1;
 		constraints.gridheight = GridBagConstraints.REMAINDER;
 
-		addButton = new javax.swing.JButton();
+		addButton = new JButton();
 
 		addButton.setUI(new BlueishButtonUI());
 
@@ -296,7 +308,7 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 
 		listSplitPane.setDividerLocation(400);
 		listSplitPane.setDividerSize(5);
-		listSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+		listSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 
 		// Default View Panel
 		// defaultViewImagePanel.setMinimumSize(new Dimension(200, 200));
@@ -305,10 +317,10 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 		defaultViewImagePanel.setSize(defaultViewImagePanel.getPreferredSize());
 		defaultViewImagePanel.setLayout(new BorderLayout());
 
-		noMapListScrollPane = new javax.swing.JScrollPane();
-		noMapListScrollPane.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Unused Visual Properties",
-				javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION,
-				new java.awt.Font("SansSerif", 1, 12)));
+		noMapListScrollPane = new JScrollPane();
+		noMapListScrollPane.setBorder(BorderFactory.createTitledBorder(null, "Unused Visual Properties",
+				TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION,
+				new Font("SansSerif", 1, 12)));
 		noMapListScrollPane.setToolTipText("To Create New Mapping, Drag & Drop List Item to Browser.");
 
 		GroupLayout bottomPanelLayout = new GroupLayout(bottomPanel);
@@ -325,29 +337,29 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 		listSplitPane.setLeftComponent(mainSplitPane);
 		listSplitPane.setRightComponent(bottomPanel);
 
-		mainSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-		defaultViewImagePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Defaults (Click to edit)",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("SansSerif", 1, 12),
-				java.awt.Color.darkGray));
+		mainSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		defaultViewImagePanel.setBorder(BorderFactory.createTitledBorder(null, "Defaults (Click to edit)",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, new Font("SansSerif", 1, 12),
+				Color.darkGray));
 
 		mainSplitPane.setLeftComponent(defaultViewImagePanel);
 
-		propertySheetPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Visual Mapping Browser",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("SansSerif", 1, 12),
-				java.awt.Color.darkGray));
+		propertySheetPanel.setBorder(BorderFactory.createTitledBorder(null, "Visual Mapping Browser",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, new Font("SansSerif", 1, 12),
+				Color.darkGray));
 
 		mainSplitPane.setRightComponent(propertySheetPanel);
 
-		vsSelectPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Current Visual Style",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("SansSerif", 1, 12),
-				java.awt.Color.darkGray));
+		vsSelectPanel.setBorder(BorderFactory.createTitledBorder(null, "Current Visual Style",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, new Font("SansSerif", 1, 12),
+				Color.darkGray));
 
 		optionButton.setToolTipText("Options...");
 		optionButton.setIcon(iconMgr.getIcon("optionIcon"));
-		optionButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+		optionButton.setMargin(new Insets(2, 2, 2, 2));
 		optionButton.setComponentPopupMenu(menuMgr.getMainMenu());
 
 		GroupLayout vsSelectPanelLayout = new GroupLayout(vsSelectPanel);
