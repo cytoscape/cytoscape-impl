@@ -1,6 +1,5 @@
 package csapps.layout.algorithms.graphPartition;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,62 +17,60 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.undo.UndoSupport;
 
-
 public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
-	private String DEGREE_ATTR_NAME = "degree.layout";
-	private CyNetwork network;
+	
+	private static final String DEGREE_ATTR_NAME = "degree.layout";
+	
+	private final CyNetwork network;
 
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public DegreeSortedCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, DegreeSortedCircleContext context, String attrName, UndoSupport undo) {
+	public DegreeSortedCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,
+			DegreeSortedCircleContext context, String attrName, UndoSupport undo) {
 		super(name, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
 
 		this.network = networkView.getModel();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param partition DOCUMENT ME!
-	 */
+	@Override
 	public void layoutPartion(LayoutPartition partition) {
 		// Create attribute
-		CyTable table = network.getDefaultNodeTable();
+		final CyTable table = network.getDefaultNodeTable();
 		if (table.getColumn(DEGREE_ATTR_NAME) == null)
-			table.createColumn(DEGREE_ATTR_NAME, Double.class, false);
+			table.createColumn(DEGREE_ATTR_NAME, Integer.class, false);
 
 		// just add the unlocked nodes
-		List<LayoutNode> nodes = new ArrayList<LayoutNode>();
+		final List<LayoutNode> nodes = new ArrayList<LayoutNode>();
 		for (final LayoutNode ln : partition.getNodeList()) {
 			if (!ln.isLocked())
 				nodes.add(ln);
 		}
-	
+
 		if (cancelled)
 			return;
 
 		// sort the Nodes based on the degree
-		Collections.sort(nodes,
-		            new Comparator<LayoutNode>() {
-				public int compare(LayoutNode o1, LayoutNode o2) {
-					final CyNode node1 = o1.getNode();
-					final CyNode node2 = o2.getNode();
-					// FIXME: should allow parametrization of edge type? (expose as tunable)
-					final int d1 = network.getAdjacentEdgeList(node1, CyEdge.Type.ANY).size();
-					final int d2 = network.getAdjacentEdgeList(node2, CyEdge.Type.ANY).size();
-					
-					// Create Degree Attribute
-					o1.getRow().set(DEGREE_ATTR_NAME, (double)d1);
-					o2.getRow().set(DEGREE_ATTR_NAME, (double)d2);
-					
-					return (d2 - d1);
-				}
+		Collections.sort(nodes, new Comparator<LayoutNode>() {
+			public int compare(LayoutNode o1, LayoutNode o2) {
+				final CyNode node1 = o1.getNode();
+				final CyNode node2 = o2.getNode();
+				// FIXME: should allow parametrization of edge type? (expose as
+				// tunable)
+				final int d1 = network.getAdjacentEdgeList(node1, CyEdge.Type.ANY).size();
+				final int d2 = network.getAdjacentEdgeList(node2, CyEdge.Type.ANY).size();
 
-				public boolean equals(Object o) {
-					return false;
-				}
-			});
+				// Create Degree Attribute
+				o1.getRow().set(DEGREE_ATTR_NAME, (double) d1);
+				o2.getRow().set(DEGREE_ATTR_NAME, (double) d2);
+
+				return (d2 - d1);
+			}
+
+			public boolean equals(Object o) {
+				return false;
+			}
+		});
 
 		if (cancelled)
 			return;
@@ -90,9 +87,4 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 			partition.moveNodeToLocation(node);
 		}
 	}
-	
-	//public void construct() {
-	//	super.construct();
-	//}
-
 }
