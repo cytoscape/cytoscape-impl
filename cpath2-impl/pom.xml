@@ -66,8 +66,9 @@
 		<dependency>
             <groupId>cytoscape-temp</groupId>
             <artifactId>woodstox-core-lgpl</artifactId>
-            <version>4.0.5</version>
-        </dependency>
+            <version>[4.0.5, 5.0.0)</version>
+            <scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>com.springsource.org.apache.commons.httpclient</artifactId>

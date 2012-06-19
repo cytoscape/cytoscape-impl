@@ -15,7 +15,6 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.converter.OneTwoThree;
 import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
@@ -247,9 +246,17 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	 * 
 	 * @param cyNetwork Cytoscape Network Object.
 	 */
-	private void postProcessingBinarySif(final CyNetworkView view, TaskMonitor taskMonitor) {
+	private void postProcessingBinarySif(final CyNetworkView view, TaskMonitor taskMonitor) {	
 		final CyNetwork cyNetwork = view.getModel();
 
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				CyNetworkNaming naming = cPathFactory.getCyNetworkNaming();
+				String networkTitleWithUnderscores = naming.getSuggestedNetworkTitle(networkTitle);
+				AttributeUtil.set(cyNetwork, cyNetwork, CyNetwork.NAME, networkTitleWithUnderscores, String.class);
+			}
+		});
+		
 		// Set the Quick Find Default Index
 		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNetwork.NAME, String.class);
 
@@ -270,16 +277,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 
 				VisualStyle visualStyle = cPathFactory.getBinarySifVisualStyleUtil().getVisualStyle();
 				mappingManager.setVisualStyle(visualStyle, view);
-
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						String networkTitleWithUnderscores = networkTitle.replaceAll(": ", "");
-						networkTitleWithUnderscores = networkTitleWithUnderscores.replaceAll(" ", "_");
-						CyNetworkNaming naming = cPathFactory.getCyNetworkNaming();
-						networkTitleWithUnderscores = naming.getSuggestedNetworkTitle(networkTitleWithUnderscores);
-						AttributeUtil.set(cyNetwork, cyNetwork, CyNetwork.NAME, networkTitleWithUnderscores, String.class);
-					}
-				});
+				visualStyle.apply(view);
+				view.updateView();
 			}
 		}
 	}

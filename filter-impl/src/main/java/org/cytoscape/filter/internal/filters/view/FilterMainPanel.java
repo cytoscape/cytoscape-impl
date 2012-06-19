@@ -43,6 +43,7 @@ import java.awt.event.ItemListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 
@@ -87,7 +88,6 @@ import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
@@ -446,8 +446,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			return Collections.emptyList();
 		}
 		
-		final Collection<CyColumn> columns = table.getColumns();
-
+		final Collection<CyColumn> columns = new HashSet<CyColumn>(table.getColumns());
 		for (final CyColumn column : columns) {
 			if(column!= null){
 				//  Show all attributes, with type of String or Number
@@ -461,7 +460,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				//  Alphabetical sort
 				Collections.sort(attributeList);
 			}
-			
 		}
 
 		// type conversion

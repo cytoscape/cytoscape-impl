@@ -59,7 +59,6 @@ import org.cytoscape.work.TaskMonitor;
  *
  * Modified version of the original LoadNetworkTask from cytoscape code.
  * 
- * TODO 
  */
 public class LoadNetworkFromUrlTask implements Task {
 	private final URL url;
