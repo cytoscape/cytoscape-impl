@@ -222,8 +222,15 @@ public class PSIMI25EntryMapper {
 	
 	private void processEdge(final Participant source, final Participant target, final Interaction interaction,
 			final Collection<Participant> nodes, CyTable nodeTable, CyTable edgeTable) {
-		final CyNode sourceCyNode = id2NodeMap.get(source.getInteractor().getId());
-		final CyNode targetCyNode = id2NodeMap.get(target.getInteractor().getId());
+		Interactor sourceInteractor = source.getInteractor();
+		Interactor targetInteractor = target.getInteractor();
+		
+		if (sourceInteractor == null || targetInteractor == null) {
+			return;
+		}
+		
+		final CyNode sourceCyNode = id2NodeMap.get(sourceInteractor.getId());
+		final CyNode targetCyNode = id2NodeMap.get(targetInteractor.getId());
 		
 		// PPI does not have directinarity
 		final CyEdge edge = network.addEdge(sourceCyNode, targetCyNode, false);
