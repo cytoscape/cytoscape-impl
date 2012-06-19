@@ -110,7 +110,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 		shapeIsFit = true;
 
-		System.out.println("Fitting shape to text: "+width+"x"+height);
+		// System.out.println("Fitting shape to text: "+width+"x"+height);
 
 		// Different depending on the type...
 		switch (getShapeType()) {
@@ -183,13 +183,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		}
 
 		g2.drawString(text, halfWidth, halfHeight);
-	}
-
-	public void print(Graphics g) {
-		boolean selected = isSelected();
-		setSelected(false);
-		paint(g);
-		setSelected(selected);
 	}
 
 	@Override

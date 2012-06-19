@@ -190,12 +190,11 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	public void paint(Graphics g) {
 		super.paint(g);
-		GraphicsUtilities.drawShape(g, 0, 0, getWidth()-1, getHeight()-1, this, false);
-	}
-
-	public void print(Graphics g) {
-		super.paint(g);
-		GraphicsUtilities.drawShape(g, 0, 0, getWidth()-1, getHeight()-1, this, true);
+		if (canvas.isPrinting()) {
+			GraphicsUtilities.drawShape(g, 0, 0, getWidth()-1, getHeight()-1, this, true);
+		} else {
+			GraphicsUtilities.drawShape(g, 0, 0, getWidth()-1, getHeight()-1, this, false);
+		}
 	}
 
 	public void setSize(double width, double height) {

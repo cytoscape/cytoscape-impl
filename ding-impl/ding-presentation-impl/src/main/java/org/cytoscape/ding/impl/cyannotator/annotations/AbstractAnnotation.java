@@ -46,7 +46,6 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
 
-	private ArbitraryGraphicsCanvas canvas;
 	private DGraphView.Canvas canvasName;
 	private CyAnnotator cyAnnotator;
 	private UUID uuid = UUID.randomUUID();
@@ -55,6 +54,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 
 	protected boolean usedForPreviews=false;
 	protected DGraphView view;
+	protected ArbitraryGraphicsCanvas canvas;
 
 	protected static final String ID="id";
 	protected static final String ZOOM="zoom";

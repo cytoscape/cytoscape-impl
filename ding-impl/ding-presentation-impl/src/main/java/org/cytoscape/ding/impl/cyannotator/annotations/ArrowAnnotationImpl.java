@@ -337,12 +337,10 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	public void paint(Graphics g) {
 		super.paint(g);
-		drawArrow(g, false);
-	}
-
-	public void print(Graphics g) {
-		super.paint(g);
-		drawArrow(g, true);
+		if (canvas.isPrinting())
+			drawArrow(g, true);
+		else
+			drawArrow(g, false);
 	}
 
 	public void drawArrow(Graphics g, boolean isPrinting) {

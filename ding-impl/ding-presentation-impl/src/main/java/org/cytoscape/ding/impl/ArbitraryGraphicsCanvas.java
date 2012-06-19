@@ -86,6 +86,11 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 */        
 	private Map<Component, Point> m_componentToPointMap;
 
+	/*
+ 	 * Flag to record that we're printing since we don't use the PrinterGraphics interface
+ 	 */
+	private boolean isPrinting = false;
+
 	/**
 	 * Constructor.
 	 *
@@ -303,7 +308,17 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * @param graphics Graphics
 	 */
 	public void print(Graphics graphics) {
-		this.paintChildren(graphics);
+		isPrinting = true;
+		this.printChildren(graphics);
+		isPrinting = false;
+	}
+
+	/**
+ 	 * Return true if this view is curerntly being printed (as opposed to painted on the screen)
+ 	 * @return true if we're currently being printed, false otherwise
+ 	 */
+	public boolean isPrinting() { 
+		return isPrinting; 
 	}
 
 	private boolean setBoundsChildren() {

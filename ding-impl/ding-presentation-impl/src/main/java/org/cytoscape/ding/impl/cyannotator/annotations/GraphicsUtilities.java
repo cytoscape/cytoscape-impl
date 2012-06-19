@@ -92,6 +92,7 @@ class GraphicsUtilities {
 		// Get the stroke
 		float border = (float)annotation.getBorderWidth();
 		if (!isPrinting && border < 1.0f) border = 1.0f;
+		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
 		// Get the shape
 		Shape shape = getShape(annotation.getShapeType(), x+border, y+border, width-border, height-border);
