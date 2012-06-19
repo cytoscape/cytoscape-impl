@@ -67,6 +67,7 @@ public class CanvasKeyListener implements KeyListener {
 					//Adjust the locations of the selected annotations
 					annotation.getComponent().setLocation(x,y);
 				}
+				annotation.update();
 				annotation.getCanvas().repaint();	
 			}
 		} else {

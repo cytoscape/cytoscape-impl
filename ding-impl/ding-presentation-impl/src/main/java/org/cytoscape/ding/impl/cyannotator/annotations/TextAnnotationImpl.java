@@ -9,6 +9,8 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
 
+import java.awt.font.FontRenderContext;
+
 import javax.swing.JFrame;
 
 import java.util.Map;
@@ -193,8 +195,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		g2.setColor(textColor);
 		g2.setFont(font);
 
-		int halfWidth = (getWidth()-getTextWidth(g2))/2;
-		int halfHeight = (getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
+		int halfWidth = (int)((double)getWidth()-getTextWidth(g2))/2;
+		int halfHeight = (int)((double)getHeight()+getTextHeight(g2)/2.0)/2; // Note, this is + because we start at the baseline
 
 		if(usedForPreviews) {
 			g2.drawString(text, halfWidth, halfHeight);
@@ -208,34 +210,47 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f));
 			// g2.drawRect(getX()-4, getY()-4, getTextWidth(g2)+8, getTextHeight(g2)+8);
-			g2.drawRect(0, 0, getTextWidth(g2), getTextHeight(g2));
+			g2.drawRect(0, 0, getAnnotationWidth(), getAnnotationHeight());
 		}
 	}
 
+	public void print(Graphics g) {
+		boolean selected = isSelected();
+		setSelected(false);
+		paint(g);
+		setSelected(selected);
+	}
+
 	int getAnnotationWidth() {
-		return getTextWidth((Graphics2D)this.getGraphics());
+		return (int)(getTextWidth((Graphics2D)this.getGraphics())+1.0);
 	}
 
 	int getAnnotationHeight() {
-		return getTextHeight((Graphics2D)this.getGraphics());
+		return (int)(getTextHeight((Graphics2D)this.getGraphics())+1.0);
 	}
 
-	int getTextWidth(Graphics2D g2) {
+	double getTextWidth(Graphics2D g2) {
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
+/*
 		if (g2 != null) {
 			FontMetrics fontMetrics=g2.getFontMetrics(font);
 			return fontMetrics.stringWidth(text);
 		}
 		// If we don't have a graphics context, yet, make some assumptions
 		return (int)(text.length()*fontSize);
+*/
 	}
 
-	int getTextHeight(Graphics2D g2) {
+	double getTextHeight(Graphics2D g2) {
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
+/*
 		if (g2 != null) {
 			FontMetrics fontMetrics=g2.getFontMetrics(font);
 			return fontMetrics.getHeight();
 		}
 		// If we don't have a graphics context, yet, make some assumptions
 		return (int)(fontSize*1.5);
+*/
 	}
 
 	Font getArgFont(Map<String, String> argMap) {

@@ -182,8 +182,14 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			return;
 		}
 
-		// g2.drawString(text, getX()+halfWidth, getY()+halfHeight);
 		g2.drawString(text, halfWidth, halfHeight);
+	}
+
+	public void print(Graphics g) {
+		boolean selected = isSelected();
+		setSelected(false);
+		paint(g);
+		setSelected(selected);
 	}
 
 	@Override

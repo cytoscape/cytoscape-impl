@@ -84,18 +84,18 @@ class GraphicsUtilities {
 	// Given a position and a size, draw a shape.  We use the ShapeAnnotation to get the
 	// shape itself, colors, strokes, etc.
 	static public void drawShape(Graphics g, double x, double y, double width, double height, 
-	                             ShapeAnnotation annotation) {
+	                             ShapeAnnotation annotation, boolean isPrinting) {
 		Graphics2D g2 = (Graphics2D)g;
 
 		// System.out.println("drawShape: ("+x+","+y+","+width+"x"+height+")");
 
-		// Get the shape
-		Shape shape = getShape(annotation.getShapeType(), x, y, width, height);
-		// System.out.println("drawShape: shape = "+shape.toString());
-
-		// Stroke it
+		// Get the stroke
 		float border = (float)annotation.getBorderWidth();
-		if (border < 1.0f) border = 1.0f;
+		if (!isPrinting && border < 1.0f) border = 1.0f;
+
+		// Get the shape
+		Shape shape = getShape(annotation.getShapeType(), x+border, y+border, width-border, height-border);
+		// System.out.println("drawShape: shape = "+shape.toString());
 
 		// Set our fill color
 		if (annotation.getFillColor() != null) {

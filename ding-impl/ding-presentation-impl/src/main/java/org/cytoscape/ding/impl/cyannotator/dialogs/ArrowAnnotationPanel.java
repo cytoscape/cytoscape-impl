@@ -171,7 +171,33 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 		add(targetPanel);
 		// targetPanel.setLocation(LEFT, y);
 		targetPanel.setBounds(LEFT, y, WIDTH-15, ARROWHEIGHT);
+
+		iModifySAPreview();	
 	}
+
+	public void iModifySAPreview(){
+		// Line parameters
+		preview.setLineWidth( mAnnotation.getLineWidth() );
+		preview.setLineColor( mAnnotation.getLineColor() );
+
+		// Source arrow parameters
+		preview.setArrowType(ArrowEnd.SOURCE, 
+		                     mAnnotation.getArrowType(ArrowEnd.SOURCE));
+		preview.setArrowSize(ArrowEnd.SOURCE, 
+		                     mAnnotation.getArrowSize(ArrowEnd.SOURCE));
+		preview.setArrowColor(ArrowEnd.SOURCE, 
+		                      mAnnotation.getArrowColor(ArrowEnd.SOURCE));
+
+		// Target arrow parameters
+		preview.setArrowType(ArrowEnd.TARGET, 
+		                     mAnnotation.getArrowType(ArrowEnd.TARGET));
+		preview.setArrowSize(ArrowEnd.TARGET, 
+		                     mAnnotation.getArrowSize(ArrowEnd.TARGET));
+		preview.setArrowColor(ArrowEnd.TARGET, 
+		                      mAnnotation.getArrowColor(ArrowEnd.TARGET));
+	
+		previewPanel.repaint();
+	}	
 	
 	public ArrowAnnotation getPreview() {
 		return preview;

@@ -53,5 +53,5 @@ public interface ArrowAnnotation extends Annotation {
 
 	public ArrowType[] getSupportedArrows();
 
-	public void drawArrow(Graphics g);
+	// public void drawArrow(Graphics g, boolean isPrinting);
 }

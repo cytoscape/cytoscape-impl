@@ -45,6 +45,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 
 		if (moveAnnotation != null) {
 			moveAnnotation.getComponent().setLocation(mouseX, mouseY);
+			moveAnnotation.update();
 			moveAnnotation.getCanvas().repaint();
 		} else if (resizeAnnotation != null) {
 			Component resizeComponent = resizeAnnotation.getComponent();
@@ -71,6 +72,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 			if (width == 0) width = 2;
 			if (height == 0) height = 2;
 			resizeAnnotation.setSize((double)width, (double)height);
+			resizeAnnotation.update();
 			resizeAnnotation.getCanvas().repaint();
 		} else if (repositionAnnotation != null) {
 			Point2D mousePoint = new Point2D.Double(mouseX, mouseY);
@@ -91,6 +93,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 				repositionAnnotation.setTarget(mousePoint);
 			}
 
+			repositionAnnotation.update();
 			repositionAnnotation.getCanvas().repaint();
 		}
 	}

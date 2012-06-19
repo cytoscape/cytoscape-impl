@@ -297,34 +297,13 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
                 
 	}
 
-
-/*
-	@Override
-	public Component getComponentAt(int x, int y) {
-
-		int n=getComponentCount();
-
-		for(int i=0;i<n;i++){
-				Component c=this.getComponent(i).getComponentAt(x, y);
-
-				if(c!=null)
-						return c;
-		}
-		return null;
-	}
-*/
-
-
 	/**
 	 * Invoke this method to print the component.
 	 *
 	 * @param graphics Graphics
 	 */
 	public void print(Graphics graphics) {
-		int num=this.getComponentCount();
-		for(int i=0;i<num;i++){
-			this.getComponent(i).print(graphics);
-		}
+		this.paintChildren(graphics);
 	}
 
 	private boolean setBoundsChildren() {

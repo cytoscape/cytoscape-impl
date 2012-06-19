@@ -127,7 +127,12 @@ public class CyAnnotator {
 				if (annotation instanceof ArrowAnnotation) {
 					ArrowAnnotation arrow = (ArrowAnnotation)annotation;
 					arrow.getSource().addArrow(arrow);
-					arrow.getCanvas().add(arrow.getComponent());
+					if (arrow.getCanvas() != null)
+						arrow.getCanvas().add(arrow.getComponent());
+					else
+						foreGroundCanvas.add(arrow.getComponent());
+
+					addAnnotation(arrow);
 				}
 			}
 		}
@@ -191,6 +196,7 @@ public class CyAnnotator {
 	}
 
 	public void addAnnotation(Annotation annotation) {
+		// System.out.println("Adding annotation: "+annotation);
 		annotationMap.put(annotation, annotation.getArgMap());
 		updateNetworkAttributes(view.getModel());
 	}

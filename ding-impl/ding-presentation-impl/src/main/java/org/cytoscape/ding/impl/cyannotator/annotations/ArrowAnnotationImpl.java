@@ -98,7 +98,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	                           Paint lineColor, 
 	                           ArrowType sourceType, Paint sourceColor, float sourceSize,
 	                           ArrowType targetType, Paint targetColor, float targetSize) {
-		// super(cyAnnotator, view, view.getZoom());
 		super(cyAnnotator, view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom());
 
 		// Line parameters
@@ -155,7 +154,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			UUID uuid = UUID.fromString(argMap.get(TARGETANN));
 			target = cyAnnotator.getAnnotation(uuid);
 		} else if (argMap.containsKey(TARGETNODE)) {
+			String point = argMap.get(TARGETNODE);
+			String[] xy = point.split(",");
+			double x = Double.parseDouble(xy[0]);
+			double y = Double.parseDouble(xy[1]);
+			DNodeView nv = (DNodeView)view.getPickedNodeView(new Point2D.Double(x,y));
+			target = nv.getModel();
 		}
+		updateBounds();
   }
 
 	public Map<String,String> getArgMap() {
@@ -178,6 +184,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		} else if (target instanceof Annotation) {
 			argMap.put(TARGETANN,((Annotation)target).getUUID().toString());
 		} else if (target instanceof CyNode) {
+			CyNode node = (CyNode)target;
+			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
+			double xCenter = nv.getXPosition();
+			double yCenter = nv.getYPosition();
+			argMap.put(TARGETNODE,
+			           Double.toString(xCenter)+","+Double.toString(yCenter));
 		}
 
 		argMap.put(TARGETTYPE, Integer.toString(this.targetType.ordinal()));
@@ -288,15 +300,20 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		boolean selected = isSelected();
 		setSelected(false);
 
+		double scale = scaleFactor/getZoom();
+
 		// Get the stroke
-		float border = lineWidth;
-		if (border < 1.0f) border = 1.0f;
+		double border = lineWidth*scale;
+		if (border < 1.0) border = 1.0;
 		g2.setPaint(lineColor);
-		g2.setStroke(new BasicStroke(border));
+		g2.setStroke(new BasicStroke((float)border));
 		
-		Line2D relativeLine = getRelativeLine(arrowLine, scaleFactor);
-		if (relativeLine != null)
+		Line2D relativeLine = getRelativeLine(arrowLine, 
+		                                      x*scaleFactor, y*scaleFactor, scale, border);
+
+		if (relativeLine != null) {
 			g2.draw(relativeLine);
+		}
 
 		// Add the head
 		if (sourceType != ArrowType.NONE) {
@@ -320,10 +337,15 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	public void paint(Graphics g) {
 		super.paint(g);
-		drawArrow(g);
+		drawArrow(g, false);
 	}
 
-	public void drawArrow(Graphics g) {
+	public void print(Graphics g) {
+		super.paint(g);
+		drawArrow(g, true);
+	}
+
+	public void drawArrow(Graphics g, boolean isPrinting) {
 		if ( (source == null || target == null) && !usedForPreviews ) return;
 
 		if (!usedForPreviews)
@@ -336,11 +358,11 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// Get the stroke
 		float border = lineWidth;
-		if (border < 1.0f) border = 1.0f;
+		if (!isPrinting && border < 1.0f) border = 1.0f;
 		g2.setPaint(lineColor);
-		g2.setStroke(new BasicStroke(border));
+		g2.setStroke(new BasicStroke(border, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 		
-		Line2D relativeLine = getRelativeLine(arrowLine, 1.0);
+		Line2D relativeLine = getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border);
 		g2.draw(relativeLine);
 
 		// Add the head
@@ -369,31 +391,32 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		return new ArrowAnnotationDialog(this);
 	}
 
-	private Line2D getRelativeLine(Line2D line, double scaleFactor) {
+	private Line2D getRelativeLine(Line2D line, double x, double y, 
+	                               double scaleFactor, double stroke) {
 		if (usedForPreviews || line == null) 
 			return line;
 
-		double x1 = line.getX1();
-		double x2 = line.getX2();
-		double width = Math.abs(x2-x1)+xOffset;
-		double y1 = line.getY1();
-		double y2 = line.getY2();
-		double height = Math.abs(y2-y1)+yOffset;
+		double x1 = line.getX1()*scaleFactor;
+		double x2 = line.getX2()*scaleFactor;
+		double width = Math.abs(x2-x1)+xOffset*scaleFactor;
+		double y1 = line.getY1()*scaleFactor;
+		double y2 = line.getY2()*scaleFactor;
+		double height = Math.abs(y2-y1)+yOffset*scaleFactor;
 		if (y2 < y1) {
-			y1 = height;
-			y2 = yOffset;
+			y1 = height+y-stroke;
+			y2 = yOffset*scaleFactor+y+stroke;
 		} else {
-			y1 = yOffset;
-			y2 = height;
+			y1 = yOffset*scaleFactor+y+stroke;
+			y2 = height+y-stroke;
 		}
 		if (x2 < x1) {
-			x1 = width;
-			x2 = xOffset;
+			x1 = width+x-stroke;
+			x2 = xOffset*scaleFactor+x+stroke;
 		} else {
-			x1 = xOffset;
-			x2 = width;
+			x1 = xOffset*scaleFactor+x+stroke;
+			x2 = width+x-stroke;
 		}
-		return new Line2D.Double(x1*scaleFactor, y1*scaleFactor, x2*scaleFactor, y2*scaleFactor);
+		return new Line2D.Double(x1, y1, x2, y2);
 	}
 
 	private void updateBounds() {
@@ -401,13 +424,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// We need to take into account our arrows
 		if (targetType != ArrowType.NONE) {
-			xOffset = targetSize*10.0*getZoom();
-			yOffset = targetSize*10.0*getZoom();
+			xOffset = targetSize*10.0*getZoom() + lineWidth*2;;
+			yOffset = targetSize*10.0*getZoom() + lineWidth*2;;
 		}
 
 		if (sourceType != ArrowType.NONE) {
-			xOffset += sourceSize*10.0*getZoom();
-			yOffset += sourceSize*10.0*getZoom();
+			xOffset += sourceSize*10.0*getZoom() + lineWidth*2;;
+			yOffset += sourceSize*10.0*getZoom() + lineWidth*2;;
 		}
 
 		// Update our bounds
@@ -420,7 +443,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			setLocation((int)(Math.min(x1, x2)-xOffset), (int)(Math.min(y1, y2)-yOffset));
 			setSize(Math.abs(x1-x2)+xOffset*2, Math.abs(y1-y2)+yOffset*2);
 		}
-
 	}
 
 	private Line2D getArrowLine(Object target, Annotation source) {

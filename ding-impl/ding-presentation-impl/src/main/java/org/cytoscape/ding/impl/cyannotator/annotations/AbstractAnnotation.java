@@ -114,7 +114,9 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	}
 
 	public String toString() {
-		return "annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
+		Map<String,String>argMap = getArgMap();
+
+		return argMap.get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
 	}
 
 	@Override
@@ -266,9 +268,6 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 
 	public void drawAnnotation(Graphics g, double x,
 	                           double y, double scaleFactor) {
-		for (ArrowAnnotation arrow: arrowList) {
-			arrow.drawAnnotation(g, x, y, scaleFactor);
-		}
 	}
 
 	public void update() {
@@ -286,14 +285,31 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+		                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+
+    // High quality color rendering is ON.
+    g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+                        RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+
+		g2.setRenderingHint(RenderingHints.KEY_DITHERING,
+		                    RenderingHints.VALUE_DITHER_ENABLE);
+
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+		                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+
+		// Text antialiasing is ON.
+		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+		                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+		                    RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+		                    RenderingHints.VALUE_STROKE_PURE);
+
 
 		if (!usedForPreviews()) {
 			// We need to control composite ourselves for previews...
 			g2.setComposite(AlphaComposite.Src);
-
-			// for (ArrowAnnotation arrow: arrowList) {
-			// 	arrow.drawArrow(g);
-			// }
 		}
 	}
 
@@ -303,11 +319,11 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	protected void updateAnnotationAttributes() {
 		if (!usedForPreviews) {
 			cyAnnotator.addAnnotation(this);
-			if (arrowList != null) {
-				for (ArrowAnnotation annotation: arrowList) {
-					cyAnnotator.addAnnotation(annotation);
-				}
-			}
+			// if (arrowList != null) {
+			// 	for (ArrowAnnotation annotation: arrowList) {
+			// 		cyAnnotator.addAnnotation(annotation);
+			// 	}
+			// }
 			contentChanged();
 		}
 	}
