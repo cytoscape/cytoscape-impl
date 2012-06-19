@@ -18,6 +18,8 @@ public class ForceDirectedLayoutContext implements TunableValidator {
 	public double defaultSpringLength = 50.0;
 	@Tunable(description="Default Node Mass")
 	public double defaultNodeMass = 3.0;
+	@Tunable(description="Force deterministic layouts (slower)")
+	public boolean isDeterministic;
 	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
 

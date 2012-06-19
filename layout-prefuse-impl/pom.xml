@@ -57,8 +57,8 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>!${bundle.namespace}.*</Export-Package>
-						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Export-Package>!${bundle.namespace}.*,!prefuse.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*,prefuse.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 					</instructions>
 				</configuration>
@@ -79,11 +79,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>prefuse</artifactId>
-			<version>20071021</version>
 		</dependency>
 	</dependencies>
 </project>

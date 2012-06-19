@@ -27,8 +27,9 @@
 */
 package org.cytoscape.prefuse.layouts.internal; 
 
-
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -96,11 +97,28 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		part.calculateEdgeWeights();
 		// System.out.println("layoutPartion: "+part.getEdgeList().size()+" edges after calculateEdgeWeights");
 
-		m_fsim.setIntegrator(integrator.getNewIntegrator());
-		m_fsim.clear();
+		//m_fsim.setIntegrator(integrator.getNewIntegrator());
+		//m_fsim.clear();
 
+		m_fsim = new ForceSimulator();
+		m_fsim.addForce(new NBodyForce());
+		m_fsim.addForce(new SpringForce());
+		m_fsim.addForce(new DragForce());
+
+		forceItems.clear();
+		
+		List<LayoutNode> nodeList = part.getNodeList();
+		List<LayoutEdge> edgeList = part.getEdgeList();
+
+		
+		if(context.isDeterministic){
+			Collections.sort(nodeList);
+			Collections.sort(edgeList);
+		}
+		
+		
 		// initialize nodes
-		for (LayoutNode ln: part.getNodeList()) {
+		for (LayoutNode ln: nodeList) {
 			ForceItem fitem = forceItems.get(ln); 
 			if ( fitem == null ) {
 				fitem = new ForceItem();
@@ -113,7 +131,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		}
 		
 		// initialize edges
-		for (LayoutEdge e: part.getEdgeList()) {
+		for (LayoutEdge e: edgeList) {
 			LayoutNode n1 = e.getSource();
 			ForceItem f1 = forceItems.get(n1); 
 			LayoutNode n2 = e.getTarget();
@@ -142,6 +160,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		}
 		
 		// update positions
+		part.resetNodes(); // reset the nodes so we get the new average location
 		for (LayoutNode ln: part.getNodeList()) {
 			if (!ln.isLocked()) {
 				ForceItem fitem = forceItems.get(ln); 
@@ -150,6 +169,8 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 				part.moveNodeToLocation(ln);
 			}
 		}
+		
+		/*
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
 		double xDelta = 0.0;
@@ -163,6 +184,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 				part.moveNodeToLocation(v);
 			}
 		}
+		*/
 	}
 
 	/**
