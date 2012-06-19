@@ -783,13 +783,22 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 
+	public Bend bend(final CyEdge edge) {	
+		return bend(edge, false);
+	}
+	
 	/**
 	 * Returns current Edge Bend value.
 	 * @param edge
 	 * @return edge Bend
 	 */
-	public Bend bend(final CyEdge edge) {		
+	public Bend bend(final CyEdge edge, boolean forceCreate) {		
 		Bend bend = m_edgeBends.get(edge);
+		
+		if(bend == null && forceCreate) {
+			bend = new BendImpl();
+			m_edgeBends.put(edge, bend);
+		}
 		
 		if(bend == null) {
 			if (m_edgeBendDefault == null)

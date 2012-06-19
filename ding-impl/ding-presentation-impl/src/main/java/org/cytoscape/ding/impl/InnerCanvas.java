@@ -47,6 +47,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Float;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
@@ -437,8 +438,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	
-	private void toggleChosenAnchor (long chosenAnchor, MouseEvent e) {
-		if (e.isControlDown()) {
+	private void toggleChosenAnchor (long chosenAnchor, MouseEvent e) {		
+		if (e.isAltDown() || e.isMetaDown()) {
+			// Remove handle
 			final long edge = chosenAnchor >>> 6;
 			final int anchorInx = (int)(chosenAnchor & 0x000000000000003f);
 			// Save remove handle
@@ -466,7 +468,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private int toggleSelectedEdge(long chosenEdge, MouseEvent e) {
 		int chosenEdgeSelected = 0;
 		
-		// Set Edge Bend.
+		// Add new Handle for Edge Bend.
 		if ((e.isAltDown() || e.isMetaDown()) && ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
 			
 			m_view.m_selectedAnchors.empty();
@@ -475,8 +477,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.xformComponentToNodeCoords(m_ptBuff);
 			// Store current handle list
 			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", m_undo);
-			final int chosenInx = m_view.getDEdgeView(chosenEdge).addHandlePoint(new Point2D.Float(
-					(float) m_ptBuff[0], (float) m_ptBuff[1]));
+			final Point2D newHandlePoint = new Point2D.Float((float) m_ptBuff[0], (float) m_ptBuff[1]);
+			final int chosenInx = m_view.getDEdgeView(chosenEdge).addHandlePoint(newHandlePoint);
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
 		}
@@ -512,7 +514,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return chosenEdgeSelected;
 	}
 	
-
 	private long[] setSelectedNodes() {
 		long [] selectedNodes = null;
 		
@@ -943,7 +944,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final long edge = edgeAndAnchor >>> 6;
 				final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 				final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
-				//ev.getHandleInternal(anchorInx, m_floatBuff1);
 				
 				final Bend bend = ev.getBend();
 				final Handle handle = bend.getAllHandles().get(anchorInx);
@@ -1084,14 +1084,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 		@Override
 		void singleLeftControlClick(MouseEvent e) {
-			//System.out.println("MousePressed ----> singleLeftControlClick");
-			
-			/* clicking on empty space
-			if ((getChosenNode() < 0) && (getChosenEdge() < 0) && (getChosenAnchor() < 0)) {
-				popup.createEmptySpaceMenu(e.getX(), e.getY(),"NEW"); 
-			}
-			*/
-			
 			// Cascade
 			this.singleLeftClick(e);
 		}
@@ -1305,8 +1297,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						final long edge = edgeAndAnchor >>> 6;
 						final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 						final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
-						
-						//ev.getHandleInternal(anchorInx, m_floatBuff1);
 						
 						final Bend bend = ev.getBend();
 						final Handle handle = bend.getAllHandles().get(anchorInx);
