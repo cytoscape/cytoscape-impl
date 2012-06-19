@@ -29,23 +29,18 @@ package org.cytoscape.prefuse.layouts.internal;
 
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
-import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
 import org.cytoscape.view.layout.LayoutPoint;
-import org.cytoscape.view.layout.WeightTypes;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.util.ListSingleSelection;
 
 import prefuse.util.force.DragForce;
 import prefuse.util.force.ForceItem;
@@ -56,28 +51,27 @@ import prefuse.util.force.SpringForce;
 
 /**
  * This class wraps the Prefuse force-directed layout algorithm.
- * See {@link http://prefuse.org} for more detail.
+ * 
+ * @see <a href="http://prefuse.org">Prefuse web site</a>
  */
 public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 	private ForceSimulator m_fsim;
-
 	private ForceDirectedLayout.Integrators integrator;
-	
 	private Map<LayoutNode,ForceItem> forceItems;
-
 	private ForceDirectedLayoutContext context;
 
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public ForceDirectedLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final ForceDirectedLayoutContext context,
-				       final ForceDirectedLayout.Integrators integrator, String attrName, UndoSupport undo) {
-		super(name, context.singlePartition, networkView, nodesToLayOut,attrName, undo);
+	public ForceDirectedLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,
+			final ForceDirectedLayoutContext context, final ForceDirectedLayout.Integrators integrator,
+			String attrName, UndoSupport undo) {
+		super(name, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
 
 		this.context = context;
 		this.integrator = integrator;
-		
+
 		edgeWeighter = context.edgeWeighter;
 		edgeWeighter.setWeightAttribute(layoutAttribute);
 
@@ -86,7 +80,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		m_fsim.addForce(new SpringForce());
 		m_fsim.addForce(new DragForce());
 
-		forceItems = new HashMap<LayoutNode,ForceItem>();
+		forceItems = new HashMap<LayoutNode, ForceItem>();
 	}
 	
 	public String getName() {
