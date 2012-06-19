@@ -17,7 +17,7 @@ import prefuse.util.force.RungeKuttaIntegrator;
 public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 
 	private static final String ALGORITHM_ID = "force-directed";
-	private static final String ALGORITHM_DISPLAY_NAME = "Force Directed Layout";
+	static final String ALGORITHM_DISPLAY_NAME = "Force Directed Layout";
 
 	private Integrators integrator = Integrators.RUNGEKUTTA;
 

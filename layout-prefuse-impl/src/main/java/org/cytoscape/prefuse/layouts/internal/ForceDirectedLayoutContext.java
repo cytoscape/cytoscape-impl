@@ -7,7 +7,6 @@ import org.cytoscape.work.TunableValidator;
 
 public class ForceDirectedLayoutContext implements TunableValidator {
 	
-
 	@ContainsTunables
 	public EdgeWeighter edgeWeighter = new EdgeWeighter();
 	

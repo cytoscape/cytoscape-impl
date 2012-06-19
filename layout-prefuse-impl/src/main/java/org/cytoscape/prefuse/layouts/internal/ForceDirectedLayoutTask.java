@@ -83,12 +83,10 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		forceItems = new HashMap<LayoutNode, ForceItem>();
 	}
 	
-	public String getName() {
-		return "force-directed";
-	}
-
+	
+	@Override
 	public String toString() {
-		return "Force-Directed Layout";
+		return ForceDirectedLayout.ALGORITHM_DISPLAY_NAME;
 	}
 
 	public void layoutPartion(LayoutPartition part) {
