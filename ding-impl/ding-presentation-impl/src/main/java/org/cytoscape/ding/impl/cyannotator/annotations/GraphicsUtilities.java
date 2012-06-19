@@ -337,7 +337,7 @@ class GraphicsUtilities {
 	}
 
 	static Shape circleArrow(double size) {
-		Ellipse2D circle = new Ellipse2D.Double(-size, size/2.0, size, size);
+		Ellipse2D circle = new Ellipse2D.Double(-size, -size/2.0, size, size);
 		return circle;
 	}
 
