@@ -30,7 +30,15 @@
 package org.cytoscape.view.layout.internal.algorithms;
 
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutTask;
@@ -73,13 +81,14 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 
 		final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 		final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
-
+		
+		List<View<CyNode>> sortedNodeList = sort(nodesToLayOut);
 		// Yes, our size and starting points need to be different
-		int nodeCount = nodesToLayOut.size();
+		int nodeCount = sortedNodeList.size();
 		int columns = (int) Math.sqrt(nodeCount);
 		// Calculate our starting point as the geographical center of the
 		// selected nodes.
-		for ( View<CyNode> nView : nodesToLayOut ) {
+		for ( View<CyNode> nView : sortedNodeList ) {
 			initialX += (nView.getVisualProperty(xLoc) / nodeCount);
 			initialY += (nView.getVisualProperty(yLoc) / nodeCount);
 		}
@@ -94,7 +103,7 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 		int count = 0;
 		
 		// Set visual property.
-		for (final View<CyNode> nView : nodesToLayOut ) {
+		for (final View<CyNode> nView : sortedNodeList ) {
 			// FIXME
 //			edgeList = network.getAdjacentEdgeList(nView.getModel(),CyEdge.Type.ANY);
 //			for (CyEdge edge: edgeList) {
@@ -115,6 +124,17 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 				currX += nodeHorizontalSpacing;
 			}
 		}
+	}
+
+	private List<View<CyNode>> sort(Set<View<CyNode>> nodesToLayOut) {
+		
+		Map<Long, View<CyNode>> map = new TreeMap<Long, View<CyNode>>();
+		Iterator<View<CyNode>> iterator = nodesToLayOut.iterator();
+		while(iterator.hasNext()){
+			View<CyNode> view = iterator.next();
+			map.put(view.getSUID(), view );
+		}
+		return new ArrayList<View<CyNode>>(map.values());
 	}
 
 }
