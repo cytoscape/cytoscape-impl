@@ -169,22 +169,6 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 				part.moveNodeToLocation(ln);
 			}
 		}
-		
-		/*
-		// Not quite done, yet.  If we're only laying out selected nodes, we need
-		// to migrate the selected nodes back to their starting position
-		double xDelta = 0.0;
-		double yDelta = 0.0;
-		final LayoutPoint finalLocation = part.getAverageLocation();
-		xDelta = finalLocation.getX() - initialLocation.getX();
-		yDelta = finalLocation.getY() - initialLocation.getY();
-		for (LayoutNode v: part.getNodeList()) {
-			if (!v.isLocked()) {
-				v.decrement(xDelta, yDelta);
-				part.moveNodeToLocation(v);
-			}
-		}
-		*/
 	}
 
 	/**
