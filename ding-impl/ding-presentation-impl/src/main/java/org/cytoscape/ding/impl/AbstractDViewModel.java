@@ -44,7 +44,10 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		visualProperties.put(vp, value);
+		if(value == null)
+			visualProperties.remove(vp);
+		else
+			visualProperties.put(vp, value);
 		
 		if (value != null && !isValueLocked(vp))
 			applyVisualProperty(vp, value);
