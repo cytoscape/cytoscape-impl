@@ -51,15 +51,10 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -102,9 +97,8 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  * </ul>
  */
 public class VizMapperMainPanel extends AbstractVizMapperPanel implements VisualStyleAddedListener,
-		VisualStyleSetListener, VisualStyleAboutToBeRemovedListener, PopupMenuListener, NetworkViewAddedListener,
-		SetCurrentNetworkViewListener, CytoPanelComponent, PropertyChangeListener, LexiconStateChangedListener,
-		SetCurrentVisualStyleListener {
+		VisualStyleSetListener, VisualStyleAboutToBeRemovedListener, PopupMenuListener, CytoPanelComponent,
+		PropertyChangeListener, LexiconStateChangedListener, SetCurrentVisualStyleListener {
 
 	private final static long serialVersionUID = 1202339867854959L;
 
@@ -137,12 +131,11 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 							  final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
 							  final EditorWindowManager editorWindowManager,
 							  final CyApplicationManager applicationManager,
-							  final CyEventHelper eventHelper,
 							  final ImportDefaultVizmapTaskFactory taskFactory,
 							  final TaskManager<?, ?> tManager,
 							  final SetViewModeAction viewModeAction) {
 		super(vsFactory, defViewEditor, iconMgr, colorMgr, vmm, menuMgr, editorFactory, propertySheetPanel,
-				vizMapPropertySheetBuilder, editorWindowManager, applicationManager, eventHelper, viewModeAction);
+				vizMapPropertySheetBuilder, editorWindowManager, applicationManager, viewModeAction);
 
 		this.defaultViewMouseListener = new DefaultViewMouseListener(defViewEditor, this, vmm);
 
@@ -194,7 +187,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 
 		if (!style.equals(lastStyle)) {
 			switchTo(style);
-			eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, style));
+			vmm.setCurrentVisualStyle(style);
 		}
 	}
 
@@ -366,37 +359,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		vsComboBoxModel.addElement(newStyle);
 	}
 
-	@Override
-	public void handleEvent(final NetworkViewAddedEvent e) {
-		final CyNetworkView view = e.getNetworkView();
-		final VisualStyle viewStyle = vmm.getVisualStyle(view);
-		final VisualStyle curStyle = vmm.getCurrentVisualStyle();
-
-		if (viewStyle == null) {
-			vmm.setVisualStyle(curStyle, view);
-			curStyle.apply(view);
-			view.updateView();
-		} else if (!viewStyle.equals(curStyle)) {
-			switchTo(viewStyle);
-			eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, viewStyle));
-		}
-	}
-
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		final CyNetworkView view = e.getNetworkView();
-
-		if (view != null) {
-			final VisualStyle viewStyle = vmm.getVisualStyle(view);
-			final VisualStyle curStyle = (VisualStyle) visualStyleComboBox.getSelectedItem();
-
-			if (curStyle == null || !curStyle.equals(viewStyle)) {
-				switchTo(viewStyle);
-				eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, viewStyle));
-			}
-		}
-	}
-
 	/**
 	 * Update panel when removed
 	 */
@@ -424,7 +386,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 				view.updateView();
 			}
 
-			eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, defaultStyle));
+			vmm.setCurrentVisualStyle(defaultStyle);
 		}
 	}
 
@@ -440,7 +402,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 
 			// Also check if the style is not already selected
 			if (!style.equals(lastStyle))
-				eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, style));
+				vmm.setCurrentVisualStyle(style);
 		}
 	}
 
@@ -509,13 +471,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 				}
 			}
 			
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					visualStyleComboBox.setSelectedItem(curStyle);
-				}
-			});
-			
+			visualStyleComboBox.setSelectedItem(curStyle);
 			switchTo(curStyle);
 		}
 	}

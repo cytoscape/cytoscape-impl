@@ -51,7 +51,6 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
-import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleListener;
 import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
@@ -61,7 +60,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class VisualMappingManagerImpl implements VisualMappingManager, SetCurrentVisualStyleListener, SetCurrentNetworkViewListener {
+public class VisualMappingManagerImpl implements VisualMappingManager, SetCurrentNetworkViewListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(VisualMappingManagerImpl.class);
 	
@@ -103,7 +102,6 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		this.currentStyle = defaultStyle;
 	}
 	
-	
 	private VisualStyle buildGlobalDefaultStyle(final VisualStyleFactory factory) {
 		final VisualStyle defStyle = factory.createVisualStyle(DEFAULT_STYLE_NAME);
 		
@@ -136,19 +134,17 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 			style = getDefaultVisualStyle();
 			network2VisualStyleMap.put(nv, style);
 		}
+		
 		return style;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void setVisualStyle(final VisualStyle vs, final CyNetworkView nv) {
 		if (nv == null)
 			throw new NullPointerException("Network view is null.");
 
 		boolean changed = false;
-		
+
 		if (vs == null) {
 			changed = network2VisualStyleMap.remove(nv) != null;
 		} else {
@@ -158,124 +154,113 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 		if (this.visualStyles.contains(vs) == false)
 			this.visualStyles.add(vs);
-		
+
 		if (changed)
 			cyEventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
 	}
 
 	/**
-	 * Remove a {@linkplain VisualStyle} from this manager. This will be called
-	 * through OSGi service mechanism.
-	 * 
-	 * @param vs
-	 *            DOCUMENT ME!
+	 * Remove a {@linkplain VisualStyle} from this manager. This will be called through OSGi service mechanism.
 	 */
 	@Override
 	public void removeVisualStyle(VisualStyle vs) {
 		if (vs == null)
 			throw new NullPointerException("Visual Style is null.");
 		if (vs == defaultStyle)
-			throw new IllegalArgumentException(
-					"Cannot remove default visual style.");
+			throw new IllegalArgumentException("Cannot remove default visual style.");
 
-		
 		// Use default for all views using this vs.
 		if (this.network2VisualStyleMap.values().contains(vs)) {
-			for(final CyNetworkView view: network2VisualStyleMap.keySet()) {
-				if(network2VisualStyleMap.get(view).equals(vs))
+			for (final CyNetworkView view : network2VisualStyleMap.keySet()) {
+				if (network2VisualStyleMap.get(view).equals(vs))
 					network2VisualStyleMap.put(view, defaultStyle);
 			}
 		}
-		
+
 		logger.info("Visual Style about to be removed from VMM: " + vs.getTitle());
 		cyEventHelper.fireEvent(new VisualStyleAboutToBeRemovedEvent(this, vs));
 		visualStyles.remove(vs);
 		vs = null;
-		
+
 		logger.info("Total Number of VS in VMM after remove = " + visualStyles.size());
 	}
 
-
 	/**
-	 * Add a new VisualStyle to this manager. This will be called through OSGi
-	 * service mechanism.
+	 * Add a new VisualStyle to this manager. This will be called through OSGi service mechanism.
 	 * 
 	 * @param vs new Visual Style to be added.
 	 */
 	@Override
 	public void addVisualStyle(final VisualStyle vs) {
-		if(vs == null) {
+		if (vs == null) {
 			logger.warn("Tried to add null to VMM.");
 			return;
 		}
-		
-		if (hasDuplicatedTitle(vs)){
+
+		if (hasDuplicatedTitle(vs)) {
 			String newTitle = getSuggestedTitle(vs.getTitle());
-			//Update the title
+			// Update the title
 			vs.setTitle(newTitle);
 		}
-		
+
 		this.visualStyles.add(vs);
 		logger.info("New visual Style registered to VMM: " + vs.getTitle());
 		logger.info("Total Number of VS in VMM = " + visualStyles.size());
-		if(vs.getTitle() != null && vs.getTitle().equals(DEFAULT_STYLE_NAME))
-			defaultStyle = vs;
 		
+		if (vs.getTitle() != null && vs.getTitle().equals(DEFAULT_STYLE_NAME))
+			defaultStyle = vs;
+
 		cyEventHelper.fireEvent(new VisualStyleAddedEvent(this, vs));
 	}
 
-	private String getSuggestedTitle(String title){
-		int i=0;		
+	private String getSuggestedTitle(String title) {
+		int i = 0;
 		String suggesteTitle = title;
-		
-		while (true){
-			suggesteTitle = title + "_"+(new Integer(i).toString());
-			
+
+		while (true) {
+			suggesteTitle = title + "_" + (new Integer(i).toString());
 			boolean duplicated = false;
-			
+
 			Iterator<VisualStyle> it = this.getAllVisualStyles().iterator();
-			while(it.hasNext()){
+
+			while (it.hasNext()) {
 				VisualStyle exist_vs = it.next();
-				if (exist_vs.getTitle().equalsIgnoreCase(suggesteTitle)){
+
+				if (exist_vs.getTitle().equalsIgnoreCase(suggesteTitle)) {
 					duplicated = true;
 					break;
 				}
 			}
 
-			if (duplicated){
+			if (duplicated) {
 				i++;
 				continue;
 			}
-			
+
 			break;
 		}
-		
+
 		return suggesteTitle;
 	}
 	
-	
-	private boolean hasDuplicatedTitle(VisualStyle vs){
-	
-		if (this.getAllVisualStyles().size() == 0){
+	private boolean hasDuplicatedTitle(VisualStyle vs) {
+		if (this.getAllVisualStyles().size() == 0)
 			return false;
-		}
+
 		Iterator<VisualStyle> it = this.getAllVisualStyles().iterator();
-		while(it.hasNext()){
+
+		while (it.hasNext()) {
 			VisualStyle exist_vs = it.next();
-			if (exist_vs.getTitle() == null || vs.getTitle() == null){
+
+			if (exist_vs.getTitle() == null || vs.getTitle() == null)
 				continue;
-			}
-			if (exist_vs.getTitle().equalsIgnoreCase(vs.getTitle())){
+			if (exist_vs.getTitle().equalsIgnoreCase(vs.getTitle()))
 				return true;
-			}
 		}
-		
+
 		return false;
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
+
 	@Override
 	public Set<VisualStyle> getAllVisualStyles() {
 		return visualStyles;
@@ -285,6 +270,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	public VisualStyle getDefaultVisualStyle() {
 		if (defaultStyle == null)
 			throw new IllegalStateException("No rendering engine is available, and cannot create default style!");
+		
 		return defaultStyle;
 	}
 
@@ -292,7 +278,6 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	public Set<VisualLexicon> getAllVisualLexicon() {
 		return lexManager.getAllVisualLexicon();
 	}
-
 
 	@Override
 	public VisualStyle getCurrentVisualStyle() {
@@ -302,19 +287,25 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		final CyNetworkView view = e.getNetworkView();
-		if(view == null)
+
+		if (view == null)
 			return;
-		
+
 		final VisualStyle newStyle = this.getVisualStyle(view);
-		if(newStyle != null)
-			this.currentStyle = newStyle;
+
+		if (newStyle != null)
+			setCurrentVisualStyle(newStyle);
 	}
 
-
 	@Override
-	public void handleEvent(SetCurrentVisualStyleEvent e) {
-		final VisualStyle newStyle = e.getVisualStyle();
-		if(newStyle != null)
-			this.currentStyle = newStyle;
+	public void setCurrentVisualStyle(VisualStyle newStyle) {
+		if (newStyle == null)
+			newStyle = defaultStyle;
+		
+		boolean changed = !newStyle.equals(currentStyle);
+		this.currentStyle = newStyle;
+		
+		if (changed)
+			cyEventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, currentStyle));
 	}
 }

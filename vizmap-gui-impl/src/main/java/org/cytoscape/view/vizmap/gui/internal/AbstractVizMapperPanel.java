@@ -60,7 +60,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -111,8 +110,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 	protected AttributeEventsListener nodeAttrListener;
 	protected AttributeEventsListener edgeAttrListener;
 	protected AttributeEventsListener networkAttrListener;
-
-	protected CyEventHelper eventHelper;
 
 	protected VisualMappingManager vmm;
 
@@ -171,7 +168,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 								  final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
 								  final EditorWindowManager editorWindowManager,
 								  final CyApplicationManager applicationManager,
-								  final CyEventHelper eventHelper,
 								  final SetViewModeAction viewModeAction) {
 		if (menuMgr == null)
 			throw new NullPointerException("Menu manager is missing.");
@@ -187,7 +183,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 		this.vizMapPropertySheetBuilder = vizMapPropertySheetBuilder;
 		this.editorWindowManager = editorWindowManager;
 		this.applicationManager = applicationManager;
-		this.eventHelper = eventHelper;
 		this.viewModeAction = viewModeAction;
 
 		editorReg = new PropertyEditorRegistry();

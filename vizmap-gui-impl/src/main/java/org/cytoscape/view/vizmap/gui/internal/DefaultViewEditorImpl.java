@@ -602,7 +602,7 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 	}
 
 	@Override
-	public void handleEvent(SetCurrentVisualStyleEvent e) {
+	public void handleEvent(final SetCurrentVisualStyleEvent e) {
 		final VisualStyle selectedStyle = e.getVisualStyle();
 		setTitle("Default Appearance for " + selectedStyle.getTitle());
 	}

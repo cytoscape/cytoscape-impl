@@ -5,12 +5,10 @@ import java.net.URL;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -25,13 +23,12 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 	private final VizmapReaderManager vizmapReaderMgr;
 
 	private final File vizmapFile;
-	private final CyEventHelper eventHelper;
 
-	public ImportDefaultVizmapTask(final VizmapReaderManager vizmapReaderMgr, final VisualMappingManager vmm,
-			final CyApplicationConfiguration config, final CyEventHelper eventHelper) {
+	public ImportDefaultVizmapTask(final VizmapReaderManager vizmapReaderMgr,
+								   final VisualMappingManager vmm,
+								   final CyApplicationConfiguration config) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmm = vmm;
-		this.eventHelper = eventHelper;
 		this.vizmapFile = new File(config.getConfigurationDirectoryLocation(), PRESET_VIZMAP_FILE);
 	}
 
@@ -52,19 +49,17 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 		if (reader == null)
 			throw new NullPointerException("Failed to find Default Vizmap loader.");
 
-		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, vmm, eventHelper));
+		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, vmm));
 	}
 
 	private static final class AddVisualStylesTask extends AbstractTask {
 
 		private final VizmapReader reader;
 		private final VisualMappingManager vmMgr;
-		private final CyEventHelper helper;
 
-		public AddVisualStylesTask(VizmapReader reader, VisualMappingManager vmMgr, final CyEventHelper eventHelper) {
+		public AddVisualStylesTask(final VizmapReader reader, final VisualMappingManager vmMgr) {
 			this.reader = reader;
 			this.vmMgr = vmMgr;
-			this.helper = eventHelper;
 		}
 
 		@Override
@@ -94,7 +89,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 				}
 
 				final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
-				helper.fireEvent(new SetCurrentVisualStyleEvent(this, defStyle));
+				vmMgr.setCurrentVisualStyle(defStyle);
 			}
 		}
 	}
