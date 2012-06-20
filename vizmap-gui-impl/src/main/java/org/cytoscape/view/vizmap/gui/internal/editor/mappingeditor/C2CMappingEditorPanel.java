@@ -245,8 +245,8 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 
 	
 	private void setPropertySpinner() {
-		SpinnerNumberModel propertySpinnerModel = new SpinnerNumberModel(0.0d, Float.NEGATIVE_INFINITY,
-				Float.POSITIVE_INFINITY, 0.01d);
+		SpinnerNumberModel propertySpinnerModel = new SpinnerNumberModel(0.0d, Double.NEGATIVE_INFINITY,
+				Double.POSITIVE_INFINITY, 0.01d);
 		propertySpinnerModel.addChangeListener(new PropertyValueSpinnerChangeListener(propertySpinnerModel));
 		propertySpinner.setModel(propertySpinnerModel);
 	}
@@ -261,7 +261,7 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 
 		public void stateChanged(ChangeEvent e) {
 			
-			final Float newVal = spinnerModel.getNumber().floatValue();
+			final Double newVal = spinnerModel.getNumber().doubleValue();
 			final int selectedIndex = slider.getSelectedIndex();
 
 			slider.getModel().getThumbAt(selectedIndex).setObject((V) newVal);

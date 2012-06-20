@@ -158,7 +158,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		cMapping = mapping;
 		title = cMapping.getMappingColumnName();
 
-		 Float val;
 		 //TODO: where should I put this property value?
 //		 Object propStr =
 //		 CytoscapeInit.getProperties().getProperty("vizmapper.cntMapperUpperLimit");
@@ -364,8 +363,8 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 			g.setColor(Color.DARK_GRAY);
 			g.setFont(new Font("SansSerif", Font.BOLD, 10));
 
-			Float curPositionValue = ((Double) (((fractions[i] / 100) * tracer
-					.getRange(vp)) + minValue)).floatValue();
+			Double curPositionValue = ((Double) (((fractions[i] / 100) * tracer
+					.getRange(vp)) + minValue)).doubleValue();
 			String valueString = String.format("%.4f", curPositionValue);
 
 			int flipLimit = 90;
@@ -495,7 +494,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				Thumb<V> selectedThumb = slider.getModel().getThumbAt(
 						selectedIdx);
 
-				V zero = (V) new Float(0);
+				V zero = (V) Double.valueOf(0);
 				if (curPoint.getY() >= (trackHeight + 5)) {
 					selectedThumb.setObject(zero);
 
@@ -564,7 +563,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				V newVal;
 
 				try {
-					newVal = (V) Float.valueOf(val);
+					newVal = (V) Double.valueOf(val);
 				} catch (Exception ne) {
 					// Number format error.
 					return;
@@ -615,7 +614,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				}
 
 				try {
-					below = (V) Float.valueOf(val);
+					below = (V) Double.valueOf(val);
 				} catch (Exception ne) {
 					// Number format error.
 					return;
@@ -650,7 +649,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				}
 
 				try {
-					above = (V) Float.valueOf(val);
+					above = (V) Double.valueOf(val);
 				} catch (Exception ne) {
 					// Number format error.
 					return;
