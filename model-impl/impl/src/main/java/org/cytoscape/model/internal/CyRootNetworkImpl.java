@@ -180,8 +180,12 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	@Override
 	public synchronized boolean removeNodes(final Collection<CyNode> nodes) {
-		for ( CySubNetwork sub : subNetworks )
+		for ( CySubNetwork sub : subNetworks ) {
 			sub.removeNodes(nodes);
+			if (nodes != null && sub instanceof CySubNetworkImpl)
+				((CySubNetworkImpl) sub).removeRows(nodes, CyNode.class);
+		}
+		
 		return removeNodesInternal(nodes);
 	}
 
@@ -200,8 +204,11 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	@Override
 	public synchronized boolean removeEdges(final Collection<CyEdge> edges) {
-		for ( CySubNetwork sub : subNetworks )
+		for ( CySubNetwork sub : subNetworks ) {
 			sub.removeEdges(edges);
+			if (edges != null && sub instanceof CySubNetworkImpl)
+				((CySubNetworkImpl) sub).removeRows(edges, CyEdge.class);
+		}
 		return removeEdgesInternal(edges);
 	}
 
