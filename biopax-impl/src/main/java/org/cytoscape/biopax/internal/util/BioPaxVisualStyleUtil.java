@@ -95,12 +95,12 @@ public class BioPaxVisualStyleUtil {
 	/**
 	 * Size of interaction node
 	 */
-	private static final double BIO_PAX_VISUAL_STYLE_INTERACTION_NODE_SIZE_SCALE = 0.33;
+	private static final double BIO_PAX_VISUAL_STYLE_INTERACTION_NODE_SIZE_SCALE = 0.67;
 
 	/**
 	 * Size of complex node
 	 */
-	private static final double BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE = 0.33;
+	private static final double BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE = 0.67;
 
 	/**
 	 * Default color of nodes
@@ -110,18 +110,17 @@ public class BioPaxVisualStyleUtil {
 	/**
 	 * Node border color
 	 */
-	private static final Color DEFAULT_NODE_BORDER_COLOR = new Color(0, 102,
-			102);
+	private static final Color DEFAULT_NODE_BORDER_COLOR = new Color(0, 102, 102);
 
 	/**
 	 * Complex node color
 	 */
-	private static final Color COMPLEX_NODE_COLOR = new Color(0, 0, 0);
+	private static final Color COMPLEX_NODE_COLOR = DEFAULT_NODE_COLOR; //new Color(0, 0, 0);
 
 	/**
 	 * Complex node color
 	 */
-	private static final Color COMPLEX_NODE_BORDER_COLOR = COMPLEX_NODE_COLOR;
+	private static final Color COMPLEX_NODE_BORDER_COLOR = DEFAULT_NODE_BORDER_COLOR; //COMPLEX_NODE_COLOR;
 
 	VisualStyle style;
 
@@ -186,7 +185,9 @@ public class BioPaxVisualStyleUtil {
 			String name = claz.getSimpleName();
 			shape.putMapValue(name, NodeShapeVisualProperty.ELLIPSE);
 		}
-
+		// use a different shape for Complex nodes
+		shape.putMapValue("Complex", NodeShapeVisualProperty.DIAMOND);
+		
 		// hack for phosphorylated proteins
 		shape.putMapValue(BioPaxUtil.PROTEIN_PHOSPHORYLATED,
 				NodeShapeVisualProperty.ELLIPSE);
@@ -240,17 +241,6 @@ public class BioPaxVisualStyleUtil {
 		height.putMapValue(entityName,
 			new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT
 				* BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE));
-
-		/*
-		 * // hack for phosphorylated proteins - make them large so label fits
-		 * within node // commented out by Ethan Cerami, November 15, 2006
-		 * discreteMappingWidth.putMapValue(BioPaxUtil.PROTEIN_PHOSPHORYLATED,
-		 * new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH
-		 * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE));
-		 * discreteMappingHeight.putMapValue(BioPaxUtil.PROTEIN_PHOSPHORYLATED,
-		 * new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT
-		 * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE));
-		 */
 
 		// create and set node height calculator in node appearance calculator
 		style.setDefaultValue(BasicVisualLexicon.NODE_WIDTH,

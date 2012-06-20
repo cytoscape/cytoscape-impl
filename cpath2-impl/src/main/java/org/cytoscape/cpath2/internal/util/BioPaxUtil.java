@@ -25,13 +25,10 @@
  **/
 package org.cytoscape.cpath2.internal.util;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +42,6 @@ import org.biopax.paxtools.controller.AbstractTraverser;
 import org.biopax.paxtools.controller.ObjectPropertyEditor;
 import org.biopax.paxtools.controller.PropertyEditor;
 import org.biopax.paxtools.controller.SimpleEditorMap;
-import org.biopax.paxtools.converter.OneTwoThree;
 import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.BioPAXLevel;
@@ -53,12 +49,9 @@ import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.BioSource;
 import org.biopax.paxtools.model.level3.CellularLocationVocabulary;
 import org.biopax.paxtools.model.level3.Entity;
-import org.biopax.paxtools.model.level3.EntityReference;
 import org.biopax.paxtools.model.level3.Interaction;
-import org.biopax.paxtools.model.level3.Level3Element;
 import org.biopax.paxtools.model.level3.Named;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
-import org.biopax.paxtools.model.level3.Provenance;
 import org.biopax.paxtools.model.level3.PublicationXref;
 import org.biopax.paxtools.model.level3.RelationshipTypeVocabulary;
 import org.biopax.paxtools.model.level3.RelationshipXref;
@@ -140,36 +133,12 @@ public final class BioPaxUtil {
 	
 
 	/**
-	 * Constructor.
-	 *
-	 * @param in BioPAX data file name.
-	 * @return BioPaxUtil new instance (containing the imported BioPAX data)
-	 * @throws FileNotFoundException 
-	 */
-	public static Model read(final InputStream in) throws FileNotFoundException {
-		Model model = null;
-		try {
-			SimpleIOHandler handler = new SimpleIOHandler();
-			handler.mergeDuplicates(true); // a workaround (illegal) BioPAX data having duplicated rdf:ID...
-			model =  handler.convertFromOWL(in);	
-			// immediately convert to BioPAX Level3 model
-			if(model != null && BioPAXLevel.L2.equals(model.getLevel())) {
-				model = new OneTwoThree().filter(model);
-			}
-		} catch (Throwable e) {
-			log.warn("Import failed: " + e);
-		}
-		return model;
-	}
-
-	
-	/**
 	 * Gets or infers the name of the node. 
 	 * 
 	 * @param bpe BioPAX Element
 	 * @return
 	 */
-	public static String getNodeName(BioPAXElement bpe) {
+	private static String getNodeName(BioPAXElement bpe) {
 
 		if(bpe == null) {
 			return "";
@@ -179,7 +148,7 @@ public final class BioPaxUtil {
 		if (nodeName == null || nodeName.length()== 0) {
 			nodeName = getStandardName(bpe);
 			if (nodeName == null || nodeName.length() == 0) {
-				Collection<String> names = getSynonymList(bpe);
+				Collection<String> names = getSynonyms(bpe);
 				if (!names.isEmpty())
 					nodeName = getTheShortestString(names);
 			}
@@ -191,7 +160,7 @@ public final class BioPaxUtil {
 	
 	
 	// get the shortest string
-	public static String getTheShortestString(Collection<String> nameList) {
+	private static String getTheShortestString(Collection<String> nameList) {
 		String shortest = null;
 		if (nameList != null && !nameList.isEmpty()) {
 			int minLength = -1;
@@ -214,7 +183,7 @@ public final class BioPaxUtil {
 	 * 
 	 * @return the value or null
 	 */
-	public static Object getValue(BioPAXElement bpe, String... properties) {
+	private static Object getValue(BioPAXElement bpe, String... properties) {
 		for (String property : properties) {
 			try {
 				Method method = bpe.getModelInterface().getMethod(
@@ -246,7 +215,7 @@ public final class BioPaxUtil {
 	 * 
 	 * @return the set of property values or null
 	 */
-	public static Collection<?> getValues(BioPAXElement bpe, String... properties) {
+	private static Collection<?> getValues(BioPAXElement bpe, String... properties) {
 		Collection<Object> col = new HashSet<Object>();
 		
 		for (String property : properties) {
@@ -282,7 +251,7 @@ public final class BioPaxUtil {
 	 * @param bpe BioPAX element
 	 * @return short name field, or null if not available.
 	 */
-	public static String getShortName(BioPAXElement bpe) {
+	private static String getShortName(BioPAXElement bpe) {
 		String shortName = null;
 		
 		if(bpe instanceof Named) {
@@ -298,7 +267,7 @@ public final class BioPaxUtil {
 	 * @param bpe BioPAX element
 	 * @return name field, or null if not available.
 	 */
-	public static String getStandardName(BioPAXElement bpe) {
+	private static String getStandardName(BioPAXElement bpe) {
 		if(bpe instanceof Named) {
 			return ((Named)bpe).getStandardName();
 		} else 
@@ -306,12 +275,12 @@ public final class BioPaxUtil {
 	}
 
 	/**
-	 * Gets synonym names.
+	 * Gets all names, if any present.
 	 *
 	 * @param bpe BioPAX element
-	 * @return Collection of Synonym String Objects.
+	 * @return Collection of names.
 	 */
-	public static Collection<String> getSynonymList(BioPAXElement bpe) {
+	private static Collection<String> getSynonyms(BioPAXElement bpe) {
 		Collection<String> names = new HashSet<String>();
 		if(bpe instanceof Named) {
 			names = ((Named)bpe).getName();
@@ -319,46 +288,6 @@ public final class BioPaxUtil {
 		return names;
 	}
 
-	/**
-	 * Gets the Organism Name.
-	 *
-	 * @param bpe BioPAX element
-	 * @return organism field, or null if not available.
-	 */
-	public static String getOrganismName(CyNetwork network, BioPAXElement bpe) {
-		String organism = null;
-			
-		BioPAXElement bs = (BioPAXElement) getValue(bpe, "organism");
-		if (bs != null) {
-			organism = getNodeName(bs);
-		} 
-
-		return organism;
-	}
-
-	/**
-	 * If exist, gets all data sources 
-	 * (according to the BioPAX spec. there should be only one...)
-	 * names as "comment : name"...
-	 * 
-	 * @param bpe BioPAX element
-	 * @return data source names
-	 */
-	public static String getDataSource(BioPAXElement bpe) {
-		StringBuffer sb = new StringBuffer();
-		
-		if(bpe instanceof Entity) {
-			Collection<Provenance> datasources = ((Entity)bpe).getDataSource();
-			for(Provenance pr : datasources) {
-				if(pr.getComment() != null) 
-					sb.append(pr.getComment().toString());
-				sb.append(" : ").append(getNodeName(pr)).append(' '); 
-			}
-		}
-		
-		return sb.toString();
-	}
-	
 	
 	/**
 	 * Gets the NCBI Taxonomy ID.
@@ -366,7 +295,7 @@ public final class BioPaxUtil {
 	 * @param bpe BioPAX element
 	 * @return taxonomyId, or -1, if not available.
 	 */
-	public static int getOrganismTaxonomyId(CyNetwork network, BioPAXElement bpe) {
+	private static int getOrganismTaxonomyId(CyNetwork network, BioPAXElement bpe) {
 		int taxonomyId = -1;
 		
 		try {
@@ -385,31 +314,9 @@ public final class BioPaxUtil {
 		return taxonomyId;
 	}
 
-	/**
-	 * Gets the Comment field.
-	 *
-	 * @param bpe a BioPAX element
-	 * @return comment field
-	 */
-	public static String getComment(BioPAXElement bpe) {
-		return ((Level3Element)bpe).getComment().toString();
-	}
-
-	/**
-	 * Gets the Availability Field.
-	 *
-	 * @param bpe BioPAX element
-	 * @return availability field or null, if not available.
-	 */
-	public static String getAvailability(BioPAXElement bpe) {
-		if(bpe instanceof Entity) {
-			return ((Entity)bpe).getAvailability().toString();
-		} else
-			return null;
-	}
 	
 	
-	public static <T extends Xref> List<T> getXRefs(BioPAXElement bpe, Class<T> xrefClass) {
+	private static <T extends Xref> List<T> getXRefs(BioPAXElement bpe, Class<T> xrefClass) {
 		if(bpe instanceof XReferrable) {
 			List<T> erefs = new ArrayList<T>();
 			erefs.addAll(new ClassFilterSet<Xref,T>( ((XReferrable)bpe).getXref(), xrefClass) );
@@ -423,58 +330,6 @@ public final class BioPaxUtil {
 		}
 		return new ArrayList<T>();
 	}
-
-	
-	/**
-	 * Gets the joint set of all known subclasses of the specified BioPAX types.
-	 * 
-	 * @param classes BioPAX (PaxTools Model Interfaces) Classes
-	 * @return
-	 */
-	public static Collection<Class> getSubclassNames(Class<? extends BioPAXElement>... classes) {
-		Collection<Class> subclasses = new HashSet<Class>();
-		
-		for (Class<? extends BioPAXElement> c : classes) {
-			subclasses.addAll(SimpleEditorMap.L3.getKnownSubClassesOf(c));
-		}
-		
-		return subclasses;
-	}
-	
-	/**
-	 * Gets all the objects of provided BioPAX types.
-	 * 
-	 * @param model BioPAX (PaxTools) model
-	 * @param classes query BioPAX types - e.g. Protein.class, Complex.class
-	 * @return
-	 */
-	public static Set<? extends BioPAXElement> getObjects(Model model, Class<? extends BioPAXElement>... classes) {
-		Set<BioPAXElement> coll = new HashSet<BioPAXElement>();
-		if (model != null) {
-			for (Class<? extends BioPAXElement> c : classes) {
-				coll.addAll(model.getObjects(c));
-			}
-		}
-		return coll;
-	}
-	
-
-	/**
-	 * Checks whether the element is of 
-	 * any of the listed BioPAX types.
-	 * 
-	 * @param e
-	 * @param classes
-	 * @return
-	 */
-	public static boolean isOneOfBiopaxClasses(BioPAXElement e, Class<? extends BioPAXElement>... classes) {
-		for(Class<? extends BioPAXElement> c : classes) {
-			if(c.isInstance(e)) {
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	
 	/**
@@ -483,7 +338,7 @@ public final class BioPaxUtil {
 	 * @param value
 	 * @return
 	 */
-	public static String getAbbrCellLocation(String value) {
+	private static String getAbbrCellLocation(String value) {
 		for(String abr: cellLocationMap.keySet()) {
 			if(value.toLowerCase().contains(abr)) {
 				return cellLocationMap.get(abr);
@@ -498,7 +353,7 @@ public final class BioPaxUtil {
 	 * @param value
 	 * @return
 	 */
-	public static String getAbbrChemModification(String value) {
+	private static String getAbbrChemModification(String value) {
 		for(String abr: chemModificationsMap.keySet()) {
 			if(value.toLowerCase().contains(abr)) {
 				return chemModificationsMap.get(abr);
@@ -508,16 +363,7 @@ public final class BioPaxUtil {
 	}
 	
 	
-	public static Map<String, String> getChemModificationsMap() {
-		return Collections.unmodifiableMap(chemModificationsMap);
-	}
-	
-	public static Map<String, String> getCellLocationMap() {
-		return Collections.unmodifiableMap(cellLocationMap);
-	}
-	
-	
-	public static String truncateLongStr(String str) {
+	private static String truncateLongStr(String str) {
 		if(str != null) {
 			str = str.replaceAll("[\n\r \t]+", " ");
 			if (str.length() > MAX_DISPLAY_STRING_LEN) {
@@ -528,7 +374,7 @@ public final class BioPaxUtil {
 	}
 
 	
-	public static String toOwl(BioPAXElement bpe) {
+	private static String toOwl(BioPAXElement bpe) {
 		StringWriter writer = new StringWriter();
 		try {
 			SimpleIOHandler simpleExporter = new SimpleIOHandler(BioPAXLevel.L3);
@@ -540,37 +386,13 @@ public final class BioPaxUtil {
 	}
 	
 	
-	public static void fixDisplayName(Model model) {
-		if (log.isInfoEnabled())
-			log.info("Trying to auto-fix 'null' displayName...");
-		// where it's null, set to the shortest name if possible
-		for (Named e : model.getObjects(Named.class)) {
-			if (e.getDisplayName() == null) {
-				if (e.getStandardName() != null) {
-					e.setDisplayName(e.getStandardName());
-				} else if (!e.getName().isEmpty()) {
-					String dsp = e.getName().iterator().next();
-					for (String name : e.getName()) {
-						if (name.length() < dsp.length())
-							dsp = name;
-					}
-					e.setDisplayName(dsp);
-				}
-			}
-		}
-		// if required, set PE name to (already fixed) ER's name...
-		for(EntityReference er : model.getObjects(EntityReference.class)) {
-			for(SimplePhysicalEntity spe : er.getEntityReferenceOf()) {
-				if(spe.getDisplayName() == null || spe.getDisplayName().trim().length() == 0) {
-					if(er.getDisplayName() != null && er.getDisplayName().trim().length() > 0) {
-						spe.setDisplayName(er.getDisplayName());
-					}
-				}
-			}
-		}
-	}
-	
-	
+	/**
+	 * Generates node attributes from BioPAX properties.
+	 * 
+	 * @param element
+	 * @param node
+	 * @param network
+	 */
 	public static void createAttributesFromProperties(final BioPAXElement element,
 			final CyNode node, final CyNetwork network) 
 	{
@@ -803,27 +625,8 @@ public final class BioPaxUtil {
 	}
 
     
-	private static String addXRefs(List<ExternalLink> xrefList) {
-		if (!xrefList.isEmpty()) {
-			StringBuffer temp = new StringBuffer("<ul>");
-			for (ExternalLink link : xrefList) {
-                //  Ignore cPath Link.
-                if (link.getDbName() != null && link.getDbName().equalsIgnoreCase("CPATH")) {
-                    continue;
-                }
-                temp.append("<li>- ");
-				temp.append(ExternalLinkUtil.createLink(link.getDbName(), link.getId()));
-                temp.append("</li>");
-			}
-			temp.append("</ul>");
-			return temp.toString();
-		}
-
-		return null;
-	}
-	
 	private static String addIHOPLinks(CyNetwork network, BioPAXElement bpe) {
-		List<String> synList = new ArrayList<String>(BioPaxUtil.getSynonymList(bpe));
+		List<String> synList = new ArrayList<String>(BioPaxUtil.getSynonyms(bpe));
 		List<ExternalLink> dbList = xrefToExternalLinks(bpe, Xref.class);
 		
 		if (!synList.isEmpty() || !dbList.isEmpty()) {
@@ -836,8 +639,9 @@ public final class BioPaxUtil {
 
 		return null;
 	}
+
 	
-	public static <T extends Xref> List<ExternalLink> xrefToExternalLinks(BioPAXElement bpe, Class<T> xrefClass) {
+	private static <T extends Xref> List<ExternalLink> xrefToExternalLinks(BioPAXElement bpe, Class<T> xrefClass) {
 		
 		if(bpe instanceof XReferrable) {
 			List<ExternalLink> erefs = new ArrayList<ExternalLink>();
@@ -897,6 +701,7 @@ public final class BioPaxUtil {
 
 		return dbList;
 	}
+
 	
 	private static List<String> getXRefList(BioPAXElement bpe, String xrefType) {
 		List<String> listToReturn = new ArrayList<String>();
@@ -919,6 +724,7 @@ public final class BioPaxUtil {
 
 		return listToReturn;
 	}
+
 	
 	private static NodeAttributesWrapper getInteractionChemicalModifications(BioPAXElement participantElement) 
 	{
@@ -976,6 +782,7 @@ public final class BioPaxUtil {
 
 		return new NodeAttributesWrapper(chemicalModificationsMap, chemicalModifications);
 	}
+
 	
 	private static String getModificationsString(NodeAttributesWrapper chemicalModificationsWrapper) 
 	{

@@ -908,7 +908,7 @@ public class BioPaxMapper {
 
 	
 	private static String addIHOPLinks(CyNetwork network, BioPAXElement bpe) {
-		List<String> synList = new ArrayList<String>(BioPaxUtil.getSynonymList(bpe));
+		List<String> synList = new ArrayList<String>(BioPaxUtil.getSynonyms(bpe));
 		List<ExternalLink> dbList = xrefToExternalLinks(bpe, Xref.class);
 		
 		if (!synList.isEmpty() || !dbList.isEmpty()) {

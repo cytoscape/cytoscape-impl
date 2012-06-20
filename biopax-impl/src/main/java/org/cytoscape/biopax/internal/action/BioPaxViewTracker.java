@@ -9,6 +9,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.biopax.internal.BioPaxMapper;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.view.BioPaxContainer;
@@ -69,7 +70,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {	
 		final CyNetworkView view = e.getNetworkView();
-		if(BioPaxUtil.isBioPAXNetwork(view.getModel())) {
+		if(isBioPAXNetwork(view.getModel())) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -95,7 +96,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		CyNetworkView view = e.getNetworkView();
 		
 		// update bpPanel accordingly
-       	if (view != null && BioPaxUtil.isBioPAXNetwork(view.getModel())) {
+       	if (view != null && isBioPAXNetwork(view.getModel())) {
        		SwingUtilities.invokeLater(new Runnable() {
        			@Override
        			public void run() {
@@ -108,7 +109,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		if (BioPaxUtil.isBioPAXNetwork(e.getNetworkView().getModel())) {
+		if (isBioPAXNetwork(e.getNetworkView().getModel())) {
 			//TODO nothing?
 		}
 	}
@@ -120,7 +121,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		if(view == null) return;
 		
 		final CyNetwork network = view.getModel();
-		if (BioPaxUtil.isBioPAXNetwork(network)) {
+		if (isBioPAXNetwork(network)) {
 
 			if (!network.getDefaultNodeTable().equals(e.getSource()))
 				return;
@@ -252,5 +253,11 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 //			// add the graphic
 //			dingNodeView.addCustomGraphic(rect, paint, NodeDetails.ANCHOR_CENTER);
 //		}
+	}
+
+	
+	private static boolean isBioPAXNetwork(CyNetwork cyNetwork) {
+		return Boolean.TRUE == cyNetwork.getRow(cyNetwork)
+			.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
 	}
 }

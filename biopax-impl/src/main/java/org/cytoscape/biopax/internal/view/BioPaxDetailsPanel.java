@@ -212,8 +212,8 @@ public class BioPaxDetailsPanel extends JPanel {
         stringRef = network.getRow(node,CyNetwork.HIDDEN_ATTRS).get(BioPaxUtil.BIOPAX_DATA, String.class);
         //stringRef = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
         if (stringRef != null) {
-        	appendHeader("BioPAX L3 (excerpt)", buf);
-            buf.append("<pre>" + StringEscapeUtils.escapeXml(stringRef) + "</pre>");
+        	appendHeader("BioPAX L3 (fragment)", buf);
+            buf.append("<pre class='excerpt'>" + StringEscapeUtils.escapeXml(stringRef) + "</pre>");
         }
 		
 		buf.append("</BODY></HTML>");
