@@ -3,9 +3,11 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -28,11 +30,15 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 	
 	private final VisualStyleFactory vsFactory;
 	private final VisualMappingManager vmm;
+	private final CyEventHelper eventHelper;
 	
-	public CreateNewVisualStyleTask(final VisualStyleFactory vsFactory, final VisualMappingManager vmm) {
+	public CreateNewVisualStyleTask(final VisualStyleFactory vsFactory,
+									final VisualMappingManager vmm,
+									final CyEventHelper eventHelper) {
 		super();
 		this.vsFactory = vsFactory;
 		this.vmm = vmm;
+		this.eventHelper = eventHelper;
 	}
 
 	
@@ -41,23 +47,24 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 			return;
 
 		// Create new style.  This method call automatically fire event.
-		final VisualStyle newStyle = vsFactory.createVisualStyle(vsName);
-		vmm.addVisualStyle(newStyle);
-		logger.info("CreateNewVisualStyleTask created new Visual Style: " + newStyle.getTitle());
+		final VisualStyle style = vsFactory.createVisualStyle(vsName);
+		vmm.addVisualStyle(style);
+		logger.debug("CreateNewVisualStyleTask created new Visual Style: " + style);
+		eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, style));
 	}
 	
 	
 	public ValidationState getValidationState(final Appendable errMsg){
-		
 		Iterator<VisualStyle> it = this.vmm.getAllVisualStyles().iterator();
+		
 		while(it.hasNext()){
 			VisualStyle exist_vs = it.next();
+			
 			if (exist_vs.getTitle().equalsIgnoreCase(vsName)){
 				try {
 					errMsg.append("Visual style "+ vsName +" already existed!");
 					return ValidationState.INVALID;
-				}
-				catch (IOException e){
+				} catch (IOException e) {
 				}
 			}
 		}

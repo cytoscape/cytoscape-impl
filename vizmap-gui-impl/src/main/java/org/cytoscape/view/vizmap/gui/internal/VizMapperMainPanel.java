@@ -193,12 +193,12 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		final VisualStyle style = (VisualStyle) visualStyleComboBox.getSelectedItem();
 
 		if (!style.equals(lastStyle)) {
-			switchVS(style);
+			switchTo(style);
 			eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, style));
 		}
 	}
 
-	private void switchVS(final VisualStyle style) {
+	private void switchTo(final VisualStyle style) {
 		// Close editor windows
 		editorWindowManager.closeAllEditorWindows();
 		vizMapPropertySheetBuilder.setPropertyTable(style);
@@ -265,7 +265,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		}
 
 		// Switch back to the original style.
-		switchVS(this.vmm.getDefaultVisualStyle());
+		switchTo(vmm.getDefaultVisualStyle());
 
 		// Sync check box and actual lock state
 		spcs.firePropertyChange("UPDATE_LOCK", null, true);
@@ -276,7 +276,6 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	}
 
 	void updateDefaultImage(final VisualStyle vs, final RenderingEngine<CyNetwork> engine, final Dimension size) {
-
 		logger.debug("Creating Default Image for new visual style " + vs.getTitle());
 		Image image = defaultImageManager.remove(vs);
 
@@ -360,12 +359,11 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		// Style already exists
 		if (vsComboBoxModel.getIndexOf(newStyle) != -1) {
 			logger.info(newStyle.getTitle() + " is already in the combobox.");
-			switchVS(newStyle);
+			switchTo(newStyle);
 			return;
 		}
 
 		vsComboBoxModel.addElement(newStyle);
-		visualStyleComboBox.setSelectedItem(newStyle);
 	}
 
 	@Override
@@ -379,7 +377,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 			curStyle.apply(view);
 			view.updateView();
 		} else if (!viewStyle.equals(curStyle)) {
-			switchVS(viewStyle);
+			switchTo(viewStyle);
 			eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, viewStyle));
 		}
 	}
@@ -393,7 +391,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 			final VisualStyle curStyle = (VisualStyle) visualStyleComboBox.getSelectedItem();
 
 			if (curStyle == null || !curStyle.equals(viewStyle)) {
-				switchVS(viewStyle);
+				switchTo(viewStyle);
 				eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, viewStyle));
 			}
 		}
@@ -415,7 +413,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		// Switch to the default style if necessary
 		if (toBeRemoved.equals(selectedStyle)) {
 			final VisualStyle defaultStyle = this.vmm.getDefaultVisualStyle();
-			switchVS(defaultStyle);
+			switchTo(defaultStyle);
 
 			// Apply to the current view
 			final CyNetworkView view = applicationManager.getCurrentNetworkView();
@@ -441,7 +439,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 			final VisualStyle lastStyle = (VisualStyle) visualStyleComboBox.getSelectedItem();
 
 			// Also check if the style is not already selected
-			if (style.equals(lastStyle) == false)
+			if (!style.equals(lastStyle))
 				eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, style));
 		}
 	}
@@ -477,7 +475,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					switchVS(vmm.getCurrentVisualStyle());
+					switchTo(vmm.getCurrentVisualStyle());
 					showAllVPButton.setSelected(PropertySheetUtil.isAdvancedMode());
 				}
 			});
@@ -494,10 +492,31 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 
 	@Override
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
-		final VisualStyle newStyle = e.getVisualStyle();
-		final Object currentSelected = visualStyleComboBox.getSelectedItem();
+		final VisualStyle curStyle = e.getVisualStyle();
+		final VisualStyle selectedStyle = (VisualStyle) visualStyleComboBox.getModel().getSelectedItem();
+		
+		if (curStyle != null && !curStyle.equals(selectedStyle)) {
+			final CyNetworkView currentView = applicationManager.getCurrentNetworkView();
 
-		if (newStyle != null && !newStyle.equals(currentSelected))
-			visualStyleComboBox.setSelectedItem(newStyle);
+			// Apply only if necessary.
+			if (currentView != null) {
+				final VisualStyle curViewStyle = vmm.getVisualStyle(currentView);
+
+				if (curViewStyle == null || !curViewStyle.equals(curStyle)) {
+					vmm.setVisualStyle(curStyle, currentView);
+					curStyle.apply(currentView);
+					currentView.updateView();
+				}
+			}
+			
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					visualStyleComboBox.setSelectedItem(curStyle);
+				}
+			});
+			
+			switchTo(curStyle);
+		}
 	}
 }
