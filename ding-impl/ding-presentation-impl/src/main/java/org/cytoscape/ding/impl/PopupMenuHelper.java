@@ -189,7 +189,12 @@ class PopupMenuHelper {
 		String pref = (String)(props.get(PREFERRED_MENU));
 		String toolTip = (String) (props.get(TOOLTIP));
 		String menuGravity = (String) (props.get(MENU_GRAVITY));
+		String prefAction = (String)(props.get(PREFERRED_ACTION));
 		double gravity;
+
+		// We really don't want to have double-click actions in our menus
+		if (prefAction != null && prefAction.equals("OPEN"))
+			return;
 
 		if (menuGravity != null) {
 			gravity = Double.parseDouble(menuGravity);
