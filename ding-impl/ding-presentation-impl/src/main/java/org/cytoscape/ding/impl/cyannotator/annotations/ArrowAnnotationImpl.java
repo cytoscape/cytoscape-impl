@@ -355,13 +355,15 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		Graphics2D g2 = (Graphics2D)g;
 
 		// Get the stroke
-		float border = lineWidth;
+		float border = (float)(lineWidth/2.0);
 		if (!isPrinting && border < 1.0f) border = 1.0f;
 		g2.setPaint(lineColor);
 		g2.setStroke(new BasicStroke(border, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 		
 		Line2D relativeLine = getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border);
 		g2.draw(relativeLine);
+
+		g2.setStroke(new BasicStroke(border));
 
 		// Add the head
 		if (sourceType != ArrowType.NONE) {
@@ -422,13 +424,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// We need to take into account our arrows
 		if (targetType != ArrowType.NONE) {
-			xOffset = targetSize*10.0*getZoom() + lineWidth*2;;
-			yOffset = targetSize*10.0*getZoom() + lineWidth*2;;
+			xOffset = targetSize*10.0*getZoom() + lineWidth;
+			yOffset = targetSize*10.0*getZoom() + lineWidth;
 		}
 
 		if (sourceType != ArrowType.NONE) {
-			xOffset += sourceSize*10.0*getZoom() + lineWidth*2;;
-			yOffset += sourceSize*10.0*getZoom() + lineWidth*2;;
+			xOffset += sourceSize*10.0*getZoom() + lineWidth;
+			yOffset += sourceSize*10.0*getZoom() + lineWidth;
 		}
 
 		// Update our bounds
