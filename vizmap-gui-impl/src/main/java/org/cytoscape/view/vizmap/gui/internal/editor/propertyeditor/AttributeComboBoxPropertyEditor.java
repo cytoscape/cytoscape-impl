@@ -65,36 +65,38 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 	}
 
 	private void updateComboBox(final CyNetwork currentNetwork) {
-		final AttributeSet compatibleColumns = attrManager.getAttributeSet(currentNetwork, graphObjectType);
-		currentColumnMap = compatibleColumns.getAttrMap();
-		final Set<CyNetwork> networks = networkManager.getNetworkSet();
-
 		final JComboBox box = (JComboBox) editor;
 		final Object selected = box.getSelectedItem();
 		box.removeAllItems();
+		
+		if (currentNetwork == null)
+			return;
+		
+		final AttributeSet compatibleColumns = attrManager.getAttributeSet(currentNetwork, graphObjectType);
+		currentColumnMap = compatibleColumns.getAttrMap();
+		final AttributeSet targetSet = attrManager.getAttributeSet(currentNetwork, graphObjectType);
 
-		if (currentNetwork != null) {
-			final AttributeSet targetSet = this.attrManager.getAttributeSet(currentNetwork, graphObjectType);
+		if (targetSet == null)
+			return;
+		
+		final SortedSet<String> sortedName = new TreeSet<String>();
+		final Set<CyNetwork> networks = networkManager.getNetworkSet();
 
-			final SortedSet<String> sortedName = new TreeSet<String>();
-			if (targetSet == null)
-				return;
-
-			for (CyNetwork net : networks) {
-				final AttributeSet currentSet = this.attrManager.getAttributeSet(net, graphObjectType);
-				for (String attrName : currentSet.getAttrMap().keySet())
-					sortedName.add(attrName);
-			}
-
-			for (final String attrName : sortedName)
-				box.addItem(attrName);
-
-			// Add new name if not in the list.
-			box.setSelectedItem(selected);
-
-			logger.debug(graphObjectType + " attribute Combobox Updated: New Names = "
-					+ targetSet.getAttrMap().keySet());
+		for (CyNetwork net : networks) {
+			final AttributeSet currentSet = this.attrManager.getAttributeSet(net, graphObjectType);
+			
+			for (String attrName : currentSet.getAttrMap().keySet())
+				sortedName.add(attrName);
 		}
+
+		for (final String attrName : sortedName)
+			box.addItem(attrName);
+
+		// Add new name if not in the list.
+		box.setSelectedItem(selected);
+
+		logger.debug(graphObjectType + " attribute Combobox Updated: New Names = "
+				+ targetSet.getAttrMap().keySet());
 	}
 
 	private final class AttributeComboBoxCellRenderer extends BasicComboBoxRenderer {

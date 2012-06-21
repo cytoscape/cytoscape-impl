@@ -116,7 +116,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	 */
 	@Override
 	public void processEvent(final PropertyChangeEvent e) {
-
 		final Object newVal = e.getNewValue();
 		final Object oldVal = e.getOldValue();
 
@@ -140,15 +139,17 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final Item selectedItem = (Item) propertySheetPanel.getTable().getValueAt(selected, 0);
 		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();
 
+		if (prop == null)
+			return;
+		
 		VisualProperty<?> type = null;
 
 		if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
 			// Case 1: Attribute type changed.
-			if (newVal == null)
-				return;
-			final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
-			processTableColumnChange(newVal.toString(), prop, editor);
-
+			if (newVal != null && e.getSource() instanceof AttributeComboBoxPropertyEditor) {
+				final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
+				processTableColumnChange(newVal.toString(), prop, editor);
+			}
 		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
 			// Case 2. Switch mapping type
 			// Parent is always root.
@@ -279,10 +280,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 
 	private void switchMappingType(final VizMapperProperty<?, ?, ?> prop, final VisualProperty<?> vp,
 			final VisualMappingFunctionFactory factory, final String controllingAttrName) {
-
 		// This is the currently selected Visual Style.
 		final VisualStyle style = vmm.getCurrentVisualStyle();
-
 		final VisualProperty<Visualizable> startVP = util.getCategory((Class<? extends CyIdentifiable>) vp
 				.getTargetDataType());
 		final VisualMappingFunction<?, ?> currentMapping = style.getVisualMappingFunction(vp);
@@ -294,9 +293,13 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		logger.debug("!! Current Mapping type: " + currentMapping);
 
 		if (currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType()) {
+			final CyNetwork currentNet = applicationManager.getCurrentNetwork();
+			
+			if (currentNet == null)
+				return;
+				
 			// Mapping does not exist. Need to create new one.
-			final AttributeSet attrSet = attrManager.getAttributeSet(applicationManager.getCurrentNetwork(),
-					vp.getTargetDataType());
+			final AttributeSet attrSet = attrManager.getAttributeSet(currentNet, vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
 			if (factory.getMappingFunctionType() == ContinuousMapping.class) {
@@ -317,12 +320,14 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 
 			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
 			style.addVisualMappingFunction(newMapping);
-		} else
+		} else {
 			newMapping = currentMapping;
+		}
 
 		// Disable listeners to avoid unnecessary updates
 		final PropertySheetTableModel model = (PropertySheetTableModel) this.propertySheetPanel.getTable().getModel();
 		final TableModelListener[] modelListeners = model.getTableModelListeners();
+		
 		for (final TableModelListener tm : modelListeners)
 			model.removeTableModelListener(tm);
 
