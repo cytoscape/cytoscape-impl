@@ -124,6 +124,8 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
+import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
 import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.FitContentEvent;
@@ -942,9 +944,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final DNodeView returnThis;
 		final CyNode nnode;
 
+		nnode = model.getNode(nodeInx);
+		returnThis = (DNodeView) m_nodeViewMap.get(nnode);
+		if (returnThis == null) {
+			return null;
+		}
+		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyNode>) returnThis, AboutToRemoveNodeViewsEvent.class);
+		
 		synchronized (m_lock) {
-			nnode = model.getNode(nodeInx);
-
 			// We have to query edges in the m_structPersp, not m_drawPersp
 			// because what if the node is hidden?
 			hiddenEdgeInx = model.getAdjacentEdgeList(nnode, CyEdge.Type.ANY);
@@ -959,7 +966,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			for (final CyEdge ee : hiddenEdgeInx)
 				removeEdgeViewInternal(ee);
 
-			returnThis = (DNodeView) m_nodeViewMap.remove(nnode);
+			m_nodeViewMap.remove(nnode);
 			returnThis.unselectInternal();
 
 			// If this node was hidden, it won't be in m_drawPersp.
@@ -1026,8 +1033,18 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final DEdgeView returnThis;
 		final CyEdge edge; 
 
+		edge = model.getEdge(edgeInx);
+		if (edge == null) {
+			return null;
+		}
+		
+		EdgeView view = m_edgeViewMap.get(edge);
+		if (view == null) {
+			return null;
+		}
+		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyEdge>) view, AboutToRemoveEdgeViewsEvent.class);
+		
 		synchronized (m_lock) {
-			edge = model.getEdge(edgeInx);
 			returnThis = removeEdgeViewInternal(edge);
 
 			if (returnThis != null) {

@@ -2,6 +2,7 @@
 package org.cytoscape.internal.select;
 
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,11 +78,10 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AboutToRemoveNodeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				final CyNetworkView view = e.getSource();
-				final CyNetwork net = view.getModel(); 
-
-				for ( View<CyNode> v : e.getNodeViews()) 
-					rowViewMap.remove( net.getRow(v.getModel()) );
+				Collection<View<?>> values = rowViewMap.values();
+				for ( View<CyNode> v : e.getPayloadCollection()) {
+					values.remove(v);
+				}
 			}
 		});
 	}
@@ -89,11 +89,9 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AboutToRemoveEdgeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				final CyNetworkView view = e.getSource();
-				final CyNetwork net = view.getModel(); 
-
-				for ( View<CyEdge> v : e.getEdgeViews()) 
-					rowViewMap.remove( net.getRow(v.getModel()) );
+				Collection<View<?>> values = rowViewMap.values();
+				for ( View<CyEdge> v : e.getPayloadCollection()) 
+					values.remove(v);
 			}
 		});
 	}
