@@ -12,17 +12,19 @@ import java.io.OutputStream;
 public class CSVTableWriterFactory extends AbstractCyWriterFactory implements CyTableWriterFactory {
 	private final boolean writeSchema;
 	private final boolean handleEquations;
+	private final boolean includeVirtualColumns;
 
 	public CSVTableWriterFactory(final CyFileFilter fileFilter, final boolean writeSchema,
-				     final boolean handleEquations)
+				     final boolean handleEquations, final boolean includeVirtualColumns)
 	{
 		super(fileFilter);
 		this.writeSchema     = writeSchema;
 		this.handleEquations = handleEquations;
+		this.includeVirtualColumns = includeVirtualColumns;
 	}
 	
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CyTable table) {
-		return new CSVCyWriter(outputStream, table, writeSchema, handleEquations);
+		return new CSVCyWriter(outputStream, table, writeSchema, handleEquations, includeVirtualColumns);
 	}
 }

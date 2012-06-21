@@ -25,14 +25,16 @@ public class CSVCyWriter implements CyWriter {
 	private final boolean writeSchema;
 	private boolean isCanceled;
 	private final boolean handleEquations;
+	private final boolean includeVirtualColumns;
 
 	public CSVCyWriter(final OutputStream outputStream, final CyTable table,
-			   final boolean writeSchema, final boolean handleEquations)
+			   final boolean writeSchema, final boolean handleEquations, final boolean includeVirtualColumns)
 	{
 		this.outputStream    = outputStream;
 		this.table           = table;
 		this.writeSchema     = writeSchema;
 		this.handleEquations = handleEquations;
+		this.includeVirtualColumns = includeVirtualColumns;
 	}
 
 	@Override
@@ -48,7 +50,8 @@ public class CSVCyWriter implements CyWriter {
 			List<CyColumn> columns = new ArrayList<CyColumn>();
 			for (CyColumn column : table.getColumns()) {
 				if (column.getVirtualColumnInfo().isVirtual()) {
-					continue;
+					if (!includeVirtualColumns)
+						continue;
 				}
 				columns.add(column);
 			}
