@@ -177,7 +177,23 @@ public final class PSICQUICRestClient {
 
 	public CyNetwork importClusteredNetwork(final String query, final Collection<String> targetServices,
 			final SearchMode mode, final TaskMonitor tm) throws IOException {
+		
+		InteractionCluster importedCluster = importClustered(query, targetServices, mode, tm);
 
+		final MergedNetworkBuilder builder = new MergedNetworkBuilder(factory);
+		final CyNetwork network = builder.buildNetwork(importedCluster);
+		
+		tm.setProgress(1.0d);
+		return network;
+	}
+	
+	public InteractionCluster importNeighbours(final String query, final Collection<String> targetServices,
+			final SearchMode mode, final TaskMonitor tm) throws IOException {
+		return importClustered(query, targetServices, mode, tm);
+	}
+	
+	private final InteractionCluster importClustered(final String query, final Collection<String> targetServices,
+			final SearchMode mode, final TaskMonitor tm) {
 		canceled = false;
 
 		tm.setTitle("Loading network data from Remote PSICQUIC Services");
@@ -269,12 +285,8 @@ public final class PSICQUICRestClient {
 		iC.setBinaryInteractionIterator(binaryInteractions.iterator());
 		iC.setMappingIdDbNames(MAPPING_NAMES);
 		iC.runService();
-
-		final MergedNetworkBuilder builder = new MergedNetworkBuilder(factory);
-		final CyNetwork network = builder.buildNetwork(iC);
 		
-		tm.setProgress(1.0d);
-		return network;
+		return iC;
 	}
 
 	public Map<String, Long> search(final String query, final Collection<String> targetServices, final SearchMode mode,

@@ -11,6 +11,7 @@ import java.util.Set;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
@@ -40,18 +41,21 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	
 	private final SearchMode mode;
 	private final boolean toCluster;
+	private final CyNetworkView parentNetworkView;
 	
 	
 	private volatile boolean canceled = false;
 	
 	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
 			final CyNetworkManager manager, final RegistryManager registryManager, final Set<String> searchResult,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final boolean toCluster) {
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final boolean toCluster, final CyNetworkView parentNetworkView) {
 		this.client = client;
 		this.manager = manager;
 		this.registryManager = registryManager;
 		this.query = query;
 		this.toCluster = toCluster;
+		this.parentNetworkView = parentNetworkView;
+		
 
 		this.searchResult = searchResult;
 		this.mode = mode;
@@ -70,6 +74,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		this.searchTask = searchTask;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
+		this.parentNetworkView = null;
 	}
 
 	@Override

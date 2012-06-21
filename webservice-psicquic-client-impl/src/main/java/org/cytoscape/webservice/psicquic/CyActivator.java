@@ -1,12 +1,19 @@
 package org.cytoscape.webservice.psicquic;
 
+import java.awt.LayoutManager;
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.webservice.psicquic.task.ExpandNodeContextMenuFactory;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -18,12 +25,19 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
-		
+
 		DialogTaskManager tm = getService(bc, DialogTaskManager.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
+		CyLayoutAlgorithmManager layoutManager = getService(bc, CyLayoutAlgorithmManager.class);
 
-		CreateNetworkViewTaskFactory createViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
+		VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
+		CyEventHelper eh = getService(bc, CyEventHelper.class);
+
+		DialogTaskManager taskManager = getService(bc, DialogTaskManager.class);
+
+		CreateNetworkViewTaskFactory createViewTaskFactoryServiceRef = getService(bc,
+				CreateNetworkViewTaskFactory.class);
 
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "PSICQUIC Universal Client",
@@ -31,5 +45,11 @@ public class CyActivator extends AbstractCyActivator {
 				tm, createViewTaskFactoryServiceRef, openBrowser);
 
 		registerAllServices(bc, psicquicClient, new Properties());
+
+		final ExpandNodeContextMenuFactory expandNodeContextMenuFactory = new ExpandNodeContextMenuFactory(eh, vmm,
+				psicquicClient.getRestClient(), psicquicClient.getRegistryManager(), taskManager, layoutManager);
+		final Properties nodeProp = new Properties();
+		nodeProp.setProperty("preferredTaskManager", "menu");
+		registerService(bc, expandNodeContextMenuFactory, CyNodeViewContextMenuFactory.class, nodeProp);
 	}
 }

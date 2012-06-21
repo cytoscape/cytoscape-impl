@@ -133,4 +133,12 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	public Container getQueryBuilderGUI() {
 		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, openBrowser);
 	}
+	
+	PSICQUICRestClient getRestClient() {
+		return this.client;
+	}
+	
+	RegistryManager getRegistryManager() {
+		return regManager;
+	}
 }

@@ -75,6 +75,10 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>layout-api</artifactId>
+		</dependency>
 
 		<!-- MI Cluster dependency -->
 		<dependency>
