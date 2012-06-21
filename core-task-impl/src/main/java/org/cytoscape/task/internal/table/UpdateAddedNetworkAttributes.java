@@ -13,6 +13,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 
@@ -27,9 +29,9 @@ import org.cytoscape.work.SynchronousTaskManager;
  *
  */
 
-public class UpdateAddedNetworkAttributes implements NetworkAddedListener{
+public class UpdateAddedNetworkAttributes implements NetworkAddedListener, SessionLoadedListener{
 
-	private static Map<CyTable, List< Class<? extends CyIdentifiable>>> tableMappings;
+	private final Map<CyTable, List< Class<? extends CyIdentifiable>>> tableMappings;
 	private final MapGlobalToLocalTableTaskFactory mappingTF;
 	private final SynchronousTaskManager<?> syncTaskManager;
 
@@ -62,7 +64,7 @@ public class UpdateAddedNetworkAttributes implements NetworkAddedListener{
 		return false;
 	}
 
-	final static void addMappingToList(CyTable importedTable,  Class<? extends CyIdentifiable> mappedTableType){
+	final void addMappingToList(CyTable importedTable,  Class<? extends CyIdentifiable> mappedTableType){
 		//When an imported table is mapped add it to the list with the type of table it has been mapped to.
 		if (!tableMappings.containsKey(importedTable))
 			tableMappings.put(importedTable, new ArrayList< Class<? extends CyIdentifiable>>());
@@ -78,6 +80,11 @@ public class UpdateAddedNetworkAttributes implements NetworkAddedListener{
 		if (tableType == CyNetwork.class)
 			return network.getDefaultNetworkTable();
 		return null;
+	}
+
+	@Override
+	public void handleEvent(SessionLoadedEvent e) {
+		tableMappings.clear();
 	}
 
 }

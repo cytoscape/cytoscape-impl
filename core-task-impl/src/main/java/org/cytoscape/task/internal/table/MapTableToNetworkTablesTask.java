@@ -52,6 +52,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	private final  CyTableReader reader;
 	private final boolean byReader;
 	private Map<String, CyNetwork> name2NetworkMap;
+	private final UpdateAddedNetworkAttributes updateAddedNetworkAttributes;
 	
 	
 	@Tunable(description = "Import Data To:")
@@ -71,22 +72,25 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	}
 
 	
-	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader){
+	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes){
 		this.reader = reader;
 		globalTable = null;
 		this.byReader = true;
 		this.networkManager = networkManager;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
+		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
+		
 		initTunable(networkManager);
 		
 	}
 	
-	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTable globalTable){
+	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTable globalTable, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes){
 		this.networkManager = networkManager;
 		this.globalTable = globalTable;
 		this.byReader = false;
 		this.reader = null;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
+		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
 		initTunable(networkManager);
 	}
 	
@@ -141,9 +145,9 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 				if(byReader){
 					if (reader.getTables() != null && reader.getTables().length >0)
 						for(CyTable sourceTable : reader.getTables())
-							UpdateAddedNetworkAttributes.addMappingToList(sourceTable, tableType.getType());
+							updateAddedNetworkAttributes.addMappingToList(sourceTable, tableType.getType());
 				}else
-					UpdateAddedNetworkAttributes.addMappingToList(globalTable, tableType.getType());
+					updateAddedNetworkAttributes.addMappingToList(globalTable, tableType.getType());
 			}
 		}
 	}

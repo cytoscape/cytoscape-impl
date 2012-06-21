@@ -196,7 +196,7 @@ public class MappingIntegrationTest {
 	
 	public void mapping(CyTable table, CyNetwork net, boolean selectedOnly) throws Exception{
 		
-		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts);
+		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		

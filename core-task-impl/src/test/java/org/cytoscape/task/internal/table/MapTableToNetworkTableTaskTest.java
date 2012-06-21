@@ -85,8 +85,8 @@ public class MapTableToNetworkTableTaskTest {
 	
 	
 	public static void mapping(CyTable table, CyNetwork net, boolean selectedOnly) throws Exception{
-		
-		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts);
+		UpdateAddedNetworkAttributes up = new UpdateAddedNetworkAttributes(new MapGlobalToLocalTableTaskFactoryImpl(mock(CyTableManager.class), netMgr, ts), new SyncTaskManager(stm));
+		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		
@@ -96,7 +96,6 @@ public class MapTableToNetworkTableTaskTest {
 		assertTrue(ti.hasNext());
 		Task t = ti.next();
 		assertNotNull("task is null", t);
-		UpdateAddedNetworkAttributes up = new UpdateAddedNetworkAttributes(new MapGlobalToLocalTableTaskFactoryImpl(mock(CyTableManager.class), netMgr, ts), new SyncTaskManager(stm));
 		t.run(mock(TaskMonitor.class));
 	}
 }
