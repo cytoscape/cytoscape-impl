@@ -1,6 +1,7 @@
 package org.cytoscape.app.internal.manager;
 
 import java.net.MalformedURLException;
+import java.util.List;
 
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.exception.AppInstallException;
@@ -13,6 +14,17 @@ import org.osgi.framework.BundleException;
 
 public class BundleApp extends App {
 
+	/**
+	 * Karaf feature information used to install/uninstall a bundle app, 
+	 * which consists of Karaf features.
+	 */
+	public static class KarafFeature {
+		public String featureName;
+		public String featureVersion;
+	}
+	
+	private List<KarafFeature> featuresList = null;
+	
 	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter)
 			throws AppInstanceException {
@@ -46,5 +58,19 @@ public class BundleApp extends App {
 		// to the uninstalled apps directory
 		// defaultUninstall(appManager);
 	}
+
+	/**
+	 * Return the list of karaf features.
+	 * @return The list of karaf features
+	 */
+	public List<KarafFeature> getFeaturesList() {
+		return featuresList;
+	}
+	
+	public void setFeaturesList(List<KarafFeature> featuresList) {
+		this.featuresList = featuresList;
+	}
+
+	
 
 }

@@ -117,7 +117,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 						
 						try {
 							App app = appManager.getAppParser().parseApp(appFile);
-	
+							
 							appManager.installApp(app);
 						} catch (AppParsingException e) {
 							installStatus = "install-failed";

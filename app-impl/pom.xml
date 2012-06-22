@@ -116,19 +116,32 @@
 			<version>chargebee-1.0</version>
 		</dependency>
 		
-		<!--
-		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>simple-json-parser</artifactId>
-			<version>1.0-b20120413</version>
-		</dependency>
-		-->
-		
 		<!-- dependency for Http server, uses the Apache HttpComponents library -->
 		<dependency>
 		    <groupId>org.apache.httpcomponents</groupId>
   			<artifactId>httpcore-osgi</artifactId>
  		 	<version>4.2</version>
+		</dependency>
+
+		<!-- dependency for ssh client to connect to karaf console for bundle apps -->
+		<dependency>
+			<groupId>org.apache.sshd</groupId>
+			<artifactId>sshd</artifactId>
+			<version>0.6.0</version>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>com.springsource.org.apache.xmlbeans</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.xml</groupId>
+			<artifactId>namespace</artifactId>
+			<version>1.0.1</version>
+			<type>pom</type>
 		</dependency>
 
 		<!-- dependencies needed for plugin manager -->

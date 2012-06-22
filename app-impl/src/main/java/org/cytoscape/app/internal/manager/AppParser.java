@@ -2,11 +2,33 @@ package org.cytoscape.app.internal.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlObject;
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.json.XML;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * This class represents an app parser that is capable of parsing given {@link File}
@@ -84,6 +106,111 @@ public class AppParser {
 			throw new AppParsingException("Error parsing given file as a jar file: " + e.getMessage());
 		}
 		
+		boolean bundleApp = false;
+		boolean xmlParseFailed = false;
+		
+		final List<BundleApp.KarafFeature> featuresList = new LinkedList<BundleApp.KarafFeature>();
+	
+		// Look for features specified in an xml file
+		Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			JarEntry jarEntry = entries.nextElement();
+			
+			if (jarEntry.getName().endsWith("xml")) {
+
+				try {
+					SAXParserFactory spf = SAXParserFactory.newInstance();
+				    spf.setNamespaceAware(true);
+				    XMLReader xmlReader = spf.newSAXParser().getXMLReader();
+
+				    xmlReader.setContentHandler(new ContentHandler() {
+						
+				    	private Stack<String> qNames = new Stack<String>();
+				    	
+						@Override
+						public void startPrefixMapping(String arg0, String arg1)
+								throws SAXException {
+						}
+						
+						@Override
+						public void startElement(String uri, String localName, String qName,
+								Attributes atts) throws SAXException {
+							
+							qNames.push(qName);
+
+							if (qNames.size() == 2
+									&& qNames.get(0).equalsIgnoreCase("features")
+									&& qNames.get(1).equalsIgnoreCase("feature")) {
+								
+								BundleApp.KarafFeature feature = new BundleApp.KarafFeature();
+								
+								// Obtain the feature name and version
+								feature.featureName = atts.getValue("name");
+								feature.featureVersion = atts.getValue("version");
+								
+								featuresList.add(feature);
+							}
+						}
+						
+						@Override
+						public void startDocument() throws SAXException {
+						}
+						
+						@Override
+						public void skippedEntity(String arg0) throws SAXException {
+						}
+						
+						@Override
+						public void setDocumentLocator(Locator arg0) {
+						}
+						
+						@Override
+						public void processingInstruction(String arg0, String arg1)
+								throws SAXException {
+						}
+						
+						@Override
+						public void ignorableWhitespace(char[] arg0, int arg1, int arg2)
+								throws SAXException {
+						}
+						
+						@Override
+						public void endPrefixMapping(String arg0) throws SAXException {
+						}
+						
+						@Override
+						public void endElement(String arg0, String arg1, String arg2)
+								throws SAXException {
+							qNames.pop();
+						}
+						
+						@Override
+						public void endDocument() throws SAXException {
+						}
+						
+						@Override
+						public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
+						}
+					});
+				    
+				    xmlReader.parse(new InputSource(jarFile.getInputStream(jarEntry)));
+				    
+				} catch (SAXException e) {
+					xmlParseFailed = true;
+				} catch (IOException e) {
+					xmlParseFailed = true;
+				} catch (ParserConfigurationException e) {
+					xmlParseFailed = true;
+				}
+			}
+		}
+		
+		// If an XML parsing error occurred, continue to attempt to parse the app as a simple app
+		if (featuresList.size() > 0 && !xmlParseFailed) {
+			bundleApp = true;
+			parsedApp = new BundleApp();
+		}
+		
 		// Attempt to obtain manifest file from jar
 		Manifest manifest = null;
 		try {
@@ -97,10 +224,14 @@ public class AppParser {
 			throw new AppParsingException("No manifest was found in the jar file.");
 		}
 		
-		// Obtain the fully-qualified name of the class to instantiate upon app installation
-		String entryClassName = manifest.getMainAttributes().getValue(APP_CLASS_TAG);
-		if (entryClassName == null || entryClassName.trim().length() == 0) {
-			throw new AppParsingException("Jar is missing value for entry " + APP_CLASS_TAG + " in its manifest file.");
+		String entryClassName = null;
+		// Bundle apps are instantiated by OSGi using their activator classes
+		if (!bundleApp) {
+			// Obtain the fully-qualified name of the class to instantiate upon app installation
+			entryClassName = manifest.getMainAttributes().getValue(APP_CLASS_TAG);
+			if (entryClassName == null || entryClassName.trim().length() == 0) {
+				throw new AppParsingException("Jar is missing value for entry " + APP_CLASS_TAG + " in its manifest file.");
+			}
 		}
 		
 		// Obtain the human-readable name of the app
@@ -144,5 +275,7 @@ public class AppParser {
 		parsedApp.setAppValidated(true);
 		
 		return parsedApp;
+		
+		
 	}
 }
