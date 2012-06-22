@@ -20,6 +20,8 @@ import csapps.layout.algorithms.graphPartition.AttributeCircleLayout;
 import csapps.layout.algorithms.graphPartition.DegreeSortedCircleLayout;
 import csapps.layout.algorithms.graphPartition.ISOMLayout;
 import csapps.layout.algorithms.hierarchicalLayout.HierarchicalLayoutAlgorithm;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
+import org.cytoscape.view.presentation.property.values.BendFactory;
 
 import static org.cytoscape.work.ServiceProperties.*;
 
@@ -33,9 +35,11 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		
 		UndoSupport undo = getService(bc,UndoSupport.class);
+		HandleFactory hf = getService(bc,HandleFactory.class);
+		BendFactory bf = getService(bc,BendFactory.class);
 
 		CircularLayoutAlgorithm circularLayoutAlgorithm = new CircularLayoutAlgorithm(undo);
-		HierarchicalLayoutAlgorithm hierarchicalLayoutAlgorithm = new HierarchicalLayoutAlgorithm(undo);
+		HierarchicalLayoutAlgorithm hierarchicalLayoutAlgorithm = new HierarchicalLayoutAlgorithm(undo,hf,bf);
 		AttributeCircleLayout attributeCircleLayout = new AttributeCircleLayout(undo);
 		DegreeSortedCircleLayout degreeSortedCircleLayout = new DegreeSortedCircleLayout(undo);
 		ISOMLayout ISOMLayout = new ISOMLayout(undo);

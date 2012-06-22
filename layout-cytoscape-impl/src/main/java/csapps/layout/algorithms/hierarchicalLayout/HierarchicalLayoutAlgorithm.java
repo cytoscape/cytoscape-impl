@@ -48,6 +48,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
+import org.cytoscape.view.presentation.property.values.BendFactory;
 
 
 /**
@@ -74,15 +76,20 @@ import org.cytoscape.work.undo.UndoSupport;
  * {@link csapps.hierarchicallayout.Graph}
 */
 public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm {
+	private HandleFactory hf;
+	private BendFactory bf;
+
 	/**
 	 * Creates a new HierarchicalLayoutAlgorithm object.
 	 */
-	public HierarchicalLayoutAlgorithm(UndoSupport undo) {
+	public HierarchicalLayoutAlgorithm(UndoSupport undo,HandleFactory hf,BendFactory bf) {
 		super("hierarchical", "Hierarchical Layout", undo);		
+		this.hf = hf;
+		this.bf = bf;
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(getName(), networkView, nodesToLayOut,(HierarchicalLayoutContext) context, attrName, undoSupport));
+		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(getName(), networkView, nodesToLayOut,(HierarchicalLayoutContext) context, attrName, undoSupport,hf,bf));
 	}
 	
 	@Override

@@ -17,8 +17,13 @@ import org.cytoscape.view.layout.AbstractLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
+import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
+
 
 
 
@@ -28,13 +33,20 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	private TaskMonitor taskMonitor;
 	CyNetwork network;
 	private HierarchicalLayoutContext context;
+	private HandleFactory handleFactory;
+	private BendFactory bendFactory; 
 	
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public HierarchicalLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, HierarchicalLayoutContext context, String attrName, UndoSupport undo) {
+	public HierarchicalLayoutAlgorithmTask(final String name, CyNetworkView networkView, 
+	                                       Set<View<CyNode>> nodesToLayOut, HierarchicalLayoutContext context, 
+										   String attrName, UndoSupport undo, HandleFactory handleFactory,
+										   BendFactory bendFactory) {
 		super(name, networkView, nodesToLayOut, attrName, undo);
 		this.context = context;
+		this.handleFactory = handleFactory;
+		this.bendFactory = bendFactory;
 	}
 
 
@@ -523,15 +535,6 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			}
 		}
 
-//		/* Delete edge anchors */
-//		iter = networkView.getEdgeViewsIterator();
-//
-//		while (iter.hasNext()) {
-//			((EdgeView) iter.next()).getBend().removeAllHandles();
-//		} /* Done removing edge anchors */
-//		iter = networkView.getEdgeViewsIterator();
-//		;
-
 		for (nodeIndex = 0; nodeIndex < resize; nodeIndex++) {
 			HierarchyFlowLayoutOrderNode node = flowLayoutOrder[nodeIndex];
 
@@ -561,9 +564,13 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 					if (k != 0)
 						xPos += ((node.yPos - getYPositionOf(source)) / k);
 
-					Point2D p2d = new Point2D.Double();
-					p2d.setLocation(xPos, node.yPos);
-					// ev.getBend().addHandle(p2d); // FIXME edge bends
+					Bend b = bendFactory.createBend();
+
+					Handle h = handleFactory.createHandle(xPos,node.yPos);
+					h.defineHandle(networkView,ev,xPos,node.yPos);
+					b.insertHandleAt(0,h);
+
+					ev.setVisualProperty(BasicVisualLexicon.EDGE_BEND, b); 
 				}
 			}
 		}
@@ -574,21 +581,16 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			if (node.nodeView == null) {
 				Edge theEdge = dummy2Edge[cI[node.graphIndex]].get(Integer.valueOf(renumber[node.graphIndex]));
 				View<CyEdge> ev = myEdges2EdgeViews[cI[node.graphIndex]].get(theEdge);
-				/* FIXME: I assume this part is only about setting edge bends; since that part of the 3.0 api is not clear yet,
-				 * I'm commenting it all out.  (which might mean that this whole loop, from "for(nodeIndex..." could be commented out) 
 				if (ev != null) {
-					Point2D[] bends = ev.getBend().getDrawPoints();
-					for (int i = 0; i < bends.length; i++) {
-						if (bends[i].getY() == node.yPos) {
-							Point2D p2d = new Point2D.Double();
-							p2d.setLocation(node.xPos, node.yPos);
-							ev.getBend().moveHandle(i, p2d);
-	
+					List<Handle> handles = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND).getAllHandles();
+					for ( Handle h : handles ) {
+						Point2D handelPt = h.calculateHandleLocation(networkView,ev);
+						if ( handelPt.getY() == node.yPos ) {
+							h.defineHandle(networkView,ev,(double)(node.xPos), (double)(node.yPos));
 							break;
 						}
 					}
 				}
-				*/
 			}
 		}
 
