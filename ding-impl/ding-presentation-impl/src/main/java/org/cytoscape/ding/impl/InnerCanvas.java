@@ -47,7 +47,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Float;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
@@ -905,17 +904,37 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		repaint();
 	}
 
+	/**
+	 * Arrow key handler.
+	 * They are used to pan and mode nodes/edge bend handles.
+	 * @param k key event
+	 */
 	private void handleArrowKeys(KeyEvent k) {
 		final int code = k.getKeyCode();
 		double move = 1.0;
 
+		// Adjust increment if Shift key is pressed
 		if (k.isShiftDown())
-			move = 10.0;
+			move = 15.0;
 
+		// Pan if CTR is pressed.
+		if(k.isControlDown()) {
+			// Pan
+			if (code == KeyEvent.VK_UP) {
+				pan(0, move);
+			} else if (code == KeyEvent.VK_DOWN) {
+				pan(0, -move);
+			} else if (code == KeyEvent.VK_LEFT) {
+				pan(-move, 0);
+			} else if (code == KeyEvent.VK_RIGHT) {
+				pan(move, 0);
+			}
+			return;
+		}
+		
 		if (m_view.m_nodeSelection) {
 			// move nodes
-			long[] selectedNodes = m_view.getSelectedNodeIndices();
-
+			final long[] selectedNodes = m_view.getSelectedNodeIndices();
 			for (int i = 0; i < selectedNodes.length; i++) {
 				DNodeView nv = ((DNodeView) m_view.getDNodeView(selectedNodes[i]));
 				double xPos = nv.getXPosition();
@@ -963,6 +982,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 			repaint();
 		}
+	}
+	
+	private void pan(double deltaX, double deltaY) {
+		synchronized (m_lock) {
+			m_xCenter -= (deltaX / m_scaleFactor);
+			m_yCenter -= (deltaY / m_scaleFactor);
+		}
+		m_view.m_viewportChanged = true;
+		repaint();
 	}
 
 	private class AddEdgeMousePressedDelegator extends ButtonDelegator {
