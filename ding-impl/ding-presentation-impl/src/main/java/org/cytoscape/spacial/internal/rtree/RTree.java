@@ -178,10 +178,10 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 			throw new IllegalArgumentException("objKey is negative");
 
 		if (!(xMin <= xMax))
-			throw new IllegalArgumentException("xMin <= xMax not true");
+			throw new IllegalArgumentException("xMin <= xMax not true: xMin " + xMin + " xMax " + xMax);
 
 		if (!(yMin <= yMax))
-			throw new IllegalArgumentException("yMin <= yMax not true");
+			throw new IllegalArgumentException("yMin <= yMax not true: yMin " + yMin + " yMax " + yMax);
 
 		if (m_entryMap.get(objKey) != null) { // Hashtable lookups are cached.
 
