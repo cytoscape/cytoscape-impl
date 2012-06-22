@@ -2,13 +2,13 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JList;
@@ -73,6 +73,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		JTextArea jta = new JTextArea(getDescription());
+		jta.setPreferredSize(new Dimension(120, 50));
 		jta.setLineWrap(true);
 		jta.setWrapStyleWord(true);
 		jta.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -85,14 +86,32 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		itemsContainerList.setFont(new Font("sansserif",Font.PLAIN,11));
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
-
+		
+		// selected items
+		final List<T> selectedVals = listMultipleSelection.getSelectedValues();
+		final List<T> allValues = listMultipleSelection.getPossibleValues();
+		
+		final int[] selectedIdx = new int[selectedVals.size()];
+		int index = 0;
+		for(T selected: selectedVals) {
+			for(int i = 0; i<allValues.size(); i++) {
+				if(itemsContainerList.getModel().getElementAt(i).equals(selected)) {
+					selectedIdx[index] = i;
+					index++;
+				}
+			}
+		}
+		itemsContainerList.setSelectedIndices(selectedIdx);
+		
 		//use a JscrollPane to visualize the items
 		JScrollPane scrollpane = new JScrollPane(itemsContainerList);
 		panel.add(scrollpane,BorderLayout.CENTER);
 	}
 
+	
+	@Override
 	public void update(){
-		
+		// FIXME: implement this!
 	}
 	
 	/**
