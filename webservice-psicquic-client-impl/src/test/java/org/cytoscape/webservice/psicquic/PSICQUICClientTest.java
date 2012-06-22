@@ -1,14 +1,10 @@
 package org.cytoscape.webservice.psicquic;
 
-import java.net.URI;
-
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.webservice.AbstractWebServiceClientTest;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

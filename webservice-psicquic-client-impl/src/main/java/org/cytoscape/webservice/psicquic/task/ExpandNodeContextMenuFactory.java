@@ -12,18 +12,14 @@ import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
+import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -39,15 +35,17 @@ public class ExpandNodeContextMenuFactory implements CyNodeViewContextMenuFactor
 	private final TaskManager<?, ?> taskManager;
 	
 	private final CyLayoutAlgorithmManager layouts;
+	private final MergedNetworkBuilder builder;
 
 	public ExpandNodeContextMenuFactory(CyEventHelper eh, VisualMappingManager vmm, final PSICQUICRestClient client,
-			final RegistryManager manager, final TaskManager taskManager, final CyLayoutAlgorithmManager layouts) {
+			final RegistryManager manager, final TaskManager taskManager, final CyLayoutAlgorithmManager layouts, final MergedNetworkBuilder builder) {
 		this.eh = eh;
 		this.vmm = vmm;
 		this.client = client;
 		this.taskManager = taskManager;
 		this.manager = manager;
 		this.layouts = layouts;
+		this.builder = builder;
 	}
 
 	@Override
@@ -97,13 +95,8 @@ public class ExpandNodeContextMenuFactory implements CyNodeViewContextMenuFactor
 			searchTask.setQuery(query);
 			searchTask.setTargets(activeSource.values());
 
-			ExpandNodeTask networkTask = new ExpandNodeTask(query, client, searchTask, netView, nodeView, eh, vmm);
-			final CyLayoutAlgorithm layout = layouts.getLayout("force-directed");
-			
-			//System.out.println("###### Selected nodes = " + netView.getModel().getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true).size());
-			TaskIterator itr = layout.createTaskIterator(netView, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
-			return new TaskIterator(searchTask, networkTask, itr.next());
+			final ProcessSearchResultTask expandTask = new ProcessSearchResultTask(query, client, searchTask, netView, nodeView, eh, vmm, layouts, manager, builder);
+			return new TaskIterator(searchTask, expandTask);
 		}
 	}
-
 }

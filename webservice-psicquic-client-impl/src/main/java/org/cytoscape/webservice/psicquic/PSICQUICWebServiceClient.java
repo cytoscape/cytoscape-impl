@@ -20,6 +20,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
+import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
 import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
 import org.cytoscape.webservice.psicquic.ui.PSICQUICSearchUI;
@@ -39,6 +40,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private PSICQUICRestClient client;
 	private RegistryManager regManager;
 	private final CyNetworkManager networkManager;
+	private final MergedNetworkBuilder builder;
 
 	private final TaskManager<?, ?> tManager;
 
@@ -51,13 +53,14 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
 			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager, final TaskManager<?, ?> tManager,
-			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowser) {
+			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowser, final MergedNetworkBuilder builder) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;
 		this.tManager = tManager;
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.openBrowser = openBrowser;
+		this.builder = builder;
 
 		// Initialize registry manager in different thread.
 		initRegmanager(networkFactory);
@@ -94,7 +97,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		if(regManager == null)
 			throw new IllegalStateException("PSICQUIC Reg manager could not be initialized.");
 		
-		client = new PSICQUICRestClient(factory, regManager);
+		client = new PSICQUICRestClient(factory, regManager, builder);
 		
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);

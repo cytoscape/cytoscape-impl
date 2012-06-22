@@ -23,6 +23,30 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.8.1</version>
+				<executions>
+					<execution>
+						<id>miriam</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaDirectory>src/main/resources</schemaDirectory>
+							<schemaIncludes>
+								<include>MiriamXML.xml</include>
+							</schemaIncludes>
+							<generatePackage>${bundle.namespace}.miriam</generatePackage>
+							<verbose>true</verbose>
+							<encoding>UTF-8</encoding>
+							<removeOldOutput>false</removeOldOutput>
+							<forceRegenerate>true</forceRegenerate>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>${maven-jar-plugin.version}</version>

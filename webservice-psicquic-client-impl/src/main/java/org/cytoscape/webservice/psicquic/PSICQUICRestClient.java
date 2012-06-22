@@ -27,8 +27,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.simpleclient.PSICQUICSimpleClient;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -76,12 +76,14 @@ public final class PSICQUICRestClient {
 
 	private final CyNetworkFactory factory;
 	private final RegistryManager regManager;
+	private final MergedNetworkBuilder builder;
 
 	private boolean canceled = false;
 
-	public PSICQUICRestClient(final CyNetworkFactory factory, final RegistryManager regManager) {
+	public PSICQUICRestClient(final CyNetworkFactory factory, final RegistryManager regManager, final MergedNetworkBuilder builder) {
 		this.factory = factory;
 		this.regManager = regManager;
+		this.builder = builder;
 	}
 
 	public Map<String, CyNetwork> importNetwork(final String query, final Collection<String> targetServices,
@@ -180,7 +182,6 @@ public final class PSICQUICRestClient {
 		
 		InteractionCluster importedCluster = importClustered(query, targetServices, mode, tm);
 
-		final MergedNetworkBuilder builder = new MergedNetworkBuilder(factory);
 		final CyNetwork network = builder.buildNetwork(importedCluster);
 		
 		tm.setProgress(1.0d);

@@ -22,7 +22,6 @@ import javax.swing.LayoutStyle;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -231,6 +230,7 @@ public class SourceStatusPanel extends JPanel {
 		clearSelectionButton = new JButton();
 		selectAllButton = new JButton();
 		clusterResultCheckBox = new JCheckBox("Merge results into one network");
+		clusterResultCheckBox.setSelected(true);
 
 		titlePanel.setBackground(java.awt.Color.white);
 

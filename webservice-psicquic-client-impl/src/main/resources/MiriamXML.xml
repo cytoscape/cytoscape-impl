@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    MiriamXML_Schema: XML Schema of the XML export of MIRIAM Registry
+
+    MIRIAM Registry is a set of online services created to catalog 
+    biological data types, their URIs and the corresponding physical URLs,
+    whether these are controlled vocabularies or databases.
+    Ref. http://www.ebi.ac.uk/miriam/
+
+    Copyright (C) 2007-2011  BioModels.net (EMBL-EBI)
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    For more information: http://www.gnu.org/licenses/gpl.txt
+
+    version:  20111213
+    Author :  Camille Laibe
+    E-Mail :  camille.laibe@ebi.ac.uk
+    Address:  Computational Systems Neurobiology,
+              EMBL - European Bioinformatics Institute,
+              Wellcome-Trust Genome Campus
+              Hinxton, CAMBRIDGE
+              CB10 1SD
+              United Kingdom
+ -->
+
+
+<xsd:schema targetNamespace="http://www.biomodels.net/MIRIAM/" 
+            xmlns="http://www.biomodels.net/MIRIAM/" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            elementFormDefault="qualified" 
+            attributeFormDefault="unqualified">
+
+  <!-- Definition of the identifier of a data type -->
+  <xsd:simpleType name="dataTypeID">
+    <xsd:restriction base="xsd:Name">
+      <xsd:pattern value="MIR:000\d{5}" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Definition of the identifier of a resource -->
+  <xsd:simpleType name="resourceID">
+    <xsd:restriction base="xsd:Name">
+      <xsd:pattern value="MIR:001\d{5}" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Definition of the list of resources -->
+  <xsd:complexType name="resources">
+    <xsd:sequence>
+      <xsd:element name="resource" type="resource" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- Definition of a resource -->
+  <xsd:complexType name="resource">
+    <xsd:sequence>
+      <xsd:element name="dataResource" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="dataEntityExample" type="xsd:string" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="dataEntry" type="dataEntry" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="dataInfo" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="dataInstitution" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="dataLocation" type="xsd:string" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="resourceID" use="required" />
+    <xsd:attribute name="obsolete" type="TrueOrFalse" use="optional" />
+    <xsd:attribute name="preferred" type="TrueOrFalse" use="optional" />
+    <xsd:attribute name="state" type="xsd:string" use="optional" />
+    <xsd:attribute name="reliability" type="xsd:byte" use="optional" />
+  </xsd:complexType>
+
+  <!-- Definition of the type of an access URL (data entry) -->
+  <xsd:simpleType name="dataEntry">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="\S*$id\S*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+  <!-- Definition of the list of synonyms -->
+  <xsd:complexType name="synonyms">
+    <xsd:sequence>
+      <xsd:element name="synonym" type="xsd:string" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- Definition of the list of URIs -->
+  <xsd:complexType name="uris">
+    <xsd:sequence>
+      <xsd:element name="uri" type="uri" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- Definition of a URI -->
+  <xsd:complexType name="uri">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="type" type="uriType" use="required" />
+        <xsd:attribute name="deprecated" type="TrueOrFalse" use="optional" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <!-- Definition of the type of a URI -->
+  <xsd:simpleType name="uriType">
+    <xsd:restriction base="xsd:Name">
+      <xsd:enumeration value="URN" />
+      <xsd:enumeration value="URL" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Definition of the type of a documentation -->
+  <xsd:simpleType name="docType">
+    <xsd:restriction base="xsd:Name">
+      <xsd:enumeration value="PMID" />
+      <xsd:enumeration value="DOI" />
+      <xsd:enumeration value="URL" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Definition of the list of documentations -->
+  <xsd:complexType name="documentations">
+    <xsd:sequence>
+      <xsd:element name="documentation" type="documentation" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- Definition of a documentation -->
+  <xsd:complexType name="documentation">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:anyURI">
+        <xsd:attribute name="type" type="docType" use="required" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  
+  <!-- Definition of the list of restrictions -->
+  <xsd:complexType name="restrictions">
+    <xsd:sequence>
+      <xsd:element name="restriction" type="restriction" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- Definition of a restriction -->
+  <xsd:complexType name="restriction">
+    <xsd:sequence>
+      <xsd:element name="statement" type="xsd:string" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="link" type="link" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="type" type="xsd:byte" use="required" />
+    <xsd:attribute name="desc" type="xsd:string" use="required" />
+  </xsd:complexType>
+  
+  <!-- Definition of a link -->
+  <xsd:complexType name="link">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="desc" type="xsd:string" use="optional" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  
+  <!-- Definition of the list of tags -->
+  <xsd:complexType name="tags">
+    <xsd:sequence>
+      <xsd:element name="tag" type="xsd:string" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- Definition of an element -->
+  <xsd:complexType name="element">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string" />
+    </xsd:simpleContent>
+  </xsd:complexType>
+  
+  <!-- Definition of the list of elements -->
+  <xsd:complexType name="elements">
+    <xsd:sequence>
+      <xsd:element name="element" type="element" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- Definition of a format -->
+  <xsd:complexType name="format">
+    <xsd:sequence>
+      <xsd:element name="elements" type="elements" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+  </xsd:complexType>
+  
+  <!-- Definition of an annotation -->
+  <xsd:complexType name="annotation">
+    <xsd:sequence>
+      <xsd:element name="format" type="format" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- Definition of a boolean type limited to "true" or "false" (no "1" or "0") -->
+  <xsd:simpleType name="TrueOrFalse">
+    <xsd:restriction base="xsd:boolean">
+      <xsd:pattern value="true" />
+      <xsd:pattern value="false" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+  <!-- Definition of the list of tags (with definition) -->
+  <xsd:complexType name="listOfTags">
+    <xsd:sequence>
+      <xsd:element name="tagDefinition" minOccurs="1" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" />
+            <xsd:element name="definition" type="xsd:string" minOccurs="1" maxOccurs="1" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- Top level element of a MiriamXML document -->
+  <xsd:element name="miriam">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="datatype" minOccurs="1" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="comment" type="xsd:string" minOccurs="0" maxOccurs="1" />
+              <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" />
+              <xsd:element name="synonyms" type="synonyms" minOccurs="0" maxOccurs="1" />
+              <xsd:element name="definition" type="xsd:string" minOccurs="1" maxOccurs="1" />
+              <xsd:element name="uris" type="uris" minOccurs="1" maxOccurs="unbounded" />
+              <xsd:element name="namespace" type="xsd:string" minOccurs="1" maxOccurs="1" />
+              <xsd:element name="documentations" type="documentations" minOccurs="0" maxOccurs="1" />
+              <xsd:element name="resources" type="resources" minOccurs="1" maxOccurs="1" />
+              <xsd:element name="restrictions" type="restrictions" minOccurs="0" maxOccurs="1" />
+              <xsd:element name="tags" type="tags" minOccurs="0" maxOccurs="1" />
+              <xsd:element name="annotation" type="annotation" minOccurs="0" maxOccurs="1" />
+            </xsd:sequence>
+            <xsd:attribute name="id" type="dataTypeID" use="required" />
+            <xsd:attribute name="pattern" type="xsd:string" use="required" />
+            <xsd:attribute name="restricted" type="TrueOrFalse" use="optional" />
+            <xsd:attribute name="obsolete" type="TrueOrFalse" use="optional" />
+            <xsd:attribute name="replacement" type="xsd:string" use="optional" />
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="listOfTags" type="listOfTags" minOccurs="0" maxOccurs="1" />
+      </xsd:sequence>
+      <xsd:attribute name="date" type="xsd:dateTime" use="required" />
+      <xsd:attribute name="data-version" type="xsd:dateTime" use="required" />
+    </xsd:complexType>
+  </xsd:element>
+
+</xsd:schema>
