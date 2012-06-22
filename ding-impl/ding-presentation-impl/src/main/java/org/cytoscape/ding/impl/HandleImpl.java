@@ -45,15 +45,16 @@ public class HandleImpl implements Handle {
 		final double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
 		final Point2D newPoint;
-		if (EditMode.isDirectMode() == false) {
-			newPoint = convert(sX, sY, tX, tY);
-		} else {
+		if (EditMode.isDirectMode()) {
 			newPoint = new Point2D.Double();
 			if (x == 0 && y == 0) {
 				// If default, use center
 				newPoint.setLocation(tX - sX, tY - sY);
-			} else
+			} else {
 				newPoint.setLocation(x, y);
+			}
+		} else {
+			newPoint = convert(sX, sY, tX, tY);
 		}
 		return newPoint;
 	}
@@ -220,5 +221,10 @@ public class HandleImpl implements Handle {
 			return null;
 		}
 		
+	}
+
+	@Override
+	public String toString() {
+		return "handle x:" + x + " y:" + y + " cosTheta: " + cosTheta + " sinTheta: " + sinTheta + " ratio: " + ratio;
 	}
 }

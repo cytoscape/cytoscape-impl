@@ -355,11 +355,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final LongHash m_hash = new LongHash();
 
 	/**
-	 * Used for holding edge anchors.
-	 */
-	final float[] handleLocationBuffer = new float[2];
-
-	/**
 	 *
 	 */
 	int m_lastSize = 0;

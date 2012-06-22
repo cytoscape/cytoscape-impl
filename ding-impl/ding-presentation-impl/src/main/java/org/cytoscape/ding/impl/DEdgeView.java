@@ -35,6 +35,8 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
 
+import java.util.List;
+
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
@@ -344,19 +346,18 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		m_view.m_edgeDetails.select(model);		
 		m_view.m_selectedEdges.insert(m_inx);
 
-		final int numHandles = m_view.m_edgeDetails.bend(model).getAllHandles().size();
-		for (int j = 0; j < numHandles; j++) {			
-			final Bend bend = m_view.m_edgeDetails.bend(model);
-			final Handle handle = bend.getAllHandles().get(j);
+		List<Handle> handles = m_view.m_edgeDetails.bend(model).getAllHandles();
+		for (int j = 0; j < handles.size(); j++) {
+			final Handle handle = handles.get(j);
 			final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),this);
-			m_view.handleLocationBuffer[0] = (float) newPoint.getX();
-			m_view.handleLocationBuffer[1] = (float) newPoint.getY();
+			final double x = newPoint.getX();
+			final double y = newPoint.getY();
+			final double halfSize = m_view.getAnchorSize() / 2.0;
 			
 			m_view.m_spacialA.insert((m_inx << 6) | j,
-					(float) (m_view.handleLocationBuffer[0] - (m_view.getAnchorSize() / 2.0d)),
-					(float) (m_view.handleLocationBuffer[1] - (m_view.getAnchorSize() / 2.0d)),
-					(float) (m_view.handleLocationBuffer[0] + (m_view.getAnchorSize() / 2.0d)),
-					(float) (m_view.handleLocationBuffer[1] + (m_view.getAnchorSize() / 2.0d)));
+					(float) (x - halfSize), (float) (y - halfSize),
+					(float) (x + halfSize), (float) (y + halfSize));
+
 			if (selectAnchors)
 				m_view.m_selectedAnchors.insert((m_inx << 6) | j);
 		}
