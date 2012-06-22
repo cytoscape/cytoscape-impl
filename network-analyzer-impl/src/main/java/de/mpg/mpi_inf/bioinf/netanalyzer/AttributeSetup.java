@@ -4,6 +4,8 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+
 
 final class AttributeSetup {
 
@@ -11,37 +13,37 @@ final class AttributeSetup {
 
 	static void createDirectedNodeAttributes(CyTable nodeTable) {
 		createCommonNodeAttributes(nodeTable);
-		createAttr(nodeTable,"dal", Integer.class);
-		createAttr(nodeTable,"din", Integer.class);
-		createAttr(nodeTable,"dou", Integer.class);
-		createAttr(nodeTable,"nbt", Double.class);
-		createAttr(nodeTable,"nco", Double.class);
+		createAttr(nodeTable,Messages.getAttr("dal"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("din"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("dou"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("nbt"), Double.class);
+		createAttr(nodeTable,Messages.getAttr("nco"), Double.class);
 	}
 
 	static void createUndirectedNodeAttributes(CyTable nodeTable) {
 		createCommonNodeAttributes(nodeTable);
-		createAttr(nodeTable,"deg", Integer.class);
-		createAttr(nodeTable,"nbt", Double.class); 
-		createAttr(nodeTable,"nco", Double.class);
-		createAttr(nodeTable,"nde", Integer.class);
-		createAttr(nodeTable,"nue", Integer.class);
-		createAttr(nodeTable,"rad", Double.class);
-		createAttr(nodeTable,"tco", Double.class);
+		createAttr(nodeTable,Messages.getAttr("deg"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("nbt"), Double.class); 
+		createAttr(nodeTable,Messages.getAttr("nco"), Double.class);
+		createAttr(nodeTable,Messages.getAttr("nde"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("nue"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("rad"), Double.class);
+		createAttr(nodeTable,Messages.getAttr("tco"), Double.class);
 	}
 
 	private static void createCommonNodeAttributes(CyTable nodeTable) {
-		createAttr(nodeTable,"apl", Double.class); 
-		createAttr(nodeTable,"cco", Double.class);
-		createAttr(nodeTable,"clc", Double.class);
-		createAttr(nodeTable,"isn", Boolean.class);
-		createAttr(nodeTable,"pmn", Integer.class);
-		createAttr(nodeTable,"slo", Integer.class);
-		createAttr(nodeTable,"spl", Integer.class);
-		createAttr(nodeTable,"stress", Long.class);
+		createAttr(nodeTable,Messages.getAttr("apl"), Double.class); 
+		createAttr(nodeTable,Messages.getAttr("cco"), Double.class);
+		createAttr(nodeTable,Messages.getAttr("clc"), Double.class);
+		createAttr(nodeTable,Messages.getAttr("isn"), Boolean.class);
+		createAttr(nodeTable,Messages.getAttr("pmn"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("slo"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("spl"), Integer.class);
+		createAttr(nodeTable,Messages.getAttr("stress"), Long.class);
 	}
 
 	static void createEdgeAttributes(CyTable edgeTable) {
-		createAttr(edgeTable,"ebt",Double.class);
+		createAttr(edgeTable,Messages.getAttr("ebt"),Double.class);
 	}
 
 	private static void createAttr(final CyTable table, final String col, final Class<?> newType) {

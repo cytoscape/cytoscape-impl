@@ -37,6 +37,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.CCInfo;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.DegreeDistribution;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.LogBinDistribution;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.LongHistogram;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.MutInteger;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NodeBetweenInfo;
@@ -188,13 +189,13 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 				multiEdgePartners += partnerOfMultiEdgeNodePairs;
 
 				if (useNodeAttributes) {
-					network.getRow(node).set("cco", 0.0);
-					network.getRow(node).set("din", inEdges.size());
-					network.getRow(node).set("dou", outEdges.size());
-					network.getRow(node).set("dal", inEdges.size() + outEdges.size());
-					network.getRow(node).set("isn", (neighborCount == 0));
-					network.getRow(node).set("slo", selfloops);
-					network.getRow(node).set("pmn", partnerOfMultiEdgeNodePairs);
+					network.getRow(node).set(Messages.getAttr("cco"), 0.0);
+					network.getRow(node).set(Messages.getAttr("din"), inEdges.size());
+					network.getRow(node).set(Messages.getAttr("dou"), outEdges.size());
+					network.getRow(node).set(Messages.getAttr("dal"), inEdges.size() + outEdges.size());
+					network.getRow(node).set(Messages.getAttr("isn"), (neighborCount == 0));
+					network.getRow(node).set(Messages.getAttr("slo"), selfloops);
+					network.getRow(node).set(Messages.getAttr("pmn"), partnerOfMultiEdgeNodePairs);
 				}
 
 				if (neighborCount > 1) {
@@ -204,10 +205,10 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 					final double nodeCCp = computeCC(neighbors);
 					accumulate(CCps, neighborCount, nodeCCp);
 					if (useNodeAttributes) {
-						network.getRow(node).set("cco", Utils.roundTo(nodeCCp, roundingDigits));
+						network.getRow(node).set(Messages.getAttr("cco"), Utils.roundTo(nodeCCp, roundingDigits));
 					}
 				} else if (useNodeAttributes) {
-					network.getRow(node).set("cco", 0.0);
+					network.getRow(node).set(Messages.getAttr("cco"), 0.0);
 				}
 
 				// Neighborhood connectivity calculation
@@ -231,7 +232,7 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 				}
 
 				if (useNodeAttributes) {
-					network.getRow(node).set("nco", nco);
+					network.getRow(node).set(Messages.getAttr("nco"), nco);
 				}
 
 				if (nodeSet == null) {
@@ -251,9 +252,9 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 					closenessCent.add(new Point2D.Double(neighborCount, closeness));
 
 					if (useNodeAttributes) {
-						network.getRow(node).set("spl", eccentricity);
-						network.getRow(node).set("apl", Utils.roundTo(apl, roundingDigits));
-						network.getRow(node).set("clc", Utils.roundTo(closeness, roundingDigits));
+						network.getRow(node).set(Messages.getAttr("spl"), eccentricity);
+						network.getRow(node).set(Messages.getAttr("apl"), Utils.roundTo(apl, roundingDigits));
+						network.getRow(node).set(Messages.getAttr("clc"), Utils.roundTo(closeness, roundingDigits));
 					}
 
 					// CyNode and edge betweenness calculation
@@ -287,8 +288,8 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 					final long nodeStress = stress.get(n).longValue();
 					stressDist.addObservation(nodeStress);
 					if (useNodeAttributes) {
-						network.getRow(n).set("nbt", Utils.roundTo(nb, roundingDigits));
-						network.getRow(n).set("stress", nodeStress);
+						network.getRow(n).set(Messages.getAttr("nbt"), Utils.roundTo(nb, roundingDigits));
+						network.getRow(n).set(Messages.getAttr("stress"), nodeStress);
 					}
 				}
 
@@ -299,7 +300,7 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 						if (Double.isNaN(eb)) {
 							eb = 0.0;
 						}
-						network.getRow(betEntry.getKey()).set("ebt",
+						network.getRow(betEntry.getKey()).set(Messages.getAttr("ebt"),
 								Utils.roundTo(eb, roundingDigits));
 					}
 				}
