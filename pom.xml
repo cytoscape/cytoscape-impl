@@ -72,6 +72,7 @@
 		<module>scripting-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
+		<module>group-session-restore-shim</module>
   </modules>
 
 	<properties>

@@ -125,6 +125,10 @@ public class CSVCyReader implements CyTableReader {
 			for (String item : values) {
 				list.add(parseValue(listElementType, null, item));
 			}
+
+			if (list.size() == 1 && list.get(0) == null) 
+				return null;
+
 			return list;
 		} else if (type.equals(String.class))
 			return value;

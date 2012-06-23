@@ -144,6 +144,12 @@ class CyGroupImpl implements CyGroup {
 		    edges.size() == 0 && nodes.size() == 0 &&
 		    np.getRootNetwork().equals(this.rootNetwork)) {
 			CySubNetwork groupNet = np;
+
+			// See if we're already collapsed
+			if (getGroupCollapsedAttribute(network)) {
+				// Yes, reflect it...
+				collapseSet.add(network);
+			}
 		} else {
 			// Create the subnetwork
 			CySubNetwork groupNet = rootNetwork.addSubNetwork(nodes, edges);
