@@ -226,8 +226,6 @@ class CyStatusBar extends JPanel {
 		memStatusBtn.setIcon(memState.getIcon());
 		memStatusBtn.setText("Memory: " + memState.getName());
 		memAmountLabel.setText(String.format("%.1f%% used of %s", memUsed * 100.0f, memTotalFmt));
-
-		logger.info("haydi ho! "+ memTotalFmt);
 	}
 
 	public void setMessage(final String level, final String message)
