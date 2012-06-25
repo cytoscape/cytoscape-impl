@@ -257,7 +257,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	 * if it is requested, or a simple one if not
 	 */
 	private JPanel createJPanel(final String title, final GUITunableHandler gh, 
-	                            final Boolean vertical, final Boolean displayed) {
+			final Boolean vertical, final Boolean displayed) {
 		if (gh == null)
 			return createSimplePanel(title, vertical, displayed);
 
@@ -271,13 +271,12 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				final BasicCollapsiblePanel cp = new BasicCollapsiblePanel(title);
 				if (displayState.equalsIgnoreCase("uncollapsed"))
 					cp.setCollapsed(false);	
+			
 				cp.addPropertyChangeListener(new PropertyChangeListener() {
-					
 					@Override
 					public void propertyChange(PropertyChangeEvent arg0) {
 						repackEnclosingDialog();
 					}
-					
 					/**
 					 * Attempts to locate the instance of the enclosing JDialog.  If successful we will call the pack() method on it.
 					 */
@@ -289,9 +288,10 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 							((JDialog)container).pack();
 					}
 				});
+				
 				return cp;
 
-			// We're not collapsable, so return a normal jpanel
+				// We're not collapsable, so return a normal jpanel
 			} else {
 				return createSimplePanel(title, vertical, displayed);
 			}
