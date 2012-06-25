@@ -103,7 +103,6 @@ public class FilterSettingPanel extends JPanel {
 
 	private CompositeFilter theFilter;
 	private FilterMainPanel parentPanel;
-	private CyNetwork currentNetwork;
 	private TopoFilterPanel topoPanel;
 	private InteractionFilterPanel interactionPanel;
 	private final CyApplicationManager applicationManager;
@@ -945,7 +944,7 @@ public class FilterSettingPanel extends JPanel {
 	
 	
 	private NumberIndex createNumberIndex(NumericFilter pNumericFilter) {
-		currentNetwork = applicationManager.getCurrentNetwork();
+		CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
 
 		if (currentNetwork == null)
 			return null;
