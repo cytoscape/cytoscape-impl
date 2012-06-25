@@ -2,7 +2,10 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +15,7 @@ import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -264,9 +268,27 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			// Figure out if the collapsable flag is set
 			final String displayState = gh.getParams().getProperty("displayState");
 			if (displayState != null) {
-				BasicCollapsiblePanel cp = new BasicCollapsiblePanel(title);
+				final BasicCollapsiblePanel cp = new BasicCollapsiblePanel(title);
 				if (displayState.equalsIgnoreCase("uncollapsed"))
 					cp.setCollapsed(false);	
+				cp.addPropertyChangeListener(new PropertyChangeListener() {
+					
+					@Override
+					public void propertyChange(PropertyChangeEvent arg0) {
+						repackEnclosingDialog();
+					}
+					
+					/**
+					 * Attempts to locate the instance of the enclosing JDialog.  If successful we will call the pack() method on it.
+					 */
+					private void repackEnclosingDialog() {
+						Container container = cp.getParent();
+						while (container != null && !(container instanceof JDialog))
+							container = container.getParent();
+						if (container != null)
+							((JDialog)container).pack();
+					}
+				});
 				return cp;
 
 			// We're not collapsable, so return a normal jpanel
