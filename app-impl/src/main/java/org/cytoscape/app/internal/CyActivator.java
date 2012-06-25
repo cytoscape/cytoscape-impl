@@ -1,5 +1,6 @@
 package org.cytoscape.app.internal;
 
+import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.CyAppAdapterImpl;
 import org.cytoscape.app.internal.action.AppManagerAction;
@@ -348,10 +349,13 @@ public class CyActivator extends AbstractCyActivator {
 		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef);
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
 		
+		FeaturesService featuresService = getService(bc, FeaturesService.class);
+		
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(
 				cyAppAdapter, cyApplicationConfigurationServiceRef, webQuerier);
 		registerService(bc, appManager, AppManager.class, new Properties());
+		appManager.setFeaturesService(featuresService);
 		
 		// AbstractCyAction implementation for updated app manager
 		AppManagerAction appManagerAction2 = new AppManagerAction(appManager, cySwingApplicationRef, fileUtilServiceRef, dialogTaskManagerRef);

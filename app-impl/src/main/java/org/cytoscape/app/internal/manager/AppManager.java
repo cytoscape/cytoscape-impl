@@ -15,6 +15,7 @@ import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
@@ -76,6 +77,11 @@ public class AppManager {
 	private WebQuerier webQuerier;
 	
 	/**
+	 * The {@link FeaturesService} used to communicate with Apache Karaf to manage OSGi bundle based apps
+	 */
+	private FeaturesService featuresService;
+	
+	/**
 	 * {@link CyApplicationConfiguration} service used to obtain the directories used to store the apps.
 	 */
 	private CyApplicationConfiguration applicationConfiguration;
@@ -96,7 +102,6 @@ public class AppManager {
 		
 		public SingleLevelFileFilter(File parentDirectory) {
 			this.parentDirectory = parentDirectory;
-			
 		}
 		
 		@Override
@@ -109,7 +114,6 @@ public class AppManager {
 			
 			return true;
 		}
-		
 	}
 	
 	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, final WebQuerier webQuerier) {
@@ -125,7 +129,7 @@ public class AppManager {
 		initializeAppsDirectories();
 		
 		this.appListeners = new HashSet<AppsChangedListener>();
-		
+
 		// Install previously enabled apps
 		installAppsInDirectory(new File(getInstalledAppsPath()));
 		
@@ -138,6 +142,13 @@ public class AppManager {
 		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
 	}
 	
+	public FeaturesService getFeaturesService() {
+		return this.featuresService;
+	}
+	
+	public void setFeaturesService(FeaturesService featuresService) {
+		this.featuresService = featuresService;
+	}
 	
 	private void setupAlterationMonitor() {
 		// Set up the FileAlterationMonitor to install/uninstall apps when apps are moved in/out of the 

@@ -102,6 +102,12 @@
 			<artifactId>application-api</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.karaf.features</groupId>
+			<artifactId>org.apache.karaf.features.core</artifactId>
+			<version>2.2.7</version>
+		</dependency>
+
 		<!-- dependency for file copying and moving, as well as directory watching -->
 		<dependency>
   			<groupId>commons-io</groupId>

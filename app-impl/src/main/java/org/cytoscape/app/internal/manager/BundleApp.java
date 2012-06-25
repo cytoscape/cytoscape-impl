@@ -3,6 +3,8 @@ package org.cytoscape.app.internal.manager;
 import java.net.MalformedURLException;
 import java.util.List;
 
+import org.apache.karaf.features.Feature;
+import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
@@ -49,6 +51,10 @@ public class BundleApp extends App {
 		// Use the default installation procedure consisting of copying over
 		// the file, creating an instance, and registering with the app manager.
 		// defaultInstall(appManager);
+		
+		// Copy to Karaf deploy directory
+		
+		
 	}
 
 	@Override
@@ -57,6 +63,29 @@ public class BundleApp extends App {
 		// Use the default uninstallation procedure consisting of moving the app file
 		// to the uninstalled apps directory
 		// defaultUninstall(appManager);
+		
+		FeaturesService featuresService = appManager.getFeaturesService();
+		
+		try {
+			Feature[] availableFeatures = featuresService.listFeatures();
+			List<BundleApp.KarafFeature> appFeatures = this.getFeaturesList();
+			
+			Feature availableFeature;
+			for (int i = 0; i < availableFeatures.length; i++) {
+				availableFeature = availableFeatures[i];
+				
+				for (BundleApp.KarafFeature appFeature : appFeatures) {
+					if (appFeature.featureName.equalsIgnoreCase(availableFeature.getName())
+							&& appFeature.featureVersion.equalsIgnoreCase(availableFeature.getVersion())) {
+						
+					}
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
 	}
 
 	/**
