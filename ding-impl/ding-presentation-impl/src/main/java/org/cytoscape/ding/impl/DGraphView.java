@@ -395,8 +395,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	
 	private final Properties props;
 
-	private final NodeViewDefaultSupport m_nodeViewDefaultSupport;
-	private final EdgeViewDefaultSupport m_edgeViewDefaultSupport;
+//	private final NodeViewDefaultSupport m_nodeViewDefaultSupport;// TODO delete?
+	private final EdgeViewDefaultSupport m_edgeViewDefaultSupport;// TODO delete?
 	private final CyAnnotator cyAnnotator;
 	private final AnnotationFactoryManager annMgr;
 
@@ -478,7 +478,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_spacialA = spacialFactory.createSpacialIndex2D();
 		m_nodeDetails = new DNodeDetails(this);
 		m_edgeDetails = new DEdgeDetails(this);
-		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
+//		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
 		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
 		m_nodeViewMap = new HashMap<CyNode, NodeView>();
 		m_edgeViewMap = new HashMap<CyEdge, EdgeView>();
@@ -2659,40 +2659,47 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		final Class<?> targetType = vp.getTargetDataType();
 		
-		// Filter some special cases here: In DING, there is no default W, H, and D.
+		// Filter some special cases here: 
+		if (vp == BasicVisualLexicon.NODE_X_LOCATION || vp == BasicVisualLexicon.NODE_Y_LOCATION
+				|| vp == BasicVisualLexicon.NODE_Z_LOCATION)
+			return;
+		
+		// In DING, there is no default W, H, and D.
 		// Also, custom Graphics should be applied for each view.
 		if (vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH
-				|| vp == BasicVisualLexicon.NODE_HEIGHT) {
-			applyToAll(vp, defaultValue);
+				|| vp == BasicVisualLexicon.NODE_HEIGHT || vp == BasicVisualLexicon.NODE_TRANSPARENCY) {
+			applyToAllNodes(vp, defaultValue);
 			return;
 		}
 		
-		if((VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
-			applyToAll(vp, defaultValue);
+		if ((VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
+			applyToAllNodes(vp, defaultValue);
 			return;
 		}
 		
 		if (vp != DVisualLexicon.NODE_LABEL_POSITION && defaultValue instanceof ObjectPosition) {
 			if (defaultValue != ObjectPositionImpl.DEFAULT_POSITION) {
-				applyToAll(vp, defaultValue);
+				applyToAllNodes(vp, defaultValue);
 				return;
 			}
 		}
 		
-		if(targetType == CyNode.class) {
-			m_nodeDetails.clear();
-			m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
-		} else if(targetType == CyEdge.class) {
+		if (targetType == CyNode.class) {
+//			m_nodeDetails.clear(); // TODO double-check and delete commented lines if ok
+//			m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
+			applyToAllNodes(vp, defaultValue);
+		} else if (targetType == CyEdge.class) {
 			m_edgeDetails.clear();
 			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
-		} else if(targetType == CyNetwork.class) {
-			if(vp.shouldIgnoreDefault() == false)
+		} else if (targetType == CyNetwork.class) {
+			if (vp.shouldIgnoreDefault() == false)
 				this.setVisualProperty(vp, defaultValue);
 		}
 	}
 	
-	private <T, V extends T> void applyToAll(VisualProperty<? extends T> vp, final V defaultValue) {
+	private <T, V extends T> void applyToAllNodes(VisualProperty<? extends T> vp, final V defaultValue) {
 		final Collection<NodeView> nodes = this.m_nodeViewMap.values();
+		
 		for (NodeView node : nodes)
 			((DNodeView) node).setVisualProperty(vp, defaultValue);
 	}

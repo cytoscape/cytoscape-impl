@@ -39,7 +39,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
-
+// TODO delete or refactor: setNodeViewDefault is redundant with DNodeView.applyVisualProperty
 class NodeViewDefaultSupport {
 
 	private final DNodeDetails nodeDetails;

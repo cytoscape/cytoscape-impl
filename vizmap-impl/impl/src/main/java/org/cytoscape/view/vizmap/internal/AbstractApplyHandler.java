@@ -28,13 +28,15 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 
 	protected void applyValues(final CyRow row, final View<T> view, final Collection<VisualProperty<?>> vps) {
 		for (final VisualProperty<?> vp : vps) {
-			// check mapping exists or not
-			final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
-
-			if (mapping != null)
-				mapping.apply(row, view);
-			else
-				applyDefaultToView(view, vp);
+			if (!view.isValueLocked(vp)) {
+				// check mapping exists or not
+				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
+	
+				if (mapping != null)
+					mapping.apply(row, view);
+				else
+					applyDefaultToView(view, vp);
+			}
 		}
 
 		override(view);
@@ -42,8 +44,10 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 
 	private void applyDefaultToView(final View<T> view, final VisualProperty<?> vp) {
 		final Set<VisualLexicon> lexSet = lexManager.getAllVisualLexicon();
-		if(lexSet.size() != 0)
+		
+		if (lexSet.size() != 0)
 			this.lex = lexSet.iterator().next();
+		
 		final VisualLexiconNode vlNode = lex.getVisualLexiconNode(vp);
 		final Collection<VisualLexiconNode> children = vlNode.getChildren();
 
@@ -59,11 +63,11 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 
 		if (!vp.shouldIgnoreDefault())
 			view.setVisualProperty(vp, defaultValue);
-
 	}
 
 	private void override(final View<T> view) {
 		this.dependencies = style.getAllVisualPropertyDependencies();
+		
 		// Override dependency
 		for (final VisualPropertyDependency<?> dep : dependencies) {
 			if (dep.isDependencyEnabled()) {
@@ -78,6 +82,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 					((VisualStyleImpl) style).getStyleDefaults().put(visualProperty, visualProperty.getDefault());
 					defaultValue = style.getDefaultValue(visualProperty);
 				}
+				
 				for (Object vp : vpSet)
 					view.setVisualProperty((VisualProperty<?>) vp, defaultValue);
 			}

@@ -41,7 +41,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,7 +83,6 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
 /**
  * DING implementation of View Model and Presentation.
- * 
  */
 public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, Label {
 	
@@ -141,19 +139,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// The FixedGraph index (non-negative)
 	private final long m_inx;
 
-	// Selection flag.
-	private boolean m_selected;
-
 	// Node color
 //	private Paint m_unselectedPaint;
 //	private Paint m_selectedPaint;
 	
-	private Paint m_borderPaint;
-
-	// Opacity
+	private boolean selected;
+	private Paint borderPaint;
 	private int transparency;
-
-	// Font size
 	private float fontSize = 12;
 
 	/**
@@ -223,11 +215,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.graphView = graphView;
 
 		m_inx = inx;
-
-		m_selected = false;
-
-		m_borderPaint = graphView.m_nodeDetails.borderPaint(model);
-
+		borderPaint = graphView.m_nodeDetails.borderPaint(model);
 		transparency = DEFAULT_TRANSPARENCY;
 	}
 
@@ -236,12 +224,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return graphView;
 	}
 
-	
 	@Override
 	public long getGraphPerspectiveIndex() {
 		return m_inx;
 	}
-
 
 	@Override
 	public List<EdgeView> getEdgeViewsList(final NodeView otherNodeView) {
@@ -249,7 +235,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			return graphView.getEdgeViewsList(getModel(), ((DNodeView)otherNodeView).getModel());
 		}
 	}
-
 	
 	@Override
 	public int getShape() {
@@ -257,7 +242,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			return graphView.m_nodeDetails.shape(model);
 		}
 	}
-
 
 	@Override
 	public void setSelectedPaint(final Paint paint) {
@@ -278,54 +262,50 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	@Override
 	public Paint getSelectedPaint() {
 		return graphView.m_nodeDetails.selectedPaint(model);
 	}
 
-
 	@Override
-	public void setUnselectedPaint(final Paint paint) {
+	public void setUnselectedPaint(Paint paint) {
 		synchronized (graphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
+			if (paint instanceof Color) {
+				final Color c = (Color) paint;
+				
+				if (c.getAlpha() != transparency)
+					paint = new Color(c.getRed(), c.getGreen(), c.getBlue(), transparency);
+			}
+			
 			graphView.m_nodeDetails.setUnselectedPaint(model, paint);
 			
 			if (!isSelected())
 				graphView.m_contentChanged = true;
 		}
 	}
-
 	
 	@Override
 	public Paint getUnselectedPaint() {
 		return graphView.m_nodeDetails.unselectedPaint(model);
 	}
 
-
 	@Override
 	public void setBorderPaint(Paint paint) {
 		synchronized (graphView.m_lock) {
-			m_borderPaint = paint;
+			borderPaint = paint;
 			fixBorder();
 			graphView.m_contentChanged = true;
 		}
 	}
 
-
 	@Override
 	public Paint getBorderPaint() {
-		return m_borderPaint;
+		return borderPaint;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param width
-	 *            DOCUMENT ME!
-	 */
 	@Override
 	public void setBorderWidth(float width) {
 		synchronized (graphView.m_lock) {
@@ -334,7 +314,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	@Override
 	public float getBorderWidth() {
 		synchronized (graphView.m_lock) {
@@ -342,12 +321,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param stroke
-	 *            DOCUMENT ME!
-	 */
 	@Override
 	public void setBorder(Stroke stroke) {
 		if (stroke instanceof BasicStroke) {
@@ -376,25 +349,25 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// Callers of this method must be holding m_view.m_lock.
 	private void fixBorder() {
 		if ((m_borderDash == 0.0f) && (m_borderDash2 == 0.0f))
-			graphView.m_nodeDetails.overrideBorderPaint(model, m_borderPaint);
+			graphView.m_nodeDetails.overrideBorderPaint(model, borderPaint);
 		else {
 			final int size = (int) Math.max(1.0f, (int) (m_borderDash + m_borderDash2)); // Average
 			// times
 			// two.
 
-			if ((size == graphView.m_lastSize) && (m_borderPaint == graphView.m_lastPaint)) {
+			if ((size == graphView.m_lastSize) && (borderPaint == graphView.m_lastPaint)) {
 				/* Use the cached texture paint. */} else {
 				final BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 				final Graphics2D g2 = (Graphics2D) img.getGraphics();
 				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
 				g2.setPaint(s_transparent);
 				g2.fillRect(0, 0, size, size);
-				g2.setPaint(m_borderPaint);
+				g2.setPaint(borderPaint);
 				g2.fillRect(0, 0, size / 2, size / 2);
 				g2.fillRect(size / 2, size / 2, size / 2, size / 2);
 				graphView.m_lastTexturePaint = new TexturePaint(img, new Rectangle2D.Double(0, 0, size, size));
 				graphView.m_lastSize = size;
-				graphView.m_lastPaint = m_borderPaint;
+				graphView.m_lastPaint = borderPaint;
 			}
 
 			graphView.m_nodeDetails.overrideBorderPaint(model, graphView.m_lastTexturePaint);
@@ -412,37 +385,35 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void setTransparency(int trans) {
 		synchronized (graphView.m_lock) {
 			if (trans < 0 || trans > 255) {
 				// If out of range, use default value.
 				transparency = BasicVisualLexicon.NODE_TRANSPARENCY.getDefault();
-			} else
+			} else {
 				transparency = trans;
+			}
 
-			final Color unselectedColor = (Color) getUnselectedPaint();
-			if(unselectedColor.getAlpha() != transparency)
-				setUnselectedPaint(new Color(unselectedColor.getRed(), unselectedColor.getGreen(), unselectedColor.getBlue(), transparency));
+			final Paint unselectedPaint = getUnselectedPaint();
+
+			if (unselectedPaint instanceof Color) {
+				final Color unselectedColor = (Color) unselectedPaint;
+
+				if (unselectedColor.getAlpha() != transparency)
+					setUnselectedPaint(new Color(unselectedColor.getRed(), unselectedColor.getGreen(),
+							unselectedColor.getBlue(), transparency));
+			}
 			
 			graphView.m_contentChanged = true;
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public int getTransparency() {
 		return transparency;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public boolean setWidth(final double originalWidth) {
 		final Double width;
@@ -479,10 +450,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public double getWidth() {
 		synchronized (graphView.m_lock) {
@@ -493,9 +460,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public boolean setHeight(double originalHeight) {
 		final Double height;
@@ -527,10 +491,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public double getHeight() {
 		synchronized (graphView.m_lock) {
@@ -541,14 +501,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Label getLabel() {
 		return this;
 	}
-
 
 	@Override
 	public void setOffset(double x, double y) {
@@ -577,11 +533,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * FIXME: remove label-related methods.
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public Point2D getOffset() {
 		synchronized (graphView.m_lock) {
@@ -630,7 +581,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	public double getXPosition() {
 		synchronized (graphView.m_lock) {
 			if (graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
@@ -639,7 +589,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				return (double) (m_hiddenXMin + m_hiddenXMax) / 2.0;
 		}
 	}
-
 
 	public void setYPosition(final double yPos) {
 		final double hDiv2;
@@ -675,7 +624,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	public double getYPosition() {
 		synchronized (graphView.m_lock) {
 			if (graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
@@ -703,10 +651,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 * @return true if selected.
 	 */
 	boolean selectInternal() {
-		if (m_selected)
+		if (selected)
 			return false;
 
-		m_selected = true;
+		selected = true;
 		graphView.m_nodeDetails.select(model);
 		graphView.m_selectedNodes.insert(m_inx);
 
@@ -727,10 +675,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	// Should synchronize around m_view.m_lock.
 	boolean unselectInternal() {
-		if (!m_selected)
+		if (!selected)
 			return false;
 
-		m_selected = false;
+		selected = false;
 		graphView.m_nodeDetails.unselect(model);
 		graphView.m_selectedNodes.delete(m_inx);
 
@@ -739,7 +687,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public boolean isSelected() {
-		return m_selected;
+		return selected;
 	}
 
 	@Override
@@ -756,7 +704,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	public boolean isHidden() {
 		return graphView.isHidden(this);
 	}
-
 	
 	@Override
 	public void setShape(final NodeShape shape) {
@@ -772,7 +719,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	@Override
 	public void setToolTip(final String tip) {
 		synchronized (graphView.m_lock) {
@@ -781,14 +727,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	@Override
 	public String getToolTip() {
 		synchronized (graphView.m_lock) {
 			return graphView.m_nodeDetails.tooltipText(model);
 		}
 	}
-
 
 	@Override
 	public Paint getTextPaint() {
@@ -797,7 +741,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	
 	@Override
 	public void setTextPaint(Paint textPaint) {
 		synchronized (graphView.m_lock) {
@@ -806,14 +749,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	@Override
 	public String getText() {
 		synchronized (graphView.m_lock) {
 			return graphView.m_nodeDetails.labelText(model, 0);
 		}
 	}
-
 
 	@Override
 	public void setText(String text) {
@@ -1073,7 +1014,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 							IMAGE_HEIGHT);
 					return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
 				}
+				
 				setNestedNetworkView();
+				
 				if (nestedNetworkView != null) {					
 					final double scaleFactor = graphView.getGraphLOD().getNestedNetworkImageScaleFactor();
 					return nestedNetworkView.getSnapshot(IMAGE_WIDTH * scaleFactor, IMAGE_HEIGHT * scaleFactor);
@@ -1175,7 +1118,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		VisualProperty<?> vp = vpOriginal;
 		
 		// Null means set value to VP's default.
-		if(value == null)
+		if (value == null)
 			value = (V) vp.getDefault();
 
 		if (vp == DVisualLexicon.NODE_SHAPE) {
@@ -1260,6 +1203,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {
 		Set<CustomGraphic> dCustomGraphicsSet = cgMap.get(vp);
+		
 		if (dCustomGraphicsSet == null)
 			dCustomGraphicsSet = new HashSet<CustomGraphic>();
 
@@ -1281,6 +1225,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final VisualProperty<?> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
 		Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
 		boolean sync = false;
+		
 		for(VisualPropertyDependency dep:dependencies) {
 			if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
 				sync = dep.isDependencyEnabled();
@@ -1310,7 +1255,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	private void applyCustomGraphicsPosition(final VisualProperty<?> vp, final ObjectPosition position) {
-
 		// No need to modify
 		if (position == null)
 			return;
@@ -1318,8 +1262,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		// Use dependency to retrieve its parent.
 		final VisualLexiconNode lexNode = lexicon.getVisualLexiconNode(vp);
 		final Collection<VisualLexiconNode> leavs = lexNode.getParent().getChildren();
-
 		VisualProperty<?> parent = null;
+		
 		for (VisualLexiconNode vlNode : leavs) {
 			if (vlNode.getVisualProperty().getRange().getType().equals(CyCustomGraphics.class)) {
 				parent = vlNode.getVisualProperty();
@@ -1336,6 +1280,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			return;
 
 		final Set<CustomGraphic> newList = new HashSet<CustomGraphic>();
+		
 		for (CustomGraphic g : currentCG)
 			newList.add(moveCustomGraphicsToNewPosition(g, position));
 
@@ -1346,7 +1291,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	private CustomGraphic syncSize(CyCustomGraphics<?> graphics, final CustomGraphic cg) {
-
 		final double nodeW = this.getWidth();
 		final double nodeH = this.getHeight();
 
@@ -1373,6 +1317,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * (nodeH / cgH) * (nodeW / nodeH));
 			}
 		}
+		
 		return new CustomGraphic(scale.createTransformedShape(originalShape), cg.getPaintFactory());
 	}
 }

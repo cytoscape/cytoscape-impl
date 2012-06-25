@@ -108,48 +108,32 @@ public class VisualStyleImpl implements VisualStyle {
 		logger.info("New Visual Style Created: Style Name = " + this.title);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void addVisualMappingFunction(final VisualMappingFunction<?, ?> mapping) {
 		mappings.put(mapping.getVisualProperty(), mapping);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> VisualMappingFunction<?, V> getVisualMappingFunction(VisualProperty<V> t) {
 		return (VisualMappingFunction<?, V>) mappings.get(t);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void removeVisualMappingFunction(VisualProperty<?> t) {
 		mappings.remove(t);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <V> V getDefaultValue(final VisualProperty<V> vp) {
 		return (V) styleDefaults.get(vp);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public <V, S extends V> void setDefaultValue(final VisualProperty<V> vp, final S value) {
 		styleDefaults.put(vp, value);
 	}
-
 	
 	@Override
 	public void apply(final CyNetworkView networkView) {
@@ -157,9 +141,7 @@ public class VisualStyleImpl implements VisualStyle {
 		final ApplyHandler<CyNetwork> networkViewHandler = applyHandlersMap.get(CyNetwork.class);
 		networkViewHandler.apply(null, networkView);
 	}
-	/**
-	 * {@inheritDoc}
-	 */
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void apply(final CyRow row, final View<? extends CyIdentifiable> view) {
@@ -169,9 +151,10 @@ public class VisualStyleImpl implements VisualStyle {
 		}
 
 		ApplyHandler handler = null;
+		
 		for (final Class<?> viewType : applyHandlersMap.keySet()) {
 			if (viewType.isAssignableFrom(view.getModel().getClass())) {
-				handler = this.applyHandlersMap.get(viewType);
+				handler = applyHandlersMap.get(viewType);
 				break;
 			}
 		}
@@ -182,33 +165,21 @@ public class VisualStyleImpl implements VisualStyle {
 		handler.apply(row, view);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public String toString() {
 		return this.title;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Collection<VisualMappingFunction<?, ?>> getAllVisualMappingFunctions() {
 		return mappings.values();

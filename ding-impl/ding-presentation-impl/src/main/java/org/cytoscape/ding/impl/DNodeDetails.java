@@ -32,8 +32,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.TexturePaint;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,9 +45,6 @@ import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
-import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
-import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
@@ -266,7 +261,6 @@ class DNodeDetails extends NodeDetails {
 		m_selectedPaintDefault = c;
 	}
 
-
 	@Override
 	public byte shape(final CyNode node) {
 		// Check bypass
@@ -305,21 +299,13 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
 	 * Note: this will be used for BOTH unselected and selected.
-	 * 
 	 */
 	public Paint unselectedPaint(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_FILL_COLOR))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR);
-		
 		final Paint o = m_unselectedPaints.get(node);
 
 		if (o == null)
-			if ( m_unselectedPaintDefault == null ) 
+			if (m_unselectedPaintDefault == null) 
 				return super.fillPaint(node);
 			else
 				return m_unselectedPaintDefault;
@@ -331,7 +317,6 @@ class DNodeDetails extends NodeDetails {
 		m_unselectedPaintDefault = p;
 	}
 
-	
 	void setUnselectedPaint(final CyNode node, final Paint paint) {
 		m_unselectedPaints.put(node, paint);
 		if(paint instanceof Color)
