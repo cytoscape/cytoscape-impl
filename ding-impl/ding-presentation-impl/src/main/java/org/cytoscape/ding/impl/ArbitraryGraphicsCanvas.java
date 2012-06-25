@@ -49,7 +49,6 @@ import java.util.Map;
 
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
 
@@ -60,11 +59,6 @@ import org.cytoscape.model.CyNode;
  */
 public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChangeListener {
 	private final static long serialVersionUID = 1202416510975364L;
-
-	/**
-	 * Our reference to the GraphPerspective our view belongs to
-	 */
-	private CyNetwork m_cyNetwork;
 
 	/**
 	 * Our reference to the DGraphView we live within
@@ -101,11 +95,10 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * @param isVisible boolean
 	 * @param isOpaque boolean
 	 */
-	public ArbitraryGraphicsCanvas(CyNetwork cyNetwork, DGraphView dGraphView,
+	public ArbitraryGraphicsCanvas(DGraphView dGraphView,
 	                               InnerCanvas innerCanvas, Color backgroundColor,
 	                               boolean isVisible, boolean isOpaque) {
 		// init members
-		m_cyNetwork = cyNetwork;
 		m_dGraphView = dGraphView;
 		m_innerCanvas = innerCanvas;
 		m_backgroundColor = backgroundColor;
