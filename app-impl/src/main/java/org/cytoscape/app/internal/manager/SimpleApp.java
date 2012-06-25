@@ -18,13 +18,13 @@ public class SimpleApp extends App {
 	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter) throws AppInstanceException {
 		
-		File appFile = this.getAppFile();
+		File installFile = this.getAppTemporaryInstallFile();
 		URL appURL = null;
 		try {
-			appURL = appFile.toURI().toURL();
+			appURL = installFile.toURI().toURL();
 		} catch (MalformedURLException e) {
 			throw new AppInstanceException("Unable to obtain URL for file: " 
-					+ appFile + ". Reason: " + e.getMessage());
+					+ installFile + ". Reason: " + e.getMessage());
 		}
 		
 		// TODO: Currently uses the CyAppAdapter's loader to load apps' classes. Is there reason to use a different one?

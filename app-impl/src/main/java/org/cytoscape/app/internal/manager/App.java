@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -16,6 +17,8 @@ import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents an app, and contains all needed information about the app such as its name, version, 
@@ -23,12 +26,23 @@ import org.cytoscape.app.swing.CySwingAppAdapter;
  */
 public abstract class App {
 	
+	private static final Logger logger = LoggerFactory.getLogger(AppManager.class);
+	
 	private String appName;
 	private String version;
 	private String authors;
 	private String description;
-	private File appFile;
 	
+	/**
+	 * The file containing the app, may be a jar file.
+	 */
+	private File appFile;
+
+	/**
+	 * The temporary file corresponding to the app that is used to load classes from.
+	 */
+	private File appTemporaryInstallFile;
+		
 	/**
 	 * The fully-qualified name of the app's class that extends {@link AbstractCyApp} to be instantiated when the app is loaded.
 	 */
@@ -142,7 +156,7 @@ public abstract class App {
 			
 			// If the app is not packaged properly or is missing fields in its manifest file, do not install the app
 			// as the install operation will fail.
-			throw new AppInstallException("Cannot install app; app file has not been checked to comply with app specifications");
+			throw new AppInstallException("Cannot install app; app file has not been checked to have proper metadata");
 		}
 		
 		// Check if the app has already been installed.
@@ -182,7 +196,7 @@ public abstract class App {
 			// Make sure no app with the same filename and app name is already installed
 			File installedDirectoryTargetFile = new File(installedAppsPath + File.separator + appFile.getName());
 			File uninstalledDirectoryTargetFile = new File(uninstalledAppsPath + File.separator + appFile.getName());
-			
+		
 			String copyDestinationFileName = appFile.getName();
 			
 			// Check for filename collisions in both the installed apps directory as well as the 
@@ -260,11 +274,12 @@ public abstract class App {
 				// Uses Apache Commons library; overwrites files with the same name.
 				// FileUtils.copyFileToDirectory(appFile, new File(installedAppsPath));
 				
-				FileUtils.copyFile(appFile, new File(installedAppsPath + File.separator + copyDestinationFileName));
-				
 				// If we copied it from the uninstalled apps directory, remove it from that directory
+				File targetFile = new File(installedAppsPath + File.separator + copyDestinationFileName);
 				if (appFile.getParentFile().getCanonicalPath().equals(uninstalledAppsPath)) {
-					appFile.delete();
+					FileUtils.moveFile(appFile, targetFile);
+				} else {
+					FileUtils.copyFile(appFile, targetFile);				
 				}
 				
 				// Update the app's path
@@ -272,6 +287,25 @@ public abstract class App {
 			}
 		} catch (IOException e) {
 			throw new AppInstallException("Unable to copy app file to installed apps directory: " + e.getMessage());
+		}
+		
+		// Make a second copy to be used to load the actual classes
+		// This is used to prevent errors associated with moving jar files that have classes loaded from them.
+		if (this.getAppTemporaryInstallFile() == null) {
+			String temporaryInstallPath = appManager.getTemporaryInstallPath();
+			List<String> temporaryInstallPathCollection = new LinkedList<String>();
+			temporaryInstallPathCollection.add(temporaryInstallPath);
+			
+			// Rename the file if necessary to avoid overwrites
+			File temporaryInstallTargetFile = new File(temporaryInstallPath + File.separator 
+					+ suggestFileName(temporaryInstallPathCollection, appFile.getName()));
+			try {
+				FileUtils.copyFile(appFile, temporaryInstallTargetFile);
+				
+				this.setAppTemporaryInstallFile(temporaryInstallTargetFile);
+			} catch (IOException e) {
+				logger.warn("Failed to make copy of app file to be used for loading classes. The problem was: " + e.getMessage());
+			}
 		}
 	
 		// Create an app instance only if one was not already created
@@ -386,14 +420,16 @@ public abstract class App {
 					
 					// Use the Apache commons library to copy over the file, overwriting existing files.
 					try {
-						FileUtils.copyFileToDirectory(this.getAppFile(), new File(uninstalledAppsPath));
+						FileUtils.moveFileToDirectory(this.getAppFile(), new File(uninstalledAppsPath), true);
 					} catch (IOException e) {
 						throw new AppUninstallException("Unable to move file: " + e.getMessage());
 					}
 					
 					// Delete the source file after the copy operation
 					String fileName = this.getAppFile().getName();
-					this.getAppFile().delete();
+					
+					//System.gc();
+					//System.out.println("Deleting " + this.getAppFile().getPath() + ": " + App.delete(this.getAppFile()));
 					this.setAppFile(new File(uninstalledAppsPath + File.separator + fileName));
 				}
 			} catch (IOException e) {
@@ -454,8 +490,20 @@ public abstract class App {
 		return description;
 	}
 	
+	/**
+	 * Return the file containing the app.
+	 * @return The file containing the app, such as a jar, zip, or kar file.
+	 */
 	public File getAppFile() {
 		return appFile;
+	}
+	
+	/**
+	 * Return the temporary file associated with the app that is used to load classes from.
+	 * @return The temporary file corresponding to the app used to load classes from
+	 */
+	public File getAppTemporaryInstallFile() {
+		return appTemporaryInstallFile;
 	}
 	
 	public String getEntryClassName() {
@@ -510,6 +558,10 @@ public abstract class App {
 		this.appFile = appFile;
 	}
 	
+	public void setAppTemporaryInstallFile(File appTemporaryInstallFile) {
+		this.appTemporaryInstallFile = appTemporaryInstallFile;
+	}
+	
 	public void setEntryClassName(String entryClassName) {
 		this.entryClassName = entryClassName;
 	}
@@ -537,4 +589,46 @@ public abstract class App {
 	public void setStatus(AppStatus status) {
 		this.status = status;
 	}
+	
+	public static boolean delete( File f )  
+    {  
+        if( ! f.exists() )  
+        {  
+            System.err.println( "Cannont delete, file does not exist: " + f.getPath() );  
+            return false;  
+        }  
+        f.setReadable( true );  
+        f.setWritable( true );  
+        if( ! f.canWrite() )  
+        {  
+            System.err.println( "Cannont delete, file is read-only: " + f.getPath() );  
+            return false;  
+        }  
+  
+        // Hack attempt  
+        File    parent = f.getParentFile();  
+        parent.setReadable( true );  
+        parent.setWritable( true );  
+        if( ! parent.canWrite() )  
+        {  
+            System.err.println( "Cannont delete, parent folder read-only: " + parent.getPath() );  
+            return false;  
+        }  
+  
+        try  
+        {  
+            (new SecurityManager()).checkDelete( f.getPath() );  
+        }  
+        catch( Exception ex )  
+        {  
+            System.err.println( "Cannot delete file, " + ex.getMessage() );  
+            return false;  
+        }  
+  
+        boolean ret = f.delete();  
+        if( ! ret )  
+            System.err.println( "Delete failed: " + f.getPath() );  
+        return ret;  
+    }
+
 }

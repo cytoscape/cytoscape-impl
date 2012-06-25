@@ -2,6 +2,7 @@ package org.cytoscape.app.internal.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -193,7 +194,16 @@ public class AppParser {
 						}
 					});
 				    
-				    xmlReader.parse(new InputSource(jarFile.getInputStream(jarEntry)));
+				    InputStream inputStream = null;
+				    try {
+				    	inputStream = jarFile.getInputStream(jarEntry);
+				    	xmlReader.parse(new InputSource(inputStream));
+				    	
+				    } finally {
+				    	if (inputStream != null) {
+				    		inputStream.close();
+				    	}
+				    }
 				    
 				} catch (SAXException e) {
 					xmlParseFailed = true;

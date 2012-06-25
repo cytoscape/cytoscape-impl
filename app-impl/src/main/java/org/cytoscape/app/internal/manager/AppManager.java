@@ -53,6 +53,9 @@ public class AppManager {
 	/** Apps are downloaded from the web store to this subdirectory under local app storage directory. */
 	private static final String DOWNLOADED_APPS_DIRECTORY_NAME = "download-temp";
 	
+	/** Apps that are loaded are stored in this temporary directory. */
+	private static final String TEMPORARY_LOADED_APPS_DIRECTORY_NAME = ".temp-installed";
+	
 	/** This subdirectory in the local Cytoscape storage directory is used to store app data, as 
 	 * well as installed and uninstalled apps. */
 	private static final String APPS_DIRECTORY_NAME = "3.0/apps";
@@ -122,7 +125,7 @@ public class AppManager {
 		initializeAppsDirectories();
 		
 		this.appListeners = new HashSet<AppsChangedListener>();
-
+		
 		// Install previously enabled apps
 		installAppsInDirectory(new File(getInstalledAppsPath()));
 		
@@ -417,19 +420,39 @@ public class AppManager {
 	 * or <code>null</code> if there was an error obtaining the canonical path.
 	 */
 	public String getInstalledAppsPath() {
+		File path = new File(getBaseAppPath() + File.separator + INSTALLED_APPS_DIRECTORY_NAME);
+		
 		try {
-			// Create the directory if it doesn't exist
-			File path = new File(getBaseAppPath() + File.separator + INSTALLED_APPS_DIRECTORY_NAME);
-			
+			// Create the directory if it doesn't exist	
 			if (!path.exists()) {
 				path.mkdirs();
-				System.out.println("Remaking installed dir");
 			}
 			
 			return path.getCanonicalPath();
 		} catch (IOException e) {
 			logger.warn("Failed to obtain path to installed apps directory");
-			return null;
+			return path.getAbsolutePath();
+		}
+	}
+
+	/**
+	 * Return the canonical path of the temporary directory in the local storage directory used to contain apps that
+	 * are currently loaded.
+	 * @return The canonical path of the temporary directory containing apps with classes that are loaded.
+	 */
+	public String getTemporaryInstallPath() {
+		File path = new File(getBaseAppPath() + File.separator + TEMPORARY_LOADED_APPS_DIRECTORY_NAME);
+		
+		try {
+			// Create the directory if it doesn't exist
+			if (!path.exists()) {
+				path.mkdirs();
+			}
+			
+			return path.getCanonicalPath();
+		} catch (IOException e) {
+			logger.warn("Failed to obtain canonical path to the temporary installed apps directory");
+			return path.getAbsolutePath();
 		}
 	}
 	
@@ -439,10 +462,10 @@ public class AppManager {
 	 * or <code>null</code> if there was an error obtaining the canonical path.
 	 */
 	public String getUninstalledAppsPath() {
+		File path = new File(getBaseAppPath() + File.separator + UNINSTALLED_APPS_DIRECTORY_NAME);
+		
 		try {
 			// Create the directory if it doesn't exist
-			File path = new File(getBaseAppPath() + File.separator + UNINSTALLED_APPS_DIRECTORY_NAME);
-			
 			if (!path.exists()) {
 				path.mkdirs();
 			}
@@ -450,7 +473,7 @@ public class AppManager {
 			return path.getCanonicalPath();
 		} catch (IOException e) {
 			logger.warn("Failed to obtain path to uninstalled apps directory");
-			return null;
+			return path.getAbsolutePath();
 		}
 	}
 	
@@ -461,10 +484,10 @@ public class AppManager {
 	 * storing apps downloaded from the app store.
 	 */
 	public String getDownloadedAppsPath() {
+		File path = new File(getBaseAppPath() + File.separator + DOWNLOADED_APPS_DIRECTORY_NAME);
+		
 		try {
 			// Create the directory if it doesn't exist
-			File path = new File(getBaseAppPath() + File.separator + DOWNLOADED_APPS_DIRECTORY_NAME);
-			
 			if (!path.exists()) {
 				path.mkdirs();
 			}
@@ -472,7 +495,7 @@ public class AppManager {
 			return path.getCanonicalPath();
 		} catch (IOException e) {
 			logger.warn("Failed to obtain path to downloaded apps directory");
-			return null;
+			return path.getAbsolutePath();
 		}
 	}
 	
@@ -482,13 +505,14 @@ public class AppManager {
 	public void purgeTemporaryDirectories() {
 		File downloaded = new File(getDownloadedAppsPath());
 		File uninstalled = new File(getUninstalledAppsPath());
+		File temporaryInstall = new File(getTemporaryInstallPath());
 		
 		try {
 			FileUtils.deleteDirectory(downloaded);
 			FileUtils.deleteDirectory(uninstalled);
-			
+			FileUtils.deleteDirectory(temporaryInstall);
 		} catch (IOException e) {
-			logger.warn("Unable to completely remove temporary directories for downloaded and uninstalled apps.");
+			logger.warn("Unable to completely remove temporary directories for downloaded, loaded, and uninstalled apps.");
 		}
 	}
 	
@@ -548,19 +572,25 @@ public class AppManager {
 		File appDirectory = getBaseAppPath();
 		if (!appDirectory.exists()) {
 			created = created && appDirectory.mkdirs();
-			DebugHelper.print("Creating " + appDirectory + ". Success? " + created);
+			logger.info("Creating " + appDirectory + ". Success? " + created);
 		}
 		
 		File installedDirectory = new File(getInstalledAppsPath());
 		if (!installedDirectory.exists()) {
 			created = created && installedDirectory.mkdirs();
-			DebugHelper.print("Creating " + installedDirectory + ". Success? " + created);
+			logger.info("Creating " + installedDirectory + ". Success? " + created);
+		}
+		
+		File temporaryInstallDirectory = new File(getTemporaryInstallPath());
+		if (!temporaryInstallDirectory.exists()) {
+			created = created && temporaryInstallDirectory.mkdirs();
+			logger.info("Creating " + temporaryInstallDirectory + ". Success? " + created);
 		}
 		
 		File uninstalledDirectory = new File(getUninstalledAppsPath());
 		if (!uninstalledDirectory.exists()) {
 			created = created && uninstalledDirectory.mkdirs();
-			DebugHelper.print("Creating " + uninstalledDirectory + ". Success? " + created);
+			logger.info("Creating " + uninstalledDirectory + ". Success? " + created);
 		}
 		
 		File downloadedDirectory = new File(getDownloadedAppsPath());
@@ -569,7 +599,7 @@ public class AppManager {
 		}
 		
 		if (!created) {
-			throw new RuntimeException("Failed to create local app storage directories.");
+			logger.error("Failed to create local app storage directories.");
 		}
 	}
 	

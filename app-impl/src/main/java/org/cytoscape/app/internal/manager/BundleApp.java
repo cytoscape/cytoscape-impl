@@ -32,7 +32,7 @@ public class BundleApp extends App {
 		BundleContext bundleContext = null;
 		Bundle bundle = null;
 		try {
-			bundle = bundleContext.installBundle(this.getAppFile().toURI().toURL().toString());
+			bundle = bundleContext.installBundle(this.getAppTemporaryInstallFile().toURI().toURL().toString());
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
