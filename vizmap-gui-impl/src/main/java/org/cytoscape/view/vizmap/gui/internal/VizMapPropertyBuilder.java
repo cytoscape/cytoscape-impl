@@ -147,8 +147,8 @@ public class VizMapPropertyBuilder {
 				editorManager.getDefaultComboBoxEditor("mappingTypeEditor"));
 
 		final Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
-
 		final Map<CyNetwork,Set<CyIdentifiable>> graphObjectSet = new HashMap<CyNetwork,Set<CyIdentifiable>>();
+		
 		for (CyNetwork targetNetwork : networks) {
 			Iterator<? extends CyIdentifiable> it = null;
 			graphObjectSet.put(targetNetwork, new HashSet<CyIdentifiable>());
@@ -218,18 +218,14 @@ public class VizMapPropertyBuilder {
 			graphicalView.setParentProperty(topProperty);
 			topProperty.addSubProperty(graphicalView);
 
-			
-
 			final PropertySheetTable table = propertySheetPanel.getTable();
 			final PropertyRendererRegistry rendReg = (PropertyRendererRegistry) table.getRendererFactory();
-			
-			
 			final PropertyEditorRegistry cellEditorFactory = (PropertyEditorRegistry) table.getEditorFactory();
 			final PropertyEditor continuousCellEditor = editorManager.getContinuousEditor(vp);
 
-			if (continuousCellEditor == null)
+			if (continuousCellEditor == null) {
 				throw new NullPointerException("Continuous Mapping cell editor is null.");
-			else {
+			} else {
 				// Renderer for Continuous mapping icon cell
 				final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer((ContinuousMappingEditor<? extends Number, V>) continuousCellEditor);
 				rendReg.registerRenderer(graphicalView, continuousRenderer);
@@ -237,52 +233,8 @@ public class VizMapPropertyBuilder {
 				cellEditorFactory.registerEditor(graphicalView, continuousCellEditor);
 				table.repaint();
 			}
-			
-			
 		} else if (visualMapping instanceof PassthroughMapping && (attrName != null)) {
-			String id;
-			Object value;
-			String stringVal;
-
-			for (CyNetwork net : graphObjectSet.keySet()) {
-			for (CyIdentifiable go : graphObjectSet.get(net)) {
-				CyColumn column = net.getRow(go).getTable().getColumn(attrName);
-
-				if (column != null) {
-					Class<?> attrClass = column.getType();
-
-					id = net.getRow(go).get(CyNetwork.NAME, String.class);
-
-					if (attrName.equals(CyIdentifiable.SUID))
-						value = go.getSUID();
-					else if (attrClass.isAssignableFrom(List.class))
-						value = net.getRow(go).getList(attrName, column.getListElementType());
-					else
-						value = net.getRow(go).get(attrName, attrClass);
-
-					if (value != null)
-						stringVal = value.toString();
-					else
-						stringVal = null;
-
-					if (value != null) {
-						final VizMapperProperty<String, V, VisualMappingFunction<K, V>> oneProperty = new VizMapperProperty<String, V, VisualMappingFunction<K, V>>(
-								CellType.DISCRETE, id, (Class<V>) value.getClass());
-						oneProperty.setInternalValue(visualMapping);
-						oneProperty.setValue(stringVal);
-
-						// This prop. should not be editable!
-						oneProperty.setEditable(false);
-
-						oneProperty.setParentProperty(topProperty);
-						oneProperty.setDisplayName(id);
-
-						topProperty.addSubProperty(oneProperty);
-					}
-				}
-			}
-		}
-
+			// Doesn't need to display the mapped values!
 		} else {
 			throw new IllegalArgumentException("Unsupported mapping type: " + visualMapping);
 		}
