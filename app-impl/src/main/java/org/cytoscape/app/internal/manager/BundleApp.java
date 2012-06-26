@@ -1,8 +1,14 @@
 package org.cytoscape.app.internal.manager;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.CyAppAdapter;
@@ -25,7 +31,13 @@ public class BundleApp extends App {
 		public String featureVersion;
 	}
 	
-	private List<KarafFeature> featuresList = null;
+	private Map<String, KarafFeature> featuresSet;
+	
+	public BundleApp() {
+		super();
+		
+		this.featuresSet = new HashMap<String, KarafFeature>();
+	}
 	
 	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter)
@@ -53,10 +65,76 @@ public class BundleApp extends App {
 		// defaultInstall(appManager);
 		
 		// Copy to Karaf deploy directory
+		String karafDeployDirectory = appManager.getKarafDeployDirectory();
+		File appFile = this.getAppFile();
 		
+		try {
+			if (appFile != null 
+					&& !appFile.getParentFile().getCanonicalPath().equals(appManager.getInstalledAppsPath())) {
+				
+				FileUtils.copyFileToDirectory(appFile, new File(appManager.getInstalledAppsPath()));
+				
+				if (appFile.getParentFile().getCanonicalPath().equalsIgnoreCase(
+						appManager.getUninstalledAppsPath())) {
+					appFile.delete();
+				}
+				
+				this.setAppFile(new File(appManager.getInstalledAppsPath() + File.separator + appFile.getName()));
+			}
+		} catch (IOException e) {
+			throw new AppInstallException("Failed to copy bundle app to local storage directory for installed apps");
+		}
 		
+		try {
+			FileUtils.copyFileToDirectory(this.getAppFile(), new File(karafDeployDirectory));
+			this.setAppTemporaryInstallFile(new File(karafDeployDirectory + File.separator + this.getAppFile().getName()));
+		} catch (IOException e) {
+			throw new AppInstallException("Failed to copy bundle app to Karaf deploy directory");
+		}
+		
+		// Check if the features were installed
+		FeaturesService featuresService = appManager.getFeaturesService();
+		List<Feature> installedFeatures = getCorrespondingFeatures(featuresService); 
+		
+		if (installedFeatures.size() == featuresSet.size()) {
+			
+		} else {
+			throw new AppInstallException("Not all Karaf features were successfully installed from the bundle app.");
+		}
+		
+		if (!appManager.getApps().contains(this)) {
+			appManager.getApps().add(this);
+		}
+		
+		this.setStatus(AppStatus.INSTALLED);
 	}
 
+	private List<Feature> getCorrespondingFeatures(FeaturesService featuresService) {
+		List<Feature> correspondingFeatures = new LinkedList<Feature>();
+		
+		Feature[] availableFeatures = new Feature[]{};
+		try {
+			availableFeatures = featuresService.listFeatures();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		for (int i = 0; i < availableFeatures.length; i++) {
+			Feature availableFeature = availableFeatures[i];
+			
+			BundleApp.KarafFeature appFeature = featuresSet.get(availableFeature.getName());
+			
+			if (appFeature != null
+					&& appFeature.featureVersion.equalsIgnoreCase(availableFeature.getVersion())) {
+				correspondingFeatures.add(availableFeature);
+				
+				// System.out.println("feature match: " + availableFeature.getName() + " vs " + appFeature.featureName);
+			}
+		}
+		
+		return correspondingFeatures;
+	}
+	
 	@Override
 	public void uninstall(AppManager appManager) throws AppUninstallException {
 		
@@ -65,7 +143,29 @@ public class BundleApp extends App {
 		// defaultUninstall(appManager);
 		
 		FeaturesService featuresService = appManager.getFeaturesService();
+		List<Feature> installedFeatures = getCorrespondingFeatures(featuresService);
 		
+		this.getAppTemporaryInstallFile().delete();
+		
+		try {
+			FileUtils.moveFileToDirectory(getAppFile(), new File(appManager.getUninstalledAppsPath()), false);
+			this.setAppFile(new File(appManager.getUninstalledAppsPath() + File.separator + this.getAppFile().getName()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			throw new AppUninstallException("Unable to move app file to uninstalled apps directory: " + e.getMessage());
+		}
+		
+		this.setStatus(AppStatus.UNINSTALLED);
+		
+		/*
+		for (Feature installedFeature : installedFeatures) {
+			featuresService.uninstallFeature(arg0)
+		}
+		*/
+		
+		/*
 		try {
 			Feature[] availableFeatures = featuresService.listFeatures();
 			List<BundleApp.KarafFeature> appFeatures = this.getFeaturesList();
@@ -86,20 +186,18 @@ public class BundleApp extends App {
 			e.printStackTrace();
 			
 		}
+		*/
 	}
 
 	/**
 	 * Return the list of karaf features.
 	 * @return The list of karaf features
 	 */
-	public List<KarafFeature> getFeaturesList() {
-		return featuresList;
+	public Map<String, KarafFeature> getFeaturesList() {
+		return featuresSet;
 	}
 	
-	public void setFeaturesList(List<KarafFeature> featuresList) {
-		this.featuresList = featuresList;
+	public void setFeaturesList(Map<String, KarafFeature> featuresSet) {
+		this.featuresSet = featuresSet;
 	}
-
-	
-
 }

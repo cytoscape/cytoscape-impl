@@ -81,6 +81,9 @@ public class AppManager {
 	 */
 	private FeaturesService featuresService;
 	
+	
+	// private KarService karService;
+	
 	/**
 	 * {@link CyApplicationConfiguration} service used to obtain the directories used to store the apps.
 	 */
@@ -508,6 +511,20 @@ public class AppManager {
 			logger.warn("Failed to obtain path to downloaded apps directory");
 			return path.getAbsolutePath();
 		}
+	}
+	
+	
+	public String getKarafDeployDirectory() {
+		String current = System.getProperties().get("user.dir").toString();
+		
+		String deployDirectoryPath = current + File.separator + "framework" 
+			+ File.separator + "deploy";
+		
+		return deployDirectoryPath;
+	}
+	
+	public void cleanKarafDeployDirectory() {
+		// Remove apps
 	}
 	
 	/**

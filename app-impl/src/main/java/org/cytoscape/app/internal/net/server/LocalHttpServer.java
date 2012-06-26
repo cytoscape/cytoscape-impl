@@ -96,7 +96,7 @@ public class LocalHttpServer implements Runnable {
 		public Response respond(String url, String body) throws Exception;
     }
 
-    final Logger logger = LoggerFactory.getLogger(LocalHttpServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalHttpServer.class);
 
     final List<GetResponder> getResponders = new ArrayList<GetResponder>(); 
     final List<PostResponder> postResponders = new ArrayList<PostResponder>(); 

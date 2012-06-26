@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class App {
 	
-	private static final Logger logger = LoggerFactory.getLogger(AppManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(App.class);
 	
 	private String appName;
 	private String version;
