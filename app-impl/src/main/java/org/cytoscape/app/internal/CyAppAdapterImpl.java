@@ -98,6 +98,7 @@ import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -181,6 +182,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	// thus making it available to any app.  All packages in the
 	// Cytoscape API should have at least one object in this class!!!
 	//
+	private NetworkTaskFactory networkTaskFactory;
 	private SessionAboutToBeSavedEvent sessionAboutToBeSavedEvent;
 	private VisualStyleAboutToBeRemovedEvent visualStyleAboutToBeRemovedEvent;
 	private AboutToRemoveEdgeViewsListener aboutToRemoveEdgeViewsListener;
