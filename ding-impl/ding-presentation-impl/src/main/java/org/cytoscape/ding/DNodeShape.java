@@ -7,7 +7,6 @@ import java.util.Map;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
-import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 
 public class DNodeShape implements NodeShape {
 

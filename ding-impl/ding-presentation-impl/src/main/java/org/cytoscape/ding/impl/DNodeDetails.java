@@ -263,24 +263,14 @@ class DNodeDetails extends NodeDetails {
 
 	@Override
 	public byte shape(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
-		if(dnv.isValueLocked(DVisualLexicon.NODE_SHAPE)) {
-			final NodeShape nodeShape = dnv.getVisualProperty(DVisualLexicon.NODE_SHAPE);
-			final DNodeShape dShape = DNodeShape.getDShape(nodeShape);
-			if(dShape == null)
-				return DEF_NODE_SHAPE;
-			else
-				return dShape.getNativeShape();
-		}
-		
 		final Byte shape = m_shapes.get(node);
 
-		if (shape == null)
-			if ( m_shapeDefault == null )
+		if (shape == null) {
+			if (m_shapeDefault == null)
 				return super.shape(node);
-			else 
+			else
 				return m_shapeDefault.getNativeShape();
+		}
 
 		return shape;
 	}
@@ -350,7 +340,6 @@ class DNodeDetails extends NodeDetails {
 		selected.remove(node);
 	}
 
-	
 	@Override
 	public float borderWidth(final CyNode node) {
 		// Check bypass
