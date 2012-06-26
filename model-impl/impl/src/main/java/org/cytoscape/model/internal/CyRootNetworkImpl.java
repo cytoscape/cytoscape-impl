@@ -76,6 +76,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	private final InteractionSetListener interactionSetListener;
 	private final NetworkAddedListenerDelegator networkAddedListenerDelegator;
 	private final NetworkNameSetListener networkNameSetListener;
+	private final CyServiceRegistrar serviceRegistrar;
 
 
 	private int nextNodeIndex;
@@ -93,6 +94,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		this.tableMgr = tableMgr;
 		this.networkTableMgr = networkTableMgr;
 		this.tableFactory = tableFactory;
+		this.serviceRegistrar = serviceRegistrar;
 		this.publicTables = publicTables;
 		suid = super.getSUID(); 
 		subNetworks = new ArrayList<CySubNetwork>();
@@ -121,6 +123,14 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
 	}
 
+	public void dispose() {
+		serviceRegistrar.unregisterAllServices(columnAdder);
+		serviceRegistrar.unregisterAllServices(nameSetListener);
+		serviceRegistrar.unregisterAllServices(interactionSetListener);
+		serviceRegistrar.unregisterAllServices(networkAddedListenerDelegator);
+		serviceRegistrar.unregisterAllServices(networkNameSetListener);
+	}
+	
 	// Simply register all tables to the table manager
 	private void registerAllTables(Collection<CyTable> tables) {
 		for (final CyTable table : tables)

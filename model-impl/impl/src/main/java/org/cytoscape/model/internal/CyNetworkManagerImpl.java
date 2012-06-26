@@ -39,10 +39,11 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkDestroyedEvent;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,16 +109,34 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 
 	    networkMap.remove(networkId);
 	    
+		if (network instanceof CySubNetwork) {
+			CySubNetwork subNetwork = (CySubNetwork) network;
+			CyRootNetwork rootNetwork = subNetwork.getRootNetwork();
+			CySubNetwork baseNetwork = rootNetwork.getBaseNetwork();
+			if (subNetwork != baseNetwork)
+				rootNetwork.removeSubNetwork(subNetwork);
+			
+			if (rootNetwork instanceof CyRootNetworkImpl && !hasRegisteredNetworks(rootNetwork))
+				((CyRootNetworkImpl) rootNetwork).dispose();
+		}
+		
 	    // TODO: remove tables!!
-
-	    network = null;
 	}
 
 	// let everyone know that some network is gone
 	cyEventHelper.fireEvent(new NetworkDestroyedEvent(CyNetworkManagerImpl.this));
     }
 
-    @Override
+    private boolean hasRegisteredNetworks(CyRootNetwork rootNetwork) {
+    	for (CySubNetwork network : rootNetwork.getSubNetworkList()) {
+    		if (networkMap.containsKey(network.getSUID())) {
+    			return true;
+    		}
+    	}
+    	return false;
+	}
+
+	@Override
     public void addNetwork(final CyNetwork network) {
 	if (network == null)
 	    throw new NullPointerException("Network is null");
