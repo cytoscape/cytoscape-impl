@@ -34,6 +34,7 @@ import org.cytoscape.view.vizmap.gui.internal.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.EditorManagerImpl;
 import org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.StringVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyColorPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.BooleanValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.CyColorChooser;
@@ -97,6 +98,8 @@ public class CyActivator extends AbstractCyActivator {
 		PropertySheetPanel propertySheetPanel = new PropertySheetPanel();
 		
 		CyColorChooser colorEditor = new CyColorChooser();
+		CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorEditor);
+		
 		FontEditor fontEditor = new FontEditor();
 		NumericValueEditor<Double> doubleValueEditor = new NumericValueEditor<Double>(Double.class);
 		NumericValueEditor<Integer> integerValueEditor = new NumericValueEditor<Integer>(Integer.class);
@@ -104,7 +107,7 @@ public class CyActivator extends AbstractCyActivator {
 		StringValueEditor stringValueEditor = new StringValueEditor();
 		BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		
-		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
+		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef, cyColorPropertyEditor);
 		NumberVisualPropertyEditor doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
 		NumberVisualPropertyEditor integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
 		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);

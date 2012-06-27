@@ -55,15 +55,9 @@ public class ColorVisualPropertyEditor extends BasicVisualPropertyEditor<Paint> 
 	 * Constructor. Should instantiate one editor per VisualProperty.
 	 */
 	public ColorVisualPropertyEditor(final Class<Paint> type, final CyNetworkTableManager manager,
-			final CyApplicationManager appManager, final EditorManager editorManager, final VisualMappingManager vmm) {
-		super(type, new CyColorPropertyEditor(), ContinuousEditorType.COLOR);
+			final CyApplicationManager appManager, final EditorManager editorManager, final VisualMappingManager vmm, final CyColorPropertyEditor colorPropEditor) {
+		super(type, colorPropEditor, ContinuousEditorType.COLOR);
 
 		this.discreteTableCellRenderer = REG.getRenderer(Color.class);
-
-		// this.continuousEditor = new GradientEditor(manager, appManager,
-		// selectedManager, editorManager, vmm);
-		// this.continuousTableCellRenderer = new
-		// ContinuousMappingCellRenderer((AbstractContinuousMappingEditor<?, ?>)
-		// continuousEditor);
 	}
 }

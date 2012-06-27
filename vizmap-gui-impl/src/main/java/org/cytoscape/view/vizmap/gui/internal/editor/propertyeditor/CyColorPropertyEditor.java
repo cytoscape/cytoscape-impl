@@ -41,6 +41,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.view.vizmap.gui.internal.cellrenderer.CyColorCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.CyColorChooser;
@@ -63,31 +64,39 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 	private JButton button;
 	private Color color;
 
-	private CyColorChooser chooser;
+	private final CyColorChooser chooser;
 
 	/**
 	 * Creates a new CyColorPropertyEditor object.
 	 */
-	public CyColorPropertyEditor() {
+	public CyColorPropertyEditor(final CyColorChooser chooser) {
 		color = Color.white;
-		chooser = new CyColorChooser();
-		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
-		((JPanel) editor).add("*", label = new CyColorCellRenderer());
-		label.setOpaque(false);
-		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				selectColor();
+		this.chooser = chooser;
+
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
+				((JPanel) editor).add("*", label = new CyColorCellRenderer());
+				label.setOpaque(false);
+				((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						selectColor();
+					}
+				});
+				((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
+				button.setText("X");
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						selectNull();
+					}
+				});
+				((JPanel) editor).setOpaque(false);
 			}
 		});
-		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
-		button.setText("X");
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				selectNull();
-			}
-		});
-		((JPanel) editor).setOpaque(false);
+
 	}
 
 	@Override
@@ -101,7 +110,7 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 		label.setValue(color);
 	}
 
-	protected void selectColor() {
+	private void selectColor() {
 		ResourceManager rm = ResourceManager.all(FilePropertyEditor.class);
 		String title = rm.getString("ColorPropertyEditor.title");
 		Paint selectedColor = chooser.showEditor(editor, color);
