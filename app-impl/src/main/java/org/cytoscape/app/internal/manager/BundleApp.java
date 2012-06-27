@@ -96,11 +96,17 @@ public class BundleApp extends App {
 		FeaturesService featuresService = appManager.getFeaturesService();
 		List<Feature> installedFeatures = getCorrespondingFeatures(featuresService); 
 		
+		//System.out.println("features from app: " + featuresSet.size());
+		//System.out.println("available features: " + featuresService.listFeatures().length);
+		
+		/*
 		if (installedFeatures.size() == featuresSet.size()) {
 			
 		} else {
+			this.getAppTemporaryInstallFile().delete();
 			throw new AppInstallException("Not all Karaf features were successfully installed from the bundle app.");
 		}
+		*/
 		
 		if (!appManager.getApps().contains(this)) {
 			appManager.getApps().add(this);
@@ -123,6 +129,8 @@ public class BundleApp extends App {
 			Feature availableFeature = availableFeatures[i];
 			
 			BundleApp.KarafFeature appFeature = featuresSet.get(availableFeature.getName());
+			
+			// System.out.println("available feature: " + availableFeature.getName() + ", " + availableFeature.getVersion());
 			
 			if (appFeature != null
 					&& appFeature.featureVersion.equalsIgnoreCase(availableFeature.getVersion())) {

@@ -8,6 +8,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
@@ -43,7 +47,7 @@ public class AppManager {
 	
 	/** Only files with these extensions are checked when looking for apps in a given subdirectory.
 	 */
-	private static final String[] APP_EXTENSIONS = {"jar"};
+	private static final String[] APP_EXTENSIONS = {"jar", "kar"};
 	
 	/** Installed apps are copied to this subdirectory under the local app storage directory. */
 	private static final String INSTALLED_APPS_DIRECTORY_NAME = "installed";
@@ -119,15 +123,18 @@ public class AppManager {
 		}
 	}
 	
-	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, final WebQuerier webQuerier) {
+	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, 
+			final WebQuerier webQuerier, FeaturesService featuresService) {
 		this.applicationConfiguration = applicationConfiguration;
 		this.swingAppAdapter = swingAppAdapter;
 		this.webQuerier = webQuerier;
+		this.featuresService = featuresService;
 		
 		apps = new HashSet<App>();
 
 		appParser = new AppParser();
 		
+		cleanKarafDeployDirectory();
 		purgeTemporaryDirectories();
 		initializeAppsDirectories();
 		
@@ -524,7 +531,44 @@ public class AppManager {
 	}
 	
 	public void cleanKarafDeployDirectory() {
-		// Remove apps
+		String[] bundleAppExtensions = new String[]{"kar"};
+		File karafDeployDirectory = new File(getKarafDeployDirectory());
+		Collection<File> files = FileUtils.listFiles(karafDeployDirectory, bundleAppExtensions, false);
+		
+		JarFile jarFile = null;
+		Manifest manifest;
+		for (File potentialApp : files) {
+			try {
+				jarFile = new JarFile(potentialApp);
+				
+				manifest = jarFile.getManifest();
+				
+				// Check the manifest file 
+				if (manifest != null) {
+					if (manifest.getMainAttributes().getValue("Cytoscape-App-Name") != null) {
+					
+						jarFile.close();
+						System.gc();
+						potentialApp.delete();
+					}
+				}
+				
+				jarFile.close();
+			} catch (ZipException e) {
+				// Do nothing; skip file
+				e.printStackTrace();
+			} catch (IOException e) {
+				// Do nothing; skip file
+				e.printStackTrace();
+			} finally {
+				if (jarFile != null) {
+					try {
+						jarFile.close();
+					} catch (IOException e) {
+					}
+				}
+			}
+		}
 	}
 	
 	/**

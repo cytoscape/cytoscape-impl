@@ -348,10 +348,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
 		
 		FeaturesService featuresService = getService(bc, FeaturesService.class);
-
+		
 		// Instantiate new manager
-		final AppManager appManager = new AppManager(
-				cyAppAdapter, cyApplicationConfigurationServiceRef, webQuerier);
+		final AppManager appManager = new AppManager(cyAppAdapter, 
+				cyApplicationConfigurationServiceRef, webQuerier, featuresService);
 		registerService(bc, appManager, AppManager.class, new Properties());
 		appManager.setFeaturesService(featuresService);
 		

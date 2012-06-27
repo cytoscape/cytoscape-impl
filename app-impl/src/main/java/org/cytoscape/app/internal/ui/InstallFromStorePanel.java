@@ -319,8 +319,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
 	private void installFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
     	// Setup a the file filter for the open file dialog
-    	FileChooserFilter fileChooserFilter = new FileChooserFilter("Jar, Zip Files (*.jar, *.zip)",
-    			new String[]{"jar", "zip"});
+    	FileChooserFilter fileChooserFilter = new FileChooserFilter("Jar, Zip, and Karaf Kar Files (*.jar, *.zip, *.kar)",
+    			new String[]{"jar", "zip", "kar"});
     	
     	Collection<FileChooserFilter> fileChooserFilters = new LinkedList<FileChooserFilter>();
     	fileChooserFilters.add(fileChooserFilter);
