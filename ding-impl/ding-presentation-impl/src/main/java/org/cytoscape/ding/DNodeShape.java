@@ -62,18 +62,15 @@ public class DNodeShape implements NodeShape {
 	}
 
 	private final Byte rendererShapeID;
-
 	private final String displayName;
 	private final String serializableString;
 
 	private static final Map<Byte, Shape> nodeShapes = GraphGraphics.getNodeShapes();
 
-	public DNodeShape(final Byte rendererShapeID, final String displayName,
-			final String serializableString) {
+	public DNodeShape(final Byte rendererShapeID, final String displayName, final String serializableString) {
+		this.rendererShapeID = rendererShapeID;
 		this.displayName = displayName;
 		this.serializableString = serializableString;
-
-		this.rendererShapeID = rendererShapeID;
 	}
 
 	@Override
@@ -98,5 +95,4 @@ public class DNodeShape implements NodeShape {
 	public Shape getShape() {
 		return nodeShapes.get(rendererShapeID);
 	}
-
 }

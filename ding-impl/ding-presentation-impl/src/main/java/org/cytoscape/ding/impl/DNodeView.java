@@ -417,12 +417,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public boolean setWidth(final double originalWidth) {
 		final Double width;
+		
 		// Check bypass
-		if(isValueLocked(DVisualLexicon.NODE_WIDTH))
+		if (isValueLocked(DVisualLexicon.NODE_WIDTH))
 			width = getVisualProperty(DVisualLexicon.NODE_WIDTH);
 		else
 			width = originalWidth;
-		
+			
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(m_inx, graphView.m_extentsBuff, 0))
 				return false;
@@ -438,11 +439,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			graphView.m_spacial.delete(m_inx);
 			graphView.m_spacial.insert(m_inx, xMin, graphView.m_extentsBuff[1], xMax, graphView.m_extentsBuff[3]);
 
-			final double w = ((double) xMax) - xMin;
-			final double h = ((double) graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1];
-
-			if (!(Math.max(w, h) < (1.99d * Math.min(w, h))) && (getShape() == GraphGraphics.SHAPE_ROUNDED_RECTANGLE))
-				setShape(NodeShapeVisualProperty.RECTANGLE);
+// TODO Is it really necessary?
+//			final double w = ((double) xMax) - xMin;
+//			final double h = ((double) graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1];
+//			if (!(Math.max(w, h) < (1.99d * Math.min(w, h))) && (getShape() == GraphGraphics.SHAPE_ROUNDED_RECTANGLE))
+//				setShape(NodeShapeVisualProperty.RECTANGLE);
 
 			graphView.m_contentChanged = true;
 
@@ -464,7 +465,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	public boolean setHeight(double originalHeight) {
 		final Double height;
 		// Check bypass
-		if(isValueLocked(DVisualLexicon.NODE_HEIGHT))
+		if (isValueLocked(DVisualLexicon.NODE_HEIGHT))
 			height = getVisualProperty(DVisualLexicon.NODE_HEIGHT);
 		else
 			height = originalHeight;
