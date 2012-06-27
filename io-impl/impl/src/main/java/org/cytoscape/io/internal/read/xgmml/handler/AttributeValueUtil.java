@@ -27,6 +27,7 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +44,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.VirtualColumnInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -192,8 +194,42 @@ public class AttributeValueUtil {
 				curNet = manager.getRootNetwork();
 		}
 		
-		final CyRow row = curNet.getRow(curElement, tableName);
-        final CyColumn column = row.getTable().getColumn(name);
+		CyRow row = curNet.getRow(curElement, tableName);
+		CyTable table = row.getTable();
+        CyColumn column = table.getColumn(name);
+        
+        if (column != null) {
+        	// Check if it's a virtual column
+        	final VirtualColumnInfo info = column.getVirtualColumnInfo();
+        	
+        	if (info.isVirtual()) {
+        		final CyTable srcTable = info.getSourceTable(); 
+        		final CyColumn srcColumn = srcTable.getColumn(info.getSourceColumn());
+        		final Class<?> jkColType = table.getColumn(info.getTargetJoinKey()).getType();
+        		final Object jkValue = row.get(info.getTargetJoinKey(), jkColType);
+        		final Collection<CyRow> srcRowList = srcTable.getMatchingRows(info.getSourceJoinKey(), jkValue);
+        		final CyRow srcRow; 
+        		
+        		if (srcRowList == null || srcRowList.isEmpty()) {
+        			if (info.getTargetJoinKey().equals(CyIdentifiable.SUID)) {
+        				// Try to create the row
+        				srcRow = srcTable.getRow(jkValue);
+        			} else {
+						logger.error("Unable to import virtual column \"" + name + "\": The source table \""
+								+ srcTable.getTitle() + "\" does not have any matching rows for join key \""
+								+ info.getSourceJoinKey() + "=" + jkValue + "\".");
+	        			return parseState;
+        			}
+        		} else {
+        			srcRow = srcRowList.iterator().next();
+        		}
+        		
+        		// Use the source table instead
+        		table = srcTable;
+        		column = srcColumn;
+        		row = srcRow;
+        	}
+        }
         
         Object value = null;
         ObjectType objType = typeMap.getType(type);

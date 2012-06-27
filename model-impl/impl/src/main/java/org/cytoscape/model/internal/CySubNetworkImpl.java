@@ -271,16 +271,20 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	}
 
 	private void updateSharedNames(CyTable src, CyTable tgt) {
-		for ( CyRow sr : src.getAllRows() ) {
-			CyRow tr = tgt.getRow( sr.get(CyIdentifiable.SUID,Long.class) );
-			tr.set( CyRootNetwork.SHARED_NAME, sr.get(CyNetwork.NAME,String.class) );			
+		for (CyRow sr : src.getAllRows()) {
+			CyRow tr = tgt.getRow(sr.get(CyIdentifiable.SUID, Long.class));
+
+			if (tr.get(CyRootNetwork.SHARED_NAME, String.class) == null)
+				tr.set(CyRootNetwork.SHARED_NAME, sr.get(CyNetwork.NAME, String.class));
 		}
 	}
 
 	private void updateSharedInteractions(CyTable src, CyTable tgt) {
-		for ( CyRow sr : src.getAllRows() ) {
-			CyRow tr = tgt.getRow( sr.get(CyIdentifiable.SUID,Long.class) );
-			tr.set( CyRootNetwork.SHARED_INTERACTION, sr.get(CyEdge.INTERACTION,String.class) );			
+		for (CyRow sr : src.getAllRows()) {
+			CyRow tr = tgt.getRow(sr.get(CyIdentifiable.SUID, Long.class));
+			
+			if (tr.get(CyRootNetwork.SHARED_INTERACTION, String.class) == null)
+				tr.set(CyRootNetwork.SHARED_INTERACTION, sr.get(CyEdge.INTERACTION, String.class));
 		}
 	}
 	@Override

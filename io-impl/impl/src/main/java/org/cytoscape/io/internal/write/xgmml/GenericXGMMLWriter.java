@@ -502,7 +502,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         	// because they are also returned as NETWORK's descendants
         	if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class)
         		continue;
-        	
+        	// TODO: not exactly the right thing to do here:
         	if (disabledVisualProperties.contains(vp)) 
         		continue;
         		
@@ -673,7 +673,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     	// create an attribute and its type:
 		final CyColumn column = row.getTable().getColumn(attName);
 		
-		if (column == null || column.getVirtualColumnInfo().isVirtual())
+		if (column == null)
 			return;
 		
 		final Class<?> attType = column.getType();
