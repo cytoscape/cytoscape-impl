@@ -50,8 +50,6 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	private final SynchronousTaskManager<?> syncTaskMgr;
 	private final VisualMappingManager vmm;
 
-	private NewEmptyNetworkTask task;
-
 	public NewEmptyNetworkTaskFactoryImpl(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, 
 			final CyNetworkManager netMgr, final CyNetworkViewManager networkViewManager, 
 			final CyNetworkNaming namingUtil, final SynchronousTaskManager<?> syncTaskMgr,
@@ -66,13 +64,17 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	}
 
 	public TaskIterator createTaskIterator() {
-		task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, vmm);
-		return new TaskIterator(task);
+		return new TaskIterator(createTask());
 	} 
 
+	private NewEmptyNetworkTask createTask() {
+		return new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, vmm);
+	}
+	
 	public CyNetworkView createNewEmptyNetworkView() {
 		// no tunables, so no need to set the execution context
-		syncTaskMgr.execute(createTaskIterator());	
+		NewEmptyNetworkTask task = createTask();
+		syncTaskMgr.execute(new TaskIterator(task));	
 		return task.getView(); 
 	}
 }
