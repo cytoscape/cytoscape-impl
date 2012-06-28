@@ -3,6 +3,7 @@ package org.cytoscape.biopax.internal.action;
 import static org.cytoscape.biopax.internal.BioPaxMapper.BIOPAX_ENTITY_TYPE;
 
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
@@ -10,7 +11,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.biopax.internal.BioPaxMapper;
-import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.view.BioPaxContainer;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
@@ -19,6 +19,9 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -28,6 +31,7 @@ import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.TaskManager;
 
 
 /**
@@ -44,23 +48,34 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	private final CyApplicationManager cyApplicationManager;
 	private final VisualMappingManager visualMappingManager;
 	private final BioPaxVisualStyleUtil bioPaxVisualStyleUtil;
+	private final CyLayoutAlgorithmManager layoutAlgorithmManager;
+	private final TaskManager taskManagerRef;
+	private final CyProperty<Properties> prop;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param bpPanel BioPaxDetails Panel Object.
+	 * @param taskManagerRef 
+	 * @param cytoscapePropertiesServiceRef 
 	 */
 	public BioPaxViewTracker(BioPaxDetailsPanel bpPanel, 
 			BioPaxContainer bpContainer, 
 			CyApplicationManager cyApplicationManager,
 			VisualMappingManager visualMappingManager,
-			BioPaxVisualStyleUtil bioPaxVisualStyleUtil) 
+			BioPaxVisualStyleUtil bioPaxVisualStyleUtil,
+			CyLayoutAlgorithmManager layoutAlgorithmManager, 
+			TaskManager taskManagerRef, 
+			CyProperty<Properties> prop) 
 	{
 		this.bpPanel = bpPanel;
 		this.bpContainer = bpContainer;
 		this.cyApplicationManager = cyApplicationManager;
 		this.visualMappingManager = visualMappingManager;
 		this.bioPaxVisualStyleUtil = bioPaxVisualStyleUtil;
+		this.layoutAlgorithmManager = layoutAlgorithmManager;
+		this.taskManagerRef = taskManagerRef;
+		this.prop = prop;
 	}
 
 
@@ -82,6 +97,24 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 					VisualStyle bioPaxVisualStyle = bioPaxVisualStyleUtil.getBioPaxVisualStyle();
 					visualMappingManager.setVisualStyle(bioPaxVisualStyle, view);
 					bioPaxVisualStyle.apply(view);
+					view.updateView();
+					
+					String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
+					if (prop != null)
+						pref = prop.getProperties().getProperty("preferredLayoutAlgorithm", pref);
+					final CyLayoutAlgorithm layout = layoutAlgorithmManager.getLayout(pref);					
+//	    			final CyLayoutAlgorithm layout = layoutAlgorithmManager.getDefaultLayout();
+	    			final Object context = layout.getDefaultLayoutContext();
+					taskManagerRef.execute(
+	    				layout.createTaskIterator(view, context, CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
+						    			
+//not yet migrated	    	        // set tooltips
+//	    			setNodeToolTips(view);	    			
+	    			// add node's context menu
+	    			// TODO: NodeViewTaskFactory?
+//	    			BiopaxNodeCtxMenuListener nodeCtxMenuListener = new BiopaxNodeCtxMenuListener();
+//	    			view.addNodeContextMenuListener(nodeCtxMenuListener);
+					
 					view.updateView();
 				}
 			});

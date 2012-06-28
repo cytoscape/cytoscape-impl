@@ -205,10 +205,11 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				taskMonitor.setProgress(1.0);
 			}
 
-			CyLayoutAlgorithmManager layoutManager = cPathFactory.getCyLayoutAlgorithmManager();
-			CyLayoutAlgorithm layout = layoutManager.getDefaultLayout();
-			Object context = layout.getDefaultLayoutContext();
-			insertTasksAfterCurrentTask(layout.createTaskIterator(view, context, CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
+// biopax/sif core apps will do
+//			CyLayoutAlgorithmManager layoutManager = cPathFactory.getCyLayoutAlgorithmManager();
+//			CyLayoutAlgorithm layout = layoutManager.getDefaultLayout();
+//			Object context = layout.getDefaultLayoutContext();
+//			insertTasksAfterCurrentTask(layout.createTaskIterator(view, context, CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
 
 		} catch (IOException e) {
 			throw new Exception("Failed to retrieve records.", e);
