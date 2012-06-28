@@ -88,6 +88,7 @@ public class BundleApp extends App {
 		try {
 			FileUtils.copyFileToDirectory(this.getAppFile(), new File(karafDeployDirectory));
 			this.setAppTemporaryInstallFile(new File(karafDeployDirectory + File.separator + this.getAppFile().getName()));
+			this.getAppTemporaryInstallFile().deleteOnExit();
 		} catch (IOException e) {
 			throw new AppInstallException("Failed to copy bundle app to Karaf deploy directory");
 		}

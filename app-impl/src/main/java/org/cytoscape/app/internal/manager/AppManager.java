@@ -138,6 +138,8 @@ public class AppManager {
 		purgeTemporaryDirectories();
 		initializeAppsDirectories();
 		
+		setupAlterationMonitor();
+		
 		this.appListeners = new HashSet<AppsChangedListener>();
 
 		// Install previously enabled apps
@@ -146,8 +148,6 @@ public class AppManager {
 		// Load apps from the "uninstalled apps" directory
 		Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()));
 		apps.addAll(uninstalledApps);
-		
-		setupAlterationMonitor();
 		
 		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
 	}
@@ -166,12 +166,9 @@ public class AppManager {
 		fileAlterationMonitor = new FileAlterationMonitor(600);
 		
 		File installedAppsPath = new File(getInstalledAppsPath());
-		File uninstalledAppsPath = new File(getUninstalledAppsPath());
 		
 		FileAlterationObserver installAlterationObserver = new FileAlterationObserver(
 				installedAppsPath, new SingleLevelFileFilter(installedAppsPath), IOCase.SYSTEM);
-		FileAlterationObserver uninstallAlterationObserver = new FileAlterationObserver(
-				uninstalledAppsPath, new SingleLevelFileFilter(uninstalledAppsPath), IOCase.SYSTEM);
 		
 		// Listen for events on the "installed apps" folder
 		installAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
@@ -227,96 +224,47 @@ public class AppManager {
 			}
 		});
 		
-		
-		/*
-		uninstallAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
-			@Override
-			public void onFileDelete(File file) {
-				
-				try {
-					String canonicalPath = file.getCanonicalPath();
-					
-					Set<App> appsToBeRemoved = new HashSet<App>();
-					
-					for (App app : apps) {
-						File appFile = app.getAppFile();
-						
-						// If the app was uninstalled and was moved from the uninstalled apps
-						// directory, remove it from the app manager
-						if (appFile != null 
-								&& appFile.getCanonicalPath().equals(canonicalPath)) {
-							
-							//app.setAppFile(null);
-							app.setAppFile(new File(getInstalledAppsPath() + File.separator + appFile.getName()));
-							
-							if (app.getStatus() == AppStatus.UNINSTALLED) {
-								appsToBeRemoved.add(app);
-							}
-								
-						}
-						
-						// TODO: Currently keeps the app registered to the app manager
-						// if its state was about-to-uninstall, perhaps need to 
-						// disable app re-installing as the file is no longer there.
-						// Possibly do by calling app.setFile(null)
-					}
-					
-					for (App appToBeRemoved : appsToBeRemoved) {
-						removeApp(appToBeRemoved);
-					}
-					
-					if (appsToBeRemoved.size() > 0) {
-						fireAppsChangedEvent();	
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-			@Override
-			public void onFileCreate(File file) {
-				try {
-					App parsedApp = appParser.parseApp(file);
-					
-					// If no installed app has the same name, register it and make it available
-					boolean nameConflict = false;
-					
-					for (App registeredApp : apps) {
-						if (registeredApp.getAppName().equalsIgnoreCase(parsedApp.getAppName())) {
-							nameConflict = true;
-							break;
-						}
-					}
-					
-					if (!nameConflict) {
-						addApp(parsedApp);
-						fireAppsChangedEvent();
-					}
-					
-				} catch (AppParsingException e) {
-				
-				}
-				
-				// Do nothing if a file is added to the uninstalled apps directory
-			}
-			
-			@Override
-			public void onFileChange(File file) {
-			}
-		});
-		*/
+		//setupKarafDeployMonitor(fileAlterationMonitor);
 		
 		try {
-			installAlterationObserver.initialize();
-			uninstallAlterationObserver.initialize();
+			//installAlterationObserver.initialize();
 			// fileAlterationMonitor.addObserver(installAlterationObserver);
-			// fileAlterationMonitor.addObserver(uninstallAlterationObserver);
 			fileAlterationMonitor.start();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	private void setupKarafDeployMonitor(FileAlterationMonitor fileAlterationMonitor) {
+		// Set up the FileAlterationMonitor to install/uninstall bundle apps when they are moved
+		// to the Karaf deploy directory
+				
+		File karafDeployPath = new File(getKarafDeployDirectory());
+		
+		FileAlterationObserver karafDeployObserver = new FileAlterationObserver(
+				karafDeployPath, new SingleLevelFileFilter(karafDeployPath), IOCase.SYSTEM);
+
+		karafDeployObserver.addListener(new FileAlterationListenerAdaptor() {
+			@Override
+			public void onFileDelete(File file) {
+				//System.out.println("File deleted from deploy:"  + file.getName());
+			}
+			
+			@Override
+			public void onFileCreate(File file) {
+				//System.out.println("File added to deploy: " + file.getName());
+			}			
+		});
+		
+		try {
+			//karafDeployObserver.initialize();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		fileAlterationMonitor.addObserver(karafDeployObserver);
 	}
 	
 	public CySwingAppAdapter getSwingAppAdapter() {
@@ -535,40 +483,49 @@ public class AppManager {
 		File karafDeployDirectory = new File(getKarafDeployDirectory());
 		Collection<File> files = FileUtils.listFiles(karafDeployDirectory, bundleAppExtensions, false);
 		
-		JarFile jarFile = null;
-		Manifest manifest;
 		for (File potentialApp : files) {
-			try {
-				jarFile = new JarFile(potentialApp);
-				
-				manifest = jarFile.getManifest();
-				
-				// Check the manifest file 
-				if (manifest != null) {
-					if (manifest.getMainAttributes().getValue("Cytoscape-App-Name") != null) {
-					
-						jarFile.close();
-						System.gc();
-						potentialApp.delete();
-					}
+			
+			if (checkIfCytoscapeApp(potentialApp)) {
+				DebugHelper.print("Cleaning: " + potentialApp.getName());
+				potentialApp.delete();
+			}
+		}
+	}
+	
+	private boolean checkIfCytoscapeApp(File file) {
+		JarFile jarFile = null;
+		
+		try {
+			jarFile = new JarFile(file);
+			
+			Manifest manifest = jarFile.getManifest();
+			
+			// Check the manifest file 
+			if (manifest != null) {
+				if (manifest.getMainAttributes().getValue("Cytoscape-App-Name") != null) {
+
+					jarFile.close();
+					return true;
 				}
-				
-				jarFile.close();
-			} catch (ZipException e) {
-				// Do nothing; skip file
-				e.printStackTrace();
-			} catch (IOException e) {
-				// Do nothing; skip file
-				e.printStackTrace();
-			} finally {
-				if (jarFile != null) {
-					try {
-						jarFile.close();
-					} catch (IOException e) {
-					}
+			}
+			
+			jarFile.close();
+		} catch (ZipException e) {
+			// Do nothing; skip file
+			e.printStackTrace();
+		} catch (IOException e) {
+			// Do nothing; skip file
+			e.printStackTrace();
+		} finally {
+			if (jarFile != null) {
+				try {
+					jarFile.close();
+				} catch (IOException e) {
 				}
 			}
 		}
+
+		return false;
 	}
 	
 	/**

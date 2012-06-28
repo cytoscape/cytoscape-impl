@@ -109,6 +109,7 @@ public class AppParser {
 		
 		boolean bundleApp = false;
 		boolean xmlParseFailed = false;
+		boolean osgiMetadataFound = false; // Treat the jar as an OSGi bundle if OSGi metadata is found
 		
 		final List<BundleApp.KarafFeature> featuresList = new LinkedList<BundleApp.KarafFeature>();
 	
@@ -215,6 +216,20 @@ public class AppParser {
 			}
 		}
 		
+		// Check if a manifest that contains OSGi metadata is present
+		try {
+			Manifest osgiManifest = jarFile.getManifest();
+			
+			if (osgiManifest != null) {
+				if (osgiManifest.getMainAttributes().getValue("Export-Package") != null) {
+
+					osgiMetadataFound = true;
+				}
+			}
+			
+		} catch (IOException e) {
+		}
+		
 		// If an XML parsing error occurred, continue to attempt to parse the app as a simple app
 		if (featuresList.size() > 0 && !xmlParseFailed) {
 			bundleApp = true;
@@ -223,6 +238,9 @@ public class AppParser {
 			for (BundleApp.KarafFeature feature: featuresList) {
 				((BundleApp) parsedApp).getFeaturesList().put(feature.featureName, feature);
 			}
+		} else if (osgiMetadataFound) {
+			bundleApp = true;
+			parsedApp = new BundleApp();
 		}
 		
 		// Attempt to obtain manifest file from jar
