@@ -26,12 +26,17 @@ public class HandleImpl implements Handle {
 	private double x = Double.NaN;
 	private double y = Double.NaN;
 	
-	HandleImpl(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
+	public HandleImpl(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
 		defineHandle(graphView, view, x, y);
 	}
 
 	@Override
 	public Point2D calculateHandleLocation(final CyNetworkView graphView, final View<CyEdge> view) {
+		
+		if (sinTheta == Double.NaN || cosTheta == Double.NaN) {
+			defineHandle(graphView, view, x, y);
+		}
+		
 		final CyNode source = view.getModel().getSource();
 		final CyNode target = view.getModel().getTarget();
 
