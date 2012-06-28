@@ -16,6 +16,7 @@ import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -43,7 +44,7 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 		                                       mock(ViewTaskFactoryListener.class),
 											   mock(AnnotationFactoryManager.class),
 											   mock(DingGraphLOD.class), mock(VisualMappingManager.class),
-											   mock(CyNetworkViewManager.class));
+											   mock(CyNetworkViewManager.class), mock(HandleFactory.class));
 	}
 	
 	public CyNetworkView getNetworkView() {

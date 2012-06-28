@@ -140,11 +140,14 @@ public class CyActivator extends AbstractCyActivator {
 		
 		DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 		
+		HandleFactory handleFactory = new HandleFactoryImpl();
+		registerService(bc, handleFactory, HandleFactory.class, new Properties());
+		
 		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
 				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
-				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef,cyNetworkViewManagerServiceRef);
+				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef,cyNetworkViewManagerServiceRef, handleFactory);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
 				cyServiceRegistrarServiceRef, dVisualLexicon, renderingEngineManagerServiceRef,
 				applicationManagerServiceRef);
@@ -158,7 +161,7 @@ public class CyActivator extends AbstractCyActivator {
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,
 				cyRootNetworkFactoryServiceRef, undoSupportServiceRef, spacialIndex2DFactoryServiceRef, dVisualLexicon,
 				dialogTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
-				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef, cyNetworkViewManagerServiceRef);
+				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef, cyNetworkViewManagerServiceRef, handleFactory);
 
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,
@@ -382,9 +385,6 @@ public class CyActivator extends AbstractCyActivator {
 		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerServiceRef,
 				cyNetworkViewManagerServiceRef, dialogTaskManager, cyPropertyServiceRef, dingGraphLOD, dingGraphLODAll);
 		registerAllServices(bc, graphicsDetailAction, new Properties());
-
-		HandleFactory handleFactory = new HandleFactoryImpl();
-		registerService(bc, handleFactory, HandleFactory.class, new Properties());
 
 		BendFactory bendFactory = new BendFactoryImpl();
 		registerService(bc, bendFactory, BendFactory.class, new Properties());

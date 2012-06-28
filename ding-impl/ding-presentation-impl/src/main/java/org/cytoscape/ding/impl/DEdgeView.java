@@ -51,6 +51,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 
@@ -89,6 +90,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	
 	private LineType lineType;
 	private Float fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault().floatValue();
+	
+	private final HandleFactory handleFacgtory;
 
 	/**
 	 * 
@@ -96,11 +99,12 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	 * @param inx
 	 * @param model
 	 */
-	DEdgeView(final DGraphView view, final long inx, final CyEdge model) {
+	DEdgeView(final DGraphView view, final long inx, final CyEdge model, final HandleFactory handleFactory) {
 		super(model);
 		if (view == null )
 			throw new IllegalArgumentException("Constructor needs its parent DGraphView.");
 		
+		this.handleFacgtory = handleFactory;
 		m_view = view;
 		m_inx = inx;
 		m_selected = false;
@@ -530,8 +534,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	protected final void moveHandleInternal(final int inx, double x, double y) {
 		final Bend bend = m_view.m_edgeDetails.bend(model);
-		final Handle handle = bend.getAllHandles().get(inx);
-		handle.defineHandle(m_view.getViewModel(),this, x, y);
+		final HandleImpl handle = (HandleImpl) bend.getAllHandles().get(inx);
+		handle.defineHandle(m_view.getViewModel(), this, x, y);
 
 		if (m_view.m_spacialA.delete((m_inx << 6) | inx))
 			m_view.m_spacialA.insert((m_inx << 6) | inx,
@@ -609,9 +613,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	private void addHandleInternal(final int insertInx, final Point2D handleLocation) {
 		synchronized (m_view.m_lock) {
 			final Bend bend = m_view.m_edgeDetails.bend(model);			
-			final Handle handle = new HandleImpl(handleLocation.getX(), handleLocation.getY());
-			handle.defineHandle(m_view, this, handleLocation.getX(), handleLocation.getY());
-			
+			final Handle handle = handleFacgtory.createHandle(m_view, this, handleLocation.getX(), handleLocation.getY());
 			bend.insertHandleAt(insertInx, handle);
 
 			if (m_selected) {

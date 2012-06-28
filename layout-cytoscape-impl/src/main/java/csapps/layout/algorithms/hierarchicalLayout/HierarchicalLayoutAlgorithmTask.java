@@ -566,8 +566,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 					Bend b = bendFactory.createBend();
 
-					Handle h = handleFactory.createHandle(xPos,node.yPos);
-					h.defineHandle(networkView,ev,xPos,node.yPos);
+					Handle h = handleFactory.createHandle(networkView,ev,xPos,node.yPos);
 					b.insertHandleAt(0,h);
 
 					ev.setVisualProperty(BasicVisualLexicon.EDGE_BEND, b); 

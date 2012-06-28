@@ -24,6 +24,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -53,6 +54,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	private final VisualMappingManager vmm;
 	
 	private final CyNetworkViewManager netViewMgr; 
+	private final HandleFactory handleFactory; 
 
 	public DingRenderingEngineFactory(CyTableFactory dataTableFactory,
 			CyRootNetworkManager rootNetworkManager, UndoSupport undo,
@@ -63,7 +65,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			CyEventHelper eventHelper,
 			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr) {
+			final CyNetworkViewManager netViewMgr, final HandleFactory handleFactory) {
 		
 		this.dataTableFactory = dataTableFactory;
 		this.rootNetworkManager = rootNetworkManager;
@@ -76,6 +78,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		this.eventHelper = eventHelper;
 		this.annMgr = annMgr;
 		this.vmm=vmm;
+		this.handleFactory = handleFactory;
 
 		this.netViewMgr = netViewMgr;
 		
@@ -120,7 +123,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			else
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
-					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr);
+					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
 
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());

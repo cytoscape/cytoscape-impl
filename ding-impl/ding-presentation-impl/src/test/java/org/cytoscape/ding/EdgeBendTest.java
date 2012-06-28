@@ -22,7 +22,7 @@ public class EdgeBendTest {
 	@Test
 	public void testEdgeBend() {
 		Bend bend1 = new BendImpl();
-		bend1.insertHandleAt(0, new HandleImpl(10, 20));
+		bend1.insertHandleAt(0, new HandleImpl(null, null, 10, 20));
 	}
 
 }

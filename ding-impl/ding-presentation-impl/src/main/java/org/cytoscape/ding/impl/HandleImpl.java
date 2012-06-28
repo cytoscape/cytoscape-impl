@@ -25,10 +25,9 @@ public class HandleImpl implements Handle {
 	// Original handle location
 	private double x = Double.NaN;
 	private double y = Double.NaN;
-
-	public HandleImpl(double x, double y) {
-		this.x = x;
-		this.y = y;
+	
+	public HandleImpl(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
+		defineHandle(graphView, view, x, y);
 	}
 
 	@Override
@@ -59,6 +58,7 @@ public class HandleImpl implements Handle {
 		return newPoint;
 	}
 
+	
 	@Override
 	public void defineHandle(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
 		if(!((Double)x).equals(Double.NaN))
@@ -66,7 +66,9 @@ public class HandleImpl implements Handle {
 		
 		if(!((Double)y).equals(Double.NaN))
 			this.y = y;
-		convertToRatio(graphView, view, new Point2D.Double(this.x, this.y));
+		
+		if(graphView != null && view != null)
+			convertToRatio(graphView, view, new Point2D.Double(this.x, this.y));
 	}
 
 	private void convertToRatio(final CyNetworkView graphView, View<CyEdge> view, final Point2D absolutePoint) {
@@ -202,7 +204,7 @@ public class HandleImpl implements Handle {
 			final double sin = Double.valueOf(parts[1]);
 			final double ratio = Double.valueOf(parts[2]);
 
-			HandleImpl handle = new HandleImpl(0, 0);
+			HandleImpl handle = new HandleImpl(null, null, 0, 0);
 			handle.setSin(sin);
 			handle.setCos(cos);
 			handle.setRatio(ratio);
@@ -216,7 +218,7 @@ public class HandleImpl implements Handle {
 		try {
 			final double x = Double.valueOf(parts[0]);
 			final double y = Double.valueOf(parts[1]);
-			return new HandleImpl(x, y);
+			return new HandleImpl(null, null, x, y);
 		} catch (Exception ex) {
 			return null;
 		}

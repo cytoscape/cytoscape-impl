@@ -15,6 +15,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -41,7 +42,8 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private final DingGraphLOD dingGraphLOD;
 	private final VisualMappingManager vmm;
 
-	private final CyNetworkViewManager netViewMgr; 
+	private final CyNetworkViewManager netViewMgr;
+	private final HandleFactory handleFactory;
 
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkManager,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
@@ -49,7 +51,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
 			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr) {
+			final CyNetworkViewManager netViewMgr, final HandleFactory handleFactory) {
 
 		this.dataTableFactory = dataTableFactory;
 		this.rootNetworkManager = rootNetworkManager;
@@ -66,6 +68,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.vmm=vmm;
 		
 		this.netViewMgr = netViewMgr;
+		this.handleFactory = handleFactory;
 	}
 
 	@Override
@@ -74,7 +77,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				vtfListener, dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr);
+				vtfListener, dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
 
 		registrar.registerAllServices(dgv, new Properties());
 

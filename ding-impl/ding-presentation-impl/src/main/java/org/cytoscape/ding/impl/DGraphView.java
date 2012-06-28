@@ -135,6 +135,7 @@ import org.cytoscape.view.model.events.FitSelectedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -405,6 +406,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final VisualMappingManager vmm;
 
 	private final CyNetworkViewManager netViewMgr; 
+	
+	private final HandleFactory handleFactory;
 
 	/**
 	 * Create presentation from View Model
@@ -419,10 +422,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr) {
+			final CyNetworkViewManager netViewMgr, final HandleFactory handleFactory) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, 
-				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr);
+				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
 	}
 
 	
@@ -450,10 +453,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr) {
+			final CyNetworkViewManager netViewMgr, final HandleFactory handleFactory) {
 		super(model);
 		this.props = new Properties();
 		this.vmm = vmm;
+		this.handleFactory = handleFactory;
 		
 		long start = System.currentTimeMillis();
 		logger.debug("Phase 1: rendering start.");
@@ -862,7 +866,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			m_drawPersp.addEdge(edge);
 
-			dEdgeView = new DEdgeView(this, edgeInx, edge);
+			dEdgeView = new DEdgeView(this, edgeInx, edge, handleFactory);
 
 			m_edgeViewMap.put(edge, dEdgeView);
 			m_contentChanged = true;
