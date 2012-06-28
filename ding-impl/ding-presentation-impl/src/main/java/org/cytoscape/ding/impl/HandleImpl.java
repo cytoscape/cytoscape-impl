@@ -26,7 +26,7 @@ public class HandleImpl implements Handle {
 	private double x = Double.NaN;
 	private double y = Double.NaN;
 	
-	public HandleImpl(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
+	HandleImpl(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
 		defineHandle(graphView, view, x, y);
 	}
 
