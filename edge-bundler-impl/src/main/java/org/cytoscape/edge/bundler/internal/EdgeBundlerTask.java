@@ -247,7 +247,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			for (int ni = 0; ni < numNubs; ni++) {
 				final double x = nubs[ni][0][ei];
 				final double y = nubs[ni][1][ei];
-				final Handle h = hf.createHandle(view, edge, 0, 0);
+				final Handle h = hf.createHandle(view, edge, x, y);
 				hlist.add(h);
 			}
 			
