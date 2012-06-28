@@ -85,7 +85,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         
         appsInstalledLabel.setText("0 Apps installed.");
 
-        enableSelectedButton.setText("Reinstall");
+        enableSelectedButton.setText("Enable");
         enableSelectedButton.setEnabled(false);
         enableSelectedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -93,7 +93,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
             }
         });
 
-        disableSelectedButton.setText("Uninstall");
+        disableSelectedButton.setText("Disable");
         disableSelectedButton.setEnabled(false);
         disableSelectedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
