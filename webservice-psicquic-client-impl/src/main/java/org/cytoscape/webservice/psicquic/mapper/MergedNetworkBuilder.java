@@ -10,10 +10,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,16 +47,27 @@ public class MergedNetworkBuilder {
 
 	public CyNetwork buildNetwork(final InteractionCluster iC) throws IOException {
 		CyNetwork network = networkFactory.createNetwork();
-		process(iC, network);
+		process(iC, network, null, null);
 		return network;
 	}
 	
-	public Map<String, CyNode> addToNetwork(final InteractionCluster iC, CyNetwork network) {
-		return process(iC, network);
+	public Map<String, CyNode> addToNetwork(final InteractionCluster iC, CyNetworkView networkView, final View<CyNode> hubNode) {
+		return process(iC, networkView.getModel(), networkView, hubNode);
 	}
 	
-	private final Map<String, CyNode> process(final InteractionCluster iC, CyNetwork network) {
+	private final Map<String, CyNode> process(final InteractionCluster iC, CyNetwork network, CyNetworkView netView, final View<CyNode> hubNode) {
 		nodeMap = new HashMap<String, CyNode>();
+		if(hubNode != null) {
+			nodeMap.put(network.getRow(hubNode.getModel()).get(CyNetwork.NAME, String.class), hubNode.getModel());
+			if(netView != null)
+				network.getRow(hubNode.getModel()).set(CyNetwork.SELECTED, true);
+		}
+		
+		if(network.getNodeCount() != 0) {
+			for(CyNode existingNode: network.getNodeList())
+				nodeMap.put(network.getRow(existingNode).get(CyNetwork.NAME, String.class), existingNode);
+		}
+		
 		Map<Integer, EncoreInteraction> interactions = iC.getInteractionMapping();
 		Map<String, List<Integer>> interactorMapping = iC.getInteractorMapping();
 		Map<String, String> interactorSynonyms = iC.getSynonymMapping();
@@ -73,6 +87,8 @@ public class MergedNetworkBuilder {
 			if (sourceNode == null) {
 				sourceNode = network.addNode();
 				network.getRow(sourceNode).set(CyNetwork.NAME, source);
+				if(netView != null)
+					network.getRow(sourceNode).set(CyNetwork.SELECTED, true);
 				nodeMap.put(source, sourceNode);
 			}
 			final String target = interaction.getInteractorB();
@@ -80,6 +96,8 @@ public class MergedNetworkBuilder {
 			if (targetNode == null) {
 				targetNode = network.addNode();
 				network.getRow(targetNode).set(CyNetwork.NAME, target);
+				if(netView != null)
+					network.getRow(targetNode).set(CyNetwork.SELECTED, true);
 				nodeMap.put(target, targetNode);
 			}
 			mapper.mapNodeColumn(interaction, network.getRow(sourceNode), network.getRow(targetNode));

@@ -2,7 +2,6 @@ package org.cytoscape.webservice.psicquic.task;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 
-import uk.ac.ebi.enfin.mi.cluster.EncoreInteraction;
 import uk.ac.ebi.enfin.mi.cluster.InteractionCluster;
 
 public class ExpandFromSelectedSourcesTask extends AbstractTask {
@@ -68,7 +66,7 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 		
 		final List<String> sourceNames = new ArrayList<String>(sourceMap.keySet());
 		services = new ListMultipleSelection<String>(sourceNames);
-		services.setSelectedValues(sourceNames);
+		services.setSelectedValues(sourceNames);		
 	}
 
 	@Override
@@ -110,24 +108,12 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 	}
 	
 	private void expand(final InteractionCluster iC) {
-		final CyNetwork parentNetwork = netView.getModel();
-		final Map<String, CyNode> nodeMap = builder.addToNetwork(iC, parentNetwork);
-
 		eh.flushPayloadEvents();
-
-		for (CyNode n : nodeMap.values()) {
-			final View<CyNode> nv = netView.getNodeView(n);
-			nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,
-					nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
-			nv.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,
-					nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
-			nv.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
-			parentNetwork.getRow(nv.getModel()).set(CyNetwork.SELECTED, true);
-		}
+		builder.addToNetwork(iC, netView, nodeView);
+		eh.flushPayloadEvents();
 
 		// Apply visual style
-		eh.flushPayloadEvents();
-		VisualStyle vs = vmm.getVisualStyle(netView);
+		final VisualStyle vs = vmm.getVisualStyle(netView);
 		vs.apply(netView);
 		netView.updateView();
 	}
