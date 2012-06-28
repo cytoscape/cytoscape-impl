@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.jar.JarFile;
@@ -19,6 +20,7 @@ import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.CyAppAdapter;
@@ -134,7 +136,7 @@ public class AppManager {
 
 		appParser = new AppParser();
 		
-		cleanKarafDeployDirectory();
+		// cleanKarafDeployDirectory();
 		purgeTemporaryDirectories();
 		initializeAppsDirectories();
 		
@@ -248,12 +250,40 @@ public class AppManager {
 		karafDeployObserver.addListener(new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileDelete(File file) {
-				//System.out.println("File deleted from deploy:"  + file.getName());
+				for (App app : getApps()) {
+					if (app.getAppTemporaryInstallFile().equals(file)) {
+						try {
+							uninstallApp(app);
+						} catch (AppUninstallException e) {
+							logger.warn("Failed to uninstall app that was removed from Karaf deploy directory: " + app.getAppName());
+						}
+					}
+				}
 			}
 			
 			@Override
 			public void onFileCreate(File file) {
-				//System.out.println("File added to deploy: " + file.getName());
+				if (checkIfCytoscapeApp(file)) {
+					
+					App parsedApp = null;
+					try {
+						parsedApp = appParser.parseApp(file);
+						
+						if (parsedApp instanceof SimpleApp) {
+							logger.warn("A simple app " + file.getName() + " was moved to the " 
+									+ "framework/deploy directory. It should be installed via the "
+									+ "app manager! Installing anyway..");
+						}
+
+						installApp(parsedApp);
+					} catch (AppParsingException e) {
+						logger.error("Failed to parse app that was moved to Karaf deploy directory: " + file.getName()
+								+ ". The error was: " + e.getMessage());
+					} catch (AppInstallException e) {
+						logger.error("Failed to register app with app manager: " + file.getName()
+								+ ". The error was:" + e.getMessage());
+					}
+				}
 			}			
 		});
 		
@@ -264,7 +294,7 @@ public class AppManager {
 			e.printStackTrace();
 		}
 		
-		fileAlterationMonitor.addObserver(karafDeployObserver);
+		// fileAlterationMonitor.addObserver(karafDeployObserver);
 	}
 	
 	public CySwingAppAdapter getSwingAppAdapter() {
@@ -325,6 +355,15 @@ public class AppManager {
 			}
 			
 			throw new AppInstallException(e.getMessage());
+		}
+		
+		// For bundle apps, remove temporary files from Karaf deploy directory on exit
+		if (app instanceof BundleApp) {
+			File temporaryInstallFile = ((BundleApp) app).getAppTemporaryInstallFile();
+			
+			if (temporaryInstallFile != null) {
+				// temporaryInstallFile.deleteOnExit();
+			}
 		}
 		
 		// Let the listeners know that an app has been installed

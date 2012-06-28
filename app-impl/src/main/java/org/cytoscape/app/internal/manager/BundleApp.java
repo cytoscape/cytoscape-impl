@@ -64,8 +64,7 @@ public class BundleApp extends App {
 		// the file, creating an instance, and registering with the app manager.
 		// defaultInstall(appManager);
 		
-		// Copy to Karaf deploy directory
-		String karafDeployDirectory = appManager.getKarafDeployDirectory();
+		
 		File appFile = this.getAppFile();
 		
 		try {
@@ -85,10 +84,19 @@ public class BundleApp extends App {
 			throw new AppInstallException("Failed to copy bundle app to local storage directory for installed apps");
 		}
 		
+		// Prepare to copy to Karaf deploy directory
+		String karafDeployDirectory = appManager.getKarafDeployDirectory();
+		
 		try {
-			FileUtils.copyFileToDirectory(this.getAppFile(), new File(karafDeployDirectory));
-			this.setAppTemporaryInstallFile(new File(karafDeployDirectory + File.separator + this.getAppFile().getName()));
-			this.getAppTemporaryInstallFile().deleteOnExit();
+			
+			// Copy if not already in Karaf deploy directory 
+			File karafTargetFile = new File(karafDeployDirectory + File.separator + this.getAppFile().getName());
+			if (!karafTargetFile.exists()) {
+				FileUtils.copyFile(this.getAppFile(), karafTargetFile);
+			}
+			
+			this.setAppTemporaryInstallFile(karafTargetFile);
+			
 		} catch (IOException e) {
 			throw new AppInstallException("Failed to copy bundle app to Karaf deploy directory");
 		}
