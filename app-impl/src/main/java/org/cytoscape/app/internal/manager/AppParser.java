@@ -24,6 +24,8 @@ import org.apache.xmlbeans.XmlObject;
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.json.XML;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -79,6 +81,8 @@ public class AppParser {
 	 * Examples that do not match are "1.0b" and "v1, v2", as these contain non-digit characters.
 	 */
 	private static final String APP_COMPATIBLE_TAG_REGEX = "(\\d+(\\.\\d+)?\\s*)(,\\s*\\d+(\\.\\d+)?\\s*)*";
+	
+	private static final Logger logger = LoggerFactory.getLogger(App.class);
 	
 	/**
 	 * Attempt to parse a given {@link File} object as an {@link App} object.
@@ -269,15 +273,26 @@ public class AppParser {
 		// Obtain the human-readable name of the app
 		String readableName = manifest.getMainAttributes().getValue(APP_READABLE_NAME_TAG);
 		if (readableName == null || readableName.trim().length() == 0) {
-			//throw new AppParsingException("Jar is missing value for entry " + APP_READABLE_NAME_TAG + " in its manifest file.");
-			readableName = "unnamed";
+			
+			if (bundleApp) {
+				readableName = "Name-not-found: karaf/" + file.getName();
+			} else {
+				throw new AppParsingException("Jar is missing value for entry " + APP_READABLE_NAME_TAG + " in its manifest file.");
+				// readableName = "unnamed";
+			}
 		}
 		
 		// Obtain the version of the app, in major.minor.patch[-tag] format, ie. 3.0.0-SNAPSHOT or 1.2.3
 		String appVersion = manifest.getMainAttributes().getValue(APP_VERSION_TAG);
 		if (appVersion == null || appVersion.trim().length() == 0) {
-			//throw new AppParsingException("Jar is missing value for entry " + APP_VERSION_TAG + " in its manifiest file.");
-			appVersion = "unversioned";
+			
+			if (bundleApp) {
+				appVersion = "Not found";
+			} else {
+				throw new AppParsingException("Jar is missing value for entry " + APP_VERSION_TAG + " in its manifiest file.");
+				// appVersion = "unversioned";
+			}
+			
 		} else if (!appVersion.matches(APP_VERSION_TAG_REGEX)) {
 			throw new AppParsingException("The app version specified in its manifest file under the key " + APP_VERSION_TAG
 					+ " was found to not match the format major.minor[.patch][-tag], eg. 2.1, 2.1-test, 3.0.0 or 3.0.0-SNAPSHOT");
@@ -288,8 +303,13 @@ public class AppParser {
 			compatibleVersions = manifest.getMainAttributes().getValue(APP_COMPATIBLE_ALTERNATIVE_TAG);
 			
 			if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
-				//throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
-				compatibleVersions = "";
+				if (bundleApp) {
+					logger.warn("Bundle app " + file.getName() + " manifest does not contain an entry for " + APP_COMPATIBLE_TAG
+							+ ". Assuming default value 3.0..");
+					compatibleVersions = "3.0";
+				} else {
+					throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
+				}
 			} else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
 				throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"
 						+ " key " + APP_COMPATIBLE_ALTERNATIVE_TAG + " does not match the form of a comma-delimited list of"

@@ -146,6 +146,7 @@ public class AppManager {
 
 		// Install previously enabled apps
 		installAppsInDirectory(new File(getInstalledAppsPath()));
+		installAppsInDirectory(new File(getKarafDeployDirectory()));
 		
 		// Load apps from the "uninstalled apps" directory
 		Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()));
@@ -226,7 +227,7 @@ public class AppManager {
 			}
 		});
 		
-		//setupKarafDeployMonitor(fileAlterationMonitor);
+		setupKarafDeployMonitor(fileAlterationMonitor);
 		
 		try {
 			//installAlterationObserver.initialize();
@@ -263,8 +264,11 @@ public class AppManager {
 			
 			@Override
 			public void onFileCreate(File file) {
+				
+				//System.out.println("File found: " + file);
+				
 				if (checkIfCytoscapeApp(file)) {
-					
+					//System.out.println("File was app: " + file);
 					App parsedApp = null;
 					try {
 						parsedApp = appParser.parseApp(file);
@@ -275,7 +279,11 @@ public class AppManager {
 									+ "app manager! Installing anyway..");
 						}
 
+						//System.out.println("App was parsed: " + file);
+						
 						installApp(parsedApp);
+						//System.out.println("App was installed: " + file);
+						
 					} catch (AppParsingException e) {
 						logger.error("Failed to parse app that was moved to Karaf deploy directory: " + file.getName()
 								+ ". The error was: " + e.getMessage());
@@ -294,7 +302,7 @@ public class AppManager {
 			e.printStackTrace();
 		}
 		
-		// fileAlterationMonitor.addObserver(karafDeployObserver);
+		fileAlterationMonitor.addObserver(karafDeployObserver);
 	}
 	
 	public CySwingAppAdapter getSwingAppAdapter() {

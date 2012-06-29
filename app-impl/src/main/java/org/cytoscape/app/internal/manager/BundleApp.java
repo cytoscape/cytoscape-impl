@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
@@ -20,8 +21,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
-public class BundleApp extends App {
-
+public class BundleApp extends App {	
+	
 	/**
 	 * Karaf feature information used to install/uninstall a bundle app, 
 	 * which consists of Karaf features.
@@ -60,10 +61,17 @@ public class BundleApp extends App {
 
 	@Override
 	public void install(AppManager appManager) throws AppInstallException {
-		// Use the default installation procedure consisting of copying over
-		// the file, creating an instance, and registering with the app manager.
-		// defaultInstall(appManager);
 		
+		// Check if we already have an app object representing this app registered to the app manager
+		for (App app : appManager.getApps()) {
+			if (this.heuristicEquals(app) && this != app) {
+				
+				app.setAppFile(this.getAppFile());
+				app.install(appManager);
+				
+				return;
+			}
+		}
 		
 		File appFile = this.getAppFile();
 		
@@ -159,14 +167,23 @@ public class BundleApp extends App {
 		// to the uninstalled apps directory
 		// defaultUninstall(appManager);
 		
-		FeaturesService featuresService = appManager.getFeaturesService();
-		List<Feature> installedFeatures = getCorrespondingFeatures(featuresService);
-		
-		this.getAppTemporaryInstallFile().delete();
+		if (this.getStatus() == AppStatus.UNINSTALLED) {
+			return;
+		}
 		
 		try {
-			FileUtils.moveFileToDirectory(getAppFile(), new File(appManager.getUninstalledAppsPath()), false);
-			this.setAppFile(new File(appManager.getUninstalledAppsPath() + File.separator + this.getAppFile().getName()));
+			File uninstallDirectoryTargetFile = new File(appManager.getUninstalledAppsPath() + File.separator + getAppFile().getName());
+			
+			if (uninstallDirectoryTargetFile.exists()) {
+				uninstallDirectoryTargetFile.delete();
+			}
+			
+			try {
+				FileUtils.moveFile(getAppFile(), uninstallDirectoryTargetFile);
+			} catch (FileExistsException e) {
+			}
+			
+			this.setAppFile(uninstallDirectoryTargetFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -174,36 +191,9 @@ public class BundleApp extends App {
 			throw new AppUninstallException("Unable to move app file to uninstalled apps directory: " + e.getMessage());
 		}
 		
+		this.getAppTemporaryInstallFile().delete();
+		
 		this.setStatus(AppStatus.UNINSTALLED);
-		
-		/*
-		for (Feature installedFeature : installedFeatures) {
-			featuresService.uninstallFeature(arg0)
-		}
-		*/
-		
-		/*
-		try {
-			Feature[] availableFeatures = featuresService.listFeatures();
-			List<BundleApp.KarafFeature> appFeatures = this.getFeaturesList();
-			
-			Feature availableFeature;
-			for (int i = 0; i < availableFeatures.length; i++) {
-				availableFeature = availableFeatures[i];
-				
-				for (BundleApp.KarafFeature appFeature : appFeatures) {
-					if (appFeature.featureName.equalsIgnoreCase(availableFeature.getName())
-							&& appFeature.featureVersion.equalsIgnoreCase(availableFeature.getVersion())) {
-						
-					}
-				}
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			
-		}
-		*/
 	}
 
 	/**
