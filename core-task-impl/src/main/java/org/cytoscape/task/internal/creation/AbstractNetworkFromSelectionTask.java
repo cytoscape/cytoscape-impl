@@ -124,12 +124,16 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		for (final CyNode node : selectedNodes){
 			newNet.addNode(node);
 			cloneRow(parentNetwork.getRow(node), newNet.getRow(node));
+			//Set rows and edges to not selected state to avoid conflicts with table browser
+			newNet.getRow(node).set(CyNetwork.SELECTED, false);
 		}
 
 		tm.setProgress(0.4);
 		for (final CyEdge edge : getEdges(parentNetwork, selectedNodes)){
 			newNet.addEdge(edge);
 			cloneRow(parentNetwork.getRow(edge), newNet.getRow(edge));
+			//Set rows and edges to not selected state to avoid conflicts with table browser
+			newNet.getRow(edge).set(CyNetwork.SELECTED, false);
 		}
 		tm.setProgress(0.5);
 
