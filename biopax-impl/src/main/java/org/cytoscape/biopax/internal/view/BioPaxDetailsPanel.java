@@ -209,8 +209,8 @@ public class BioPaxDetailsPanel extends JPanel {
 		
 		// excerpt from the BioPAX OWL
 		stringRef = null;
+		//the following attr. was experimental, not so important for users; may be null (not generated) in large networks
         stringRef = network.getRow(node,CyNetwork.HIDDEN_ATTRS).get(BioPaxUtil.BIOPAX_DATA, String.class);
-        //stringRef = row.get(BioPaxUtil.BIOPAX_DATA, String.class);
         if (stringRef != null) {
         	appendHeader("BioPAX L3 (fragment)", buf);
             buf.append("<pre class='excerpt'>" + StringEscapeUtils.escapeXml(stringRef) + "</pre>");

@@ -691,8 +691,12 @@ public class BioPaxMapper {
 		
 		// add a piece of the BioPAX (RDF/XML without parent|child elements)
 		
-		String owl = BioPaxUtil.toOwl(element); // (requires common-lang-2.4 bundle to be started)
-		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BioPaxUtil.BIOPAX_DATA, owl, String.class);
+		
+		//the following attr. was experimental, not so important for users...
+		if(network.getNodeCount() < 100) { //- this condition was added for performance/memory...
+			String owl = BioPaxUtil.toOwl(element); // (requires common-lang-2.4 bundle to be started)
+			AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BioPaxUtil.BIOPAX_DATA, owl, String.class);
+		}
 		
 		String name = BioPaxUtil.truncateLongStr(BioPaxUtil.getNodeName(element) + "");
 		
