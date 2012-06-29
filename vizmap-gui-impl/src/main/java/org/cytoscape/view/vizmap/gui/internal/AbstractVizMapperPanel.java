@@ -138,8 +138,6 @@ public abstract class AbstractVizMapperPanel extends JPanel implements VizMapGUI
 	protected PropertyRendererRegistry rendReg;
 	protected PropertyEditorRegistry editorReg;
 
-	// protected VizMapEventHandlerManager vizMapEventHandlerManager;
-
 	protected EditorWindowManager editorWindowManager;
 
 	protected CyApplicationManager applicationManager;

@@ -16,6 +16,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
@@ -58,9 +59,6 @@ public class VizMapPropertySheetBuilder {
 
 	private final PropertySheetPanel propertySheetPanel;
 
-	private DefaultTableCellRenderer emptyBoxRenderer;
-	private DefaultTableCellRenderer filledBoxRenderer;
-
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
 	private final EditorManager editorManager;
 	private final VizMapperMenuManager menuMgr;
@@ -74,9 +72,9 @@ public class VizMapPropertySheetBuilder {
 
 	private List<VisualProperty<?>> unusedVisualPropType;
 
-	public VizMapPropertySheetBuilder(final VizMapperMenuManager menuMgr, CyNetworkManager cyNetworkManager,
+	public VizMapPropertySheetBuilder(final VizMapperMenuManager menuMgr,
 			PropertySheetPanel propertySheetPanel, EditorManager editorManager, DefaultViewPanel defViewPanel,
-			CyTableManager tableMgr, final VizMapperUtil util, final VisualMappingManager vmm) {
+			final VizMapperUtil util, final VisualMappingManager vmm, final VizMapPropertyBuilder vizMapPropertyBuilder) {
 
 		this.menuMgr = menuMgr;
 		this.propertySheetPanel = propertySheetPanel;
@@ -86,7 +84,7 @@ public class VizMapPropertySheetBuilder {
 		this.editorManager = editorManager;
 
 		propertyMap = new HashMap<VisualStyle, List<Property>>();
-		vizMapPropertyBuilder = new VizMapPropertyBuilder(cyNetworkManager, editorManager, tableMgr);
+		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
 	}
 
 	/**
@@ -136,56 +134,44 @@ public class VizMapPropertySheetBuilder {
 		table.setCategoryForeground(Color.black);
 		table.setSelectionBackground(Color.white);
 		table.setSelectionForeground(Color.blue);
-
-		// FIXME
-		emptyBoxRenderer = new DefaultTableCellRenderer();
-		emptyBoxRenderer.setHorizontalTextPosition(SwingConstants.CENTER);
-		emptyBoxRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		emptyBoxRenderer.setBackground(new Color(0, 200, 255, 20));
-		emptyBoxRenderer.setForeground(Color.red);
-		emptyBoxRenderer.setFont(new Font("SansSerif", Font.BOLD, 12));
-
-		filledBoxRenderer = new DefaultTableCellRenderer();
-		filledBoxRenderer.setBackground(Color.white);
-		filledBoxRenderer.setForeground(Color.blue);
 	}
 
+	
+	private void setBasicVP(final Collection<VisualProperty<?>> allVP, final Collection<VisualProperty<?>> selectedVP) {
+		for (VisualProperty<?> vp : allVP) {
+			if (PropertySheetUtil.isBasic(vp))
+				selectedVP.add(vp);
+		}
+	}
 	private List<Property> getPropertyListFromVisualStyle(final VisualStyle style) {
 
 		final Collection<VisualProperty<?>> nodeVP = util.getVisualPropertySet(CyNode.class);
 		final Collection<VisualProperty<?>> edgeVP = util.getVisualPropertySet(CyEdge.class);
-		// final Collection<VisualProperty<?>> networkVP =
-		// style.getVisualLexicon().getVisualLexiconNode(TwoDVisualLexicon.NETWORK).getChildren();
+		final Collection<VisualProperty<?>> networkVP = util.getVisualPropertySet(CyNetwork.class);
 
 		Collection<VisualProperty<?>> nodeVPSelected = new ArrayList<VisualProperty<?>>();
 		Collection<VisualProperty<?>> edgeVPSelected = new ArrayList<VisualProperty<?>>();
+		Collection<VisualProperty<?>> networkVPSelected = new ArrayList<VisualProperty<?>>();
 
 		if (PropertySheetUtil.isAdvancedMode()) {
 			nodeVPSelected = nodeVP;
 			edgeVPSelected = edgeVP;
+			networkVPSelected = networkVP;
 		} else {
-
-			for (VisualProperty<?> vp : nodeVP) {
-				if (PropertySheetUtil.isBasic(vp))
-					nodeVPSelected.add(vp);
-			}
-
-			for (VisualProperty<?> vp : edgeVP) {
-				if (PropertySheetUtil.isBasic(vp))
-					edgeVPSelected.add(vp);
-			}
+			setBasicVP(nodeVP, nodeVPSelected);
+			setBasicVP(edgeVP, edgeVPSelected);
+			setBasicVP(networkVP, networkVPSelected);
 		}
 
 		final List<Property> nodeProps = getProps(style, BasicVisualLexicon.NODE.getDisplayName(), nodeVPSelected);
 		final List<Property> edgeProps = getProps(style, BasicVisualLexicon.EDGE.getDisplayName(), edgeVPSelected);
-		// final List<Property> networkProps = setProps(style,
-		// TwoDVisualLexicon.NETWORK);
+		final List<Property> networkProps = getProps(style, BasicVisualLexicon.NETWORK.getDisplayName(), networkVPSelected);
 
 		final List<Property> result = new ArrayList<Property>();
 
 		result.addAll(nodeProps);
 		result.addAll(edgeProps);
-		// result.addAll(networkProps);
+		result.addAll(networkProps);
 
 		return result;
 

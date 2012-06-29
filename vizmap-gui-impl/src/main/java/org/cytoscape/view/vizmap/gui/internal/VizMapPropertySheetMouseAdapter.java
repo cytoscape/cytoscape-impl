@@ -45,6 +45,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -75,6 +76,7 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter {
 
 	private final PropertyEditor nodeAttributeEditor;
 	private final PropertyEditor edgeAttributeEditor;
+	private final PropertyEditor networkAttributeEditor;
 
 	private final VisualMappingManager vmm;
 
@@ -93,6 +95,7 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter {
 
 		this.nodeAttributeEditor = editorManager.getDataTableComboBoxEditor(CyNode.class);
 		this.edgeAttributeEditor = editorManager.getDataTableComboBoxEditor(CyEdge.class);
+		this.networkAttributeEditor = editorManager.getDataTableComboBoxEditor(CyNetwork.class);
 	}
 
 	@Override
@@ -147,6 +150,9 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter {
 					logger.debug("This is edge prop: " + vp.getDisplayName());
 				} else {
 					// Network prop
+					newProp.setCategory(BasicVisualLexicon.NETWORK.getDisplayName());
+					((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(newProp,
+							networkAttributeEditor);
 					logger.debug("This is network prop: " + vp.getDisplayName());
 				}
 

@@ -2,9 +2,11 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Paint;
 import java.util.Properties;
 
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -129,7 +131,23 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,vmmServiceRef);
 		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(vmmServiceRef);
 		ImportDefaultVizmapTaskFactory importDefaultVizmapTaskFactory = new ImportDefaultVizmapTaskFactory(vizmapReaderManagerServiceRef,vmmServiceRef,cyApplicationConfigurationServiceRef);
-		VizMapPropertySheetBuilder vizMapPropertySheetBuilder = new VizMapPropertySheetBuilder(menuManager,cyNetworkManagerServiceRef,propertySheetPanel,editorManager,defaultViewPanel,cyTableManagerServiceRef,vizMapperUtil,vmmServiceRef);
+		
+		
+		DefaultTableCellRenderer emptyBoxRenderer = new DefaultTableCellRenderer();
+		DefaultTableCellRenderer filledBoxRenderer = new DefaultTableCellRenderer();
+		emptyBoxRenderer = new DefaultTableCellRenderer();
+		emptyBoxRenderer.setHorizontalTextPosition(SwingConstants.CENTER);
+		emptyBoxRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+		emptyBoxRenderer.setBackground(new Color(0, 200, 255, 20));
+		emptyBoxRenderer.setForeground(Color.red);
+		emptyBoxRenderer.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+		filledBoxRenderer = new DefaultTableCellRenderer();
+		filledBoxRenderer.setBackground(Color.white);
+		filledBoxRenderer.setForeground(Color.blue);
+		
+		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyNetworkManagerServiceRef, editorManager, emptyBoxRenderer, filledBoxRenderer);
+		VizMapPropertySheetBuilder vizMapPropertySheetBuilder = new VizMapPropertySheetBuilder(menuManager,propertySheetPanel,editorManager,defaultViewPanel,vizMapperUtil,vmmServiceRef, vizMapPropertyBuilder);
 		EditorWindowManager editorWindowManager = new EditorWindowManager(editorManager,propertySheetPanel);
 		
 		VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(visualStyleFactoryServiceRef,defViewEditor,iconManager,colorMgr,vmmServiceRef,menuManager,editorManager,propertySheetPanel,vizMapPropertySheetBuilder,editorWindowManager,cyApplicationManagerServiceRef,importDefaultVizmapTaskFactory,dialogTaskManagerServiceRef,viewModeAction);
@@ -145,8 +163,7 @@ public class CyActivator extends AbstractCyActivator {
 		RandomNumberMappingGenerator randomNumberGenerator = new RandomNumberMappingGenerator();
 		FitLabelMappingGenerator<Number> fitLabelMappingGenerator = new FitLabelMappingGenerator<Number>(Number.class, cyApplicationManagerServiceRef, vmmServiceRef);
 		
-		DefaultTableCellRenderer emptyBoxRenderer = new DefaultTableCellRenderer();
-		DefaultTableCellRenderer filledBoxRenderer = new DefaultTableCellRenderer();
+		
 		VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(vmmServiceRef, editorManager,vizMapPropertySheetBuilder,propertySheetPanel,vizMapperMainPanel,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,attributeSetManager,vizMapperUtil);
 		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager, vmmServiceRef);
 		

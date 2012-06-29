@@ -73,19 +73,21 @@ import com.l2fprod.common.propertysheet.PropertySheetTable;
  * Create property for the Property Sheet object.
  */
 public class VizMapPropertyBuilder {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(VizMapPropertyBuilder.class);
 
-	private DefaultTableCellRenderer emptyBoxRenderer;
-	private DefaultTableCellRenderer filledBoxRenderer;
+	private final DefaultTableCellRenderer emptyBoxRenderer;
+	private final DefaultTableCellRenderer filledBoxRenderer;
 
-	private EditorManager editorManager;
+	private final EditorManager editorManager;
+	private final CyNetworkManager cyNetworkManager;
 
-	private CyNetworkManager cyNetworkManager;
-
-	public VizMapPropertyBuilder(CyNetworkManager cyNetworkManager, EditorManager editorManager, CyTableManager tableMgr) {
+	public VizMapPropertyBuilder(CyNetworkManager cyNetworkManager, EditorManager editorManager,
+			DefaultTableCellRenderer emptyBoxRenderer, DefaultTableCellRenderer filledBoxRenderer) {
 		this.cyNetworkManager = cyNetworkManager;
 		this.editorManager = editorManager;
+		this.emptyBoxRenderer = emptyBoxRenderer;
+		this.filledBoxRenderer = filledBoxRenderer;
 	}
 
 	/**
@@ -137,7 +139,7 @@ public class VizMapPropertyBuilder {
 		// Set mapping type as string.
 		mappingHeader.setValue(factory);
 		mappingHeader.setInternalValue(visualMapping);
-		
+
 		// Set parent-child relationship
 		mappingHeader.setParentProperty(topProperty);
 		topProperty.addSubProperty(mappingHeader);
@@ -147,8 +149,8 @@ public class VizMapPropertyBuilder {
 				editorManager.getDefaultComboBoxEditor("mappingTypeEditor"));
 
 		final Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
-		final Map<CyNetwork,Set<CyIdentifiable>> graphObjectSet = new HashMap<CyNetwork,Set<CyIdentifiable>>();
-		
+		final Map<CyNetwork, Set<CyIdentifiable>> graphObjectSet = new HashMap<CyNetwork, Set<CyIdentifiable>>();
+
 		for (CyNetwork targetNetwork : networks) {
 			Iterator<? extends CyIdentifiable> it = null;
 			graphObjectSet.put(targetNetwork, new HashSet<CyIdentifiable>());
@@ -173,32 +175,18 @@ public class VizMapPropertyBuilder {
 
 		if (visualMapping instanceof DiscreteMapping && (attrName != null)) {
 			// Discrete Mapping
-			
+
 			// This set should not contain null!
 			final SortedSet<K> attrSet = new TreeSet<K>();
 
 			for (CyNetwork net : graphObjectSet.keySet()) {
-				for (CyIdentifiable go : graphObjectSet.get(net)) {
-					final CyRow row = net.getRow(go);
-					final CyTable table = row.getTable();
-					final CyColumn column = table.getColumn(attrName);
-	
-					if (column != null) {
-						final Class<?> attrClass = column.getType();
-	
-						if (attrClass.isAssignableFrom(List.class)) {
-							List<?> list = row.getList(attrName, column.getListElementType());
-							if (list != null) {
-								for (Object item : list) {
-									if (item != null)
-										attrSet.add((K) item);
-								}
-							}
-						} else {
-							final Object id = row.get(attrName, attrClass);
-							if (id != null)
-								attrSet.add((K) id);
-						}
+				if (vp.getTargetDataType() == CyNetwork.class) {
+					final CyRow row = net.getRow(net);
+					processDiscretValues(row, attrName, attrSet);
+				} else {
+					for (CyIdentifiable go : graphObjectSet.get(net)) {
+						final CyRow row = net.getRow(go);
+						processDiscretValues(row, attrName, attrSet);
 					}
 				}
 			}
@@ -206,10 +194,10 @@ public class VizMapPropertyBuilder {
 			// FIXME
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, topProperty, propertySheetPanel);
 
-		} else if (visualMapping instanceof ContinuousMapping && (attrName != null)) {			
-			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
-					new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
-					CellType.CONTINUOUS, visualMapping.getVisualProperty().getDisplayName()+ "_" + AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW, visualMapping.getClass());
+		} else if (visualMapping instanceof ContinuousMapping && (attrName != null)) {
+			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
+					CellType.CONTINUOUS, visualMapping.getVisualProperty().getDisplayName() + "_"
+							+ AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW, visualMapping.getClass());
 
 			graphicalView.setShortDescription("Continuous Mapping from " + visualMapping.getMappingColumnName()
 					+ " to " + visualMapping.getVisualProperty().getDisplayName());
@@ -227,7 +215,8 @@ public class VizMapPropertyBuilder {
 				throw new NullPointerException("Continuous Mapping cell editor is null.");
 			} else {
 				// Renderer for Continuous mapping icon cell
-				final TableCellRenderer continuousRenderer = vpEditor.getContinuousTableCellRenderer((ContinuousMappingEditor<? extends Number, V>) continuousCellEditor);
+				final TableCellRenderer continuousRenderer = vpEditor
+						.getContinuousTableCellRenderer((ContinuousMappingEditor<? extends Number, V>) continuousCellEditor);
 				rendReg.registerRenderer(graphicalView, continuousRenderer);
 				continuousCellEditor.setValue(visualMapping);
 				cellEditorFactory.registerEditor(graphicalView, continuousCellEditor);
@@ -242,6 +231,29 @@ public class VizMapPropertyBuilder {
 		propertySheetPanel.addProperty(0, topProperty);
 
 		return topProperty;
+	}
+	
+	private <K> void processDiscretValues(final CyRow row, final String attrName, final SortedSet<K> attrSet) {
+		final CyTable table = row.getTable();
+		final CyColumn column = table.getColumn(attrName);
+
+		if (column != null) {
+			final Class<?> attrClass = column.getType();
+
+			if (attrClass.isAssignableFrom(List.class)) {
+				List<?> list = row.getList(attrName, column.getListElementType());
+				if (list != null) {
+					for (Object item : list) {
+						if (item != null)
+							attrSet.add((K) item);
+					}
+				}
+			} else {
+				final Object id = row.get(attrName, attrClass);
+				if (id != null)
+					attrSet.add((K) id);
+			}
+		}
 	}
 
 	/*
