@@ -68,13 +68,13 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 		//final RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
 		
 		// Create instance of an engine.
-		final BirdsEyeView bev = new BirdsEyeView(dgv);
+		final BirdsEyeView bev = new BirdsEyeView(dgv, registrar);
 
 		container.setLayout(new BorderLayout());
 		container.add(bev, BorderLayout.CENTER);
 
 		// Register this rendering engine as service.
-		this.registrar.registerAllServices(bev, new Properties());
+		bev.registerServices();
 
 		logger.debug("Bird's Eye View had been set to the component.  Network Model = " + view.getModel().getSUID());
 		return bev;

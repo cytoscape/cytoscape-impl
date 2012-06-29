@@ -53,6 +53,11 @@ public class CyAnnotator {
 
 	private Set<Annotation> selectedAnnotations = new HashSet<Annotation>();
 
+	private CanvasMouseMotionListener mouseMotionListener;
+	private CanvasMouseListener mouseListener;
+	private CanvasKeyListener keyListener;
+	private CanvasMouseWheelListener mouseWheelListener;
+
 	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager) {
 		this.view = view;
 		this.foreGroundCanvas = 
@@ -65,17 +70,37 @@ public class CyAnnotator {
 	}
 
 	private void initListeners() {
-		foreGroundCanvas.addMouseListener(new CanvasMouseListener(this, view));
-		foreGroundCanvas.addMouseMotionListener(new CanvasMouseMotionListener(this, view));
-		foreGroundCanvas.addKeyListener(new CanvasKeyListener(this, view));
+		mouseListener = new CanvasMouseListener(this, view);
+		mouseMotionListener = new CanvasMouseMotionListener(this, view);
+		keyListener = new CanvasKeyListener(this, view);
+		mouseWheelListener = new CanvasMouseWheelListener(this, view);
+		
+		foreGroundCanvas.addMouseListener(mouseListener);
+		foreGroundCanvas.addMouseMotionListener(mouseMotionListener);
+		foreGroundCanvas.addKeyListener(keyListener);
 		foreGroundCanvas.setFocusable(true);
 
 		//The created annotations resize (Their font changes), if we zoom in and out
-		foreGroundCanvas.addMouseWheelListener(new CanvasMouseWheelListener(this, view));
+		foreGroundCanvas.addMouseWheelListener(mouseWheelListener);
 
 		//We also setup this class as a ViewportChangeListener to the current networkview
 		myViewportChangeListener=new MyViewportChangeListener();
 		view.addViewportChangeListener(myViewportChangeListener);
+	}
+	
+	public void dispose() {
+		// Bug #1178: Swing's focus subsystem is leaking foreGroundCanvas.
+		// We need to remove all our listeners from that class to ensure we
+		// don't leak anything further.
+		foreGroundCanvas.removeMouseListener(mouseListener);
+		foreGroundCanvas.removeMouseMotionListener(mouseMotionListener);
+		foreGroundCanvas.removeKeyListener(keyListener);
+		foreGroundCanvas.removeMouseWheelListener(mouseWheelListener);
+		
+		view.removeViewportChangeListener(myViewportChangeListener);
+		
+		foreGroundCanvas.dispose();
+		backGroundCanvas.dispose();
 	}
 
 	public void loadAnnotations() {

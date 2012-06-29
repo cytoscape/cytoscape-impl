@@ -108,6 +108,7 @@ import org.cytoscape.model.events.AddedNodesEvent;
 import org.cytoscape.model.events.AddedNodesListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
@@ -402,11 +403,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final AnnotationFactoryManager annMgr;
 
 	private boolean annotationsLoaded = false;
+	private boolean servicesRegistered;
 	
 	private final VisualMappingManager vmm;
 
 	private final CyNetworkViewManager netViewMgr; 
-	
+	private final CyServiceRegistrar registrar;
 	private final HandleFactory handleFactory;
 
 	/**
@@ -422,10 +424,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			CyEventHelper eventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr, final HandleFactory handleFactory) {
+			final CyNetworkViewManager netViewMgr,
+			final HandleFactory handleFactory,
+			final CyServiceRegistrar registrar) {
 		
 		this(view.getModel(), dataFactory, cyRoot, undo, spacialFactory, dingLexicon, 
-				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
+				vtfl, manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
 	}
 
 	
@@ -453,10 +457,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			CyEventHelper cyEventHelper,
 			CyNetworkTableManager tableMgr,
 			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr, final HandleFactory handleFactory) {
+			final CyNetworkViewManager netViewMgr,
+			final HandleFactory handleFactory,
+			final CyServiceRegistrar registrar) {
 		super(model);
 		this.props = new Properties();
 		this.vmm = vmm;
+		this.registrar = registrar;
 		this.handleFactory = handleFactory;
 		
 		long start = System.currentTimeMillis();
@@ -2190,6 +2197,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private String title;
 
+	private AddDeleteHandler addDeleteHandler;
+
 	/**
 	 * DOCUMENT ME!
 	 *
@@ -2715,5 +2724,30 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public String toString() {
 		return "DGraphView: suid=" + suid + ", model=" + model;
+	}
+
+	public void registerServices() {
+		synchronized (this) {
+			if (servicesRegistered)
+				return;
+			registrar.registerAllServices(this, new Properties());
+			addDeleteHandler = new AddDeleteHandler(this);
+			registrar.registerAllServices(addDeleteHandler, new Properties());
+			servicesRegistered = true;
+		}
+	}
+	
+	@Override
+	public void dispose() {
+		synchronized (this) {
+			if (!servicesRegistered)
+				return;
+			registrar.unregisterAllServices(this);
+			if (addDeleteHandler != null)
+				registrar.unregisterAllServices(addDeleteHandler);
+			servicesRegistered = false;
+			
+			cyAnnotator.dispose();
+		}
 	}
 }

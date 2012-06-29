@@ -55,6 +55,7 @@ import javax.swing.Icon;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -83,6 +84,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private final ContentChangeListener m_cLis;
 	private final ViewportChangeListener m_vLis;
+	private final CyServiceRegistrar registrar;
 
 	private VolatileImage networkImage;
 	
@@ -109,13 +111,14 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 * @param viewModel
 	 *            The view to monitor
 	 */
-	public BirdsEyeView(final DGraphView viewModel) {
+	public BirdsEyeView(final DGraphView viewModel, final CyServiceRegistrar registrar) {
 		super();
 
 		if (viewModel == null)
 			throw new NullPointerException("DGraphView is null.");
 
 		this.viewModel = viewModel;
+		this.registrar = registrar;
 
 		m_cLis = new InnerContentChangeListener();
 		m_vLis = new InnerViewportChangeListener();
@@ -374,5 +377,14 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	@Override
 	public void printCanvas(Graphics printCanvas) {
 		throw new UnsupportedOperationException("Printing is not supported for Bird's eye view.");
+	}
+
+	public void registerServices() {
+		registrar.registerAllServices(this, new Properties());
+	}
+	
+	@Override
+	public void dispose() {
+		registrar.unregisterAllServices(this);
 	}
 }

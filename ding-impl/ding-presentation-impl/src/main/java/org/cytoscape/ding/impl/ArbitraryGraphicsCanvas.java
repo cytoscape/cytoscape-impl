@@ -393,4 +393,14 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		}
 	}
 
+	public void dispose() {
+		// Bug #1178: This class is being leaked by Swing's focus subsystem
+		// In order to ensure no other instances get strung along, we should
+		// release them here.
+		m_dGraphView = null;
+		m_innerCanvas = null;
+		m_componentToNodeMap = null;
+		m_componentToPointMap = null;
+	}
+
 }

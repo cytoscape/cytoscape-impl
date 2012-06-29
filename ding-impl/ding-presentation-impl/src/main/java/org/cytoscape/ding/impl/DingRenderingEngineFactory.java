@@ -120,11 +120,12 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 				dgv = (DGraphView) view;				
 				logger.info("%%%%%%% This view is DGV.");
 			}
-			else
+			else {
 				dgv = new DGraphView(targetView, dataTableFactory,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
-					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
-
+					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
+				dgv.registerServices();
+			}
 			logger.info("DGraphView created as a presentation for view model: "
 					+ targetView.getSUID());
 			vtfListener.viewMap.put(targetView, new WeakReference<DGraphView>(dgv));
@@ -144,10 +145,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 					"frame object is not of type JInternalFrame, which is invalid for this implementation of PresentationFactory");
 		}
 
-		registrar.registerAllServices(dgv, new Properties());
-		final AddDeleteHandler addDeleteHandler = new AddDeleteHandler(dgv);
-		registrar.registerAllServices(addDeleteHandler, new Properties());
-		
 		return dgv;
 	}
 
