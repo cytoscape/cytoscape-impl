@@ -331,10 +331,13 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	 * @param networkId
 	 */
 	private void removeNetwork(final CyNetwork network) {
-		final NetworkTreeNode node = this.network2nodeMap.get(network);
+		final NetworkTreeNode node = this.network2nodeMap.remove(network);
+		
 		if (node == null)
 			return;
 
+		treeNodeMap.values().remove(node);
+		
 		final Enumeration<?> children = node.children();
 		if (children.hasMoreElements()) {
 			final List<NetworkTreeNode> removedChildren = new ArrayList<NetworkTreeNode>();
@@ -355,7 +358,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			// Remove from root node
 			parentNode.removeFromParent();
 		}
-
+		
 		treeTable.getTree().updateUI();
 		treeTable.repaint();
 	}

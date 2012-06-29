@@ -299,4 +299,8 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	public String toString() {
 		return "CyNetwork: " + getSUID() + " name: " + getRow(this).get("name", String.class); 
 	}
+	
+	@Override
+	public void dispose() {
+	}
 }

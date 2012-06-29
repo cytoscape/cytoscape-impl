@@ -25,4 +25,5 @@ public class DummyNetworkView implements CyNetworkView {
 	public void clearValueLock(VisualProperty<?> vp) {}
 	public CyNetwork getModel() { return null;}
 	public Long getSUID() { return null;}
+	public void dispose() {}
 }

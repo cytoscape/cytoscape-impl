@@ -123,6 +123,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
 	}
 
+	@Override
 	public void dispose() {
 		serviceRegistrar.unregisterAllServices(columnAdder);
 		serviceRegistrar.unregisterAllServices(nameSetListener);

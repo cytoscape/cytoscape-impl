@@ -38,6 +38,7 @@ package org.cytoscape.internal.view;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -53,6 +54,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.InternalFrameListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -106,6 +108,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final Map<CyNetworkView, RenderingEngine<CyNetwork>> presentationMap;
 
 	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
+	private final Map<JInternalFrame, InternalFrameListener> frameListeners;
 	private final Properties props;
 
 	// Supports multiple presentations
@@ -151,6 +154,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		presentationContainerMap = new WeakHashMap<CyNetworkView, JInternalFrame>();
 		presentationMap = new WeakHashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
 		iFrameMap = new WeakHashMap<JInternalFrame, CyNetworkView>();
+		frameListeners = new HashMap<JInternalFrame, InternalFrameListener>();
 	}
 
 	/**
@@ -317,6 +321,16 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				logger.debug("Removing rendering engine: " + removed);
 				removed = null;
 				iFrameMap.remove(frame);
+				
+				frame.getRootPane().getLayeredPane().removeAll();
+				frame.getRootPane().getContentPane().removeAll();
+				frame.setClosed(true);
+				
+				frame.removeInternalFrameListener(this);
+				InternalFrameListener frameListener = frameListeners.remove(frame);
+				if (frameListener != null)
+					frame.removeInternalFrameListener(frameListener);
+				
 				frame.dispose();
 				frame = null;
 			}
@@ -353,19 +367,18 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			}
 		});
 
-		iframe.addInternalFrameListener(new InternalFrameAdapter() {
+		final InternalFrameAdapter frameListener = new InternalFrameAdapter() {
 			public void internalFrameClosing(InternalFrameEvent e) {
-				netViewMgr.destroyNetworkView(view);
+				if (netViewMgr.getNetworkViewSet().contains(view))
+					netViewMgr.destroyNetworkView(view);
 
-				Component[] components = iframe.getComponents();
-				for (Component cp : components) {
-					logger.debug("Removing: " + cp);
-					cp = null;
-				}
-				components = null;
-
+				// See bug #1178 (item #3)
+				KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
 			}
-		});
+		};
+		
+		iframe.addInternalFrameListener(frameListener);
+		frameListeners.put(iframe, frameListener);
 		
 		desktopPane.add(iframe);
 		

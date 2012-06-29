@@ -20,7 +20,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties renderingEngineManagerProps = new Properties();
 		renderingEngineManagerProps.setProperty("service.type", "manager");
-		registerService(bc, renderingEngineManager, RenderingEngineManager.class, renderingEngineManagerProps);
+		registerAllServices(bc, renderingEngineManager, renderingEngineManagerProps);
 
 		registerServiceListener(bc, renderingEngineManager, "addRenderingEngineFactory",
 				"removeRenderingEngineFactory", RenderingEngineFactory.class);

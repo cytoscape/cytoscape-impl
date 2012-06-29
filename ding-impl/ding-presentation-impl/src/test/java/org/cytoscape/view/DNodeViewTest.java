@@ -31,6 +31,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
@@ -96,6 +97,9 @@ public class DNodeViewTest {
 	private VisualMappingManager vmm;
 	
 	@Mock
+	private CyServiceRegistrar registrar;
+	
+	@Mock
 	private HandleFactory handleFactory;
 	
 	private final TableTestSupport tableSupport = new TableTestSupport();
@@ -127,7 +131,7 @@ public class DNodeViewTest {
 		networkView = new DGraphView(network, dataFactory, cyRoot, undo, spacialFactory, lexicon,
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
-				dropEmptySpaceTFs,*/ manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
+				dropEmptySpaceTFs,*/ manager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
 		
 		dnv1 = (DNodeView) networkView.getDNodeView(node1);
 		dnv2 = (DNodeView) networkView.getDNodeView(node2);

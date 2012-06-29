@@ -179,7 +179,9 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 
 		for (CyNetworkView view : toBeRemoved) {
 			presentationMap.remove(view);
-			viewToEngineMap.remove(view);
+			RenderingEngine<?> engine = viewToEngineMap.remove(view);
+			if (engine != null)
+				engine.dispose();
 		}
 
 		toBeRemoved.clear();

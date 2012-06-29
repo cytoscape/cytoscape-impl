@@ -116,8 +116,8 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 			if (subNetwork != baseNetwork)
 				rootNetwork.removeSubNetwork(subNetwork);
 			
-			if (rootNetwork instanceof CyRootNetworkImpl && !hasRegisteredNetworks(rootNetwork))
-				((CyRootNetworkImpl) rootNetwork).dispose();
+			if (!hasRegisteredNetworks(rootNetwork))
+				rootNetwork.dispose();
 		}
 		
 	    // TODO: remove tables!!

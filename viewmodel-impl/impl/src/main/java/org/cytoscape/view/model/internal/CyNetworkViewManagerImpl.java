@@ -140,6 +140,8 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 			views.remove(view);
 			networkViewMap.put(network, views);
 		}
+		
+		view.dispose();
 
 		cyEventHelper.fireEvent(new NetworkViewDestroyedEvent(this));
 		view = null;

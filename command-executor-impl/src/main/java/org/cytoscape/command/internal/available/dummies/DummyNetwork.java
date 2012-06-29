@@ -30,4 +30,5 @@ public class DummyNetwork implements CyNetwork {
 	public CyTable getTable(Class <?extends CyIdentifiable> type, String namespace) {return null;}
 	public CyRow getRow(CyIdentifiable entry, String tableName) {return null;}
 	public CyRow getRow(CyIdentifiable entry) {return null;}
+	public void dispose() {}
 }

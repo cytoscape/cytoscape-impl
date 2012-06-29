@@ -16,6 +16,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
@@ -73,6 +74,8 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 	@Mock
 	private HandleFactory handleFactory;
 
+	@Mock
+	private CyServiceRegistrar registrar;
 	
 	private final TableTestSupport tableSupport = new TableTestSupport();
 	private final NetworkTestSupport netSupport = new NetworkTestSupport();
@@ -91,7 +94,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
 				dropEmptySpaceTFs, */
-				manager, eventHelper, tableMgr,annMgr, dingGRaphLOD, vmm, netViewMgr, handleFactory);
+				manager, eventHelper, tableMgr,annMgr, dingGRaphLOD, vmm, netViewMgr, handleFactory, registrar);
 	}
 	
 	@Override

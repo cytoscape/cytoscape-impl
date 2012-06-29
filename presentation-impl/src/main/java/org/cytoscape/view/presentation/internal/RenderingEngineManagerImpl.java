@@ -92,6 +92,8 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		final View<?> viewModel = renderingEngine.getViewModel();
 		final Collection<RenderingEngine<?>> currentEngines = renderingEngineMap.get(viewModel);
 		currentEngines.remove(renderingEngine);
+		
+		renderingEngine.dispose();
 	}
 	
 
@@ -141,6 +143,10 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		renderingEngineMap.remove(e.getNetworkView());
+		Collection<RenderingEngine<?>> engines = renderingEngineMap.remove(e.getNetworkView());
+		if (engines == null)
+			return;
+		for (RenderingEngine<?> engine : engines)
+			engine.dispose();
 	}
 }
