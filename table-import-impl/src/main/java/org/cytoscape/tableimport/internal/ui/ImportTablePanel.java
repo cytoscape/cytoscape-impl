@@ -1589,7 +1589,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			textImportOptionPanel.setVisible(false);
 		}
 
-		//((JDialog)this.getParent().getParent().getParent().getParent().getParent().getParent()).pack();
+		JDialog dlg = (JDialog)SwingUtilities.getWindowAncestor(this);
+		dlg.pack();
+		
 	}
 
 

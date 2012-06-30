@@ -1,8 +1,15 @@
 package org.cytoscape.tableimport.internal.tunable;
 
+import java.awt.BorderLayout;
+import java.awt.LayoutManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import javax.swing.GroupLayout;
+import javax.swing.JPanel;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle;
 
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
@@ -58,8 +65,8 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 		}
-		
-		panel.add(importTablePanel);
+		panel = new JPanel(new BorderLayout(10, 10));
+		panel.add(importTablePanel, BorderLayout.CENTER);
 	}
 	
 	@Override
