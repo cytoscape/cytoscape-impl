@@ -1,6 +1,7 @@
 package org.cytoscape.welcome.internal;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
@@ -22,7 +23,7 @@ public class HelpPanel extends JPanel {
 	
 	private static final long serialVersionUID = -1685752658901305871L;
 	private static final Font LABEL_FONT = new Font("SansSerif", Font.PLAIN, 12);
-	private static final Color LABEL_COLOR = new Color(0x40, 0x40, 0x40);
+	private static final Color LABEL_COLOR = Color.blue;
 	
 	private JLabel about;
 	private JLabel manual;
@@ -72,6 +73,7 @@ public class HelpPanel extends JPanel {
 			label.setHorizontalAlignment(SwingConstants.LEFT);
 			label.setHorizontalTextPosition(SwingConstants.LEFT);
 			label.setOpaque(false);
+			label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			label.addMouseListener(new LabelMouseListener(label, urlMap.get(label), this));
 			add(label);
 		}

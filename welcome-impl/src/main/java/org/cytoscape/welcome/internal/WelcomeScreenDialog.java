@@ -182,7 +182,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, openSessionTaskFactory),
 				"Open a Recent Session");
-		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, config, dsManager, cyProps), "Create New Network");
+		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, config, dsManager, cyProps), "Import Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef, cyProps), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
 

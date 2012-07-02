@@ -1,6 +1,7 @@
 package org.cytoscape.welcome.internal;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -49,8 +50,8 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 	private static final long serialVersionUID = -8750909701276867389L;
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
 	private static final String LAYOUT_ALGORITHM = "force-directed";
-	private static final String ICON_OPEN = "images/Icons/net_file_import_small.png";
-	private static final String ICON_DATABASE = "images/Icons/net_db_import_small.png";
+	//private static final String ICON_OPEN = "images/Icons/net_file_import_small.png";
+	//private static final String ICON_DATABASE = "images/Icons/net_db_import_small.png";
 
 	private JLabel loadNetwork;
 	private JLabel fromDB;
@@ -119,7 +120,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 	private void initComponents() {
 
-		BufferedImage openIconImg = null;
+	/*	BufferedImage openIconImg = null;
 		BufferedImage databaseIconImg = null;
 		try {
 			openIconImg = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(ICON_OPEN));
@@ -129,15 +130,16 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		}
 
 		ImageIcon openIcon = new ImageIcon(openIconImg);
-		ImageIcon databaseIcon = new ImageIcon(databaseIconImg);
+		ImageIcon databaseIcon = new ImageIcon(databaseIconImg);*/
 
 		this.layout = new JCheckBox();
 		layout.setText("Apply preferred layout");
 		layout.setToolTipText("Note: This option may take minutes to finish for large networks!");
 
 		this.loadNetwork = new JLabel("From file...");
-		this.loadNetwork.setIcon(openIcon);
-
+		//this.loadNetwork.setIcon(openIcon);
+		this.loadNetwork.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		
 		loadNetwork.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent ev) {
@@ -149,9 +151,10 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
 
 		this.fromDB = new JLabel("From Reference Network Data:");
-		this.fromDB.setIcon(databaseIcon);
+		//this.fromDB.setIcon(databaseIcon);
 
 		this.fromWebService = new JLabel("From Public Web Service...");
+		this.fromWebService.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		this.fromWebService.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent ev) {

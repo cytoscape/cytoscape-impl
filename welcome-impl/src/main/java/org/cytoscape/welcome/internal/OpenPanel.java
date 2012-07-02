@@ -1,6 +1,7 @@
 package org.cytoscape.welcome.internal;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Window;
@@ -29,7 +30,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class OpenPanel extends JPanel {
 
 	private static final long serialVersionUID = 591882944100485039L;
-	private static final Font FILE_NAME_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
+	private static final Font FILE_NAME_FONT = new Font(Font.DIALOG, Font.ITALIC, 12);
 	private static final String ICON_LOCATION = "/images/Icons/open_session.png";
 	private BufferedImage openIconImg;
 	private ImageIcon openIcon;
@@ -76,6 +77,7 @@ public class OpenPanel extends JPanel {
 			fileLabel.setFont(FILE_NAME_FONT);
 			fileLabel.setBorder(padLine);
 			fileLabel.setHorizontalAlignment(SwingConstants.LEFT);
+			fileLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			try {
 				fileLabel.setToolTipText(target.toURI().toString());				
 			}
@@ -101,6 +103,7 @@ public class OpenPanel extends JPanel {
 		open.setIcon(openIcon);
 		open.setBorder(padLine);
 		open.setHorizontalAlignment(SwingConstants.LEFT);
+		open.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		open.addMouseListener(new MouseAdapter() {
 
 			@Override
