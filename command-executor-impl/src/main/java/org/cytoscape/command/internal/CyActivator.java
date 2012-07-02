@@ -44,8 +44,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		Properties commandExecutorTaskFactoryProps = new Properties();
-		commandExecutorTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools");
-		commandExecutorTaskFactoryProps.setProperty(TITLE,"Run Commands...");
+		commandExecutorTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools.Command");
+		commandExecutorTaskFactoryProps.setProperty(TITLE,"Run Command File...");
 		registerService(bc,commandExecutorTaskFactory,TaskFactory.class, commandExecutorTaskFactoryProps);
 		registerService(bc,commandExecutorTaskFactory,CommandExecutorTaskFactory.class, commandExecutorTaskFactoryProps);
 
