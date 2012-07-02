@@ -38,9 +38,9 @@ public class CyActivator extends AbstractCyActivator {
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
-		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
-		sifInterpreterTaskFactoryProps.setProperty(TITLE, "Add Edge (by SIF Syntax)");
+//		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "2.5");
+		sifInterpreterTaskFactoryProps.setProperty(TITLE, "SIF Interpreter");
 		registerService(bc, sifInterpreterTaskFactory, NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
 
 		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
