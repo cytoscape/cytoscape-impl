@@ -34,16 +34,13 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		CreateNetworkViewTaskFactory createNetworkViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
 
-			
 		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		// Setting preferredAction to OPEN registers this service for double clicks on
-		// the network canvas, something we don't want right now for this task!
-		//sifInterpreterTaskFactoryProps.setProperty(PREFERRED_ACTION,"OPEN");
-		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools");
-		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "5.0f");
-		sifInterpreterTaskFactoryProps.setProperty(TITLE, "SIF Interpreter");
+		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
+		sifInterpreterTaskFactoryProps.setProperty(TITLE, "Add Edge (by SIF Syntax)");
 		registerService(bc, sifInterpreterTaskFactory, NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
 
 		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
