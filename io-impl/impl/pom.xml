@@ -56,6 +56,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/vizmap</generateDirectory>
 							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
 							<schemaIncludes>
 								<include>vizmap.xsd</include>
@@ -63,24 +64,21 @@
 							<generatePackage>org.cytoscape.io.internal.util.vizmap.model</generatePackage>
 							<verbose>true</verbose>
 							<encoding>UTF-8</encoding>
-							<removeOldOutput>false</removeOldOutput>
-							<forceRegenerate>false</forceRegenerate>
 						</configuration>
 					</execution>
 					<execution>
-						<id>session</id>
+						<id>cysession</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/cysession</generateDirectory>
 							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
 							<schemaIncludes>
 								<include>cysession.xsd</include>
 							</schemaIncludes>
 							<generatePackage>org.cytoscape.io.internal.util.session.model</generatePackage>
 							<verbose>true</verbose>
-							<removeOldOutput>false</removeOldOutput>
-							<forceRegenerate>true</forceRegenerate>
 						</configuration>
 					</execution>
 					<execution>
@@ -89,6 +87,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/cytables</generateDirectory>
 							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
 							<schemaIncludes>
 								<include>cytables.xsd</include>
@@ -96,8 +95,6 @@
 							<generatePackage>org.cytoscape.io.internal.util.cytables.model</generatePackage>
 							<verbose>true</verbose>
 							<encoding>UTF-8</encoding>
-							<removeOldOutput>false</removeOldOutput>
-							<forceRegenerate>true</forceRegenerate>
 						</configuration>
 					</execution>
 				</executions>

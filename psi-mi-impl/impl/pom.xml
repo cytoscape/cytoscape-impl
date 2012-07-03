@@ -52,6 +52,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/MIF1</generateDirectory>
 							<schemaDirectory>src/main/xsd</schemaDirectory>
 							<schemaIncludes>
 								<include>MIF1.xsd</include>
@@ -59,8 +60,6 @@
 							<generatePackage>${bundle.namespace}.schema.mi1</generatePackage>
 							<verbose>true</verbose>
 							<encoding>UTF-8</encoding>
-							<removeOldOutput>false</removeOldOutput>
-							<forceRegenerate>true</forceRegenerate>
 						</configuration>
 					</execution>
 					<execution>
@@ -69,6 +68,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/MIF25</generateDirectory>
 							<schemaDirectory>src/main/xsd</schemaDirectory>
 							<schemaIncludes>
 								<include>MIF25.xsd</include>
@@ -76,8 +76,6 @@
 							<generatePackage>${bundle.namespace}.schema.mi25</generatePackage>
 							<verbose>true</verbose>
 							<encoding>UTF-8</encoding>
-							<removeOldOutput>false</removeOldOutput>
-							<forceRegenerate>true</forceRegenerate>
 						</configuration>
 					</execution>
 				</executions>

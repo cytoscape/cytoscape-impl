@@ -33,6 +33,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/MiriamXML</generateDirectory>
 							<schemaDirectory>src/main/resources</schemaDirectory>
 							<schemaIncludes>
 								<include>MiriamXML.xml</include>
@@ -40,8 +41,6 @@
 							<generatePackage>${bundle.namespace}.miriam</generatePackage>
 							<verbose>true</verbose>
 							<encoding>UTF-8</encoding>
-							<removeOldOutput>false</removeOldOutput>
-							<forceRegenerate>true</forceRegenerate>
 						</configuration>
 					</execution>
 				</executions>

@@ -116,6 +116,7 @@
 			                <goal>generate</goal>
 			            </goals>
 			            <configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/SearchResponse</generateDirectory>
 			                <schemaDirectory>src/main/resources/xsd</schemaDirectory>
 			                <schemaIncludes>
 			                    <include>SearchResponse.xsd</include>
@@ -123,8 +124,6 @@
 			                <generatePackage>org.cytoscape.cpath2.internal.schemas.search_response</generatePackage>
 			                <verbose>true</verbose>
 			                <encoding>UTF-8</encoding>
-			                <removeOldOutput>false</removeOldOutput>
-			                <forceRegenerate>true</forceRegenerate>
 			            </configuration>
 			        </execution>
 			        <execution>
@@ -133,14 +132,13 @@
 			                <goal>generate</goal>
 			            </goals>
 			            <configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/SummaryResponse</generateDirectory>
 			                <schemaDirectory>src/main/resources/xsd</schemaDirectory>
 			                <schemaIncludes>
 			                    <include>SummaryResponse.xsd</include>
 			                </schemaIncludes>
 			                <generatePackage>org.cytoscape.cpath2.internal.schemas.summary_response</generatePackage>
 			                <verbose>true</verbose>
-			                <removeOldOutput>false</removeOldOutput>
-			                <forceRegenerate>true</forceRegenerate>
 			            </configuration>
 			        </execution>
 			    </executions>
