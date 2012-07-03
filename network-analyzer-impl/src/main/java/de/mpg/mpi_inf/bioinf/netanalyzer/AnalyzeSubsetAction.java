@@ -42,12 +42,16 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 public class AnalyzeSubsetAction extends NetAnalyzerAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(AnalyzeSubsetAction.class);
+	
+	private final AnalyzeNetworkAction action;
 
 	/**
 	 * Initializes a new instance of <code>NetSubsetAction</code>.
 	 */
-	public AnalyzeSubsetAction(CyApplicationManager appMgr, CySwingApplication swingApp) {
+	public AnalyzeSubsetAction(CyApplicationManager appMgr, CySwingApplication swingApp, final AnalyzeNetworkAction action) {
 		super(Messages.AC_ANALYZE_SUBSET,appMgr,swingApp);
+		this.action = action;
+		
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 		selected = null;
 	}
@@ -61,7 +65,7 @@ public class AnalyzeSubsetAction extends NetAnalyzerAction {
 	public void actionPerformed(ActionEvent e) {
 		try {
 			if (selectNetwork()) {
-				final AnalysisExecutor exec = AnalyzeNetworkAction.initAnalysisExecuter(network, selected,swingApp);
+				final AnalysisExecutor exec = action.initAnalysisExecuter(network, selected,swingApp);
 				if (exec != null) {
 					exec.start();
 				}

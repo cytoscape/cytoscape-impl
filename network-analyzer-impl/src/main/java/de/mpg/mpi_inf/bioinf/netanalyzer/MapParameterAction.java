@@ -23,6 +23,8 @@ import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
@@ -39,11 +41,25 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.MapParameterDialog;
 public class MapParameterAction extends NetAnalyzerAction implements AnalysisListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(MapParameterAction.class);
+	
+	private final CyNetworkViewManager viewManager;
+	private final VisualMappingManager vmm;
+	private final VisualStyleBuilder vsBuilder;
+	
+	private final AnalyzeNetworkAction action;
+	
+	
 	/**
 	 * Initializes a new instance of <code>MapParameterAction</code>.
 	 */
-	public MapParameterAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
+	public MapParameterAction(CyApplicationManager appMgr,CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm, final AnalyzeNetworkAction action) {
 		super(Messages.AC_MAPPARAM,appMgr,swingApp);
+		this.vsBuilder = vsBuilder;
+		this.vmm = vmm;
+		this.viewManager = viewManager;
+		this.action = action;
+		
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU +Messages.AC_MENU_ANALYSIS);
 	}
 
@@ -113,7 +129,7 @@ public class MapParameterAction extends NetAnalyzerAction implements AnalysisLis
 	 * mapped to visual styles afterwards.
 	 */
 	private void runNetworkAnalyzer() {
-		final AnalysisExecutor exec = AnalyzeNetworkAction.initAnalysisExecuter(network, null, swingApp);
+		final AnalysisExecutor exec = action.initAnalysisExecuter(network, null, swingApp);
 		if (exec != null) {
 			exec.setShowDialog(false);
 			exec.addAnalysisListener(this);
@@ -127,8 +143,8 @@ public class MapParameterAction extends NetAnalyzerAction implements AnalysisLis
 	private void openMapParameterDialog() {
 		nodeAttr = CyNetworkUtils.getComputedNodeAttributes(network);
 		edgeAttr = CyNetworkUtils.getComputedEdgeAttributes(network);
-		final MapParameterDialog d = new MapParameterDialog(swingApp.getJFrame(), network, nodeAttr,
-				edgeAttr);
+		final MapParameterDialog d = new MapParameterDialog(swingApp.getJFrame(), network, viewManager, vsBuilder, vmm,
+				nodeAttr, edgeAttr);
 		d.setVisible(true);
 	}
 

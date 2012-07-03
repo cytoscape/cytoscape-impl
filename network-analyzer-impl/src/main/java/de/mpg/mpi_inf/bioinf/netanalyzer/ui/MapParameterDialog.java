@@ -24,9 +24,8 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -38,32 +37,15 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 
-//import cytoscape.view.CyNetworkView;
-//import cytoscape.visual.CalculatorCatalog;
-//import cytoscape.visual.EdgeAppearance;
-//import cytoscape.visual.EdgeAppearanceCalculator;
-//import cytoscape.visual.GlobalAppearanceCalculator;
-//import cytoscape.visual.NodeAppearance;
-//import cytoscape.visual.NodeAppearanceCalculator;
-//import cytoscape.visual.NodeShape;
-//import cytoscape.visual.VisualMappingManager;
-//import cytoscape.visual.VisualPropertyDependency;
-//import cytoscape.visual.VisualPropertyType;
-//import cytoscape.visual.VisualStyle;
-//import cytoscape.visual.calculators.BasicCalculator;
-//import cytoscape.visual.calculators.Calculator;
-//import cytoscape.visual.mappings.BoundaryRangeValues;
-//import cytoscape.visual.mappings.ContinuousMapping;
-//import cytoscape.visual.mappings.Interpolator;
-//import cytoscape.visual.mappings.LinearNumberToColorInterpolator;
-//import cytoscape.visual.mappings.LinearNumberToNumberInterpolator;
-//import cytoscape.visual.mappings.ObjectMapping;
-//import cytoscape.visual.mappings.PassThroughMapping;
+import de.mpg.mpi_inf.bioinf.netanalyzer.VisualStyleBuilder;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 
@@ -74,7 +56,11 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
  * @author Yassen Assenov
  */
 public class MapParameterDialog extends VisualizeParameterDialog implements ActionListener {
-
+	
+	private final CyNetworkViewManager viewManager;
+	private final VisualMappingManager vmm;
+	private final VisualStyleBuilder vsBuilder;
+	
 	/**
 	 * Initializes a new instance of <code>MapParameterDialog</code>.
 	 * 
@@ -93,8 +79,14 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	 * @throws NullPointerException
 	 *             If <code>aNetwork</code> is <code>null</code>.
 	 */
-	public MapParameterDialog(Frame aOwner, CyNetwork aNetwork, String[][] aNodeAttr, String[][] aEdgeAttr) {
+	public MapParameterDialog(Frame aOwner, CyNetwork aNetwork, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm, String[][] aNodeAttr, String[][] aEdgeAttr) {
 		super(aOwner, Messages.DT_MAPPARAM, true, aNetwork, aNodeAttr, aEdgeAttr);
+
+		this.viewManager = viewManager;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
+		
 		getMinMaxMeanValues();
 		init();
 		setResizable(false);
@@ -111,48 +103,12 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		mapEdgeColor = Messages.DI_LOWTOBRIGHT;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		final Object src = e.getSource();
 		if (src == btnApply) {
-			if (cbxNodeSize != null && cbxNodeSize.getSelectedItem() != null) {
-				attrNodeSize = (String) cbxNodeSize.getSelectedItem();
-			}
-			if (cbxNodeColor != null && cbxNodeColor.getSelectedItem() != null) {
-				attrNodeColor = (String) cbxNodeColor.getSelectedItem();
-			}
-			if (cbxEdgeSize != null && cbxEdgeSize.getSelectedItem() != null) {
-				attrEdgeSize = (String) cbxEdgeSize.getSelectedItem();
-			}
-			if (cbxEdgeColor != null && cbxEdgeColor.getSelectedItem() != null) {
-				attrEdgeColor = (String) cbxEdgeColor.getSelectedItem();
-			}
-			// get the network view on which to apply the visual style based on
-			// this.network
-//			CyNetworkView networkView = null;
-//			Map<String, CyNetworkView> networkViewMap = Cytoscape.getNetworkViewMap();
-//			if (networkViewMap.containsKey(network.getIdentifier())) {
-//				networkView = networkViewMap.get(network.getIdentifier());
-//			} else {
-//				networkView = Cytoscape.createNetworkView(network);
-//			}
-//			// get the current visual style and modify it according to the user
-//			// specified criteria
-//			VisualMappingManager manager = Cytoscape.getVisualMappingManager();
-//			CalculatorCatalog catalog = manager.getCalculatorCatalog();
-//			VisualStyle newStyle = createVisualStyle();
-//			String name = newStyle.getName();
-//			if (catalog.getVisualStyle(name) != null) {
-//				catalog.removeVisualStyle(name);
-//			}
-//			catalog.addVisualStyle(newStyle);
-//			manager.setVisualStyle(newStyle);
-//			networkView.redrawGraph(true, true);
-
+			apply();
 			setVisible(false);
 			dispose();
 		} else if (src == btnClose) {
@@ -183,6 +139,40 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		} else if (src == btnEdgeColor2) {
 			mapEdgeColor = btnEdgeColor2.getText();
 		}
+	}
+	
+	private final void apply() {
+		// Check view exists or not
+		final Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
+		if(views.isEmpty())
+			return;
+		
+		// Pick the first view
+		final CyNetworkView networkView = views.iterator().next();
+		
+		if (cbxNodeSize != null && cbxNodeSize.getSelectedItem() != null) {
+			attrNodeSize = (String) cbxNodeSize.getSelectedItem();
+		}
+		if (cbxNodeColor != null && cbxNodeColor.getSelectedItem() != null) {
+			attrNodeColor = (String) cbxNodeColor.getSelectedItem();
+		}
+		if (cbxEdgeSize != null && cbxEdgeSize.getSelectedItem() != null) {
+			attrEdgeSize = (String) cbxEdgeSize.getSelectedItem();
+		}
+		if (cbxEdgeColor != null && cbxEdgeColor.getSelectedItem() != null) {
+			attrEdgeColor = (String) cbxEdgeColor.getSelectedItem();
+		}
+		
+		// Create a new style and register it
+		final VisualStyle newStyle = vsBuilder.createVisualStyle(networkView);
+		vmm.addVisualStyle(newStyle);
+		
+		vmm.setVisualStyle(newStyle, networkView);
+		vmm.setCurrentVisualStyle(newStyle);
+		
+		// Apply and update the current view
+		newStyle.apply(networkView);
+		networkView.updateView();
 	}
 
 	/**
@@ -381,94 +371,7 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		return false;
 	}
 
-	/**
-	 * Creates a new visual style in Cytoscape's VizMapper depending on the by the user defined mappings of
-	 * computed attributes.
-	 * 
-	 * @return New visual style.
-	 
-	private VisualStyle createVisualStyle() {
 
-		// Create new visual style
-		String name = network.getTitle();
-		VisualStyle visualStyle = new VisualStyle(name); // , nodeAppCalc, edgeAppCalc, globalAppCalc);
-
-		NodeAppearanceCalculator nodeAppCalc = visualStyle.getNodeAppearanceCalculator();
-		EdgeAppearanceCalculator edgeAppCalc = visualStyle.getEdgeAppearanceCalculator();
-		GlobalAppearanceCalculator globalAppCalc = new GlobalAppearanceCalculator();
-		globalAppCalc.setDefaultBackgroundColor(SettingsSerializer.getPluginSettings().getBackgroundColor());
-		// Color.getHSBColor(0.6666667f, 0.2f, 1.0f)
-
-		// Create default appearance
-		Calculator nlc = Cytoscape.getVisualMappingManager().getCalculatorCatalog().getCalculator(
-				VisualPropertyType.NODE_LABEL, "label");
-		if (nlc == null) {
-			PassThroughMapping m = new PassThroughMapping("", "ID");
-			nlc = new BasicCalculator("label", m, VisualPropertyType.NODE_LABEL);
-		}
-		nodeAppCalc.setCalculator(nlc);
-
-		NodeAppearance na = nodeAppCalc.getDefaultAppearance();
-		na.set(VisualPropertyType.NODE_SHAPE, NodeShape.ELLIPSE);
-		na.set(VisualPropertyType.NODE_FILL_COLOR, Color.getHSBColor(0.0f, 0.4f, 1.0f));
-		nodeAppCalc.setDefaultAppearance(na);
-
-		EdgeAppearance ea = edgeAppCalc.getDefaultAppearance();
-		ea.set(VisualPropertyType.EDGE_COLOR, Color.BLUE);
-		edgeAppCalc.setDefaultAppearance(ea);
-
-		// Apply new visual settings
-		if (attrNodeColor.length() > 0) {
-			// Continuous Mapping - set node color
-			name += "_NodeColor_" + attrNodeColor;
-			ContinuousMapping conMapNodeColor = getColorMapping(attrNodeColor, ObjectMapping.NODE_MAPPING);
-			conMapNodeColor = addBoundaries(conMapNodeColor, attrNodeColor, mapNodeColor, SettingsSerializer
-					.getPluginSettings().getBrightColor(), SettingsSerializer.getPluginSettings()
-					.getMiddleColor(), SettingsSerializer.getPluginSettings().getDarkColor());
-			Calculator nodeColorCalculator = new BasicCalculator("NetworkAnalyzer Node Color Calc",
-					conMapNodeColor, VisualPropertyType.NODE_FILL_COLOR);
-			nodeAppCalc.setCalculator(nodeColorCalculator);
-		}
-		if (attrNodeSize.length() > 0) {
-			// Continuous Mapping - set node size
-			name += "_NodeSize_" + attrNodeSize;
-			visualStyle.getDependency().set(VisualPropertyDependency.Definition.NODE_SIZE_LOCKED, false);
-			ContinuousMapping conMapNodeSize = getSizeMapping(attrNodeSize, ObjectMapping.NODE_MAPPING);
-			conMapNodeSize = addBoundaries(conMapNodeSize, attrNodeSize, mapNodeSize, new Double(10.0),
-					new Double(50.0), new Double(100.0));
-			Calculator nodeHeightCalculator = new BasicCalculator("NetworkAnalyzer Node Height Calc",
-					conMapNodeSize, VisualPropertyType.NODE_HEIGHT);
-			Calculator nodeWidthCalculator = new BasicCalculator("NetworkAnalyzer Node Width Calc",
-					conMapNodeSize, VisualPropertyType.NODE_WIDTH);
-			nodeAppCalc.setCalculator(nodeHeightCalculator);
-			nodeAppCalc.setCalculator(nodeWidthCalculator);
-		}
-		if (attrEdgeColor.length() > 0) {
-			// Continuous Mapping - set edge color
-			name += "_EdgeColor_" + attrEdgeColor;
-			ContinuousMapping conMapEdgeColor = getColorMapping(attrEdgeColor, ObjectMapping.EDGE_MAPPING);
-			conMapEdgeColor = addBoundaries(conMapEdgeColor, attrEdgeColor, mapEdgeColor, SettingsSerializer
-					.getPluginSettings().getBrightColor(), SettingsSerializer.getPluginSettings()
-					.getMiddleColor(), SettingsSerializer.getPluginSettings().getDarkColor());
-			Calculator edgeColorCalculator = new BasicCalculator("NetworkAnalyzer Edge Color Calc",
-					conMapEdgeColor, VisualPropertyType.EDGE_COLOR);
-			edgeAppCalc.setCalculator(edgeColorCalculator);
-		}
-		if (attrEdgeSize.length() > 0) {
-			// Continuous Mapping - set line width
-			name += "_EdgeSize_" + attrEdgeSize;
-			ContinuousMapping conMapEdgeSize = getSizeMapping(attrEdgeSize, ObjectMapping.EDGE_MAPPING);
-			conMapEdgeSize = addBoundaries(conMapEdgeSize, attrEdgeSize, mapEdgeSize, new Double(1.0),
-					new Double(4.0), new Double(8.0));
-			Calculator edgeSizeCalculator = new BasicCalculator("NetworkAnalyzer Edge Size Calc",
-					conMapEdgeSize, VisualPropertyType.EDGE_LINE_WIDTH);
-			edgeAppCalc.setCalculator(edgeSizeCalculator);
-		}
-
-		visualStyle.setName(name);
-		return visualStyle;
-	}
-	*/
 
 	/**
 	 * Computes the minimal, maximal and mean value for each computed attribute by consequently processing

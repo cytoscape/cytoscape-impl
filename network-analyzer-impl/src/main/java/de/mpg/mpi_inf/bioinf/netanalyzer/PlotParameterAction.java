@@ -39,11 +39,14 @@ public class PlotParameterAction extends NetAnalyzerAction implements AnalysisLi
 
 	private static final Logger logger = LoggerFactory.getLogger(PlotParameterAction.class);
 
+	private final AnalyzeNetworkAction action;
+	
 	/**
 	 * Initializes a new instance of <code>PlotParameterAction</code>.
 	 */
-	public PlotParameterAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
+	public PlotParameterAction(CyApplicationManager appMgr,CySwingApplication swingApp, final AnalyzeNetworkAction action) {
 		super(Messages.AC_PLOTPARAM,appMgr,swingApp);
+		this.action = action;
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
@@ -121,7 +124,7 @@ public class PlotParameterAction extends NetAnalyzerAction implements AnalysisLi
 	 * visualized afterwards.
 	 */
 	private void runNetworkAnalyzer() {
-		final AnalysisExecutor exec = AnalyzeNetworkAction.initAnalysisExecuter(network, null, swingApp);
+		final AnalysisExecutor exec = action.initAnalysisExecuter(network, null, swingApp);
 		if (exec != null) {
 			exec.setShowDialog(false);
 			exec.addAnalysisListener(this);

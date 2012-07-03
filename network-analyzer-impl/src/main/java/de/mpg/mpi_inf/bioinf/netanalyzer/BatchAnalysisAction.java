@@ -52,12 +52,14 @@ public class BatchAnalysisAction extends NetAnalyzerAction {
 	
 	private final CyNetworkReaderManager cyNetworkViewReaderMgr;
 	private final CyNetworkManager netMgr;
+	private final LoadNetstatsAction action;
 
 	/**
 	 * Constructs a new batch analysis action.
 	 */
-	protected BatchAnalysisAction(CyApplicationManager appMgr,CySwingApplication swingApp, CyNetworkManager netMgr, CyNetworkReaderManager cyNetworkViewReaderMgr) {
+	protected BatchAnalysisAction(CyApplicationManager appMgr,CySwingApplication swingApp, CyNetworkManager netMgr, CyNetworkReaderManager cyNetworkViewReaderMgr, final LoadNetstatsAction action) {
 		super(Messages.AC_BATCH_ANALYSIS,appMgr,swingApp);
+		this.action = action;
 		this.netMgr = netMgr;
 		this.cyNetworkViewReaderMgr = cyNetworkViewReaderMgr;
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
@@ -87,7 +89,7 @@ public class BatchAnalysisAction extends NetAnalyzerAction {
 					d2.setVisible(true);
 					if (d2.resultsPressed()) {
 						// Step 3 - Show results
-						BatchResultsDialog d3 = new BatchResultsDialog(swingApp.getJFrame(),analyzer.getReports(),cyNetworkViewReaderMgr);
+						BatchResultsDialog d3 = new BatchResultsDialog(swingApp.getJFrame(),analyzer.getReports(),cyNetworkViewReaderMgr, action);
 						d3.setVisible(true);
 					}
 				} else {

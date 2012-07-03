@@ -24,10 +24,12 @@ import java.io.IOException;
 
 import javax.swing.JFileChooser;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStats;
@@ -43,12 +45,20 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 public class LoadNetstatsAction extends NetAnalyzerAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(LoadNetstatsAction.class);
+	
+	private final CyNetworkViewManager viewManager;
+	private final VisualMappingManager vmm;
+	private final VisualStyleBuilder vsBuilder;
 
 	/**
 	 * Initializes a new instance of <code>LoadNetstatsAction</code>.
 	 */
-	public LoadNetstatsAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
+	public LoadNetstatsAction(CyApplicationManager appMgr,CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm) {
 		super(Messages.AC_LOAD,appMgr,swingApp);
+		this.viewManager = viewManager;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
@@ -86,10 +96,10 @@ public class LoadNetstatsAction extends NetAnalyzerAction {
 	 * @param aFile
 	 *            Network statistics file to be open.
 	 */
-	public static void openNetstats(Frame owner, File aFile) {
+	public void openNetstats(Frame owner, File aFile) {
 		try {
 			final NetworkStats stats = StatsSerializer.load(aFile);
-			final AnalysisDialog d = new AnalysisDialog(owner, stats, null);
+			final AnalysisDialog d = new AnalysisDialog(owner, stats, null, viewManager, vsBuilder, vmm);
 			d.setVisible(true);
 		} catch (IOException ex) {
 			// FileNotFoundException, IOException

@@ -410,7 +410,8 @@ public class PluginSettings extends Settings {
 	/**
 	 * Color to be used for the background when visualizing network parameters.
 	 */
-	Color backgroundColor;
+	Color backgroundColor = new Color(245, 245, 245);
+
 
 	/**
 	 * Bright color to be used for visualizing of network parameters.

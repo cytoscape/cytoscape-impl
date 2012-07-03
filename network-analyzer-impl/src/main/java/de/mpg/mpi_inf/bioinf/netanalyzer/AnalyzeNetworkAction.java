@@ -25,6 +25,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
@@ -42,12 +44,21 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 public class AnalyzeNetworkAction extends NetAnalyzerAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(AnalyzeNetworkAction.class);
+	
+	private final CyNetworkViewManager viewManager;
+	private final VisualMappingManager vmm;
+	private final VisualStyleBuilder vsBuilder;
 
 	/**
 	 * Initializes a new instance of <code>AnalyzeNetworkAction</code>.
 	 */
-	public AnalyzeNetworkAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
+	public AnalyzeNetworkAction(CyApplicationManager appMgr,CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm) {
 		super(Messages.AC_ANALYZE,appMgr,swingApp);
+		this.viewManager = viewManager;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
+		
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
@@ -84,7 +95,7 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 	 * @return Newly initialized analysis executor; <code>null</code> if the user has decided to cancel the
 	 *         operation.
 	 */
-	public static AnalysisExecutor initAnalysisExecuter(CyNetwork aNetwork, Set<CyNode> aNodeSet, CySwingApplication swingApp) {
+	public AnalysisExecutor initAnalysisExecuter(CyNetwork aNetwork, Set<CyNode> aNodeSet, CySwingApplication swingApp) {
 		// Ask the user for an interpretation of the network edges
 		try {
 			final NetworkInspection status = CyNetworkUtils.inspectNetwork(aNetwork);
@@ -99,7 +110,7 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 			} else {
 				analyzer = new UndirNetworkAnalyzer(aNetwork, aNodeSet, interpr);
 			}
-			return new AnalysisExecutor(swingApp.getJFrame(), analyzer);
+			return new AnalysisExecutor(swingApp.getJFrame(), analyzer, viewManager, vsBuilder, vmm);
 		} catch (IllegalArgumentException ex) {
 			Utils.showInfoBox(swingApp.getJFrame(),Messages.DT_INFO, Messages.SM_NETWORKEMPTY);
 			return null;

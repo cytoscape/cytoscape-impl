@@ -58,6 +58,8 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 
 	private final CyNetworkReaderManager cyNetworkViewReaderMgr;
 	private final Frame aOwner;
+	
+	private final LoadNetstatsAction action;
 
 	/**
 	 * Initializes a new instance of <code>BatchResultsDialog</code>.
@@ -67,8 +69,10 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 	 * @param aReports
 	 *            List of analysis reports to be visualized.
 	 */
-	public BatchResultsDialog(Frame aOwner, List<NetworkAnalysisReport> aReports, CyNetworkReaderManager cyNetworkViewReaderMgr) {
+	public BatchResultsDialog(Frame aOwner, List<NetworkAnalysisReport> aReports, CyNetworkReaderManager cyNetworkViewReaderMgr, final LoadNetstatsAction action) {
 		super(aOwner, Messages.DT_BATCHRESULTS, false);
+		this.action = action;
+		
 		init(aReports);
 		setLocationRelativeTo(aOwner);
 		this.cyNetworkViewReaderMgr = cyNetworkViewReaderMgr;
@@ -106,7 +110,7 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 				if (c == 2) {
 					final File file = model.getNetstatsFile(r);
 					if (file != null) {
-						LoadNetstatsAction.openNetstats(aOwner,file);
+						action.openNetstats(aOwner,file);
 					}
 				} else if (c == 0) {
 					final File file = model.getNetwork(r);

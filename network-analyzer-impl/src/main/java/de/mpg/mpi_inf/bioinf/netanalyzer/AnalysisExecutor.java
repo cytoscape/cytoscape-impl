@@ -26,6 +26,8 @@ import javax.swing.JFrame;
 import javax.swing.ProgressMonitor;
 import javax.swing.Timer;
 
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
@@ -34,13 +36,17 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog;
 /**
  * Initializer and starter of a separate thread dedicated to network analysis.
  * <p>
- * This class manages the UI binding to the analysis of a network, in particular it:
+ * This class manages the UI binding to the analysis of a network, in particular
+ * it:
  * <ul>
- * <li>initializes a dialog that enables the user to keep track of the current progress;</li>
+ * <li>initializes a dialog that enables the user to keep track of the current
+ * progress;</li>
  * <li>starts the network analyzer;</li>
- * <li>stops the analyzer if the user presses the &quot;Cancel&quot; button of the dialog;</li>
- * <li>(optionally) creates an {@link de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog} to
- * display results once the analysis completes successfully.</li>
+ * <li>stops the analyzer if the user presses the &quot;Cancel&quot; button of
+ * the dialog;</li>
+ * <li>(optionally) creates an
+ * {@link de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog} to display
+ * results once the analysis completes successfully.</li>
  * </ul>
  * </p>
  * 
@@ -50,15 +56,20 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(AnalysisExecutor.class);
 
+	private final CyNetworkViewManager viewManager;
+	private final VisualMappingManager vmm;
+	private final VisualStyleBuilder vsBuilder;
+
 	/**
 	 * Initializes a new instance of <code>AnalysisExecutor</code>.
 	 * <p>
-	 * The executor displays analysis results dialog once the analysis is completed.
+	 * The executor displays analysis results dialog once the analysis is
+	 * completed.
 	 * </p>
 	 * <p>
-	 * Note that the constructor does not start the process of network analysis - this is performed
-	 * by the <code>start()</code> method. It is recommended that <code>start()</code> is called
-	 * immediately after the initialization.
+	 * Note that the constructor does not start the process of network analysis
+	 * - this is performed by the <code>start()</code> method. It is recommended
+	 * that <code>start()</code> is called immediately after the initialization.
 	 * </p>
 	 * 
 	 * @param aDesktop
@@ -66,9 +77,15 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	 * @param aAnalyzer
 	 *            <code>NetworkAnalyzer</code> instance to be started.
 	 */
-	public AnalysisExecutor(JFrame aDesktop, NetworkAnalyzer aAnalyzer) {
+	public AnalysisExecutor(JFrame aDesktop, NetworkAnalyzer aAnalyzer, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm) {
 		desktop = aDesktop;
 		analyzer = aAnalyzer;
+		
+		this.viewManager = viewManager;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
+		
 		listeners = new ArrayList<AnalysisListener>();
 		showDialog = true;
 		int maxProgress = analyzer.getMaxProgress();
@@ -80,7 +97,8 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 * @see
+	 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent e) {
 		monitor.setProgress(analyzer.getCurrentProgress());
@@ -101,7 +119,7 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 			monitor.close();
 			if (showDialog) {
 				try {
-					AnalysisDialog d = new AnalysisDialog(desktop, analyzer.getStats(), analyzer);
+					AnalysisDialog d = new AnalysisDialog(desktop, analyzer.getStats(), analyzer, viewManager, vsBuilder, vmm);
 					d.setVisible(true);
 				} catch (InnerException ex) {
 					// NetworkAnalyzer internal error
@@ -118,8 +136,8 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	 * Adds an <code>AnalysisListener</code> to this executor.
 	 * 
 	 * @param aListener
-	 *            Listener to be added. If this parameter is <code>null</code>, calling this method
-	 *            has no effect.
+	 *            Listener to be added. If this parameter is <code>null</code>,
+	 *            calling this method has no effect.
 	 */
 	public void addAnalysisListener(AnalysisListener aListener) {
 		if (aListener != null && (!listeners.contains(aListener))) {
@@ -146,8 +164,8 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	 * Enables or disables the display of analysis results dialog.
 	 * 
 	 * @param aShowDialog
-	 *            Flag indicating if an analysis results dialog must be displayed after the analysis
-	 *            is complete.
+	 *            Flag indicating if an analysis results dialog must be
+	 *            displayed after the analysis is complete.
 	 */
 	public void setShowDialog(boolean aShowDialog) {
 		showDialog = aShowDialog;
@@ -179,8 +197,8 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	private JFrame desktop;
 
 	/**
-	 * Flag indicating if an analysis results dialog must be displayed after the analysis is
-	 * complete.
+	 * Flag indicating if an analysis results dialog must be displayed after the
+	 * analysis is complete.
 	 */
 	private boolean showDialog;
 

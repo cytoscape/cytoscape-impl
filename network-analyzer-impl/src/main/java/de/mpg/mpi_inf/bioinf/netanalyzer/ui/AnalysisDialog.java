@@ -40,10 +40,14 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+
 import de.mpg.mpi_inf.bioinf.netanalyzer.CyNetworkUtils;
 import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
 import de.mpg.mpi_inf.bioinf.netanalyzer.NetworkAnalyzer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
+import de.mpg.mpi_inf.bioinf.netanalyzer.VisualStyleBuilder;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Decorators;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
@@ -60,6 +64,10 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
  */
 public class AnalysisDialog extends JDialog implements ActionListener, WindowListener {
 
+	private final CyNetworkViewManager viewManager;
+	private final VisualMappingManager vmm;
+	private final VisualStyleBuilder vsBuilder;
+	
 	/**
 	 * Dialog window for choosing a filename when saving and loading .netstats files.
 	 */
@@ -88,9 +96,13 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 	 *            Analyzer class that performed the topological analysis. Set this to <code>null</code> if the
 	 *            results were loaded from a file rather than just computed.
 	 */
-	public AnalysisDialog(Frame aOwner, NetworkStats aStats, NetworkAnalyzer aAnalyzer) {
+	public AnalysisDialog(Frame aOwner, NetworkStats aStats, NetworkAnalyzer aAnalyzer, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm) {
 		super(aOwner, Messages.DT_ANALYSIS + aStats.getTitle(), false);
 		this.aOwner = aOwner;
+		this.viewManager = viewManager;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
 
 		stats = aStats;
 		boolean paramMapping = false;
@@ -287,19 +299,19 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 	 */
 	private void visualizeParameter() {
 		CyNetwork network = stats.getNetwork();
-		if (network != null ) {
+		if (network != null) {
 			final String[][] nodeAttr = CyNetworkUtils.getComputedNodeAttributes(network);
 			final String[][] edgeAttr = CyNetworkUtils.getComputedEdgeAttributes(network);
 			if ((nodeAttr[0].length > 0) || (nodeAttr[1].length > 0) || (edgeAttr[0].length > 0)
 					|| (edgeAttr[1].length > 0)) {
-				final MapParameterDialog d = new MapParameterDialog(aOwner, network,
+				final MapParameterDialog d = new MapParameterDialog(aOwner, network, viewManager, vsBuilder, vmm,
 						nodeAttr, edgeAttr);
 				d.setVisible(true);
 				return;
 			}
 		}
 		// Could not locate network - display an error message to the user
-		Utils.showErrorBox(this,Messages.DT_WRONGDATA, Messages.SM_VISUALIZEERROR);
+		Utils.showErrorBox(this, Messages.DT_WRONGDATA, Messages.SM_VISUALIZEERROR);
 		visualizeButton.setEnabled(false);
 	}
 
