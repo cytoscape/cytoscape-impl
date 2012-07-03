@@ -37,6 +37,7 @@ package org.cytoscape.filter.internal.filters.model;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -220,13 +221,17 @@ public class TopologyFilter extends CompositeFilter {
 		
 		// remove all the neighbors that do not pass the given filter
 		if (!passFilter.getName().equalsIgnoreCase("None")) {
-			for (CyNode node : neighborSet) {
-				int nodeIndex = pIndexMap.get(node).intValue();				
+			Iterator<CyNode> iterator = neighborSet.iterator();
+			
+			CyNode node;
+			while (iterator.hasNext()) {
+				node = iterator.next();
+				int nodeIndex = pIndexMap.get(node).intValue();
 				
 				if (!passFilter.getNodeBits().get(nodeIndex)) {
-					neighborSet.remove(node);
-				}				
-			}							
+					iterator.remove();
+				}
+			}
 		}
 		
 		if (neighborSet.size() < minNeighbors) {
