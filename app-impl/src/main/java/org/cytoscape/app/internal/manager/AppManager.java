@@ -51,11 +51,14 @@ public class AppManager {
 	 */
 	private static final String[] APP_EXTENSIONS = {"jar", "kar"};
 	
-	/** Installed apps are copied to this subdirectory under the local app storage directory. */
+	/** Installed apps are moved to this subdirectory under the local app storage directory. */
 	private static final String INSTALLED_APPS_DIRECTORY_NAME = "installed";
 	
-	/** Uninstalled apps are copied to this subdirectory under the local app storage directory. */
+	/** Uninstalled apps are moved to this subdirectory under the local app storage directory. */
 	private static final String UNINSTALLED_APPS_DIRECTORY_NAME = "uninstalled";
+	
+	/** Disabled apps are moved to this subdirectory under the local app storage directory. */
+	private static final String DISABLED_APPS_DIRECTORY_NAME = "disabled";
 	
 	/** Apps are downloaded from the web store to this subdirectory under local app storage directory. */
 	private static final String DOWNLOADED_APPS_DIRECTORY_NAME = "download-temp";
@@ -166,7 +169,7 @@ public class AppManager {
 	private void setupAlterationMonitor() {
 		// Set up the FileAlterationMonitor to install/uninstall apps when apps are moved in/out of the 
 		// installed/uninstalled app directories
-		fileAlterationMonitor = new FileAlterationMonitor(600);
+		fileAlterationMonitor = new FileAlterationMonitor(30000L);
 		
 		File installedAppsPath = new File(getInstalledAppsPath());
 		
@@ -450,6 +453,27 @@ public class AppManager {
 			return path.getAbsolutePath();
 		}
 	}
+	
+	/**
+	 * Return the canonical path of the subdirectory in the local storage directory containing disabled apps.
+	 * @return The canonical path of the subdirectory in the local storage directory containing disabled apps,
+	 * or <code>null</code> if there was an error obtaining the canonical path.
+	 */
+	public String getDisabledAppsPath() {
+		File path = new File(getBaseAppPath() + File.separator + DISABLED_APPS_DIRECTORY_NAME);
+		
+		try {
+			// Create the directory if it doesn't exist	
+			if (!path.exists()) {
+				path.mkdirs();
+			}
+			
+			return path.getCanonicalPath();
+		} catch (IOException e) {
+			logger.warn("Failed to obtain path to disabled apps directory");
+			return path.getAbsolutePath();
+		}
+	}
 
 	/**
 	 * Return the canonical path of the temporary directory in the local storage directory used to contain apps that
@@ -655,6 +679,12 @@ public class AppManager {
 		if (!installedDirectory.exists()) {
 			created = created && installedDirectory.mkdirs();
 			logger.info("Creating " + installedDirectory + ". Success? " + created);
+		}
+		
+		File disabledDirectory = new File(getDisabledAppsPath());
+		if (!disabledDirectory.exists()) {
+			created = created && disabledDirectory.mkdirs();
+			logger.info("Creating " + disabledDirectory + ". Success? " + created);
 		}
 		
 		File temporaryInstallDirectory = new File(getTemporaryInstallPath());

@@ -9,7 +9,7 @@ URL
 
 GET  http://127.0.0.1:2608/status?appname=<app_name>
 
-Notes: App_name is the app store unique app name. For web-downloaded apps, it will be the same 
+Notes: App_name is the full app name. For web-downloaded apps, it will be the same 
 as the Cytoscape-App-Name entry in the manifest.
 
 Response
