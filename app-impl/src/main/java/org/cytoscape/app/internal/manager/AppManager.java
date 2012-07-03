@@ -148,11 +148,11 @@ public class AppManager {
 		this.appListeners = new HashSet<AppsChangedListener>();
 
 		// Install previously enabled apps
-		installAppsInDirectory(new File(getInstalledAppsPath()));
-		installAppsInDirectory(new File(getKarafDeployDirectory()));
+		installAppsInDirectory(new File(getKarafDeployDirectory()), false);
+		installAppsInDirectory(new File(getInstalledAppsPath()), true);
 		
 		// Load apps from the "uninstalled apps" directory
-		Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()));
+		Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), true);
 		apps.addAll(uninstalledApps);
 		
 		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
@@ -196,8 +196,7 @@ public class AppManager {
 							try {
 								uninstallApp(app);
 							} catch (AppUninstallException e) {
-
-								e.printStackTrace();
+								logger.warn("Failed to uninstall app " + app.getAppName() + " when it was removed from the local install directory.");
 							}
 						}
 					}
@@ -234,7 +233,7 @@ public class AppManager {
 		
 		try {
 			//installAlterationObserver.initialize();
-			// fileAlterationMonitor.addObserver(installAlterationObserver);
+			//fileAlterationMonitor.addObserver(installAlterationObserver);
 			fileAlterationMonitor.start();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -583,10 +582,10 @@ public class AppManager {
 			jarFile.close();
 		} catch (ZipException e) {
 			// Do nothing; skip file
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IOException e) {
 			// Do nothing; skip file
-			e.printStackTrace();
+			// e.printStackTrace();
 		} finally {
 			if (jarFile != null) {
 				try {
@@ -616,10 +615,10 @@ public class AppManager {
 		}
 	}
 	
-	private void installAppsInDirectory(File directory) {
+	private void installAppsInDirectory(File directory, boolean ignoreDuplicateBundleApps) {
 
 		// Parse App objects from the given directory
-		Set<App> parsedApps = obtainAppsFromDirectory(directory);
+		Set<App> parsedApps = obtainAppsFromDirectory(directory, ignoreDuplicateBundleApps);
 		
 		// Install each app
 		for (App parsedApp : parsedApps) {
@@ -638,24 +637,33 @@ public class AppManager {
 	 * @param directory The directory used to parse {@link App} objects
 	 * @return A set of all {@link App} objects that were successfully parsed from files in the given directory
 	 */
-	private Set<App> obtainAppsFromDirectory(File directory) {
+	private Set<App> obtainAppsFromDirectory(File directory, boolean ignoreDuplicateBundleApps) {
 		// Obtain all files in the given directory with supported extensions, perform a non-recursive search
 		Collection<File> files = FileUtils.listFiles(directory, APP_EXTENSIONS, false); 
 		
 		Set<App> parsedApps = new HashSet<App>();
 		
+		String karafDeployDirectory = getKarafDeployDirectory();
+		
 		App app;
 		for (File potentialApp : files) {
-			app = null;
-			try {
-				app = appParser.parseApp(potentialApp);
-			} catch (AppParsingException e) {
-				DebugHelper.print("Failed to parse " + potentialApp + ", error: " + e.getMessage());
-			} finally {
-				if (app != null) {
-					parsedApps.add(app);
-					
-					DebugHelper.print("App parsed: " + app);
+			
+			if (ignoreDuplicateBundleApps
+					&& (new File(karafDeployDirectory + File.separator + potentialApp.getName())).exists()) {
+				// Skip file
+			} else {
+			
+				app = null;
+				try {
+					app = appParser.parseApp(potentialApp);
+				} catch (AppParsingException e) {
+					DebugHelper.print("Failed to parse " + potentialApp + ", error: " + e.getMessage());
+				} finally {
+					if (app != null) {
+						parsedApps.add(app);
+						
+						DebugHelper.print("App parsed: " + app);
+					}
 				}
 			}
 		}
@@ -721,6 +729,6 @@ public class AppManager {
 	 * Install apps from the local storage directory containing previously installed apps.
 	 */
 	public void installAppsFromDirectory() {
-		installAppsInDirectory(new File(getInstalledAppsPath()));
+		installAppsInDirectory(new File(getInstalledAppsPath()), false);
 	}
 }

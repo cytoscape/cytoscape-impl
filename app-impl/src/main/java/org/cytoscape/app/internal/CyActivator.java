@@ -356,9 +356,10 @@ public class CyActivator extends AbstractCyActivator {
 		appManager.setFeaturesService(featuresService);
 		
 		// AbstractCyAction implementation for updated app manager
-		AppManagerAction appManagerAction2 = new AppManagerAction(appManager, cySwingApplicationRef, fileUtilServiceRef, dialogTaskManagerRef);
-		registerService(bc, appManagerAction2, CyAction.class, new Properties());
-	
+		AppManagerAction appManagerAction = new AppManagerAction(appManager, cySwingApplicationRef, 
+				fileUtilServiceRef, dialogTaskManagerRef, cyServiceRegistrarRef);
+		registerService(bc, appManagerAction, CyAction.class, new Properties());
+		
 		// Start thread for local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
 		Thread serverThread = new Thread() {

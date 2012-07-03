@@ -304,8 +304,8 @@ public class AppParser {
 			
 			if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
 				if (bundleApp) {
-					logger.warn("Bundle app " + file.getName() + " manifest does not contain an entry for " + APP_COMPATIBLE_TAG
-							+ ". Assuming default value 3.0..");
+					logger.warn("Bundle app " + file.getName() + " manifest does not contain the entry \"" + APP_COMPATIBLE_TAG
+							+ "\". Assuming default value 3.0..");
 					compatibleVersions = "3.0";
 				} else {
 					throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");

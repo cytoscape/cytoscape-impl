@@ -551,7 +551,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         	
     		String text = "";
     		
-    		text += "<html> <head> </head> <body hspace=\"8\" vspace=\"8\">";
+    		text += "<html> <head> </head> <body hspace=\"6\" vspace=\"6\">";
     		
     		// App hyperlink to web store page
     		// text += "<p style=\"margin-top: 0\"> <a href=\"" + selectedApp.getPageUrl() + "\">" + selectedApp.getPageUrl() + "</a> </p>";
