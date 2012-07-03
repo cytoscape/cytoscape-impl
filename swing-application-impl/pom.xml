@@ -23,7 +23,7 @@
 				<directory>src/main/resources</directory>
 			</resource>
 			<resource>
-			   <directory>${project.build.outputDirectory}/help</directory>
+			   <directory>target/help</directory>
 			</resource>
 		</resources>
 		<plugins>
@@ -53,6 +53,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/sessionState</generateDirectory>
 							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
 							<schemaIncludes>
 								<include>sessionState.xsd</include>
@@ -60,8 +61,6 @@
 							<generatePackage>org.cytoscape.internal.io</generatePackage>
 							<verbose>true</verbose>
 							<encoding>UTF-8</encoding>
-							<removeOldOutput>false</removeOldOutput>
-							<forceRegenerate>true</forceRegenerate>
 						</configuration>
 					</execution>
 				</executions>
@@ -85,7 +84,7 @@
 					   <type>zip</type>
 					   <classifier>javahelp</classifier>
 					   <overWrite>true</overWrite>
-					   <outputDirectory>${project.build.outputDirectory}/help/cytoscape/help</outputDirectory>
+					   <outputDirectory>target/help/cytoscape/help</outputDirectory>
 					 </artifactItem>
 				   </artifactItems>
 				 </configuration>
