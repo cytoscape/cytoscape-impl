@@ -215,7 +215,10 @@ public abstract class Messages {
 
 	public static String SM_CHOOSEINTERPR = "Please choose an interpretation for the edges.";
 
-	public static String SM_CLOSEWARN = "<html>You have not saved the network statistics. They will be lost when you close this window.<br>Are you sure you want to close the window?";
+	public static String SM_CLOSEWARN = "<html>You have not saved the network statistics. " +
+			"They will be lost when you close this window." +
+			"<br /><br />Are you sure you want to close the window?<br /><br />" +
+			"(Note: Statistics will be saved as normal table data, not the Network Analyzer property file)</html>";
 
 	public static String SM_CONNECTED = " is connected, i.e. has a single connected component.";
 
@@ -332,7 +335,7 @@ public abstract class Messages {
 
 	public static String AC_COMPARE = "Compare Two Networks";
 
-	public static String AC_CONNCOMP = "Connected Components";
+	public static String AC_CONNCOMP = "Extract Connected Components...";
 
 	public static String AC_LOAD = "Load Network Statistics";
 
@@ -344,7 +347,7 @@ public abstract class Messages {
 	/**
 	 * Name of Submenu in Cytoscape's menubar, where network modification actions are added.
 	 */
-	public static String AC_MENU_MODIFICATION = "Network Modifications";
+	public static String AC_MENU_MODIFICATION = "Subnetwork Creation";
 
 	public static String AC_PLOTPARAM = "Plot Parameters";
 
@@ -354,7 +357,7 @@ public abstract class Messages {
 
 	public static String AC_REMSELFLOOPS = "Remove Self-Loops";
 
-	public static String AC_MAPPARAM = "Visualize Parameters";
+	public static String AC_MAPPARAM = "Generate Visual Style from Statistics...";
 
 	// Labels of items in dialogs
 

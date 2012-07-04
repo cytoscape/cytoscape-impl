@@ -31,6 +31,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.PluginSettings;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.MapParameterDialog;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 /**
  * Action handler for the menu item &quot;Visualize Parameters&quot;.

@@ -1,7 +1,3 @@
-
-
-
-
 package de.mpg.mpi_inf.bioinf.netanalyzer;
 
 import org.cytoscape.application.swing.CySwingApplication;
@@ -22,6 +18,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
 import de.mpg.mpi_inf.bioinf.netanalyzer.AboutAction;
 import de.mpg.mpi_inf.bioinf.netanalyzer.LoadNetstatsAction;
 import de.mpg.mpi_inf.bioinf.netanalyzer.AnalyzeNetworkAction;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 import org.cytoscape.application.swing.CyAction;
 
@@ -29,10 +26,12 @@ import org.cytoscape.application.swing.CyAction;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.util.Properties;
 
@@ -43,7 +42,8 @@ public class CyActivator extends AbstractCyActivator {
 		super();
 	}
 
-
+	
+	@Override
 	public void start(BundleContext bc) {
 
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
@@ -58,6 +58,10 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory continupousMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=continuous)");
 		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		
+		// Create network from selection
+		NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactoryServiceRef = getService(bc,NewNetworkSelectedNodesAndEdgesTaskFatory.class);
+		DialogTaskManager taskManager = getService(bc, DialogTaskManager.class);
+		
 		// FIXME refactor this code
 		Plugin plugin = new Plugin(cySwingApplicationServiceRef);
 		
@@ -71,16 +75,15 @@ public class CyActivator extends AbstractCyActivator {
 		AboutAction aboutAction = new AboutAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
 		AnalyzeSubsetAction analyzeSubsetAction = new AnalyzeSubsetAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, analyzeNetworkAction);
 		BatchAnalysisAction batchAnalysisAction = new BatchAnalysisAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef,cyNetworkViewReaderManagerServiceRef, loadNetstatsAction);
-		CompareAction compareAction = new CompareAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
-		ConnComponentAction connComponentAction = new ConnComponentAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
 		
+		// Disabled because similar function is available from Network Merge
+		//CompareAction compareAction = new CompareAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
+		ConnComponentAction connComponentAction = new ConnComponentAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, newNetworkSelectedNodesEdgesTaskFactoryServiceRef, taskManager);
 		
 		PlotParameterAction plotParameterAction = new PlotParameterAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, analyzeNetworkAction);
 		RemDupEdgesAction remDupEdgesAction = new RemDupEdgesAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		RemoveSelfLoopsAction removeSelfLoopsAction = new RemoveSelfLoopsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		SettingsAction settingsAction = new SettingsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
-		
-
 		
 		registerService(bc,analyzeNetworkAction,CyAction.class, new Properties());
 		registerService(bc,analyzeSubsetAction,CyAction.class, new Properties());
@@ -89,11 +92,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,plotParameterAction,CyAction.class, new Properties());
 		registerService(bc,mapParameterAction,CyAction.class, new Properties());
 		registerService(bc,settingsAction,CyAction.class, new Properties());
-		registerService(bc,compareAction,CyAction.class, new Properties());
+		//registerService(bc,compareAction,CyAction.class, new Properties());
 		registerService(bc,connComponentAction,CyAction.class, new Properties());
 		registerService(bc,remDupEdgesAction,CyAction.class, new Properties());
 		registerService(bc,removeSelfLoopsAction,CyAction.class, new Properties());
 		registerService(bc,aboutAction,CyAction.class, new Properties());
 	}
 }
-

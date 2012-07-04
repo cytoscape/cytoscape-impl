@@ -45,7 +45,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.VisualStyleBuilder;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 
@@ -164,7 +163,7 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		}
 		
 		// Create a new style and register it
-		final VisualStyle newStyle = vsBuilder.createVisualStyle(networkView);
+		final VisualStyle newStyle = vsBuilder.createVisualStyle(networkView, this);
 		vmm.addVisualStyle(newStyle);
 		
 		vmm.setVisualStyle(newStyle, networkView);
@@ -458,93 +457,6 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	}
 
 	/**
-	 * Creates a continuous mapping of a node or edge attribute to the color of the nodes/edges.
-	 * 
-	 * @param attr
-	 *            Attribute to be mapped to the color of nodes/edges.
-	 * @param objectMapping
-	 *            Contains the information whether a node or edge attribute is mapped.
-	 * @return A continuous mapping ot an attribute to the color of nodes/edges.
-	
-	private ContinuousMapping getColorMapping(String attr, byte objectMapping) {
-		ContinuousMapping conMapColor = new ContinuousMapping(Color.WHITE, objectMapping);
-		conMapColor.setControllingAttributeName(attr, network, false);
-
-		Interpolator numToColor = new LinearNumberToColorInterpolator();
-		conMapColor.setInterpolator(numToColor);
-
-		return conMapColor;
-	}
-	 */
-
-	/**
-	 * Creates a continuous mapping of a node or edge attribute to the size of the nodes (width &
-	 * height)/edges(tickness).
-	 * 
-	 * @param attr
-	 *            Attribute to be mapped to the size of nodes/edges.
-	 * @param objectMapping
-	 *            Contains the information whether a node or edge attribute is mapped.
-	 * @return A continuous mapping ot an attribute to the size of nodes/edges.
-	
-	private ContinuousMapping getSizeMapping(String attr, byte objectMapping) {
-		ContinuousMapping conMapSize = new ContinuousMapping(new Double(1.0), objectMapping);
-		conMapSize.setControllingAttributeName(attr, network, false);
-
-		Interpolator numToNum = new LinearNumberToNumberInterpolator();
-		conMapSize.setInterpolator(numToNum);
-
-		return conMapSize;
-	}
-	 */
-
-	/**
-	 * Adds boundaries to the continuous mapping by defining minimal, maximal and middle values for both color
-	 * and size mapping.
-	 * 
-	 * @param conMap
-	 *            Continuous mapping for which boundaries are set.
-	 * @param attr
-	 *            Node/Edge attribute that is mapped.
-	 * @param mapType
-	 *            Type of the mapping, i.e. low values to small sizes or otherwise or low values to bright
-	 *            colors and otherwise respectively.
-	 * @param min
-	 *            Minimal value of size/color for the mapping.
-	 * @param mid
-	 *            Middle value of size/color for the mapping.
-	 * @param max
-	 *            Maximal value of size/color for the mapping.
-	 * @return The value of the <code>conMap</code> parameter.
-	 
-	private ContinuousMapping addBoundaries(ContinuousMapping conMap, String attr, String mapType,
-			Object min, Object mid, Object max) {
-		Object min_ = min;
-		Object mid_ = mid;
-		Object max_ = max;
-		if (min instanceof Color && mapType.equals(Messages.DI_LOWTODARK)) {
-			min_ = max;
-			max_ = min;
-		}
-		if (min instanceof Double && mapType.equals(Messages.DI_LOWTOLARGE)) {
-			min_ = max;
-			max_ = min;
-		}
-
-		// Create boundary conditions less than, equals, greater than
-		BoundaryRangeValues bv0 = new BoundaryRangeValues(min_, min_, min_);
-		BoundaryRangeValues bv1 = new BoundaryRangeValues(mid_, mid_, mid_);
-		BoundaryRangeValues bv2 = new BoundaryRangeValues(max_, max_, max_);
-
-		// Set the attribute point values associated with the boundary values
-		conMap.addPoint(minAttrValue.get(attr).doubleValue(), bv0);
-		conMap.addPoint(meanAttrValue.get(attr).doubleValue(), bv1);
-		conMap.addPoint(maxAttrValue.get(attr).doubleValue(), bv2);
-
-		return conMap;
-	}
-*/
-	/**
 	 * Unique ID for this version of this class. It is used in serialization.
 	 */
 	private static final long serialVersionUID = 1514650388927387666L;
@@ -625,55 +537,55 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	/**
 	 * Attribute that is mapped to node size.
 	 */
-	private String attrNodeSize;
+	protected String attrNodeSize;
 
 	/**
 	 * Type of mapping the node attributes, i.e. low values to small sizes or otherwise.
 	 */
-	private String mapNodeSize;
+	protected String mapNodeSize;
 
 	/**
 	 * Attribute that is mapped to node color.
 	 */
-	private String attrNodeColor;
+	protected String attrNodeColor;
 
 	/**
 	 * Type of mapping the node attributes, i.e. low values to bright colors or otherwise.
 	 */
-	private String mapNodeColor;
+	protected String mapNodeColor;
 
 	/**
 	 * Attribute that is mapped to edge size.
 	 */
-	private String attrEdgeSize;
+	protected String attrEdgeSize;
 
 	/**
 	 * Type of mapping the edge attributes, i.e. low values to small sizes or otherwise.
 	 */
-	private String mapEdgeSize;
+	protected String mapEdgeSize;
 
 	/**
 	 * Attribute that is mapped to edge color.
 	 */
-	private String attrEdgeColor;
+	protected String attrEdgeColor;
 
 	/**
 	 * Type of mapping the edge attributes, i.e. low values to bright colors or otherwise.
 	 */
-	private String mapEdgeColor;
+	protected String mapEdgeColor;
 
 	/**
 	 * Map with the minimal computed value for each attribute.
 	 */
-	private HashMap<String, Double> minAttrValue;
+	protected HashMap<String, Double> minAttrValue;
 
 	/**
 	 * Map with the maximal computed value for each attribute.
 	 */
-	private HashMap<String, Double> maxAttrValue;
+	protected HashMap<String, Double> maxAttrValue;
 
 	/**
 	 * Map with the mean computed value for each attribute.
 	 */
-	private HashMap<String, Double> meanAttrValue;
+	protected HashMap<String, Double> meanAttrValue;
 }

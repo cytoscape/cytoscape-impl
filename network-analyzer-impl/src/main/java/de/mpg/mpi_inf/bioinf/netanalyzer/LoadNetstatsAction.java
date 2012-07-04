@@ -36,6 +36,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStats;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.StatsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 /**
  * Action handler for the menu item &quot;Load Network Statistics&quot;.

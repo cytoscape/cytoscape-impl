@@ -49,6 +49,12 @@ import javax.swing.event.ListSelectionListener;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.ConnComponentAnalyzer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.CyNetworkUtils;
@@ -64,6 +70,9 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 public class ConnComponentsDialog extends JDialog
 	implements ActionListener, DocumentListener, ListSelectionListener {
 
+	private final NewNetworkSelectedNodesAndEdgesTaskFatory tf;
+	private final TaskManager<?, ?> tm;
+	
 	/**
 	 * Initializes a new instance of <code>ConnComponentsDialog</code>.
 	 * 
@@ -73,11 +82,15 @@ public class ConnComponentsDialog extends JDialog
 	 * @throws HeadlessException if <code>GraphicsEnvironment.isHeadless()</code> returns
 	 *         <code>true</code>.
 	 */
-	public ConnComponentsDialog(Frame aOwner, CyNetwork aNetwork, CCInfo[] aComponents)
+	public ConnComponentsDialog(Frame aOwner, CyNetwork aNetwork, CCInfo[] aComponents,
+			final NewNetworkSelectedNodesAndEdgesTaskFatory tf, final TaskManager<?, ?> tm)
 		throws HeadlessException {
 		super(aOwner, Messages.DT_CONNCOMP, true);
 		network = aNetwork;
 		components = aComponents;
+		this.tf = tf;
+		this.tm = tm;
+		
 		initControls();
 		pack();
 		setResizable(false);
@@ -95,13 +108,24 @@ public class ConnComponentsDialog extends JDialog
 			setVisible(false);
 			dispose();
 		} else if (btnExtract == src) {
+			// Reset
+			for(CyNode node: network.getNodeList())
+				network.getRow(node).set(CyNetwork.SELECTED, false);
+			for(CyEdge edge: network.getEdgeList())
+				network.getRow(edge).set(CyNetwork.SELECTED, false);
+			
 			CCInfo comp = components[listComp.getSelectedIndex()];
-			ArrayList<CyNode> nodes = new ArrayList<CyNode>(ConnComponentAnalyzer.getNodesOf(network, comp));
-			Set<CyEdge> edges = CyNetworkUtils.getAllConnectingEdges(network,nodes);
-			// TODO figure out what the procedure should be for creating new networks from selected nodes/edges.
-			// This should be resolved in the NewNetworkFromNodesAndEdges tasks in core-task-impl, not here.
-//			Cytoscape.createNetwork(nodes, edges, fieldNetName.getText());
-			JOptionPane.showMessageDialog(getOwner(), "This functionality is not yet implemented");
+			final List<CyNode> nodes = new ArrayList<CyNode>(ConnComponentAnalyzer.getNodesOf(network, comp));
+			final Set<CyEdge> edges = CyNetworkUtils.getAllConnectingEdges(network,nodes);
+			
+			for(CyNode node: nodes)
+				network.getRow(node).set(CyNetwork.SELECTED, true);
+			for(CyEdge edge: edges)
+				network.getRow(edge).set(CyNetwork.SELECTED, true);
+			
+			final TaskIterator itr = tf.createTaskIterator(network);
+			tm.execute(itr);
+			//fieldNetName.getText();
 		}
 	}
 
@@ -124,7 +148,7 @@ public class ConnComponentsDialog extends JDialog
 			} else {
 				title = title + "_" + i;
 			}
-			fieldNetName.setText(title);
+			//fieldNetName.setText(title);
 		}
 	}
 
@@ -194,22 +218,23 @@ public class ConnComponentsDialog extends JDialog
 		panList.add(scrollList);
 		contentPane.add(panList);
 
-		JPanel panExtract = new JPanel(new BorderLayout());
-		panExtract.setBorder(BorderFactory.createTitledBorder(Messages.DI_EXTRCOMP));
-		panExtract.add(new JLabel(Messages.DI_EXTRCOMPLONG), BorderLayout.NORTH);
-		fieldNetName = new JTextField();
-		fieldNetName.getDocument().addDocumentListener(this);
-		panExtract.add(fieldNetName, BorderLayout.CENTER);
+//		JPanel panExtract = new JPanel(new BorderLayout());
+//		panExtract.setBorder(BorderFactory.createTitledBorder(Messages.DI_EXTRCOMP));
+//		panExtract.add(new JLabel(Messages.DI_EXTRCOMPLONG), BorderLayout.NORTH);
+//		fieldNetName = new JTextField();
+//		fieldNetName.getDocument().addDocumentListener(this);
+//		panExtract.add(fieldNetName, BorderLayout.CENTER);
 		btnExtract = Utils.createButton(Messages.DI_EXTR, null, this);
 		btnExtract.setEnabled(false);
-		JPanel panExtr = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-		panExtr.add(btnExtract);
-		panExtract.add(panExtr, BorderLayout.SOUTH);
-		contentPane.add(panExtract);
+//		JPanel panExtr = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+//		panExtr.add(btnExtract);
+//		panExtract.add(panExtr, BorderLayout.SOUTH);
+//		contentPane.add(panExtract);
 
 		JPanel panButtons = new JPanel();
 		panButtons.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnClose = Utils.createButton(Messages.DI_CLOSE, null, this);
+		panButtons.add(btnExtract);
 		panButtons.add(btnClose);
 		contentPane.add(panButtons);
 		setContentPane(contentPane);
@@ -219,7 +244,7 @@ public class ConnComponentsDialog extends JDialog
 	 * Updates the &quot;enabled&quot; status of the Extract button.
 	 */
 	private void updateBtnExtract() {
-		if ("".equals(fieldNetName.getText()) || listComp.getSelectedIndex() == -1) {
+		if (listComp.getSelectedIndex() == -1) {
 			btnExtract.setEnabled(false);
 		} else {
 			btnExtract.setEnabled(true);
@@ -251,8 +276,8 @@ public class ConnComponentsDialog extends JDialog
 	 */
 	private JList listComp;
 
-	/**
-	 * Text field for entering the name of a new network.
-	 */
-	private JTextField fieldNetName;
+//	/**
+//	 * Text field for entering the name of a new network.
+//	 */
+//	private JTextField fieldNetName;
 }

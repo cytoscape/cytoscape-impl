@@ -35,6 +35,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStatus;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.InterpretationDialog;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 /**
  * Action handler for the menu item &quot;Analyze Network&quot;.

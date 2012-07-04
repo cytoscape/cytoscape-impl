@@ -47,7 +47,6 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.CyNetworkUtils;
 import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
 import de.mpg.mpi_inf.bioinf.netanalyzer.NetworkAnalyzer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
-import de.mpg.mpi_inf.bioinf.netanalyzer.VisualStyleBuilder;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Decorators;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;

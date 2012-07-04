@@ -23,6 +23,8 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.CCInfo;
@@ -40,11 +42,17 @@ public class ConnComponentAction extends NetAnalyzerAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(ConnComponentAction.class);
 
+	private final NewNetworkSelectedNodesAndEdgesTaskFatory tf;
+	private final TaskManager<?, ?> tm;
+	
 	/**
 	 * Initializes a new instance of <code>ConnComponentAction</code>.
 	 */
-	public ConnComponentAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
+	public ConnComponentAction(CyApplicationManager appMgr,CySwingApplication swingApp, final NewNetworkSelectedNodesAndEdgesTaskFatory tf, final TaskManager<?, ?> tm) {
 		super(Messages.AC_CONNCOMP,appMgr,swingApp);
+		this.tf = tf;
+		this.tm = tm;
+		
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_MODIFICATION);
 	}
 
@@ -72,7 +80,7 @@ public class ConnComponentAction extends NetAnalyzerAction {
 				Utils.showInfoBox(swingApp.getJFrame(),Messages.DT_CONNCOMP, msg);
 			} else {
 				Arrays.sort(comps, new CCInfoInvComparator());
-				ConnComponentsDialog d = new ConnComponentsDialog(swingApp.getJFrame(), network, comps);
+				ConnComponentsDialog d = new ConnComponentsDialog(swingApp.getJFrame(), network, comps, tf, tm);
 				d.setVisible(true);
 			}
 		} catch (InnerException ex) {
