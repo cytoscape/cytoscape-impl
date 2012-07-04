@@ -174,23 +174,10 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-		// Collect set of tables to dispose
 		CyNetwork network = e.getNetwork();
-		Set<CyTable> tablesToDispose = new HashSet<CyTable>();
 		for (Class<? extends CyIdentifiable> type : COMPATIBLE_TYPES)
-			tablesToDispose.addAll(networkTableManager.getTables(network, type).values());
-		
-		// Exclude tables that are being referenced by other networks
-		for (CyNetwork otherNetwork : networkManager.getNetworkSet()) {
-			if (otherNetwork.getSUID() == network.getSUID())
-				continue;
-			
-			for (Class<? extends CyIdentifiable> type : COMPATIBLE_TYPES)
-				tablesToDispose.removeAll(networkTableManager.getTables(otherNetwork, type).values());
-		}
-		
-		for (CyTable table : tablesToDispose)
-			deleteTableInternal(table.getSUID(), true);
+			for (CyTable table : networkTableManager.getTables(network, type).values())
+				deleteTableInternal(table.getSUID(), true);
 	}
 
 

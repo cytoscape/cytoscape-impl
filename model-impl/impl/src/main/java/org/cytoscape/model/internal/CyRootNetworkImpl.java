@@ -130,6 +130,11 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		serviceRegistrar.unregisterAllServices(interactionSetListener);
 		serviceRegistrar.unregisterAllServices(networkAddedListenerDelegator);
 		serviceRegistrar.unregisterAllServices(networkNameSetListener);
+		
+		for (CySubNetwork network : subNetworks) {
+			network.dispose();
+		}
+		networkTableMgr.removeAllTables(this);
 	}
 	
 	// Simply register all tables to the table manager
@@ -297,6 +302,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		sub.removeNodes(sub.getNodeList());
 
 		subNetworks.remove( sub );
+		sub.dispose();
 	}
 
 	@Override

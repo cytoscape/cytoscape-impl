@@ -6,14 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 
-public class CyNetworkTableManagerImpl implements CyNetworkTableManager, NetworkAboutToBeDestroyedListener {
+public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 
 	private final Map<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>> tables;
 	
@@ -149,7 +147,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, Network
 	}
 	
 	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-		tables.remove(e.getNetwork());
+	public void removeAllTables(CyNetwork network) {
+		tables.remove(network);
 	}
 }

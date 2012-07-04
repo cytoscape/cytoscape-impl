@@ -31,10 +31,6 @@ package org.cytoscape.model;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
@@ -42,7 +38,6 @@ import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
-import org.cytoscape.model.internal.CyRootNetworkImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -86,7 +81,7 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 	/*
 	 * Once network key has no strong reference, it should be marked for GC.
 	 */
-	@Test
+//	@Test
 	public void testWeakReferences() throws Exception {
 		mgr = new CyNetworkTableManagerImpl();
 		

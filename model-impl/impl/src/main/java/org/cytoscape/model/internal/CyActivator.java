@@ -16,7 +16,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNetworkFactory;
 
 
@@ -49,7 +48,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,cyTableFactory,CyTableFactory.class, new Properties());
 		registerService(bc,cyRootNetworkFactory,CyRootNetworkManager.class, new Properties());
 		registerService(bc,cyTableManager,CyTableManager.class, new Properties());
-		registerService(bc,cyNetworkTableManager,CyNetworkTableManager.class, new Properties());
+		registerAllServices(bc,cyNetworkTableManager, new Properties());
 		registerService(bc,cyTableManager,NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,cyNetworkManager,CyNetworkManager.class, new Properties());
 

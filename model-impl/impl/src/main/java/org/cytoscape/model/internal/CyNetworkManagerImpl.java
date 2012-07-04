@@ -120,7 +120,7 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 				rootNetwork.dispose();
 		}
 		
-	    // TODO: remove tables!!
+	    network.dispose();
 	}
 
 	// let everyone know that some network is gone
