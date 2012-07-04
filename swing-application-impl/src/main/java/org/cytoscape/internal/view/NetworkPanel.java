@@ -38,6 +38,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -376,9 +377,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				removeNetwork(net);
 				ignoreTreeSelectionEvents = false;
 
-				nameTables.remove(net.getDefaultNetworkTable());
-				nodeEdgeTables.remove(net.getDefaultNodeTable());
-				nodeEdgeTables.remove(net.getDefaultEdgeTable());
+				nameTables.values().removeAll(Collections.singletonList(net));
+				nodeEdgeTables.values().removeAll(Collections.singletonList(net));
 			}
 		});
 	}
