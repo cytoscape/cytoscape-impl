@@ -1406,4 +1406,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public double getScaleFactor(){
 		return m_scaleFactor;
 	}
+
+	public void dispose() {
+		m_view = null;
+	}
 }
