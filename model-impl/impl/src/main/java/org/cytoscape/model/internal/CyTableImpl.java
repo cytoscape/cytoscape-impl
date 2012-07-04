@@ -779,7 +779,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		final Object value = getValue(key,columnName,type);
 
-		if ( value == null )
+		if (value == null)
 			return getDefaultValue(columnName,defaultValue);
 		else
 			return type.cast(value);
@@ -875,16 +875,18 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	synchronized private <T> boolean isSetX(final Object key, final String columnName) {
 		final String normalizedColName = normalizeColumnName(columnName);
+		
+		if (primaryKey.equalsIgnoreCase(normalizedColName))
+			return true;
+		
 		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 		
-		if (virtColumn != null)
+		if (virtColumn != null) {
 			return virtColumn.getRawValue(key) != null;
-		else {
+		} else {
 			final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
-			if (keyToValueMap == null) {
-				return false;
-			}
-			return keyToValueMap.get(key) != null;
+			
+			return keyToValueMap != null && keyToValueMap.get(key) != null;
 		}
 	}
 

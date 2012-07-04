@@ -84,14 +84,23 @@ public class CyTableTest extends AbstractCyTableTest {
 	}
 
 	@Test
+	public void testPrimaryKeyValueIsSet() {
+		Long pk = SUIDFactory.getNextSUID();
+		CyRow row = table.getRow(pk);
+		
+		assertTrue(row.isSet(CyIdentifiable.SUID));
+		assertEquals(pk, row.get(CyIdentifiable.SUID, Long.class));
+	}
+	
+	@Test
 	public void testSetEquation() {
 		table.createColumn("someDouble", Double.class, false);
 		table.createColumn("someOtherDouble", Double.class, false);
-
+		
 		compiler.compile("=6/3", new HashMap<String, Class<?>>());
 		final Equation eqn = compiler.getEquation();
 		attrs.set("someDouble", eqn);
-
+		
 		assertTrue(attrs.isSet("someDouble"));
 		assertEquals(2.0, attrs.get("someDouble", Double.class).doubleValue(), 0.00001);
 	}
