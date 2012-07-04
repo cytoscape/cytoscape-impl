@@ -86,12 +86,14 @@ public class CyActivator extends AbstractCyActivator {
 		ISOMLayoutProps.setProperty(MENU_GRAVITY,"10.9");
 		registerService(bc,ISOMLayout,CyLayoutAlgorithm.class, ISOMLayoutProps);
 
+		/*
 		Properties bioLayoutKKAlgorithmFALSEProps = new Properties();
 		bioLayoutKKAlgorithmFALSEProps.setProperty(PREFERRED_MENU,"Layout.Cytoscape Layouts");
 		bioLayoutKKAlgorithmFALSEProps.setProperty("preferredTaskManager","menu");
 		bioLayoutKKAlgorithmFALSEProps.setProperty(TITLE,bioLayoutKKAlgorithmFALSE.toString());
 		bioLayoutKKAlgorithmFALSEProps.setProperty(MENU_GRAVITY,"10.99");
 		registerService(bc,bioLayoutKKAlgorithmFALSE,CyLayoutAlgorithm.class, bioLayoutKKAlgorithmFALSEProps);
+		*/
 		
 		Properties bioLayoutKKAlgorithmTRUEProps = new Properties();
 		bioLayoutKKAlgorithmTRUEProps.setProperty(PREFERRED_MENU,"Layout.Cytoscape Layouts");
