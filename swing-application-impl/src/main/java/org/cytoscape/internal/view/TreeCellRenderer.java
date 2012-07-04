@@ -76,7 +76,12 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 		}
 		
 		setForeground(treeNode.getNodeColor());
-		setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyNetwork.NAME, String.class));
+		try {
+			setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyNetwork.NAME, String.class));
+		} catch (NullPointerException e) {
+			// It's possible that the network got deleted but we haven't been
+			// notified yet.
+		}
 
 		return this;
 	}
