@@ -18,10 +18,12 @@ import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 
-public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener, NetworkAddedListener {
+public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener, NetworkAddedListener, NetworkAboutToBeDestroyedListener {
 
 	private static final Set<Class<? extends CyIdentifiable>> GRAPH_OBJECTS;
 
@@ -83,6 +85,13 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 		this.tableSets.put(network, object2tableMap);
 	}
 
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
+		CyNetwork network = e.getNetwork();
+		attrSets.remove(network);
+		tableSets.remove(network);
+	}
+	
 	@Override
 	public void handleEvent(ColumnCreatedEvent e) {
 
