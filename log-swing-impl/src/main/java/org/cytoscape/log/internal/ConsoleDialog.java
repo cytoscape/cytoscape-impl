@@ -169,6 +169,7 @@ class ConsoleDialog {
 		dialog = new JDialog(app.getJFrame(), "Developer's Log Console");
 		dialog.setLayout(new GridBagLayout());
 		dialog.setModal(false);
+		dialog.setAlwaysOnTop(false);
 
 		filterTextField = new JTextField();
 		makeFilterTextFieldValid();

@@ -23,6 +23,9 @@ import org.cytoscape.service.util.AbstractCyActivator;
 
 import static org.cytoscape.work.ServiceProperties.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();
@@ -108,42 +111,6 @@ public class CyActivator extends AbstractCyActivator {
 			PREFERRED_MENU, "Help",
 			TITLE, "Developer's Log Console...")
 		);
-		/*
-
-		Map logViewConfigMap = new HashMap();
-		logViewConfigMap.put("baseHTMLPath","/consoledialogbase.html"); 
-		logViewConfigMap.put("colorParityTrue","ffffff");
-		logViewConfigMap.put("colorParityFalse","eeeeee");
-		logViewConfigMap.put("entryTemplate"," <html> <body bgcolor=\"#%s\"> <table border=0 width=\"100%%\" cellspacing=5> <tr> <td width=\"0%%\"><img src=\"%s\"></td> <td><h3>%s</h3></td> </tr> <tr> <td></td> <td><font size=\"-2\" color=\"#555555\">%s</font></td> </tr> </table> </body> </html>");
-		logViewConfigMap.put("DEBUG","console-debug.png");
-		logViewConfigMap.put("ERROR","console-error.png");
-		logViewConfigMap.put("FATAL","console-error.png");
-		logViewConfigMap.put("INFO","console-info.png");
-		logViewConfigMap.put("TRACE","console-debug.png");
-		logViewConfigMap.put("WARN","console-warning.png");
-
-		Map statusBarConfigMap = new HashMap();
-
-		LinkedBlockingQueue advancedQueue = new LinkedBlockingQueue();
-		LinkedBlockingQueue statusBarQueue = new LinkedBlockingQueue();
-		AdvancedQueueAppender advancedAppender = new AdvancedQueueAppender(advancedQueue);
-		StatusBarQueueAppender statusBarAppender = new StatusBarQueueAppender(statusBarQueue);
-		StatusBarUpdater statusBarUpdater = new StatusBarUpdater(cytoStatusBar,statusBarQueue,statusBarConfigMap);
-		ConsoleTaskFactory consoleTaskFactory = new ConsoleTaskFactory(simpleQueue,advancedQueue,executorService,cytoStatusBar,cySwingApplicationRef,taskManagerRef,logViewConfigMap,logViewConfigMap);
-		
-		
-		Properties advancedAppenderProps = new Properties();
-		advancedAppenderProps.setProperty("org.ops4j.pax.logging.appender.name","OrgCytoscapeLogSwingAdvancedAppender");
-		registerService(bc,advancedAppender,PaxAppender.class, advancedAppenderProps);
-
-
-		Properties statusBarAppenderProps = new Properties();
-		statusBarAppenderProps.setProperty("org.ops4j.pax.logging.appender.name","OrgCytoscapeLogSwingStatusBarAppender");
-		registerService(bc,statusBarAppender,PaxAppender.class, statusBarAppenderProps);
-
-		Properties consoleTaskFactoryProps = new Properties();
-		registerService(bc,consoleTaskFactory,TaskFactory.class, consoleTaskFactoryProps);
-		*/
 	}
 }
 

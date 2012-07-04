@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.cytoscape.application.swing.CySwingApplication;
-
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -17,6 +16,7 @@ import org.slf4j.Logger;
  * Handles the status bar at the bottom of the Cytoscape desktop
  */
 class CyStatusBar extends JPanel {
+    static final Logger logger = LoggerFactory.getLogger("CyUserMessages");
 	static final int MEM_UPDATE_DELAY_MS = 2000;
 	static final int MEM_STATE_ICON_DIM_PX = 14;
 	static enum MemState {
@@ -40,6 +40,8 @@ class CyStatusBar extends JPanel {
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setColor(color);
 			g2d.fillOval(1, 1, MEM_STATE_ICON_DIM_PX - 2, MEM_STATE_ICON_DIM_PX - 2);
+            g2d.setColor(Color.DARK_GRAY);
+			g2d.drawOval(1, 1, MEM_STATE_ICON_DIM_PX - 3, MEM_STATE_ICON_DIM_PX - 3);
 			this.icon = new ImageIcon(image);
 		}
 
@@ -94,8 +96,10 @@ class CyStatusBar extends JPanel {
 		final Runtime runtime = Runtime.getRuntime();
 		final long freeMem = runtime.freeMemory();
 		final long totalMem = runtime.totalMemory();
-		final double usedMem = 1.0 - (freeMem / (double) totalMem);
-		return (float) usedMem;
+        final long usedMem = totalMem - freeMem;
+		final long maxMem = runtime.maxMemory();
+		final double usedMemFraction = usedMem / (double) maxMem;
+		return (float) usedMemFraction;
 	}
 
 	static void performGC() {
@@ -163,7 +167,7 @@ class CyStatusBar extends JPanel {
 			}
 		});
 		gcBtn.setVisible(false);
-		gcBtn.setToolTipText("Invoke the Java Virtual Machine's garbage collector to try to free unused memory.");
+		gcBtn.setToolTipText("<html>Try to free unused memory.<br><br><i>Warning:</i> freeing memory may freeze Cytoscape for several seconds.</html>");
 		setFontSize(gcBtn, 9);
 
 		memStatusBtn = new JToggleButton();
@@ -215,10 +219,8 @@ class CyStatusBar extends JPanel {
 		updateTimer.start();
 	}
 
-	Logger logger = LoggerFactory.getLogger("CyUserMessages");
-
 	private void updateMemStatus() {
-		final long memTotal = Runtime.getRuntime().totalMemory();
+		final long memTotal = Runtime.getRuntime().maxMemory();
 		final String memTotalFmt = MemUnit.format(memTotal);
 
 		final float memUsed = getMemUsed();
