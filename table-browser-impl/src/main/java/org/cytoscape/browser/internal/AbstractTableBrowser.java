@@ -130,9 +130,16 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	
 	// Delete the given table from the JTable
 	public void deleteTable(CyTable cyTable){
+		BrowserTableModel model = browserTableModels.remove(cyTable);
+		if (model == null) {
+			return;
+		}
+		scrollPanes.remove(model);
+		serviceRegistrar.unregisterAllServices(model);
+		
+		model.getBrowserTable().setModel(new DefaultTableModel());
+		
 		if (currentTable == cyTable) {
-			browserTableModels.get(cyTable).getBrowserTable().setModel(new DefaultTableModel());				
-			browserTableModels.remove(cyTable);
 			currentTable = null;
 		}
 	}

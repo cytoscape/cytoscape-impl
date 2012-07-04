@@ -219,7 +219,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 			
 			setOpaque(true);
-			this.setText(network.getRow(network).get(CyNetwork.NAME, String.class));
+			
+			// When a network is deleted, its tables are also deleted, but it's
+			// possible that we still have a reference to a network with no tables.
+			try {
+				this.setText(network.getRow(network).get(CyNetwork.NAME, String.class));
+			} catch (NullPointerException e) {
+			}
 			
 			return this;
 		}
