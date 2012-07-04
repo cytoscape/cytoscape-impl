@@ -39,9 +39,11 @@ import org.cytoscape.event.CyPayloadEvent;
 import org.cytoscape.event.CyEventHelper;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
@@ -155,8 +157,11 @@ public class CyEventHelperImpl implements CyEventHelper {
 			flushList = new ArrayList<CyPayloadEvent<?,?>>();
 			havePayload = false;
 			
-			for ( Object source : sourceAccMap.keySet() ) {
-				for ( PayloadAccumulator<?,?,?> acc : sourceAccMap.get(source).values() ) {
+			Iterator<Entry<Object, Map<Class<?>, PayloadAccumulator<?, ?, ?>>>> iterator = sourceAccMap.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Entry<Object, Map<Class<?>, PayloadAccumulator<?, ?, ?>>> entry = iterator.next();
+				Object source = entry.getKey();
+				for ( PayloadAccumulator<?,?,?> acc : entry.getValue().values() ) {
 					try {
 						CyPayloadEvent<?,?> event = acc.newEventInstance( source );
 						if ( event != null ) {
@@ -166,6 +171,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 						logger.warn("Couldn't instantiate event for source: " + source, ie);
 					}
 				}
+				iterator.remove();
 			}
 			
 		}
