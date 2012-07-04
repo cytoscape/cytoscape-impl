@@ -43,7 +43,7 @@ public class CyActivator extends AbstractCyActivator {
 		AttributeCircleLayout attributeCircleLayout = new AttributeCircleLayout(undo);
 		DegreeSortedCircleLayout degreeSortedCircleLayout = new DegreeSortedCircleLayout(undo);
 		ISOMLayout ISOMLayout = new ISOMLayout(undo);
-		BioLayoutKKAlgorithm bioLayoutKKAlgorithmFALSE = new BioLayoutKKAlgorithm(false,undo);
+		// BioLayoutKKAlgorithm bioLayoutKKAlgorithmFALSE = new BioLayoutKKAlgorithm(false,undo);
 		BioLayoutKKAlgorithm bioLayoutKKAlgorithmTRUE = new BioLayoutKKAlgorithm(true,undo);
 		BioLayoutFRAlgorithm bioLayoutFRAlgorithm = new BioLayoutFRAlgorithm(true,undo);
 		StackedNodeLayout stackedNodeLayout = new StackedNodeLayout(undo);
