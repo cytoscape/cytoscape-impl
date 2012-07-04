@@ -23,7 +23,8 @@ public class BioLayoutKKContext extends BioLayoutContext implements TunableValid
 	public int m_layoutPass = 2;
 	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
-
+	@Tunable(description="Use unweighted edges", groups="Standard settings")
+	public boolean unweighted;
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {
 		return ValidationState.OK;

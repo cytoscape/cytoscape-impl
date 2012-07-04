@@ -547,8 +547,8 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 		for (LayoutEdge edge: partition.getEdgeList()) {
 			int node_i = edge.getSource().getIndex();
 			int node_j = edge.getTarget().getIndex();
-			double weight = edge.getWeight();
-
+			double weight = context.unweighted ? edgeWeighter.defaultEdgeWeight : edge.getWeight();
+			
 			// System.out.println(edge);
 			if (nodeDistances[node_i][node_j] != Integer.MAX_VALUE) {
 				// Compute spring rest lengths.
