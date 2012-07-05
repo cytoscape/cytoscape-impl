@@ -135,7 +135,7 @@ public final class VizMapPropertySheetMouseAdapter extends MouseAdapter {
 						CellType.MAPPING_TYPE, "Mapping Type", VisualMappingFunctionFactory.class);
 
 				newProp.setDisplayName(vp.getDisplayName());
-				newProp.setValue("Please select a value!");
+				newProp.setValue("Please select a value.");
 
 				if (vp.getTargetDataType().equals(CyNode.class)) {
 					newProp.setCategory(BasicVisualLexicon.NODE.getDisplayName());

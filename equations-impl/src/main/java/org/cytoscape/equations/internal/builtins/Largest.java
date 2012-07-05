@@ -70,7 +70,7 @@ public class Largest extends AbstractFunction {
 	public Object evaluateFunction(final Object[] args) throws IllegalArgumentException, ArithmeticException {
 		final List list = (List)args[0];
 		if (list.isEmpty())
-			throw new IllegalArgumentException("illegal empty list argument in call to LARGEST()!");
+			throw new IllegalArgumentException("illegal empty list argument in call to LARGEST().");
 
 		final double[] array = new double[list.size()];
 		int i = 0;
@@ -88,12 +88,12 @@ public class Largest extends AbstractFunction {
 		try {
 			k = FunctionUtil.getArgAsLong(args[1]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to an integer argument in a call to LARGEST()!");
+			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to an integer argument in a call to LARGEST().");
 		}
 		if (k <= 0)
-			throw new IllegalArgumentException("invalid index " + args[1] + " in a call to LARGEST()!");
+			throw new IllegalArgumentException("invalid index " + args[1] + " in a call to LARGEST().");
 		if (k > array.length)
-			throw new IllegalArgumentException("index " + args[1] + " is too large for a list w/ " + array.length + " elements in a call to LARGEST()!");
+			throw new IllegalArgumentException("index " + args[1] + " is too large for a list w/ " + array.length + " elements in a call to LARGEST().");
 
 		return (Double)kthSmallest(array, array.length - (int)k);
 	}

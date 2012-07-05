@@ -69,7 +69,7 @@ public class IList extends AbstractFunction {
 		try {
 			numbers = FunctionUtil.getLongs(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert an argument or a list element to an integer in a call to ILIST()!");
+			throw new IllegalArgumentException("can't convert an argument or a list element to an integer in a call to ILIST().");
 		}
 
 		return new LongList(numbers);

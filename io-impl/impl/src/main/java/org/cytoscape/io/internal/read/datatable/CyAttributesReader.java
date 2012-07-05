@@ -321,7 +321,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 				tbl.createListColumn(attributeName, Double.class, false);
 			else
 				// type is String, do nothing
-				/* Intentionally empty! */;
+				/* Intentionally empty. */;
 		}
 		CyRow row = tbl.getRow(key);
 		row.set(attributeName, elmsBuff);

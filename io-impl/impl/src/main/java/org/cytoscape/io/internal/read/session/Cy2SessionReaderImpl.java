@@ -141,19 +141,19 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		super(sourceInputStream, cache);
 		
 		if (networkReaderMgr == null)
-			throw new NullPointerException("network reader manager is null!");
+			throw new NullPointerException("network reader manager is null.");
 		this.networkReaderMgr = networkReaderMgr;
 
 		if (propertyReaderMgr == null)
-			throw new NullPointerException("property reader manager is null!");
+			throw new NullPointerException("property reader manager is null.");
 		this.propertyReaderMgr = propertyReaderMgr;
 
 		if (vizmapReaderMgr == null)
-			throw new NullPointerException("vizmap reader manager is null!");
+			throw new NullPointerException("vizmap reader manager is null.");
 		this.vizmapReaderMgr = vizmapReaderMgr;
 
 		if (rootNetworkManager == null)
-			throw new NullPointerException("root network factory is null!");
+			throw new NullPointerException("root network factory is null.");
 		this.rootNetworkManager = rootNetworkManager;
 
 		xgmmlEntries = new HashMap<String, String>();
@@ -295,7 +295,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			if (reader instanceof SessionXGMMLNetworkReader) {
 				((SessionXGMMLNetworkReader) reader).setParent(parent);
 			} else {
-				logger.error("CyNetworkReader should be an instance of XGMMLNetworkReader! "
+				logger.error("CyNetworkReader should be an instance of XGMMLNetworkReader. "
 						+ "Cannot extract network as sub-nertwork of: " + entryName);
 			}
 		}

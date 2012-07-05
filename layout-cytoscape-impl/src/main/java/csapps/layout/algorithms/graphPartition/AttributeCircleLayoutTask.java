@@ -55,7 +55,7 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 				//Collections.sort(nodes, new AttributeComparator<Comparable<?>>(kasted));
 				Collections.sort(nodes, new AttributeComparator(klass));
 			} else {
-				/* FIXME Error! */
+				/* FIXME Error. */
 			}
 		}
 

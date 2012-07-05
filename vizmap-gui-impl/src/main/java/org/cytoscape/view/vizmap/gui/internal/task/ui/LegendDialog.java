@@ -38,7 +38,7 @@ import org.freehep.util.export.ExportDialog;
  * Dialog for legend
  */
 
-// TODO: not working! Should create utility class to generate legend from given
+// TODO: not working. Should create utility class to generate legend from given
 // mapping.
 
 public class LegendDialog extends JDialog {

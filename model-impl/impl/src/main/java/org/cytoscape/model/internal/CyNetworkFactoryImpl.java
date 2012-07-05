@@ -59,16 +59,16 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 				    final CyServiceRegistrar serviceRegistrar)
 	{
 		if (help == null)
-			throw new NullPointerException("CyEventHelper is null!");
+			throw new NullPointerException("CyEventHelper is null.");
 
 		if (mgr == null)
-			throw new NullPointerException("CyTableManager is null!");
+			throw new NullPointerException("CyTableManager is null.");
 
 		if (tableFactory == null)
-			throw new NullPointerException("CyTableFactory is null!");
+			throw new NullPointerException("CyTableFactory is null.");
 
 		if (serviceRegistrar == null)
-			throw new NullPointerException("CyServiceRegistrar is null!");
+			throw new NullPointerException("CyServiceRegistrar is null.");
 
 		this.help             = help;
 		this.mgr              = mgr;

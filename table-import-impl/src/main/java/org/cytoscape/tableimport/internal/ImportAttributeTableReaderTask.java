@@ -168,7 +168,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	public ValidationState getValidationState(Appendable errMsg) {
 		if (amp.getKeyIndex() == -1){
 			try {
-				errMsg.append("The primary key column needs to be selected!");
+				errMsg.append("The primary key column needs to be selected.");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;
@@ -178,7 +178,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		
 		if (amp.getSelectedColumnCount() < 2){
 			try {
-				errMsg.append("Table should have more than one column! Please check the selected delimeters and columns.");
+				errMsg.append("Table should have more than one column. Please check the selected delimeters and columns.");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;

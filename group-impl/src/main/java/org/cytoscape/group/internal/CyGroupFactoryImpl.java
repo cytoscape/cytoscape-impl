@@ -54,13 +54,13 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 				    final CyServiceRegistrar serviceRegistrar)
 	{
 		if (help == null)
-			throw new NullPointerException("CyEventHelper is null!");
+			throw new NullPointerException("CyEventHelper is null.");
 
 		if (mgr == null)
-			throw new NullPointerException("CyGroupManager is null!");
+			throw new NullPointerException("CyGroupManager is null.");
 
 		if (serviceRegistrar == null)
-			throw new NullPointerException("CyServiceRegistrar is null!");
+			throw new NullPointerException("CyServiceRegistrar is null.");
 
 		this.help             = help;
 		this.mgr              = mgr;

@@ -278,7 +278,7 @@ public class AppManager {
 						if (parsedApp instanceof SimpleApp) {
 							logger.warn("A simple app " + file.getName() + " was moved to the " 
 									+ "framework/deploy directory. It should be installed via the "
-									+ "app manager! Installing anyway..");
+									+ "app manager. Installing anyway..");
 						}
 
 						//System.out.println("App was parsed: " + file);

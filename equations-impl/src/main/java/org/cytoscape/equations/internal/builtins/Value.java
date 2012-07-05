@@ -71,7 +71,7 @@ public class Value extends AbstractFunction {
 		try {
 			return Double.parseDouble((String)args[0]);
 		} catch (final NumberFormatException e) {
-			throw new IllegalArgumentException("text argument \"" + args[0] + "\"of VALUE() function is not a valid number!");
+			throw new IllegalArgumentException("text argument \"" + args[0] + "\"of VALUE() function is not a valid number.");
 		}
 	}
 }

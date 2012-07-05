@@ -99,19 +99,19 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	 */
 	public final void run(final TaskMonitor tm) throws Exception {
 		if (outputFile == null)
-			throw new NullPointerException("Output file has not ben specified!");
+			throw new NullPointerException("Output file has not ben specified.");
 
 		final String desc = getExportFileFormat();
 		if (desc == null)
-			throw new NullPointerException("No file type has been specified!");
+			throw new NullPointerException("No file type has been specified.");
 
 		final CyFileFilter filter = getFileFilter(desc);
 		if (filter == null)
-			throw new NullPointerException("No file filter found for specified file type!");
+			throw new NullPointerException("No file filter found for specified file type.");
 		
 		final CyWriter writer = getWriter(filter, outputFile); 
 		if (writer == null)
-			throw new NullPointerException("No CyWriter found for specified file type!");
+			throw new NullPointerException("No CyWriter found for specified file type.");
 
 		insertTasksAfterCurrentTask(writer);
 	}

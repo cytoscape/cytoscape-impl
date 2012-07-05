@@ -85,7 +85,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		network = mapper.createCyNetwork(networkName);
 		
 		if (network.getNodeCount() == 0) {
-			log.error("Pathway is empty! Please check the BioPAX source file.");
+			log.error("Pathway is empty. Please check the BioPAX source file.");
 		}
 	}
 

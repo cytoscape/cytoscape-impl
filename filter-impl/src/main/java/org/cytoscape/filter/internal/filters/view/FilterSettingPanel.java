@@ -530,7 +530,7 @@ public class FilterSettingPanel extends JPanel {
 
 				retFilter.setIndex(quickFind.getIndex(cyNetwork));
 		} else {
-				logger.error("AttributeType is not numeric/string/list/boolean!");
+				logger.error("AttributeType is not numeric/string/list/boolean.");
 		}
 
 		if (retFilter != null) {

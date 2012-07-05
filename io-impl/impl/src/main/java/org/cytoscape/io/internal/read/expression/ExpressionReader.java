@@ -247,7 +247,7 @@ public class ExpressionReader extends AbstractTableReader {
 			++lineCount;
 
 			if (headerLine == null || headerLine.length() == 0) {
-				taskMonitor.setStatusMessage("Missing header in input file!");
+				taskMonitor.setStatusMessage("Missing header in input file.");
 				return;
 			}
 			taskMonitor.setProgress(0.1);
@@ -258,7 +258,7 @@ public class ExpressionReader extends AbstractTableReader {
 				headerLine = input.readLine();
 				++lineCount;
 				if (headerLine == null) {
-					taskMonitor.setStatusMessage("Missing header in input file!");
+					taskMonitor.setStatusMessage("Missing header in input file.");
 					return;
 				}
 			}

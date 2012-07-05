@@ -134,7 +134,7 @@ public class CreateNewNetworkPanel extends JPanel implements ActionListener {
 
 		this.layout = new JCheckBox();
 		layout.setText("Apply preferred layout");
-		layout.setToolTipText("Note: This option may take minutes to finish for large networks!");
+		layout.setToolTipText("Note: This option may take minutes to finish for large networks.");
 
 		this.loadNetwork = new JLabel("From file...");
 		//this.loadNetwork.setIcon(openIcon);

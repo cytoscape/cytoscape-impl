@@ -70,11 +70,11 @@ public class Median extends AbstractFunction {
 		try {
 			numbers = FunctionUtil.getDoubles(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert an argument or list element to a number in a call to MEDIAN()!");
+			throw new IllegalArgumentException("can't convert an argument or list element to a number in a call to MEDIAN().");
 		}
 
 		if (numbers.length == 0)
-			throw new IllegalArgumentException("can't calculate the median of an empty list!");
+			throw new IllegalArgumentException("can't calculate the median of an empty list.");
 
 		Arrays.sort(numbers);
 

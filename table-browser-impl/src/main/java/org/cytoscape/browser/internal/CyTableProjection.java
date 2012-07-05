@@ -67,7 +67,7 @@ public final class CyTableProjection implements CyTable {
 				throw new IllegalArgumentException("\"" + columnName
 				                                   + "\" is not a known column in the \""
 				                                   + underlyingTable.getTitle()
-				                                   + "\" table!");
+				                                   + "\" table.");
 		}
 	}
 
@@ -80,7 +80,7 @@ public final class CyTableProjection implements CyTable {
 		if (!underlyingTable.rowExists(primaryKey))
 			throw new IllegalArgumentException("\"" + primaryKey
 			                                   + "\" is not a primary key for the underlying reference table \""
-			                                   + underlyingTable.getTitle() + "\"!");
+			                                   + underlyingTable.getTitle() + "\".");
 		primaryKeys.add(primaryKey);
 	}
 
@@ -128,7 +128,7 @@ public final class CyTableProjection implements CyTable {
 	 */
 	@Override
 	public void setTitle(final String title) {
-		throw new UnsupportedOperationException("setTitle() method not supported!");
+		throw new UnsupportedOperationException("setTitle() method not supported.");
 	}
 
 	/**
@@ -170,7 +170,7 @@ public final class CyTableProjection implements CyTable {
 	 */
 	@Override
 	public void deleteColumn(String columnName) {
-		throw new UnsupportedOperationException("deleteColumn() method not supported!");
+		throw new UnsupportedOperationException("deleteColumn() method not supported.");
 	}
 
 	/**
@@ -184,7 +184,7 @@ public final class CyTableProjection implements CyTable {
 	public <T> void createColumn(String columnName, Class<?extends T> type,
 	                             boolean isImmutable)
 	{
-		throw new UnsupportedOperationException("createColumn() method not supported!");
+		throw new UnsupportedOperationException("createColumn() method not supported.");
 	}
 
 	/**
@@ -199,7 +199,7 @@ public final class CyTableProjection implements CyTable {
 	public <T> void createColumn(String columnName, Class<?extends T> type,
 	                             boolean isImmutable, T defValue)
 	{
-		throw new UnsupportedOperationException("createColumn() method not supported!");
+		throw new UnsupportedOperationException("createColumn() method not supported.");
 	}
 
 	/**
@@ -213,7 +213,7 @@ public final class CyTableProjection implements CyTable {
 	public <T> void createListColumn(String columnName, Class<T> listElementType,
 	                                 boolean isImmutable)
 	{
-		throw new UnsupportedOperationException("createListColumn() method not supported!");
+		throw new UnsupportedOperationException("createListColumn() method not supported.");
 	}
 
 	/**
@@ -228,7 +228,7 @@ public final class CyTableProjection implements CyTable {
 	public <T> void createListColumn(String columnName, Class<T> listElementType,
 	                                 boolean isImmutable, List<T> defValue)
 	{
-		throw new UnsupportedOperationException("createListColumn() method not supported!");
+		throw new UnsupportedOperationException("createListColumn() method not supported.");
 	}
 
 	/**
@@ -242,7 +242,7 @@ public final class CyTableProjection implements CyTable {
 	@Override
 	public CyRow getRow(Object primaryKey) {
 		if (!rowExists(primaryKey))
-			throw new UnsupportedOperationException("row creation is not supported by CyTableProjection!");
+			throw new UnsupportedOperationException("row creation is not supported by CyTableProjection.");
 		
 		return underlyingTable.getRow(primaryKey);
 	}
@@ -331,7 +331,7 @@ public final class CyTableProjection implements CyTable {
 	public String addVirtualColumn(String virtualColumn, String sourceColumn,
 				       CyTable sourceTable, String targetJoinKey, boolean isImmutable)
 	{
-		throw new UnsupportedOperationException("addVirtualColumn() method not supported!");
+		throw new UnsupportedOperationException("addVirtualColumn() method not supported.");
 	}
 
 	/** Adds all columns in another table as "virtual" columns to the the current table.
@@ -345,7 +345,7 @@ public final class CyTableProjection implements CyTable {
 	@Override
 	public void addVirtualColumns(CyTable sourceTable, String targetJoinKey, boolean isImmutable)
 	{
-		throw new UnsupportedOperationException("addVirtualColumns() method not supported!");
+		throw new UnsupportedOperationException("addVirtualColumns() method not supported.");
 	}
 	
 	/**
@@ -366,7 +366,7 @@ public final class CyTableProjection implements CyTable {
 
 	/** Swaps the contents and properties, like mutability etc. of "otherTable" with this table.
 	 *  @param otherTable  the table that we're being swapped with.
-	 *  Note: the one "property" that is not being swapped is the SUID!  Also, no events are being
+	 *  Note: the one "property" that is not being swapped is the SUID.  Also, no events are being
 	 *        fired to give any listners a chance to react to the exchange!
 	 */
 	@Override
@@ -376,11 +376,11 @@ public final class CyTableProjection implements CyTable {
 
 	@Override
 	public void setPublic(boolean isPublic) {
-		throw new UnsupportedOperationException("setPublic(boolean isPublic) method not supported!");		
+		throw new UnsupportedOperationException("setPublic(boolean isPublic) method not supported.");		
 	}
 	
 	@Override
 	public boolean deleteRows(Collection<?> primaryKeys) {
-		throw new UnsupportedOperationException("deleteRows() method not supported!");		
+		throw new UnsupportedOperationException("deleteRows() method not supported.");		
 	}
 }

@@ -50,7 +50,7 @@ public class UnaryOpNode extends AbstractNode {
 		super(sourceLocation);
 
 		if (operand == null)
-			throw new IllegalArgumentException("operand must not be null!");
+			throw new IllegalArgumentException("operand must not be null.");
 
 		this.operator = operator;
 		this.operand = operand;
@@ -83,7 +83,7 @@ public class UnaryOpNode extends AbstractNode {
 			codeStack.push(new CodeAndSourceLocation(Instruction.FUMINUS, getSourceLocation()));
 			break;
 		default:
-			throw new IllegalStateException("invalid unary operation: " + operator + "!");
+			throw new IllegalStateException("invalid unary operation: " + operator + ".");
 		}
 	}
 }

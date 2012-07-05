@@ -115,7 +115,7 @@ class EqnSupport {
 			return ((Long)result).intValue();
 
 		throw new IllegalArgumentException("unexpected equation result type " + resultType
-						   + " for a column of type " + columnType + "!");
+						   + " for a column of type " + columnType + ".");
 	}
 
 	static Object evalEquation(final Equation equation, final Object key,
@@ -127,7 +127,7 @@ class EqnSupport {
 		if (currentlyActiveAttributes.contains(columnName)) {
 			currentlyActiveAttributes.clear();
 			try {
-				lastInternalError.append("Recursive equation evaluation of \"" + columnName + "\"!");
+				lastInternalError.append("Recursive equation evaluation of \"" + columnName + "\".");
 			} catch (Exception e) {
 				// Intentionally empty!
 			}
@@ -155,7 +155,7 @@ class EqnSupport {
 					try {
 						lastInternalError.append(
 							"Missing value for referenced attribute \""
-							+ attribRef + "\"!");
+							+ attribRef + "\".");
 					} catch (Exception e) {
 						// Intentionally empty!
 					}
@@ -172,7 +172,7 @@ class EqnSupport {
 				currentlyActiveAttributes.clear();
 				try {
 					lastInternalError.append("Bad attribute reference to \""
-								 + attribRef + "\"!");
+								 + attribRef + "\".");
 				} catch (Exception e2) {
 					// Intentionally empty!
 				}
@@ -236,7 +236,7 @@ class EqnSupport {
 
 		// We should never get here because "columnName" should have been found in the for-loop above!
 		throw new IllegalStateException("\"" + columnName
-		                                + "\" was not found in the toplogical order, which should be impossible!");
+		                                + "\" was not found in the toplogical order, which should be impossible.");
 	}
 
 	/**
@@ -307,7 +307,7 @@ class EqnSupport {
 			final Integer retVal = doubleToInteger((Double)equationValue);
 			if (retVal == null)
 				logger.warn("Cannot convert a floating point value ("
-					    + equationValue + ") to an integer!  (ID:" + id
+					    + equationValue + ") to an integer.  (ID:" + id
 					    + ", attribute name:" + columnName + ")");
 			return retVal;
 		}
@@ -315,7 +315,7 @@ class EqnSupport {
 			final Integer retVal = longToInteger((Long)equationValue);
 			if (retVal == null)
 				logger.warn("Cannot convert a large integer (long) value ("
-					    + equationValue + ") to an integer! (ID:" + id
+					    + equationValue + ") to an integer. (ID:" + id
 					    + ", attribute name:" + columnName + ")");
 			return retVal;
 		}
@@ -324,7 +324,7 @@ class EqnSupport {
 			return (Integer)(boolValue ? 1 : 0);
 		}
 		else
-			throw new IllegalStateException("we should never get here!");
+			throw new IllegalStateException("we should never get here.");
 	}
 
 	/**
@@ -347,13 +347,13 @@ class EqnSupport {
 				return Double.parseDouble(valueAsString);
 			} catch (final NumberFormatException e) {
 				logger.warn("Cannot convert a string (\"" + valueAsString
-				            + "\") to a floating point value! (ID:" + id
+				            + "\") to a floating point value. (ID:" + id
                                             + ", attribute name:" + columnName + ")");
 				return null;
 			}
 		}
 		else
-			throw new IllegalStateException("we should never get here!");
+			throw new IllegalStateException("we should never get here.");
 	}
 
 	/**
@@ -377,12 +377,12 @@ class EqnSupport {
 				return false;
 			else {
 				logger.warn("Cannot convert a string (\"" + stringValue
-				            + "\") to a boolean value! (ID:" + id
+				            + "\") to a boolean value. (ID:" + id
                                             + ", attribute name:" + columnName + ")");
 				return null;
 			}
 		}
 		else
-			throw new IllegalStateException("we should never get here!");
+			throw new IllegalStateException("we should never get here.");
 	}
 }

@@ -82,7 +82,7 @@ public class OutDegree extends AbstractFunction {
 
 		final CyNode node = suidToNodeMapper.getNode(nodeID);
 		if (node == null)
-			throw new IllegalArgumentException("\"" + nodeID + "\" is not a valid node identifier!");
+			throw new IllegalArgumentException("\"" + nodeID + "\" is not a valid node identifier.");
 		
 		return (Long)(long)currentNetwork.getAdjacentEdgeList(node, CyEdge.Type.OUTGOING).size();
 	}

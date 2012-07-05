@@ -44,9 +44,9 @@ public final class CopyValueToEntireColumnTaskFactoryImpl extends AbstractTableC
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column, Object primaryKeyValue) {
 		if (column == null)
-			throw new IllegalStateException("\"column\" was not set!");
+			throw new IllegalStateException("\"column\" was not set.");
 		if (primaryKeyValue == null)
-			throw new IllegalStateException("\"primaryKeyValue\" was not set!");
+			throw new IllegalStateException("\"primaryKeyValue\" was not set.");
 		return new TaskIterator(new CopyValueToEntireColumnTask(undoSupport, column,
 									primaryKeyValue));
 	}

@@ -46,7 +46,7 @@ public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory i
 	@Override
 	public TaskIterator createTaskIterator(CyTable table) {
 		if (table == null)
-			throw new IllegalStateException("you forgot to set the CyTable on this task factory!");
+			throw new IllegalStateException("you forgot to set the CyTable on this task factory.");
 		return new TaskIterator(new DeleteTableTask(tableManager, table));
 	}
 }

@@ -64,7 +64,7 @@ public class ACos extends AbstractFunction {
 	public Object evaluateFunction(final Object[] args) {
 		final double arg = FunctionUtil.getArgAsDouble(args[0]);
 		if (arg < -1.0 || arg > 1.0)
-			throw new IllegalArgumentException("the argument to ACOS() must be in [-1,+1]!");
+			throw new IllegalArgumentException("the argument to ACOS() must be in [-1,+1].");
 		return Math.acos(arg);
 	}
 }

@@ -87,7 +87,7 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 					return true;
 			} else {
 				logger.error("isNetworkTitleTaken: CyNetwork " 
-					+ existingNetwork.getSUID() + " 'name' is NULL!");
+					+ existingNetwork.getSUID() + " 'name' is NULL.");
 			}
 		}
 

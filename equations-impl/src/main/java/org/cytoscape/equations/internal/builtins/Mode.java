@@ -70,7 +70,7 @@ public class Mode extends AbstractFunction {
 		try {
 			x = FunctionUtil.getDoubles(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("non-numeric argument or list element in a call to MODE()!");
+			throw new IllegalArgumentException("non-numeric argument or list element in a call to MODE().");
 		}
 
 		Arrays.sort(x);
@@ -93,7 +93,7 @@ public class Mode extends AbstractFunction {
 		}
 
 		if (highestFrequencySoFar < 2)
-			throw new IllegalArgumentException("the are no duplicates in the list of numbers supplied to MODE()!");
+			throw new IllegalArgumentException("the are no duplicates in the list of numbers supplied to MODE().");
 
 		return mode;
 	}

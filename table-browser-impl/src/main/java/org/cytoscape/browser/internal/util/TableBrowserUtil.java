@@ -26,7 +26,7 @@ public final class TableBrowserUtil {
 		try {
 			return Long.valueOf(text);
 		} catch (final Exception e) {
-			errorMessage.append("Can't convert text to a whole number!");
+			errorMessage.append("Can't convert text to a whole number.");
 			return null;
 		}
 	}
@@ -35,7 +35,7 @@ public final class TableBrowserUtil {
 		try {
 			return Integer.valueOf(text);
 		} catch (final Exception e) {
-			errorMessage.append("Can't convert text to a whole number!");
+			errorMessage.append("Can't convert text to a whole number.");
 			return null;
 		}
 	}
@@ -44,7 +44,7 @@ public final class TableBrowserUtil {
 		try {
 			return Double.valueOf(text);
 		} catch (final Exception e) {
-			errorMessage.append("Can't convert text to a floating point number!");
+			errorMessage.append("Can't convert text to a floating point number.");
 			return null;
 		}
 	}
@@ -56,7 +56,7 @@ public final class TableBrowserUtil {
 		if (text.compareToIgnoreCase("false") == 0)
 			return Boolean.valueOf(false);
 
-		errorMessage.append("Can't convert text to a truth value!");
+		errorMessage.append("Can't convert text to a truth value.");
 		return null;
 	}
 
@@ -86,7 +86,7 @@ public final class TableBrowserUtil {
 						errorMessage);
 		else
 			throw new IllegalStateException("unknown column type: "
-					+ columnType.getName() + "!");
+					+ columnType.getName() + ".");
 
 		ArrayList retValue = new ArrayList();
 		retValue.add(parsedValue);;
@@ -112,7 +112,7 @@ public final class TableBrowserUtil {
 				reader.mark(0);
 				ch = reader.read();
 			} catch (final IOException e) {
-				throw new IllegalStateException("We should *never* get here!");
+				throw new IllegalStateException("We should *never* get here.");
 			}
 
 			if (ch == '\n' || ch == '\t' || ch == ' ')
@@ -124,7 +124,7 @@ public final class TableBrowserUtil {
 					state = ListParserState.ITEM_OR_CLOSING_BRACE_EXPECTED;
 					break;
 				} else {
-					errorMessage.append("List must start with '['!");
+					errorMessage.append("List must start with '['.");
 					return null;
 				}
 			case ITEM_OR_CLOSING_BRACE_EXPECTED:
@@ -134,13 +134,13 @@ public final class TableBrowserUtil {
 				}
 			case ITEM_EXPECTED:
 				if (ch == EOF) {
-					errorMessage.append("Premature end of list!");
+					errorMessage.append("Premature end of list.");
 					return null;
 				}
 				try {
 					reader.reset();
 				} catch (final IOException e) {
-					throw new IllegalStateException("We should *never* get here!");
+					throw new IllegalStateException("We should *never* get here.");
 				}
 
 				final Object item = getListItem(reader, listElementType, errorMessage);
@@ -158,12 +158,12 @@ public final class TableBrowserUtil {
 					state = ListParserState.ITEM_EXPECTED;
 					break;
 				} else {
-					errorMessage.append("Unexpected character(s) in list detected!");
+					errorMessage.append("Unexpected character(s) in list detected.");
 					return null;
 				}
 			case END_OF_INPUT_EXPECTED:
 				if (ch != EOF) {
-					errorMessage.append("Unexpected garbage after end of list!");
+					errorMessage.append("Unexpected garbage after end of list.");
 					return null;
 				}
 
@@ -186,18 +186,18 @@ public final class TableBrowserUtil {
 				reader.mark(0);
 				ch = reader.read();
 			} catch (final IOException e) {
-				throw new IllegalStateException("We should *never* get here!");
+				throw new IllegalStateException("We should *never* get here.");
 			}
 			final StringBuilder builder = new StringBuilder();
 			if (ch == '-')
 				builder.append((char)ch);
 			else if (ch == '+')
-				/* Intentionally empty! */;
+				/* Intentionally empty. */;
 			else {
 				try {
 					reader.reset();
 				} catch (final IOException e) {
-					throw new IllegalStateException("We should *never* get here!");
+					throw new IllegalStateException("We should *never* get here.");
 				}
 			}
 
@@ -208,7 +208,7 @@ public final class TableBrowserUtil {
 				else
 					return Long.valueOf(builder.toString());
 			} catch (final NumberFormatException e) {
-				errorMessage.append("Found invalid integer or long integer list item!");
+				errorMessage.append("Found invalid integer or long integer list item.");
 				return null;
 			}
 		} else if (listElementType == Boolean.class) {
@@ -221,12 +221,12 @@ public final class TableBrowserUtil {
 				return Boolean.valueOf(false);
 			else {
 				errorMessage.append("\"" + boolValueCandidate
-						+ "\" is not a valid boolean list item!");
+						+ "\" is not a valid boolean list item.");
 				return null;
 			}
 		} else
 			throw new IllegalStateException("unknown list element type: "
-					+ listElementType.getName() + "!");
+					+ listElementType.getName() + ".");
 	}
 
 
@@ -235,7 +235,7 @@ public final class TableBrowserUtil {
 			reader.mark(0);
 			int ch = reader.read();
 			if (ch == EOF) {
-				errorMessage.append("Unexpected end of input while trying to read a floating point number!");
+				errorMessage.append("Unexpected end of input while trying to read a floating point number.");
 				return null;
 			}
 
@@ -256,7 +256,7 @@ public final class TableBrowserUtil {
 			ch = reader.read();
 			if (ch != '.') {
 				if (needAfterDecimalPointDigits) {
-					errorMessage.append("Bad or missing floating point list item!");
+					errorMessage.append("Bad or missing floating point list item.");
 					return null;
 				}
 				reader.reset();
@@ -265,7 +265,7 @@ public final class TableBrowserUtil {
 				savedLength = builder.length();
 				grabAsciiDigits(reader, builder);
 				if (needAfterDecimalPointDigits && savedLength == builder.length()) {
-					errorMessage.append("Bad or missing floating point list item!");
+					errorMessage.append("Bad or missing floating point list item.");
 					return null;
 				}
 			}
@@ -289,7 +289,7 @@ public final class TableBrowserUtil {
 				savedLength = builder.length();
 				grabAsciiDigits(reader, builder);
 				if (builder.length() == savedLength) {
-					errorMessage.append("Invalid exponent!");
+					errorMessage.append("Invalid exponent.");
 					return null;
 				}
 			}
@@ -297,11 +297,11 @@ public final class TableBrowserUtil {
 			try {
 				return Double.valueOf(builder.toString());
 			} catch (Exception e) {
-				errorMessage.append("Malformed number!");
+				errorMessage.append("Malformed number.");
 				return null;
 			}
 		} catch (final IOException e) {
-			throw new IllegalStateException("This should *never* happen!");
+			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
 
@@ -318,14 +318,14 @@ public final class TableBrowserUtil {
 				builder.append((char)ch);
 			}
 		} catch (final IOException e) {
-			throw new IllegalStateException("This should *never* happen!");
+			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
 
 	private static String getString(final StringReader reader, final StringBuilder errorMessage) {
 		try {
 			if (reader.read() != '"') {
-				errorMessage.append("Strings must start with a double quote symbol!");
+				errorMessage.append("Strings must start with a double quote symbol.");
 				return null;
 			}
 
@@ -335,7 +335,7 @@ public final class TableBrowserUtil {
 			boolean escaped = false;
 			while (escaped || ch != '"') {
 				if (ch == EOF) {
-					errorMessage.append("Unterminated string list item!");
+					errorMessage.append("Unterminated string list item.");
 					return null;
 				}
 
@@ -370,7 +370,7 @@ public final class TableBrowserUtil {
 
 			return builder.toString();
 		} catch (final IOException e) {
-			throw new IllegalStateException("This should *never* happen!");
+			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
 
@@ -391,7 +391,7 @@ public final class TableBrowserUtil {
 				builder.append((char)ch);
 			}
 		} catch (final IOException e) {
-			throw new IllegalStateException("This should *never* happen!");
+			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
 	

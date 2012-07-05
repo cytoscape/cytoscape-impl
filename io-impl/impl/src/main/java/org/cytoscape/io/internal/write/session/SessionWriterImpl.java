@@ -187,7 +187,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		zipFileListMap();
 		taskMonitor.setProgress(0.9);
 		zos.close();
-		taskMonitor.setStatusMessage("Done!");
+		taskMonitor.setStatusMessage("Done.");
 		taskMonitor.setProgress(1.0);
 	}
 

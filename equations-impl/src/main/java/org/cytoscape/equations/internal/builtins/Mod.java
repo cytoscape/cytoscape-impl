@@ -68,17 +68,17 @@ public class Mod extends AbstractFunction {
 		try {
 			number = FunctionUtil.getArgAsDouble(args[0]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a number in a call to MOD()!");
+			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a number in a call to MOD().");
 		}
 
 		final double divisor;
 		try {
 			divisor = FunctionUtil.getArgAsDouble(args[1]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to a divisor in a call to MOD()!");
+			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to a divisor in a call to MOD().");
 		}
 		if (divisor == 0.0)
-			throw new ArithmeticException("division by zero in call to MOD()!");
+			throw new ArithmeticException("division by zero in call to MOD().");
 
 		final double result = number % divisor;
 		if (Math.signum(result) != Math.signum(divisor))

@@ -124,7 +124,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	public VisualStyle getVisualStyle(CyNetworkView nv) {
 		if (nv == null) {
 			logger.warn("Attempting to get the visual style for a null network view; " + 
-			            "returning the default visual style!");
+			            "returning the default visual style.");
 			return getDefaultVisualStyle();	
 		}
 
@@ -269,7 +269,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	@Override
 	public VisualStyle getDefaultVisualStyle() {
 		if (defaultStyle == null)
-			throw new IllegalStateException("No rendering engine is available, and cannot create default style!");
+			throw new IllegalStateException("No rendering engine is available, and cannot create default style.");
 		
 		return defaultStyle;
 	}

@@ -66,8 +66,8 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 		engine.printCanvas(g);
 		g.endExport();
 		
-		logger.debug("SVG Rendering DONE!");
-		taskMonitor.setStatusMessage("SVG Rendering DONE!");		
+		logger.debug("SVG Rendering DONE.");
+		taskMonitor.setStatusMessage("SVG Rendering DONE.");		
 		taskMonitor.setProgress(1.0);
 	}
 

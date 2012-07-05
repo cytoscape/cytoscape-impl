@@ -89,7 +89,7 @@ public class OpenSessionTask extends AbstractTask {
 		taskMonitor.setProgress(0.0);
 
 		if ( file == null )
-			throw new NullPointerException("No file specified!");
+			throw new NullPointerException("No file specified.");
 		
 		reader = readerMgr.getReader(file.toURI(),file.getName());
 		if (reader == null)

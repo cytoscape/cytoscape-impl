@@ -85,7 +85,7 @@ public class Parser {
 		} else if (line.hasOption("c")) {
 			startupConfig.setCommandFile(line.getOptionValue("c"));
 		} else {
-			logger.error("No arguments specified! See usage for details.");
+			logger.error("No arguments specified. See usage for details.");
 			printHelp();
 		}
 	}

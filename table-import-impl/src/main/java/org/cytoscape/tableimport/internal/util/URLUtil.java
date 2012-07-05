@@ -106,7 +106,7 @@ public class URLUtil {
 		try {
 			is = uc.getInputStream();
 		} catch (final Exception e) {
-			throw new IllegalStateException("Failed to get input stream for \"" + source + "\"!");
+			throw new IllegalStateException("Failed to get input stream for \"" + source + "\".");
 		}
 		return is;
 	}

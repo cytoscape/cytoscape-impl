@@ -63,7 +63,7 @@ public class CommandFileExecutorTask extends AbstractTask {
 
 	public void run(TaskMonitor tm) throws Exception {
         if (file == null)
-            throw new NullPointerException("You must specify a non-null command file to load!");
+            throw new NullPointerException("You must specify a non-null command file to load.");
 
 		FileReader fin = null; 
 		BufferedReader bin = null; 

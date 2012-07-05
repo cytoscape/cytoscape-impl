@@ -149,7 +149,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 
 	@Override
 	public void handleEvent(final SessionAboutToBeSavedEvent e) {
-		// Do not use invokeLater() here!  It breaks session file.
+		// Do not use invokeLater() here.  It breaks session file.
 		prepareForSaving(e);
 	}
 	

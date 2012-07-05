@@ -598,7 +598,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 					final int cellColumn = table.getSelectedColumn();
 
 					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, cellColumn)) {
-						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell!",
+						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
 								"Information", JOptionPane.INFORMATION_MESSAGE);
 					} else {
 						final String attrName = getAttribName(cellRow, cellColumn);
@@ -861,7 +861,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				newAttribName = null;
 				JOptionPane.showMessageDialog(null,
 							      "Column " + newAttribName + " already exists.",
-							      "Error!", JOptionPane.ERROR_MESSAGE);
+							      "Error.", JOptionPane.ERROR_MESSAGE);
 			}
 		} while (newAttribName == null);
 
@@ -911,6 +911,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		else if (type.equals("Boolean List"))
 			attrs.createListColumn(newAttribName, Boolean.class, false);
 		else
-			throw new IllegalArgumentException("unknown column type \"" + type + "\"!");
+			throw new IllegalArgumentException("unknown column type \"" + type + "\".");
 	}
 }

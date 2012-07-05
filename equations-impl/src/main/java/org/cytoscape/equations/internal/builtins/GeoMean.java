@@ -76,7 +76,7 @@ public class GeoMean extends AbstractFunction {
 						final double d = FunctionUtil.getArgAsDouble(listElement);
 						if (d <= 0.0)
 							throw new IllegalArgumentException(FunctionUtil.getOrdinal(i) +
-											   " argument in call to GEOMEAN() is not a list of positive numbers!");
+											   " argument in call to GEOMEAN() is not a list of positive numbers.");
 						a.add(d);
 					} catch (final IllegalArgumentException e) {
 						throw new IllegalArgumentException(FunctionUtil.getOrdinal(i) +
@@ -89,7 +89,7 @@ public class GeoMean extends AbstractFunction {
 					final double d = FunctionUtil.getArgAsDouble(args[i]);
 					if (d <= 0.0)
 						throw new IllegalArgumentException(FunctionUtil.getOrdinal(i) +
-										   " element in call to GEOMEAN() is not a positive number!");
+										   " element in call to GEOMEAN() is not a positive number.");
 					
 					a.add(d);
 				} catch (final IllegalArgumentException e) {
@@ -101,7 +101,7 @@ public class GeoMean extends AbstractFunction {
 		}
 
 		if (a.size() < 2)
-			throw new IllegalArgumentException("illegal arguments in call to GEOMEAN(): must have at least 2 numbers!");
+			throw new IllegalArgumentException("illegal arguments in call to GEOMEAN(): must have at least 2 numbers.");
 
 		double sumOfLogs = 0.0;
 		for (double d : a)

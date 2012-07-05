@@ -67,20 +67,20 @@ public class Permut extends AbstractFunction {
 	public Object evaluateFunction(final Object[] args) throws IllegalArgumentException, ArithmeticException {
 		final long N = FunctionUtil.getArgAsLong(args[0]);
 		if (N <= 0L)
-			throw new IllegalArgumentException("first argument to PERMUT must be positive!");
+			throw new IllegalArgumentException("first argument to PERMUT must be positive.");
 
 		final long K = FunctionUtil.getArgAsLong(args[1]);
 		if (K < 0L)
-			throw new IllegalArgumentException("second argument to PERMUT must be nonnegative!");
+			throw new IllegalArgumentException("second argument to PERMUT must be nonnegative.");
 		if (K > N)
-			throw new IllegalArgumentException("second argument to PERMUT must be no greater than the first argument!");
+			throw new IllegalArgumentException("second argument to PERMUT must be no greater than the first argument.");
 
 		long retval = 1L;
 		long multiplier = N;
 		for (long i = 0; i < K; ++i) {
 			final long next = retval * multiplier;
 			if (next < retval)
-				throw new ArithmeticException("overflow detected while calulating PERMUT(" + N + "," + K + "!");
+				throw new ArithmeticException("overflow detected while calulating PERMUT(" + N + "," + K + ".");
 			--multiplier;
 			retval = next;
 		}

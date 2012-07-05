@@ -226,7 +226,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 				manager.removeCustomGraphics(cg.getIdentifier());
 			} else {
 				JOptionPane.showMessageDialog(this, cg.getDisplayName() + " is used in current session and cannot remove it.", 
-						"Custom Graphics is in Use!", JOptionPane.ERROR_MESSAGE);
+						"Custom Graphics is in Use.", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}

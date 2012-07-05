@@ -64,7 +64,7 @@ public class Tanh extends AbstractFunction {
 		try {
 			angleInRadians = FunctionUtil.getArgAsDouble(args[0]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to an angle in radians in a call to TANH()!");
+			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to an angle in radians in a call to TANH().");
 		}
 		
 		return Math.sinh(angleInRadians) / Math.cosh(angleInRadians);

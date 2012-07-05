@@ -183,7 +183,7 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 
 			return "*No Title*";
 		} catch (final ClassCastException e) {
-			logger.warn("This should *never* happen!",e);
+			logger.warn("This should *never* happen.",e);
 			return "*Missing Title*";
 		}
 	}

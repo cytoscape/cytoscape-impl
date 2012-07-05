@@ -65,7 +65,7 @@ public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 		this.taskMonitor = taskMonitor;
 		
 		if (file == null)
-			throw new NullPointerException("No file specified!");
+			throw new NullPointerException("No file specified.");
 
 		reader = mgr.getReader(file.toURI(), file.getName());
 

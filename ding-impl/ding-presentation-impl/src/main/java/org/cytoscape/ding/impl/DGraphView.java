@@ -765,7 +765,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				m_backgroundCanvas.setBackground((Color) paint);
 				m_contentChanged = true;
 			} else {
-				logger.debug("DGraphView.setBackgroundPaint(), Color not found!");
+				logger.debug("DGraphView.setBackgroundPaint(), Color not found.");
 			}
 		}
 	}
@@ -2425,7 +2425,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final byte[] retval = baos.toByteArray();
 			return retval;
 		} catch (final IOException e) {
-			logger.warn("Failed to convert a BufferedImage to a PNG! (" + e + ")");
+			logger.warn("Failed to convert a BufferedImage to a PNG. (" + e + ")");
 			return null;
 		}
 	}
@@ -2439,7 +2439,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final BufferedImage retval = (BufferedImage)ImageIO.read(is);
 			return retval;
 		} catch (final IOException e) {
-			logger.warn("Failed to convert a PNG to a BufferedImage! (" + e + ")");
+			logger.warn("Failed to convert a PNG to a BufferedImage. (" + e + ")");
 			return null;
 		}
 	}
@@ -2579,7 +2579,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		//  WARNING!!!!!!!
 		//  
 		//  No calls to other methods from this method should trigger calls to updateView().
-		//  Allowing this can cause deadlocks!  The expectation is that anyone using
+		//  Allowing this can cause deadlocks.  The expectation is that anyone using
 		//  setVisualProperty() should call updateView() themselves.
 		//  
 		

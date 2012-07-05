@@ -180,7 +180,7 @@ class MergeAttributeTable extends JTable{
                                                 } else {
                                                     label.setBackground(table.getBackground());
                                                 }
-                                                label.setToolTipText("CHANGE ME!");
+                                                label.setToolTipText("CHANGE ME.");
                                                 return label;
                                         } else {
                                                 JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -484,12 +484,12 @@ class MergeAttributeTable extends JTable{
                 }
                 
                 if (v.length()==0) {
-                    JOptionPane.showMessageDialog(getParent(),"Please use a non-empty name for the attribute!", "Error: empty attribute Name", JOptionPane.ERROR_MESSAGE );
+                    JOptionPane.showMessageDialog(getParent(),"Please use a non-empty name for the attribute.", "Error: empty attribute Name", JOptionPane.ERROR_MESSAGE );
                     return;
                 } 
                 
                 if (attributeMapping.containsMergedAttribute(v)) {
-                    JOptionPane.showMessageDialog(getParent(),"Atribute "+v+" is already exist! Please use another name for this attribute!", "Error: duplicated attribute Name", JOptionPane.ERROR_MESSAGE );
+                    JOptionPane.showMessageDialog(getParent(),"Atribute "+v+" is already exist. Please use another name for this attribute.", "Error: duplicated attribute Name", JOptionPane.ERROR_MESSAGE );
                     return;
                 }
                                 

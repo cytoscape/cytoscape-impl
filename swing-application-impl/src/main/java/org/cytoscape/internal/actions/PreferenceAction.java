@@ -100,7 +100,7 @@ public class PreferenceAction extends AbstractCyAction {
 		} else if (obj instanceof Bookmarks){
 			bookmarkMap.put(propertyName, (Bookmarks)obj);
 		} else {
-			System.out.println("PreferenceAction: Do not know what kind of properties it is!");
+			System.out.println("PreferenceAction: Do not know what kind of properties it is.");
 		}
 	}
 	

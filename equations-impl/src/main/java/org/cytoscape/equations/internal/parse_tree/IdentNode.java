@@ -50,9 +50,9 @@ public class IdentNode extends AbstractNode {
 		super(sourceLocation);
 
 		if (type == null)
-			throw new IllegalArgumentException("\"type\" must not be null!");
+			throw new IllegalArgumentException("\"type\" must not be null.");
 		if (defaultValue != null && defaultValue.getClass() != type)
-			throw new IllegalArgumentException("default value must match \"type\"!");
+			throw new IllegalArgumentException("default value must match \"type\".");
 		this.attribName = attribName;
 		this.defaultValue = defaultValue;
 		this.type = type;

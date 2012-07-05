@@ -55,7 +55,7 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 		if ( filters == null || filters.size() < 1)
 			throw new NullPointerException("No Session file filters found");
 		if ( filters.size() > 1 )
-			throw new IllegalArgumentException("Found too many session filters!");
+			throw new IllegalArgumentException("Found too many session filters.");
 
 		if (!outputFile.getName().endsWith(".cys")){
 			outputFile = new File(outputFile.getPath() + ".cys");
@@ -64,7 +64,7 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 
 		CyWriter writer = writerMgr.getWriter(session,filters.get(0),outputFile); 
 		if ( writer == null )
-			throw new NullPointerException("No CyWriter found for specified file type!");
+			throw new NullPointerException("No CyWriter found for specified file type.");
 
 		insertTasksAfterCurrentTask( writer );
 	}

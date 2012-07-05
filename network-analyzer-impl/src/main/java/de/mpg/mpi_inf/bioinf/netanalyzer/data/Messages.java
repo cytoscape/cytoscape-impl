@@ -199,12 +199,12 @@ public abstract class Messages {
 
 	// Short informative messages to the user
 
-	public static String SM_AMBIGUOUSFTYPE = constructLabel("File type not specified!",
+	public static String SM_AMBIGUOUSFTYPE = constructLabel("File type not specified.",
 			"When giving file name, please also select one of the supported file types.");
 
 	public static String SM_ANALYSISC = "Analysis cancelled.";
 
-	public static String SM_ATTRIBUTESNOTSAVED = "  ERROR: Could not save node attributes to a file!";
+	public static String SM_ATTRIBUTESNOTSAVED = "  ERROR: Could not save node attributes to a file.";
 
 	public static String SM_BADINPUT = constructLabel("Selected input directory is not acceptable.",
 			"Please make sure you have selected an existing non-empty directory.");
@@ -235,7 +235,7 @@ public abstract class Messages {
 
 	public static String SM_FITLINEERROR = "Could not fit line to the points.";
 
-	public static String SM_FITLINENODATA = "There are not enough data points to fit a line!";
+	public static String SM_FITLINENODATA = "There are not enough data points to fit a line.";
 
 	public static String SM_FITNONPOSITIVE = "<html>Some data points have non-positive coordinates.<br>Only points with positive coordinates are included in the fit.</html>";
 
@@ -243,7 +243,7 @@ public abstract class Messages {
 
 	public static String SM_FITPLERROR = "Could not fit power law to the points.";
 
-	public static String SM_FITPLNODATA = "There are not enough data points to fit a power law!";
+	public static String SM_FITPLNODATA = "There are not enough data points to fit a power law.";
 
 	public static String SM_GUIERROR = "An error occurred while initializing the window.";
 
@@ -298,7 +298,7 @@ public abstract class Messages {
 			"You need to run NetworkAnalyzer to compute node or edge attributes.<br>"
 					+ "Do you want to run NetworkAnalyzer on the selected network?");
 
-	public static String SM_SAVEERROR = "  ERROR: Could not save results to network statistics file!";
+	public static String SM_SAVEERROR = "  ERROR: Could not save results to network statistics file.";
 
 	public static String SM_SAVESETERROR = constructLabel(
 			"NetworkAnalyzer cannot save plugin's settings due to security restrictions.",

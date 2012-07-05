@@ -58,7 +58,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	@Tunable(description = "Import Data To:")
 	public ListSingleSelection<TableType> dataTypeOptions;
 	
-	//******* we couldnt use the enum to check the dependency! So, update this line if you change the GLOBAL enum string 
+	//******* we couldnt use the enum to check the dependency. So, update this line if you change the GLOBAL enum string 
 	@Tunable(description = "Apply to Selected Networks Only",groups="Network Options", dependsOn="dataTypeOptions!=Unassigned Tables", params="displayState=collapsed")
 	public boolean selectedNetworksOnly = false;
 	
@@ -167,7 +167,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	
 	private void mapTable(final CyTable localTable, final CyTable globalTable) {
 		if (globalTable.getPrimaryKey().getType() != String.class)
-			throw new IllegalStateException("Local table's primary key should be type String!");
+			throw new IllegalStateException("Local table's primary key should be type String.");
 
 		final CyColumn trgCol = localTable.getColumn(CyNetwork.NAME);
 		if (trgCol != null){
@@ -175,6 +175,6 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			globalTable.setPublic(false);
 		}
 		else
-			logger.warn("Name column in the target table was not found!");
+			logger.warn("Name column in the target table was not found.");
 	}
 }

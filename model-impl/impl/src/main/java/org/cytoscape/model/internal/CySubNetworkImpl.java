@@ -120,7 +120,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 				return false;
 
 			if (!parent.containsNode(node))
-				throw new IllegalArgumentException("node is not contained in parent network!");
+				throw new IllegalArgumentException("node is not contained in parent network.");
 
 			addNodeInternal(node);
 			
@@ -161,7 +161,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 				return false;
 
 			if (!parent.containsEdge(edge))
-				throw new IllegalArgumentException("edge is not contained in parent network!");
+				throw new IllegalArgumentException("edge is not contained in parent network.");
 
 			// This will:
 			// -- add the node if it doesn't already exist

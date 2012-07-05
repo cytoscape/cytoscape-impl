@@ -67,10 +67,10 @@ public class Sqrt extends AbstractFunction {
 		try {
 			number = FunctionUtil.getArgAsDouble(args[0]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a number in a call to SQRT()!");
+			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a number in a call to SQRT().");
 		}
 		if (number < 0.0)
-			throw new ArithmeticException("negative argument in call to the SQRT() function!");
+			throw new ArithmeticException("negative argument in call to the SQRT() function.");
 
 		return Math.sqrt(number);
 	}

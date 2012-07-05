@@ -112,7 +112,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 				
 			} catch (final Exception e) {
 				combobox.setBackground(Color.red);
-				JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "The value entered cannot be set.", "Error", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
 				combobox.setBackground(Color.white);
 				return;

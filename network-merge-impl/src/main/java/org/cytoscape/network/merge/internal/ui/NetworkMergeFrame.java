@@ -375,7 +375,7 @@ public class NetworkMergeFrame extends JFrame {
 					}
 
 					if (getOperation()==Operation.DIFFERENCE && selectedNetworkData.getSize()+indices.length>2) {
-						JOptionPane.showMessageDialog(frame,"Difference operation only supports two networks! If you need to replace the selected network, remove it first and select the new one.", "Warning", JOptionPane.WARNING_MESSAGE );
+						JOptionPane.showMessageDialog(frame,"Difference operation only supports two networks. If you need to replace the selected network, remove it first and select the new one.", "Warning", JOptionPane.WARNING_MESSAGE );
 						return;
 					}
 

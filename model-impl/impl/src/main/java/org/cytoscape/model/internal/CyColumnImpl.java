@@ -76,10 +76,10 @@ final class CyColumnImpl implements CyColumn {
 	@Override
 	public void setName(final String newName) {
 		if (newName == null)
-			throw new NullPointerException("\"newName\" must not be null!");
+			throw new NullPointerException("\"newName\" must not be null.");
 
 		if (isImmutable)
-			throw new IllegalArgumentException("can't rename an immutable column!");
+			throw new IllegalArgumentException("can't rename an immutable column.");
 
 			
 		final String oldName = columnName;
@@ -108,10 +108,10 @@ final class CyColumnImpl implements CyColumn {
 	@Override
 	public <T> List<T> getValues(final Class<? extends T> type) {
 		if (type == null)
-			throw new NullPointerException("type argument must not be null!");
+			throw new NullPointerException("type argument must not be null.");
 		if (type != columnType)
 			throw new IllegalArgumentException("expected " + columnType.getName()
-							   + " got " + type.getName() + "!");
+							   + " got " + type.getName() + ".");
 		return table.getColumnValues(columnName, type);
 	}
 	

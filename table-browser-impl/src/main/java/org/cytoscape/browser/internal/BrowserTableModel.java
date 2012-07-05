@@ -433,7 +433,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			}
 		}
 
-		throw new IllegalStateException("We should *never* get here!");
+		throw new IllegalStateException("We should *never* get here.");
 	}
 
 	int mapColumnNameToColumnIndex(final String columnName) {
@@ -472,7 +472,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			++i;
 		}
 
-		throw new IllegalStateException("We should *never* get here! (index="+index+", i="+i+")");
+		throw new IllegalStateException("We should *never* get here. (index="+index+", i="+i+")");
 	}
 
 	// Because tableModel will disappear if user click on open space on canvas, 
@@ -514,7 +514,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 					final Class<?> expectedType = columnType == Integer.class ? Long.class : columnType;
 					final String errorMsg = "Equation result type is "
 						+ getUnqualifiedName(eqnType) + ", column type is "
-						+ getUnqualifiedName(columnType) + "!";
+						+ getUnqualifiedName(columnType) + ".";
 					final Equation errorEqn = compiler.getErrorEquation(text, expectedType, errorMsg);
 					row.set(columnName, errorEqn);
 				}
@@ -543,7 +543,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 
 	// Pop-up window for error message
 	private static void showErrorWindow(final String errMessage) {
-		JOptionPane.showMessageDialog(null, errMessage, "Invalid Value!",
+		JOptionPane.showMessageDialog(null, errMessage, "Invalid Value.",
 		                              JOptionPane.ERROR_MESSAGE);
 	}
 
@@ -587,7 +587,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				variableNameToTypeMap.put(columnName, List.class);
 			else
 				throw new IllegalStateException("unknown type \"" + type.getName()
-								+ "\"!");
+								+ "\".");
 		}
 	}
 

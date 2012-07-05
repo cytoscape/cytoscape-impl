@@ -65,7 +65,7 @@ public class Var extends AbstractFunction {
 	public Object evaluateFunction(final Object[] args) throws FunctionError {
 		final double[] numbers = FunctionUtil.getDoubles(args);
 		if (numbers.length < 2)
-			throw new IllegalArgumentException("illegal list argument in call to VAR(): must have at least 2 numbers!");
+			throw new IllegalArgumentException("illegal list argument in call to VAR(): must have at least 2 numbers.");
 
 		return FunctionUtil.calcSampleVariance(numbers);
 	}

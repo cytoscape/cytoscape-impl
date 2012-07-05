@@ -72,20 +72,20 @@ public class Mid extends AbstractFunction {
 		try {
 			start = (int)FunctionUtil.getArgAsLong(args[1]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to a start position in a call to MID()!");
+			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to a start position in a call to MID().");
 		}
 
 		final int count;
 		try {
 			count = (int)FunctionUtil.getArgAsLong(args[2]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[2] + "\" to a count in a call to MID()!");
+			throw new IllegalArgumentException("can't convert \"" + args[2] + "\" to a count in a call to MID().");
 		}
 
 		if (start < 1)
-			throw new IllegalArgumentException("illegal start position in call to MID()!");
+			throw new IllegalArgumentException("illegal start position in call to MID().");
 		if (count < 0)
-			throw new IllegalArgumentException("illegal character count in call to MID()!");
+			throw new IllegalArgumentException("illegal character count in call to MID().");
 		if (count >= text.length() - start + 1)
 			return text.substring(start - 1);
 		return text.substring(start - 1, start + count - 1);

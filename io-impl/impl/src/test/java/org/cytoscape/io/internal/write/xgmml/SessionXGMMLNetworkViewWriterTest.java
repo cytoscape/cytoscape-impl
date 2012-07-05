@@ -167,7 +167,7 @@ public class SessionXGMMLNetworkViewWriterTest extends AbstractXGMMLWriterTest {
 			writer = new SessionXGMMLNetworkViewWriter(out, renderingEngineMgr, (CyNetworkView) netOrView,
 					unrecogVisPropMgr, netMgr, rootNetMgr, vmMgr);
 		else
-			throw new IllegalArgumentException("netOrView must be a CyNetworkView!");
+			throw new IllegalArgumentException("netOrView must be a CyNetworkView.");
 			
 		return writer;
 	}

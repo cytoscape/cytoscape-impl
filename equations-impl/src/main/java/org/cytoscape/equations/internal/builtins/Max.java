@@ -68,7 +68,7 @@ public class Max extends AbstractFunction {
 		try {
 			numbers = FunctionUtil.getDoubles(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert an argument or a list element to a number in a call to MAX()!");
+			throw new IllegalArgumentException("can't convert an argument or a list element to a number in a call to MAX().");
 		}
 
 		double max = Double.NEGATIVE_INFINITY;

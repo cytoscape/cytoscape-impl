@@ -151,7 +151,7 @@ public class LinkOut implements PropertyUpdatedListener{
 			if (propertyFile.canRead())
 				props.load(new FileInputStream(propertyFile));
 		} catch (Exception e) {
-			logger.warn("Couldn't load linkout props from \'" + propertyFile.getAbsolutePath() + "\'!", e);
+			logger.warn("Couldn't load linkout props from \'" + propertyFile.getAbsolutePath() + "\'.", e);
 		}
 	}
 

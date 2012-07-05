@@ -508,7 +508,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 					if (cellRow == -1 || cellColumn == -1
 					    || !tableModel.isCellEditable(cellRow, cellColumn))
 						JOptionPane.showMessageDialog(rootFrame,
-						                              "Can't enter a formula w/o a selected cell!",
+						                              "Can't enter a formula w/o a selected cell.",
 						                              "Information", JOptionPane.INFORMATION_MESSAGE);
 					else {
 						final String columnName = tableModel.getColumnName(cellColumn);

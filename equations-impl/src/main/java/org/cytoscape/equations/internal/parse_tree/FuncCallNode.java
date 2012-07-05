@@ -51,11 +51,11 @@ public class FuncCallNode extends AbstractNode {
 		super(sourceLocation);
 
 		if (func == null)
-			throw new IllegalArgumentException("function must not be null!");
+			throw new IllegalArgumentException("function must not be null.");
 		if (returnType == null)
-			throw new IllegalArgumentException("return type must not be null!");
+			throw new IllegalArgumentException("return type must not be null.");
 		if (args == null)
-			throw new IllegalArgumentException("args must not be null!");
+			throw new IllegalArgumentException("args must not be null.");
 
 		this.func       = func;
 		this.returnType = returnType;

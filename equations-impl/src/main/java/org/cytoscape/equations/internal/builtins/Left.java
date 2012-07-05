@@ -73,11 +73,11 @@ public class Left extends AbstractFunction {
 			try {
 				count = (int)FunctionUtil.getArgAsLong(args[1]);
 			} catch (final Exception e) {
-				throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to a count in a call to LEFT()!");
+				throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to a count in a call to LEFT().");
 			}
 
 			if (count < 0)
-				throw new IllegalArgumentException("illegal character count in call to LEFT()!");
+				throw new IllegalArgumentException("illegal character count in call to LEFT().");
 		}
 
 		if (count >= text.length())

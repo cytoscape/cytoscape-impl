@@ -69,7 +69,7 @@ public class CyHelpBrokerImpl implements CyHelpBroker {
 			hs = new HelpSet(null, hsURL);
 			hb = hs.createHelpBroker();
 		} catch (Exception e) {
-			logger.warn("HelpSet not found!",e);
+			logger.warn("HelpSet not found.",e);
 		}
 	}
 

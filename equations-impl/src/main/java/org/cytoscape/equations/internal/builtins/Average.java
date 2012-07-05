@@ -73,7 +73,7 @@ public class Average extends AbstractFunction {
 		}
 
 		if (numbers.length == 0)
-			throw new IllegalArgumentException("need at least one number in a call to AVERAGE()!");
+			throw new IllegalArgumentException("need at least one number in a call to AVERAGE().");
 
 		return FunctionUtil.numericallySafeSum(numbers) / numbers.length;
 	}

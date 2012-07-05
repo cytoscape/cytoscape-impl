@@ -72,16 +72,16 @@ public class Nth extends AbstractFunction {
 		try {
 			index = (int)FunctionUtil.getArgAsLong(args[1]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to an integer in a call to NTH()!");
+			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to an integer in a call to NTH().");
 		}
 
 		if (index <= 0 || index > list.size())
-			throw new IllegalArgumentException("illegal list index in call to NTH()!");
+			throw new IllegalArgumentException("illegal list index in call to NTH().");
 
 		final Object listElement = list.get(index - 1);
 		final Object retVal = FunctionUtil.translateObjectType(listElement);
 		if (retVal == null)
-			throw new IllegalArgumentException("bad list element type: " + listElement.getClass() + " in a call to NTH()!");
+			throw new IllegalArgumentException("bad list element type: " + listElement.getClass() + " in a call to NTH().");
 
 		return retVal;
 	}

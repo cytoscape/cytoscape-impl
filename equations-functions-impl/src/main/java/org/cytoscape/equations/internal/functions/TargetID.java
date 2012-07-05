@@ -71,7 +71,7 @@ public class TargetID extends AbstractFunction {
 
 		final CyEdge edge = suidToEdgeMapper.getEdge(edgeID);
 		if (edge == null)
-			throw new IllegalArgumentException("\"" + edgeID + "\" is not a valid edge identifier!");
+			throw new IllegalArgumentException("\"" + edgeID + "\" is not a valid edge identifier.");
 		
 		return edge.getTarget().getSUID();
 	}

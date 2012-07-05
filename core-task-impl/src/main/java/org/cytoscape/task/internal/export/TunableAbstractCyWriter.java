@@ -49,18 +49,18 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 	public final ValidationState getValidationState(final Appendable msg) {
 		if(getExportFileFormat()==null){
 			try {
-				msg.append("Select a file type!");
+				msg.append("Select a file type.");
 			} catch (final Exception e) {
-				/* Intentionally empty! */
+				/* Intentionally empty. */
 			}
 			return ValidationState.INVALID;
 		}
 		
 		if(outputFile==null){
 			try {
-				msg.append("Enter the file address!");
+				msg.append("Enter the file address.");
 			} catch (final Exception e) {
-				/* Intentionally empty! */
+				/* Intentionally empty. */
 			}
 			return ValidationState.INVALID;
 		}
@@ -75,7 +75,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 			try {
 				msg.append("File already exists, are you sure you want to overwrite it?");
 			} catch (final Exception e) {
-				/* Intentionally empty! */
+				/* Intentionally empty. */
 			}
 			return ValidationState.REQUEST_CONFIRMATION;
 		} else

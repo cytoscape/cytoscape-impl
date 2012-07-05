@@ -100,7 +100,7 @@ public class EquationCompilerImpl implements EquationCompiler {
 	public Equation getErrorEquation(final String equation, final Class<?> type, final String errorMessage) {
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		if (!compile("=ERROR(\"" + escapeQuotes(errorMessage) + "\")", variableNameToTypeMap))
-			throw new IllegalStateException("internal error in Equation.getErrorEquation().  This should *never* happen!");
+			throw new IllegalStateException("internal error in Equation.getErrorEquation().  This should *never* happen.");
 
 		final Equation errorEquation = getEquation();
 		return new Equation(equation, errorEquation.getVariableReferences(),

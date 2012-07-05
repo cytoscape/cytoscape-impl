@@ -61,7 +61,7 @@ public class InterpreterImpl implements Interpreter {
 		throws NullPointerException, ArithmeticException, IllegalArgumentException, IllegalStateException
 	{
 		if (equation == null || variableNameToDescriptorMap == null)
-			throw new NullPointerException("null equation or variableNameToDescriptorMap!");
+			throw new NullPointerException("null equation or variableNameToDescriptorMap.");
 
 		this.argumentStack               = new Stack<Object>();
 		this.variableNameToDescriptorMap = variableNameToDescriptorMap;
@@ -180,20 +180,20 @@ public class InterpreterImpl implements Interpreter {
 						sconvb();
 						break;
 					default:
-						throw new IllegalStateException("unknown opcode: " + instrOrArg + "!");
+						throw new IllegalStateException("unknown opcode: " + instrOrArg + ".");
 					}
 				}
 				else
 					argumentStack.push(instrOrArg);
 			}
 		} catch (final EmptyStackException e) {
-			throw new IllegalStateException("inconsistent number of stack entries detected!");
+			throw new IllegalStateException("inconsistent number of stack entries detected.");
 		} catch (final FunctionError e) {
 			throw new IllegalStateException(e.getMessage());
 		}
 
 		if (argumentStack.size() != 1)
-			throw new IllegalStateException("invalid argument stack size " + argumentStack.size() + ", must be 1!");
+			throw new IllegalStateException("invalid argument stack size " + argumentStack.size() + ", must be 1.");
 		final Object retVal = argumentStack.peek();
 		final Class retValClass = retVal.getClass();
 		if (retValClass == Double.class || retValClass == String.class || retValClass == Boolean.class || retValClass == Long.class
@@ -201,7 +201,7 @@ public class InterpreterImpl implements Interpreter {
 		    || retValClass == StringList.class)
 			return retVal;
 
-		throw new IllegalStateException("illegal result type at end of interpretation: " + retValClass + "!");
+		throw new IllegalStateException("illegal result type at end of interpretation: " + retValClass + ".");
 	}
 
 	private void fadd() throws EmptyStackException {
@@ -226,7 +226,7 @@ public class InterpreterImpl implements Interpreter {
 		final double float1 = getFloat(argumentStack.pop());
 		final double float2 = getFloat(argumentStack.pop());
 		if (float2 == 0.0)
-			throw new ArithmeticException("illegal division by zero!");
+			throw new ArithmeticException("illegal division by zero.");
 		argumentStack.push(float1 / float2);
 	}
 
@@ -354,7 +354,7 @@ public class InterpreterImpl implements Interpreter {
 		// 1. get the function
 		final Object o = argumentStack.pop();
 		if (!(o instanceof Function))
-			throw new IllegalStateException("expected an attribute function after the CALL opcode but found \"" + o.getClass() + "\" instead!");
+			throw new IllegalStateException("expected an attribute function after the CALL opcode but found \"" + o.getClass() + "\" instead.");
 		final Function func = (Function)o;
 
 		// 2. get and validate the argument count
@@ -362,13 +362,13 @@ public class InterpreterImpl implements Interpreter {
 		try {
 			argCount = (Integer)argumentStack.pop();
 		} catch (final Exception e) {
-			throw new IllegalStateException("invalid argument count type following a CALL opcode!");
+			throw new IllegalStateException("invalid argument count type following a CALL opcode.");
 		}
 		final int MIN_ARG_COUNT = 0;
 		final int MAX_ARG_COUNT = 100; // This is an arbitrary limit and exists only to find bugs.
                                                // Should it prove to be too low we could easily make it much bigger.
 		if (argCount < MIN_ARG_COUNT || argCount > MAX_ARG_COUNT)
-			throw new IllegalStateException("invalid argument count type following a CALL opcode (range must be in [" + MIN_ARG_COUNT + ", " + MAX_ARG_COUNT + "])!");
+			throw new IllegalStateException("invalid argument count type following a CALL opcode (range must be in [" + MIN_ARG_COUNT + ", " + MAX_ARG_COUNT + "]).");
 
 		// 3. collect the actual arguments
 		final Object args[] = new Object[argCount];
@@ -393,10 +393,10 @@ public class InterpreterImpl implements Interpreter {
 		final String attribName = (String)argumentStack.pop();
 		final IdentDescriptor identDescriptor = variableNameToDescriptorMap.get(attribName);
 		if (identDescriptor == null)
-			throw new IllegalStateException("unknown attribute reference: \"" + attribName + "\" (1)!");
+			throw new IllegalStateException("unknown attribute reference: \"" + attribName + "\" (1).");
 		final Object value = identDescriptor.getValue();
 		if (value == null)
-			throw new IllegalStateException("undefined attribute reference: \"" + attribName + "\"!");
+			throw new IllegalStateException("undefined attribute reference: \"" + attribName + "\".");
 		argumentStack.push(value);
 	}
 
@@ -405,7 +405,7 @@ public class InterpreterImpl implements Interpreter {
 		final Object defaultValue = argumentStack.pop();
 		final IdentDescriptor identDescriptor = variableNameToDescriptorMap.get(attribName);
 		if (identDescriptor == null)
-			throw new IllegalStateException("unknown attribute reference: \"" + attribName + "\" (2)!");
+			throw new IllegalStateException("unknown attribute reference: \"" + attribName + "\" (2).");
 		final Object value = identDescriptor.getValue();
 		argumentStack.push(value != null ? value : defaultValue);
 	}
@@ -425,7 +425,7 @@ public class InterpreterImpl implements Interpreter {
 		try {
 			argumentStack.push(Double.parseDouble(s));
 		} catch(final NumberFormatException e) {
-			throw new IllegalStateException("can't convert \"" + s + "\" to a number!");
+			throw new IllegalStateException("can't convert \"" + s + "\" to a number.");
 		}
 	}
 
@@ -450,27 +450,27 @@ public class InterpreterImpl implements Interpreter {
 		if (o instanceof Double)
 			return (Double)o;
 
-		throw new IllegalStateException("can't convert a " + o.getClass() + " (" + o + ") to a floating point number!");
+		throw new IllegalStateException("can't convert a " + o.getClass() + " (" + o + ") to a floating point number.");
 	}
 
 	private long getLong(final Object o) throws IllegalStateException {
 		if (o instanceof Long)
 			return (Long)o;
 
-		throw new IllegalStateException("can't convert a " + o.getClass() + " (" + o + ") to an integer number!");
+		throw new IllegalStateException("can't convert a " + o.getClass() + " (" + o + ") to an integer number.");
 	}
 
 	private String getString(final Object o) throws IllegalStateException {
 		if (o instanceof String)
 			return (String)o;
 
-		throw new IllegalStateException("can't convert a " + o.getClass() + " to a string!");
+		throw new IllegalStateException("can't convert a " + o.getClass() + " to a string.");
 	}
 
 	private boolean getBoolean(final Object o) throws IllegalStateException {
 		if (o instanceof Boolean)
 			return (Boolean)o;
 
-		throw new IllegalStateException("can't convert a " + o.getClass() + " to a boolean!");
+		throw new IllegalStateException("can't convert a " + o.getClass() + " to a boolean.");
 	}
 }

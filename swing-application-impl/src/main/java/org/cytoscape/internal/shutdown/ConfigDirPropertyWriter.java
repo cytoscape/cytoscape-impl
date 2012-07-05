@@ -51,7 +51,7 @@ public class ConfigDirPropertyWriter implements CyShutdownListener {
 				out.close();
 			}
 			catch(Exception e){
-				logger.error("Error in wring properties file!");
+				logger.error("Error in wring properties file.");
 			}
 		}
 	}

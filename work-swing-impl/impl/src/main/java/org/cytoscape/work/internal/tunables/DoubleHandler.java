@@ -102,7 +102,7 @@ public class DoubleHandler extends AbstractGUITunableHandler implements ActionLi
 				setValue(d);
 			} catch (final Exception e) {
 				textField.setBackground(Color.red);
-				JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "The value entered cannot be set.", "Error", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
 				textField.setBackground(Color.white);
 				return;

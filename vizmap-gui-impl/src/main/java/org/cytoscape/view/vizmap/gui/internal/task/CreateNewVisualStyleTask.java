@@ -53,7 +53,7 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 
 			if (exist_vs.getTitle().equalsIgnoreCase(vsName)) {
 				try {
-					errMsg.append("Visual style " + vsName + " already existed!");
+					errMsg.append("Visual style " + vsName + " already existed.");
 					return ValidationState.INVALID;
 				} catch (IOException e) {
 				}

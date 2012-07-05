@@ -151,7 +151,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 			}
 
 			if (!force && (table.getMutability() != Mutability.MUTABLE)) {
-				throw new IllegalArgumentException("can't delete an immutable table!");
+				throw new IllegalArgumentException("can't delete an immutable table.");
 			}
 
 			table.removeAllVirtColumns();

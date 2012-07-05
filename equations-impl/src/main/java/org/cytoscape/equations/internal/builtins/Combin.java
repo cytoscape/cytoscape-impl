@@ -69,11 +69,11 @@ public class Combin extends AbstractFunction {
 		final long K = FunctionUtil.getArgAsLong(args[1]);
 
 		if (N < 0)
-			throw new IllegalArgumentException("1st argument to COMBIN() must not be negative!");
+			throw new IllegalArgumentException("1st argument to COMBIN() must not be negative.");
 		if (K < 0)
-			throw new IllegalArgumentException("2nd argument to COMBIN() must not be negative!");
+			throw new IllegalArgumentException("2nd argument to COMBIN() must not be negative.");
 		if (N < K)
-			throw new IllegalArgumentException("2nd argument to COMBIN() must not be less than 1st argument!");
+			throw new IllegalArgumentException("2nd argument to COMBIN() must not be less than 1st argument.");
 
 		// Check boundary cases:
 		if (K < 0L || K > N)
@@ -93,7 +93,7 @@ public class Combin extends AbstractFunction {
 		final long c2 = combinations(n - 1L, k - 1L);
 		final long sum = c1 + c2;
 		if (sum < c1 || sum < c2)
-			throw new ArithmeticException("overflow in call to COMBIN()!");
+			throw new ArithmeticException("overflow in call to COMBIN().");
 		return sum;
 	}
 }

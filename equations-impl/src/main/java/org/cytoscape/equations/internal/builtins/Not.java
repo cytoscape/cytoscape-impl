@@ -68,7 +68,7 @@ public class Not extends AbstractFunction {
 		try {
 			b = FunctionUtil.getArgAsBoolean(args[0]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a boolean value in a call to NOT()!");
+			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a boolean value in a call to NOT().");
 		}
 
 		return !b;

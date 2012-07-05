@@ -36,6 +36,6 @@ class LoggingTaskMonitor implements TaskMonitor {
 	}
 
 	public void showException(Exception exception) {
-		logger.error("Exception executing task!", exception);
+		logger.error("Exception executing task.", exception);
 	}
 }

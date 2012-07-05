@@ -56,14 +56,14 @@ available here:
 	<!-- Init if XEP does not exist -->
 	<target name="non-xep-init"
 	        unless="xep-exists">
-		<echo message="XEP does not exist - No PDF for you!"/>
+		<echo message="XEP does not exist - No PDF for you."/>
 	</target>
 
 	<!--==============================================================-->
 	<!-- Init if XEP does exist -->
 	<target name="xep-init"
 	        if="xep-exists">
-		<echo message="XEP exists - You get a PDF!"/>
+		<echo message="XEP exists - You get a PDF."/>
 		<property name="xep.lib" value="${xep.home}/lib"/>
 		<taskdef name="xep" classname="com.renderx.xepx.ant.XEPTask"
 			 classpath="${xep.lib}/XEPTask.jar"/>

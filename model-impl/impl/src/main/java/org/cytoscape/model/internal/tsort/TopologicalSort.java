@@ -71,7 +71,7 @@ public class TopologicalSort {
 	                          final Set<TopoGraphNode> visited, final List<TopoGraphNode> order)
 	{
 		if (alreadySeen.contains(n))
-			throw new IllegalStateException("cycle containing " + n + " found!");
+			throw new IllegalStateException("cycle containing " + n + " found.");
 		alreadySeen.add(n);
 
 		if (!visited.contains(n)) {

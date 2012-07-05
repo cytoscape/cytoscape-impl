@@ -201,7 +201,7 @@ public class SessionXGMMLNetworkWriterTest extends AbstractXGMMLWriterTest {
 		if (netOrView instanceof CyNetwork)
 			writer = new SessionXGMMLNetworkWriter(out, renderingEngineMgr, (CyNetwork)netOrView, unrecogVisPropMgr, netMgr, rootNetMgr);
 		else
-			throw new IllegalArgumentException("netOrView must be a CyNetwork!");
+			throw new IllegalArgumentException("netOrView must be a CyNetwork.");
 		
 		return writer;
 	}

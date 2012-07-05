@@ -54,7 +54,7 @@ public class XorPanel extends JPanel {
 			return c;
 		} else {
 			if (currentPanel == null)
-				throw new RuntimeException("current panel is null!");
+				throw new RuntimeException("current panel is null.");
 
 			currentPanel.add(c);
 			return c;

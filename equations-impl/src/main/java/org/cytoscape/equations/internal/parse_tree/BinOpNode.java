@@ -50,9 +50,9 @@ public class BinOpNode extends AbstractNode {
 		super(sourceLocation);
 
 		if (lhs == null)
-			throw new IllegalArgumentException("left operand must not be null!");
+			throw new IllegalArgumentException("left operand must not be null.");
 		if (rhs == null)
-			throw new IllegalArgumentException("right operand must not be null!");
+			throw new IllegalArgumentException("right operand must not be null.");
 
 		this.operator = operator;
 		this.lhs = lhs;
@@ -123,7 +123,7 @@ public class BinOpNode extends AbstractNode {
 			codeStack.push(new CodeAndSourceLocation(Instruction.SCONCAT, getSourceLocation()));
 			break;
 		default:
-			throw new IllegalStateException(getSourceLocation() + ": unknown operator: " + operator + "!");
+			throw new IllegalStateException(getSourceLocation() + ": unknown operator: " + operator + ".");
 		}
 	}
 
@@ -140,6 +140,6 @@ public class BinOpNode extends AbstractNode {
 		else if (booleanOpCode != null && operandType == Boolean.class)
 			return booleanOpCode;
 
-		throw new IllegalStateException(lhs.getSourceLocation() + ": invalid LHS operand type for comparison: " + operandType + "!");
+		throw new IllegalStateException(lhs.getSourceLocation() + ": invalid LHS operand type for comparison: " + operandType + ".");
 	}
 }

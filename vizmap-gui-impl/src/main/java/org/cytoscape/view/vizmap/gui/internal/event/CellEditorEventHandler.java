@@ -238,7 +238,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			} else {
 				JOptionPane.showMessageDialog(null,
 						"Continuous Mapper can be used with Numbers only.\nPlease select numerical attributes.",
-						"Incompatible Mapping Type!", JOptionPane.INFORMATION_MESSAGE);
+						"Incompatible Mapping Type.", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 
@@ -305,7 +305,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			if (factory.getMappingFunctionType() == ContinuousMapping.class) {
 				if (attributeDataType == null) {
 					JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
-							+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column!",
+							+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column.",
 							JOptionPane.WARNING_MESSAGE);
 					return;
 				}
@@ -313,7 +313,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				if (!Number.class.isAssignableFrom(attributeDataType)) {
 					JOptionPane.showMessageDialog(null,
 							"Selected column data type is not Number.\nPlease select numerical attributes.",
-							"Incompatible Column Type!", JOptionPane.WARNING_MESSAGE);
+							"Incompatible Column Type.", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 			}

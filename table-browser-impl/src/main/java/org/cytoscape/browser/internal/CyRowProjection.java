@@ -76,7 +76,7 @@ final class CyRowProjection implements CyRow {
 		if (!tableProjection.getColumnNames().contains(columnName))
 			throw new IllegalArgumentException("\"" + columnName
 							   + "\" is not a valid column in the \""
-							   + tableProjection.getTitle() + "\" table!");
+							   + tableProjection.getTitle() + "\" table.");
 	}
 
 	/**
@@ -151,7 +151,7 @@ final class CyRowProjection implements CyRow {
 
 	/**
 	 * Note that the returned object may well not be of the type that get() for this column might
-	 * return!  You should therefore almost always use get() instead!
+	 * return.  You should therefore almost always use get() instead!
 	 * @return The row Object that represents the value in a column.
 	 */
 	public Object getRaw(final String columnName) {

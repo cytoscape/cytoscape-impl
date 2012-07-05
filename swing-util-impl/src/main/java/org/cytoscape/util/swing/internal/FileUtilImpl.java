@@ -115,7 +115,7 @@ class FileUtilImpl implements FileUtil {
 			final String custom_approve_text, final boolean multiselect, final Collection<FileChooserFilter> filters) {
 		
 		if (parent == null)
-			throw new NullPointerException("\"parent\" must not be null!");
+			throw new NullPointerException("\"parent\" must not be null.");
 
 		if (start_dir == null)
 			start_dir = coreProperties.getProperty(FileUtil.LAST_DIRECTORY, System.getProperty("user.dir"));

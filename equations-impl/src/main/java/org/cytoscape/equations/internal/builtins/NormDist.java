@@ -71,25 +71,25 @@ public class NormDist extends AbstractFunction {
 		try {
 			x = FunctionUtil.getArgAsDouble(args[0]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to the 1st argument of NORMDIST()!");
+			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to the 1st argument of NORMDIST().");
 		}
 
 		final double mu;
 		try {
 			mu = FunctionUtil.getArgAsDouble(args[1]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to the 2nd argument of NORMDIST()!");
+			throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to the 2nd argument of NORMDIST().");
 		}
 
 		final double sigma;
 		try {
 			sigma = FunctionUtil.getArgAsDouble(args[2]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[2] + "\" to the 3rd argument of NORMDIST()!");
+			throw new IllegalArgumentException("can't convert \"" + args[2] + "\" to the 3rd argument of NORMDIST().");
 		}
 
 		if (sigma <= 0)
-			throw new IllegalArgumentException("mean parameter in call to NORMDIST must be nonnegative!");
+			throw new IllegalArgumentException("mean parameter in call to NORMDIST must be nonnegative.");
 		final boolean cumulative = FunctionUtil.getArgAsBoolean(args[3]);
 
 		if (cumulative) {

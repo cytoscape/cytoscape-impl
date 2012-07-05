@@ -95,7 +95,7 @@ public class QuickFindImpl implements QuickFind {
 		if (controllingAttribute.equalsIgnoreCase(QuickFind.UNIQUE_IDENTIFIER)
 		    || controllingAttribute.equalsIgnoreCase(QuickFind.INDEX_ALL_ATTRIBUTES)
 		    || controllingAttribute.equalsIgnoreCase("biopax.node_label"))
-			/* Do nothing! */;
+			/* Do nothing. */;
 
 		else if (isNullAttribute(nodeTable, controllingAttribute))
 			return;

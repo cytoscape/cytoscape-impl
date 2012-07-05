@@ -385,7 +385,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 					URLstr = tfURL.getText();
 
 					if (name.trim().equals("") || URLstr.trim().equals("")) {
-						String msg = "Please provide a name/URL!";
+						String msg = "Please provide a name/URL.";
 						// display info dialog
 						JOptionPane.showMessageDialog(parent, msg, "Warning",
 								JOptionPane.INFORMATION_MESSAGE);
@@ -399,7 +399,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 
 					if (bkUtil.containsBookmarks(bookmarks, categoryName,
 							theDataSource)) {
-						String msg = "Bookmark already existed!";
+						String msg = "Bookmark already existed.";
 						// display info dialog
 						JOptionPane.showMessageDialog(parent, msg, "Warning",
 								JOptionPane.INFORMATION_MESSAGE);
@@ -417,7 +417,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 					URLstr = tfURL.getText();
 
 					if (URLstr.trim().equals("")) {
-						String msg = "URL is empty!";
+						String msg = "URL is empty.";
 						// display info dialog
 						JOptionPane.showMessageDialog(parent, msg, "Warning",
 								JOptionPane.INFORMATION_MESSAGE);

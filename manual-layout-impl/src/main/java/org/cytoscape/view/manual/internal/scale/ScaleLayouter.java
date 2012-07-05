@@ -129,7 +129,7 @@ public final class ScaleLayouter {
 			xFactor = 1.0;
 			break;
 		case BOTH_AXES:
-			/* Intentionally empty! */
+			/* Intentionally empty. */
 			break;
 		}
 

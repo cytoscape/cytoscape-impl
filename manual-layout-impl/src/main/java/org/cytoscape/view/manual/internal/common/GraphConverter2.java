@@ -54,7 +54,7 @@ public final class GraphConverter2 {
 	 * Returns a MutablePolyEdgeGraphLayout, which, when mutated,
 	 * has a direct effect on the underlying Cytoscape network view.  You'd
 	 * sure as heck better be using the returned object from the AWT event
-	 * dispatch thread!  Better yet, lock the Cytoscape desktop somehow
+	 * dispatch thread.  Better yet, lock the Cytoscape desktop somehow
 	 * (with a modal dialog for example) while using this returned object.
 	 * Movable nodes are defined to be selected nodes in Cytoscape - if no
 	 * nodes are selected then all nodes are movable.  If selected node

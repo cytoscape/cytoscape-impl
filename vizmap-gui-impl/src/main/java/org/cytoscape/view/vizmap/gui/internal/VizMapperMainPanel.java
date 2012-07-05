@@ -282,7 +282,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 
 	void setDefaultViewImagePanel(final Image defImage, final VisualStyle newStyle) {
 		if (defImage == null) {
-			logger.debug("Default image is null!");
+			logger.debug("Default image is null.");
 			return;
 		}
 

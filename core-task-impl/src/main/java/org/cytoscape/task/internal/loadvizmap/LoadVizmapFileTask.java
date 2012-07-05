@@ -35,7 +35,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
 		if (file == null) 
-			throw new NullPointerException("No file specified!");
+			throw new NullPointerException("No file specified.");
 
 		VizmapReader reader = vizmapReaderMgr.getReader(file.toURI(), file.getName());
 		taskMonitor.setProgress(0.9);

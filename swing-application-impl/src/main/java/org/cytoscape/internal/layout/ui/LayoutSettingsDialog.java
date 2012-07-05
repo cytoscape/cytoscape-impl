@@ -402,7 +402,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 				int row = 0;
 				if (tunablePanel == null){
-					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not available!", "Warning", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not available.", "Warning", JOptionPane.WARNING_MESSAGE);
 					algorithmPanel.removeAll();
 				}
 				else {

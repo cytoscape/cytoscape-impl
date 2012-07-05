@@ -29,7 +29,7 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 		super(writerManager);
 		
 		if (view == null)
-			throw new NullPointerException("View is null!");
+			throw new NullPointerException("View is null.");
 		this.view = view;
 	}
 

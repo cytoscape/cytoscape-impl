@@ -70,7 +70,7 @@ public class Trunc extends AbstractFunction {
 		try {
 			number = FunctionUtil.getArgAsDouble(args[0]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("cannot convert \"" + args[0] +"\" to a number in a call to TRUNC()!");
+			throw new IllegalArgumentException("cannot convert \"" + args[0] +"\" to a number in a call to TRUNC().");
 		}
 		final double absNumber = Math.abs(number);
 
@@ -81,7 +81,7 @@ public class Trunc extends AbstractFunction {
 			try {
 				numDigits = FunctionUtil.getArgAsLong(args[1]);
 			} catch (final Exception e) {
-				throw new IllegalArgumentException("cannot convert \"" + args[1] +"\" to an integer in a call to TRUNC()!");
+				throw new IllegalArgumentException("cannot convert \"" + args[1] +"\" to an integer in a call to TRUNC().");
 				
 			}
 		}

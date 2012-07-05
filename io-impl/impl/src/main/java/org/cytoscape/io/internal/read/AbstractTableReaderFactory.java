@@ -42,10 +42,10 @@ public abstract class AbstractTableReaderFactory extends AbstractInputStreamTask
 	{
 		super(filter);
 		if (filter == null)
-			throw new NullPointerException("filter is null!");
+			throw new NullPointerException("filter is null.");
 
 		if (tableFactory == null)
-			throw new NullPointerException("tableFactory is null!");
+			throw new NullPointerException("tableFactory is null.");
 		this.tableFactory = tableFactory;
 
 	}

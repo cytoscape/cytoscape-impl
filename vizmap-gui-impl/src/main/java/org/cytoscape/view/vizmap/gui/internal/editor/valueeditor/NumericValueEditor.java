@@ -39,7 +39,7 @@ public class NumericValueEditor<T extends Number> extends
 				number = new BigDecimal(value.toString());
 				result = convert(number, initialValue.getClass());
 			} catch (NumberFormatException ne) {
-				JOptionPane.showMessageDialog(editorDialog, ERR_MESSAGE, "Invalid Input!", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(editorDialog, ERR_MESSAGE, "Invalid Input.", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		

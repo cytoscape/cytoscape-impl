@@ -113,7 +113,7 @@ public class EnhancedSearchQuery {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					JOptionPane.showMessageDialog(null, pe.getMessage(), "Invalid query!", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, pe.getMessage(), "Invalid query.", JOptionPane.ERROR_MESSAGE);
 				}
 			});
 		} catch (final Exception e) {
@@ -121,7 +121,7 @@ public class EnhancedSearchQuery {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					JOptionPane.showMessageDialog(null, e.getMessage(), "Query execution error!",
+					JOptionPane.showMessageDialog(null, e.getMessage(), "Query execution error.",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			});

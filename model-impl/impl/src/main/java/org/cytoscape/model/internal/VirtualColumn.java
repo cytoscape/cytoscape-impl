@@ -68,7 +68,7 @@ final class VirtualColumn {
 	void setValue(final Object targetKey, final Object value) {
 		final CyRow sourceRow = getSourceRow(targetKey);
 		if (sourceRow == null)
-			throw new IllegalArgumentException("can't set a value for a virtual column!");
+			throw new IllegalArgumentException("can't set a value for a virtual column.");
 		sourceRow.set(sourceColumn.getName(), value);
 	}
 

@@ -73,10 +73,10 @@ public class Right extends AbstractFunction {
 			try {
 				count = (int)FunctionUtil.getArgAsLong(args[1]);
 			} catch (final Exception e) {
-				throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to an integer in a call to RIGHT()!");
+				throw new IllegalArgumentException("can't convert \"" + args[1] + "\" to an integer in a call to RIGHT().");
 			}
 			if (count < 0)
-				throw new IllegalArgumentException("illegal character count in a call to RIGHT()!");
+				throw new IllegalArgumentException("illegal character count in a call to RIGHT().");
 		}
 
 		if (count >= text.length())

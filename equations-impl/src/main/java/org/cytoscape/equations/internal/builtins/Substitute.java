@@ -78,7 +78,7 @@ public class Substitute extends AbstractFunction {
 			try {
 				nthAppearance = (int)FunctionUtil.getArgAsLong(args[3]);
 			} catch (final Exception e) {
-				throw new IllegalArgumentException("can't convert \"" + args[3] + "\" to a number in a call to SUBSTITUTE()!");
+				throw new IllegalArgumentException("can't convert \"" + args[3] + "\" to a number in a call to SUBSTITUTE().");
 			}
 
 			if (nthAppearance <= 0)

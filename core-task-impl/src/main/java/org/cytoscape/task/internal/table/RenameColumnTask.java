@@ -68,7 +68,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 	public ValidationState getValidationState(final Appendable errMsg) {
 		if (newColumnName == null || newColumnName.isEmpty()) {
 			try {
-				errMsg.append("You must provide a new column name!");
+				errMsg.append("You must provide a new column name.");
 			} catch (Exception e) {
 			}
 			return ValidationState.INVALID;
@@ -77,7 +77,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 		final CyTable table = column.getTable();
 		if (table.getColumn(newColumnName) != null) {
 			try {
-				errMsg.append("Column name is a duplicate!");
+				errMsg.append("Column name is a duplicate.");
 			} catch (Exception e) {
 			}
 			return ValidationState.INVALID;
@@ -85,7 +85,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 
 		if (column.isImmutable()) {
 			try {
-				errMsg.append("Cannot rename an immutable column!");
+				errMsg.append("Cannot rename an immutable column.");
 			} catch (Exception e) {
 			}
 			return ValidationState.INVALID;

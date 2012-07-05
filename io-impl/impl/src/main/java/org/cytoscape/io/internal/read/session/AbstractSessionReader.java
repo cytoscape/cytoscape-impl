@@ -79,12 +79,12 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	public AbstractSessionReader(final InputStream sourceInputStream,
 								 final ReadCache cache) {
 		if (sourceInputStream == null)
-			throw new NullPointerException("input stream is null!");
+			throw new NullPointerException("input stream is null.");
 		// So it can be read multiple times:
 		this.sourceInputStream = new ReusableInputStream(sourceInputStream);
 
 		if (cache == null)
-			throw new NullPointerException("cache is null!");
+			throw new NullPointerException("cache is null.");
 		this.cache = cache;
 		
 		this.logger = LoggerFactory.getLogger(this.getClass());
@@ -171,7 +171,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 */
 	protected void readSessionFile(TaskMonitor tm) throws Exception {
 		if (!sourceInputStream.markSupported())
-			throw new RuntimeException("Mark/Reset not supported!");
+			throw new RuntimeException("Mark/Reset not supported.");
 		
 		if (inputStreamRead)
 			sourceInputStream.reset();

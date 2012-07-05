@@ -778,7 +778,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 			// add this cytopanel back to cytopanel container
 			if (cytoPanelContainer == null) {
-				logger.warn("cytoPanelContainer reference has not been set!");
+				logger.warn("cytoPanelContainer reference has not been set.");
 			}
 
 			cytoPanelContainer.insertCytoPanel(this, compassDirection);

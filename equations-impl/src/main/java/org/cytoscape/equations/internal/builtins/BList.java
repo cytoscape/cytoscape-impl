@@ -69,7 +69,7 @@ public class BList extends AbstractFunction {
 		try {
 			booleans = FunctionUtil.getBooleans(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert an argument or a list element to a boolean in a call to BLIST()!");
+			throw new IllegalArgumentException("can't convert an argument or a list element to a boolean in a call to BLIST().");
 		}
 
 		return new BooleanList(booleans);

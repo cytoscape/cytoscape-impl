@@ -460,7 +460,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			});
 
 		caseSensitiveCheckBox = new JCheckBox("Case Sensitive");
-		caseSensitiveCheckBox.setToolTipText("<html><strong><font color=\"red\">Caution! If you uncheck this, import can be extrelely slow.</font></strong></html>");
+		caseSensitiveCheckBox.setToolTipText("<html><strong><font color=\"red\">Caution. If you uncheck this, import can be extrelely slow.</font></strong></html>");
 		caseSensitiveCheckBox.setSelected(true);
 		caseSensitiveCheckBox.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2397,13 +2397,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final JTable table = previewPanel.getPreviewTable();
 
 		if ((table == null) || (table.getModel() == null) || (table.getColumnCount() == 0)) {
-			JOptionPane.showMessageDialog(this, "No table selected.", "Invalid Table!",
+			JOptionPane.showMessageDialog(this, "No table selected.", "Invalid Table.",
 			                              JOptionPane.INFORMATION_MESSAGE);
 
 			return false;
 		} else if ((table.getColumnCount() < 2) && (dialogType != NETWORK_IMPORT)) {
 			JOptionPane.showMessageDialog(this, "Table should contain at least 2 columns.",
-			                              "Invalid Table!", JOptionPane.INFORMATION_MESSAGE);
+			                              "Invalid Table.", JOptionPane.INFORMATION_MESSAGE);
 
 			return false;
 		}
@@ -2416,7 +2416,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			if ((sIdx == tIdx) || (((iIdx == sIdx) || (iIdx == tIdx)) && (iIdx != -1))) {
 				JOptionPane.showMessageDialog(this,
 				                              "Columns for source, target, and interaction type must be distinct.",
-				                              "Same column index!", JOptionPane.INFORMATION_MESSAGE);
+				                              "Same column index.", JOptionPane.INFORMATION_MESSAGE);
 
 				return false;
 			}

@@ -60,7 +60,7 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 	public ValidationState getValidationState(final Appendable errMsg) {
 		if (column.isImmutable()) {
 			try {
-				errMsg.append("Cannot delete an immutable column!");
+				errMsg.append("Cannot delete an immutable column.");
 			} catch (Exception e) {
 			}
 			return ValidationState.INVALID;

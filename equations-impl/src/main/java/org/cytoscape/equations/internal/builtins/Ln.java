@@ -68,11 +68,11 @@ public class Ln extends AbstractFunction {
 		try {
 			number = FunctionUtil.getArgAsDouble(args[0]);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a number in a call to LN()!");
+			throw new IllegalArgumentException("can't convert \"" + args[0] + "\" to a number in a call to LN().");
 		}
 
 		if (number <= 0.0)
-			throw new IllegalArgumentException("LN() called with a number <= 0.0!");
+			throw new IllegalArgumentException("LN() called with a number <= 0.0.");
 
 		return  Math.log(number);
 	}

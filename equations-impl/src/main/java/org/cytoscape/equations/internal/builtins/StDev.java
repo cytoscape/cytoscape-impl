@@ -68,10 +68,10 @@ public class StDev extends AbstractFunction {
 		try {
 			numbers = FunctionUtil.getDoubles(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("could not convert an argument or list element to a number in a call to STDEV()!");
+			throw new IllegalArgumentException("could not convert an argument or list element to a number in a call to STDEV().");
 		}
 		if (numbers.length < 2)
-			throw new IllegalArgumentException("illegal argument(s) in call to STDEV(): must have at least 2 numbers!");
+			throw new IllegalArgumentException("illegal argument(s) in call to STDEV(): must have at least 2 numbers.");
 
 		return Math.sqrt(FunctionUtil.calcSampleVariance(numbers));
 	}

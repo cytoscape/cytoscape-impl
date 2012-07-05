@@ -25,7 +25,7 @@ class PayloadAccumulator<S,P,E extends CyPayloadEvent<S,P>> {
 		}
 
 		if ( sourceClass == null )
-			throw new IllegalArgumentException("no valid source class found!");
+			throw new IllegalArgumentException("no valid source class found.");
 			
 		constructor = eventType.getConstructor(sourceClass, Collection.class);
 		payloadList = new ArrayList<P>();

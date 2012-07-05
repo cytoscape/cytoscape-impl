@@ -133,22 +133,22 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final CyRootNetworkManager rootNetworkMgr) {
 		super(sourceInputStream, cache);
 
-		if (networkReaderMgr == null) throw new NullPointerException("network reader manager is null!");
+		if (networkReaderMgr == null) throw new NullPointerException("network reader manager is null.");
 		this.networkReaderMgr = networkReaderMgr;
 		
-		if (propertyReaderMgr == null) throw new NullPointerException("property reader manager is null!");
+		if (propertyReaderMgr == null) throw new NullPointerException("property reader manager is null.");
 		this.propertyReaderMgr = propertyReaderMgr;
 
-		if (vizmapReaderMgr == null) throw new NullPointerException("vizmap reader manager is null!");
+		if (vizmapReaderMgr == null) throw new NullPointerException("vizmap reader manager is null.");
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		
-		if (csvCyReaderFactory == null) throw new NullPointerException("table reader manager is null!");
+		if (csvCyReaderFactory == null) throw new NullPointerException("table reader manager is null.");
 		this.csvCyReaderFactory = csvCyReaderFactory;
 
-		if (networkTableMgr == null) throw new NullPointerException("network table manager is null!");
+		if (networkTableMgr == null) throw new NullPointerException("network table manager is null.");
 		this.networkTableMgr = networkTableMgr;
 		
-		if (rootNetworkMgr == null) throw new NullPointerException("root network manager is null!");
+		if (rootNetworkMgr == null) throw new NullPointerException("root network manager is null.");
 		this.rootNetworkMgr = rootNetworkMgr;
 
 		filenameTableMap = new HashMap<String, CyTable>();

@@ -18,7 +18,7 @@ public class GridNodeLayoutContext implements TunableValidator {
 			return ValidationState.OK;
 		else {
 			try {
-				errMsg.append("This is a test : I don't want 30.0 for nodeVerticalSpacing value\nProvide something else!!!!");
+				errMsg.append("This is a test : I don't want 30.0 for nodeVerticalSpacing value\nProvide something else!!!.");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;

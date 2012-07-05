@@ -48,7 +48,7 @@ public class ColumnSetListener implements RowsSetListener {
 		if ( local == null )
 			throw new NullPointerException("target table is null");
 		if ( shared == local )
-			throw new IllegalArgumentException("source and target tables cannot be the same!");
+			throw new IllegalArgumentException("source and target tables cannot be the same.");
 		
 		tables.put(local,shared);
     }

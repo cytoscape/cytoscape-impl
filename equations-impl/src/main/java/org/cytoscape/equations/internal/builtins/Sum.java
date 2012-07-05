@@ -64,7 +64,7 @@ public class Sum extends AbstractFunction {
 		try {
 			numbers = FunctionUtil.getDoubles(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("in a call to SUM(): could not convert one of the arguments to a number or list of numbers!");
+			throw new IllegalArgumentException("in a call to SUM(): could not convert one of the arguments to a number or list of numbers.");
 		}
 
 		double sum = 0.0;

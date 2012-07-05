@@ -199,9 +199,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		super(model);
 		
 		if (graphView == null)
-			throw new NullPointerException("View must never be null!");
+			throw new NullPointerException("View must never be null.");
 		if (lexicon == null)
-			throw new NullPointerException("Lexicon must never be null!");
+			throw new NullPointerException("Lexicon must never be null.");
 
 		this.lexicon = lexicon;
 		this.vmm = vmm;

@@ -76,13 +76,13 @@ public class Text extends AbstractFunction {
 		else {
 			final String format = FunctionUtil.getArgAsString(args[1]);
 			if (!isValidFormat(format))
-				throw new IllegalArgumentException("\"" + format +"\" is not a valid format string for the TEXT() function!");
+				throw new IllegalArgumentException("\"" + format +"\" is not a valid format string for the TEXT() function.");
 
 			final DecimalFormat decimalFormat;
 			try {
 				decimalFormat = new DecimalFormat(format, new DecimalFormatSymbols(Locale.US));
 			} catch (final Exception e) {
-				throw new IllegalStateException("we should *never* get here!");
+				throw new IllegalStateException("we should *never* get here.");
 			}
 
 			try {

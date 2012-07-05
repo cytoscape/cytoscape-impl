@@ -92,7 +92,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 		try {
 			errMsg.append("Cytoscape was unable to connect to the internet because:\n\n" + result.getMessage());
 		} catch (final Exception e) {
-			/* Intentionally ignored! */
+			/* Intentionally ignored. */
 		}
 		
 		return ValidationState.INVALID;

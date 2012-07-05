@@ -68,12 +68,12 @@ public class First extends AbstractFunction {
 	public Object evaluateFunction(final Object[] args) throws IllegalArgumentException, ArithmeticException {
 		final List list = (List)args[0];
 		if (list.isEmpty())
-			throw new IllegalArgumentException("can't get the first argument of an empty list in a call to FIRST()!");
+			throw new IllegalArgumentException("can't get the first argument of an empty list in a call to FIRST().");
 
 		final Object firstElement = list.get(0);
 		final Object retVal = FunctionUtil.translateObjectType(firstElement);
 		if (retVal == null)
-			throw new IllegalArgumentException("bad list element type: " + firstElement.getClass() + " in a call to FIRST()!");
+			throw new IllegalArgumentException("bad list element type: " + firstElement.getClass() + " in a call to FIRST().");
 
 		return retVal;
 	}

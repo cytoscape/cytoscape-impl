@@ -49,7 +49,7 @@ public class UndoSupportImpl implements SwingUndoSupport {
 	/**
 	 * Returns the UndoManager. To preserve encapsulation and to prevent
 	 * the wrong hands for mucking with your edit stack, don't make this
-	 * public!  Rather, extend the class and use this method with the 
+	 * public.  Rather, extend the class and use this method with the 
 	 * class and package to set up actions, etc..
 	 * @return the UndoManager used for managing the edits.
 	 */

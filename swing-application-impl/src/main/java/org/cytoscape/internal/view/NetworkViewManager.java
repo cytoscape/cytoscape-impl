@@ -248,7 +248,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		final CyNetworkView view = e.getNetworkView();
-		// Do not use invokeLater() here! It cause all kinds of threading problem.
+		// Do not use invokeLater() here. It cause all kinds of threading problem.
 		setFocus(view);
 	}
 
@@ -264,7 +264,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				view = views.iterator().next();
 		}
 		
-		// Do not use invokeLater() here! It cause all kinds of threading problem.
+		// Do not use invokeLater() here. It cause all kinds of threading problem.
 		setFocus(view);
 	}
 

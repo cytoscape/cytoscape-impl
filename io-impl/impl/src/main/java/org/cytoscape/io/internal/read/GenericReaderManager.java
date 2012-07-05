@@ -42,7 +42,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 	 */
 	public void addInputStreamTaskFactory(T factory, @SuppressWarnings("rawtypes") Map props) {
 		if (factory == null)
-			logger.warn("Specified factory is null!");
+			logger.warn("Specified factory is null.");
 		else if (factory.getFileFilter().getDataCategory() == category) {
 			logger.debug("adding IO taskFactory (factory = " + factory + 
 			            ", category = " + category + ")");

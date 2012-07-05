@@ -38,7 +38,7 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 
 		
 		if (reader == null)
-			throw new NullPointerException("Failed to find reader for specified file!");
+			throw new NullPointerException("Failed to find reader for specified file.");
 
 		taskMonitor.setStatusMessage("Importing Data Table...");
 		

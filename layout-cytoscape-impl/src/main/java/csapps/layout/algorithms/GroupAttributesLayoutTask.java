@@ -85,7 +85,7 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 			Class<Comparable>kasted = (Class<Comparable>) klass;
 			doConstruct(kasted);
 		} else {
-			/* FIXME Error! */
+			/* FIXME Error. */
 		}
 	}
 	/** Needed to allow usage of parametric types */

@@ -75,10 +75,10 @@ public class HarMean extends AbstractFunction {
 		}
 
 		if (!isPositiveArray(numbers))
-			throw new IllegalArgumentException("at least one argument to HARMEAN() is not positive!");
+			throw new IllegalArgumentException("at least one argument to HARMEAN() is not positive.");
 
 		if (numbers.length < 2)
-			throw new IllegalArgumentException("illegal arguments in call to HARMEAN(): must have at least 2 numbers!");
+			throw new IllegalArgumentException("illegal arguments in call to HARMEAN(): must have at least 2 numbers.");
 
 		double sum = 0.0;
 		for (double d : numbers)

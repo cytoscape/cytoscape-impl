@@ -35,7 +35,7 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 
 		final Set<CyNetwork> allNetworks = networkManager.getNetworkSet();
 		if (globalTable == null)
-			throw new IllegalStateException("No Global Table is selected!");
+			throw new IllegalStateException("No Global Table is selected.");
 
 		if (allNetworks.size() == 0)
 			throw new IllegalStateException("No network in current session.  You need at least one network.");
@@ -71,7 +71,7 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 
 	private void mapTable(final CyTable localTable, final CyTable globalTable) {
 		if (globalTable.getPrimaryKey().getType() != String.class)
-			throw new IllegalStateException("Local table's primary key should be type String!");
+			throw new IllegalStateException("Local table's primary key should be type String.");
 
 		final CyColumn trgCol = localTable.getColumn(CyNetwork.NAME);
 		if (trgCol != null)

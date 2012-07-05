@@ -69,7 +69,7 @@ public class FList extends AbstractFunction {
 		try {
 			numbers = FunctionUtil.getDoubles(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert an argument or a list element to a number in a call to FLIST()!");
+			throw new IllegalArgumentException("can't convert an argument or a list element to a number in a call to FLIST().");
 		}
 
 		return new DoubleList(numbers);

@@ -184,7 +184,7 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 			}
 
 			if (value == null) {
-				component = new JLabel("Select Value!");
+				component = new JLabel("Select Value.");
 				component.setForeground(SELECTED);
 				((JLabel) component).setFont(new Font("SansSerif", Font.BOLD, 12));
 			} else if ((value == null) && (((JComboBox) editor).getItemCount() != 0)) {

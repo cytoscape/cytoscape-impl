@@ -148,7 +148,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			taskMonitor.setProgress(1.0);
 			
 			JOptionPane
-					.showMessageDialog(null, "Could not find any matches.", "No Match!", JOptionPane.WARNING_MESSAGE);
+					.showMessageDialog(null, "Could not find any matches.", "No Match.", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 

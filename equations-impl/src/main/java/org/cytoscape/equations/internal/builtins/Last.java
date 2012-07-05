@@ -68,12 +68,12 @@ public class Last extends AbstractFunction {
 	public Object evaluateFunction(final Object[] args) throws IllegalArgumentException, ArithmeticException {
 		final List list = (List)args[0];
 		if (list.isEmpty())
-			throw new IllegalArgumentException("can't get the last argument of an empty list in a call to LAST()!");
+			throw new IllegalArgumentException("can't get the last argument of an empty list in a call to LAST().");
 
 		final Object lastElement = list.get(list.size() - 1);
 		final Object retVal = FunctionUtil.translateObjectType(lastElement);
 		if (retVal == null)
-			throw new IllegalArgumentException("bad list element type: " + lastElement.getClass() + " in a call to LAST()!");
+			throw new IllegalArgumentException("bad list element type: " + lastElement.getClass() + " in a call to LAST().");
 
 		return retVal;
 	}

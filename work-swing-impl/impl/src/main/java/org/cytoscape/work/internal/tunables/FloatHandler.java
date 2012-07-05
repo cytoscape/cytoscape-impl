@@ -93,7 +93,7 @@ public class FloatHandler extends AbstractGUITunableHandler implements ActionLis
 				
 			} catch (final Exception e) {
 				textField.setBackground(Color.red);
-				JOptionPane.showMessageDialog(null, "The value entered cannot be set!", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "The value entered cannot be set.", "Error", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
 				textField.setBackground(Color.white);
 				return;

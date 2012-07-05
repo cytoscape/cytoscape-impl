@@ -88,7 +88,7 @@ public class VizMapperUtil {
 				return ret;
 
 			JOptionPane.showMessageDialog(parentComponent,
-					"Visual style with name " + ret + " already exists!",
+					"Visual style with name " + ret + " already exists.",
 					"Duplicate visual style name", JOptionPane.WARNING_MESSAGE,
 					null);
 		}

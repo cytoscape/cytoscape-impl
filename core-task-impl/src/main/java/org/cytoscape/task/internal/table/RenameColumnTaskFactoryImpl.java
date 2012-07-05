@@ -51,7 +51,7 @@ public final class RenameColumnTaskFactoryImpl extends AbstractTableColumnTaskFa
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
-			throw new IllegalStateException("you forgot to set the CyColumn on this task factory!");
+			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 		return new TaskIterator(new RenameColumnTask(undoSupport, column));
 	}
 	@Override

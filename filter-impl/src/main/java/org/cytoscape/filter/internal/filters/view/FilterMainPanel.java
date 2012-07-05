@@ -991,7 +991,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				String attributeName = cmbAttributes.getSelectedItem().toString().substring(5);
 
 				if (CyAttributesUtil.isNullAttribute(applicationManager.getCurrentNetwork(), attributeType, attributeName)){
-					JOptionPane.showMessageDialog(this, "All the values for this attribute are NULL!", "Can not create filter", JOptionPane.ERROR_MESSAGE); 
+					JOptionPane.showMessageDialog(this, "All the values for this attribute are NULL.", "Can not create filter", JOptionPane.ERROR_MESSAGE); 
 				} else {
 					theSettingPanel.addNewWidget(cmbAttributes.getSelectedItem());					
 				}
@@ -1050,7 +1050,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					if (newFilterName.trim().equals("")) {
 						Object[] options = { "OK" };
 						JOptionPane.showOptionDialog(this,
-									     "Filter name is empty!", "Warning",
+									     "Filter name is empty.", "Warning",
 									     JOptionPane.DEFAULT_OPTION,
 									     JOptionPane.WARNING_MESSAGE, null, options,
 									     options[0]);
@@ -1061,7 +1061,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					    .isFilterNameDuplicated(modelLocator.getFilters(),  newFilterName)) {
 						Object[] options = { "OK" };
 						JOptionPane.showOptionDialog(this,
-									     "Filter name already existed!", "Warning",
+									     "Filter name already existed.", "Warning",
 									     JOptionPane.DEFAULT_OPTION,
 									     JOptionPane.WARNING_MESSAGE, null, options,
 									     options[0]);
@@ -1221,7 +1221,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			if (FilterUtil.isFilterNameDuplicated(modelLocator.getFilters(), newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
-							     "Filter name already existed!", "Warning",
+							     "Filter name already existed.", "Warning",
 							     JOptionPane.DEFAULT_OPTION,
 							     JOptionPane.WARNING_MESSAGE, null, options,
 							     options[0]);
@@ -1264,7 +1264,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			if (FilterUtil.isFilterNameDuplicated(modelLocator.getFilters(), newFilterName)) {
 				Object[] options = { "OK" };
 				JOptionPane.showOptionDialog(this,
-							     "Filter name already existed!", "Warning",
+							     "Filter name already existed.", "Warning",
 							     JOptionPane.DEFAULT_OPTION,
 							     JOptionPane.WARNING_MESSAGE, null, options,
 							     options[0]);

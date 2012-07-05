@@ -157,7 +157,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 			else if (fieldValue instanceof Long)
 				bounded.setValue((Long)fieldValue);
 			else
-				throw new IllegalStateException("unexpected type: " + fieldValue.getClass() + "!");
+				throw new IllegalStateException("unexpected type: " + fieldValue.getClass() + ".");
 			
 			setValue(bounded);
 		} catch (Exception e) {

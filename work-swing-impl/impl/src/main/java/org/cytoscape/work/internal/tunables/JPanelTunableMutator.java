@@ -66,7 +66,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	/** Provides an initialised logger. */
 	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
 
-	/** Do not ever modify this panel! Used for special case handling of files. */
+	/** Do not ever modify this panel. Used for special case handling of files. */
 	protected final JPanel FILE_HANDLER_CANCEL_PANEL = new JPanel();
 
 	/**
@@ -126,10 +126,10 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		// Sanity check:
 		if (factoryCount > 0) {
 			if (factoryCount != 1) {
-				logger.error("More than one annotated TaskFactory found!");
+				logger.error("More than one annotated TaskFactory found.");
 				return null;
 			} else if (otherCount != 0) {
-				logger.error("Found annotated Task objects in addition to an annotated TaskFactory!");
+				logger.error("Found annotated Task objects in addition to an annotated TaskFactory.");
 				return null;
 			}
 		}
@@ -208,7 +208,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				String groupNames = "";
 				for (String g : gh.getGroups()) {
 					if (g.equals(""))
-						throw new IllegalArgumentException("A group's name must not be \"\"!");
+						throw new IllegalArgumentException("A group's name must not be \"\".");
 					groupNames = groupNames + g;
 					if (!panels.containsKey(groupNames)) {
 						panels.put(groupNames,

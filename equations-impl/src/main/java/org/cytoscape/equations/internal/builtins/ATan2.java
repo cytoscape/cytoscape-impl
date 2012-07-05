@@ -66,7 +66,7 @@ public class ATan2 extends AbstractFunction {
 		final double x = FunctionUtil.getArgAsDouble(args[0]);
 		final double y = FunctionUtil.getArgAsDouble(args[1]);
 		if (x == 0.0 && y == 0.0)
-			throw new IllegalArgumentException("both arguments to ATAN2() must not simultaneously be equal to zero!");
+			throw new IllegalArgumentException("both arguments to ATAN2() must not simultaneously be equal to zero.");
 
 		return Math.atan2(x, y);
 	}

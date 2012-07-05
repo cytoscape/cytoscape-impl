@@ -66,7 +66,7 @@ public class Product extends AbstractFunction {
 		try {
 			numbers = FunctionUtil.getDoubles(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert an argument or a list element to a number in a call to PRODUCT()!");
+			throw new IllegalArgumentException("can't convert an argument or a list element to a number in a call to PRODUCT().");
 		}
 
 		double product = 1.0;

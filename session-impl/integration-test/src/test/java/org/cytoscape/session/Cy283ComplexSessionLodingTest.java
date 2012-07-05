@@ -51,7 +51,7 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 	public void setup() throws Exception {
 		sessionFile = new File("./src/test/resources/testData/session2x/", "v283Session1.cys");
 		if (!sessionFile.exists())
-			fail("Could not find the file! " + sessionFile.toString());
+			fail("Could not find the file. " + sessionFile.toString());
 
 		checkBasicConfiguration();
 	}

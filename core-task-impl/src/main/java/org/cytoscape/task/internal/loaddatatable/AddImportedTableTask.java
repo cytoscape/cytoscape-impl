@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory;
 				tableMgr.addTable(table);
 		else{
 			if (reader == null)
-				logger.warn("reader is null!" );
+				logger.warn("reader is null." );
 			else
-				logger.warn("No tables in reader!");
+				logger.warn("No tables in reader.");
 		}
 
 	}

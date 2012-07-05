@@ -66,9 +66,9 @@ final class BookmarksCyProperty implements CyProperty<Bookmarks> {
         public BookmarksCyProperty(final Bookmarks bookmarks, final CyProperty.SavePolicy savePolicy)
 	{
                 if (bookmarks == null)
-			throw new NullPointerException("\"bookmarks\" parameter is null!");
+			throw new NullPointerException("\"bookmarks\" parameter is null.");
                 if (savePolicy == null)
-                        throw new NullPointerException("\"savePolicy\" parameter is null!");
+                        throw new NullPointerException("\"savePolicy\" parameter is null.");
 
                 this.bookmarks = bookmarks;
                 this.savePolicy = savePolicy;

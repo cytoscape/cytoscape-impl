@@ -81,10 +81,10 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		if (titleAlreayExisted){
 			// Inform user duplicated network title!
 			try {
-				errMsg.append("Duplicated network title!");	
+				errMsg.append("Duplicated network title.");	
 			}
 			catch (Exception e){
-				System.out.println("Warning: Duplicated network title!");
+				System.out.println("Warning: Duplicated network title.");
 			}
 			return ValidationState.INVALID;			
 		}

@@ -69,7 +69,7 @@ public class And extends AbstractFunction {
 		try {
 			booleans = FunctionUtil.getBooleans(args);
 		} catch (final Exception e) {
-			throw new IllegalArgumentException("can't convert an argument or a list element to a boolean in a call to OR()!");
+			throw new IllegalArgumentException("can't convert an argument or a list element to a boolean in a call to OR().");
 		}
 
 		for (final boolean b : booleans) {

@@ -73,7 +73,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 	public void run(final TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
 		if (file == null)
-			throw new NullPointerException("You must specify a non-null file to load!");
+			throw new NullPointerException("You must specify a non-null file to load.");
 
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;

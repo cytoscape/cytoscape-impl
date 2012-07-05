@@ -146,7 +146,7 @@ public class Tokeniser {
 
 	public void ungetToken(final Token token) throws IllegalStateException {
 		if (previousToken != null)
-			throw new IllegalStateException("can't unget more than one token!");
+			throw new IllegalStateException("can't unget more than one token.");
 
 		previousToken = token;
 		previousIntConstant = currentIntConstant;
@@ -232,7 +232,7 @@ public class Tokeniser {
 
 	private void ungetChar(final int ch) {
 		if (putBackChar)
-			throw new IllegalStateException("can't unget two chars in a row!");
+			throw new IllegalStateException("can't unget two chars in a row.");
 		previousChar = ch;
 		putBackChar = true;
 		--currentPos;
@@ -261,7 +261,7 @@ public class Tokeniser {
 						builder.append('\n');
 						break;
 					default:
-						errorMsg = "unknown escape character '" + Character.toString(ch) + "'!";
+						errorMsg = "unknown escape character '" + Character.toString(ch) + "'.";
 						return Token.ERROR;
 					}
 
@@ -276,7 +276,7 @@ public class Tokeniser {
 			}
 		}
 
-		errorMsg = "unterminated String constant!";
+		errorMsg = "unterminated String constant.";
 		return Token.ERROR;
 	}
 
@@ -295,7 +295,7 @@ public class Tokeniser {
 				ungetChar(ch);
 				return Token.FLOAT_CONSTANT;
 			} catch (final NumberFormatException e2) {
-				errorMsg = "invalid numeric constant!";
+				errorMsg = "invalid numeric constant.";
 				return Token.ERROR;
 			}
 		}
@@ -313,7 +313,7 @@ public class Tokeniser {
 
 			ch = getChar();
 			if (ch == -1) {
-				errorMsg = "invalid numeric constant!";
+				errorMsg = "invalid numeric constant.";
 				return Token.ERROR;
 			}
 
@@ -325,7 +325,7 @@ public class Tokeniser {
 
 			// Now we require at least a single digit.
 			if (!Character.isDigit((char)ch)) {
-				errorMsg = "missing digits in exponent!";
+				errorMsg = "missing digits in exponent.";
 				return Token.ERROR;
 			}
 			ungetChar(ch);
@@ -341,7 +341,7 @@ public class Tokeniser {
 			currentFloatConstant = d;
 			return Token.FLOAT_CONSTANT;
 		} catch (final NumberFormatException e3) {
-			errorMsg = "invalid numeric constant!";
+			errorMsg = "invalid numeric constant.";
 			return Token.ERROR;
 		}
 	}
@@ -372,7 +372,7 @@ public class Tokeniser {
 				builder.append((char)ch);
 		}
 		if (escaped) {
-			errorMsg = "invalid attribute name at end of formula!";
+			errorMsg = "invalid attribute name at end of formula.";
 			return Token.ERROR;
 		}
 		ungetChar(ch);

@@ -59,7 +59,7 @@ public class myBoundedSwing extends JTextField {
 		else if (defaultValue instanceof Long)
 			return getLongFieldValue();
 		else
-			throw new IllegalStateException("unexpected type: " + defaultValue.getClass() + "!");
+			throw new IllegalStateException("unexpected type: " + defaultValue.getClass() + ".");
 	}
 
 	private Double getDoubleFieldValue() {

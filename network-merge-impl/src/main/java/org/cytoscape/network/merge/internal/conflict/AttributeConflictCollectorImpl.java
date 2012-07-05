@@ -149,7 +149,7 @@ public class AttributeConflictCollectorImpl implements AttributeConflictCollecto
                         mapToAttrConflicts.put(toAttr, conflicts);
                 } else {
 //                        if (conflicts.cyAttributes!=cyAttributes) {
-//                                throw new java.lang.IllegalArgumentException("CyAttributes are different!");
+//                                throw new java.lang.IllegalArgumentException("CyAttributes are different.");
 //                        }
                 }
 

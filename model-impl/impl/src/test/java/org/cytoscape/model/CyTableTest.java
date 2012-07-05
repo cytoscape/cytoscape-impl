@@ -116,7 +116,7 @@ public class CyTableTest extends AbstractCyTableTest {
 			attrs.set("someDouble", eqn);
 			fail();
 		} catch (IllegalArgumentException e) {
-			/* Intentionally empty! */
+			/* Intentionally empty. */
 		}
 	}
 

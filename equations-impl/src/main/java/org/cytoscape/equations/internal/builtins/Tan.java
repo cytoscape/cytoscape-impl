@@ -64,7 +64,7 @@ public class Tan extends AbstractFunction {
 
 		final double cos = Math.cos(angleInRadians);
 		if (cos == 0.0)
-			throw new IllegalArgumentException("division by zero in call to TAN()!");
+			throw new IllegalArgumentException("division by zero in call to TAN().");
 
 		return Math.sin(angleInRadians) / cos;
 	}

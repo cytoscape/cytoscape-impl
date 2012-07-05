@@ -510,7 +510,7 @@ public class FormulaBuilderDialog extends JDialog {
 			break;
 		default:
 			throw new IllegalStateException("unknown application domain: "
-			                                + applicationDomain + "!");
+			                                + applicationDomain + ".");
 		}
 
 		return true;

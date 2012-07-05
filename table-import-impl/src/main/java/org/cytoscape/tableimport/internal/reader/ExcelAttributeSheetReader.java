@@ -151,7 +151,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 				cells[i] = null;
 			} else if (cell.getCellType() == Cell.CELL_TYPE_ERROR) {
 				cells[i] = null;
-				logger.warn("Error found when reading a cell!");
+				logger.warn("Error found when reading a cell.");
 			}
 		}
 

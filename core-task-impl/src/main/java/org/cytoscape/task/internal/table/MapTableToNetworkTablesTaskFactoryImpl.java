@@ -41,7 +41,7 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 		
 		TableType tableType = getTableType(type);
 		if(tableType == null)
-			throw new IllegalArgumentException("The specified type " + type + " is not acceptable!");
+			throw new IllegalArgumentException("The specified type " + type + " is not acceptable.");
 		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
 		tableTypes.setSelectedValue( tableType);
 		
