@@ -6,12 +6,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListMultipleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -24,7 +27,7 @@ public class LoadRepositoryTask extends AbstractTask {
 	private final BiomartRestClient client;
 
 	private Map<String, Map<String, String>> reg;
-	
+	private final Map<String, String> name2DatasourceMap;
 
 	private LoadRepositoryResult result;
 
@@ -41,15 +44,42 @@ public class LoadRepositoryTask extends AbstractTask {
 
 	private Map<String, String> datasourceMap;
 	private List<String> dsList;
+	
+	@Tunable(description="Please slect services you want to use")
+	public ListMultipleSelection<String> services;
 
 	public LoadRepositoryTask(final BiomartRestClient client) {
 		this.client = client;
+		this.name2DatasourceMap = new HashMap<String, String>();
+		try {
+			initServiceList();
+		} catch (Exception e) {
+			throw new IllegalStateException("Could not obtain registry", e);
+		}
+	}
+	
+	private final void initServiceList() throws IOException, ParserConfigurationException, SAXException {
+		reg = client.getRegistry();
+		
+		for (String databaseName : reg.keySet()) {
+
+			final Map<String, String> detail = reg.get(databaseName);
+			if (detail.get("visible").equals("1")
+					&& (databaseFilter.contains(databaseName) == false)) {
+				String dispName = detail.get("displayName");
+				name2DatasourceMap.put(dispName, databaseName);
+			}
+		}
+		final TreeSet<String> sortedSet = new TreeSet<String>(name2DatasourceMap.keySet());
+		services = new ListMultipleSelection<String>(new ArrayList<String>(sortedSet));
 	}
 
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException, ParserConfigurationException, SAXException {
 
+		final List<String> selected = services.getSelectedValues();
+		
 		taskMonitor.setTitle("Loading list of available BioMart Services.  Please wait...");
 		taskMonitor.setStatusMessage("Loading list of available Marts...");
 		
@@ -58,9 +88,8 @@ public class LoadRepositoryTask extends AbstractTask {
 
 		logger.debug("Loading Repository...");
 		
-		reg = client.getRegistry();
 		taskMonitor.setProgress(0.1);
-		final int registryCount = reg.size();
+		final int registryCount = selected.size();
 		float increment = 0.9f / registryCount;
 		float percentCompleted = 0.1f;
 
@@ -75,19 +104,22 @@ public class LoadRepositoryTask extends AbstractTask {
 			if (detail.get("visible").equals("1")
 					&& (databaseFilter.contains(databaseName) == false)) {
 				String dispName = detail.get("displayName");
-				try {
-					datasources = client.getAvailableDatasets(databaseName);
-				} catch (IOException e) {
-					// If timeout/connection error is found, skip the source.
-					percentCompleted += increment;
-					continue;
-				}
+				if (selected.contains(dispName)) {
+					try {
+						datasources = client.getAvailableDatasets(databaseName);
+					} catch (IOException e) {
+						// If timeout/connection error is found, skip the
+						// source.
+						percentCompleted += increment;
+						continue;
+					}
 
-				for (String key : datasources.keySet()) {
-					final String dataSource = dispName + " - " + datasources.get(key);
-					dsList.add(dataSource);
-					datasourceMap.put(dataSource, key);
-					taskMonitor.setStatusMessage("Loading Data Source: " + dataSource);
+					for (String key : datasources.keySet()) {
+						final String dataSource = dispName + " - " + datasources.get(key);
+						dsList.add(dataSource);
+						datasourceMap.put(dataSource, key);
+						taskMonitor.setStatusMessage("Loading Data Source: " + dataSource);
+					}
 				}
 			}
 

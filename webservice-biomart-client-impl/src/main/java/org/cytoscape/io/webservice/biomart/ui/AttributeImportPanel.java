@@ -100,6 +100,7 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 	protected JButton importButton;
 	protected JLabel titleLabel;
 	protected JButton resetButton;
+	protected JButton refreshButton;
 	protected CheckBoxJList attrCheckboxList;
 
 	protected DefaultListModel attrCheckboxListModel;
@@ -148,6 +149,7 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		importButton = new JButton();
 		cancelButton = new JButton();
 		resetButton = new JButton();
+		refreshButton= new JButton();
 
 		setBackground(new java.awt.Color(255, 255, 255));
 		titleLabel.setBackground(new java.awt.Color(255, 255, 255));
@@ -262,13 +264,21 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		});
 		cancelButton.setBackground(Color.white);
 
-		resetButton.setText("Reset");
+		resetButton.setText("Clear");
 		resetButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				resetButtonActionPerformed(evt);
 			}
 		});
 		resetButton.setBackground(Color.white);
+		
+		refreshButton.setText("Refresh");
+		refreshButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				refreshButtonActionPerformed(evt);
+			}
+		});
+		refreshButton.setBackground(Color.white);
 
 		GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -287,7 +297,7 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 										.addComponent(titleLabel)
 										.addGroup(
 												layout.createSequentialGroup()
-														.addComponent(resetButton)
+														.addComponent(resetButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(refreshButton)
 														.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 343,
 																Short.MAX_VALUE).addComponent(cancelButton)
 														.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -308,10 +318,11 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 						.addGroup(
 								layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(importButton)
-										.addComponent(cancelButton).addComponent(resetButton)).addContainerGap()));
+										.addComponent(cancelButton).addComponent(resetButton).addComponent(refreshButton)).addContainerGap()));
 	} // </editor-fold>
 
 	protected abstract void resetButtonActionPerformed(ActionEvent evt);
+	protected abstract void refreshButtonActionPerformed(ActionEvent evt);
 
 	protected void importButtonActionPerformed(ActionEvent evt) {
 		importAttributes();

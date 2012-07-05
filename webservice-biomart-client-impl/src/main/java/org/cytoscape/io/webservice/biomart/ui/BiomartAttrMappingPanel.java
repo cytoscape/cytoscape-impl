@@ -44,6 +44,7 @@ import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
@@ -130,7 +131,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
 	private void initPanel() {
 		LoadRepositoryTask firstTask = new LoadRepositoryTask(client.getRestClient());
-		ShowBiomartDialogTask showDialogTask = new ShowBiomartDialogTask(this, client, firstTask);
+		ShowBiomartDialogTask showDialogTask = new ShowBiomartDialogTask(this, firstTask);
 
 		taskManager.setExecutionContext(null);
 		taskManager.execute(new TaskIterator(firstTask, showDialogTask));
@@ -148,16 +149,21 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 	}
 
 	public void setMartServiceList(LoadRepositoryResult res) {
+		databaseComboBox.removeAllItems();
+		
 		this.datasourceMap = res.getDatasourceMap();
 		final List<String> dsList = res.getSortedDataSourceList();
 		for (String ds : dsList)
-			this.databaseComboBox.addItem(ds);
+			this.databaseComboBox.addItem(ds);		
 	}
 
 	public void loadFilter() {
+		Object selected = databaseComboBox.getSelectedItem();
+		if(selected == null)
+			return;
+		
 		attributeTypeComboBox.removeAllItems();
-
-		final String selectedDB = databaseComboBox.getSelectedItem().toString();
+		final String selectedDB = selected.toString();
 		final String selectedDBName = datasourceMap.get(selectedDB);
 
 		fetchData(selectedDBName, SourceType.FILTER);
@@ -172,8 +178,12 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 		loadFilter();
 	}
 
-	private void updateAttributeList() {		
-		final String selectedDB = databaseComboBox.getSelectedItem().toString();
+	private void updateAttributeList() {
+		Object selected = databaseComboBox.getSelectedItem();
+		if(selected == null)
+			return;
+		
+		final String selectedDB = selected.toString();
 		final String selectedDBName = datasourceMap.get(selectedDB);
 
 		List<String> order = attributeListOrder.get(selectedDBName);
@@ -413,6 +423,11 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 				attributeTypeComboBox.addItem(filter);
 		}
 
+	}
+
+	@Override
+	protected void refreshButtonActionPerformed(ActionEvent evt) {
+		initPanel();
 	}
 
 }
