@@ -91,7 +91,9 @@ public class DefaultAttributeMerger implements AttributeMerger {
                             Object o1 = fromCyRow.getRaw(fromAttr.getName()); //Correct??
                             String o2 = cyRow.get(toAttr.getName(), String.class);
                             if (o2==null||o2.length()==0) { //null or empty attribute
-                                cyRow.set(toAttr.getName(), o1.toString());
+                            	if (!toAttr.getVirtualColumnInfo().isVirtual()){
+                                    cyRow.set(toAttr.getName(), o1.toString());                            		
+                            	}
                             } else if (o1.equals(o2)) { //TODO: neccessary?
                                 // the same, do nothing
                             } else { // attribute conflict
