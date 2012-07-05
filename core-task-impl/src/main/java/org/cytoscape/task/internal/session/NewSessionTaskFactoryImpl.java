@@ -52,7 +52,7 @@ public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements Ne
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new NewSessionTask(mgr));
+		return new TaskIterator(new NewSessionTask(mgr,false));
 	}
 
 	@Override

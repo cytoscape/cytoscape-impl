@@ -22,7 +22,7 @@ public class NewSessionTaskTest {
 
 	@Test
 	public void testRun() throws Exception {
-		final NewSessionTask t = new NewSessionTask(mgr);
+		final NewSessionTask t = new NewSessionTask(mgr,true);
 
 		t.run(tm);
 		verify(mgr, times(1)).setCurrentSession(null, null);

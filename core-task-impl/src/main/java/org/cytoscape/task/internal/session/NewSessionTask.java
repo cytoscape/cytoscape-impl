@@ -30,6 +30,8 @@
 package org.cytoscape.task.internal.session; 
 
 
+import javax.swing.JOptionPane;
+
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -39,24 +41,44 @@ import org.cytoscape.work.Tunable;
 
 public class NewSessionTask extends AbstractTask {
 
-	@ProvidesTitle
+	/*@ProvidesTitle
 	public String getTitle() {
 		return "New Session";
 	}
 	
 	@Tunable(description="<html>Current session (all networks/attributes) will be lost.<br />Do you want to continue?</html>")
-	public boolean destroyCurrentSession = true;
+	//public boolean destroyCurrentSession = true;*/
 
 	private CySessionManager mgr;
+	private Boolean test;
 	
 	
-	public NewSessionTask(CySessionManager mgr) {
+	public NewSessionTask(CySessionManager mgr,Boolean test) {
 		this.mgr = mgr;
+		this.test = test;
 	}
 
 	public void run(TaskMonitor taskMonitor) {
-		if (destroyCurrentSession) {
-			mgr.setCurrentSession(null,null);			
+		// Ask user whether to delete current session or not.
+		final String msg = "<html>Current session (all networks/attributes) will be lost.<br />Do you want to continue?</html>";
+		final String header ="New Session";
+		final Object[] options = { "Ok","Cancel" };
+		final int n ;
+		
+		if (test ) {
+			mgr.setCurrentSession(null,null);
 		}
+		else
+		{
+			n = JOptionPane.showOptionDialog(null, msg, header,
+				                                     JOptionPane.OK_CANCEL_OPTION,
+				                                     JOptionPane.QUESTION_MESSAGE, 
+													 null, options, options[0]);
+			if (n == JOptionPane.YES_OPTION  ) {
+				mgr.setCurrentSession(null,null);
+			}
+		}
+
+	
 	}
 }
