@@ -30,7 +30,6 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Component;
 import java.awt.Point;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +39,8 @@ import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
@@ -54,12 +55,9 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.DynamicSubmenuListener;
 
 import static org.cytoscape.work.ServiceProperties.*;
 
@@ -100,7 +98,7 @@ class PopupMenuHelper {
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
 				String edgeLabel = network.getRow(ev.getModel()).get("interaction",String.class);
-				JPopupMenu menu = new JPopupMenu(edgeLabel);
+				JPopupMenu menu = createMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
 				for ( EdgeViewTaskFactory evtf : usableTFs ) {
@@ -132,7 +130,7 @@ class PopupMenuHelper {
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
 				String nodeLabel = network.getRow(nv.getModel()).get("name",String.class);
-				JPopupMenu menu = new JPopupMenu(nodeLabel);
+				JPopupMenu menu = createMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
 				for ( NodeViewTaskFactory nvtf : usableTFs ) {
@@ -153,13 +151,32 @@ class PopupMenuHelper {
 		}
 	}
 
-	
+	private JPopupMenu createMenu(String title) {
+		final JPopupMenu menu = new JPopupMenu(title);
+		menu.addPopupMenuListener(new PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+			}
+			
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				menu.removeAll();
+			}
+			
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent arg0) {
+				menu.removeAll();
+			}
+		});
+		return menu;
+	}
+
 	/**
 	 * Creates a menu based on the NetworkView.
 	 */
 	void createEmptySpaceMenu(Point rawPt, Point xformPt, String action) {
 		
-		final JPopupMenu menu = new JPopupMenu("Double Click Menu: empty");
+		final JPopupMenu menu = createMenu("Double Click Menu: empty");
 		final JMenuTracker tracker = new JMenuTracker(menu);
 
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
@@ -320,5 +337,9 @@ class PopupMenuHelper {
 		public void actionPerformed(ActionEvent ae) {
 			m_view.manager.execute(tf.createTaskIterator());
 		}
+	}
+
+	public void dispose() {
+		m_view = null;
 	}
 }

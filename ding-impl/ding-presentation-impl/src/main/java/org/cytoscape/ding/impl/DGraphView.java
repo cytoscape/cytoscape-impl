@@ -2747,6 +2747,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				registrar.unregisterAllServices(addDeleteHandler);
 			servicesRegistered = false;
 			
+			m_lis[0] = null;
 			cyAnnotator.dispose();
 			m_networkCanvas.dispose();
 		}

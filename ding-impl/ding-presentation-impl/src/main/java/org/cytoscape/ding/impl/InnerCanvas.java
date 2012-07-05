@@ -131,7 +131,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private final MouseDraggedDelegator mouseDraggedDelegator;
 	private final AddEdgeMousePressedDelegator addEdgeMousePressedDelegator;
 
-	private final AddEdgeStateMonitor addEdgeMode;
+	private AddEdgeStateMonitor addEdgeMode;
 
 	InnerCanvas(Object lock, DGraphView view, UndoSupport undo) {
 		super();
@@ -1409,5 +1409,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	public void dispose() {
 		m_view = null;
+		m_undoable_edit = null;
+		addEdgeMode = null;
+		popup.dispose();
 	}
 }
