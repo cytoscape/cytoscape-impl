@@ -36,7 +36,8 @@ import org.cytoscape.work.TaskMonitor;
 
 
 public class HelpContactHelpDeskTask extends AbstractTask {
-	private String helpDeskURL = "http://www.cytoscape.org/documentation_users.html";
+	// Google Group's help desk top
+	private String helpDeskURL = "https://groups.google.com/forum/?fromgroups#!forum/cytoscape-helpdesk";
 	private OpenBrowser openBrowser;
 
 	public HelpContactHelpDeskTask(OpenBrowser openBrowser) {
