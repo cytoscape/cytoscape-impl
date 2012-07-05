@@ -446,6 +446,10 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			return Collections.emptyList();
 		}
 		
+		if (table == null) {
+			return Collections.emptyList();
+		}
+		
 		final Collection<CyColumn> columns = new HashSet<CyColumn>(table.getColumns());
 		for (final CyColumn column : columns) {
 			if(column!= null){
