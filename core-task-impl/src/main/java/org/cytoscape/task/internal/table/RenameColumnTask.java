@@ -53,6 +53,8 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 	RenameColumnTask(final UndoSupport undoSupport, final CyColumn column) {
 		super(column);
 		this.undoSupport = undoSupport;
+		// Set the original column name
+		newColumnName = column.getName();
 	}
 
 	@Override
