@@ -180,7 +180,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	@Override
 	public void update(Graphics g) {
-		if (m_grafx == null)
+		if (m_grafx == null || m_view == null)
 			return;
 
 		// This is the magical portion of code that transfers what is in the
