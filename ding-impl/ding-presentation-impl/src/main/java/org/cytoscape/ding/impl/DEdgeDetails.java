@@ -484,9 +484,6 @@ final class DEdgeDetails extends EdgeDetails {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Paint segmentPaint(final CyEdge edge) {
 		final boolean isSelected = selected.contains(edge);
@@ -502,13 +499,6 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	public Paint unselectedPaint(final CyEdge edge) {
-		// Check bypass
-		final DEdgeView dev = m_view.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_UNSELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_UNSELECTED_PAINT);
-		
 		final Paint paint = m_unselectedPaints.get(edge);
 
 		if (paint == null) {
@@ -517,23 +507,19 @@ final class DEdgeDetails extends EdgeDetails {
 			else
 				return m_unselectedPaintDefault;
 		}
+
 		return paint;
 	}
 
 	public Paint selectedPaint(final CyEdge edge) {
-		// Check bypass
-		final DEdgeView dev = m_view.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_SELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_SELECTED_PAINT);
-		
 		final Paint paint = m_selectedPaints.get(edge);
-		if (paint == null)
+
+		if (paint == null) {
 			if (m_selectedPaintDefault == null)
 				return Color.red;
 			else
 				return m_selectedPaintDefault;
+		}
 
 		return paint;
 	}

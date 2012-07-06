@@ -2703,8 +2703,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 //			m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
 			applyToAllNodes(vp, defaultValue);
 		} else if (targetType == CyEdge.class) {
-			m_edgeDetails.clear();
-			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
+//			m_edgeDetails.clear();
+//			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
+			applyToAllEdges(vp, defaultValue);
 		} else if (targetType == CyNetwork.class) {
 			this.setVisualProperty(vp, defaultValue);
 		}
@@ -2713,8 +2714,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private <T, V extends T> void applyToAllNodes(VisualProperty<? extends T> vp, final V defaultValue) {
 		final Collection<NodeView> nodes = this.m_nodeViewMap.values();
 		
-		for (NodeView node : nodes)
-			((DNodeView) node).setVisualProperty(vp, defaultValue);
+		for (NodeView n : nodes)
+			((DNodeView) n).setVisualProperty(vp, defaultValue);
+	}
+	
+	private <T, V extends T> void applyToAllEdges(VisualProperty<? extends T> vp, final V defaultValue) {
+		final Collection<EdgeView> edges = this.m_edgeViewMap.values();
+		
+		for (EdgeView e : edges)
+			((DEdgeView) e).setVisualProperty(vp, defaultValue);
 	}
 
 	public CyAnnotator getCyAnnotator() {

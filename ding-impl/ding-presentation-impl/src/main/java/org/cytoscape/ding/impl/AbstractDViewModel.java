@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.Color;
+import java.awt.Paint;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -44,11 +46,11 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		if(value == null)
+		if (value == null)
 			visualProperties.remove(vp);
 		else
 			visualProperties.put(vp, value);
-		
+
 		if (value != null && !isValueLocked(vp))
 			applyVisualProperty(vp, value);
 	}
@@ -75,9 +77,8 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
-		
-		if(visualPropertyLocks.get(vp) == null) {
-			if(visualProperties.get(vp) == null)
+		if (visualPropertyLocks.get(vp) == null) {
+			if (visualProperties.get(vp) == null)
 				return vp.getDefault();
 			else
 				return (T) visualProperties.get(vp);
@@ -86,4 +87,13 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	}
 	
 	protected abstract <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value);
+	
+	protected Paint getTransparentColor(final Paint p, final int alpha) {
+		if (p instanceof Color && ((Color) p).getAlpha() != alpha) {
+			Color c = (Color) p;
+			return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+		} else {
+			return p;
+		}
+	}
 }

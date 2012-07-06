@@ -249,7 +249,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			graphView.m_nodeDetails.setSelectedPaint(model, paint);
+			final Paint transpColor = getTransparentColor(paint, transparency);
+			graphView.m_nodeDetails.setSelectedPaint(model, transpColor);
 			
 			if (isSelected()) {
 //				graphView.m_nodeDetails.overrideFillPaint(model, paint);
@@ -268,19 +269,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	@Override
-	public void setUnselectedPaint(Paint paint) {
+	public void setUnselectedPaint(final Paint paint) {
 		synchronized (graphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			if (paint instanceof Color) {
-				final Color c = (Color) paint;
-				
-				if (c.getAlpha() != transparency)
-					paint = new Color(c.getRed(), c.getGreen(), c.getBlue(), transparency);
-			}
-			
-			graphView.m_nodeDetails.setUnselectedPaint(model, paint);
+			final Paint transpColor = getTransparentColor(paint, transparency);
+			graphView.m_nodeDetails.setUnselectedPaint(model, transpColor);
 			
 			if (!isSelected())
 				graphView.m_contentChanged = true;
@@ -395,15 +390,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				transparency = trans;
 			}
 
-			final Paint unselectedPaint = getUnselectedPaint();
-
-			if (unselectedPaint instanceof Color) {
-				final Color unselectedColor = (Color) unselectedPaint;
-
-				if (unselectedColor.getAlpha() != transparency)
-					setUnselectedPaint(new Color(unselectedColor.getRed(), unselectedColor.getGreen(),
-							unselectedColor.getBlue(), transparency));
-			}
+			setUnselectedPaint(getUnselectedPaint());
+			setSelectedPaint(getSelectedPaint());
 			
 			graphView.m_contentChanged = true;
 		}
