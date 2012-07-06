@@ -137,6 +137,7 @@ import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.vizmap.ApplyVisualStyleTaskFactoryimpl;
+import org.cytoscape.task.internal.vizmap.ClearEdgeBendTaskFactory;
 import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
 import org.cytoscape.task.internal.zoom.FitSelectedTaskFactory;
 import org.cytoscape.task.internal.zoom.ZoomInTaskFactory;
@@ -307,6 +308,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, applyVisualStyleTaskFactory, NetworkViewCollectionTaskFactory.class, applyVisualStyleProps);
 		registerService(bc, applyVisualStyleTaskFactory, ApplyVisualStyleTaskFactory.class, applyVisualStyleProps);
 		
+		// Clear edge bends
+		ClearEdgeBendTaskFactory clearEdgeBendTaskFactory = new ClearEdgeBendTaskFactory();
+		Properties clearEdgeBendProps = new Properties();
+		clearEdgeBendProps.setProperty(ID, "clearEdgeBendTaskFactory");
+		clearEdgeBendProps.setProperty(TITLE, "Clear Edge Bends");
+		clearEdgeBendProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+		clearEdgeBendProps.setProperty(ENABLE_FOR, "networkAndView");
+		clearEdgeBendProps.setProperty(PREFERRED_MENU,"Edit");
+		clearEdgeBendProps.setProperty(MENU_GRAVITY,"5.4");
+
+		registerService(bc, clearEdgeBendTaskFactory, NetworkViewCollectionTaskFactory.class, clearEdgeBendProps);
 		
 		Properties mapGlobalProps = new Properties();
 	/*	mapGlobalProps.setProperty(ID,"mapGlobalToLocalTableTaskFactory");
