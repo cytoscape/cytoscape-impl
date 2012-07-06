@@ -71,7 +71,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 	private static final ImageIcon DOUBLE_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
 			"images/datatype_float_double_16.png"));
 	private static final ImageIcon BOOLEAN_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader()
-			.getResource("images/datatype_boolean_16.png"));
+			.getResource("images/datatype_boolean2_16.png"));
 	private static final ImageIcon LIST_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
 			"images/datatype_list_16.png"));
 	
@@ -120,12 +120,12 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		} else if(text.equals(CyIdentifiable.SUID))
 			toolTip = "Session-Unique ID (Primary Key).  This is column is immutable.";
 		else
-			toolTip = "Data type of this column is " + col.getType().getName();
+			toolTip = "Data type of this column is " + col.getType().getName().substring(col.getType().getName().lastIndexOf('.')+1);
 		
 		if (col.getVirtualColumnInfo().isVirtual()) {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_VIRTUAL_COLOR);
-			toolTip = "<html>" + col.getType().getName() + "<br />Virtual Column</html>";
+			toolTip = "<html>" + col.getType().getName().substring(col.getType().getName().lastIndexOf('.')+1) + "<br />Virtual Column</html>";
 		} else {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_COLOR);

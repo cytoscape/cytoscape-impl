@@ -37,21 +37,21 @@ import org.cytoscape.model.events.RowsSetListener;
 
 
 public final class BrowserTableModel extends AbstractTableModel implements ColumnCreatedListener,
-		ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedListener {
-	
+ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedListener {
+
 	private static final long serialVersionUID = -517521404005631245L;
-	
+
 	private final BrowserTable table;
 	private final CyTable dataTable;
 	private final EquationCompiler compiler;
-	
+
 	private final CyTableManager tableManager;
 
 	// If this is FALSE then we show all rows
 	private boolean regularViewMode;
-	
+
 	private List<AttrNameAndVisibility> attrNamesAndVisibilities;
-	
+
 	private Collection<CyRow> selectedRows = null;
 
 	private Object[] rowIndexToPrimaryKey;
@@ -65,7 +65,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		this.compiler = compiler;
 		this.regularViewMode = false; 
 		this.tableManager = tableManager;
-		
+
 		initAttrNamesAndVisibilities();
 
 		// add each row to an array to allow fast lookup from an index
@@ -86,13 +86,12 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 
 		final CyColumn primaryKey = dataTable.getPrimaryKey();
 		attrNamesAndVisibilities.add(new AttrNameAndVisibility(primaryKey.getName(), true));
-		
+
 		for (final CyColumn column : dataTable.getColumns()) {
-			
+
 			// Ignore p-key (SUID)
 			if (column == primaryKey)
 				continue;
-			
 			attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), true));
 		}
 	}
@@ -126,8 +125,8 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		boolean changed = false;
 		final String primaryKey = dataTable.getPrimaryKey().getName();
 		for (final AttrNameAndVisibility nameAndVisibility : attrNamesAndVisibilities) {
-			if (nameAndVisibility.getName().equals(primaryKey))
-				continue;
+			//if (nameAndVisibility.getName().equals(primaryKey))
+			//	continue;
 
 			if (visibleAttributes.contains(nameAndVisibility.getName())) {
 				if (!nameAndVisibility.isVisible()) {
@@ -206,7 +205,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 
 
 	private ValidatedObjectAndEditString getValidatedObjectAndEditString(final CyRow row,
-									     final String columnName)
+			final String columnName)
 	{
 		if (row == null)
 			return null;
@@ -250,8 +249,8 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		attrNamesAndVisibilities.add(new AttrNameAndVisibility(e.getColumnName(), true));
 		fireTableStructureChanged();
 	}
-	
-	
+
+
 
 	@Override
 	public void handleEvent(final ColumnDeletedEvent e) {
@@ -280,14 +279,14 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		if (column != -1)
 			table.getColumnModel().getColumn(column).setHeaderValue(newColumnName);
 	}
- 
+
 	@Override
 	public synchronized void handleEvent(RowsCreatedEvent e) {
 		if(!e.getSource().equals(this.dataTable))
 			return ;
-		
+
 		selectedRows = null;
-	
+
 		// add new rows to rowIndexToPrimaryKey array
 		Object[] newRowIndex = new Object[rowIndexToPrimaryKey.length + e.getPayloadCollection().size()];
 		System.arraycopy(rowIndexToPrimaryKey,0,newRowIndex,0,rowIndexToPrimaryKey.length);
@@ -317,9 +316,9 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				return;
 			}
 		}
-		
+
 		final Collection<RowSetRecord> rows = e.getPayloadCollection();
-		
+
 		synchronized (this) {
 			if (regularViewMode) {
 				for (final RowSetRecord rowSet : rows)
@@ -333,7 +332,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		}
 	}
 
-	
+
 	/**
 	 * Switch view mode.
 	 * 
@@ -346,7 +345,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 			CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
 			this.regularViewMode = selectedColumn != null && selectedColumn.getType() == Boolean.class;
 
-		// otherwise always display everything
+			// otherwise always display everything
 		} else {
 			regularViewMode = false;
 		}
@@ -355,12 +354,12 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	void updateShowAll() {
 		fireTableDataChanged();
 	}
-	
+
 	boolean isShowAll() {
 		return !regularViewMode;
 	}
 
-	
+
 	/**
 	 * Select rows in the table when something selected in the network view.
 	 * @param rows
@@ -376,7 +375,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				break;
 			}
 		}
-		
+
 		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
 		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
 
@@ -390,7 +389,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				}
 			}
 		}
-		
+
 		final int rowCount = table.getRowCount();
 		for(int i=0; i<rowCount; i++) {
 			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) table.getValueAt(i, tablePKeyIndex);
@@ -408,11 +407,11 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				}else if (suidMapUnselected.keySet().contains(pk)){
 					table.removeRowSelectionInterval(i, i);
 				}
-				
+
 			}
 		}
 	}
-	
+
 	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
 			final Object newRawValue) {
 		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
@@ -481,14 +480,14 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		Vector cellVect = new Vector();
 		cellVect.add(mapRowIndexToRow(rowIndex));
 		cellVect.add( mapColumnIndexToColumnName(columnIndex));
-		
+
 		return cellVect;
 	}
-	
+
 	CyRow getRow(final Object suid) {
 		return dataTable.getRow(suid);
 	}
-	
+
 	@Override
 	public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
 		final String text = (String)value;
@@ -527,13 +526,13 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 		} else { // Not an equation!
 
 			ArrayList parsedData = TableBrowserUtil.parseCellInput(dataTable, columnName, value);
-			
+
 			if (parsedData.get(0) != null)
 				row.set(columnName, parsedData.get(0));
 			else {
 				//Error!
 				showErrorWindow(parsedData.get(1).toString());
-						//+ " should be an Integer (or the number is too big/small).");
+				//+ " should be an Integer (or the number is too big/small).");
 			}
 		}
 
@@ -544,10 +543,10 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 	// Pop-up window for error message
 	private static void showErrorWindow(final String errMessage) {
 		JOptionPane.showMessageDialog(null, errMessage, "Invalid Value.",
-		                              JOptionPane.ERROR_MESSAGE);
+				JOptionPane.ERROR_MESSAGE);
 	}
 
-	
+
 	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> eqnType) {
 		if (columnType == eqnType)
 			return true;
@@ -587,7 +586,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 				variableNameToTypeMap.put(columnName, List.class);
 			else
 				throw new IllegalStateException("unknown type \"" + type.getName()
-								+ "\".");
+						+ "\".");
 		}
 	}
 
@@ -601,7 +600,7 @@ public final class BrowserTableModel extends AbstractTableModel implements Colum
 
 
 final class AttrNameAndVisibility {
-	
+
 	private String attrName;
 	private boolean isVisible;
 

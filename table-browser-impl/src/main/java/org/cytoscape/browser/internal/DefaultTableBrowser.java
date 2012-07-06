@@ -2,15 +2,21 @@ package org.cytoscape.browser.internal;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
@@ -45,7 +51,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private static final long serialVersionUID = 627394119637512735L;
 
-	private final JToggleButton selectionModeButton;
+	private final JButton selectionModeButton;
+	private JPopupMenu displayMode;
 	
 	private final JComboBox networkChooser;
 	private final Class<? extends CyIdentifiable> objType;
@@ -53,7 +60,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private boolean rowSelectionMode;
 	private boolean ignoreSetCurrentNetwork = true;
 	
-
 	public DefaultTableBrowser(final String tabTitle,
 							   final Class<? extends CyIdentifiable> objType,
 							   final CyTableManager tableManager,
@@ -81,27 +87,66 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		networkChooser.setSize(SELECTOR_SIZE);
 		networkChooser.setEnabled(false);
 		
-		selectionModeButton = new JToggleButton();
+		createPopupMenu();
+		selectionModeButton = new JButton();
 		selectionModeButton.addActionListener(this);
 		selectionModeButton.setBorder(null);
-		selectionModeButton.setSelected(rowSelectionMode);
 		selectionModeButton.setMargin(new Insets(0, 0, 0, 0));
-		selectionModeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table_selection_mode.png")));
-		selectionModeButton.setToolTipText("Change Selection Mode");
+		selectionModeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table-gear-icon.png")));
+		selectionModeButton.setBorder(null);
+		selectionModeButton.setToolTipText("Change Table Mode");
+		
 		selectionModeButton.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				changeSelectionMode();
+				displayMode.show(e.getComponent(), e.getX(), e.getY());
 			}
-		});
 		
+		});
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
 				deleteTableTaskFactory, guiTaskManager, networkChooser, selectionModeButton, objType,
 				applicationManager);// , mapGlobalTableTaskFactoryService);
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
 	
+	private void createPopupMenu() {
+		
+		displayMode = new JPopupMenu();
+		
+		final JCheckBoxMenuItem displayAll = new JCheckBoxMenuItem("Show all");
+		displayAll.setSelected(rowSelectionMode);
+		final JCheckBoxMenuItem displaySelect = new JCheckBoxMenuItem("Show selected");
+		displaySelect.setSelected(! rowSelectionMode);
+		
+		displayAll.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rowSelectionMode = true;
+				changeSelectionMode();
+
+				displayAll.setSelected(rowSelectionMode);
+				displaySelect.setSelected(!rowSelectionMode);
+			}
+		});
+		
+		displaySelect.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rowSelectionMode = false;
+				changeSelectionMode();
+				
+				displayAll.setSelected(rowSelectionMode);
+				displaySelect.setSelected(!rowSelectionMode);
+			}
+		});
+		
+		displayMode.add(displayAll);
+		displayMode.add(displaySelect);
+	}
+
 	private void changeSelectionMode() {
-		rowSelectionMode = selectionModeButton.isSelected();
+		//rowSelectionMode = selectionModeButton.isSelected();
 		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
 		getCurrentBrowserTableModel().updateShowAll();
 	}
@@ -158,19 +203,23 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
 		final CyNetwork network = e.getNetwork();
-		
+
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				ignoreSetCurrentNetwork = true;
-				
+
 				try {
 					networkChooser.addItem(network);
 				} finally {
 					ignoreSetCurrentNetwork = false;
 				}
+
+				//attributeBrowserToolBar.initializeColumns();
 			}
 		});
 	}
+
+	
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
