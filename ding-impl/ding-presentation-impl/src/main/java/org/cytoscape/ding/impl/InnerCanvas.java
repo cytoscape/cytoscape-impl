@@ -1205,10 +1205,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					m_selectionRect = null;
 
 					// Update visual property value (x/y)
-					for (long node : selectedNodes) {
-						final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
-						dNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
-						dNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
+					if (selectedNodes != null){
+						for (long node : selectedNodes) {
+							final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
+							dNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
+							dNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
+						}						
 					}
 	
 					final GraphViewChangeListener listener = m_view.m_lis[0];
