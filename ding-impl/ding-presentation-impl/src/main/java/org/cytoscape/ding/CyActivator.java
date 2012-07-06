@@ -87,6 +87,7 @@ import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
@@ -366,6 +367,32 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                selectAnnotationTaskFactoryProps);
 
+		// Set mouse drag selection modes
+		SelectModeTaskFactory selectNodesOnly = new SelectModeTaskFactory("Nodes only", applicationManagerServiceRef);
+		Properties selectNodesOnlyProps = new Properties();
+		selectNodesOnlyProps.setProperty(PREFERRED_ACTION, "New");
+		selectNodesOnlyProps.setProperty(MENU_GRAVITY, "0.5");
+		selectNodesOnlyProps.setProperty(PREFERRED_MENU, "Select.Mouse Drag Selects");
+		selectNodesOnlyProps.setProperty(TITLE, "Nodes Only");
+		registerService(bc, selectNodesOnly, TaskFactory.class, selectNodesOnlyProps);
+		
+		SelectModeTaskFactory selectEdgesOnly = new SelectModeTaskFactory("Edges only", applicationManagerServiceRef);
+		Properties selectEdgesOnlyProps = new Properties();
+		selectEdgesOnlyProps.setProperty(PREFERRED_ACTION, "New");
+		selectEdgesOnlyProps.setProperty(MENU_GRAVITY, "0.6");
+		selectEdgesOnlyProps.setProperty(PREFERRED_MENU, "Select.Mouse Drag Selects");
+		selectEdgesOnlyProps.setProperty(TITLE, "Edges Only");
+		registerService(bc, selectEdgesOnly, TaskFactory.class, selectEdgesOnlyProps);
+
+		SelectModeTaskFactory selectNodesAndEdges = new SelectModeTaskFactory("Nodes and Edges", applicationManagerServiceRef);
+		Properties selectNodesEdgesProps = new Properties();
+		selectNodesEdgesProps.setProperty(PREFERRED_ACTION, "New");
+		selectNodesEdgesProps.setProperty(MENU_GRAVITY, "0.7");
+		selectNodesEdgesProps.setProperty(PREFERRED_MENU, "Select.Mouse Drag Selects");
+		selectNodesEdgesProps.setProperty(TITLE, "Nodes and Edges");
+		registerService(bc, selectNodesAndEdges, TaskFactory.class, selectNodesEdgesProps);
+		
+		//
 		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",
 				NodeViewTaskFactory.class);
 		registerServiceListener(bc, vtfListener, "addEdgeViewTaskFactory", "removeEdgeViewTaskFactory",
