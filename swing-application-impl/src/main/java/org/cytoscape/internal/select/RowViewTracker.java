@@ -23,12 +23,15 @@ import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedEdgeViewsListener;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsListener;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 
 public class RowViewTracker implements NetworkViewAddedListener, 
 	AddedNodeViewsListener, AddedEdgeViewsListener, 
-	AboutToRemoveNodeViewsListener, AboutToRemoveEdgeViewsListener {
+	AboutToRemoveNodeViewsListener, AboutToRemoveEdgeViewsListener,
+	NetworkViewAboutToBeDestroyedListener {
 
 	private Map<CyRow,View<?>> rowViewMap;
 
@@ -91,6 +94,18 @@ public class RowViewTracker implements NetworkViewAddedListener,
 			public void run() {
 				Collection<View<?>> values = rowViewMap.values();
 				for ( View<CyEdge> v : e.getPayloadCollection()) 
+					values.remove(v);
+			}
+		});
+	}
+	
+	@Override
+	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				CyNetworkView networkView = e.getNetworkView();
+				Collection<View<?>> values = rowViewMap.values();
+				for ( View<?> v : networkView.getAllViews()) 
 					values.remove(v);
 			}
 		});
