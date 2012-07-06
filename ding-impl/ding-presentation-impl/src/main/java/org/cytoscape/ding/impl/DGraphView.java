@@ -73,7 +73,6 @@ import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.GraphViewChangeListener;
 import org.cytoscape.ding.GraphViewObject;
 import org.cytoscape.ding.NodeView;
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -87,7 +86,6 @@ import org.cytoscape.ding.impl.events.GraphViewNodesRestoredEvent;
 import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
-import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -2670,32 +2668,35 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
+		if (vp.shouldIgnoreDefault())
+			return;
+		
 		final Class<?> targetType = vp.getTargetDataType();
 		
-		// Filter some special cases here: 
-		if (vp == BasicVisualLexicon.NODE_X_LOCATION || vp == BasicVisualLexicon.NODE_Y_LOCATION
-				|| vp == BasicVisualLexicon.NODE_Z_LOCATION)
-			return;
+//		// Filter some special cases here:
+//		if (vp == BasicVisualLexicon.NODE_X_LOCATION || vp == BasicVisualLexicon.NODE_Y_LOCATION
+//				|| vp == BasicVisualLexicon.NODE_Z_LOCATION)
+//			return;
 		
 		// In DING, there is no default W, H, and D.
 		// Also, custom Graphics should be applied for each view.
-		if (vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH
-				|| vp == BasicVisualLexicon.NODE_HEIGHT || vp == BasicVisualLexicon.NODE_TRANSPARENCY) {
-			applyToAllNodes(vp, defaultValue);
-			return;
-		}
+//		if (vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH
+//				|| vp == BasicVisualLexicon.NODE_HEIGHT || vp == BasicVisualLexicon.NODE_TRANSPARENCY) {
+//			applyToAllNodes(vp, defaultValue);
+//			return;
+//		}
 		
-		if ((VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
-			applyToAllNodes(vp, defaultValue);
-			return;
-		}
+//		if ((VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
+//			applyToAllNodes(vp, defaultValue);
+//			return;
+//		}
 		
-		if (vp != DVisualLexicon.NODE_LABEL_POSITION && defaultValue instanceof ObjectPosition) {
-			if (defaultValue != ObjectPositionImpl.DEFAULT_POSITION) {
-				applyToAllNodes(vp, defaultValue);
-				return;
-			}
-		}
+//		if (vp != DVisualLexicon.NODE_LABEL_POSITION && defaultValue instanceof ObjectPosition) {
+//			if (defaultValue != ObjectPositionImpl.DEFAULT_POSITION) {
+//				applyToAllNodes(vp, defaultValue);
+//				return;
+//			}
+//		}
 		
 		if (targetType == CyNode.class) {
 //			m_nodeDetails.clear(); // TODO double-check and delete commented lines if ok
@@ -2705,8 +2706,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			m_edgeDetails.clear();
 			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
 		} else if (targetType == CyNetwork.class) {
-			if (vp.shouldIgnoreDefault() == false)
-				this.setVisualProperty(vp, defaultValue);
+			this.setVisualProperty(vp, defaultValue);
 		}
 	}
 	

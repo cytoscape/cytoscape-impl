@@ -119,7 +119,7 @@ class DNodeDetails extends NodeDetails {
 	private Double m_labelWidthDefault;
 
 
-	private boolean isCleared = false;
+	private boolean isCleared;
 	
 	
 	DNodeDetails(final DGraphView view) {
@@ -316,22 +316,22 @@ class DNodeDetails extends NodeDetails {
 	
 	void setSelectedPaint(final CyNode node, final Paint paint) {
 		m_selectedPaints.put(node, paint);
-		if(paint instanceof Color)
+		if (paint instanceof Color)
 			m_selectedColorsLowDetail.put(node, paint);
 
 		isCleared = false;
 	}
-	
+
 	@Override
 	public Paint fillPaint(final CyNode node) {
 		boolean isSelected = selected.contains(node);
-		
-		if(isSelected)
+
+		if (isSelected)
 			return selectedPaint(node);
 		else
 			return unselectedPaint(node);
 	}
-	
+
 	void select(final CyNode node) {
 		selected.add(node);
 	}

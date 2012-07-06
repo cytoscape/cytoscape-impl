@@ -307,7 +307,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		jXTitledPanel1.setTitle("Default Visual Properties");
-
 		jXTitledPanel1.setTitleFont(new Font("SansSerif", 1, 12));
 		jXTitledPanel1.setMinimumSize(new Dimension(300, 27));
 		jXTitledPanel1.setPreferredSize(new Dimension(300, 27));
@@ -321,7 +320,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		defaultObjectTabbedPane.addTab("Node", nodeScrollPane);
 		defaultObjectTabbedPane.addTab("Edge", edgeScrollPane);
 		defaultObjectTabbedPane.addTab("Network", globalScrollPane);
-
 		defaultObjectTabbedPane.addTab("Dependency", dependencyScrollPane);
 
 		GroupLayout jXTitledPanel1Layout = new GroupLayout(jXTitledPanel1.getContentContainer());
@@ -423,13 +421,14 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 		if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
 			final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
 			final V defaultVal = selectedStyle.getDefaultValue(vp);
+			
 			try {
 				if (defaultVal != null)
 					newValue = editorFactory.showVisualPropertyValueEditor(this, vp, defaultVal);
 				else
 					newValue = editorFactory.showVisualPropertyValueEditor(this, vp, vp.getDefault());
-			} catch (Exception e1) {
-				e1.printStackTrace();
+			} catch (Exception ex) {
+				logger.error("Error opening Visual Property values editor for: " + vp, ex);
 			}
 
 			if (newValue != null) {
