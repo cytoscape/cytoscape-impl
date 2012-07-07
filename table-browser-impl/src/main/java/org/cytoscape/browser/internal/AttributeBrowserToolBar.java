@@ -280,7 +280,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JScrollPane getJScrollPane() {
 		if (jScrollPane == null) {
 			jScrollPane = new JScrollPane();
-			jScrollPane.setPreferredSize(new Dimension(600, 300));
+			jScrollPane.setPreferredSize(new Dimension(250, 200));
 			jScrollPane.setViewportView(getSelectedAttributeList());
 		}
 
