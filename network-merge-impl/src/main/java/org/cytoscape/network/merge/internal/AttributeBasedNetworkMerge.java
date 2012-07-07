@@ -132,20 +132,20 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge {
 		setAttributeTypes(toNetwork.getDefaultEdgeTable(), edgeAttributeMapping);
 	}
 
-	private void setAttributeTypes(CyTable toTable, AttributeMapping attributeMapping) {
+	private void setAttributeTypes(final CyTable table, AttributeMapping attributeMapping) {
 		int n = attributeMapping.getSizeMergedAttributes();
 		for (int i = 0; i < n; i++) {
 			String attr = attributeMapping.getMergedAttribute(i);
-			if (toTable.getColumn(attr) != null) {
+			if (table.getColumn(attr) != null) {
 				continue; // TODO: check if the type is the same
 			}
 
 			// TODO: immutability?
 			final ColumnType type = attributeMapping.getMergedAttributeType(i);
 			if (type.isList()) {
-				toTable.createListColumn(attr, type.getType(), true);
+				table.createListColumn(attr, type.getType(), true);
 			} else {
-				toTable.createColumn(attr, type.getClass(), true);
+				table.createColumn(attr, type.getType(), true);
 			}
 		}
 	}

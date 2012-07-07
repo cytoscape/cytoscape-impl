@@ -36,72 +36,59 @@
 
 package org.cytoscape.network.merge.internal.conflict;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyIdentifiable;
-
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.network.merge.internal.util.ColumnType;
 
-/**
- *
- * 
- */
 public class DefaultAttributeConflictHandler implements AttributeConflictHandler {
 
-        /**
-         * Handle attribute conflict when merging (copying from one attr to another)
-         *
-         * @param conflict
-         *      attribute conflict
-         * @return
-         *      true if successful, false if failed
-         */
-        public boolean handleIt(final CyIdentifiable to,
-                                final CyColumn toAttr,
-                                final Map<CyIdentifiable,CyColumn> mapFromGOFromAttr) {
-                //TODO: write a reasonable default one
-                if (to==null || toAttr==null || mapFromGOFromAttr==null) {
-                        throw new java.lang.NullPointerException();
-                }
+	@Override
+	public boolean handleIt(final CyIdentifiable to, final CyColumn toColumn,
+			final Map<CyIdentifiable, CyColumn> mapFromGOFromAttr) {
+		
+		if (to == null || toColumn == null || mapFromGOFromAttr == null) {
+			throw new java.lang.NullPointerException("All parameters should not be null.");
+		}
 
-				// TODO figure out a network to pass in
-                CyRow row = null; //to.getCyRow(toAttr.getTable().getTitle());
-                
-                ColumnType type = ColumnType.getType(toAttr);
-                
-                if (type == ColumnType.STRING) {
-                        final String toValue = row.get(toAttr.getName(), String.class);
-                        Set<String> values = new TreeSet<String>();
-                        values.add(toValue);
+		final CyTable table = toColumn.getTable();
+		final CyRow row = table.getRow(to.getSUID());
+		final ColumnType type = ColumnType.getType(toColumn);
 
-                        for (Map.Entry<CyIdentifiable,CyColumn> entry : mapFromGOFromAttr.entrySet()) {
-                                CyIdentifiable from = entry.getKey();
-                                CyColumn fromAttr = entry.getValue();
-								// TODO figure out which network to be using 
-                                Object fromValue = null; //from.getCyRow(fromAttr.getTable().getTitle()).getRaw(fromAttr.getName());
-                                if (fromValue!=null) {
-                                        values.add(fromValue.toString());
-                                }
-                        }
-                        
-                        StringBuilder str = new StringBuilder();
-                        for (String v : values) {
-                                str.append(v+";");
-                        }
-                        
-                        str.deleteCharAt(str.length()-1);
-                        
-                        row.set(toAttr.getName(), str.toString());
+		if (type == ColumnType.STRING) {
+			final String toValue = row.get(toColumn.getName(), String.class);
+			final Set<String> values = new TreeSet<String>();
+			values.add(toValue);
 
-                        return true;
-                }
+			for (Map.Entry<CyIdentifiable, CyColumn> entry : mapFromGOFromAttr.entrySet()) {
+				final CyIdentifiable from = entry.getKey();
+				final CyColumn fromColumn = entry.getValue();
+				final CyRow fromRow = fromColumn.getTable().getRow(from.getSUID());
+				
+				// TODO figure out which network to be using
+				String fromValue = fromRow.get(fromColumn.getName(), String.class);
+				if (fromValue != null) {
+					values.add(fromValue.toString());
+				}
+			}
 
-                // how about Integer, Double, Boolean?
+			StringBuilder str = new StringBuilder();
+			for (String v : values) {
+				str.append(v + ";");
+			}
 
-                return false;
-        }
+			str.deleteCharAt(str.length() - 1);
+			row.set(toColumn.getName(), str.toString());
+
+			return true;
+		}
+
+		// FIXME: how about Integer, Double, Boolean?
+		return false;
+	}
 }

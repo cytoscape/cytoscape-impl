@@ -43,7 +43,6 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.network.merge.internal.conflict.AttributeConflictCollector;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,115 +53,103 @@ import java.util.Map;
  */
 public class DefaultAttributeMerger implements AttributeMerger {
 
-        protected final AttributeConflictCollector conflictCollector;
+	protected final AttributeConflictCollector conflictCollector;
 
-        public DefaultAttributeMerger(final AttributeConflictCollector conflictCollector) {
-                this.conflictCollector = conflictCollector;
-        }
+	public DefaultAttributeMerger(final AttributeConflictCollector conflictCollector) {
+		this.conflictCollector = conflictCollector;
+	}
 
-        /**
-         * Merge one attribute into another
-         * @param fromIDs
-         * @param fromAttr
-         * @param toID
-         * @param toAttrName
-         * @param attrs
-         * @param conflictCollector
-         */
-        //@Override
-        public <T extends CyIdentifiable> void mergeAttribute(Map<T,CyColumn> mapGOAttr,
-                                     T toGO, CyColumn toAttr, CyNetwork toNetwork) {
-                if ((mapGOAttr == null) || (toGO == null) || (toAttr == null)) {
-                    throw new java.lang.IllegalArgumentException("Null argument.");
-                }
-                
-                CyRow cyRow = toNetwork.getRow(toGO);
-                ColumnType colType = ColumnType.getType(toAttr);
+	@Override
+	public <T extends CyIdentifiable> void mergeAttribute(final Map<T, CyColumn> mapGOAttr, final T graphObject, final CyColumn column,
+			final CyNetwork network) {
+		if ((mapGOAttr == null) || (graphObject == null) || (column == null))
+			throw new java.lang.IllegalArgumentException("Required parameters cannot be null.");
 
-                for (Map.Entry<T,CyColumn> entryGOAttr : mapGOAttr.entrySet()) {
-                        T from = entryGOAttr.getKey();
-                        CyColumn fromAttr = entryGOAttr.getValue();
-                        CyTable fromTable1 = fromAttr.getTable();
-                        
-                        CyRow fromCyRow = fromTable1.getRow(from.getSUID());
-                        ColumnType fromColType = ColumnType.getType(fromAttr);
+		final CyRow cyRow = network.getRow(graphObject);
+		final ColumnType colType = ColumnType.getType(column);
 
-                        if (colType == ColumnType.STRING) { // the case of inconvertable attributes and simple attributes to String
-                            Object o1 = fromCyRow.getRaw(fromAttr.getName()); //Correct??
-                            String o2 = cyRow.get(toAttr.getName(), String.class);
-                            if (o2==null||o2.length()==0) { //null or empty attribute
-                            	if (!toAttr.getVirtualColumnInfo().isVirtual()){
-                                    cyRow.set(toAttr.getName(), o1.toString());                            		
-                            	}
-                            } else if (o1.equals(o2)) { //TODO: neccessary?
-                                // the same, do nothing
-                            } else { // attribute conflict
-                                
-                                // add to conflict collector
-                                conflictCollector.addConflict(from, fromAttr, toGO, toAttr);
-                                
-                            }
-                        } else if (!colType.isList()) { // simple type (Integer, Long, Double, Boolean)
-                            Object o1 = fromCyRow.get(fromAttr.getName(), fromColType.getType());
-                            if (fromColType!=colType) {
-                                o1 = colType.castService(o1);
-                            }
+		for (Map.Entry<T, CyColumn> entryGOAttr : mapGOAttr.entrySet()) {
+			final T from = entryGOAttr.getKey();
+			final CyColumn fromColumn = entryGOAttr.getValue();
+			final CyTable fromTable = fromColumn.getTable();
+			final CyRow fromCyRow = fromTable.getRow(from.getSUID());
+			final ColumnType fromColType = ColumnType.getType(fromColumn);
 
-                            Object o2 = cyRow.get(toAttr.getName(), colType.getType());
-                            if (o2==null) {
-                                cyRow.set(toAttr.getName(), o1);
-                                //continue;
-                            } else if (o1.equals(o2)) {
-                                //continue; // the same, do nothing
-                            } else { // attribute conflict
+			if (colType == ColumnType.STRING) {
+				final String fromValue = fromCyRow.get(fromColumn.getName(), String.class);
+				final String o2 = cyRow.get(column.getName(), String.class);
+				if (o2 == null || o2.length() == 0) { // null or empty attribute
+					if(!column.getVirtualColumnInfo().isVirtual())
+						cyRow.set(column.getName(), fromValue);
+				} else if (fromValue.equals(o2)) { // TODO: neccessary?
+					// the same, do nothing
+				} else { // attribute conflict
+					// add to conflict collector
+					conflictCollector.addConflict(from, fromColumn, graphObject, column);
+				}
+			} else if (!colType.isList()) { // simple type (Integer, Long,
+											// Double, Boolean)
+				Object o1 = fromCyRow.get(fromColumn.getName(), fromColType.getType());
+				if (fromColType != colType) {
+					o1 = colType.castService(o1);
+				}
 
-                                // add to conflict collector
-                                conflictCollector.addConflict(from, fromAttr, toGO, toAttr);
-                                //continue;
-                            }
-                        } else { // toattr is list type
-                            //TODO: use a conflict handler to handle this part?
-                            ColumnType plainType = colType.toPlain();
+				Object o2 = cyRow.get(column.getName(), colType.getType());
+				if (o2 == null) {
+					cyRow.set(column.getName(), o1);
+					// continue;
+				} else if (o1.equals(o2)) {
+					// continue; // the same, do nothing
+				} else { // attribute conflict
 
-                            List l2 = cyRow.getList(toAttr.getName(), plainType.getType());
-                            if (l2 == null) {
-                                l2 = new ArrayList();
-                            }
-                            
-                            if (!fromColType.isList()) { // from plain
-                                Object o1 = fromCyRow.get(fromAttr.getName(), fromColType.getType());
-                                if (plainType!=fromColType) {
-                                    o1 = plainType.castService(o1);
-                                }
+					// add to conflict collector
+					conflictCollector.addConflict(from, fromColumn, graphObject, column);
+					// continue;
+				}
+			} else { // toattr is list type
+				// TODO: use a conflict handler to handle this part?
+				ColumnType plainType = colType.toPlain();
 
-                                if (!l2.contains(o1)) {
-                                    l2.add(o1);
-                                }
+				List l2 = cyRow.getList(column.getName(), plainType.getType());
+				if (l2 == null) {
+					l2 = new ArrayList<Object>();
+				}
 
-                                cyRow.set(toAttr.getName(), l2);
-                            } else { // from list
-                                ColumnType fromPlain = fromColType.toPlain();
+				if (!fromColType.isList()) { // from plain
+					Object o1 = fromCyRow.get(fromColumn.getName(), fromColType.getType());
+					if (plainType != fromColType) {
+						o1 = plainType.castService(o1);
+					}
 
-                                List l1 = fromCyRow.getList(fromAttr.getName(), fromPlain.getType());
+					if (!l2.contains(o1)) {
+						l2.add(o1);
+					}
 
-                                int nl1 = l1.size();
-                                for (int il1=0; il1<nl1; il1++) {
-                                    Object o1 = l1.get(il1);
-                                    if (plainType!=fromColType) {
-                                        o1 = plainType.castService(o1);
-                                    }
-                                    if (!l2.contains(o1)) {
-                                        l2.add(o1);
-                                    }
-                                }
-                            }
-                            
-                            cyRow.set(toAttr.getName(), l2);
-                        }
-                }
+					cyRow.set(column.getName(), l2);
+				} else { // from list
+					final ColumnType fromPlain = fromColType.toPlain();
+					final List<?> list = fromCyRow.getList(fromColumn.getName(), fromPlain.getType());
 
+					for (final Object listValue:list) {
+						if(listValue == null)
+							continue;
+						
+						final Object validValue;
+						if (plainType != fromColType) {
+							validValue = plainType.castService(listValue);
+						} else {
+							validValue = listValue;
+						}
+						if (!l2.contains(validValue)) {
+							l2.add(validValue);
+						}
+					}
+				}
 
-        }
+				cyRow.set(column.getName(), l2);
+			}
+		}
 
+	}
 
 }
