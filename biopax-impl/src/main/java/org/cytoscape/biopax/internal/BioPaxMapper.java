@@ -228,8 +228,8 @@ public class BioPaxMapper {
 			if(members.isEmpty()) 
 				continue;
 			
-			List<CyNode> nodeList = new ArrayList<CyNode>();
-			List<CyEdge> edgeList = new ArrayList<CyEdge>();
+//			List<CyNode> nodeList = new ArrayList<CyNode>();
+//			List<CyEdge> edgeList = new ArrayList<CyEdge>();
 			
 			CyNode cyParentNode = uriToCyNodeMap.get(par);
 			assert cyParentNode != null : "cyParentNode is NULL.";
@@ -240,11 +240,11 @@ public class BioPaxMapper {
 				CyEdge edge = network.addEdge(cyParentNode, cyMemberNode, true);
 				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "member", String.class);
 				
-				nodeList.add(cyMemberNode);
-				edgeList.add(edge);
+//				nodeList.add(cyMemberNode);
+//				edgeList.add(edge);
 			}
 			
-			cyGroupFactory.createGroup(network, cyParentNode, nodeList, edgeList, true);
+//			cyGroupFactory.createGroup(network, cyParentNode, nodeList, edgeList, true);
 		}
 	}
 
@@ -323,8 +323,8 @@ public class BioPaxMapper {
 			// get node
 			CyNode complexCyNode = uriToCyNodeMap.get(complexElement);
 			
-			List<CyNode> nodeList = new ArrayList<CyNode>();
-			List<CyEdge> edgeList = new ArrayList<CyEdge>();
+//			List<CyNode> nodeList = new ArrayList<CyNode>();
+//			List<CyEdge> edgeList = new ArrayList<CyEdge>();
 			
 			// get all components. There can be 0 or more
 			for (PhysicalEntity member : members) 
@@ -334,11 +334,11 @@ public class BioPaxMapper {
 				CyEdge edge = network.addEdge(complexCyNode, complexMemberCyNode, true);
 				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "contains", String.class);
 				
-				nodeList.add(complexMemberCyNode);
-				edgeList.add(edge);
+//				nodeList.add(complexMemberCyNode);
+//				edgeList.add(edge);
 			}
 			
-			cyGroupFactory.createGroup(network, complexCyNode, nodeList, edgeList, true);
+//			cyGroupFactory.createGroup(network, complexCyNode, nodeList, edgeList, true);
 		}
 	}
 

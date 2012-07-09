@@ -98,6 +98,7 @@ public class CyActivator extends AbstractCyActivator {
 //			t.printStackTrace();
 //		}
 		
+		// TODO set paxtools logging level to ERROR
 		
 	}
 }
