@@ -119,11 +119,6 @@ public class MergedNetworkBuilder {
 		if (nodeTable.getColumn(TAXNOMY_DB) == null)
 			nodeTable.createColumn(TAXNOMY_DB, String.class, false);
 	}
-	
-	
-	
-	
-
 
 	public void cancel() {
 		this.cancel = true;
