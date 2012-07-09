@@ -1,6 +1,9 @@
 package org.cytoscape.cpath2.internal.task;
 
+import java.awt.Window;
 import java.util.List;
+
+import javax.swing.JPanel;
 
 import org.cytoscape.cpath2.internal.schemas.search_response.ExtendedRecordType;
 import org.cytoscape.cpath2.internal.schemas.search_response.SearchResponseType;
@@ -26,6 +29,7 @@ public class ExecutePhysicalEntitySearch implements Task {
     private String keyword;
     private int ncbiTaxonomyId;
 	private ResultHandler result;
+	private final JPanel parentPanel;
 
     /**
      * Constructor.
@@ -34,13 +38,15 @@ public class ExecutePhysicalEntitySearch implements Task {
      * @param keyword        Keyword
      * @param ncbiTaxonomyId NCBI Taxonomy ID.
      * @param result 
+     * @param parentPanel 
      */
     public ExecutePhysicalEntitySearch(CPathWebService webApi, String keyword,
-            int ncbiTaxonomyId, ResultHandler result) {
+            int ncbiTaxonomyId, ResultHandler result, final JPanel parentPanel) {
         this.webApi = webApi;
         this.keyword = keyword;
         this.ncbiTaxonomyId = ncbiTaxonomyId;
         this.result = result;
+        this.parentPanel = parentPanel;
     }
 
     /**
@@ -97,6 +103,9 @@ public class ExecutePhysicalEntitySearch implements Task {
             taskMonitor.setStatusMessage("Done");
             taskMonitor.setProgress(1);
             result.finished(numHits);
+			Window parentWindow = ((Window) parentPanel.getRootPane().getParent());
+			parentPanel.repaint();
+			parentWindow.toFront();
         }
     }
 }

@@ -1,7 +1,6 @@
 package org.cytoscape.cpath2.internal.web_service;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.util.List;
 
@@ -44,8 +43,6 @@ public class CytoscapeCPathWebService extends AbstractWebServiceGUIClient
 
 	@Tunable(description="Filter by Organism - NCBI Taxonomy ID")
 	Integer taxonomyId = -1;
-	
-    private JPanel mainPanel;
 
 	private final CPath2Factory factory;
 
@@ -67,11 +64,6 @@ public class CytoscapeCPathWebService extends AbstractWebServiceGUIClient
 //        }
         return null;
     }
-
-    @Override
-    public Container getQueryBuilderGUI() {
-    	return mainPanel;
-    }
     
     
     @Override
@@ -89,9 +81,9 @@ public class CytoscapeCPathWebService extends AbstractWebServiceGUIClient
     	super(CPathProperties.getInstance().getCPathUrl(), DISPLAY_NAME, makeDescription());
     	this.factory = factory;
     	
-        mainPanel = new JPanel();
-        mainPanel.setPreferredSize(new Dimension (500,400));
-        mainPanel.setLayout (new BorderLayout());
+        gui = new JPanel();
+        gui.setPreferredSize(new Dimension (500,400));
+        gui.setLayout (new BorderLayout());
 
         webApi = CPathWebServiceImpl.getInstance();
         cPathSearchPanel cpathPanel = new cPathSearchPanel(webApi, factory);
@@ -101,7 +93,7 @@ public class CytoscapeCPathWebService extends AbstractWebServiceGUIClient
 
         JScrollPane configPanel = CPathPlugIn2.createConfigPanel();
         tabbedPane.add("Options", configPanel);
-        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+        gui.add(tabbedPane, BorderLayout.CENTER);
     }
 
     private static String makeDescription() {
