@@ -33,7 +33,7 @@ public class HandleConflictsTask extends AbstractTask {
 	//@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setStatusMessage("Handle conflicts.\n\nIt may take a while.\nPlease wait...");
-		taskMonitor.setProgress(0.0);
+		taskMonitor.setProgress(0.0d);
 
 		int nBefore = conflictCollector.getMapToGOAttr().size();
 
@@ -54,7 +54,7 @@ public class HandleConflictsTask extends AbstractTask {
 
 		int nAfter = conflictCollector.getMapToGOAttr().size();
 
-		taskMonitor.setProgress(1.0);
+		taskMonitor.setProgress(1.0d);
 		taskMonitor.setStatusMessage("Successfully handled " + (nBefore-nAfter) + " attribute conflicts. "
 					      + nAfter+" conflicts remains.");
 	}

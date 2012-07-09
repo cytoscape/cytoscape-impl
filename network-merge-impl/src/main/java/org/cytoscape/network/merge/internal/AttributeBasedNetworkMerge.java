@@ -42,6 +42,7 @@ import org.cytoscape.network.merge.internal.model.AttributeMapping;
 import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 import org.cytoscape.network.merge.internal.util.AttributeMerger;
 import org.cytoscape.network.merge.internal.util.ColumnType;
+import org.cytoscape.work.TaskMonitor;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -78,9 +79,9 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge {
 	 */
 	public AttributeBasedNetworkMerge(final MatchingAttribute matchingAttribute,
 			final AttributeMapping nodeAttributeMapping, final AttributeMapping edgeAttributeMapping,
-			final AttributeMerger attributeMerger) {
+			final AttributeMerger attributeMerger, final TaskMonitor taskMonitor) {
 		this(matchingAttribute, nodeAttributeMapping, edgeAttributeMapping, attributeMerger,
-				new DefaultAttributeValueMatcher());
+				new DefaultAttributeValueMatcher(), taskMonitor);
 	}
 
 	/**
@@ -93,7 +94,9 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge {
 	 */
 	public AttributeBasedNetworkMerge(final MatchingAttribute matchingAttribute,
 			final AttributeMapping nodeAttributeMapping, final AttributeMapping edgeAttributeMapping,
-			final AttributeMerger attributeMerger, AttributeValueMatcher attributeValueMatcher) {
+			final AttributeMerger attributeMerger, AttributeValueMatcher attributeValueMatcher, final TaskMonitor taskMonitor) {
+		super(taskMonitor);
+		
 		if (matchingAttribute == null || nodeAttributeMapping == null || edgeAttributeMapping == null
 				|| attributeMerger == null || attributeValueMatcher == null) {
 			throw new java.lang.NullPointerException();
