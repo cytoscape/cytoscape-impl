@@ -73,7 +73,7 @@ public class CyActivator extends AbstractCyActivator {
 			}
 		}, TaskFactory.class, ezProps(
 			PREFERRED_MENU, "Help",
-			TITLE, "User Messages...")
+			TITLE, "User Messages...", MENU_GRAVITY, "3.0")
 		);
 
 		final CyStatusBar statusBar = new CyStatusBar(cySwingApplicationRef, "/logConsole.png", userMessagesDialog, ezMap(
@@ -109,7 +109,7 @@ public class CyActivator extends AbstractCyActivator {
 			}
 		}, TaskFactory.class, ezProps(
 			PREFERRED_MENU, "Help",
-			TITLE, "Developer's Log Console...")
+			TITLE, "Developer's Log Console...", MENU_GRAVITY, "4.0")
 		);
 	}
 }
