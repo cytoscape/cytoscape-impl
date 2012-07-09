@@ -315,8 +315,8 @@ public class CyActivator extends AbstractCyActivator {
 		clearEdgeBendProps.setProperty(TITLE, "Clear Edge Bends");
 		clearEdgeBendProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
 		clearEdgeBendProps.setProperty(ENABLE_FOR, "networkAndView");
-		clearEdgeBendProps.setProperty(PREFERRED_MENU,"Edit");
-		clearEdgeBendProps.setProperty(MENU_GRAVITY,"5.4");
+		clearEdgeBendProps.setProperty(PREFERRED_MENU,"Layout");
+		clearEdgeBendProps.setProperty(MENU_GRAVITY,"0.1");
 
 		registerService(bc, clearEdgeBendTaskFactory, NetworkViewCollectionTaskFactory.class, clearEdgeBendProps);
 		
