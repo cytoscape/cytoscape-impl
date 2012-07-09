@@ -103,7 +103,6 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 					if (prop != null)
 						pref = prop.getProperties().getProperty("preferredLayoutAlgorithm", pref);
 					final CyLayoutAlgorithm layout = layoutAlgorithmManager.getLayout(pref);					
-//	    			final CyLayoutAlgorithm layout = layoutAlgorithmManager.getDefaultLayout();
 	    			final Object context = layout.getDefaultLayoutContext();
 					taskManagerRef.execute(
 	    				layout.createTaskIterator(view, context, CyLayoutAlgorithm.ALL_NODE_VIEWS,""));

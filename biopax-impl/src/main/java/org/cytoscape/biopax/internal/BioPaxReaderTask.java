@@ -5,6 +5,7 @@ import java.io.InputStream;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.model.Model;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -30,6 +31,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	private final CyNetworkFactory networkFactory;
 	private final CyNetworkViewFactory viewFactory;
 	private final CyNetworkNaming naming;
+	private final CyGroupFactory cyGroupFactory;
 
 	private InputStream stream;
 
@@ -40,17 +42,19 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 
 	/**
 	 * Constructor
+	 * @param cyGroupFactory 
 	 * @param model PaxTools BioPAX Model
 	 */
 	public BioPaxReaderTask(InputStream stream, String inputName, 
 			CyNetworkFactory networkFactory, CyNetworkViewFactory viewFactory, 
-			CyNetworkNaming naming) 
+			CyNetworkNaming naming, CyGroupFactory cyGroupFactory) 
 	{
 		this.stream = stream;
 		this.inputName = inputName;
 		this.networkFactory = networkFactory;
 		this.viewFactory = viewFactory;
 		this.naming = naming;
+		this.cyGroupFactory = cyGroupFactory;
 	}
 
 	
@@ -80,7 +84,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 //		}
 		
 		// Map BioPAX Data to Cytoscape Nodes/Edges (run as task)
-		BioPaxMapper mapper = new BioPaxMapper(model, networkFactory, taskMonitor);
+		BioPaxMapper mapper = new BioPaxMapper(model, networkFactory, taskMonitor, cyGroupFactory);
 		String networkName = getNetworkName(model);
 		network = mapper.createCyNetwork(networkName);
 		

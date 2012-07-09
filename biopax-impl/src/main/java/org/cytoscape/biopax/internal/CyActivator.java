@@ -6,6 +6,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
@@ -66,6 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyLayoutAlgorithmManager cyLayoutsRef = getService(bc,CyLayoutAlgorithmManager.class);	
 		TaskManager taskManagerRef = getService(bc, DialogTaskManager.class);
 		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyGroupFactory cyGroupFactory = getService(bc, CyGroupFactory.class);
 		
 		BioPaxFilter bioPaxFilter = new BioPaxFilter(streamUtilRef);
 		LaunchExternalBrowser launchExternalBrowser = new LaunchExternalBrowser(openBrowserRef);	
@@ -74,7 +76,7 @@ public class CyActivator extends AbstractCyActivator {
 		BioPaxVisualStyleUtil bioPaxVisualStyleUtil = new BioPaxVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFunctionFactoryRef,passthroughMappingFunctionFactoryRef);
 		BioPaxViewTracker bioPaxViewTracker = new BioPaxViewTracker(bioPaxDetailsPanel,bioPaxContainer, cyApplicationManagerRef, 
 				visualMappingManagerRef, bioPaxVisualStyleUtil, cyLayoutsRef, taskManagerRef, cytoscapePropertiesServiceRef);
-		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef);
+		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef, cyGroupFactory);
 		CytoPanelComponent cytoPanelComponent = new BioPaxCytoPanelComponent(bioPaxContainer);
 		
 		// register/export osgi services
@@ -95,6 +97,8 @@ public class CyActivator extends AbstractCyActivator {
 //			System.out.println("Failed test biopax-impl.");
 //			t.printStackTrace();
 //		}
+		
+		
 	}
 }
 

@@ -24,6 +24,7 @@ import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.util.ExternalLink;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
 import org.cytoscape.biopax.internal.util.NodeAttributesWrapper;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -144,9 +145,10 @@ public class BioPaxMapper {
         phosNodeSelectedLeft
     };
 
-	private Model model;
-	private CyNetworkFactory networkFactory;
-	private TaskMonitor taskMonitor;
+	private final Model model;
+	private final CyNetworkFactory networkFactory;
+	private final TaskMonitor taskMonitor;
+	private final CyGroupFactory cyGroupFactory;
 	
 	// BioPAX ID (URI) to CyNode map
 	// remark: nodes's CyTable will also have 'URI' (RDF Id) column
@@ -161,11 +163,13 @@ public class BioPaxMapper {
 	 * @param model
 	 * @param cyNetworkFactory
 	 * @param taskMonitor
+	 * @param cyGroupFactory 
 	 */
-	public BioPaxMapper(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor) {
+	public BioPaxMapper(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor, CyGroupFactory cyGroupFactory) {
 		this.model = model;
 		this.networkFactory = cyNetworkFactory;
-		this.taskMonitor = taskMonitor;	
+		this.taskMonitor = taskMonitor;
+		this.cyGroupFactory = cyGroupFactory;
 	}
 	
 
@@ -220,14 +224,27 @@ public class BioPaxMapper {
 	private void createMemberEdges(CyNetwork network) {
 		// for each PE,
 		for (PhysicalEntity par : model.getObjects(PhysicalEntity.class)) {
+			Set<PhysicalEntity> members = par.getMemberPhysicalEntity();
+			if(members.isEmpty()) 
+				continue;
+			
+			List<CyNode> nodeList = new ArrayList<CyNode>();
+			List<CyEdge> edgeList = new ArrayList<CyEdge>();
+			
 			CyNode cyParentNode = uriToCyNodeMap.get(par);
+			assert cyParentNode != null : "cyParentNode is NULL.";
 			// for each its member PE, add the directed edge
-			for (PhysicalEntity member : par.getMemberPhysicalEntity()) 
+			for (PhysicalEntity member : members) 
 			{
 				CyNode cyMemberNode = uriToCyNodeMap.get(member);
 				CyEdge edge = network.addEdge(cyParentNode, cyMemberNode, true);
 				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "member", String.class);
+				
+				nodeList.add(cyMemberNode);
+				edgeList.add(edge);
 			}
+			
+			cyGroupFactory.createGroup(network, cyParentNode, nodeList, edgeList, true);
 		}
 	}
 
@@ -299,16 +316,29 @@ public class BioPaxMapper {
 	private void createComplexEdges(CyNetwork network) {
 		// interate through all pe's
 		for (Complex complexElement : model.getObjects(Complex.class)) {
+			Set<PhysicalEntity> members = complexElement.getComponent();
+			if(members.isEmpty()) 
+				continue;
+
 			// get node
 			CyNode complexCyNode = uriToCyNodeMap.get(complexElement);
+			
+			List<CyNode> nodeList = new ArrayList<CyNode>();
+			List<CyEdge> edgeList = new ArrayList<CyEdge>();
+			
 			// get all components. There can be 0 or more
-			for (PhysicalEntity member : complexElement.getComponent()) 
+			for (PhysicalEntity member : members) 
 			{
 				CyNode complexMemberCyNode = uriToCyNodeMap.get(member);
 				// create edge, set attributes
 				CyEdge edge = network.addEdge(complexCyNode, complexMemberCyNode, true);
 				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "contains", String.class);
+				
+				nodeList.add(complexMemberCyNode);
+				edgeList.add(edge);
 			}
+			
+			cyGroupFactory.createGroup(network, complexCyNode, nodeList, edgeList, true);
 		}
 	}
 

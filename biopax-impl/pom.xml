@@ -58,6 +58,11 @@
 			<artifactId>layout-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>group-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
         <dependency>
 	        <groupId>org.biopax.paxtools</groupId>
 	        <artifactId>paxtools-core</artifactId>
