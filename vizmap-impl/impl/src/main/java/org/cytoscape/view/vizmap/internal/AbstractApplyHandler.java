@@ -32,17 +32,21 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 				// check mapping exists or not
 				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 	
-				if (mapping != null)
-					mapping.apply(row, view);
-				else
+				if (mapping != null) {
+					Object value = mapping.getMappedValue(row);
+					
+					if (value != null)
+						view.setVisualProperty(vp, value);
+				} else {
 					applyDefaultToView(view, vp);
+				}
 			}
 		}
 
-		override(view);
+		override(row, view);
 	}
 
-	private void applyDefaultToView(final View<T> view, final VisualProperty<?> vp) {
+	protected void applyDefaultToView(final View<T> view, final VisualProperty<?> vp) {
 		final Set<VisualLexicon> lexSet = lexManager.getAllVisualLexicon();
 		
 		if (lexSet.size() != 0)
@@ -65,17 +69,18 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 			view.setVisualProperty(vp, defaultValue);
 	}
 
-	private void override(final View<T> view) {
+	private void override(final CyRow row, final View<T> view) {
 		this.dependencies = style.getAllVisualPropertyDependencies();
 		
 		// Override dependency
 		for (final VisualPropertyDependency<?> dep : dependencies) {
 			if (dep.isDependencyEnabled()) {
-				final Set<?> vpSet = dep.getVisualProperties();
+				final Set<VisualProperty<?>> vpSet = dep.getVisualProperties();
+				
 				// Pick parent
-				VisualProperty<?> visualProperty = (VisualProperty<?>) vpSet.iterator().next();
-				final VisualLexiconNode node = lex.getVisualLexiconNode(visualProperty);
-				final VisualProperty<?> parentVP = node.getParent().getVisualProperty();
+				VisualProperty<?> visualProperty = vpSet.iterator().next();
+				final VisualProperty<?> parentVP = dep.getParentVisualProperty();
+				
 				Object defaultValue = style.getDefaultValue(parentVP);
 
 				if (defaultValue == null) {
@@ -83,8 +88,19 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 					defaultValue = style.getDefaultValue(visualProperty);
 				}
 				
-				for (Object vp : vpSet)
-					view.setVisualProperty((VisualProperty<?>) vp, defaultValue);
+				// check mapping exists or not
+				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(parentVP);
+				
+				for (VisualProperty<?> vp : vpSet) {
+					if (mapping != null) {
+						Object value = mapping.getMappedValue(row);
+						
+						if (value != null)
+							view.setVisualProperty(vp, value);
+					} else {
+						view.setVisualProperty((VisualProperty<?>) vp, defaultValue);
+					}
+				}
 			}
 		}
 	}

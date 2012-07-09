@@ -66,6 +66,7 @@ final class EdgeViewDefaultSupport {
 		this.lock = lock;
 	}
 
+	// TODO: delete
 	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vpOriginal, V value) {
 		
 		final VisualProperty<?> vp = vpOriginal;
@@ -139,7 +140,6 @@ final class EdgeViewDefaultSupport {
 				edgeDetails.setLineTypeDefault(EdgeView.STRAIGHT_LINES);
 		}
 	}
-		
 
 	void setTransparency(int trans) {
 		transparency = trans;
@@ -217,7 +217,6 @@ final class EdgeViewDefaultSupport {
 		}
 	}
 
-
 	public void setText(final String text) {
 		synchronized (lock) {
 			edgeDetails.setLabelTextDefault(text);
@@ -236,7 +235,6 @@ final class EdgeViewDefaultSupport {
 			edgeDetails.setLabelFontDefault(font);
 		}
 	}
-
 
 	public void setLabelWidth(double width) {
 		synchronized (lock) {

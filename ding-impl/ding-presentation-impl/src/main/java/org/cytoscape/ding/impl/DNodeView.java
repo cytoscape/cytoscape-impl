@@ -252,14 +252,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			final Paint transpColor = getTransparentColor(paint, transparency);
 			graphView.m_nodeDetails.setSelectedPaint(model, transpColor);
 			
-			if (isSelected()) {
-//				graphView.m_nodeDetails.overrideFillPaint(model, paint);
-//
-//				if (paint instanceof Color)
-//					graphView.m_nodeDetails.overrideColorLowDetail(model, (Color) paint);
-
+			if (isSelected())
 				graphView.m_contentChanged = true;
-			}
 		}
 	}
 
@@ -1146,9 +1140,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setWidth(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_HEIGHT) {
 			setHeight(((Number) value).doubleValue());
-		} else if (vp == BasicVisualLexicon.NODE_SIZE) {
-			setWidth(((Number) value).doubleValue());
-			setHeight(((Number) value).doubleValue());
+//		} else if (vp == BasicVisualLexicon.NODE_SIZE) { // TODO: delete?
+//			setWidth(((Number) value).doubleValue());
+//			setHeight(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
 		}  else if (vp == BasicVisualLexicon.NODE_LABEL_WIDTH) {
