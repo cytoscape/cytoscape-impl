@@ -35,9 +35,7 @@ import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.internal.mappings.interpolators.FlatInterpolator;
 import org.cytoscape.view.vizmap.internal.mappings.interpolators.Interpolator;
@@ -69,6 +67,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	// Contains List of Data Points
 	private List<ContinuousMappingPoint<K, V>> points;
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp) {
 		super(attrName, attrType, vp);
 		
@@ -119,39 +118,19 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	@Override
-	public void apply(final CyRow row, final View<? extends CyIdentifiable> view) {
-		if (row != null && view != null && !this.points.isEmpty())
-			doMap(row,view);
-	}
+	public V getMappedValue(final CyRow row) {
+		V value = null;
+		
+		if (row != null && row.isSet(columnName)) {
+			// Skip if source attribute is not defined.
+			// ViewColumn will automatically substitute the per-VS or global default, as appropriate
 
-	/**
-	 * Read attribute from row, map it and apply it.
-	 * 
-	 * types are guaranteed to be correct (? FIXME: check this)
-	 * 
-	 * Putting this in a separate method makes it possible to make it
-	 * type-parametric.
-	 * 
-	 * @param <V>
-	 *            the type-parameter of the ViewColumn column
-	 * @param <K>
-	 *            the type-parameter of the domain of the mapping (the object
-	 *            read as an attribute value has to be is-a K)
-	 * @param <V>
-	 *            the type-parameter of the View
-	 */
-	private void doMap(final CyRow row, final View<? extends CyIdentifiable> view) {
-		if (row.isSet(columnName)) {
-			// skip Views where source attribute is not defined;
-			// ViewColumn will automatically substitute the per-VS or global
-			// default, as appropriate
-
-			// In all cases, attribute value should be a number for continuous
-			// mapping.
+			// In all cases, attribute value should be a number for continuous mapping.
 			final K attrValue = row.get(columnName, columnType);
-			final V value = getRangeValue(attrValue);
-			view.setVisualProperty(vp, value);
+			value = getRangeValue(attrValue);
 		}
+		
+		return value;
 	}
 
 	private V getRangeValue(K domainValue) {

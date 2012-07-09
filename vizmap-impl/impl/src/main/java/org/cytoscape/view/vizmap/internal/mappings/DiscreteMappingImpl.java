@@ -34,9 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -70,48 +68,39 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	}
 
 	@Override
-	public void apply(CyRow row, View<? extends CyIdentifiable> view) {
-		if (row != null && view != null) {
-			V value = null;
-	
-			if (columnName.equals(CyIdentifiable.SUID)) {
-				// Special case: SUID
-				Object key = Long.valueOf(view.getModel().getSUID());
-				
+	public V getMappedValue(final CyRow row) {
+		V value = null;
+		
+		if (row != null && row.isSet(columnName)) {
+			// Skip if source attribute is not defined.
+			// ViewColumn will automatically substitute the per-VS or global default, as appropriate
+			final CyColumn column = row.getTable().getColumn(columnName);
+			final Class<?> attrClass = column.getType();
+
+			if (attrClass.isAssignableFrom(List.class)) {
+				List<?> list = row.getList(columnName, column.getListElementType());
+
+				if (list != null) {
+					for (Object item : list) {
+						// TODO: should we convert other types to String?
+						String key = item.toString();
+						value = attribute2visualMap.get(key);
+
+						if (value != null)
+							break;
+					}
+				}
+			} else {
+				Object key = row.get(columnName, columnType);
+
 				if (key != null)
 					value = attribute2visualMap.get(key);
-			} else if (row.isSet(columnName)) {
-				// skip Views where source attribute is not defined;
-				// ViewColumn will automatically substitute the per-VS or global default, as appropriate
-				final CyColumn column = row.getTable().getColumn(columnName);
-				final Class<?> attrClass = column.getType();
-	
-				if (attrClass.isAssignableFrom(List.class)) {
-					List<?> list = row.getList(columnName, column.getListElementType());
-	
-					if (list != null) {
-						for (Object item : list) {
-							// TODO: should we convert other types to String?
-							String key = item.toString();
-							value = attribute2visualMap.get(key);
-							
-							if (value != null)
-								break;
-						}
-					}
-				} else {
-					Object key = row.get(columnName, columnType);
-	
-					if (key != null)
-						value = attribute2visualMap.get(key);
-				}
 			}
-	
-			if (value != null)
-				view.setVisualProperty(vp, value);
 		}
+		
+		return value;
 	}
-
+	
 	@Override
 	public V getMapValue(K key) {
 		return attribute2visualMap.get(key);
