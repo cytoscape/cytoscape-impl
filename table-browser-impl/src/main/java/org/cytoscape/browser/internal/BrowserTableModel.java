@@ -85,14 +85,17 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		attrNamesAndVisibilities = new ArrayList<AttrNameAndVisibility>();
 
 		final CyColumn primaryKey = dataTable.getPrimaryKey();
-		attrNamesAndVisibilities.add(new AttrNameAndVisibility(primaryKey.getName(), true));
+		attrNamesAndVisibilities.add(new AttrNameAndVisibility(primaryKey.getName(), false));
 
 		for (final CyColumn column : dataTable.getColumns()) {
 
 			// Ignore p-key (SUID)
 			if (column == primaryKey)
 				continue;
-			attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), true));
+			if (column.getName().equals(CyNetwork.SELECTED))
+				attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), false));
+			else
+				attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), true));
 		}
 	}
 
