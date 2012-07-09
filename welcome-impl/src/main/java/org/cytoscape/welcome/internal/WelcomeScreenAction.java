@@ -53,6 +53,8 @@ public class WelcomeScreenAction extends AbstractCyAction {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 
+		this.setMenuGravity(1.5f);
+		
 		this.openBrowser = openBrowserServiceRef;
 		this.fileTracker = fileTracker;
 		this.guiTaskManager = guiTaskManager;
