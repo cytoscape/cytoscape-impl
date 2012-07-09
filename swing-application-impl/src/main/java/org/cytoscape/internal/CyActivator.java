@@ -303,6 +303,7 @@ public class CyActivator extends AbstractCyActivator {
 		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
 		helpContentsTaskFactoryProps.setProperty(LARGE_ICON_URL, getClass().getResource("/images/ximian/stock_help.png").toString());
 		helpContentsTaskFactoryProps.setProperty(TITLE, "Contents...");
+		helpContentsTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		helpContentsTaskFactoryProps.setProperty(TOOLTIP, "Show Help Contents...");
 		helpContentsTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY, "20.0f");
 		helpContentsTaskFactoryProps.setProperty(IN_TOOL_BAR, "true");
@@ -310,6 +311,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties helpContactHelpDeskTaskFactoryProps = new Properties();
 		helpContactHelpDeskTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+		helpContactHelpDeskTaskFactoryProps.setProperty(MENU_GRAVITY,"7.0");	
 		helpContactHelpDeskTaskFactoryProps.setProperty(TITLE, "Contact Help Desk...");
 		registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class,
 		                helpContactHelpDeskTaskFactoryProps);
@@ -317,6 +319,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties helpReportABugTaskFactoryProps = new Properties();
 		helpReportABugTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
 		helpReportABugTaskFactoryProps.setProperty(TITLE, "Report a Bug...");
+		helpReportABugTaskFactoryProps.setProperty(MENU_GRAVITY,"8.0");
 		registerService(bc, helpReportABugTaskFactory, TaskFactory.class,
 		                helpReportABugTaskFactoryProps);
 
@@ -324,6 +327,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties helpAboutTaskFactoryProps = new Properties();
 		helpAboutTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
 		helpAboutTaskFactoryProps.setProperty(TITLE, "About...");
+		helpAboutTaskFactoryProps.setProperty(MENU_GRAVITY,"10.0");
 		registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
 
 		Properties arrangeGridTaskFactoryProps = new Properties();
