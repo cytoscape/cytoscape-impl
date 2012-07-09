@@ -159,10 +159,13 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		currentScrollPane = newScrollPane;
 		applicationManager.setCurrentTable(currentTable);
 		attributeBrowserToolBar.setBrowserTableModel(currentBrowserTableModel);
+	
 		
-		// Resize column
+		/* 
+		// Never resize columns as they would reset the columns each time the view is changed
 		if (currentBrowserTableModel != null)
 			ColumnResizer.adjustColumnPreferredWidths(currentBrowserTableModel.getTable());
+		 */
 	}
 
 	private JScrollPane getScrollPane(final BrowserTableModel browserTableModel) {
