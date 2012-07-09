@@ -146,8 +146,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 								   final JComboBox tableChooser,
 								   final Class<? extends CyIdentifiable> objType,
 								   final CyApplicationManager appMgr) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+		
 		this(serviceRegistrar, compiler, deleteTableTaskFactory, guiTaskMgr, tableChooser,
 				new JButton(), objType, appMgr);//, mapGlobalTableTaskFactoryService);
+		this.selectionModeButton.setVisible(false);
 	}
 	
 	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar,
@@ -695,8 +697,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 							allAttrNames.add(column.getName());
 						browserTableModel.setVisibleAttributeNames(allAttrNames);
 
-						// Resize column
-						ColumnResizer.adjustColumnPreferredWidths(browserTableModel.getTable());
+						// ***DO NOT *** Resize column
+						//ColumnResizer.adjustColumnPreferredWidths(browserTableModel.getTable());
 					} catch (Exception ex) {
 						attributeList.clearSelection();
 					}
