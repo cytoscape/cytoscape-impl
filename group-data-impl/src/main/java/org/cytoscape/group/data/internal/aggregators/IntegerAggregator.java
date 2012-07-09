@@ -94,7 +94,6 @@ public class IntegerAggregator extends AbstractAggregator {
 					aggregation = (vArray[(vArray.length/2)-1] + vArray[(vArray.length/2)]) / 2;
 			} else if (type == AttributeHandlingType.AVG) {
 				aggregation = aggregation/(double)count;
-				System.out.println("Integer average aggregation = "+aggregation);
 			}
 
 			Integer v = new Integer((int)aggregation);
