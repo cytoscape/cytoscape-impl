@@ -21,6 +21,7 @@ public class RenameVisualStyleTask extends AbstractTask {
 
 	public RenameVisualStyleTask(final VisualMappingManager vmm) {
 		this.vmm = vmm;
+		this.vsName = vmm.getCurrentVisualStyle().getTitle();
 	}
 
 	@Override
