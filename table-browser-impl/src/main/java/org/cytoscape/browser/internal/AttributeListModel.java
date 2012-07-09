@@ -43,6 +43,7 @@ import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
@@ -100,13 +101,11 @@ public class AttributeListModel
 		attributeNames = new ArrayList<String>();
 		final CyTable attributes = browserTableModel.getAttributes();
 		
-		for (final String attrName : browserTableModel.getVisibleAttributeNames()) {
-			if (validAttrTypes.contains(attributes.getColumn(attrName).getType()))
-				attributeNames.add(attrName);
-		}
 		
+		for (final CyColumn col : attributes.getColumns()){
+			attributeNames.add(col.getName());
+		}
 		Collections.sort(attributeNames);
-		browserTableModel.setVisibleAttributeNames(attributeNames);
 
 		notifyListeners(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0,
 		                                  attributeNames.size()));
