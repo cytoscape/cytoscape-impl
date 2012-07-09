@@ -84,6 +84,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 				responseBody = "Will obtain \"" + appName + "\", version " + version;
 
 				String installStatus = "app-not-found";
+				String installError = "";
 				boolean appFoundInStore = false;
 				WebApp appToDownload = null;
 				
@@ -112,6 +113,8 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 					// Attempt to install app
 					if (appFile == null) {
 						installStatus = "version-not-found";
+						installError = "An entry for the app " + appName + " with version " + version
+							+ " was not found in the app store database at: " + appManager.getWebQuerier().getAppStoreUrl();
 					} else {
 						installStatus = "success";
 						
@@ -121,15 +124,27 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 							appManager.installApp(app);
 						} catch (AppParsingException e) {
 							installStatus = "install-failed";
+							installError = "The installation could not be completed because there were errors in the app file. "
+								+ "Details: " + e.getMessage();
 						} catch (AppInstallException e) {
 							installStatus = "install-failed";
+							installError = "The app file passed checking, but the app manager encountered errors while attempting" 
+								+ "install. Details: " + e.getMessage();
 						}
 					}
+				} else {
+					installStatus = "app-not-found";
+					installError = "The app " + appName + " is not found in the app store database at "
+						+ appManager.getWebQuerier().getAppStoreUrl();
 				}
 				
 				responseData.put("install_status", installStatus);
+				responseData.put("install_error", installError);
+				
 			} else if (version == null) {
+				
 				responseData.put("install_status", "version-not-found");
+				responseData.put("install_error", "The query to the app manager did not specify a desired app version.");
 			}
 		}
 		

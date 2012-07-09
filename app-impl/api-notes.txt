@@ -48,5 +48,7 @@ app-not-found, version-not-found, install-failed. "install-failed" is for when a
 matching the given name and version was found, but there was an error while attempting
 to install it, such as a malformed manifest, or some other error preventing successful
 install.
+ "install_error": If install outcome was something other than success, then a more
+detailed message is put here.
 }
 

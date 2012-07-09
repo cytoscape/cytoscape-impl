@@ -43,9 +43,11 @@ import org.apache.http.impl.DefaultHttpServerConnection;
 
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.ConnectionClosedException;
 import org.apache.http.MethodNotSupportedException;
+import org.apache.http.RequestLine;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -60,6 +62,13 @@ import org.cytoscape.app.internal.util.DebugHelper;
  * Creates a server socket and serves http connections from localhost clients only.
  */
 public class LocalHttpServer implements Runnable {
+	
+	// The list of addresses allowed to query the server
+	public static final String[] ALLOWED_ORIGINS = new String[]{
+		"http://apps3.nrnb.org", 
+		"http://apps.cytoscape.org"
+	};
+	
     public static class Response {
 		final String body;
 		final String contentType;
@@ -172,7 +181,7 @@ public class LocalHttpServer implements Runnable {
 		}
 	
 		logger.info("Server socket started on {}", String.format("%s:%d", serverSocket.getInetAddress().getHostAddress(), port));
-	
+		
 		// Keep servicing incoming connections until this thread is flagged as interrupted
 		while (!Thread.interrupted()) { // TODO: **interrupted is deprecated?
 			
@@ -181,6 +190,7 @@ public class LocalHttpServer implements Runnable {
 		    try {
 				final Socket socket = serverSocket.accept();
 				logger.info("Server socket received connection from {}", socket.getInetAddress().getHostAddress());
+				//System.out.println("Server socket received connection from {}" + socket.getInetAddress().getHostAddress());
 				connection = new DefaultHttpServerConnection();
 				connection.bind(socket, params);
 		    } catch (IOException e) {
@@ -250,16 +260,42 @@ public class LocalHttpServer implements Runnable {
             final String method = request.getRequestLine().getMethod().toLowerCase();
             DebugHelper.print("Request received. Method: " + method);
 
-            /*
-            System.out.println("Headers: ");
-            for (int i = 0; i < request.getAllHeaders().length; i++) {
-            	System.out.println("Header name: " + request.getAllHeaders()[i].getName());
-            	System.out.println("Header value: " + request.getAllHeaders()[i].getValue());
+            // System.out.println("Request recvd: " + requestLine.toString());
+
+            // Obtain origin
+            Header originHeader = request.getFirstHeader("Origin");
+            
+            String originValue = null;
+            if (originHeader != null) {
+            	originValue = originHeader.getValue();
             }
-            */
+            
+            boolean originFound = false;
+
+            for (int i = 0; i < ALLOWED_ORIGINS.length; i++) {
+            	String allowedOrigin = ALLOWED_ORIGINS[i];
+            	
+            	if (originValue != null && allowedOrigin.equals(originValue)) {
+            		originFound = true;
+            	}
+            }
+            
+            // System.out.println("Origin found? " + originFound);
+                        
+            if (!originFound) {
+            	if (originValue != null) {
+            		setHttpResponseToError(httpResponse, HttpStatus.SC_FORBIDDEN, "Access denied", 
+            			"The app manager does not recognize the orgin " + originValue);
+            	} else {
+            		setHttpResponseToError(httpResponse, HttpStatus.SC_FORBIDDEN, "Access denied", 
+                			"Origin not found.");
+            	}
+            	return;
+            }
             
 		    if (method.equals("options")) {
-			    httpResponse.addHeader("Access-Control-Allow-Origin", "*");
+		    	// If the origin is on the allowed list, echo it back as the allowed origin
+			    httpResponse.addHeader("Access-Control-Allow-Origin", originValue);
 			    httpResponse.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
 			    httpResponse.addHeader("Access-Control-Max-Age", "1");
 			    httpResponse.addHeader("Access-Control-Allow-Headers", "origin, x-csrftoken, accept");
@@ -322,7 +358,7 @@ public class LocalHttpServer implements Runnable {
 		    	// none of the http methods are valid, so issue an error to the client
 	            throw new MethodNotSupportedException(String.format("\"%s\" method not supported", method)); 
 		    }
-	
+		    
 		    if (response == null) {
 		    	setHttpResponseToError(httpResponse, HttpStatus.SC_NOT_FOUND, "Resource not found", null);
 		    } else {
@@ -331,7 +367,7 @@ public class LocalHttpServer implements Runnable {
 				    setHttpResponseToInternalError(httpResponse, "Responder \"%s\" returned null");
 				} else {
 				    setHttpResponse(httpResponse, HttpStatus.SC_OK, body, response.getContentType());
-				    httpResponse.addHeader("Access-Control-Allow-Origin", "*");
+				    httpResponse.addHeader("Access-Control-Allow-Origin", originValue != null? originValue : "*");
 				}
 		    }
 		}
