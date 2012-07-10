@@ -10,7 +10,6 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
@@ -324,8 +323,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 		synchronized (this) {
 			if (regularViewMode) {
-				for (final RowSetRecord rowSet : rows)
-					handleRowValueUpdate(rowSet.getRow(), rowSet.getColumn(), rowSet.getValue(), rowSet.getRawValue());
+				fireTableDataChanged();
 			} else {
 				table.clearSelection();
 				fireTableDataChanged();
