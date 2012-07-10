@@ -36,7 +36,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -62,11 +61,11 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -148,8 +147,6 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     private Writer writer;
 
     private boolean doFullEncoding;
-	private final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap;
-	private Set<VisualProperty<?>> disabledVisualProperties;
 
 	public GenericXGMMLWriter(final OutputStream outputStream,
 							  final RenderingEngineManager renderingEngineMgr,
@@ -176,8 +173,6 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 		this.networkMgr = networkMgr;
 		this.rootNetworkMgr = rootNetworkMgr;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
-		this.dependencyMap = new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
-		this.disabledVisualProperties = new HashSet<VisualProperty<?>>();
 		
 		if (network instanceof CyRootNetwork) {
 			this.network = this.rootNetwork = (CyRootNetwork) network;
@@ -502,26 +497,22 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         	// because they are also returned as NETWORK's descendants
         	if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class)
         		continue;
-        	// TODO: not exactly the right thing to do here:
-        	if (disabledVisualProperties.contains(vp)) 
-        		continue;
-        		
-            Object value = view.getVisualProperty(vp);
+        	
+            // It doesn't have to write the property if the value is null
+			Object value = view.getVisualProperty(vp);
             
             if (value == null)
             	continue;
             
-            final VisualPropertyDependency<?> dep = dependencyMap.get(vp);
-            
-            if (dep != null && !dep.isDependencyEnabled()) {
-            	// The property is the parent of a dependency, but the dependency is not enabled.
-            	// So ignore this visual property, because the child properties should be used instead.
-            	continue;
-            }
-            
             if (groupLockedProperties && view.isValueLocked(vp)) {
             	lockedProperties.add(vp);
             	continue;
+            } else {
+            	// If not a bypass, write only leaf nodes
+            	final VisualLexiconNode node = visualLexicon.getVisualLexiconNode(vp);
+
+    			if (!node.getChildren().isEmpty())
+    				continue;
             }
             
         	// Use XGMML graphics attribute names for some visual properties
@@ -648,6 +639,10 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         // Edges
         if (vp.equals(BasicVisualLexicon.EDGE_WIDTH)) return new String[]{"width"};
         if (vp.equals(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)) return new String[]{"fill"};
+        
+        // TODO: also write these attributes to keep compatibility with 2.x an Cytoscape Web (?):
+        // cy:nodeTransparency cy:nodeLabelFont cy:nodeLabel cy:borderLineType
+        // cy:sourceArrow cy:targetArrow cy:sourceArrowColor cy:targetArrowColor cy:edgeLabelFont cy:edgeLabel cy:edgeLineType cy:curved
 
         return new String[]{};
     }
@@ -884,21 +879,6 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 	 */
 	private void setVisualStyle(final VisualStyle visualStyle) {
 		this.visualStyle = visualStyle;
-		dependencyMap.clear();
-		disabledVisualProperties.clear();
-		
-		if (visualStyle != null) {
-	    	final Set<VisualPropertyDependency<?>> dependencies = visualStyle.getAllVisualPropertyDependencies();
-			
-			for (final VisualPropertyDependency<?> dep : dependencies) {
-				dependencyMap.put(dep.getParentVisualProperty(), dep);
-				
-				if (dep.isDependencyEnabled()) {
-					final Set<VisualProperty<?>> descendants = dep.getVisualProperties();
-					disabledVisualProperties.addAll(descendants);
-				}
-			}
-	    }
 	}
     
     /**

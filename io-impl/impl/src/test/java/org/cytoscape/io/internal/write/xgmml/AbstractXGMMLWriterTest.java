@@ -1,12 +1,10 @@
 package org.cytoscape.io.internal.write.xgmml;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,7 +28,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -39,7 +36,6 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
-import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -47,6 +43,7 @@ import org.xml.sax.InputSource;
 public abstract class AbstractXGMMLWriterTest {
 
 	protected final int NODE_COUNT = 3;
+	protected final int EDGE_COUNT = NODE_COUNT - 1;
 	protected CyNetworkView view;
 	protected CyNetwork net;
 	protected CyRootNetwork rootNet;

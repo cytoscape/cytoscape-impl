@@ -1,3 +1,4 @@
+
 package org.cytoscape.io.internal.write.xgmml;
 
 import static org.junit.Assert.*;
@@ -107,13 +108,15 @@ public class SessionXGMMLNetworkViewWriterTest extends AbstractXGMMLWriterTest {
 	public void testNodeGraphicsAtt() {
 		View<CyNode> nv = view.getNodeViews().iterator().next();
 		nv.setLockedValue(NODE_SIZE, 122d);
+		nv.setLockedValue(NODE_BORDER_WIDTH, 6d);
 		nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.OCTAGON);
 		write(view);
 		
 		assertEquals("list", evalString("//x:node[@id="+nv.getSUID()+"]/x:graphics/x:att[@name=\"lockedVisualProperties\"]/@type"));
-		assertEquals(2, evalNumber("count(//x:node[@id="+nv.getSUID()+"]/x:graphics/x:att[@name=\"lockedVisualProperties\"]/x:att)"));
+		assertEquals(3, evalNumber("count(//x:node[@id="+nv.getSUID()+"]/x:graphics/x:att[@name=\"lockedVisualProperties\"]/x:att)"));
 		
 		assertEquals(122, evalNumber("//x:node[@id="+nv.getSUID()+"]/x:graphics/x:att/x:att[@name=\""+NODE_SIZE.getIdString()+"\"]/@value"));
+		assertEquals(6, evalNumber("//x:node[@id="+nv.getSUID()+"]/x:graphics/x:att/x:att[@name=\""+NODE_BORDER_WIDTH.getIdString()+"\"]/@value"));
 		assertEquals("OCTAGON", evalString("//x:node[@id="+nv.getSUID()+"]/x:graphics/x:att/x:att[@name=\""+NODE_SHAPE.getIdString()+"\"]/@value"));
 	}
 	
