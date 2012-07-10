@@ -5,6 +5,8 @@ import java.awt.Window;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -55,6 +57,15 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	public synchronized void open() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					open();
+				}
+			});
+			return;
+		}
 		if (dialog != null)
 			return;
 
@@ -77,7 +88,16 @@ class SwingTaskMonitor implements TaskMonitor {
 	 * are being displayed there are no Swing related threading 
 	 * issues.
 	 */
-	public void showDialog(boolean sd) {
+	public void showDialog(final boolean sd) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					showDialog(sd);
+				}
+			});
+			return;
+		}
 		showDialog = sd;
 		if ( dialog != null ) {
 			dialog.setVisible(showDialog);
@@ -117,18 +137,45 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	public void setTitle(final String title) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					setTitle(title);
+				}
+			});
+			return;
+		}
 		this.title = title;
 		if (dialog != null)
 			dialog.setTaskTitle(title);
 	}
 
-	public void setStatusMessage(String statusMessage) {
+	public void setStatusMessage(final String statusMessage) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					setStatusMessage(statusMessage);
+				}
+			});
+			return;
+		}
 		this.statusMessage = statusMessage;
 		if (dialog != null)
 			dialog.setStatus(statusMessage);
 	}
 
-	public void setProgress(double progress) {
+	public void setProgress(final double progress) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					setProgress(progress);
+				}
+			});
+			return;
+		}
 		if ( progress < 0 ) {
 			if (dialog != null)
 				dialog.setPercentCompleted(-1);
@@ -141,7 +188,16 @@ class SwingTaskMonitor implements TaskMonitor {
 		}
 	}
 
-	public synchronized void showException(Exception exception) {
+	public synchronized void showException(final Exception exception) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					showException(exception);
+				}
+			});
+			return;
+		}
 		// force the dialog box to be created if
 		// the Task throws an exception
 		if (dialog == null)
