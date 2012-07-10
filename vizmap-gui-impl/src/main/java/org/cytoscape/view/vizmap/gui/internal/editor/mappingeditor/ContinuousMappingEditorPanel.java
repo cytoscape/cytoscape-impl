@@ -117,6 +117,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected final VisualStyle style;
 
 	final JPanel mainPanel;
+	
+	protected final Class<K> columnType;
+	protected final Class<V> vpValueType;
 
 	/**
 	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual property type T.
@@ -140,6 +143,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.mainPanel = new JPanel();
 		this.dataTable = table;
 		
+		columnType = mapping.getMappingColumnType();
+		vpValueType = mapping.getVisualProperty().getRange().getType();
+		
 		final String controllingAttrName = mapping.getMappingColumnName();
 		
 		//TODO more error checking
@@ -161,6 +167,34 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		initRangeValues();
 		setSpinner();
 	}
+	
+	protected static <T> T convert(final Class<T> type, Number value) {
+		T converted = null;
+		if(type == Double.class) {
+			Double doubleValue = value.doubleValue();
+			converted = (T) doubleValue;
+		} else if(type == Integer.class) {
+			Integer intValue = value.intValue();
+			converted = (T) intValue;
+		} else if(type == Float.class) {
+			Float floatValue = value.floatValue();
+			converted = (T) floatValue;
+		} else if(type == Byte.class) {
+			Byte byteValue = value.byteValue();
+			converted = (T) byteValue;
+		} else if(type == Long.class){
+			Long longValue = value.longValue();
+			converted = (T) longValue;
+		} else if(type == Short.class) {
+			Short shortValue = value.shortValue();
+			converted = (T) shortValue;
+		} else {
+			throw new IllegalStateException("Could not covert Number.");
+		}
+		
+		return converted;
+	}
+
 
 	private void setSpinner() {
 		spinnerModel = new SpinnerNumberModel(0.0d, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
@@ -520,8 +554,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			V lesserVal = below;
 			V greaterVal = above;
 
-			mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(equalVal, lesserVal, greaterVal));
-
+			if(equalVal instanceof Number)
+				mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(convert(vpValueType, (Number)equalVal), convert(vpValueType, (Number)lesserVal), convert(vpValueType, (Number)greaterVal)));
+			else {
+				mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(equalVal, lesserVal, greaterVal));
+			}
 			newVal = ((thumbs.get(0).getPosition() / 100) * range) + min;
 			mapping.getPoint(0).setValue((K) newVal);
 
@@ -550,7 +587,12 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				greaterVal = (V) t.getObject();
 			}
 
-			mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
+			if(equalVal instanceof Number)
+				mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(convert(vpValueType, (Number)equalVal), convert(vpValueType, (Number)lesserVal), convert(vpValueType, (Number)greaterVal)));
+			else {
+				mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(equalVal, lesserVal, greaterVal));
+			}
+//			mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
 
 			newVal = ((t.getPosition() / 100) * range) + min;
 			mapping.getPoint(i).setValue((K) newVal);

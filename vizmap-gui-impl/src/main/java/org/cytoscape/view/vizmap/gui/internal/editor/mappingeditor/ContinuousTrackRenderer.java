@@ -127,6 +127,9 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	
 	private final VisualProperty<V> vp;
 	private final ContinuousMapping<K, V> cMapping;
+	
+	private final Class<V> vpValueType;
+	private final Class<K> columnType;
 
 	/**
 	 * Creates a new ContinuousTrackRenderer object.
@@ -156,6 +159,9 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		this.style = style;
 
 		cMapping = mapping;
+		this.columnType = mapping.getMappingColumnType();
+		this.vpValueType = mapping.getVisualProperty().getRange().getType();
+		
 		title = cMapping.getMappingColumnName();
 
 		 //TODO: where should I put this property value?
@@ -533,7 +539,9 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 					}
 				}
 
-				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(lesserVal, newVal, greaterVal);
+				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(ContinuousMappingEditorPanel.convert(
+						vpValueType, lesserVal), ContinuousMappingEditorPanel.convert(vpValueType, newVal),
+						ContinuousMappingEditorPanel.convert(vpValueType, greaterVal));
 
 				cMapping.getPoint(selectedIdx).setRange(brv);
 			}
@@ -592,8 +600,11 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 					}
 				}
 
-				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(
-						lesserVal, newVal, greaterVal);
+//				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(
+//						lesserVal, newVal, greaterVal);
+				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(ContinuousMappingEditorPanel.convert(
+						vpValueType, lesserVal), ContinuousMappingEditorPanel.convert(vpValueType, newVal),
+						ContinuousMappingEditorPanel.convert(vpValueType, greaterVal));
 
 				cMapping.getPoint(selectedIdx).setRange(brv);
 
@@ -626,7 +637,10 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				BoundaryRangeValues<V> original;
 
 				original = cMapping.getPoint(0).getRange();
-				brv = new BoundaryRangeValues<V>(newValue, original.equalValue, original.greaterValue);
+//				brv = new BoundaryRangeValues<V>(newValue, original.equalValue, original.greaterValue);
+				brv = new BoundaryRangeValues<V>(ContinuousMappingEditorPanel.convert(
+						vpValueType, newValue), ContinuousMappingEditorPanel.convert(vpValueType, original.equalValue),
+						ContinuousMappingEditorPanel.convert(vpValueType, original.greaterValue));
 				cMapping.getPoint(0).setRange(brv);
 
 
@@ -660,7 +674,11 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 				original = cMapping.getPoint(cMapping.getPointCount() - 1)
 						.getRange();
-				brv = new BoundaryRangeValues<V>(original.lesserValue,original.equalValue, above);
+//				brv = new BoundaryRangeValues<V>(original.lesserValue,original.equalValue, above);
+				brv = new BoundaryRangeValues<V>(ContinuousMappingEditorPanel.convert(
+						vpValueType, original.lesserValue), ContinuousMappingEditorPanel.convert(vpValueType, original.equalValue),
+						ContinuousMappingEditorPanel.convert(vpValueType, above));
+				
 				cMapping.getPoint(cMapping.getPointCount() - 1).setRange(brv);
 
 				// Update view.

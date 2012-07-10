@@ -70,15 +70,11 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	private static final Number FIRST_LOCATION = 10d;
 	private static final Number SECOND_LOCATION = 30d;
 
-	private final Class<K> columnType;
-	private final Class<V> vpValueType;
+	
 
 	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping, final CyTable attr,
 			final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		super(style, mapping, attr, appManager, vmm);
-		
-		columnType = mapping.getMappingColumnType();
-		vpValueType = mapping.getVisualProperty().getRange().getType();
 		
 		abovePanel.setVisible(false);
 		belowPanel.setVisible(false);
@@ -102,33 +98,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		return convert(columnType, value);
 	}
 	
-	private <T> T convert(final Class<T> type, Number value) {
-		T converted = null;
-		if(type == Double.class) {
-			Double doubleValue = value.doubleValue();
-			converted = (T) doubleValue;
-		} else if(type == Integer.class) {
-			Integer intValue = value.intValue();
-			converted = (T) intValue;
-		} else if(type == Float.class) {
-			Float floatValue = value.floatValue();
-			converted = (T) floatValue;
-		} else if(type == Byte.class) {
-			Byte byteValue = value.byteValue();
-			converted = (T) byteValue;
-		} else if(type == Long.class){
-			Long longValue = value.longValue();
-			converted = (T) longValue;
-		} else if(type == Short.class) {
-			Short shortValue = value.shortValue();
-			converted = (T) shortValue;
-		} else {
-			throw new IllegalStateException("Could not covert Number.");
-		}
-		
-		return converted;
-	}
-
+	
 	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
 		final TrackRenderer rend = slider.getTrackRenderer();
 
@@ -162,7 +132,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		if (mapping.getPointCount() == 0) {
 			slider.getModel().addThumb(position.floatValue(), convertToValue(value));
 
-			newRange = new BoundaryRangeValues<V>(below, convertToValue(5d), above);
+			newRange = new BoundaryRangeValues<V>(convertToValue(below), convertToValue(5d), convertToValue(above));
 			final K newKey = convertToColumnValue((maxValue.doubleValue() / 2));
 			
 			mapping.addPoint(newKey, newRange);
@@ -184,7 +154,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		V equalVal = convertToValue(5d);
 		V greaterVal = previousRange.greaterValue;
 
-		newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
+		newRange = new BoundaryRangeValues<V>(convertToValue(lesserVal), convertToValue(equalVal), convertToValue(greaterVal));
 
 		mapping.addPoint(maxValue, newRange);
 

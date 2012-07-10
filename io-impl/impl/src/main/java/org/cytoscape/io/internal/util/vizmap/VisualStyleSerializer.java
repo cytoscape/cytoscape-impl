@@ -257,20 +257,20 @@ public class VisualStyleSerializer {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <K, V> void createVizmapProperties(VisualStyle vs,
-											   VisualProperty<Visualizable> root,
-											   List<org.cytoscape.io.internal.util.vizmap.model.VisualProperty> vpModelList) {
-		Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(root);
-		Iterator<VisualProperty<?>> iter = vpList.iterator();
+	private void createVizmapProperties(VisualStyle vs, VisualProperty<Visualizable> root,
+			List<org.cytoscape.io.internal.util.vizmap.model.VisualProperty> vpModelList) {
+		
+		final Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(root);
+		final Iterator<VisualProperty<?>> iter = vpList.iterator();
 
 		while (iter.hasNext()) {
-			VisualProperty<V> vp = (VisualProperty<V>) iter.next();
+			final VisualProperty<Object> vp = (VisualProperty<Object>) iter.next();
 
 			// NETWORK root includes NODES and EDGES, but we want to separate the CyNetwork properties!
 			if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class) continue;
 
-			V defValue = vs.getDefaultValue(vp);
-			VisualMappingFunction<?, V> mapping = vs.getVisualMappingFunction(vp);
+			Object defValue = vs.getDefaultValue(vp);
+			final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
 
 			if (defValue != null || mapping != null) {
 				org.cytoscape.io.internal.util.vizmap.model.VisualProperty vpModel = new org.cytoscape.io.internal.util.vizmap.model.VisualProperty();
@@ -288,7 +288,7 @@ public class VisualStyleSerializer {
 				}
 
 				if (mapping instanceof PassthroughMapping<?, ?>) {
-					PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) mapping;
+					PassthroughMapping<?, ?> pm = (PassthroughMapping<?, ?>) mapping;
 					AttributeType attrType = toAttributeType(pm.getMappingColumnType());
 
 					org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping pmModel = new org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping();
@@ -298,16 +298,16 @@ public class VisualStyleSerializer {
 					vpModel.setPassthroughMapping(pmModel);
 
 				} else if (mapping instanceof DiscreteMapping<?, ?>) {
-					DiscreteMapping<K, V> dm = (DiscreteMapping<K, V>) mapping;
+					DiscreteMapping<?, ?> dm = (DiscreteMapping<?, ?>) mapping;
 					AttributeType attrType = toAttributeType(dm.getMappingColumnType());
 
 					org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping dmModel = new org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping();
 					dmModel.setAttributeName(dm.getMappingColumnName());
 					dmModel.setAttributeType(attrType);
 
-					Map<K, V> map = dm.getAll();
+					Map<?, ?> map = dm.getAll();
 
-					for (Map.Entry<?, V> entry : map.entrySet()) {
+					for (Map.Entry<?, ?> entry : map.entrySet()) {
 						DiscreteMappingEntry entryModel = new DiscreteMappingEntry();
 						entryModel.setAttributeValue(entry.getKey().toString());
 						entryModel.setValue(vp.toSerializableString(entry.getValue()));
@@ -318,25 +318,32 @@ public class VisualStyleSerializer {
 					vpModel.setDiscreteMapping(dmModel);
 
 				} else if (mapping instanceof ContinuousMapping<?, ?>) {
-					ContinuousMapping<K, V> cm = (ContinuousMapping<K, V>) mapping;
+					final ContinuousMapping<?,?> cm = (ContinuousMapping<?, ?>) mapping;
 					AttributeType attrType = toAttributeType(cm.getMappingColumnType());
 
 					org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping cmModel = new org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping();
 					cmModel.setAttributeName(cm.getMappingColumnName());
 					cmModel.setAttributeType(attrType);
 
-					List<ContinuousMappingPoint<K, V>> points = cm.getAllPoints();
+					List<?> points = cm.getAllPoints();
 
-					for (ContinuousMappingPoint<K, V> p : points) {
+					for (Object point : points) {
+						ContinuousMappingPoint<?, ?> continuousPoint = (ContinuousMappingPoint<?, ?>) point;
 						org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint pModel = new org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint();
 
-						String sValue = p.getValue().toString();
-						BigDecimal value = new BigDecimal(sValue);
-						V lesser = p.getRange().lesserValue;
-						V equal = p.getRange().equalValue;
-						V greater = p.getRange().greaterValue;
-
+						Object originalValue = continuousPoint.getValue();
+						
+						final String sValue = originalValue.toString();
+						final BigDecimal value = new BigDecimal(sValue);
 						pModel.setAttrValue(value);
+						
+						Object lesser = continuousPoint.getRange().lesserValue;
+						Object equal = continuousPoint.getRange().equalValue;
+						Object greater = continuousPoint.getRange().greaterValue;
+						
+//						System.out.println(cm.getVisualProperty().getDisplayName() + ": ***Point is "
+//								+ lesser.getClass() + ", " + equal.getClass() +", " + greater.getClass());
+
 						pModel.setLesserValue(vp.toSerializableString(lesser));
 						pModel.setEqualValue(vp.toSerializableString(equal));
 						pModel.setGreaterValue(vp.toSerializableString(greater));
