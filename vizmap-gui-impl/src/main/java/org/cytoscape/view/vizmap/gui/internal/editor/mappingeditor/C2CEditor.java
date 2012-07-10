@@ -9,7 +9,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
-public class C2CEditor extends AbstractContinuousMappingEditor<Number, Number> {
+public class C2CEditor<K extends Number, V extends Number> extends AbstractContinuousMappingEditor<K, V> {
 
 	public C2CEditor(final CyNetworkTableManager manager, final CyApplicationManager appManager,
 			final EditorManager editorManager, final VisualMappingManager vmm) {
@@ -20,18 +20,16 @@ public class C2CEditor extends AbstractContinuousMappingEditor<Number, Number> {
 	public void setValue(Object value) {
 		if (value instanceof ContinuousMapping == false)
 			throw new IllegalArgumentException("Value should be ContinuousMapping: this is " + value);
+		
 		final CyNetwork currentNetwork = appManager.getCurrentNetwork();
 		if (currentNetwork == null)
 			return;
 
-		ContinuousMapping<?, ?> mTest = (ContinuousMapping<?, ?>) value;
-
-		// TODO: error chekcing
-		mapping = (ContinuousMapping<Number, Number>) value;
+		mapping = (ContinuousMapping<K, V>) value;
 		@SuppressWarnings("unchecked")
 		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) mapping.getVisualProperty()
 				.getTargetDataType();
 		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-		this.editorPanel = new C2CMappingEditorPanel(vmm.getCurrentVisualStyle(), mapping, attr, appManager, vmm);
+		this.editorPanel = new C2CMappingEditorPanel<K, V>(vmm.getCurrentVisualStyle(), mapping, attr, appManager, vmm);
 	}
 }

@@ -54,26 +54,32 @@ import org.jdesktop.swingx.multislider.TrackRenderer;
 /**
  * Continuous-Continuous mapping editor.<br>
  * 
+ * This editor will be used for Number-to-Number mapping.
+ * 
  * <p>
  * This is a editor for continuous values, i.e., numbers.
  * </p>
  * 
  */
-public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEditorPanel<Double, V> {
+public class C2CMappingEditorPanel<K extends Number, V extends Number> extends ContinuousMappingEditorPanel<K, V> {
 
 	private final static long serialVersionUID = 1213748836613718L;
 
 	// Default value for below and above.
-	private final V DEF_BELOW_AND_ABOVE = (V) new Double(1f);
-	private final V FIVE = (V) new Double(5f);
+	private static final Number DEF_BELOW_AND_ABOVE = 1d;
+	private static final Number FIRST_LOCATION = 10d;
+	private static final Number SECOND_LOCATION = 30d;
 
-	private final V FIRST_LOCATION = (V) new Double(10f);
-	private final V SECOND_LOCATION = (V) new Double(30f);
-	
+	private final Class<K> columnType;
+	private final Class<V> vpValueType;
 
-	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<Double, V> mapping, final CyTable attr,
+	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping, final CyTable attr,
 			final CyApplicationManager appManager, final VisualMappingManager vmm) {
 		super(style, mapping, attr, appManager, vmm);
+		
+		columnType = mapping.getMappingColumnType();
+		vpValueType = mapping.getVisualProperty().getRange().getType();
+		
 		abovePanel.setVisible(false);
 		belowPanel.setVisible(false);
 
@@ -87,42 +93,78 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 
 		setPropertySpinner();
 	}
+	
+	private V convertToValue(final Number value) {
+		return convert(vpValueType, value);
+	}
+	
+	private K convertToColumnValue(final Number value) {
+		return convert(columnType, value);
+	}
+	
+	private <T> T convert(final Class<T> type, Number value) {
+		T converted = null;
+		if(type == Double.class) {
+			Double doubleValue = value.doubleValue();
+			converted = (T) doubleValue;
+		} else if(type == Integer.class) {
+			Integer intValue = value.intValue();
+			converted = (T) intValue;
+		} else if(type == Float.class) {
+			Float floatValue = value.floatValue();
+			converted = (T) floatValue;
+		} else if(type == Byte.class) {
+			Byte byteValue = value.byteValue();
+			converted = (T) byteValue;
+		} else if(type == Long.class){
+			Long longValue = value.longValue();
+			converted = (T) longValue;
+		} else if(type == Short.class) {
+			Short shortValue = value.shortValue();
+			converted = (T) shortValue;
+		} else {
+			throw new IllegalStateException("Could not covert Number.");
+		}
+		
+		return converted;
+	}
 
 	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
-
 		final TrackRenderer rend = slider.getTrackRenderer();
 
 		if (rend instanceof ContinuousTrackRenderer) {
 			rend.getRendererComponent(slider);
 
-			return ((ContinuousTrackRenderer<Double, V>) rend).getTrackGraphicIcon(iconWidth, iconHeight);
+			return ((ContinuousTrackRenderer) rend).getTrackGraphicIcon(iconWidth, iconHeight);
 		} else {
 			return null;
 		}
 	}
 
 	public ImageIcon getLegend(final int width, final int height) {
-
-		final ContinuousTrackRenderer<Double, V> rend = (ContinuousTrackRenderer<Double, V>) slider.getTrackRenderer();
+		final ContinuousTrackRenderer<K, V> rend = (ContinuousTrackRenderer) slider.getTrackRenderer();
 		rend.getRendererComponent(slider);
 
 		return rend.getLegend(width, height);
 	}
 
-	// FIXME
-	// // Add slider to the editor.
-	private void addSlider(Double position, V value) {
-
-		final Double maxValue = tracer.getMax(type);
-
+	
+	/**
+	 * Add New Slider to editor
+	 * 
+	 * @param position
+	 * @param value
+	 */
+	private void addSlider(Number position, Number value) {
+		final K maxValue = convertToColumnValue(tracer.getMax(type));
 		BoundaryRangeValues<V> newRange;
 
 		if (mapping.getPointCount() == 0) {
-			slider.getModel().addThumb(position.floatValue(), value);
+			slider.getModel().addThumb(position.floatValue(), convertToValue(value));
 
-			V five = (V) new Double(5);
-			newRange = new BoundaryRangeValues<V>(below, five, above);
-			final Double newKey = (maxValue / 2);
+			newRange = new BoundaryRangeValues<V>(below, convertToValue(5d), above);
+			final K newKey = convertToColumnValue((maxValue.doubleValue() / 2));
+			
 			mapping.addPoint(newKey, newRange);
 
 			slider.repaint();
@@ -132,18 +174,14 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 		}
 
 		// Add a new white thumb in the min.
-		slider.getModel().addThumb(position.floatValue(), value);
-
-		// Update continuous mapping
-		final Double newVal = maxValue;
+		slider.getModel().addThumb(position.floatValue(), convertToValue(value));
 
 		// Pick Up first point.
-		final ContinuousMappingPoint<Double, V> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
-
+		final ContinuousMappingPoint<K, V> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
 		final BoundaryRangeValues<V> previousRange = previousPoint.getRange();
 
 		V lesserVal = slider.getModel().getSortedThumbs().get(slider.getModel().getThumbCount() - 1).getObject();
-		V equalVal = FIVE;
+		V equalVal = convertToValue(5d);
 		V greaterVal = previousRange.greaterValue;
 
 		newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
@@ -160,7 +198,7 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
-		addSlider(100d, FIVE);
+		addSlider(100d, convertToValue(5d));
 	}
 
 	@Override
@@ -184,19 +222,19 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 
 		slider.updateUI();
 
-		final double minValue = tracer.getMin(type);
-		double actualRange = tracer.getRange(type);
+		final Number minValue = tracer.getMin(type);
+		Number actualRange = tracer.getRange(type);
 
 		BoundaryRangeValues<V> bound;
-		Double fraction;
+		Number fraction;
 
 		if (allPoints == null)
 			return;
 
-		for (ContinuousMappingPoint<Double, V> point : allPoints) {
+		for (ContinuousMappingPoint<K, V> point : allPoints) {
 			bound = point.getRange();
 
-			fraction = ((Number) ((point.getValue() - minValue) / actualRange)).floatValue() * 100d;
+			fraction = ((Number) ((point.getValue().doubleValue() - minValue.doubleValue()) / actualRange.doubleValue())).floatValue() * 100d;
 			slider.getModel().addThumb(fraction.floatValue(), bound.equalValue);
 		}
 
@@ -204,8 +242,8 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 			below = allPoints.get(0).getRange().lesserValue;
 			above = allPoints.get(allPoints.size() - 1).getRange().greaterValue;
 		} else {
-			below = DEF_BELOW_AND_ABOVE;
-			above = DEF_BELOW_AND_ABOVE;
+			below = convertToValue(DEF_BELOW_AND_ABOVE);
+			above = convertToValue(DEF_BELOW_AND_ABOVE);
 		}
 
 		/*
@@ -213,7 +251,7 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 		 */
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 
-		ContinuousTrackRenderer<Double, V> cRend = new ContinuousTrackRenderer<Double, V>(style, mapping, below, above,
+		ContinuousTrackRenderer<K, V> cRend = new ContinuousTrackRenderer<K, V>(style, mapping, below, above,
 				tracer, appManager);
 		cRend.addPropertyChangeListener(this);
 
@@ -224,9 +262,9 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(ContinuousMappingEditorPanel.BELOW_VALUE_CHANGED)) {
-			below = (V) evt.getNewValue();
+			below = convertToValue((Number)evt.getNewValue());
 		} else if (evt.getPropertyName().equals(ContinuousMappingEditorPanel.ABOVE_VALUE_CHANGED)) {
-			above = (V) evt.getNewValue();
+			above = convertToValue((Number)evt.getNewValue());
 		}
 	}
 
@@ -237,7 +275,7 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 		if (rend instanceof ContinuousTrackRenderer) {
 			rend.getRendererComponent(slider);
 
-			return ((ContinuousTrackRenderer<Double, V>) rend).getTrackGraphicIcon(iconWidth, iconHeight);
+			return ((ContinuousTrackRenderer) rend).getTrackGraphicIcon(iconWidth, iconHeight);
 		} else {
 			return null;
 		}
@@ -261,10 +299,10 @@ public class C2CMappingEditorPanel<V extends Number> extends ContinuousMappingEd
 
 		public void stateChanged(ChangeEvent e) {
 			
-			final Double newVal = spinnerModel.getNumber().doubleValue();
+			final Number newVal = spinnerModel.getNumber().doubleValue();
 			final int selectedIndex = slider.getSelectedIndex();
 
-			slider.getModel().getThumbAt(selectedIndex).setObject((V) newVal);
+			slider.getModel().getThumbAt(selectedIndex).setObject(convertToValue(newVal));
 
 			updateMap();
 			style.apply(appManager.getCurrentNetworkView());

@@ -78,9 +78,6 @@ import org.slf4j.LoggerFactory;
  * Abstract class for all Continuous Mapping Editors. This is the mapping from
  * Number to visual property value.
  * 
- * @param T
- *            type of the value associated with the thumb.
- * 
  */
 public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends JPanel implements
 		PropertyChangeListener {
@@ -102,7 +99,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected final ContinuousMapping<K, V> mapping;
 	protected final VisualProperty<V> type;
 	private final CyTable dataTable;
-	private final Class<K> dataType;
 
 	protected List<ContinuousMappingPoint<K, V>> allPoints;
 	private SpinnerNumberModel spinnerModel;
@@ -160,8 +156,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (!Number.class.isAssignableFrom(attrType))
 			throw new IllegalArgumentException("Cannot support attribute data type.  Numerical values only: "
 					+ attrType);
-		
-		this.dataType = (Class<K>) attrType;
 		
 		initComponents();
 		initRangeValues();

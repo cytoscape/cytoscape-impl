@@ -252,17 +252,17 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		// Remove old property
 		propertySheetPanel.removeProperty(prop);
 
-		// Create new one.
-		logger.debug("Creating new prop sheet objects for " + newMapping.getMappingColumnName() + ", "
-				+ vp.getDisplayName());
-
+		
+		
+		
+		
+		// Create new Property.
 		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyIdentifiable>) vp
 				.getTargetDataType());
 		VizMapperProperty<VisualProperty<V>, String, ?> newRootProp = vizMapPropertySheetBuilder.getPropertyBuilder()
 				.buildProperty(newMapping, category.getDisplayName(), propertySheetPanel, factory);
 
 		vizMapPropertySheetBuilder.removeProperty(prop, currentStyle);
-
 		final List<Property> propList = vizMapPropertySheetBuilder.getPropertyList(currentStyle);
 		propList.add(newRootProp);
 
