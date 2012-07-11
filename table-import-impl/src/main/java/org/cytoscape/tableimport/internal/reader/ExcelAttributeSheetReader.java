@@ -101,7 +101,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	 */
 	public void readTable(CyTable table) throws IOException {
 		Row row;
-		int rowCount = startLineNumber;
+		int rowCount = startLineNumber - 1;
 		String[] cellsInOneRow;
 
 		while ((row = sheet.getRow(rowCount)) != null) {
