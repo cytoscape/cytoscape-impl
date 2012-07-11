@@ -19,7 +19,10 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
 
 
 import java.awt.event.ActionEvent;
+import java.util.Map;
 import java.util.Set;
+
+import javax.swing.ImageIcon;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -27,6 +30,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.ServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
@@ -54,8 +58,9 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 	 * Initializes a new instance of <code>AnalyzeNetworkAction</code>.
 	 */
 	public AnalyzeNetworkAction(CyApplicationManager appMgr,CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm) {
-		super(Messages.AC_ANALYZE,appMgr,swingApp);
+			final VisualMappingManager vmm, final Map<String, String> configProps,
+			final CyNetworkViewManager networkViewManager) {
+		super(Messages.AC_ANALYZE,appMgr,swingApp, configProps, networkViewManager);
 		this.viewManager = viewManager;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;

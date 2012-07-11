@@ -1,30 +1,25 @@
 package de.mpg.mpi_inf.bioinf.netanalyzer;
 
-import org.cytoscape.application.swing.CySwingApplication;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.SMALL_ICON_URL;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
-
-import de.mpg.mpi_inf.bioinf.netanalyzer.CompareAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.PlotParameterAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.MapParameterAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.RemoveSelfLoopsAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ConnComponentAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.BatchAnalysisAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.RemDupEdgesAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.SettingsAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.AnalyzeSubsetAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
-import de.mpg.mpi_inf.bioinf.netanalyzer.AboutAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.LoadNetstatsAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.AnalyzeNetworkAction;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
-
-import org.cytoscape.application.swing.CyAction;
-
-
-import org.osgi.framework.BundleContext;
-
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -32,8 +27,9 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.osgi.framework.BundleContext;
 
-import java.util.Properties;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 
 
@@ -67,7 +63,19 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Builder object for custom Visual Style
 		VisualStyleBuilder vsBuilder = new VisualStyleBuilder(vsFactoryServiceRef, passthroughMappingFactoryRef, continupousMappingFactoryRef);
-		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef);
+		
+		Map<String,String> analyzerActionProps = new HashMap<String, String>();
+		analyzerActionProps.put(ID,"analyzeNetworkAction");
+		analyzerActionProps.put(PREFERRED_MENU,"Tools.Network Analyzer.Network Analysis");
+		analyzerActionProps.put(TITLE,"Analyze Network");
+		analyzerActionProps.put(MENU_GRAVITY,"9.0");
+		analyzerActionProps.put(TOOL_BAR_GRAVITY,"9.8");
+		analyzerActionProps.put(LARGE_ICON_URL,getClass().getResource("/networkAnalyzer24.png").toString());
+		analyzerActionProps.put(SMALL_ICON_URL,getClass().getResource("/networkAnalyzer16.png").toString());
+		analyzerActionProps.put(IN_TOOL_BAR,"true");
+		analyzerActionProps.put(TOOLTIP,"Analyze Network");
+		analyzerActionProps.put(ENABLE_FOR, "network");
+		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef);
 
 		LoadNetstatsAction loadNetstatsAction = new LoadNetstatsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef);
 		MapParameterAction mapParameterAction = new MapParameterAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzeNetworkAction);
