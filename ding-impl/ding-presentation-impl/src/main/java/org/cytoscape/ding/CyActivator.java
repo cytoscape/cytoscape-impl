@@ -180,7 +180,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
 		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
+		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
 		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Add Edge");
+		addEdgeNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.5");
 		registerService(bc, addEdgeNodeViewTaskFactory, NodeViewTaskFactory.class, addEdgeNodeViewTaskFactoryProps);
 
 		Properties dVisualLexiconProps = new Properties();
@@ -209,7 +211,7 @@ public class CyActivator extends AbstractCyActivator {
 		AddArrowTaskFactory addArrowTaskFactory = new AddArrowTaskFactory(arrowAnnotationFactory);
 		Properties addArrowTaskFactoryProps = new Properties();
 		addArrowTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		addArrowTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addArrowTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addArrowTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
 		addArrowTaskFactoryProps.setProperty(TITLE, "Arrow Annotation");
 		registerService(bc, addArrowTaskFactory, NetworkViewLocationTaskFactory.class, addArrowTaskFactoryProps);
@@ -221,7 +223,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties addImageTaskFactoryProps = new Properties();
 		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addImageTaskFactoryProps.setProperty(MENU_GRAVITY, "1.3");
 		addImageTaskFactoryProps.setProperty(TITLE, "Image Annotation");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
@@ -233,7 +235,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addShapeTaskFactoryProps.setProperty(MENU_GRAVITY, "1.4");
 		addShapeTaskFactoryProps.setProperty(TITLE, "Shape Annotation");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
@@ -246,7 +248,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties addTextTaskFactoryProps = new Properties();
 		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.5");
-		addTextTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addTextTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addTextTaskFactoryProps.setProperty(TITLE, "Text Annotation");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
@@ -259,7 +261,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties addBoundedTextTaskFactoryProps = new Properties();
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.6");
-		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Bounded Text Annotation");
 		registerService(bc, addBoundedTextTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                addBoundedTextTaskFactoryProps);
@@ -269,7 +271,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties editAnnotationTaskFactoryProps = new Properties();
 		editAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		editAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
-		editAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		editAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 		editAnnotationTaskFactoryProps.setProperty(TITLE, "Modify Annotation");
 		registerService(bc, editAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                editAnnotationTaskFactoryProps);
@@ -278,7 +280,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties moveAnnotationTaskFactoryProps = new Properties();
 		moveAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		moveAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.1");
-		moveAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		moveAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 		moveAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation");
 		registerService(bc, moveAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                moveAnnotationTaskFactoryProps);
@@ -288,7 +290,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties moveTFAnnotationTaskFactoryProps = new Properties();
 		moveTFAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		moveTFAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.1");
-		moveTFAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit.Reorder Annotations");
+		moveTFAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
 		moveTFAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation To Front");
 		registerService(bc, moveTFAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                moveTFAnnotationTaskFactoryProps);
@@ -297,7 +299,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties moveFAnnotationTaskFactoryProps = new Properties();
 		moveFAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		moveFAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.2");
-		moveFAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit.Reorder Annotations");
+		moveFAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
 		moveFAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation Forwards");
 		registerService(bc, moveFAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                moveFAnnotationTaskFactoryProps);
@@ -306,7 +308,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties moveBAnnotationTaskFactoryProps = new Properties();
 		moveBAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		moveBAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.3");
-		moveBAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit.Reorder Annotations");
+		moveBAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
 		moveBAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation Backwards");
 		registerService(bc, moveBAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                moveBAnnotationTaskFactoryProps);
@@ -315,7 +317,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties moveTBAnnotationTaskFactoryProps = new Properties();
 		moveTBAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		moveTBAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.3");
-		moveTBAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit.Reorder Annotations");
+		moveTBAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
 		moveTBAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation To Back");
 		registerService(bc, moveTBAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                moveTBAnnotationTaskFactoryProps);
@@ -324,7 +326,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties pullAnnotationTaskFactoryProps = new Properties();
 		pullAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		pullAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.3");
-		pullAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit.Reorder Annotations");
+		pullAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
 		pullAnnotationTaskFactoryProps.setProperty(TITLE, "Pull Annotation to Foreground Canvas");
 		registerService(bc, pullAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                pullAnnotationTaskFactoryProps);
@@ -333,7 +335,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties pushAnnotationTaskFactoryProps = new Properties();
 		pushAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		pushAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.4");
-		pushAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit.Reorder Annotations");
+		pushAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
 		pushAnnotationTaskFactoryProps.setProperty(TITLE, "Push Annotation to Background Canvas");
 		registerService(bc, pushAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                pushAnnotationTaskFactoryProps);
@@ -341,8 +343,8 @@ public class CyActivator extends AbstractCyActivator {
 		ResizeAnnotationTaskFactory resizeAnnotationTaskFactory = new ResizeAnnotationTaskFactory();
 		Properties resizeAnnotationTaskFactoryProps = new Properties();
 		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		resizeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.2");
-		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		resizeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.3");
+		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 		resizeAnnotationTaskFactoryProps.setProperty(TITLE, "Resize Annotation");
 		registerService(bc, resizeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                resizeAnnotationTaskFactoryProps);
@@ -352,7 +354,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties removeAnnotationTaskFactoryProps = new Properties();
 		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		removeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
-		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Delete");
+		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_DELETE_MENU);
 		removeAnnotationTaskFactoryProps.setProperty(TITLE, "Remove Annotation");
 		registerService(bc, removeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                removeAnnotationTaskFactoryProps);
@@ -362,7 +364,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties selectAnnotationTaskFactoryProps = new Properties();
 		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		selectAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
-		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, "Select");
+		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_SELECT_MENU);
 		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select/Unselect Annotation");
 		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                selectAnnotationTaskFactoryProps);

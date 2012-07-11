@@ -37,12 +37,14 @@ import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
@@ -70,7 +72,8 @@ import static org.cytoscape.work.ServiceProperties.*;
  * on TaskFactory services.
  */
 class PopupMenuHelper {
-	private double largeValue = Double.MAX_VALUE / 2.0;
+	// private double largeValue = Double.MAX_VALUE / 2.0;
+	private double largeValue = 500;  // This allows us to position some system menus at the end
 
 	// provides access to the necessary task factories and managers
 	private DGraphView m_view;
@@ -101,14 +104,20 @@ class PopupMenuHelper {
 				JPopupMenu menu = createMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
+				tracker.getGravityTracker(".").addMenuSeparator(-0.1);
+				tracker.getGravityTracker(".").addMenuSeparator(999.99);
+
 				for ( EdgeViewTaskFactory evtf : usableTFs ) {
 					Object context = null;
 					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, ev, m_view);
 					addMenuItem(ev, menu, provisioner, context, tracker, m_view.edgeViewTFs.get(evtf) );
 				}
 				
-				for (CyEdgeViewContextMenuFactory edgeCMF: m_view.cyEdgeViewContextMenuFactory.keySet())
-					menu.add(edgeCMF.createMenuItem(m_view , ev).getMenuItem());
+				for (CyEdgeViewContextMenuFactory edgeCMF: m_view.cyEdgeViewContextMenuFactory.keySet()) {
+					// menu.add(edgeCMF.createMenuItem(m_view , ev).getMenuItem());
+					CyMenuItem menuItem = edgeCMF.createMenuItem(m_view, ev);
+					addCyMenuItem(ev, menu, menuItem, tracker, m_view.cyEdgeViewContextMenuFactory.get(edgeCMF));
+				}
 				menu.show(invoker, x, y);
 
 			// execute the task directly if only one factory exists
@@ -133,14 +142,20 @@ class PopupMenuHelper {
 				JPopupMenu menu = createMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
+				tracker.getGravityTracker(".").addMenuSeparator(-0.1);
+				tracker.getGravityTracker(".").addMenuSeparator(999.99);
+
 				for ( NodeViewTaskFactory nvtf : usableTFs ) {
 					Object context = null;
 					NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, nv, m_view);
 					addMenuItem(nv, menu, provisioner, context, tracker, m_view.nodeViewTFs.get( nvtf ));
 				}
 
-				for (CyNodeViewContextMenuFactory nodeVMF: m_view.cyNodeViewContextMenuFactory.keySet())
-					menu.add(nodeVMF.createMenuItem(m_view, nv).getMenuItem());
+				for (CyNodeViewContextMenuFactory nodeVMF: m_view.cyNodeViewContextMenuFactory.keySet()) {
+					// menu.add(nodeVMF.createMenuItem(m_view, nv).getMenuItem());
+					CyMenuItem menuItem = nodeVMF.createMenuItem(m_view, nv);
+					addCyMenuItem(nv, menu, menuItem, tracker, m_view.cyNodeViewContextMenuFactory.get(nodeVMF));
+				}
 				menu.show(invoker, x, y);
 
 			// execute the task directly if only one factory exists
@@ -179,6 +194,9 @@ class PopupMenuHelper {
 		final JPopupMenu menu = createMenu("Double Click Menu: empty");
 		final JMenuTracker tracker = new JMenuTracker(menu);
 
+		tracker.getGravityTracker(".").addMenuSeparator(-0.1);
+		tracker.getGravityTracker(".").addMenuSeparator(999.99);
+
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
 		for ( NetworkViewTaskFactory nvtf : usableTFs ) {
 			NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
@@ -207,6 +225,9 @@ class PopupMenuHelper {
 		String toolTip = (String) (props.get(TOOLTIP));
 		String menuGravity = (String) (props.get(MENU_GRAVITY));
 		String prefAction = (String)(props.get(PREFERRED_ACTION));
+		boolean insertSepBefore = getBooleanProperty(props, INSERT_SEPARATOR_BEFORE);
+		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
+		boolean useCheckBoxMenuItem = getBooleanProperty(props, "useCheckBoxMenuItem");
 		double gravity;
 
 		// We really don't want to have double-click actions in our menus
@@ -216,13 +237,14 @@ class PopupMenuHelper {
 		if (menuGravity != null) {
 			gravity = Double.parseDouble(menuGravity);
 		} else  {
-			gravity = largeValue++;
+			//gravity = largeValue++;
+			gravity = -1;  // Alphabetize by default
 		}
 
-		// otherwise create our own popup menus 
-		boolean useCheckBoxMenuItem = false;
+		if (pref == null)
+			pref = APPS_MENU;
 
-		final Object useCheckBox = props.get("useCheckBoxMenuItem");
+		// otherwise create our own popup menus 
 		final Object targetVisualProperty = props.get("targetVP");
 		boolean isSelected = false;
 		if(view != null) {
@@ -243,27 +265,8 @@ class PopupMenuHelper {
 				isSelected = view.isValueLocked((VisualProperty<?>)targetVisualProperty);
 		}
 
-		if ( useCheckBox != null ) {
-			try {
-				useCheckBoxMenuItem = Boolean.parseBoolean(useCheckBox.toString());
-			} catch (Exception e) {
-				useCheckBoxMenuItem = false;
-			}
-		} else {
-			useCheckBoxMenuItem = false;
-		}
-
-		// no title and no preferred menu
-		if ( title == null && pref == null ) {
-			title = "Unidentified Task: " + tf.getName();
-			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
-
-		// title, but no preferred menu
-		} else if ( title != null && pref == null ) {
-			popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
-
-		// no title, but preferred menu
-		} else if ( title == null && pref != null ) {
+		// no title
+		if ( title == null ) {
 			int last = pref.lastIndexOf(".");
 
 			// if the preferred menu is delimited
@@ -276,19 +279,60 @@ class PopupMenuHelper {
 					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem)item; 
 					checkBox.setSelected(isSelected);
 				}
+				if (insertSepBefore)
+					gravityTracker.addMenuSeparator(gravity-.0001);
 				gravityTracker.addMenuItem(item, gravity);
+				if (insertSepAfter)
+					gravityTracker.addMenuSeparator(gravity+.0001);
 			// otherwise just use the preferred menu as the menuitem name
 			} else {
 				title = pref;
-				popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
+				// popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
+				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
+				gravityTracker.addMenuItem(item, gravity);
 			}
 
 		// title and preferred menu
 		} else {
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+			if (insertSepBefore)
+				gravityTracker.addMenuSeparator(gravity-.0001);
 			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem, toolTip), gravity);
+			if (insertSepAfter)
+				gravityTracker.addMenuSeparator(gravity+.0001);
 		}
 	}
+
+	/**
+	 * This method creates popup menu submenus and menu items based on the
+	 * "preferredMenu" keyword.  
+	 */
+	private void addCyMenuItem(View<?> view, JPopupMenu popup, CyMenuItem menuItem, JMenuTracker tracker, Map props) {
+		String pref = null;
+		if (props != null)
+			pref = (String)(props.get(PREFERRED_MENU));
+
+		if (pref == null)
+			pref = APPS_MENU;
+
+		// This is a *very* special case we used to help with Dynamic Linkout
+		if (pref.equals(menuItem.getMenuItem().getText()) && menuItem.getMenuItem() instanceof JMenu) {
+			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+			JMenu menu = (JMenu)menuItem.getMenuItem();
+			for (int menuIndex = 0; menuIndex < menu.getItemCount(); menuIndex++) {
+				JMenuItem item = menu.getItem(menuIndex);
+				gravityTracker.addMenuItem(item, -1);
+			}
+			return;
+		}
+
+		final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+		gravityTracker.addMenuItem(menuItem.getMenuItem(), menuItem.getMenuGravity());
+		return;
+	}
+	
+
 
 	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem, String toolTipText) {
 		JMenuItem item;
@@ -317,11 +361,24 @@ class PopupMenuHelper {
 		// otherwise figure out if any TaskFactories match the specified preferred action
 		java.util.List<T> usableTFs = new ArrayList<T>();
 		for ( T evtf : tfs.keySet() ) {
-			String prefAction = (String)(tfs.get( evtf ).get("preferredAction"));
+			String prefAction = (String)(tfs.get( evtf ).get(PREFERRED_ACTION));
 			if ( action != null && action.equals(prefAction) )
 				usableTFs.add(evtf);
 		}
 		return usableTFs;
+	}
+
+	/**
+ 	 * Get a boolean property
+ 	 */
+	private boolean getBooleanProperty(Map props, String property) {
+		String value = (String)(props.get(property)); // get the property
+		if (value == null || value.length() == 0) return false;
+		try {
+			return Boolean.parseBoolean(value);
+		} catch (Exception e) { 
+			return false; 
+		}
 	}
 
 	/**

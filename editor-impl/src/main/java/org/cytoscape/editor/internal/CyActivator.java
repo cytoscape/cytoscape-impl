@@ -9,6 +9,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -34,21 +35,23 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		CreateNetworkViewTaskFactory createNetworkViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
 
+		// NetworkView (empty space) context menus
 		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-//		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
-		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "2.5");
-		sifInterpreterTaskFactoryProps.setProperty(TITLE, "SIF Interpreter");
+		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
+		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "1.0");
+		sifInterpreterTaskFactoryProps.setProperty(IN_MENU_BAR, "false");
+		sifInterpreterTaskFactoryProps.setProperty(TITLE, "Edge (and possibly Nodes) using SIF...");
 		registerService(bc, sifInterpreterTaskFactory, NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
 
 		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
 		Properties networkViewLocationTaskFactoryProps = new Properties();
 		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_MENU, "Add");
+		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		networkViewLocationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
-		networkViewLocationTaskFactoryProps.setProperty(TITLE, "Add Node");
+		networkViewLocationTaskFactoryProps.setProperty(TITLE, "Node");
 		registerService(bc, networkViewLocationTaskFactory, NetworkViewLocationTaskFactory.class, networkViewLocationTaskFactoryProps);
 
 		// We need a place to hold the objects themselves
@@ -60,7 +63,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties copyTaskFactoryProps = new Properties();
 		copyTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		copyTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		copyTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		copyTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 		copyTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
 		copyTaskFactoryProps.setProperty(TITLE, "Copy");
 		copyTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0f");
@@ -72,7 +75,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties cutTaskFactoryProps = new Properties();
 		cutTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		cutTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		cutTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		cutTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 		cutTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
 		cutTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1f");
 		cutTaskFactoryProps.setProperty(TITLE, "Cut");
@@ -82,9 +85,9 @@ public class CyActivator extends AbstractCyActivator {
 		NetworkViewLocationTaskFactory pasteTaskFactory = 
 			new PasteTaskFactory(clipboardManager, cyEventHelperServiceRef, visualMappingManagerServiceRef);
 		Properties pasteTaskFactoryProps = new Properties();
-		cutTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
+		pasteTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		pasteTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		pasteTaskFactoryProps.setProperty(PREFERRED_MENU, "Edit");
+		pasteTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 		pasteTaskFactoryProps.setProperty(TITLE, "Paste");
 		pasteTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2f");
 		pasteTaskFactoryProps.setProperty(ACCELERATOR, "cmd v");
@@ -93,12 +96,35 @@ public class CyActivator extends AbstractCyActivator {
 
 		// At some point, add Paste Special.  Paste special would allow paste node only, paste copy, etc.
 
+		// NodeView context menus
+		// Copy node
+		NodeViewTaskFactory copyNodeTaskFactory = 
+			new CopyNodeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+		Properties copyNodeTaskFactoryProps = new Properties();
+		copyNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		copyNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+		copyNodeTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
+		copyNodeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0f");
+		copyNodeTaskFactoryProps.setProperty(TITLE, "Copy");
+		registerService(bc, copyNodeTaskFactory, NodeViewTaskFactory.class, copyNodeTaskFactoryProps);
+
+		// Cut node
+		NodeViewTaskFactory cutNodeTaskFactory = 
+			new CutNodeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+		Properties cutNodeTaskFactoryProps = new Properties();
+		cutNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		cutNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+		cutNodeTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
+		cutNodeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1f");
+		cutNodeTaskFactoryProps.setProperty(TITLE, "Cut");
+		registerService(bc, cutNodeTaskFactory, NodeViewTaskFactory.class, cutNodeTaskFactoryProps);
 
 		NodeViewTaskFactory addNestedNetworkTaskFactory = 
 			new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
 		Properties addNestedNetworkProps = new Properties();
 		addNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
-		addNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
+		addNestedNetworkProps.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
+		addNestedNetworkProps.setProperty(MENU_GRAVITY, "0.1f");
 		addNestedNetworkProps.setProperty(TITLE, "Add Nested Network");
 		registerService(bc, addNestedNetworkTaskFactory, NodeViewTaskFactory.class, addNestedNetworkProps);
 
@@ -106,15 +132,40 @@ public class CyActivator extends AbstractCyActivator {
 			new DeleteNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
 		Properties deleteNestedNetworkProps = new Properties();
 		deleteNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
-		deleteNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
-		deleteNestedNetworkProps.setProperty(TITLE, "Delete Nested Network");
+		deleteNestedNetworkProps.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
+		deleteNestedNetworkProps.setProperty(MENU_GRAVITY, "0.2f");
+		deleteNestedNetworkProps.setProperty(TITLE, "Remove Nested Network");
 		registerService(bc, deleteNestedNetworkTaskFactory, NodeViewTaskFactory.class, deleteNestedNetworkProps);
 		
 		NodeViewTaskFactory goToNestedNetworkTaskFactory = new GoToNestedNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyApplicationManagerServiceRef, createNetworkViewTaskFactoryServiceRef);
 		Properties goToNestedNetworkProps = new Properties();
 		goToNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
-		goToNestedNetworkProps.setProperty(PREFERRED_MENU, "Nested Network");
+		goToNestedNetworkProps.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
+		goToNestedNetworkProps.setProperty(MENU_GRAVITY, "0.3f");
 		goToNestedNetworkProps.setProperty(TITLE, "Go to Nested Network");
 		registerService(bc, goToNestedNetworkTaskFactory, NodeViewTaskFactory.class, goToNestedNetworkProps);
+
+		// EdgeView context menus
+		// Copy node
+		EdgeViewTaskFactory copyEdgeTaskFactory = 
+			new CopyEdgeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+		Properties copyEdgeTaskFactoryProps = new Properties();
+		copyEdgeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		copyEdgeTaskFactoryProps.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
+		copyEdgeTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
+		copyEdgeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0f");
+		copyEdgeTaskFactoryProps.setProperty(TITLE, "Copy");
+		registerService(bc, copyEdgeTaskFactory, EdgeViewTaskFactory.class, copyEdgeTaskFactoryProps);
+
+		// Cut edge
+		EdgeViewTaskFactory cutEdgeTaskFactory = 
+			new CutEdgeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+		Properties cutEdgeTaskFactoryProps = new Properties();
+		cutEdgeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		cutEdgeTaskFactoryProps.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
+		cutEdgeTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
+		cutEdgeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1f");
+		cutEdgeTaskFactoryProps.setProperty(TITLE, "Cut");
+		registerService(bc, cutEdgeTaskFactory, EdgeViewTaskFactory.class, cutEdgeTaskFactoryProps);
 	}
 }

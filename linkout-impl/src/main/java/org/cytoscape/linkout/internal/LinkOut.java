@@ -51,6 +51,7 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 
 import org.cytoscape.util.swing.OpenBrowser;
 
+import static org.cytoscape.work.ServiceProperties.*;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 
@@ -200,8 +201,14 @@ public class LinkOut implements PropertyUpdatedListener{
 			return null;
 		p = p + marker.length();
 		Properties dict = new Properties();
-		String menuKey = "LinkOut." + propKey.substring(p);
-		dict.setProperty("preferredMenu", menuKey);
+		String menuKey;
+		if (marker.equals(NODEMARKER))
+			menuKey = NODE_LINKOUTS_MENU + "." + propKey.substring(p);
+		else 
+			menuKey = EDGE_LINKOUTS_MENU + "." + propKey.substring(p);
+
+		dict.setProperty(PREFERRED_MENU, menuKey);
+		dict.setProperty(MENU_GRAVITY, "-1"); // Alphabetic ordering
 		return dict;
 	}
 
@@ -209,12 +216,14 @@ public class LinkOut implements PropertyUpdatedListener{
 
 		Properties ndict = new Properties();
 		ndict.setProperty("preferredTaskManager","menu");
+		ndict.setProperty(PREFERRED_MENU, NODE_DYNAMIC_LINKOUTS_MENU);
 		// menu titles are generated dynamically
 		CyNodeViewContextMenuFactory dynamicNodeUrls = new DynamicNodeLinkoutMenuFactory(browser, synTaskManager);
 		registrar.registerService(dynamicNodeUrls, CyNodeViewContextMenuFactory.class, ndict);
 
 		Properties edict = new Properties();
 		edict.setProperty("preferredTaskManager","menu");
+		ndict.setProperty(PREFERRED_MENU, EDGE_DYNAMIC_LINKOUTS_MENU);
 		// menu titles are generated dynamically
 		CyEdgeViewContextMenuFactory dynamicEdgeUrls = new DynamicEdgeLinkoutMenuFactory(browser, synTaskManager);
 		registrar.registerService(dynamicEdgeUrls, CyEdgeViewContextMenuFactory.class, edict);

@@ -1,21 +1,7 @@
 
 package org.cytoscape.task.internal;
 
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
 
@@ -577,6 +563,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,selectFromFileListTaskFactory,SelectFromFileListTaskFactory.class, selectFromFileListTaskFactoryProps);
 
 		Properties selectFirstNeighborsNodeViewTaskFactoryProps = new Properties();
+		selectFirstNeighborsNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_SELECT_MENU);
+		selectFirstNeighborsNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		selectFirstNeighborsNodeViewTaskFactoryProps.setProperty(TITLE,"Select First Neighbors (Undirected)");
 		registerService(bc,selectFirstNeighborsNodeViewTaskFactory,NodeViewTaskFactory.class, selectFirstNeighborsNodeViewTaskFactoryProps);
 		registerService(bc,selectFirstNeighborsNodeViewTaskFactory,SelectFirstNeighborsNodeViewTaskFactory.class, selectFirstNeighborsNodeViewTaskFactoryProps);
@@ -941,7 +929,7 @@ public class CyActivator extends AbstractCyActivator {
 		GroupNodesTaskFactoryImpl groupNodesTaskFactory = 
 			new GroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory);
 		Properties groupNodesTaskFactoryProps = new Properties();
-		groupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
+		groupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,NETWORK_GROUP_MENU);
 		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
 		groupNodesTaskFactoryProps.setProperty(TOOLTIP,"Group Selected Nodes Together");
 		groupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
@@ -955,7 +943,7 @@ public class CyActivator extends AbstractCyActivator {
 		UnGroupNodesTaskFactoryImpl unGroupTaskFactory = 
 			new UnGroupNodesTaskFactoryImpl(cyGroupManager);
 		Properties unGroupNodesTaskFactoryProps = new Properties();
-		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
+		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,NETWORK_GROUP_MENU);
 		unGroupNodesTaskFactoryProps.setProperty(TITLE,"Ungroup Selected Nodes");
 		unGroupNodesTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Selected Nodes");
 		unGroupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
@@ -969,7 +957,7 @@ public class CyActivator extends AbstractCyActivator {
 		GroupNodeContextTaskFactoryImpl collapseGroupTaskFactory = 
 			new GroupNodeContextTaskFactoryImpl(cyGroupManager, true);
 		Properties collapseGroupTaskFactoryProps = new Properties();
-		collapseGroupTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
+		collapseGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
 		collapseGroupTaskFactoryProps.setProperty(TITLE,"Collapse Group");
 		collapseGroupTaskFactoryProps.setProperty(TOOLTIP,"Collapse Grouped Nodes");
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -981,7 +969,7 @@ public class CyActivator extends AbstractCyActivator {
 		GroupNodeContextTaskFactoryImpl expandGroupTaskFactory = 
 			new GroupNodeContextTaskFactoryImpl(cyGroupManager, false);
 		Properties expandGroupTaskFactoryProps = new Properties();
-		expandGroupTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
+		expandGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
 		expandGroupTaskFactoryProps.setProperty(TITLE,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(TOOLTIP,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -993,7 +981,7 @@ public class CyActivator extends AbstractCyActivator {
 		UnGroupNodesTaskFactoryImpl unGroupNodesTaskFactory = 
 			new UnGroupNodesTaskFactoryImpl(cyGroupManager);
 		Properties unGroupTaskFactoryProps = new Properties();
-		unGroupTaskFactoryProps.setProperty(PREFERRED_MENU,"Groups");
+		unGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
 		unGroupTaskFactoryProps.setProperty(TITLE,"Ungroup Nodes");
 		unGroupTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Nodes");
 		unGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");

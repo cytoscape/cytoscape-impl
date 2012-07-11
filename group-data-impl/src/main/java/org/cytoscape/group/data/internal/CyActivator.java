@@ -10,6 +10,7 @@ import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NodeViewTaskFactory;
+import static org.cytoscape.work.ServiceProperties.*;
 import org.cytoscape.work.TaskFactory;
 
 import org.osgi.framework.BundleContext;
@@ -44,12 +45,12 @@ public class CyActivator extends AbstractCyActivator {
 			                               cyGroupSettings);
 
     Properties settingsProps = new Properties();
-    settingsProps.setProperty("id","settingsFactory");
-    settingsProps.setProperty("preferredMenu","Edit.Preferences");
-    settingsProps.setProperty("title", "Group Preferences...");
-    settingsProps.setProperty("menuGravity","4.0");
-    settingsProps.setProperty("toolBarGravity","4");
-    settingsProps.setProperty("inToolBar","false");
+    settingsProps.setProperty(ID,"settingsFactory");
+    settingsProps.setProperty(PREFERRED_MENU,"Edit.Preferences");
+    settingsProps.setProperty(TITLE, "Group Preferences...");
+    settingsProps.setProperty(MENU_GRAVITY,"4.0");
+    settingsProps.setProperty(TOOL_BAR_GRAVITY,"4");
+    settingsProps.setProperty(IN_TOOL_BAR,"false");
     registerService(bc,settingsFactory,TaskFactory.class, settingsProps);
 
 		// Now register our node-specific settings menu
@@ -59,13 +60,13 @@ public class CyActivator extends AbstractCyActivator {
 			                                   cyApplicationManager, 
 			                                   cyGroupSettings);
     settingsProps = new Properties();
-    settingsProps.setProperty("id","groupNodeSettingsFactory");
-    settingsProps.setProperty("preferredMenu","Preferences");
-    settingsProps.setProperty("title", "Group Preferences...");
-		settingsProps.setProperty("preferredAction", "NEW");
-		settingsProps.setProperty("command", "group-node-settings");
-		settingsProps.setProperty("commandNamespace", "network-view");
-    settingsProps.setProperty("menuGravity","4.0");
+    settingsProps.setProperty(ID,"groupNodeSettingsFactory");
+    settingsProps.setProperty(PREFERRED_MENU,NODE_PREFERENCES_MENU);
+    settingsProps.setProperty(MENU_GRAVITY, "-1");
+    settingsProps.setProperty(TITLE, "Group Preferences...");
+		settingsProps.setProperty(PREFERRED_ACTION, "NEW");
+		settingsProps.setProperty(COMMAND, "group-node-settings");
+		settingsProps.setProperty(COMMAND_NAMESPACE, "network-view");
     registerService(bc,nodeSettingsFactory,
 		                NodeViewTaskFactory.class, settingsProps);
 

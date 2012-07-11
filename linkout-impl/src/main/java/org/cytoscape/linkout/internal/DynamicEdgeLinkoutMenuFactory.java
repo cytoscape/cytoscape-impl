@@ -9,6 +9,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import static org.cytoscape.work.ServiceProperties.*;
 import org.cytoscape.work.SynchronousTaskManager;
 
 
@@ -26,7 +27,7 @@ public class DynamicEdgeLinkoutMenuFactory implements CyEdgeViewContextMenuFacto
 	public CyMenuItem createMenuItem(CyNetworkView netView,
 			View<CyEdge> edgeView) {
 			DynamicSupport support = new DynamicSupport(browser, synTaskManager);
-			CyMenuItem menuItem = new CyMenuItem(new JMenuItem("LinkOut Dynamic"), 0);
+			CyMenuItem menuItem = new CyMenuItem(new JMenuItem(EDGE_DYNAMIC_LINKOUTS_MENU), 1050); // Gravity comes from ServiceProperties
 			support.createSubMenus(menuItem, netView.getModel(),edgeView.getModel());
 			return menuItem;
 	}

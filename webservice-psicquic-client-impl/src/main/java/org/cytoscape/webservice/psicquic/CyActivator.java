@@ -13,6 +13,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ExpandNodeContextMenuFactory;
+import static org.cytoscape.work.ServiceProperties.*;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -51,6 +52,8 @@ public class CyActivator extends AbstractCyActivator {
 				psicquicClient.getRestClient(), psicquicClient.getRegistryManager(), taskManager, layoutManager, builder);
 		final Properties nodeProp = new Properties();
 		nodeProp.setProperty("preferredTaskManager", "menu");
+		nodeProp.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+		nodeProp.setProperty(MENU_GRAVITY, "10.0");
 		registerService(bc, expandNodeContextMenuFactory, CyNodeViewContextMenuFactory.class, nodeProp);
 	}
 }
