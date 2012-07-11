@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.apache.lucene.store.RAMDirectory;
 import org.cytoscape.application.CyApplicationManager;
@@ -79,7 +80,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		
+				
 		logger.debug("Index and search start.");
 		
 		// Give the task a title.
@@ -116,6 +117,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		
 		showResults(queryHandler, taskMonitor);
 		updateView();
+		
 	}
 
 	/**
@@ -139,16 +141,22 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	private void showResults(final EnhancedSearchQuery queryHandler, final TaskMonitor taskMonitor) {
 		if (network == null || network.getNodeList().size() == 0)
 			return;
-		
+
 		int nodeHitCount = queryHandler.getNodeHitCount();
 		int edgeHitCount = queryHandler.getEdgeHitCount();
 		if (nodeHitCount == 0 && edgeHitCount == 0) {
 			taskMonitor.setStatusMessage("Could not find any match.");
 			taskMonitor.setTitle("Search Finished");
 			taskMonitor.setProgress(1.0);
-			
-			JOptionPane
-					.showMessageDialog(null, "Could not find any matches.", "No Match.", JOptionPane.WARNING_MESSAGE);
+
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					JOptionPane
+					.showMessageDialog(null, "Could not find any matches.", "No Match", JOptionPane.WARNING_MESSAGE);
+					logger.warn("Could not find any matches.");
+				}
+			});
 			return;
 		}
 
