@@ -138,7 +138,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc,CyRootNetworkManager.class);		
 		
 		StreamUtilImpl streamUtil = new StreamUtilImpl(cyPropertyServiceRef);
-		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix (.pvals) File", DataCategory.TABLE, streamUtil);
+		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix File", DataCategory.TABLE, streamUtil);
 		
 		// Always register CYS filters from higher to lower version!
 		BasicCyFileFilter cys3Filter = new SessionFileFilter(new String[]{"cys"}, new String[]{"application/zip"}, "Cytoscape 3 Session (.cys) File", DataCategory.SESSION, "3.0.0", streamUtil);
