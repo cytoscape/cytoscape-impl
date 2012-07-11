@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.swing.JOptionPane;
+
 import org.cytoscape.util.swing.OpenBrowser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,16 +65,20 @@ public class OpenBrowserImpl implements OpenBrowser {
 	@Override
 	public boolean openURL(final String url) {
 		final Desktop desktop = Desktop.getDesktop();
+		
 		try {
 			URI uri = new URI(url);
 			desktop.browse(uri);
+			throw new IOException("test");
 		} catch (IOException ioe) {
-			logger.warn("Could not open web browser: ", ioe);
-			return false;
+			JOptionPane.showInputDialog(null, "There was an error while attempting to open the system browser. "
+					+ "Please copy and paste the following URL into your browser:", url);
+			logger.info("Error opening system browser; displaying copyable link instead");
 		} catch (URISyntaxException e) {
 			logger.warn("This URI is invalid: " + url, e);
 			return false;
 		}
+		
 		return true;
 	}
 }
