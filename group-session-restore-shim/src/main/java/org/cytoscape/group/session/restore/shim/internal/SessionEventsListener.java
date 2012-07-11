@@ -88,14 +88,22 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 			// Create the group
 			final CyGroup group = groupFactory.createGroup(net, n, true);
 
-			// Add in the missing external edges if we're collsped
+			// Add in the missing external edges if we're collapsed
 			// CyRow groupNodeRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			if (rnRow.isSet(EXTERNAL_EDGE_ATTRIBUTE)) {
-				List<Long> externalSUIDs = rnRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
+				Class<?> listType = rnRow.getTable().getColumn(EXTERNAL_EDGE_ATTRIBUTE).getListElementType();
+				List<?> externalIDs = rnRow.getList(EXTERNAL_EDGE_ATTRIBUTE, listType);
 				List<CyEdge> externalEdges = new ArrayList<CyEdge>();
-				for (Long oldSUID: externalSUIDs) {
-					CyEdge newEdge = sess.getObject(oldSUID, CyEdge.class);
-					externalEdges.add(newEdge);
+				for (Object oldId: externalIDs) {
+					CyEdge newEdge = null;
+					
+					if (oldId instanceof Long) // Cy3 old edge IDs are SUIDs
+						newEdge = sess.getObject((Long)oldId, CyEdge.class);
+					else // Cy2 uses edge labels as IDs
+						newEdge = sess.getObject(oldId.toString(), CyEdge.class);
+						
+					if (newEdge != null)
+						externalEdges.add(newEdge);
 				}
 				group.addEdges(externalEdges);
 			}
