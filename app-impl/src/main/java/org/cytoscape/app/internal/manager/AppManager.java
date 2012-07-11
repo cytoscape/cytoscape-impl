@@ -398,6 +398,12 @@ public class AppManager {
 		// Let the listeners know that an app has been uninstalled
 		fireAppsChangedEvent();
 	}
+
+    public void disableApp(App app) {
+		
+		// Let the listeners know that an app has been disabled
+		fireAppsChangedEvent();
+    }
 	
 	private void fireAppsChangedEvent() {
 		AppsChangedEvent appEvent = new AppsChangedEvent(this);
@@ -616,6 +622,11 @@ public class AppManager {
 	}
 	
 	private void installAppsInDirectory(File directory, boolean ignoreDuplicateBundleApps) {
+        // Temporary fix to get the App Manager working--this should be removed later (Samad)
+        if (!directory.exists()) {
+            logger.error("Attempting to load from a directory that does not exist: " + directory.getAbsolutePath());
+            return;
+        }
 
 		// Parse App objects from the given directory
 		Set<App> parsedApps = obtainAppsFromDirectory(directory, ignoreDuplicateBundleApps);

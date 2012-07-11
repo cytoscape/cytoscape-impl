@@ -167,10 +167,6 @@ public class BundleApp extends App {
 		// to the uninstalled apps directory
 		// defaultUninstall(appManager);
 		
-		if (this.getStatus() == AppStatus.UNINSTALLED) {
-			return;
-		}
-		
 		try {
 			File uninstallDirectoryTargetFile = new File(appManager.getUninstalledAppsPath() + File.separator + getAppFile().getName());
 			
@@ -193,7 +189,7 @@ public class BundleApp extends App {
 		
 		this.getAppTemporaryInstallFile().delete();
 		
-		this.setStatus(AppStatus.UNINSTALLED);
+		this.setStatus(AppStatus.TO_BE_UNINSTALLED);
 	}
 
 	/**

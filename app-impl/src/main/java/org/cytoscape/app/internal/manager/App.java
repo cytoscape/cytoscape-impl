@@ -78,8 +78,9 @@ public abstract class App {
 	 */
 	public enum AppStatus{
 		INSTALLED("Installed"),
-		TO_BE_UNINSTALLED("Uninstall-on-restart"),
-		UNINSTALLED("Uninstalled");
+		TO_BE_UNINSTALLED("Will be uninstalled after restart"),
+		TO_BE_DISABLED("Will be disabled after restart"),
+		DISABLED("Disabled");
 		
 		String readableStatus;
 		
@@ -102,7 +103,7 @@ public abstract class App {
 		
 		appValidated = false;
 		officialNameObtained = false;
-		this.status = AppStatus.UNINSTALLED;
+		this.status = null;
 	}
 	
 	/**
@@ -229,7 +230,7 @@ public abstract class App {
 						if (appFile.getParentFile().getCanonicalPath().equals(uninstalledAppsPath)) {
 							
 						// Forgive collision if other app is not installed
-						} else if (conflictingApp.getStatus() == AppStatus.UNINSTALLED) {
+						} else if (conflictingApp.getStatus() != AppStatus.INSTALLED) {
 						
 						// Ignore collisions with self
 						// } else if (conflictingApp.getAppFile().equals(appFile)) {
