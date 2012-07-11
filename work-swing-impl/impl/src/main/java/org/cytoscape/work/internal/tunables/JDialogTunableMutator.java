@@ -65,7 +65,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 
 		// found the special case of the file handle cancel panel,
 		// which means we should quit now
-		else if ( panel == FILE_HANDLER_CANCEL_PANEL )
+		else if ( panel == HANDLER_CANCEL_PANEL )
 			return false;
 
 		else

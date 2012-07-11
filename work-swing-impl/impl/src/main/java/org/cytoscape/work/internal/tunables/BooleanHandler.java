@@ -3,6 +3,7 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
@@ -11,11 +12,13 @@ import java.lang.reflect.Method;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 
 
 /**
@@ -23,10 +26,13 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  *
  * @author pasteur
  */
-public class BooleanHandler extends AbstractGUITunableHandler implements ActionListener {
+public class BooleanHandler extends AbstractGUITunableHandler implements ActionListener, DirectlyPresentableTunableHandler{
 	private JCheckBox checkBox;
 	private boolean horizontal = false;
-
+	private JOptionPane optionPane;
+	private boolean useOptionPane = false;
+	private int selectedOption;
+	
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>Boolean</code> type
 	 *
@@ -84,13 +90,35 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 			e.printStackTrace();
 		}
 	}
+	
+
+	@Override
+	public boolean setTunableDirectly(Window possibleParent) {
+		selectedOption = setOptionPaneGUI(possibleParent);
+		useOptionPane = true;
+		handle();
+		useOptionPane = false;
+		return selectedOption != JOptionPane.CANCEL_OPTION;
+	}
+
+	@SuppressWarnings("static-access")
+	private int setOptionPaneGUI(Window possibleParent) {
+		
+		//optionPane = new JOptionPane(getDescription());
+		//optionPane.setOptionType(JOptionPane.YES_NO_OPTION);
+		return  optionPane.showOptionDialog(possibleParent, getDescription(), "", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+	}
 
 	/**
 	 * To set the current value represented in the <code>GUIHandler</code> (in a <code>JCheckBox</code>)to the value of this <code>Boolean</code> object
 	 */
 	public void handle() {
 		try {
-			final Boolean setting = checkBox.isSelected();
+			final Boolean setting;
+			if (useOptionPane)
+				setting = selectedOption == JOptionPane.YES_OPTION ? true : false;
+			else
+				setting = checkBox.isSelected();
 			setValue(setting);
 		} catch (Exception e) {
 			e.printStackTrace();

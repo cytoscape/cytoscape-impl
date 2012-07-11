@@ -32,6 +32,7 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class FileHandler extends AbstractGUITunableHandler {
+public class FileHandler extends AbstractGUITunableHandler  implements DirectlyPresentableTunableHandler{
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileHandler.class);
 	
@@ -213,12 +214,14 @@ public class FileHandler extends AbstractGUITunableHandler {
 						  .addContainerGap()));
 	}
 
+	
 	/**
 	 * This method allows us to bypass the normal tunable support when the only
 	 * tunable in a Task is a File.  This allows us to pop up a file dialog
 	 * without first presenting the tunable dialog.
 	 */
-	boolean setFileTunableDirectly(Window possibleParent) {
+	@Override
+	public boolean setTunableDirectly (Window possibleParent) {
 		this.possibleParent = possibleParent;
 		setGui();
 		myFileActionListener action = new myFileActionListener();

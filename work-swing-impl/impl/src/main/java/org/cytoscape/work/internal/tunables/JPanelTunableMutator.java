@@ -28,6 +28,7 @@ import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.internal.tunables.utils.XorPanel;
 import org.cytoscape.work.swing.GUITunableHandler;
+import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
 
 	/** Do not ever modify this panel. Used for special case handling of files. */
-	protected final JPanel FILE_HANDLER_CANCEL_PANEL = new JPanel();
+	protected final JPanel HANDLER_CANCEL_PANEL = new JPanel();
 
 	/**
 	 * Constructor.
@@ -155,18 +156,19 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			return null; 
 		}
 
-		// This is special case handling for when the only tunable specified
-		// in a task is a file, in which case we don't want a full tunable dialog
-		// and all of the extra clicks, instead we just want a file dialog.
-		if ( handlers.size() == 1 && handlers.get(0) instanceof FileHandler ) {
-			FileHandler fh = (FileHandler) handlers.get(0);
-			boolean fileFound = fh.setFileTunableDirectly(possibleParent);
+		// This is special case handling for when there is only one tunable specified
+		// in a task, in which case we don't want a full tunable dialog
+		// and all of the extra clicks, instead we just want to show the special dialog.
+		if ( handlers.size() == 1 && handlers.get(0) instanceof DirectlyPresentableTunableHandler ) {
+			DirectlyPresentableTunableHandler fh = (DirectlyPresentableTunableHandler) handlers.get(0);
+			boolean fileFound = fh.setTunableDirectly(possibleParent);
 			if ( fileFound )
 				return null; 
 			else
-				return FILE_HANDLER_CANCEL_PANEL;
+				return HANDLER_CANCEL_PANEL;
 		} 
-
+		
+		
 		if (!panelMap.containsKey(handlers)) {
 			final String MAIN = " ";
 			Map<String, JPanel> panels = new HashMap<String, JPanel>();
