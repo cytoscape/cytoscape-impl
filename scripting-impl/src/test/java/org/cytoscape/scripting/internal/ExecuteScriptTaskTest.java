@@ -17,7 +17,8 @@ public class ExecuteScriptTaskTest {
 	}
 
 	@Test
-	public void test() {
+	public void testJavaScript() {
+		// TODO: implement this
 	}
 
 }
