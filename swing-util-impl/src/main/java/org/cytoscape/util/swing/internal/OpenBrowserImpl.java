@@ -69,10 +69,9 @@ public class OpenBrowserImpl implements OpenBrowser {
 		try {
 			URI uri = new URI(url);
 			desktop.browse(uri);
-			throw new IOException("test");
 		} catch (IOException ioe) {
 			JOptionPane.showInputDialog(null, "There was an error while attempting to open the system browser. "
-					+ "Please copy and paste the following URL into your browser:", url);
+					+ "\nPlease copy and paste the following URL into your browser:", url);
 			logger.info("Error opening system browser; displaying copyable link instead");
 		} catch (URISyntaxException e) {
 			logger.warn("This URI is invalid: " + url, e);
