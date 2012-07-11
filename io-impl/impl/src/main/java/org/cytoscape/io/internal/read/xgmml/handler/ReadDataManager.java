@@ -27,6 +27,7 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -455,26 +456,54 @@ public class ReadDataManager {
         	CyNode actualSrc = net.getNode(source.getSUID());
         	CyNode actualTgt = net.getNode(target.getSUID());
         	
-        	if (getDocumentVersion() < 3.0 || !isSessionFormat()) {
-        		if (actualSrc == null || actualTgt == null) {
-	        		// The nodes might have been added to other sub-networks, but not to the current one.
-	        		// If that is the case, the root network should have all both nodes,
-	        		// so let's just add the edge to the root
-					logger.warn("Cannot add edge \"" + id
-							+ "\" to the expected sub-network, because it does not contain the source or target node." +
-							" Will try to add the edge to the root-network instead.");
-	        		
-	        		net = getRootNetwork();
-					
-	        		if (actualSrc == null)
-	        			actualSrc = net.getNode(source.getSUID());
-	        		
-	        		if (actualTgt == null)
-	        			actualTgt = net.getNode(target.getSUID());
+        	List<String> extEdgeIds = null; // For 2.x groups
+        	
+        	if ( (getDocumentVersion() < 3.0 || !isSessionFormat()) && (actualSrc == null || actualTgt == null) ) {
+        		// The nodes might have been added to other sub-networks, but not to the current one.
+        		// If that is the case, the root network should have both nodes,
+        		// so let's just add the edge to the root.
+				logger.warn("Cannot add edge \"" + id
+						+ "\" to the expected sub-network, because it does not contain the source or target node." +
+						" Will try to add the edge to the root-network instead.");
+        		
+        		net = getRootNetwork();
+				
+        		if (actualSrc == null)
+        			actualSrc = net.getNode(source.getSUID());
+        		if (actualTgt == null)
+        			actualTgt = net.getNode(target.getSUID());
+        		
+        		// Does the current subnetwork belong to a 2.x group?
+        		if (getDocumentVersion() < 3.0 && !compoundNodeStack.isEmpty() && networkStack.size() > 1) {
+        			// Get the current compound node
+        			final CyNode grNode = compoundNodeStack.peek();
+        			// Get the network of that node (the current one is its network pointer)
+        			final CyNetwork grNet = cache.getNetwork(networkStack.elementAt(networkStack.size() - 2));
+        			
+        			// Check for the group's metadata attribute
+        			final CyRow grhRow = grNet.getRow(grNode, CyNetwork.HIDDEN_ATTRS);
+        			
+        			if (grhRow.isSet("__groupState")) { // It's a group!
+        				// Add extra metadata for external edges, so that the information is not lost
+        				final CyRow rnRow = getRootNetwork().getRow(grNode, CyNetwork.HIDDEN_ATTRS);
+        				
+        				if (rnRow.getTable().getColumn("__externalEdges") == null)
+        					rnRow.getTable().createListColumn("__externalEdges", String.class, false);
+        				
+        				extEdgeIds = rnRow.getList("__externalEdges", String.class);
+        						
+        				if (extEdgeIds == null) {
+        					extEdgeIds = new ArrayList<String>();
+        					rnRow.set("__externalEdges", extEdgeIds);
+        				}
+        			}
         		}
         	}
         	
         	edge = net.addEdge(actualSrc, actualTgt, directed);
+        	
+        	if (extEdgeIds != null)
+        		extEdgeIds.add(id.toString());
         }
         
         // Add to internal cache:

@@ -26,6 +26,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -115,29 +116,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 4, 2);
-		
-		// Test 2.x group parsed as network pointer
-		CyNode gn = null;
-		int npCount = 0;
-		
-		for (CyNode n : net.getNodeList()) {
-			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState")) {
-				gn = n;
-				if (++npCount > 1) fail("There should be only one group node!");
-			} else { // The other nodes have no network pointer!
-				assertNull(n.getNetworkPointer());
-			}
-		}
-		
-		assertNotNull("The group node cannot be found", gn);
-		CyNetwork np = gn.getNetworkPointer();
-		assertNotNull(np);
-		assertEquals(2, np.getNodeCount());
-		assertEquals(1, np.getEdgeCount());
-		
-		// Check if the nested graph's attribute was imported to the network pointer
-		CyRow grNetrow = np.getRow(np);
-		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
+		check2xGroupMetadata(net);
 	}
 	
 	@Test
@@ -146,29 +125,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
-		
-		// Test 2.x group parsed as network pointer
-		CyNode gn = null;
-		int npCount = 0;
-		
-		for (CyNode n : net.getNodeList()) {
-			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState")) {
-				gn = n;
-				if (++npCount > 1) fail("There should be only one group node!");
-			} else { // The other nodes have no network pointer!
-				assertNull(n.getNetworkPointer());
-			}
-		}
-		
-		assertNotNull("The group node cannot be found", gn);
-		CyNetwork np = gn.getNetworkPointer();
-		assertNotNull(np);
-		assertEquals(2, np.getNodeCount());
-		assertEquals(1, np.getEdgeCount());
-		
-		// Check if the nested graph's attribute was imported to the network pointer
-		CyRow grNetrow = np.getRow(np);
-		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
+		check2xGroupMetadata(net);
 	}
 
 	@Test
@@ -241,6 +198,40 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertEquals("SansSerif,plain,12", GenericXGMMLReader.convertOldFontValue("SansSerif-0-12.1"));
 		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif.bold-0.0-12.0"));
 		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif,bold,12"));
+	}
+	
+	private void check2xGroupMetadata(final CyNetwork net) {
+		// Test 2.x group parsed as network pointer
+		CyNode gn = null;
+		int npCount = 0;
+		
+		for (CyNode n : net.getNodeList()) {
+			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState")) {
+				gn = n;
+				if (++npCount > 1) fail("There should be only one group node!");
+			} else { // The other nodes have no network pointer!
+				assertNull(n.getNetworkPointer());
+			}
+		}
+		
+		assertNotNull("The group node cannot be found", gn);
+		CyNetwork np = gn.getNetworkPointer();
+		assertNotNull(np);
+		assertEquals(2, np.getNodeCount());
+		assertEquals(1, np.getEdgeCount());
+		
+		// Check if the nested graph's attribute was imported to the network pointer
+		CyRow grNetrow = np.getRow(np);
+		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
+		
+		// Check external edges metadata (must be added by the reader!)
+		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(np);
+		CyRow rnRow = rootNet.getRow(gn, CyNetwork.HIDDEN_ATTRS);
+		List<String> extEdgeIds = rnRow.getList("__externalEdges", String.class);
+		
+		assertNotNull(extEdgeIds);
+		assertEquals(1, extEdgeIds.size());
+		assertEquals("node1 (DirectedEdge) node2", extEdgeIds.get(0));
 	}
 	
 	private List<CyNetworkView> getViews(String file) throws Exception {
