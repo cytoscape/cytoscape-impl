@@ -225,7 +225,7 @@ public class AppParser {
 			Manifest osgiManifest = jarFile.getManifest();
 			
 			if (osgiManifest != null) {
-				if (osgiManifest.getMainAttributes().getValue("Export-Package") != null) {
+				if (osgiManifest.getMainAttributes().getValue("Bundle-SymbolicName") != null) {
 
 					osgiMetadataFound = true;
 				}
