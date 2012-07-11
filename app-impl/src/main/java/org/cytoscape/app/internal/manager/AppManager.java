@@ -546,7 +546,7 @@ public class AppManager {
 	
 	
 	public String getKarafDeployDirectory() {
-		String current = System.getProperties().get("user.dir").toString();
+		String current = System.getProperties().get("cytoscape.home").toString();
 		
 		String deployDirectoryPath = current + File.separator + "framework" 
 			+ File.separator + "deploy";
