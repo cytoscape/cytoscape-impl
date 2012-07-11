@@ -325,7 +325,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-		handleNetworkModified(e.getNetwork());
+		quickFind.removeNetwork(e.getNetwork());
 	}
 
 	@Override
