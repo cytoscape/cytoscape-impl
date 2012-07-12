@@ -3,6 +3,7 @@ package org.cytoscape.app.internal.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -115,110 +116,14 @@ public class AppParser {
 		boolean xmlParseFailed = false;
 		boolean osgiMetadataFound = false; // Treat the jar as an OSGi bundle if OSGi metadata is found
 		
-		final List<BundleApp.KarafFeature> featuresList = new LinkedList<BundleApp.KarafFeature>();
 	
 		// Look for features specified in an xml file
-		Enumeration<JarEntry> entries = jarFile.entries();
-		while (entries.hasMoreElements()) {
-			JarEntry jarEntry = entries.nextElement();
-			
-			if (jarEntry.getName().endsWith("xml")) {
-
-				try {
-					SAXParserFactory spf = SAXParserFactory.newInstance();
-				    spf.setNamespaceAware(true);
-				    XMLReader xmlReader = spf.newSAXParser().getXMLReader();
-
-				    xmlReader.setContentHandler(new ContentHandler() {
-						
-				    	private Stack<String> qNames = new Stack<String>();
-				    	
-						@Override
-						public void startPrefixMapping(String arg0, String arg1)
-								throws SAXException {
-						}
-						
-						@Override
-						public void startElement(String uri, String localName, String qName,
-								Attributes atts) throws SAXException {
-							
-							qNames.push(qName);
-
-							if (qNames.size() == 2
-									&& qNames.get(0).equalsIgnoreCase("features")
-									&& qNames.get(1).equalsIgnoreCase("feature")) {
-								
-								BundleApp.KarafFeature feature = new BundleApp.KarafFeature();
-								
-								// Obtain the feature name and version
-								feature.featureName = atts.getValue("name");
-								feature.featureVersion = atts.getValue("version");
-								
-								featuresList.add(feature);
-							}
-						}
-						
-						@Override
-						public void startDocument() throws SAXException {
-						}
-						
-						@Override
-						public void skippedEntity(String arg0) throws SAXException {
-						}
-						
-						@Override
-						public void setDocumentLocator(Locator arg0) {
-						}
-						
-						@Override
-						public void processingInstruction(String arg0, String arg1)
-								throws SAXException {
-						}
-						
-						@Override
-						public void ignorableWhitespace(char[] arg0, int arg1, int arg2)
-								throws SAXException {
-						}
-						
-						@Override
-						public void endPrefixMapping(String arg0) throws SAXException {
-						}
-						
-						@Override
-						public void endElement(String arg0, String arg1, String arg2)
-								throws SAXException {
-							qNames.pop();
-						}
-						
-						@Override
-						public void endDocument() throws SAXException {
-						}
-						
-						@Override
-						public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
-						}
-					});
-				    
-				    InputStream inputStream = null;
-				    try {
-				    	inputStream = jarFile.getInputStream(jarEntry);
-				    	xmlReader.parse(new InputSource(inputStream));
-				    	
-				    } finally {
-				    	if (inputStream != null) {
-				    		inputStream.close();
-				    	}
-				    }
-				    
-				} catch (SAXException e) {
-					xmlParseFailed = true;
-				} catch (IOException e) {
-					xmlParseFailed = true;
-				} catch (ParserConfigurationException e) {
-					xmlParseFailed = true;
-				}
-			}
-		}
+		List<BundleApp.KarafFeature> featuresList = Collections.emptyList();
+        try {
+            featuresList = getFeaturesXmlFromJar(jarFile);
+        } catch (AppParsingException e) {
+            xmlParseFailed = true;
+        }
 		
 		// Check if a manifest that contains OSGi metadata is present
 		try {
@@ -333,4 +238,99 @@ public class AppParser {
 		
 		
 	}
+
+    private static List<BundleApp.KarafFeature> getFeaturesXmlFromJar(final JarFile jarFile) throws AppParsingException
+    {
+        final List<BundleApp.KarafFeature> featuresList = new LinkedList<BundleApp.KarafFeature>();
+		final Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			JarEntry jarEntry = entries.nextElement();
+			
+			if (jarEntry.getName().endsWith("xml")) {
+
+				try {
+					SAXParserFactory spf = SAXParserFactory.newInstance();
+				    spf.setNamespaceAware(true);
+				    XMLReader xmlReader = spf.newSAXParser().getXMLReader();
+
+				    xmlReader.setContentHandler(new ContentHandler() {
+						
+				    	private Stack<String> qNames = new Stack<String>();
+				    	
+						@Override
+						public void startPrefixMapping(String arg0, String arg1) throws SAXException { }
+						
+						@Override
+						public void startElement(String uri, String localName, String qName,
+								Attributes atts) throws SAXException {
+							
+							qNames.push(qName);
+
+							if (qNames.size() == 2
+									&& qNames.get(0).equalsIgnoreCase("features")
+									&& qNames.get(1).equalsIgnoreCase("feature")) {
+								
+								BundleApp.KarafFeature feature = new BundleApp.KarafFeature();
+								
+								// Obtain the feature name and version
+								feature.featureName = atts.getValue("name");
+								feature.featureVersion = atts.getValue("version");
+								
+								featuresList.add(feature);
+							}
+						}
+						
+						@Override
+						public void startDocument() throws SAXException { }
+						
+						@Override
+						public void skippedEntity(String arg0) throws SAXException { }
+						
+						@Override
+						public void setDocumentLocator(Locator arg0) { }
+						
+						@Override
+						public void processingInstruction(String arg0, String arg1) throws SAXException { }
+						
+						@Override
+						public void ignorableWhitespace(char[] arg0, int arg1, int arg2) throws SAXException { }
+						
+						@Override
+						public void endPrefixMapping(String arg0) throws SAXException { }
+						
+						@Override
+						public void endElement(String arg0, String arg1, String arg2) throws SAXException {
+							qNames.pop();
+						}
+						
+						@Override
+						public void endDocument() throws SAXException { }
+						
+						@Override
+						public void characters(char[] arg0, int arg1, int arg2) throws SAXException { }
+					});
+				    
+				    InputStream inputStream = null;
+				    try {
+				    	inputStream = jarFile.getInputStream(jarEntry);
+				    	xmlReader.parse(new InputSource(inputStream));
+				    	
+				    } finally {
+				    	if (inputStream != null) {
+				    		inputStream.close();
+				    	}
+				    }
+				    
+				} catch (SAXException e) {
+					throw new AppParsingException("Failed to read features.xml", e);
+				} catch (IOException e) {
+					throw new AppParsingException("Failed to read features.xml", e);
+				} catch (ParserConfigurationException e) {
+					throw new AppParsingException("Failed to read features.xml", e);
+				}
+			}
+		}
+
+        return featuresList;
+    }
 }
