@@ -203,7 +203,8 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 
 		List<Object> theObjList = theCategory.getCategoryOrDataSource();
 
-		theObjList.add(pDataSource);
+		if(!theObjList.contains(pDataSource))
+			theObjList.add(pDataSource);
 		
 		org.cytoscape.io.datasource.DataSource data = convertToDataSource(pBookmarks,pCategoryName,pDataSource);
 
@@ -226,10 +227,10 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		DataCategory dataType;
 		URL url = null;
 		
-		if(pCategoryName == "network")
+		if(pCategoryName.contentEquals("network") )
 		{
 			dataType = DataCategory.NETWORK;
-		}else if(pCategoryName == "table"){
+		}else if(pCategoryName.contentEquals("table") ){
 			dataType = DataCategory.TABLE;
 		}else {
 			return null;
