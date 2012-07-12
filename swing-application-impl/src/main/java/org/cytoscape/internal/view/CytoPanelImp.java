@@ -99,9 +99,11 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private static final int WEST_MIN_HEIGHT = 500;
 	private static final int SOUTH_MIN_WIDTH = 500;
 	private static final int SOUTH_MIN_HEIGHT = 50;
+	
 	private static final int EAST_MIN_WIDTH = 100;
-	private static final int EAST_MAX_WIDTH = 500;
+	private static final int EAST_MAX_WIDTH = 1500;
 	private static final int EAST_MIN_HEIGHT = 100;
+	private static final int EAST_MAX_HEIGHT = 600;
 	
 	/**
 	 * The JTabbedPane we hide.
@@ -542,9 +544,10 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			if (panel.getSize().width == 0 && panel.getSize().height == 0)
 				return;
 
-			if (panel.getPreferredSize() != null)
+			if (panel.getPreferredSize() != null) {
 				width = panel.getPreferredSize().width;
-
+			}
+			
 			if (compassDirection == CytoPanelName.WEST) {
 				if (width > WEST_MAX_WIDTH)
 					width = WEST_MAX_WIDTH;
@@ -556,6 +559,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 					width = EAST_MAX_WIDTH;
 				else if (width < EAST_MIN_WIDTH)
 					width = EAST_MIN_WIDTH;
+				
 				jsp.setDividerLocation(jsp.getSize().width
 				                       -jsp.getInsets().right
 				                       -jsp.getInsets().left
@@ -728,7 +732,12 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			//  Add CytoPanel to the New External Frame
 			Container contentPane = externalFrame.getContentPane();
 			contentPane.add(this, BorderLayout.CENTER);
-			externalFrame.setSize(this.getSize());
+			final Dimension windowSize = this.getSelectedComponent().getPreferredSize();
+			
+			int height = windowSize.height;
+			if(height>EAST_MAX_HEIGHT)
+				windowSize.height = EAST_MAX_HEIGHT;
+			externalFrame.setSize(windowSize);
 			externalFrame.validate();
 
 			// set proper title of frame
@@ -740,7 +749,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 			// set float label text
 			floatLabel.setText("");
-
+			
 			// set location of external frame
 			setLocationOfExternalFrame(externalFrame);
 			// lets show it
