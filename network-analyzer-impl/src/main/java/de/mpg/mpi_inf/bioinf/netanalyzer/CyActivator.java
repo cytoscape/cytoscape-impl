@@ -21,6 +21,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -29,6 +30,8 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanel;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 
@@ -42,6 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 
+		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
@@ -57,6 +61,9 @@ public class CyActivator extends AbstractCyActivator {
 		// Create network from selection
 		NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactoryServiceRef = getService(bc,NewNetworkSelectedNodesAndEdgesTaskFatory.class);
 		DialogTaskManager taskManager = getService(bc, DialogTaskManager.class);
+		
+		final ResultPanelFactory resultPanel = new ResultPanelFactory(cyServiceRegistrarServiceRef);
+		registerAllServices(bc, resultPanel, new Properties());
 		
 		// FIXME refactor this code
 		Plugin plugin = new Plugin(cySwingApplicationServiceRef);
@@ -75,9 +82,9 @@ public class CyActivator extends AbstractCyActivator {
 		analyzerActionProps.put(IN_TOOL_BAR,"true");
 		analyzerActionProps.put(TOOLTIP,"Analyze Network");
 		analyzerActionProps.put(ENABLE_FOR, "network");
-		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef);
+		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef, resultPanel);
 
-		LoadNetstatsAction loadNetstatsAction = new LoadNetstatsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef);
+		LoadNetstatsAction loadNetstatsAction = new LoadNetstatsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, resultPanel);
 		MapParameterAction mapParameterAction = new MapParameterAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzeNetworkAction);
 		
 		AboutAction aboutAction = new AboutAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
@@ -92,6 +99,8 @@ public class CyActivator extends AbstractCyActivator {
 		RemDupEdgesAction remDupEdgesAction = new RemDupEdgesAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		RemoveSelfLoopsAction removeSelfLoopsAction = new RemoveSelfLoopsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		SettingsAction settingsAction = new SettingsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
+		
+		
 		
 		registerService(bc,analyzeNetworkAction,CyAction.class, new Properties());
 		registerService(bc,analyzeSubsetAction,CyAction.class, new Properties());

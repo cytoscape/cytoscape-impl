@@ -17,9 +17,10 @@
 
 package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
 
-import java.awt.Container;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -33,13 +34,17 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
@@ -61,12 +66,15 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
  * 
  * @author Yassen Assenov
  */
-public class AnalysisDialog extends JDialog implements ActionListener, WindowListener {
+public class AnalysisResultPanel extends JPanel implements ActionListener {
 
+	private ResultPanel resultPanel;
+	private final ResultPanelFactory resultPanelFactory;
+	
 	private final CyNetworkViewManager viewManager;
 	private final VisualMappingManager vmm;
 	private final VisualStyleBuilder vsBuilder;
-	
+		
 	/**
 	 * Dialog window for choosing a filename when saving and loading .netstats files.
 	 */
@@ -76,7 +84,9 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 		netstatsDialog.addChoosableFileFilter(SupportedExtensions.netStatsFilter);
 	}
 
-	private final Frame aOwner;
+	private final Window aOwner;
+
+	private CySwingApplication swingApplication;
 	
 	/**
 	 * Initializes a new instance of <code>AnalysisDialog</code>.
@@ -95,15 +105,16 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 	 *            Analyzer class that performed the topological analysis. Set this to <code>null</code> if the
 	 *            results were loaded from a file rather than just computed.
 	 */
-	public AnalysisDialog(Frame aOwner, NetworkStats aStats, NetworkAnalyzer aAnalyzer, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm) {
-		super(aOwner, Messages.DT_ANALYSIS + aStats.getTitle(), false);
+	public AnalysisResultPanel(final CySwingApplication swingApplication, Window aOwner, final ResultPanelFactory panelFactory, NetworkStats aStats, NetworkAnalyzer aAnalyzer,
+			final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
 		this.aOwner = aOwner;
 		this.viewManager = viewManager;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
+		this.swingApplication = swingApplication;
+		this.resultPanelFactory =panelFactory;
 
-		stats = aStats;
+		this.stats = aStats;
 		boolean paramMapping = false;
 		if (aAnalyzer != null) {
 			final PluginSettings s = SettingsSerializer.getPluginSettings();
@@ -113,19 +124,27 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 			saved = true;
 		}
 		initControls(paramMapping);
-		addWindowListener(this);
-
-		pack();
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setResizable(false);
-		setLocationRelativeTo(aOwner);
+		final CyNetwork network = stats.getNetwork();
+		final String networkTitle = network.getRow(network).get(CyNetwork.NAME, String.class);
+		resultPanel = panelFactory.registerPanel(this, "Network Statistics of " + networkTitle);
+		
+		final CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+		
+		int panelCount = cytoPanel.getCytoPanelComponentCount();
+		for(int i=0; i<panelCount; i++) {
+			Component panel = cytoPanel.getComponentAt(i);
+			if(panel.equals(resultPanel)) {
+				cytoPanel.setSelectedIndex(i);
+				break;
+			}
+		}
+		
+		final CytoPanelState curState = cytoPanel.getState();
+		if (curState == CytoPanelState.HIDE)
+			cytoPanel.setState(CytoPanelState.FLOAT);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		final Object src = e.getSource();
 		if (src == saveButton) {
@@ -135,76 +154,31 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.WindowListener#windowActivated(java.awt.event.WindowEvent)
-	 */
-	public void windowActivated(WindowEvent e) {
-		// Event is not processed
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.WindowListener#windowDeactivated(java.awt.event.WindowEvent)
-	 */
-	public void windowDeactivated(WindowEvent e) {
-		// Event is not processed
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.WindowListener#windowOpened(java.awt.event.WindowEvent)
-	 */
-	public void windowOpened(WindowEvent e) {
-		// Event is not processed
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.WindowListener#windowClosing(java.awt.event.WindowEvent)
-	 */
-	public void windowClosing(WindowEvent e) {
+	public void panelClosing() {
 		if (!saved) {
 			int choice = JOptionPane.showConfirmDialog(this, Messages.SM_CLOSEWARN, Messages.DT_CLOSEWARN,
 					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-			if (choice == JOptionPane.NO_OPTION) {
+			if (choice == JOptionPane.NO_OPTION)
 				return;
+		}
+		
+		// Close this panel
+		
+		final CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+		int panelCount = cytoPanel.getCytoPanelComponentCount();
+		for(int i=0; i<panelCount; i++) {
+			Component panel = cytoPanel.getComponentAt(i);
+			if(panel.equals(resultPanel)) {
+				resultPanelFactory.removePanel(resultPanel);
+				resultPanel = null;
+				break;
 			}
 		}
-		setVisible(false);
-		dispose();
+//		dispose();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.WindowListener#windowClosed(java.awt.event.WindowEvent)
-	 */
-	public void windowClosed(WindowEvent e) {
-		// Event is not processed
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.WindowListener#windowIconified(java.awt.event.WindowEvent)
-	 */
-	public void windowIconified(WindowEvent e) {
-		// Event is not processed
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.WindowListener#windowDeiconified(java.awt.event.WindowEvent)
-	 */
-	public void windowDeiconified(WindowEvent e) {
-		// Event is not processed
-	}
+	
 
 	/**
 	 * Creates and lays out the controls inside this dialog.
@@ -214,16 +188,15 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 	 */
 	private void initControls(boolean enableParameterMapping) {
 		final boolean useExpandable = SettingsSerializer.getPluginSettings().getExpandable();
-		final Container contentPane = getContentPane();
-		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		final JTabbedPane tabs = useExpandable ? null : new JTabbedPane();
 
 		final JComponent simpleStatsPanel = new SimpleStatsPanel(stats);
 		if (useExpandable) {
 			simpleStatsPanel.setBorder(BorderFactory.createTitledBorder(Messages.DI_SIMPLEPARAMS));
-			contentPane.add(simpleStatsPanel);
+			this.add(simpleStatsPanel);
 		} else {
-			contentPane.add(tabs);
+			this.add(tabs);
 			tabs.addTab(Messages.DI_SIMPLEPARAMS, simpleStatsPanel);
 		}
 
@@ -239,7 +212,7 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 				ComplexParamVisualizer v = (ComplexParamVisualizer) con.newInstance(conParams);
 				final Decorator[] decs = Decorators.get(id);
 				if (useExpandable) {
-					contentPane.add(new ChartExpandablePanel(this, id, v, (i == 0), decs));
+					this.add(new ChartExpandablePanel(this, id, v, (i == 0), decs));
 				} else {
 					tabs.addTab(v.getTitle(), new ChartDisplayPanel(this, id, v, decs));
 				}
@@ -248,20 +221,33 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 			}
 		}
 
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
+		this.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
 		saveButton = new JButton(Messages.DI_SAVESTATISTICS);
 		saveButton.addActionListener(this);
 		visualizeButton = new JButton(Messages.DI_VISUALIZEPARAMETER);
 		visualizeButton.setEnabled(false);
 		visualizeButton.addActionListener(this);
 		visualizeButton.setEnabled(enableParameterMapping);
+		
+		closeButton = new JButton("Close Tab");
+		closeButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				panelClosing();
+			}
+		});
+		
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.CENTER, Utils.BORDER_SIZE, 0));
 		Utils.equalizeSize(saveButton, visualizeButton);
 		buttonPane.add(saveButton);
 		buttonPane.add(Box.createHorizontalStrut(Utils.BORDER_SIZE * 2));
 		buttonPane.add(visualizeButton);
-		contentPane.add(buttonPane);
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
+		buttonPane.add(closeButton);
+		this.add(buttonPane);
+		this.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
+		
+		
 	}
 
 	/**
@@ -338,5 +324,6 @@ public class AnalysisDialog extends JDialog implements ActionListener, WindowLis
 	 * Network parameters instance displayed in this dialog.
 	 */
 	private NetworkStats stats;
-
+	
+	private JButton closeButton;
 }

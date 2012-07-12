@@ -17,7 +17,9 @@
 
 package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
 
+import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.Window;
 
 import javax.swing.JDialog;
 
@@ -50,9 +52,9 @@ public abstract class VisualizeParameterDialog extends JDialog {
 	 *            first column contains all NetworkAnalyzer attributes, and the second one other
 	 *            attributes.
 	 */
-	protected VisualizeParameterDialog(Frame aOwner, String aName, boolean modal,
+	protected VisualizeParameterDialog(Window aOwner, String aName, boolean modal,
 			CyNetwork aNetwork, String[][] aNodeAttr, String[][] aEdgeAttr) {
-		super(aOwner, aName, modal);
+		super(aOwner, aName, Dialog.ModalityType.APPLICATION_MODAL);
 		network = aNetwork;
 		nodeAttr = aNodeAttr;
 		edgeAttr = aEdgeAttr;

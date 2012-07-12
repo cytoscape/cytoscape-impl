@@ -22,6 +22,7 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
@@ -78,7 +79,7 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	 * @throws NullPointerException
 	 *             If <code>aNetwork</code> is <code>null</code>.
 	 */
-	public MapParameterDialog(Frame aOwner, CyNetwork aNetwork, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+	public MapParameterDialog(Window aOwner, CyNetwork aNetwork, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
 			final VisualMappingManager vmm, String[][] aNodeAttr, String[][] aEdgeAttr) {
 		super(aOwner, Messages.DT_MAPPARAM, true, aNetwork, aNodeAttr, aEdgeAttr);
 

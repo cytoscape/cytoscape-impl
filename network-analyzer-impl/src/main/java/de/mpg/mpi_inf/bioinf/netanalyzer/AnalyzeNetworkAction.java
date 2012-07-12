@@ -38,6 +38,8 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInspection;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStatus;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.InterpretationDialog;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanel;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
@@ -53,17 +55,19 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 	private final CyNetworkViewManager viewManager;
 	private final VisualMappingManager vmm;
 	private final VisualStyleBuilder vsBuilder;
+	private final ResultPanelFactory resultPanelFactory;
 
 	/**
 	 * Initializes a new instance of <code>AnalyzeNetworkAction</code>.
 	 */
 	public AnalyzeNetworkAction(CyApplicationManager appMgr,CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
 			final VisualMappingManager vmm, final Map<String, String> configProps,
-			final CyNetworkViewManager networkViewManager) {
+			final CyNetworkViewManager networkViewManager, final ResultPanelFactory resultPanelFactory) {
 		super(Messages.AC_ANALYZE,appMgr,swingApp, configProps, networkViewManager);
 		this.viewManager = viewManager;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
+		this.resultPanelFactory = resultPanelFactory;
 		
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
@@ -116,7 +120,7 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 			} else {
 				analyzer = new UndirNetworkAnalyzer(aNetwork, aNodeSet, interpr);
 			}
-			return new AnalysisExecutor(swingApp.getJFrame(), analyzer, viewManager, vsBuilder, vmm);
+			return new AnalysisExecutor(swingApp, swingApp.getJFrame(), resultPanelFactory, analyzer, viewManager, vsBuilder, vmm);
 		} catch (IllegalArgumentException ex) {
 			Utils.showInfoBox(swingApp.getJFrame(),Messages.DT_INFO, Messages.SM_NETWORKEMPTY);
 			return null;

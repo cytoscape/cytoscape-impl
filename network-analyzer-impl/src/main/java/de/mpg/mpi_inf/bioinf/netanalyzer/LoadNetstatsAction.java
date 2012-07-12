@@ -18,6 +18,7 @@
 package de.mpg.mpi_inf.bioinf.netanalyzer;
 
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +35,8 @@ import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStats;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.StatsSerializer;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisResultPanel;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
@@ -50,16 +52,18 @@ public class LoadNetstatsAction extends NetAnalyzerAction {
 	private final CyNetworkViewManager viewManager;
 	private final VisualMappingManager vmm;
 	private final VisualStyleBuilder vsBuilder;
+	private final ResultPanelFactory resultPanelFactory;
 
 	/**
 	 * Initializes a new instance of <code>LoadNetstatsAction</code>.
 	 */
 	public LoadNetstatsAction(CyApplicationManager appMgr,CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm) {
+			final VisualMappingManager vmm, final ResultPanelFactory resultPanelFactory) {
 		super(Messages.AC_LOAD,appMgr,swingApp);
 		this.viewManager = viewManager;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
+		this.resultPanelFactory = resultPanelFactory;
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
@@ -72,7 +76,7 @@ public class LoadNetstatsAction extends NetAnalyzerAction {
 	public void actionPerformed(ActionEvent e) {
 		try {
 			final Frame desktop = swingApp.getJFrame();
-			final JFileChooser dialog = AnalysisDialog.netstatsDialog;
+			final JFileChooser dialog = AnalysisResultPanel.netstatsDialog;
 			final int openIt = dialog.showOpenDialog(desktop);
 			if (openIt == JFileChooser.APPROVE_OPTION) {
 				openNetstats(desktop, dialog.getSelectedFile());
@@ -97,10 +101,10 @@ public class LoadNetstatsAction extends NetAnalyzerAction {
 	 * @param aFile
 	 *            Network statistics file to be open.
 	 */
-	public void openNetstats(Frame owner, File aFile) {
+	public void openNetstats(Window owner, File aFile) {
 		try {
 			final NetworkStats stats = StatsSerializer.load(aFile);
-			final AnalysisDialog d = new AnalysisDialog(owner, stats, null, viewManager, vsBuilder, vmm);
+			final AnalysisResultPanel d = new AnalysisResultPanel(swingApp, owner, resultPanelFactory, stats, null, viewManager, vsBuilder, vmm);
 			d.setVisible(true);
 		} catch (IOException ex) {
 			// FileNotFoundException, IOException

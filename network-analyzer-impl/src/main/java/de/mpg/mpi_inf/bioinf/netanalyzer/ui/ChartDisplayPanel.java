@@ -17,6 +17,7 @@
 
 package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
 
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,6 +31,7 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -73,7 +75,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 	 * @param aVisualizer
 	 *            Visualizer of the complex parameter to be displayed.
 	 */
-	public ChartDisplayPanel(JDialog aOwner, String aID, ComplexParamVisualizer aVisualizer) {
+	public ChartDisplayPanel(Container aOwner, String aID, ComplexParamVisualizer aVisualizer) {
 		this(aOwner, aID, aVisualizer, null);
 	}
 
@@ -89,7 +91,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 	 * @param aDecorators
 	 *            Decorator instances for the complex parameter visualized.
 	 */
-	public ChartDisplayPanel(JDialog aOwner, String aID, ComplexParamVisualizer aVisualizer,
+	public ChartDisplayPanel(Container aOwner, String aID, ComplexParamVisualizer aVisualizer,
 			Decorator[] aDecorators) {
 		super();
 		visualizer = aVisualizer;
@@ -97,7 +99,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 		decorators = aDecorators;
 		originalParam = aVisualizer.getComplexParam();
 		chart = aVisualizer.createControl();
-		ownerDialog = aOwner;
+		//ownerDialog = aOwner;
 
 		initControls();
 	}

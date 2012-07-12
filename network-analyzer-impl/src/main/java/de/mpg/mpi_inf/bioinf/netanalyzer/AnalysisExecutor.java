@@ -17,6 +17,7 @@
 
 package de.mpg.mpi_inf.bioinf.netanalyzer;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -26,12 +27,15 @@ import javax.swing.JFrame;
 import javax.swing.ProgressMonitor;
 import javax.swing.Timer;
 
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisResultPanel;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanel;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 /**
@@ -46,7 +50,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
  * <li>stops the analyzer if the user presses the &quot;Cancel&quot; button of
  * the dialog;</li>
  * <li>(optionally) creates an
- * {@link de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog} to display
+ * {@link de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisResultPanel} to display
  * results once the analysis completes successfully.</li>
  * </ul>
  * </p>
@@ -60,6 +64,10 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	private final CyNetworkViewManager viewManager;
 	private final VisualMappingManager vmm;
 	private final VisualStyleBuilder vsBuilder;
+	
+	private final ResultPanelFactory resultPanelFactory;
+	private final Window owner;
+	private final CySwingApplication swingApplication;
 
 	/**
 	 * Initializes a new instance of <code>AnalysisExecutor</code>.
@@ -78,10 +86,12 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	 * @param aAnalyzer
 	 *            <code>NetworkAnalyzer</code> instance to be started.
 	 */
-	public AnalysisExecutor(JFrame aDesktop, NetworkAnalyzer aAnalyzer, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+	public AnalysisExecutor(final CySwingApplication swingApplication, final Window owner, final ResultPanelFactory resultPanelFactory, NetworkAnalyzer aAnalyzer, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
 			final VisualMappingManager vmm) {
-		desktop = aDesktop;
+		this.resultPanelFactory = resultPanelFactory;
 		analyzer = aAnalyzer;
+		this.owner = owner;
+		this.swingApplication = swingApplication;
 		
 		this.viewManager = viewManager;
 		this.vmm = vmm;
@@ -90,7 +100,7 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 		listeners = new ArrayList<AnalysisListener>();
 		showDialog = true;
 		int maxProgress = analyzer.getMaxProgress();
-		monitor = new ProgressMonitor(aDesktop, Messages.DT_ANALYZING, null, 0, maxProgress);
+		monitor = new ProgressMonitor(owner, Messages.DT_ANALYZING, null, 0, maxProgress);
 		monitor.setMillisToDecideToPopup(1500);
 		timer = new Timer(1000, this);
 	}
@@ -120,7 +130,7 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 			monitor.close();
 			if (showDialog) {
 				try {
-					AnalysisDialog d = new AnalysisDialog(desktop, analyzer.getStats(), analyzer, viewManager, vsBuilder, vmm);
+					AnalysisResultPanel d = new AnalysisResultPanel(swingApplication, owner, resultPanelFactory, analyzer.getStats(), analyzer, viewManager, vsBuilder, vmm);
 					d.setVisible(true);
 				} catch (InnerException ex) {
 					// NetworkAnalyzer internal error
@@ -191,11 +201,6 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	 * Timer responsible for regular updates of the progress monitor.
 	 */
 	private Timer timer;
-
-	/**
-	 * Parent (owner) of the dialog(s) displayed.
-	 */
-	private JFrame desktop;
 
 	/**
 	 * Flag indicating if an analysis results dialog must be displayed after the

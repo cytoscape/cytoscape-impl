@@ -26,6 +26,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.border.TitledBorder;
 
@@ -54,7 +55,7 @@ public class ChartExpandablePanel extends ChartDisplayPanel
 	 * @param aID ID of complex parameter to be displayed.
 	 * @param aVisualizer Visualizer of the complex parameter to be displayed.
 	 */
-	public ChartExpandablePanel(JDialog aOwner, String aID, ComplexParamVisualizer aVisualizer) {
+	public ChartExpandablePanel(JComponent aOwner, String aID, ComplexParamVisualizer aVisualizer) {
 		this(aOwner, aID, aVisualizer, true, null);
 	}
 
@@ -66,7 +67,7 @@ public class ChartExpandablePanel extends ChartDisplayPanel
 	 * @param aVisualizer Visualizer of the complex parameter to be displayed.
 	 * @param aExpanded Flag indicating if the panel must be initially expanded or hidden.
 	 */
-	public ChartExpandablePanel(JDialog aOwner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded) {
+	public ChartExpandablePanel(JComponent aOwner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded) {
 		this(aOwner, aID, aVisualizer, aExpanded, null);
 	}
 
@@ -79,7 +80,7 @@ public class ChartExpandablePanel extends ChartDisplayPanel
 	 * @param aExpanded Flag indicating if the panel must be initially expanded or hidden.
 	 * @param aDecorators Decorator instances for the complex parameter visualized.
 	 */
-	public ChartExpandablePanel(JDialog aOwner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded,
+	public ChartExpandablePanel(JComponent aOwner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded,
 		Decorator[] aDecorators) {
 		super(aOwner, aID, aVisualizer, aDecorators);
 

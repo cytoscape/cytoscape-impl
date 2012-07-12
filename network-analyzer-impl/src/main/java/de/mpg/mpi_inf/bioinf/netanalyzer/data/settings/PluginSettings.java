@@ -48,7 +48,7 @@ public class PluginSettings extends Settings {
 	 * Checks if expandable chart panels must be used.
 	 * 
 	 * @return <code>true</code> if {@link de.mpg.mpi_inf.bioinf.netanalyzer.ui.ChartExpandablePanel} must be
-	 *         used as building blocks for {@link de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisDialog};
+	 *         used as building blocks for {@link de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisResultPanel};
 	 *         <code>false</code> otherwise.
 	 */
 	public boolean getExpandable() {
