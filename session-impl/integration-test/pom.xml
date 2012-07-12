@@ -54,10 +54,75 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>property-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>datasource-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>equations-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>model-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>group-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>work-headless-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>presentation-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>layout-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>viewmodel-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>vizmap-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
+		<dependency>
+                        <groupId>org.cytoscape</groupId>
+                        <artifactId>application-impl</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>model-impl</artifactId>
+			<artifactId>core-task-impl</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -70,7 +135,7 @@
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>vizmap-impl</artifactId>
+			<artifactId>vizmap-gui-impl</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -88,14 +153,6 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>application-impl</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-impl</artifactId>
