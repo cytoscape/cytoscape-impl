@@ -225,36 +225,42 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			return;
 		}
 
+		
+		/////// Create new Mapping ///////
+		
 		VisualMappingFunction<K, V> newMapping = null;
 		if (mapping instanceof PassthroughMapping) {
 			// Create new Passthrough mapping and register to current style.
 			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
-			currentStyle.addVisualMappingFunction(newMapping);
+			
 			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
 					+ newMapping.getMappingColumnName());
 		} else if (mapping instanceof ContinuousMapping) {
-			if ((dataType == Double.class) || (dataType == Integer.class)) {
-				// Do nothing
+			if ((dataType == Double.class) || (dataType == Integer.class) || (dataType == Long.class)
+					|| (dataType == Float.class) || (dataType == Byte.class)) {
+				newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
 			} else {
 				JOptionPane.showMessageDialog(null,
 						"Continuous Mapper can be used with Numbers only.\nPlease select numerical attributes.",
 						"Incompatible Mapping Type.", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-
 		} else if (mapping instanceof DiscreteMapping) {
 			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
-			currentStyle.addVisualMappingFunction(newMapping);
 			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
 					+ newMapping.getMappingColumnName());
+		}
+		
+		
+		// Register the new mapping
+		if(newMapping != null) {
+			currentStyle.addVisualMappingFunction(newMapping);
+		} else {
+			throw new NullPointerException("Mapping function is null.");
 		}
 
 		// Remove old property
 		propertySheetPanel.removeProperty(prop);
-
-		
-		
-		
 		
 		// Create new Property.
 		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyIdentifiable>) vp
