@@ -329,7 +329,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 			DataSource theDataSource = (DataSource) value;
 			setText(theDataSource.getName());
 			setToolTipText(theDataSource.getHref());
-			setBackground(isSelected ? Color.red : Color.white);
+			setBackground(isSelected ? Color.blue : Color.white);
 			setForeground(isSelected ? Color.white : Color.black);
 
 			return this;
