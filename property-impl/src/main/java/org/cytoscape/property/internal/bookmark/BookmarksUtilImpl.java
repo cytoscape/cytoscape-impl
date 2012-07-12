@@ -34,14 +34,27 @@
  */
 package org.cytoscape.property.internal.bookmark;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.cytoscape.property.bookmark.Attribute;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.property.bookmark.Category;
 import org.cytoscape.property.bookmark.DataSource;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.datasource.DefaultDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 /**
  * Utility methods for getting entries in the bookmark object.
@@ -50,6 +63,18 @@ import org.cytoscape.property.bookmark.DataSource;
  * 
  */
 public class BookmarksUtilImpl implements BookmarksUtil {
+	
+	//Map to keep information of new bookmarks converted to DataSource for dataSourceManager
+	private  Map<DataSource, org.cytoscape.io.datasource.DataSource> dataSourceMap;
+	private static final Logger logger = LoggerFactory.getLogger(BookmarksUtilImpl.class);
+	private CyServiceRegistrar register;
+	
+	public BookmarksUtilImpl( final CyServiceRegistrar register){
+
+		this.register =register;
+		this.dataSourceMap = new HashMap<DataSource, org.cytoscape.io.datasource.DataSource>();
+		
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -179,6 +204,45 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		List<Object> theObjList = theCategory.getCategoryOrDataSource();
 
 		theObjList.add(pDataSource);
+		
+		org.cytoscape.io.datasource.DataSource data = convertToDataSource(pBookmarks,pCategoryName,pDataSource);
+
+		if(data != null && !dataSourceMap.containsKey(pDataSource))
+		{
+			
+			register.registerService(data, org.cytoscape.io.datasource.DataSource.class, new Properties());
+			dataSourceMap.put(pDataSource, data);
+		}
+		
+	}
+	
+	public org.cytoscape.io.datasource.DataSource convertToDataSource(Bookmarks pBookmarks, 
+			String pCategoryName,DataSource pDataSource){
+		
+		final String location = pDataSource.getHref();
+		final String name = pDataSource.getName();
+		final String description = "From Bookmarks";
+		final String provider = "Example";
+		DataCategory dataType;
+		URL url = null;
+		
+		if(pCategoryName == "network")
+		{
+			dataType = DataCategory.NETWORK;
+		}else if(pCategoryName == "table"){
+			dataType = DataCategory.TABLE;
+		}else {
+			return null;
+		}
+		
+		try {
+			url = new URL(location);
+		} catch (MalformedURLException e) {
+			logger.warn("Bookmark file coniatin invalid URL: " + location);
+			return null;
+		}
+
+		return (new DefaultDataSource(name, provider,description, dataType, url));
 	}
 
 	/*
@@ -191,6 +255,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 	 */
 	public boolean deleteBookmark(Bookmarks pBookmarks, String pCategoryName,
 			DataSource pDataSource) {
+		org.cytoscape.io.datasource.DataSource data = null ;
 		if (!containsBookmarks(pBookmarks, pCategoryName, pDataSource)) {
 			return false;
 		}
@@ -208,6 +273,13 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 
 				if (theDataSource.getName().equalsIgnoreCase(
 						pDataSource.getName())) {
+					
+					if(dataSourceMap.containsKey(pDataSource))
+					{
+						
+						register.unregisterService(dataSourceMap.get(pDataSource), org.cytoscape.io.datasource.DataSource.class);
+						dataSourceMap.remove(pDataSource);
+					}
 					theObjList.remove(i);
 				}
 			}

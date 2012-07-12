@@ -9,6 +9,7 @@ import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.property.internal.bookmark.BookmarkReader;
 import org.cytoscape.property.internal.bookmark.BookmarksUtilImpl;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.osgi.framework.BundleContext;
 
 
@@ -18,8 +19,10 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
+		CyServiceRegistrar cyServiceRegistrarRef = getService(bc, CyServiceRegistrar.class);
 		BookmarkReader bookmarksReader = new BookmarkReader("bookmarks","bookmarks.xml");
-		BookmarksUtilImpl bookmarksUtil = new BookmarksUtilImpl();
+		BookmarksUtilImpl bookmarksUtil = new BookmarksUtilImpl( cyServiceRegistrarRef);
+		
 		
 		Properties bookmarksReaderProps = new Properties();
 		bookmarksReaderProps.setProperty("cyPropertyName","bookmarks");
