@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-alpha9</version>
+		<version>3.0.0-alpha10-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>psi-mi-impl-parent</artifactId>
