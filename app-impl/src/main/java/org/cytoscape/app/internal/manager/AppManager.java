@@ -546,8 +546,16 @@ public class AppManager {
 	
 	
 	public String getKarafDeployDirectory() {
-		String current = System.getProperties().get("cytoscape.home").toString();
+		Object property = System.getProperties().get("cytoscape.home");
 		
+		// Temporary fix -- will still allow app-impl to start even if failed to obtain Karaf deploy directory
+		if (property == null) {
+			File tempPath = new File(getDownloadedAppsPath() + File.separator + "temp");
+			tempPath.mkdirs();
+			return tempPath.getAbsolutePath();
+		}
+
+		String current = property.toString();
 		String deployDirectoryPath = current + File.separator + "framework" 
 			+ File.separator + "deploy";
 		
