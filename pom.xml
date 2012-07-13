@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-beta2</version>
+		<version>3.0.0-beta3-SNAPSHOT</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
@@ -76,7 +76,7 @@
   </modules>
 
 	<properties>
-		<cytoscape.api.version>3.0.0-beta2</cytoscape.api.version>
+		<cytoscape.api.version>3.0.0-beta3-SNAPSHOT</cytoscape.api.version>
 		<cytoscape.support.version>3.0.0-alpha8</cytoscape.support.version>
 	</properties>
 
