@@ -111,21 +111,21 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		
 		// Set datatype icon if available
 		this.setIcon(getIcon(col.getType(), col));
+		
 		String toolTip = null;
 		
 		
 		if(col.getType() == List.class) {
-			toolTip = "<html>This is a List column<br />" +
-					"The lists contain " + col.getListElementType() + "</html>";
+			toolTip = "<html>Name: " + col.getName() + "<br /> Type: List "+ getMinimizedType( col.getListElementType().getName()) + "</html>";
 		} else if(text.equals(CyIdentifiable.SUID))
 			toolTip = "Session-Unique ID (Primary Key).  This is column is immutable.";
 		else
-			toolTip = "Data type of this column is " + col.getType().getName().substring(col.getType().getName().lastIndexOf('.')+1);
+			toolTip = "<html>Name: " + col.getName()+ "<br /> Type: " + getMinimizedType(col.getType().getName());
 		
 		if (col.getVirtualColumnInfo().isVirtual()) {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_VIRTUAL_COLOR);
-			toolTip = "<html>" + col.getType().getName().substring(col.getType().getName().lastIndexOf('.')+1) + "<br />Virtual Column</html>";
+			toolTip = "<html>Name:" + col.getName() + "<br /> Type: " + getMinimizedType(col.getType().getName()) + "<br />Virtual Column</html>";
 		} else {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_COLOR);
@@ -143,11 +143,15 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		return this;
 	}
 	
+	private String getMinimizedType (String type){
+		return type.substring(type.lastIndexOf('.')+1);
+	}
+	
 	private Icon getIcon(final Class<?> dataType, final CyColumn col) {
 		
 		if(col.isPrimaryKey())
 			return PRIMARY_KEY_ICON;
-		
+	/*	
 		if(dataType == String.class)
 			return STRING_ICON;
 		else if(dataType == Double.class || dataType == Float.class)
@@ -158,7 +162,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 			return LIST_ICON;
 		else if (dataType == Integer.class || dataType == Long.class)
 			return INTEGER_ICON;
-		
+		*/
 		return null;
 	}
 
