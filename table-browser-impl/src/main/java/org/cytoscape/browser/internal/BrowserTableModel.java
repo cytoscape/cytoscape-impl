@@ -84,7 +84,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		attrNamesAndVisibilities = new ArrayList<AttrNameAndVisibility>();
 
 		final CyColumn primaryKey = dataTable.getPrimaryKey();
-		attrNamesAndVisibilities.add(new AttrNameAndVisibility(primaryKey.getName(), false));
+		attrNamesAndVisibilities.add(new AttrNameAndVisibility(primaryKey.getName(), true));
 
 		for (final CyColumn column : dataTable.getColumns()) {
 
@@ -127,8 +127,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		boolean changed = false;
 		final String primaryKey = dataTable.getPrimaryKey().getName();
 		for (final AttrNameAndVisibility nameAndVisibility : attrNamesAndVisibilities) {
-			//if (nameAndVisibility.getName().equals(primaryKey))
-			//	continue;
+			if (nameAndVisibility.getName().equals(primaryKey))
+				continue;
 
 			if (visibleAttributes.contains(nameAndVisibility.getName())) {
 				if (!nameAndVisibility.isVisible()) {
