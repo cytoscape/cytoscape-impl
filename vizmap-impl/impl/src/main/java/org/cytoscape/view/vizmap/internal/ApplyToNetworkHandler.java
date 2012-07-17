@@ -27,7 +27,6 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ApplyToNetworkHandler.class);
 
-	private Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap;
 	
 	ApplyToNetworkHandler(VisualStyle style, VisualLexiconManager lexManager) {
 		super(style, lexManager);
@@ -37,9 +36,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	public void apply(final CyRow row, final View<CyNetwork> view) {
 		final long start = System.currentTimeMillis();
 
-		dependencyMap = new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
-		
-		CyNetworkView netView = (CyNetworkView) view;
+		final CyNetworkView netView = (CyNetworkView) view;
 		final Collection<View<CyNode>> nodeViews = netView.getNodeViews();
 		final Collection<View<CyEdge>> edgeViews = netView.getEdgeViews();
 		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
@@ -49,14 +46,12 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		applyViewDefaults(netView, lexManager.getEdgeVisualProperties());
 		applyViewDefaults(netView, lexManager.getNetworkVisualProperties());
 
-		applyDependencies(netView);
+		final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap = applyDependencies(netView);
 		
-		applyMappings(netView, nodeViews, lexManager.getNodeVisualProperties());
-		applyMappings(netView, edgeViews, lexManager.getEdgeVisualProperties());
-		applyMappings(netView, networkViewSet, lexManager.getNetworkVisualProperties());
+		applyMappings(netView, nodeViews, lexManager.getNodeVisualProperties(), dependencyMap);
+		applyMappings(netView, edgeViews, lexManager.getEdgeVisualProperties(), dependencyMap);
+		applyMappings(netView, networkViewSet, lexManager.getNetworkVisualProperties(), dependencyMap);
 
-		dependencyMap = null;
-		
 		logger.info("Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
 	}
 
@@ -82,8 +77,9 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	}
 
 	private void applyMappings(final CyNetworkView netView,
-			final Collection<? extends View<? extends CyIdentifiable>> views,
-			final Collection<VisualProperty<?>> visualProperties) {
+							   final Collection<? extends View<? extends CyIdentifiable>> views,
+							   final Collection<VisualProperty<?>> visualProperties,
+							   final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap) {
 		for (VisualProperty<?> vp : visualProperties) {
 			final VisualPropertyDependency<?> dep = dependencyMap.get(vp);
 			
@@ -105,12 +101,14 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		}
 	}
 	
-	private void applyDependencies(final CyNetworkView netView) {
+	private Map<VisualProperty<?>, VisualPropertyDependency<?>> applyDependencies(final CyNetworkView netView) {
+		final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap = 
+				new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
 		final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
 		
 		for (final VisualPropertyDependency<?> dep : dependencies) {
 			final VisualProperty<?> parentVP = dep.getParentVisualProperty();
-			dependencyMap.put(parentVP, dep);
+			dependencyMap.put(parentVP, dep); // Index the dependencies by their visual properties
 			
 			if (dep.isDependencyEnabled()) {
 				final Set<VisualProperty<?>> vpSet = new HashSet<VisualProperty<?>>(dep.getVisualProperties());
@@ -150,5 +148,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 				}
 			}
 		}
+		
+		return dependencyMap;
 	}
 }
