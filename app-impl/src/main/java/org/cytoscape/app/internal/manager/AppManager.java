@@ -368,8 +368,8 @@ public class AppManager {
 		}
 		
 		// For bundle apps, remove temporary files from Karaf deploy directory on exit
-		if (app instanceof BundleApp) {
-			File temporaryInstallFile = ((BundleApp) app).getAppTemporaryInstallFile();
+		if (app instanceof KarafArchiveApp) {
+			File temporaryInstallFile = ((KarafArchiveApp) app).getAppTemporaryInstallFile();
 			
 			if (temporaryInstallFile != null) {
 				// temporaryInstallFile.deleteOnExit();

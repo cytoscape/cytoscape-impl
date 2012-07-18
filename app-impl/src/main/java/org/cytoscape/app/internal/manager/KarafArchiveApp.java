@@ -21,7 +21,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
-public class BundleApp extends App {	
+public class KarafArchiveApp extends App {	
 	
 	/**
 	 * Karaf feature information used to install/uninstall a bundle app, 
@@ -34,7 +34,7 @@ public class BundleApp extends App {
 	
 	private Map<String, KarafFeature> featuresSet;
 	
-	public BundleApp() {
+	public KarafArchiveApp() {
 		super();
 		
 		this.featuresSet = new HashMap<String, KarafFeature>();
@@ -145,7 +145,7 @@ public class BundleApp extends App {
 		for (int i = 0; i < availableFeatures.length; i++) {
 			Feature availableFeature = availableFeatures[i];
 			
-			BundleApp.KarafFeature appFeature = featuresSet.get(availableFeature.getName());
+			KarafArchiveApp.KarafFeature appFeature = featuresSet.get(availableFeature.getName());
 			
 			// System.out.println("available feature: " + availableFeature.getName() + ", " + availableFeature.getVersion());
 			

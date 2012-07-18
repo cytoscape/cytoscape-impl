@@ -112,7 +112,7 @@ public class AppParser {
 		
 	
 		// Look for features specified in an xml file
-		List<BundleApp.KarafFeature> featuresList = Collections.emptyList();
+		List<KarafArchiveApp.KarafFeature> featuresList = Collections.emptyList();
         try {
             featuresList = getFeaturesXmlFromJar(jarFile);
         } catch (AppParsingException e) {
@@ -136,14 +136,14 @@ public class AppParser {
 		// If an XML parsing error occurred, continue to attempt to parse the app as a simple app
 		if (featuresList.size() > 0 && !xmlParseFailed) {
 			bundleApp = true;
-			parsedApp = new BundleApp();
+			parsedApp = new KarafArchiveApp();
 			
-			for (BundleApp.KarafFeature feature: featuresList) {
-				((BundleApp) parsedApp).getFeaturesList().put(feature.featureName, feature);
+			for (KarafArchiveApp.KarafFeature feature: featuresList) {
+				((KarafArchiveApp) parsedApp).getFeaturesList().put(feature.featureName, feature);
 			}
 		} else if (osgiMetadataFound) {
 			bundleApp = true;
-			parsedApp = new BundleApp();
+			parsedApp = new KarafArchiveApp();
 		}
 		
 		// Attempt to obtain manifest file from jar
@@ -222,9 +222,9 @@ public class AppParser {
 		return parsedApp;
 	}
 
-    private static List<BundleApp.KarafFeature> getFeaturesXmlFromJar(final JarFile jarFile) throws AppParsingException
+    private static List<KarafArchiveApp.KarafFeature> getFeaturesXmlFromJar(final JarFile jarFile) throws AppParsingException
     {
-        final List<BundleApp.KarafFeature> featuresList = new LinkedList<BundleApp.KarafFeature>();
+        final List<KarafArchiveApp.KarafFeature> featuresList = new LinkedList<KarafArchiveApp.KarafFeature>();
 		final Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
 			JarEntry jarEntry = entries.nextElement();
@@ -253,7 +253,7 @@ public class AppParser {
 									&& qNames.get(0).equalsIgnoreCase("features")
 									&& qNames.get(1).equalsIgnoreCase("feature")) {
 								
-								BundleApp.KarafFeature feature = new BundleApp.KarafFeature();
+								KarafArchiveApp.KarafFeature feature = new KarafArchiveApp.KarafFeature();
 								
 								// Obtain the feature name and version
 								feature.featureName = atts.getValue("name");
