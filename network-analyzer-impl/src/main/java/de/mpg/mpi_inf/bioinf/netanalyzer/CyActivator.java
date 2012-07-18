@@ -30,7 +30,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanel;
+import de.mpg.mpi_inf.bioinf.netanalyzer.task.AnalyzeNetworkByNetworkAnalyzerTaskFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
@@ -84,6 +84,11 @@ public class CyActivator extends AbstractCyActivator {
 		analyzerActionProps.put(ENABLE_FOR, "network");
 		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef, resultPanel);
 
+		AnalyzeNetworkByNetworkAnalyzerTaskFactory analyzeNetworkTaskFactory = new AnalyzeNetworkByNetworkAnalyzerTaskFactory();
+		Properties selectAllEdgesTaskFactoryProps = new Properties();
+		selectAllEdgesTaskFactoryProps.setProperty(ID, "analyzeNetworkByNetworkAnalyzerTaskFactory");
+		registerAllServices(bc,analyzeNetworkTaskFactory, selectAllEdgesTaskFactoryProps);
+		
 		LoadNetstatsAction loadNetstatsAction = new LoadNetstatsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, resultPanel);
 		MapParameterAction mapParameterAction = new MapParameterAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzeNetworkAction);
 		

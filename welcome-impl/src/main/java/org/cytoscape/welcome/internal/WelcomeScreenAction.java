@@ -10,9 +10,12 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -20,7 +23,7 @@ import org.osgi.framework.BundleContext;
 public class WelcomeScreenAction extends AbstractCyAction {
 
 	private static final long serialVersionUID = 2584201062371825221L;
-	
+
 	public static final String DO_NOT_DISPLAY_PROP_NAME = "hideWelcomeScreen";
 	public static final String TEMP_DO_NOT_DISPLAY_PROP_NAME = "tempHideWelcomeScreen";
 
@@ -33,28 +36,34 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private final LoadNetworkURLTaskFactory importNetworksTaskFactory;
 	private final CyApplicationConfiguration config;
 	private final DataSourceManager dsManager;
-	
+
 	private final OpenSessionTaskFactory openSessionTaskFactory;
 	private final TaskFactory importNetworkFileTF;
 
 	private final CySwingApplication app;
 	private final CyProperty<Properties> cyProps;
-	
+
 	private final BundleContext bc;
-	
+
+	private final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
+	private final CyServiceRegistrar registrar;
+	private final VisualStyleBuilder vsBuilder;
+	private final VisualMappingManager vmm;
+
 	private boolean hide = false;
 
-	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, 
-			OpenBrowser openBrowserServiceRef, RecentlyOpenedTracker fileTracker, 
-			final OpenSessionTaskFactory openSessionTaskFactory, DialogTaskManager guiTaskManager,
-			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory importNetworksTaskFactory, 
-			final CyApplicationConfiguration config, final DataSourceManager dsManager, 
-			final CyProperty<Properties> cyProps) {
+	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, OpenBrowser openBrowserServiceRef,
+			RecentlyOpenedTracker fileTracker, final OpenSessionTaskFactory openSessionTaskFactory,
+			DialogTaskManager guiTaskManager, final TaskFactory importNetworkFileTF,
+			final LoadNetworkURLTaskFactory importNetworksTaskFactory, final CyApplicationConfiguration config,
+			final DataSourceManager dsManager, final CyProperty<Properties> cyProps,
+			final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
+			final CyServiceRegistrar registrar, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 
 		this.setMenuGravity(1.5f);
-		
+
 		this.openBrowser = openBrowserServiceRef;
 		this.fileTracker = fileTracker;
 		this.guiTaskManager = guiTaskManager;
@@ -66,9 +75,13 @@ public class WelcomeScreenAction extends AbstractCyAction {
 		this.openSessionTaskFactory = openSessionTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.bc = bc;
-		
+		this.analyzeNetworkCollectionTaskFactory = analyzeNetworkCollectionTaskFactory;
+		this.registrar = registrar;
+		this.vsBuilder = vsBuilder;
+		this.vmm = vmm;
+
 		// Show it if necessary
-		SwingUtilities.invokeLater( new Runnable() { 
+		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				startup();
 			}
@@ -77,20 +90,22 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(bc,openBrowser, fileTracker, openSessionTaskFactory, guiTaskManager, config, importNetworkFileTF, importNetworksTaskFactory, dsManager, cyProps, hide);
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(bc, openBrowser, fileTracker,
+				openSessionTaskFactory, guiTaskManager, config, importNetworkFileTF, importNetworksTaskFactory,
+				dsManager, cyProps, analyzeNetworkCollectionTaskFactory, registrar, vsBuilder, vmm, hide);
 		welcomeScreen.setLocationRelativeTo(app.getJFrame());
 		welcomeScreen.setVisible(true);
 		this.hide = welcomeScreen.getHideStatus();
-		this.cyProps.getProperties().setProperty(DO_NOT_DISPLAY_PROP_NAME, ((Boolean)hide).toString());
+		this.cyProps.getProperties().setProperty(DO_NOT_DISPLAY_PROP_NAME, ((Boolean) hide).toString());
 	}
-	
+
 	public void startup() {
 
 		// Displays the dialog after startup based on whether
 		// the specified property has been set.
 		final String hideString = this.cyProps.getProperties().getProperty(DO_NOT_DISPLAY_PROP_NAME);
 		hide = parseBoolean(hideString);
-			
+
 		if (!hide) {
 			final String tempHideString = this.cyProps.getProperties().getProperty(TEMP_DO_NOT_DISPLAY_PROP_NAME);
 			hide = parseBoolean(tempHideString);
@@ -100,11 +115,11 @@ public class WelcomeScreenAction extends AbstractCyAction {
 			final String systemHideString = System.getProperty(DO_NOT_DISPLAY_PROP_NAME);
 			hide = parseBoolean(systemHideString);
 		}
-		
+
 		// remove this property regardless!
 		this.cyProps.getProperties().remove(TEMP_DO_NOT_DISPLAY_PROP_NAME);
 
-		if(!hide)
+		if (!hide)
 			actionPerformed(null);
 	}
 

@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * Color Gradient Mapping editor.
  * 
  */
-public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Color> implements PropertyChangeListener {
+public class GradientEditorPanel<T extends Number> extends ContinuousMappingEditorPanel<T, Color> implements PropertyChangeListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(GradientEditorPanel.class);
 
@@ -78,7 +78,7 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 	private final CyApplicationManager appManager;
 	protected final ValueEditor<Paint> colorEditor;
 
-	public GradientEditorPanel(final VisualStyle style, final ContinuousMapping<Double, Color> mapping,
+	public GradientEditorPanel(final VisualStyle style, final ContinuousMapping<T, Color> mapping,
 			final CyTable attr, final CyApplicationManager appManager, final ValueEditor<Paint> colorEditor,
 			final VisualMappingManager vmm) {
 
@@ -117,13 +117,6 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 		return rend.getLegend(width, height);
 	}
 
-//	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
-//		final CyGradientTrackRenderer rend = (CyGradientTrackRenderer) slider.getTrackRenderer();
-//		rend.getRendererComponent(slider);
-//
-//		return rend.getTrackGraphicIcon(iconWidth, iconHeight);
-//	}
-
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
 
@@ -144,8 +137,8 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 			upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, above);
 
 			// Add two points.
-			mapping.addPoint(((Double) (rangeValue.doubleValue() * 0.1) + minValue.doubleValue()), lowerRange);
-			mapping.addPoint((rangeValue.doubleValue() * 0.9) + minValue.doubleValue(), upperRange);
+			mapping.addPoint( ContinuousMappingEditorPanel.convert(columnType, ((rangeValue.doubleValue() * 0.1) + minValue.doubleValue())), lowerRange);
+			mapping.addPoint(ContinuousMappingEditorPanel.convert(columnType,(rangeValue.doubleValue() * 0.9) + minValue.doubleValue()), upperRange);
 
 			slider.repaint();
 			repaint();
@@ -161,7 +154,7 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 		slider.getModel().addThumb(70f, Color.white);
 
 		// Pick Up first point.
-		final ContinuousMappingPoint<Double, Color> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
+		final ContinuousMappingPoint<T, Color> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
 		final BoundaryRangeValues<Color> previousRange = previousPoint.getRange();
 
 		Color lesserVal = slider.getModel().getSortedThumbs().get(slider.getModel().getThumbCount() - 1).getObject();
@@ -170,7 +163,7 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 
 		lowerRange = new BoundaryRangeValues<Color>(lesserVal, equalVal, greaterVal);
 
-		mapping.addPoint(maxValue, lowerRange);
+		mapping.addPoint(ContinuousMappingEditorPanel.convert(columnType, maxValue), lowerRange);
 
 		updateMap();
 
@@ -257,10 +250,10 @@ public class GradientEditorPanel extends ContinuousMappingEditorPanel<Double, Co
 			for(Thumb<Color> t: sorted)
 				slider.getModel().removeThumb(slider.getModel().getThumbIndex(t));
 			
-			for (final ContinuousMappingPoint<Double, Color> point : allPoints) {
+			for (final ContinuousMappingPoint<T, Color> point : allPoints) {
 				BoundaryRangeValues<Color> bound = point.getRange();
 
-				slider.getModel().addThumb(((Double) ((point.getValue() - minValue) / actualRange)).floatValue() * 100,
+				slider.getModel().addThumb(((Number) ((point.getValue().doubleValue() - minValue) / actualRange)).floatValue() * 100,
 						(Color) bound.equalValue);
 			}
 

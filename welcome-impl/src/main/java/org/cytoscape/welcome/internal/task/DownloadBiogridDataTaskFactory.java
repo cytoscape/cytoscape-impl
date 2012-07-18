@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal;
+package org.cytoscape.welcome.internal.task;
 
 import java.io.File;
 import java.net.URL;

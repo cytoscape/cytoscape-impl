@@ -25,9 +25,12 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -61,20 +64,28 @@ public class WelcomeScreenDialog extends JDialog {
 	private final LoadNetworkURLTaskFactory loadNetworkTF;
 
 	private final DataSourceManager dsManager;
-	
+
 	private final CyProperty<Properties> cyProps;
-	
+
 	private final TaskFactory importNetworkFileTF;
 	private final BundleContext bc;
-	
+
+	private final CyServiceRegistrar registrar;
+
 	final JCheckBox checkBox = new JCheckBox();
 
-	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef, 
-	                           RecentlyOpenedTracker fileTracker, final OpenSessionTaskFactory openSessionTaskFactory, 
-							   DialogTaskManager guiTaskManager, final CyApplicationConfiguration config,
-	                           final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory importNetworkTF, 
-	                           final DataSourceManager dsManager, final CyProperty<Properties> cyProps, 
-							   final boolean hide) {
+	private final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
+	private final VisualStyleBuilder vsBuilder;
+	private final VisualMappingManager vmm;
+
+	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef,
+			RecentlyOpenedTracker fileTracker, final OpenSessionTaskFactory openSessionTaskFactory,
+			DialogTaskManager guiTaskManager, final CyApplicationConfiguration config,
+			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory importNetworkTF,
+			final DataSourceManager dsManager, final CyProperty<Properties> cyProps,
+			final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
+			final CyServiceRegistrar registrar, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
+			final boolean hide) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.fileTracker = fileTracker;
 		this.config = config;
@@ -83,6 +94,10 @@ public class WelcomeScreenDialog extends JDialog {
 		this.openSessionTaskFactory = openSessionTaskFactory;
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.bc = bc;
+		this.analyzeNetworkCollectionTaskFactory = analyzeNetworkCollectionTaskFactory;
+		this.registrar = registrar;
+		this.vsBuilder = vsBuilder;
+		this.vmm = vmm;
 
 		this.guiTaskManager = guiTaskManager;
 		this.cyProps = cyProps;
@@ -99,10 +114,10 @@ public class WelcomeScreenDialog extends JDialog {
 		this.setModal(true);
 		this.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
 		this.setAlwaysOnTop(true);
-		
+
 		checkBox.setSelected(hide);
 	}
-	
+
 	public boolean getHideStatus() {
 		return checkBox.isSelected();
 	}
@@ -130,15 +145,16 @@ public class WelcomeScreenDialog extends JDialog {
 		bottomPanel.setLayout(new BorderLayout());
 		bottomPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		bottomPanel.setBackground(PANEL_COLOR);
-		
+
 		checkBox.setText("Don't show again");
 		checkBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				cyProps.getProperties().setProperty(WelcomeScreenAction.DO_NOT_DISPLAY_PROP_NAME, ((Boolean)checkBox.isSelected()).toString());
+				cyProps.getProperties().setProperty(WelcomeScreenAction.DO_NOT_DISPLAY_PROP_NAME,
+						((Boolean) checkBox.isSelected()).toString());
 			}
 		});
-		
+
 		JButton closeButton = new JButton("Close");
 		closeButton.addActionListener(new ActionListener() {
 			@Override
@@ -180,9 +196,14 @@ public class WelcomeScreenDialog extends JDialog {
 		panel3.setBackground(PANEL_COLOR);
 		panel4.setBackground(PANEL_COLOR);
 
+		final CreateNewNetworkPanel importPanel = new CreateNewNetworkPanel(this, bc, guiTaskManager,
+				importNetworkFileTF, loadNetworkTF, config, dsManager, cyProps, analyzeNetworkCollectionTaskFactory,
+				vsBuilder, vmm);
+		registrar.registerAllServices(importPanel, new Properties());
+
 		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, openSessionTaskFactory),
 				"Open a Recent Session");
-		buildHelpPanel(panel2, new CreateNewNetworkPanel(this, bc, guiTaskManager, importNetworkFileTF, loadNetworkTF, config, dsManager, cyProps), "Import Network");
+		buildHelpPanel(panel2, importPanel, "Import Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef, cyProps), "Help");
 		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
 

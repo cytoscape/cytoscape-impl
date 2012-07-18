@@ -81,6 +81,23 @@ public final class InterpretationDialog extends JDialog implements ActionListene
 		pack();
 		setLocationRelativeTo(aOwner);
 	}
+	
+	// TODO: this is a hack!  We need clear separation between model and view.
+	public InterpretationDialog(NetworkStatus aStatus, boolean directed)
+			throws HeadlessException {
+		super((JFrame)null, Messages.DT_INTERPRETATION, true);
+
+		pressedOK = false;
+		userChoice = aStatus.getDefaultInterprIndex();
+		initControls(aStatus);
+
+		if(directed) {
+			
+		} else {
+			
+		}
+	}
+	
 
 	/*
 	 * (non-Javadoc)

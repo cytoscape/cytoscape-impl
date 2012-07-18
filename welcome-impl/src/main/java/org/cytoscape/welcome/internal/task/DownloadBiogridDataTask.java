@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal;
+package org.cytoscape.welcome.internal.task;
 
 import java.io.BufferedReader;
 import java.io.File;
