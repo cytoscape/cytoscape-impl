@@ -54,7 +54,7 @@ public class AnalyzeNetworkTask extends AbstractNetworkCollectionTask {
 					selectedNodes.add(network.getNode(row.get(CyIdentifiable.SUID, Long.class)));
 
 			} else {
-				selectedNodes = new HashSet<CyNode>(network.getNodeList());
+				selectedNodes = null;
 			}
 			analyze(network, selectedNodes);
 			processed = processed+increment;

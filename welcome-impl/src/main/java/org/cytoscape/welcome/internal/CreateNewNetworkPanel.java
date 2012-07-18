@@ -82,6 +82,9 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 	private final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
 	private final VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
+	
+	private Set<CyNetwork> networkToBeAnalyzed;
+	private Set<CyNetworkView> networkViews;
 
 	CreateNewNetworkPanel(Window parent, final BundleContext bc, final DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
@@ -118,6 +121,9 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 		});
 
 		networkList.setEnabled(true);
+		
+		networkToBeAnalyzed = new HashSet<CyNetwork>();
+		networkViews = new HashSet<CyNetworkView>();
 	}
 
 	private void setFromDataSource() {
@@ -216,16 +222,13 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 
 		if (layout.isSelected()) {
 			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, LAYOUT_ALGORITHM);
-			networkToBeAnalyzed = new HashSet<CyNetwork>();
-			networkViews = new HashSet<CyNetworkView>();
 			loadTaskIt.append(analyzeNetworkCollectionTaskFactory.createTaskIterator(networkToBeAnalyzed));
 			loadTaskIt.append(new AnalyzeAndVisualizeNetworkTask(networkViews, vsBuilder, vmm));
 		}
 		guiTaskManager.execute(loadTaskIt);
 	}
 
-	private Set<CyNetwork> networkToBeAnalyzed;
-	private Set<CyNetworkView> networkViews;
+	
 
 	/**
 	 * Due to its dependency, we need to import this service dynamically.
