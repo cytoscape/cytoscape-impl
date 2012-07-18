@@ -1,6 +1,7 @@
 package org.cytoscape.welcome.internal;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Paint;
 import java.util.List;
 import java.util.Set;
@@ -25,10 +26,30 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 public class VisualStyleBuilder {
 
 	private static final Color NODE_COLOR = Color.WHITE;
-	private static final Color NODE_LABEL_COLOR = new Color(130, 130, 130);
-	private static final Color EDGE_COLOR = new Color(150, 150, 150);
-	private static final String nodeColorColumn = "Indegree";
-	private static final String NODE_SIZE_COLUMN = "Indegree";
+	private static final Color NODE_BORDER_COLOR = new Color(180, 180, 180);
+	private static final Color NODE_MAPPING_COLOR = new Color(0x00, 0xCE, 0xD1);
+
+	private static final Color EDGE_MAPPING_MIN_COLOR = new Color(180, 180, 180);
+	private static final Color EDGE_MAPPING_MAX_COLOR = new Color(0x7A, 0xC5, 0xCD);
+
+	private static final Color NODE_LABEL_COLOR = new Color(160, 160, 160);
+	private static final Color EDGE_COLOR = new Color(180, 180, 180);
+	private static final String NODE_COLOR_COLUMN = "BetweennessCentrality";
+	private static final String NODE_SIZE_COLUMN = "BetweennessCentrality";
+	private static final String NODE_LABEL_SIZE_COLUMN = "BetweennessCentrality";
+	private static final String EDGE_WIDTH_COLUMN = "EdgeBetweenness";
+	private static final String EDGE_COLOR_COLUMN = "EdgeBetweenness";
+	
+	private static Font NODE_LABEL_FONT;
+	static  {
+		NODE_LABEL_FONT = new Font("HelveticaNeue-UltraLight", Font.PLAIN, 10);
+		if(NODE_LABEL_FONT == null)
+			NODE_LABEL_FONT = new Font("SansSerif", Font.PLAIN, 10);
+	}
+
+	// Bend definition. We can tweak this value later.
+	private static final String EDGE_BEND_DEFINITION = "0.8117209636412094,0.5840454410278249,0.6715391110621636";
+	private static final String NODE_LABEL_POSITION_DEFINITION = "S,NW,c,0.00,0.00";
 
 	private final VisualStyleFactory vsFactory;
 	private final BendFactory bendFactory;
@@ -64,111 +85,118 @@ public class VisualStyleBuilder {
 
 		// Node View Defaults
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, NODE_BORDER_COLOR);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
-
-		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 0.0d);
+		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, NODE_LABEL_FONT);
+		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 190);
+		
+		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0d);
+		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_TRANSPARENCY, 150);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, 30d);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, 30d);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_SIZE, 30d);
-		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 200);
+		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 190);
 
 		// Edge View Defaults
-		visualStyle.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 150);
-		visualStyle.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 2.0d);
+		visualStyle.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 80);
+		visualStyle.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 1.0d);
 		visualStyle.setDefaultValue(BasicVisualLexicon.EDGE_PAINT, EDGE_COLOR);
-		final double angle = Math.PI/2;
-		Double sinVal = Math.sin(angle);
-		Double cosVal = Math.cos(angle);
-		final Bend defBend = bendFactory.parseSerializableString("0.8117209636412094,0.5840454410278249,0.6715391110621636");
+
+		final Bend defBend = bendFactory.parseSerializableString(EDGE_BEND_DEFINITION);
 		visualStyle.setDefaultValue(BasicVisualLexicon.EDGE_BEND, defBend);
-
-		// Apply new visual settings
-
-		final CyColumn col = network.getDefaultNodeTable().getColumn(nodeColorColumn);
+		
+		// Node Color
+		final CyColumn col = network.getDefaultNodeTable().getColumn(NODE_COLOR_COLUMN);
 		Class<?> attrValueType = col.getType();
 		@SuppressWarnings("unchecked")
-		final ContinuousMapping<Integer, Paint> conMapNodeColor = ((ContinuousMapping<Integer, Paint>) continupousMappingFactory
-				.createVisualMappingFunction(nodeColorColumn, attrValueType, BasicVisualLexicon.NODE_FILL_COLOR));
-		// Create boundary conditions less than, equals, greater than
+		final ContinuousMapping<Double, Paint> conMapNodeColor = ((ContinuousMapping<Double, Paint>) continupousMappingFactory
+				.createVisualMappingFunction(NODE_COLOR_COLUMN, attrValueType, BasicVisualLexicon.NODE_FILL_COLOR));
 		final BoundaryRangeValues<Paint> bv0 = new BoundaryRangeValues<Paint>(Color.white, Color.white, Color.white);
-		final BoundaryRangeValues<Paint> bv1 = new BoundaryRangeValues<Paint>(Color.RED, Color.RED, Color.RED);
-
-		// Set the attribute point values associated with the boundary values
-		final Integer min = ((Number) pickMin(network.getDefaultNodeTable(), col)).intValue();
-		final Integer max = ((Number) pickMax(network.getDefaultNodeTable(), col)).intValue();
+		final BoundaryRangeValues<Paint> bv1 = new BoundaryRangeValues<Paint>(NODE_MAPPING_COLOR, NODE_MAPPING_COLOR,
+				NODE_MAPPING_COLOR);
+		final Double min = pickMin(network.getDefaultNodeTable(), col);
+		final Double max = pickMax(network.getDefaultNodeTable(), col);
 		conMapNodeColor.addPoint(min, bv0);
 		conMapNodeColor.addPoint(max, bv1);
 		visualStyle.addVisualMappingFunction(conMapNodeColor);
-		
+
+		// Node Size
 		final CyColumn nodeSizeCol = network.getDefaultNodeTable().getColumn(NODE_SIZE_COLUMN);
 		Class<?> nodeSizeColType = nodeSizeCol.getType();
 		@SuppressWarnings("unchecked")
-		final ContinuousMapping<Integer, Double> conMapNodeSize = ((ContinuousMapping<Integer, Double>) continupousMappingFactory
+		final ContinuousMapping<Double, Double> conMapNodeSize = ((ContinuousMapping<Double, Double>) continupousMappingFactory
 				.createVisualMappingFunction(NODE_SIZE_COLUMN, nodeSizeColType, BasicVisualLexicon.NODE_SIZE));
-		// Create boundary conditions less than, equals, greater than
 		final BoundaryRangeValues<Double> bvns0 = new BoundaryRangeValues<Double>(10d, 10d, 10d);
-		final BoundaryRangeValues<Double> bvns1 = new BoundaryRangeValues<Double>(200d, 200d, 200d);
+		final BoundaryRangeValues<Double> bvns1 = new BoundaryRangeValues<Double>(100d, 100d, 100d);
 
-		// Set the attribute point values associated with the boundary values
-		final Integer minSize = ((Number) pickMin(network.getDefaultNodeTable(), col)).intValue();
-		final Integer maxSize = ((Number) pickMax(network.getDefaultNodeTable(), col)).intValue();
-		conMapNodeSize.addPoint(minSize, bvns0);
-		conMapNodeSize.addPoint(maxSize, bvns1);
+		conMapNodeSize.addPoint(min, bvns0);
+		conMapNodeSize.addPoint(max, bvns1);
 		visualStyle.addVisualMappingFunction(conMapNodeSize);
+
+		// Node Label Size
+		final CyColumn nodeLabelSizeCol = network.getDefaultNodeTable().getColumn(NODE_LABEL_SIZE_COLUMN);
+		Class<?> nodeLabelSizeColType = nodeLabelSizeCol.getType();
+		@SuppressWarnings("unchecked")
+		final ContinuousMapping<Double, Integer> conMapNodeLabelSize = ((ContinuousMapping<Double, Integer>) continupousMappingFactory
+				.createVisualMappingFunction(NODE_LABEL_SIZE_COLUMN, nodeLabelSizeColType,
+						BasicVisualLexicon.NODE_LABEL_FONT_SIZE));
+		final BoundaryRangeValues<Integer> bvnls0 = new BoundaryRangeValues<Integer>(10, 10, 10);
+		final BoundaryRangeValues<Integer> bvnls1 = new BoundaryRangeValues<Integer>(100, 100, 100);
+		// FIXME: replace min&max if you use different column
+		conMapNodeLabelSize.addPoint(min, bvnls0);
+		conMapNodeLabelSize.addPoint(max, bvnls1);
+		visualStyle.addVisualMappingFunction(conMapNodeLabelSize);
+
+		// Edge Width
+		final CyColumn edgeWidthCol = network.getDefaultEdgeTable().getColumn(EDGE_WIDTH_COLUMN);
+		final Class<?> edgeWidthColType = edgeWidthCol.getType();
+		@SuppressWarnings("unchecked")
+		final ContinuousMapping<Double, Double> conMapEdgeWidth = ((ContinuousMapping<Double, Double>) continupousMappingFactory
+				.createVisualMappingFunction(EDGE_WIDTH_COLUMN, edgeWidthColType, BasicVisualLexicon.EDGE_WIDTH));
+		final BoundaryRangeValues<Double> bvew0 = new BoundaryRangeValues<Double>(1d, 1d, 1d);
+		final BoundaryRangeValues<Double> bvew1 = new BoundaryRangeValues<Double>(12d, 12d, 12d);
+		final Double minEdge = pickMin(network.getDefaultEdgeTable(), edgeWidthCol);
+		final Double maxEdge = pickMax(network.getDefaultEdgeTable(), edgeWidthCol);
+
+		conMapEdgeWidth.addPoint(minEdge, bvew0);
+		conMapEdgeWidth.addPoint(maxEdge, bvew1);
+		visualStyle.addVisualMappingFunction(conMapEdgeWidth);
+
+		// Edge transparency
+		final CyColumn edgeTransCol = network.getDefaultEdgeTable().getColumn(EDGE_WIDTH_COLUMN);
+		final Class<?> edgeTransColType = edgeTransCol.getType();
+		@SuppressWarnings("unchecked")
+		final ContinuousMapping<Double, Integer> conMapEdgeTrans = ((ContinuousMapping<Double, Integer>) continupousMappingFactory
+				.createVisualMappingFunction(EDGE_WIDTH_COLUMN, edgeTransColType, BasicVisualLexicon.EDGE_TRANSPARENCY));
+		final BoundaryRangeValues<Integer> bvet0 = new BoundaryRangeValues<Integer>(80, 80, 80);
+		final BoundaryRangeValues<Integer> bvet1 = new BoundaryRangeValues<Integer>(220, 220, 220);
+		conMapEdgeTrans.addPoint(minEdge, bvet0);
+		conMapEdgeTrans.addPoint(maxEdge, bvet1);
+		visualStyle.addVisualMappingFunction(conMapEdgeTrans);
+
+		// Edge Color
+		final CyColumn edgeColorCol = network.getDefaultEdgeTable().getColumn(EDGE_COLOR_COLUMN);
+		final Class<?> edgeColorColType = edgeColorCol.getType();
+		@SuppressWarnings("unchecked")
+		final ContinuousMapping<Double, Paint> conMapEdgeColor = ((ContinuousMapping<Double, Paint>) continupousMappingFactory
+				.createVisualMappingFunction(EDGE_COLOR_COLUMN, edgeColorColType,
+						BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		final BoundaryRangeValues<Paint> bvec0 = new BoundaryRangeValues<Paint>(EDGE_MAPPING_MIN_COLOR,
+				EDGE_MAPPING_MIN_COLOR, EDGE_MAPPING_MIN_COLOR);
+		final BoundaryRangeValues<Paint> bvec1 = new BoundaryRangeValues<Paint>(EDGE_MAPPING_MAX_COLOR,
+				EDGE_MAPPING_MAX_COLOR, EDGE_MAPPING_MAX_COLOR);
+		conMapEdgeColor.addPoint(minEdge, bvec0);
+		conMapEdgeColor.addPoint(maxEdge, bvec1);
+		visualStyle.addVisualMappingFunction(conMapEdgeColor);
+
+		// Set Lock
 		Set<VisualPropertyDependency<?>> deps = visualStyle.getAllVisualPropertyDependencies();
-		for(VisualPropertyDependency<?> dep:deps) {
+		for (VisualPropertyDependency<?> dep : deps) {
 			final String depName = dep.getIdString();
-			if(depName.equals("nodeSizeLocked"))
+			if (depName.equals("nodeSizeLocked"))
 				dep.setDependency(true);
 		}
-		
-		
-		
-		// if (parameterDialog.attrNodeSize.length() > 0) {
-		// final CyColumn col =
-		// network.getDefaultNodeTable().getColumn(parameterDialog.attrNodeSize);
-		// Class<?> attrValueType = col.getType();
-		// VisualMappingFunction<?, Double> conMapNodeSize =
-		// continupousMappingFactory.createVisualMappingFunction(
-		// parameterDialog.attrNodeSize, attrValueType,
-		// BasicVisualLexicon.NODE_SIZE);
-		// addBoundaries(parameterDialog, conMapNodeSize,
-		// parameterDialog.attrNodeSize, parameterDialog.mapNodeSize, new
-		// Double(10.0),
-		// new Double(50.0), new Double(100.0));
-		// visualStyle.addVisualMappingFunction(conMapNodeSize);
-		// }
-		// if (parameterDialog.attrEdgeColor.length() > 0) {
-		// final CyColumn col =
-		// network.getDefaultEdgeTable().getColumn(parameterDialog.attrEdgeColor);
-		// Class<?> attrValueType = col.getType();
-		// final VisualMappingFunction<?, Paint> conMapEdgeColor =
-		// continupousMappingFactory.createVisualMappingFunction(
-		// parameterDialog.attrEdgeColor, attrValueType,
-		// BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-		// addBoundaries(parameterDialog, conMapEdgeColor,
-		// parameterDialog.attrEdgeColor, parameterDialog.mapEdgeColor,
-		// SettingsSerializer
-		// .getPluginSettings().getBrightColor(),
-		// SettingsSerializer.getPluginSettings().getMiddleColor(),
-		// SettingsSerializer.getPluginSettings().getDarkColor());
-		// visualStyle.addVisualMappingFunction(conMapEdgeColor);
-		// }
-		// if (parameterDialog.attrEdgeSize.length() > 0) {
-		// final CyColumn col =
-		// network.getDefaultEdgeTable().getColumn(parameterDialog.attrEdgeSize);
-		// Class<?> attrValueType = col.getType();
-		// VisualMappingFunction<?, Double> conMapEdgeSize =
-		// continupousMappingFactory.createVisualMappingFunction(
-		// parameterDialog.attrEdgeSize, attrValueType,
-		// BasicVisualLexicon.EDGE_WIDTH);
-		// addBoundaries(parameterDialog, conMapEdgeSize,
-		// parameterDialog.attrEdgeSize, parameterDialog.mapEdgeSize, new
-		// Double(1.0), new Double(4.0),
-		// new Double(8.0));
-		// visualStyle.addVisualMappingFunction(conMapEdgeSize);
-		// }
 
 		return visualStyle;
 	}
@@ -178,7 +206,11 @@ public class VisualStyleBuilder {
 
 		Double minNumber = Double.POSITIVE_INFINITY;
 		for (CyRow row : rows) {
-			Double value = ((Number) row.get(column.getName(), column.getType())).doubleValue();
+			final Object rawValue = row.get(column.getName(), column.getType());
+			if (rawValue == null)
+				continue;
+
+			Double value = ((Number) rawValue).doubleValue();
 			if (value < minNumber)
 				minNumber = value;
 		}
@@ -190,7 +222,11 @@ public class VisualStyleBuilder {
 
 		Double maxNumber = Double.NEGATIVE_INFINITY;
 		for (CyRow row : rows) {
-			Double value = ((Number) row.get(column.getName(), column.getType())).doubleValue();
+			final Object rawValue = row.get(column.getName(), column.getType());
+			if (rawValue == null)
+				continue;
+
+			Double value = ((Number) rawValue).doubleValue();
 			if (value > maxNumber)
 				maxNumber = value;
 		}

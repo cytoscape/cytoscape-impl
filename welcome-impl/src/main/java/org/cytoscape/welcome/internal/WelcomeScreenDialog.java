@@ -29,6 +29,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
@@ -78,6 +79,8 @@ public class WelcomeScreenDialog extends JDialog {
 	private final VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
 
+	private final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory;
+
 	public WelcomeScreenDialog(final BundleContext bc, OpenBrowser openBrowserServiceRef,
 			RecentlyOpenedTracker fileTracker, final OpenSessionTaskFactory openSessionTaskFactory,
 			DialogTaskManager guiTaskManager, final CyApplicationConfiguration config,
@@ -85,7 +88,7 @@ public class WelcomeScreenDialog extends JDialog {
 			final DataSourceManager dsManager, final CyProperty<Properties> cyProps,
 			final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
 			final CyServiceRegistrar registrar, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
-			final boolean hide) {
+			final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory, final boolean hide) {
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.fileTracker = fileTracker;
 		this.config = config;
@@ -98,6 +101,7 @@ public class WelcomeScreenDialog extends JDialog {
 		this.registrar = registrar;
 		this.vsBuilder = vsBuilder;
 		this.vmm = vmm;
+		this.applyPreferredLayoutTaskFactory = applyPreferredLayoutTaskFactory;
 
 		this.guiTaskManager = guiTaskManager;
 		this.cyProps = cyProps;
@@ -136,7 +140,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 		mainPanel = new JPanel();
 		mainPanel.setSize(DEF_SIZE);
-		mainPanel.setLayout(new GridLayout(2, 2));
+		mainPanel.setLayout(new GridLayout(1, 2));
 		mainPanel.setOpaque(false);
 
 		basePanel.add(mainPanel, BorderLayout.CENTER);
@@ -198,21 +202,30 @@ public class WelcomeScreenDialog extends JDialog {
 
 		final CreateNewNetworkPanel importPanel = new CreateNewNetworkPanel(this, bc, guiTaskManager,
 				importNetworkFileTF, loadNetworkTF, config, dsManager, cyProps, analyzeNetworkCollectionTaskFactory,
-				vsBuilder, vmm);
+				vsBuilder, vmm, applyPreferredLayoutTaskFactory);
 		registrar.registerAllServices(importPanel, new Properties());
 
 		buildHelpPanel(panel1, new OpenPanel(this, fileTracker, guiTaskManager, openSessionTaskFactory),
 				"Open a Recent Session");
 		buildHelpPanel(panel2, importPanel, "Import Network");
 		buildHelpPanel(panel3, new HelpPanel(openBrowserServiceRef, cyProps), "Help");
-		buildHelpPanel(panel4, new LogoPanel(), "Latest News");
 
+		final JPanel leftPanel = new JPanel();
+		final JPanel rightPanel = new JPanel();
+		leftPanel.setOpaque(false);
+		leftPanel.setLayout(new GridLayout(2, 1));
+		rightPanel.setOpaque(false);
+		rightPanel.setLayout(new GridLayout(1, 1));
+		
 		mainPanel.setBorder(border);
 
-		mainPanel.add(panel1);
-		mainPanel.add(panel2);
-		mainPanel.add(panel3);
-		mainPanel.add(panel4);
+		leftPanel.add(panel1);
+		leftPanel.add(panel3);
+		
+		rightPanel.add(panel2);
+		
+		mainPanel.add(leftPanel);
+		mainPanel.add(rightPanel);
 	}
 
 	private void buildHelpPanel(JPanel panel, JPanel contentPanel, final String label) {

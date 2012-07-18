@@ -19,14 +19,13 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.UndirNetworkAnalyzer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInspection;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStatus;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.InterpretationDialog;
 
 public class AnalyzeNetworkTask extends AbstractNetworkCollectionTask {
 
-	@Tunable(description = "Analyze as Directed Graph?")
+	//@Tunable(description = "Analyze as Directed Graph?")
 	public Boolean directed = false;
 	
-	@Tunable(description = "Analyze only selected nodes?")
+	//@Tunable(description = "Analyze only selected nodes?")
 	public Boolean selectedOnly = false;
 	
 	
@@ -69,7 +68,6 @@ public class AnalyzeNetworkTask extends AbstractNetworkCollectionTask {
 		if(interpr == null)
 			throw new NullPointerException("NetworkInterpretation is null.");
 		
-		System.out.println(interpr + " found.");
 		final NetworkAnalyzer analyzer;
 		if (directed)
 			analyzer = new DirNetworkAnalyzer(network, nodes, interpr);
@@ -83,11 +81,9 @@ public class AnalyzeNetworkTask extends AbstractNetworkCollectionTask {
 		final NetworkStatus status = NetworkStatus.getStatus(aInsp);
 		final NetworkInterpretation[] interpretations = status.getInterpretations();
 		for(NetworkInterpretation ni: interpretations) {
-			System.out.println(ni + ": Directed = " + ni.isDirected());
 			if(directed == ni.isDirected())
 				return ni;
 		}
-		
 		return null;
 	}
 

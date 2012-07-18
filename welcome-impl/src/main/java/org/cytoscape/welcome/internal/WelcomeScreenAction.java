@@ -14,6 +14,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
@@ -49,6 +50,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private final CyServiceRegistrar registrar;
 	private final VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
+	private final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory;
 
 	private boolean hide = false;
 
@@ -58,7 +60,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 			final LoadNetworkURLTaskFactory importNetworksTaskFactory, final CyApplicationConfiguration config,
 			final DataSourceManager dsManager, final CyProperty<Properties> cyProps,
 			final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
-			final CyServiceRegistrar registrar, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
+			final CyServiceRegistrar registrar, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 
@@ -79,6 +81,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 		this.registrar = registrar;
 		this.vsBuilder = vsBuilder;
 		this.vmm = vmm;
+		this.applyPreferredLayoutTaskFactory = applyPreferredLayoutTaskFactory;
 
 		// Show it if necessary
 		SwingUtilities.invokeLater(new Runnable() {
@@ -92,7 +95,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent ae) {
 		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(bc, openBrowser, fileTracker,
 				openSessionTaskFactory, guiTaskManager, config, importNetworkFileTF, importNetworksTaskFactory,
-				dsManager, cyProps, analyzeNetworkCollectionTaskFactory, registrar, vsBuilder, vmm, hide);
+				dsManager, cyProps, analyzeNetworkCollectionTaskFactory, registrar, vsBuilder, vmm, applyPreferredLayoutTaskFactory, hide);
 		welcomeScreen.setLocationRelativeTo(app.getJFrame());
 		welcomeScreen.setVisible(true);
 		this.hide = welcomeScreen.getHideStatus();

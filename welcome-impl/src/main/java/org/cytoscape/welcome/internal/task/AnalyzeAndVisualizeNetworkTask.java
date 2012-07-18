@@ -7,7 +7,6 @@ import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.welcome.internal.VisualStyleBuilder;
 import org.cytoscape.work.TaskMonitor;
 

@@ -19,11 +19,14 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -37,7 +40,7 @@ import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
@@ -64,9 +67,12 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 	private JLabel fromDB;
 	private JLabel fromWebService;
 
+	private final JRadioButton importOnlyButton = new JRadioButton("Import only");
+	private final JRadioButton layoutButton = new JRadioButton("Import and Layout");
+	private final JRadioButton visualizeButton = new JRadioButton("Import, Analyze, and Visualize");
+
 	// List of Preset Data
 	private JComboBox networkList;
-	private JCheckBox layout;
 
 	// Parent window, usually it's Cytoscape Desktop
 	private Window parent;
@@ -82,22 +88,26 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 	private final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
 	private final VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
-	
+
 	private Set<CyNetwork> networkToBeAnalyzed;
 	private Set<CyNetworkView> networkViews;
+
+	private final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory;
 
 	CreateNewNetworkPanel(Window parent, final BundleContext bc, final DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
 			final CyApplicationConfiguration config, final DataSourceManager dsManager,
 			final CyProperty<Properties> props,
 			final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
-			final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
+			final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
+			final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory) {
 		this.parent = parent;
 		this.bc = bc;
 		this.props = props;
 		this.analyzeNetworkCollectionTaskFactory = analyzeNetworkCollectionTaskFactory;
 		this.vsBuilder = vsBuilder;
 		this.vmm = vmm;
+		this.applyPreferredLayoutTaskFactory = applyPreferredLayoutTaskFactory;
 
 		this.importNetworkFromURLTF = loadTF;
 		this.importNetworkFileTF = importNetworkFileTF;
@@ -121,7 +131,7 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 		});
 
 		networkList.setEnabled(true);
-		
+
 		networkToBeAnalyzed = new HashSet<CyNetwork>();
 		networkViews = new HashSet<CyNetworkView>();
 	}
@@ -153,9 +163,10 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 	}
 
 	private void initComponents() {
-		this.layout = new JCheckBox();
-		layout.setText("Analyze and Visualize Network");
-		layout.setToolTipText("This option analyze the network and visualize it based on its basic statistics.");
+		importOnlyButton.setToolTipText("Just import network data.");
+		layoutButton.setToolTipText("Import network and apply preffered layout algorithm.");
+		visualizeButton
+				.setToolTipText("Import a network and analyze it.  Then visualize the network based on its basic statistics.");
 
 		this.loadNetwork = new JLabel("From file...");
 		this.loadNetwork.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -163,7 +174,6 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 		loadNetwork.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent ev) {
-				parent.dispose();
 				loadFromFile();
 			}
 		});
@@ -187,21 +197,53 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 			}
 		});
 
-		this.setLayout(new GridLayout(5, 1));
-		this.add(loadNetwork);
-		this.add(fromWebService);
-		this.add(fromDB);
-		this.add(networkList);
-		this.add(layout);
+		this.setLayout(new GridLayout(2, 1));
 
+		final JPanel topPanel = new JPanel();
+		topPanel.setOpaque(false);
+		topPanel.setLayout(new GridLayout(4, 1));
+		final JPanel bottomPanel = new JPanel();
+		bottomPanel.setOpaque(false);
+		bottomPanel.setLayout(new GridLayout(1, 1));
+
+		topPanel.add(fromWebService);
+		topPanel.add(loadNetwork);
+		topPanel.add(fromDB);
+		topPanel.add(networkList);
+
+		bottomPanel.add(initOptionPanel());
+
+		this.add(topPanel);
+		this.add(bottomPanel);
+
+	}
+
+	private JPanel initOptionPanel() {
+		final JPanel optionPanel = new JPanel();
+
+		optionPanel.setBorder(BorderFactory.createTitledBorder("Options"));
+		optionPanel.setLayout(new GridLayout(3, 1));
+
+		final ButtonGroup gr = new ButtonGroup();
+		gr.add(importOnlyButton);
+		gr.add(layoutButton);
+		gr.add(visualizeButton);
+		gr.setSelected(importOnlyButton.getModel(), true);
+
+		optionPanel.add(importOnlyButton);
+		optionPanel.add(layoutButton);
+		optionPanel.add(visualizeButton);
+		optionPanel.setOpaque(false);
+
+		return optionPanel;
 	}
 
 	private final void loadFromFile() {
-		guiTaskManager.execute(importNetworkFileTF.createTaskIterator());
+		final TaskIterator itr = importNetworkFileTF.createTaskIterator();
+		importNetwork(itr);
 	}
 
 	private void loadPreset() {
-
 		// Get selected file from the combo box
 		final Object file = networkList.getSelectedItem();
 		if (file == null)
@@ -216,19 +258,22 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 			logger.error("Source URL is invalid", e);
 		}
 
-		parent.dispose();
-
 		final TaskIterator loadTaskIt = importNetworkFromURLTF.loadCyNetworks(url);
+		importNetwork(loadTaskIt);
+	}
 
-		if (layout.isSelected()) {
-			props.getProperties().setProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME, LAYOUT_ALGORITHM);
+	private void importNetwork(final TaskIterator loadTaskIt) {
+
+		if (layoutButton.isSelected()) {
+			loadTaskIt.append(applyPreferredLayoutTaskFactory.createTaskIterator(networkViews));
+		}
+		if (visualizeButton.isSelected()) {
 			loadTaskIt.append(analyzeNetworkCollectionTaskFactory.createTaskIterator(networkToBeAnalyzed));
 			loadTaskIt.append(new AnalyzeAndVisualizeNetworkTask(networkViews, vsBuilder, vmm));
 		}
 		guiTaskManager.execute(loadTaskIt);
+		parent.dispose();
 	}
-
-	
 
 	/**
 	 * Due to its dependency, we need to import this service dynamically.
@@ -250,18 +295,14 @@ public class CreateNewNetworkPanel extends JPanel implements NetworkAddedListene
 
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
-		final boolean shouldAnalyze = layout.isSelected();
-		if (shouldAnalyze) {
-			final CyNetwork network = e.getNetwork();
-			networkToBeAnalyzed.add(network);
-		}
-
+		final CyNetwork network = e.getNetwork();
+		networkToBeAnalyzed.add(network);
 	}
 
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
 		CyNetworkView networkView = e.getNetworkView();
-		if(networkView != null)
+		if (networkView != null)
 			networkViews.add(e.getNetworkView());
 	}
 }

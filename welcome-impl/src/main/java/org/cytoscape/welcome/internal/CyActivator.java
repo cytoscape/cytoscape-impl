@@ -12,6 +12,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -28,6 +29,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc, ApplyPreferredLayoutTaskFactory.class);
 		BendFactory bendFactory = getService(bc, BendFactory.class);
 		CyServiceRegistrar cyServiceRegistrar = getService(bc, CyServiceRegistrar.class);
 		VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
@@ -61,7 +63,7 @@ public class CyActivator extends AbstractCyActivator {
 				openBrowserServiceRef, recentlyOpenedTrackerServiceRef, openSessionTaskFactory,
 				dialogTaskManagerServiceRef, importNetworkFileTF, importNetworkTF,
 				cyApplicationConfigurationServiceRef, dsManagerServiceRef, cytoscapePropertiesServiceRef,
-				analyzeNetworkCollectionTaskFactory, cyServiceRegistrar, vsBuilder, vmm);
+				analyzeNetworkCollectionTaskFactory, cyServiceRegistrar, vsBuilder, vmm, applyPreferredLayoutTaskFactory);
 
 		registerAllServices(bc, welcomeScreenAction, new Properties());
 	}
