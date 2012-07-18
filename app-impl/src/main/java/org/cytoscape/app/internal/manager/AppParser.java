@@ -162,7 +162,7 @@ public class AppParser {
 				// appVersion = "unversioned";
 			}
 			
-		} else if (!appVersion.matches(APP_VERSION_TAG_REGEX)) {
+		} else if (!SimpleApp.APP_VERSION_TAG_REGEX.matcher(appVersion).matches()) {
 			throw new AppParsingException("The app version specified in its manifest file under the key " + SimpleApp.APP_VERSION_TAG
 					+ " was found to not match the format major.minor[.patch][-tag], eg. 2.1, 2.1-test, 3.0.0 or 3.0.0-SNAPSHOT");
 		}
