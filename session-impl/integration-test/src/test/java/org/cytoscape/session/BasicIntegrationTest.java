@@ -25,7 +25,6 @@ import static org.ops4j.pax.exam.CoreOptions.repository;
 import static org.ops4j.pax.exam.CoreOptions.frameworkStartLevel;
 
 import java.io.File;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -40,6 +39,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
@@ -230,7 +230,7 @@ public abstract class BasicIntegrationTest {
 				String name = c.getName();
 				if (!name.equals(CyNetwork.SUID)     && !name.equals(CyNetwork.NAME) && 
 					!name.equals(CyNetwork.SELECTED) && !name.equals(CyEdge.INTERACTION) &&
-					!c.getVirtualColumnInfo().isVirtual()) {
+					!name.equals(CyRootNetwork.SHARED_NAME) && !name.equals(CyRootNetwork.SHARED_INTERACTION)) {
 					assertFalse("Column " + c.getName() + " should NOT be immutable", c.isImmutable());
 				}
 			}

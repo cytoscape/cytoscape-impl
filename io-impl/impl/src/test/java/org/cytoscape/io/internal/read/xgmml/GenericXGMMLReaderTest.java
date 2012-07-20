@@ -85,7 +85,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		List<CyNetworkView> views = getViews("galFiltered.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 331, 362);
 		findInteraction(net, "YGR136W", "YGR058W", "pp", 1);
-		testCustomColumnsAreMutable(net);
+		assertCustomColumnsAreMutable(net);
 	}
 	
 	@Test
@@ -111,7 +111,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		CyTable hiddenEdgeTbl = net.getRow(net.getEdgeList().get(0), CyNetwork.HIDDEN_ATTRS).getTable();
 		assertNotNull(hiddenEdgeTbl.getColumn("_private_real"));
 		
-		testCustomColumnsAreMutable(net);
+		assertCustomColumnsAreMutable(net);
 	}
 	
 	@Test
@@ -136,8 +136,8 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 			assertNotNull(grNet.getRow(n, CyNetwork.HIDDEN_ATTRS).get("__metanodeHintX", Double.class));
 			assertNotNull(grNet.getRow(n, CyNetwork.HIDDEN_ATTRS).get("__metanodeHintY", Double.class));
 		}
-		testCustomColumnsAreMutable(net);
-		testCustomColumnsAreMutable(grNet);
+		assertCustomColumnsAreMutable(net);
+		assertCustomColumnsAreMutable(grNet);
 	}
 
 	@Test
@@ -212,7 +212,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif,bold,12"));
 	}
 	
-	private void testCustomColumnsAreMutable(CyNetwork net) {
+	private void assertCustomColumnsAreMutable(CyNetwork net) {
 		// User or non-default columns should be immutable
 		CyTable[] tables = new CyTable[] {
 			net.getTable(CyNetwork.class, CyNetwork.DEFAULT_ATTRS),
@@ -227,7 +227,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 				String name = c.getName();
 				if (!name.equals(CyNetwork.SUID)     && !name.equals(CyNetwork.NAME) && 
 					!name.equals(CyNetwork.SELECTED) && !name.equals(CyEdge.INTERACTION) &&
-					!c.getVirtualColumnInfo().isVirtual()) {
+					!name.equals(CyRootNetwork.SHARED_NAME) && !name.equals(CyRootNetwork.SHARED_INTERACTION)) {
 					assertFalse("Column " + c.getName() + " should NOT be immutable", c.isImmutable());
 				}
 			}
