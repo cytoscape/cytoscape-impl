@@ -41,12 +41,14 @@ import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupCollapsedListener;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -181,13 +183,32 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			
 			// Handle opacity
 			double opacity = cyGroupSettings.getGroupNodeOpacity(group);
+			if (opacity != 100.0)
+				nView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, (int)(opacity*255.0/100.0));
 
 		} else {
+			CyNode groupNode = group.getGroupNode();
+
 			// Get the location of the group node before it went away
-			Dimension center = getLocation(rootNetwork, group.getGroupNode());
+			Dimension center = getLocation(rootNetwork, groupNode);
 			moveNodes(group, view, center);
+
 			// If we're asked to, show the group node
 			if (!cyGroupSettings.getHideGroupNode(group)) {
+				CySubNetwork subnet = (CySubNetwork)network;
+
+				subnet.addNode(group.getGroupNode()); // Add the node back
+
+				// Add the group nodes's edges back
+				List<CyEdge> groupNodeEdges = rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
+				for (CyEdge edge: groupNodeEdges)
+					subnet.addEdge(edge);
+
+				view.updateView();
+
+				// Now, call ourselves as if we had been collapsed
+				handleEvent(new GroupCollapsedEvent(group, network, true));
+				return;
 			}
 		}
 		
