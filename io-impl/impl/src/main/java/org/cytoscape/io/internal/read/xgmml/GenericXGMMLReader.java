@@ -249,8 +249,9 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		// These are NOT locked properties
 		boolean b = !((element instanceof CyNode) && attName.matches("x|y|z"));
 		b = b &&
-			!((element instanceof CyNetwork) && attName
-					.matches("GRAPH_VIEW_ZOOM|GRAPH_VIEW_CENTER_X|GRAPH_VIEW_CENTER_Y"));
+			!((element instanceof CyNetwork) && 
+					attName.matches("GRAPH_VIEW_(ZOOM|CENTER_(X|Y))|" + 
+									"NETWORK_(WIDTH|HEIGHT|SCALE_FACTOR|CENTER_(X|Y|Z)_LOCATION)"));
 
 		return b;
 	}
