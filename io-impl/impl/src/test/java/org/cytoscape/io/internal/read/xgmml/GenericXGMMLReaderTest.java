@@ -16,6 +16,7 @@ import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -84,6 +85,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		List<CyNetworkView> views = getViews("galFiltered.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 331, 362);
 		findInteraction(net, "YGR136W", "YGR058W", "pp", 1);
+		testCustomColumnsAreMutable(net);
 	}
 	
 	@Test
@@ -108,6 +110,8 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertNotNull(defEdgeTbl.getColumn("name"));
 		CyTable hiddenEdgeTbl = net.getRow(net.getEdgeList().get(0), CyNetwork.HIDDEN_ATTRS).getTable();
 		assertNotNull(hiddenEdgeTbl.getColumn("_private_real"));
+		
+		testCustomColumnsAreMutable(net);
 	}
 	
 	@Test
@@ -125,7 +129,15 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
-		check2xGroupMetadata(net);
+		CyNode grNode = check2xGroupMetadata(net);
+		// Check group network data
+		CyNetwork grNet = grNode.getNetworkPointer();
+		for (CyNode n : grNet.getNodeList()) {
+			assertNotNull(grNet.getRow(n, CyNetwork.HIDDEN_ATTRS).get("__metanodeHintX", Double.class));
+			assertNotNull(grNet.getRow(n, CyNetwork.HIDDEN_ATTRS).get("__metanodeHintY", Double.class));
+		}
+		testCustomColumnsAreMutable(net);
+		testCustomColumnsAreMutable(grNet);
 	}
 
 	@Test
@@ -200,7 +212,29 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif,bold,12"));
 	}
 	
-	private void check2xGroupMetadata(final CyNetwork net) {
+	private void testCustomColumnsAreMutable(CyNetwork net) {
+		// User or non-default columns should be immutable
+		CyTable[] tables = new CyTable[] {
+			net.getTable(CyNetwork.class, CyNetwork.DEFAULT_ATTRS),
+			net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS),
+			net.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS),
+			net.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS),
+			net.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS),
+			net.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS)
+		};
+		for (CyTable t : tables) {
+			for (CyColumn c : t.getColumns()) {
+				String name = c.getName();
+				if (!name.equals(CyNetwork.SUID)     && !name.equals(CyNetwork.NAME) && 
+					!name.equals(CyNetwork.SELECTED) && !name.equals(CyEdge.INTERACTION) &&
+					!c.getVirtualColumnInfo().isVirtual()) {
+					assertFalse("Column " + c.getName() + " should NOT be immutable", c.isImmutable());
+				}
+			}
+		}
+	}
+	
+	private CyNode check2xGroupMetadata(final CyNetwork net) {
 		// Test 2.x group parsed as network pointer
 		CyNode gn = null;
 		int npCount = 0;
@@ -232,6 +266,8 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertNotNull(extEdgeIds);
 		assertEquals(1, extEdgeIds.size());
 		assertEquals("node1 (DirectedEdge) node2", extEdgeIds.get(0));
+		
+		return gn;
 	}
 	
 	private List<CyNetworkView> getViews(String file) throws Exception {
