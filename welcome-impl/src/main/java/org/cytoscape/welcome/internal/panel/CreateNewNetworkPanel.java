@@ -12,9 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -23,7 +21,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,23 +30,11 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.welcome.internal.VisualStyleBuilder;
-import org.cytoscape.welcome.internal.task.AnalyzeAndVisualizeNetworkTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -61,11 +46,14 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel implements NetworkAddedListener,
-		NetworkViewAddedListener {
+public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = -8750909701276867389L;
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
+
+	public static final String WORKFLOW_ID = "welcomeScreenWorkflowID";
+	public static final String WORKFLOW_NAME = "welcomeScreenWorkflowName";
+	public static final String WORKFLOW_DESCRIPTION = "welcomeScreenWorkflowDescription";
 
 	private JLabel loadNetwork;
 	private JLabel fromDB;
@@ -84,34 +72,18 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 	private final DataSourceManager dsManager;
 	private final Map<String, String> dataSourceMap;
 
-	private final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
-	private final VisualStyleBuilder vsBuilder;
-	private final VisualMappingManager vmm;
-
-	private Set<CyNetwork> networkToBeAnalyzed;
-	private Set<CyNetworkView> networkViews;
-
-	private final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory;
+	private final Map<ButtonModel, TaskFactory> button2taskMap = new HashMap<ButtonModel, TaskFactory>();
+	private JRadioButton noOptionTaskButton;
 
 	public CreateNewNetworkPanel(final BundleContext bc, final DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
-			final CyApplicationConfiguration config, final DataSourceManager dsManager,
-			final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
-			final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
-			final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory) {
+			final DataSourceManager dsManager) {
 		this.bc = bc;
-		this.analyzeNetworkCollectionTaskFactory = analyzeNetworkCollectionTaskFactory;
-		this.vsBuilder = vsBuilder;
-		this.vmm = vmm;
-		this.applyPreferredLayoutTaskFactory = applyPreferredLayoutTaskFactory;
 
 		this.importNetworkFromURLTF = loadTF;
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
-		
-		networkToBeAnalyzed = new HashSet<CyNetwork>();
-		networkViews = new HashSet<CyNetworkView>();
 
 		this.dataSourceMap = new HashMap<String, String>();
 		this.networkList = new JComboBox();
@@ -252,7 +224,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 
 		optionPane.setViewportView(optionPanel);
 		optionPane.setOpaque(false);
-		optionPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		optionPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		return optionPane;
 	}
 
@@ -284,20 +256,16 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 
 		final ButtonModel selected = gr.getSelection();
 		if (selected != null) {
-			final TaskIterator optionalTasks = button2taskMap.get(selected);
-			if(optionalTasks != null)
+			final TaskFactory factory = button2taskMap.get(selected);
+
+			if (factory != null) {
+				final TaskIterator optionalTasks = factory.createTaskIterator();
 				loadTaskIt.append(optionalTasks);
+			}
 		}
-		
+
 		loadTaskIt.append(new ResetTask());
 
-//		if (layoutButton.isSelected()) {
-//			loadTaskIt.append(applyPreferredLayoutTaskFactory.createTaskIterator(networkViews));
-//		}
-//		if (visualizeButton.isSelected()) {
-//			loadTaskIt.append(analyzeNetworkCollectionTaskFactory.createTaskIterator(networkToBeAnalyzed));
-//			loadTaskIt.append(new AnalyzeAndVisualizeNetworkTask(networkViews, vsBuilder, vmm));
-//		}
 		guiTaskManager.execute(loadTaskIt);
 		closeParentWindow();
 	}
@@ -320,35 +288,21 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 		action.actionPerformed(null);
 	}
 
-	@Override
-	public void handleEvent(NetworkAddedEvent e) {
-		final CyNetwork network = e.getNetwork();
-		networkToBeAnalyzed.add(network);
-	}
-
-	@Override
-	public void handleEvent(NetworkViewAddedEvent e) {
-		CyNetworkView networkView = e.getNetworkView();
-		if (networkView != null)
-			networkViews.add(e.getNetworkView());
-	}
-
-	private final Map<ButtonModel, TaskIterator> button2taskMap = new HashMap<ButtonModel, TaskIterator>();
-	private JRadioButton noOptionTaskButton;
-	private JRadioButton visualizeButton;
-
 	public void addTaskFactory(final TaskFactory factory, @SuppressWarnings("rawtypes") Map properties) {
-		Object workflowID = properties.get("welcomeScreenWorkflowID");
+		final Object workflowID = properties.get(WORKFLOW_ID);
 		if (workflowID == null)
 			return;
 
-		final Object description = properties.get("welcomeScreenWorkflowDescription");
-		final JRadioButton taskButton = new JRadioButton(workflowID.toString());
+		Object workflowName = properties.get(WORKFLOW_NAME);
+		if (workflowName == null)
+			workflowName = workflowID;
+		final Object description = properties.get(WORKFLOW_DESCRIPTION);
+		final JRadioButton taskButton = new JRadioButton(workflowName.toString());
 		taskButton.setFont(REGULAR_FONT);
 		taskButton.setForeground(REGULAR_FONT_COLOR);
 		gr.add(taskButton);
 		optionPanel.add(taskButton);
-		button2taskMap.put(taskButton.getModel(), factory.createTaskIterator());
+		button2taskMap.put(taskButton.getModel(), factory);
 
 		if (description != null)
 			taskButton.setToolTipText(description.toString());
@@ -364,33 +318,17 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 		noOptionTaskButton.setForeground(REGULAR_FONT_COLOR);
 		gr.add(noOptionTaskButton);
 		optionPanel.add(noOptionTaskButton);
-		
-		visualizeButton = new JRadioButton("Analyze and apply custom Visual Style");
-		visualizeButton.setFont(REGULAR_FONT);
-		visualizeButton.setForeground(REGULAR_FONT_COLOR);
-		gr.add(visualizeButton);
-		optionPanel.add(visualizeButton);
-		TaskIterator itr = analyzeNetworkCollectionTaskFactory.createTaskIterator(networkToBeAnalyzed);
-		itr.append(new AnalyzeAndVisualizeNetworkTask(networkViews, vsBuilder, vmm));
-		button2taskMap.put(visualizeButton.getModel(), itr);
-		
+
 		gr.setSelected(noOptionTaskButton.getModel(), true);
 	}
-	
+
 	private final class ResetTask extends AbstractTask {
 
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-			networkToBeAnalyzed.clear();
-			networkViews.clear();
-			
-			TaskIterator itr = analyzeNetworkCollectionTaskFactory.createTaskIterator(networkToBeAnalyzed);
-			itr.append(new AnalyzeAndVisualizeNetworkTask(networkViews, vsBuilder, vmm));
-			button2taskMap.put(visualizeButton.getModel(), itr);
-			
+
 			gr.setSelected(noOptionTaskButton.getModel(), true);
 			networkList.setSelectedIndex(0);
 		}
-		
 	}
 }

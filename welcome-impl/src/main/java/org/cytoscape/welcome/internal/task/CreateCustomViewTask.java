@@ -10,12 +10,12 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.welcome.internal.VisualStyleBuilder;
 import org.cytoscape.work.TaskMonitor;
 
-public class AnalyzeAndVisualizeNetworkTask extends AbstractNetworkViewCollectionTask {
+public class CreateCustomViewTask extends AbstractNetworkViewCollectionTask {
 
 	private final VisualStyleBuilder builder;
 	private final VisualMappingManager vmm;
 
-	public AnalyzeAndVisualizeNetworkTask(final Collection<CyNetworkView> networkViews,
+	public CreateCustomViewTask(final Collection<CyNetworkView> networkViews,
 			final VisualStyleBuilder builder, final VisualMappingManager vmm) {
 		super(networkViews);
 		this.builder = builder;

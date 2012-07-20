@@ -1,8 +1,16 @@
 package org.cytoscape.welcome.internal;
 
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.datasource.DataSourceManager;
@@ -22,6 +30,7 @@ import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
 import org.cytoscape.welcome.internal.panel.HelpPanel;
 import org.cytoscape.welcome.internal.panel.OpenPanel;
 import org.cytoscape.welcome.internal.panel.StatusPanel;
+import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -33,6 +42,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		CyVersion cyVersion = getService(bc, CyVersion.class);
 		final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc,
 				ApplyPreferredLayoutTaskFactory.class);
@@ -61,20 +71,19 @@ public class CyActivator extends AbstractCyActivator {
 				CyApplicationConfiguration.class);
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
 		@SuppressWarnings("unchecked")
-		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class,
+				"(cyPropertyName=cytoscape3.props)");
 
 		// Build Child Panels
 		final OpenPanel openPanel = new OpenPanel(recentlyOpenedTrackerServiceRef, dialogTaskManagerServiceRef,
 				openSessionTaskFactory);
 
 		final CreateNewNetworkPanel createNewNetworkPanel = new CreateNewNetworkPanel(bc, dialogTaskManagerServiceRef,
-				importNetworkFileTF, importNetworkTF, cyApplicationConfigurationServiceRef, dsManagerServiceRef,
-				analyzeNetworkCollectionTaskFactory, vsBuilder, vmm,
-				applyPreferredLayoutTaskFactory);
+				importNetworkFileTF, importNetworkTF, dsManagerServiceRef);
 		registerAllServices(bc, createNewNetworkPanel, new Properties());
 
 		final HelpPanel helpPanel = new HelpPanel(openBrowserServiceRef, cytoscapePropertiesServiceRef);
-		
+
 		// TODO: implement contents
 		final StatusPanel statusPanel = new StatusPanel(cyVersion);
 
@@ -82,8 +91,27 @@ public class CyActivator extends AbstractCyActivator {
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, openPanel,
 				helpPanel, statusPanel, cytoscapePropertiesServiceRef, cytoscapeDesktop);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
-		
+
+		// Export preset tasks
+		final GenerateCustomStyleTaskFactory generateCustomStyleTaskFactory = new GenerateCustomStyleTaskFactory(
+				analyzeNetworkCollectionTaskFactory, applicationManager, vsBuilder, vmm);
+		Properties generateCustomStyleTaskFactoryProps = new Properties();
+		generateCustomStyleTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools.Workflow");
+		generateCustomStyleTaskFactoryProps.setProperty(MENU_GRAVITY, "20.0");
+		generateCustomStyleTaskFactoryProps.setProperty(TITLE,
+				"Analyze selected networks and create custom Visual Styles");
+		generateCustomStyleTaskFactoryProps.setProperty(IN_TOOL_BAR, "false");
+		registerAllServices(bc, generateCustomStyleTaskFactory, generateCustomStyleTaskFactoryProps);
+
+		// This is a preset task, so register it first.
+		final Map<String, String> propMap = new HashMap<String, String>();
+		propMap.put(CreateNewNetworkPanel.WORKFLOW_ID, "generateCustomStyleTaskFactory");
+		propMap.put(CreateNewNetworkPanel.WORKFLOW_NAME, "Analyze network and create custom Visual Style");
+		propMap.put(CreateNewNetworkPanel.WORKFLOW_DESCRIPTION,
+				"Analyze current/selected networks and create custom Visual Style for each network.");
+		createNewNetworkPanel.addTaskFactory(generateCustomStyleTaskFactory, propMap);
+
 		// Define listener
-		registerServiceListener(bc,createNewNetworkPanel,"addTaskFactory","removeTaskFactory",TaskFactory.class);
+		registerServiceListener(bc, createNewNetworkPanel, "addTaskFactory", "removeTaskFactory", TaskFactory.class);
 	}
 }
