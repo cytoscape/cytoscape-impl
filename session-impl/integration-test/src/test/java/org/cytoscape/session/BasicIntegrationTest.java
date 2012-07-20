@@ -16,7 +16,6 @@
 package org.cytoscape.session;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertNotNull;
 import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 import static org.ops4j.pax.exam.CoreOptions.felix;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
@@ -26,15 +25,20 @@ import static org.ops4j.pax.exam.CoreOptions.repository;
 import static org.ops4j.pax.exam.CoreOptions.frameworkStartLevel;
 
 import java.io.File;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -42,9 +46,6 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskIterator;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.Configuration;
@@ -214,6 +215,27 @@ public abstract class BasicIntegrationTest {
 		);
 	}
 	
+	protected void assertCustomColumnsAreMutable(CyNetwork net) {
+		// User or non-default columns must be immutable (2.x sessions only)
+		CyTable[] tables = new CyTable[] {
+			net.getTable(CyNetwork.class, CyNetwork.DEFAULT_ATTRS),
+			net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS),
+			net.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS),
+			net.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS),
+			net.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS),
+			net.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS)
+		};
+		for (CyTable t : tables) {
+			for (CyColumn c : t.getColumns()) {
+				String name = c.getName();
+				if (!name.equals(CyNetwork.SUID)     && !name.equals(CyNetwork.NAME) && 
+					!name.equals(CyNetwork.SELECTED) && !name.equals(CyEdge.INTERACTION) &&
+					!c.getVirtualColumnInfo().isVirtual()) {
+					assertFalse("Column " + c.getName() + " should NOT be immutable", c.isImmutable());
+				}
+			}
+		}
+	}
 	
 	/**
 	 * 

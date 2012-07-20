@@ -81,6 +81,9 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(331, network.getNodeCount());
 		assertEquals(362, network.getEdgeCount());
 
+		// Non-default columns should not be immutable
+		assertCustomColumnsAreMutable(network);
+		
 		// Selection state
 		Collection<CyRow> selectedNodes = network.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true);
 		Collection<CyRow> selectedEdges = network.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true);
@@ -105,7 +108,6 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 
 		// Check updated view
 		checkView(view);
-
 	}
 
 	private void checkVisualStyle(final VisualStyle style) {

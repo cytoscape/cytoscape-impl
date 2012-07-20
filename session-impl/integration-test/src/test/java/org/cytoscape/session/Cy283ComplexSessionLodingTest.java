@@ -7,6 +7,7 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -15,6 +16,8 @@ import javax.jws.soap.SOAPBinding.Style;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
@@ -87,9 +90,16 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 
 	private void checkNetworks() {
 		final Set<CyNetwork> networks = networkManager.getNetworkSet();
+		final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
 
-		// Pick specific network.
 		for (CyNetwork network : networks) {
+			// Non-default columns should not be immutable
+			assertCustomColumnsAreMutable(network);
+			
+			if (network instanceof CySubNetwork)
+				rootNetworks.add(((CySubNetwork)network).getRootNetwork());
+			
+			// Pick specific network.
 			String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
 			if (networkName.equals(NET1))
 				testNetwork1(network);
@@ -102,7 +112,9 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 			else if (networkName.equals(NET5))
 				testNetwork5(network);
 		}
-
+		
+		for (CyRootNetwork rootNet : rootNetworks)
+			assertCustomColumnsAreMutable(rootNet);
 	}
 
 	private void testNetwork1(CyNetwork network) {
