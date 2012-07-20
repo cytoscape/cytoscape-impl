@@ -108,21 +108,26 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyNetworkView view = null;
 		if(views.size() != 0)
 			view = views.iterator().next();
+
+		if (view == null)
+			return;
 		
 		if (e.collapsing()) {
 			// Calculate the center position of all of the
 			// member nodes
 			Dimension center = calculateCenter(view, group.getNodeList());
 
-			// Save it in the groupNode attribute
-			updateGroupLocation(rootNetwork, group.getGroupNode(), center);
+			if (center != null) {
+				// Save it in the groupNode attribute
+				updateGroupLocation(rootNetwork, group.getGroupNode(), center);
 
-			// For each member node,
-			// 	calculate the offset for each member node from the center
-			// 	save it in the node's attribute
-			for (CyNode node: group.getNodeList()) {
-				Dimension offset = calculateOffset(center, view, node);
-				updateNodeOffset(rootNetwork, node, offset);
+				// For each member node,
+				// 	calculate the offset for each member node from the center
+				// 	save it in the node's attribute
+				for (CyNode node: group.getNodeList()) {
+					Dimension offset = calculateOffset(center, view, node);
+					updateNodeOffset(rootNetwork, node, offset);
+				}
 			}
 		} else {
 			// Get the current position of the groupNode
@@ -141,6 +146,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyNetworkView view = null;
 		if(views.size() != 0)
 			view = views.iterator().next();
+
+		if (view == null)
+			return;
 		
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 		VisualStyle viewStyle = cyStyleManager.getVisualStyle(view);
@@ -193,6 +201,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 		for (CyNode node: nodeList) {
 			View<CyNode>nView = view.getNodeView(node);
+			if (nView == null) continue;
 			double x = nView.getVisualProperty(xLoc);
 			double y = nView.getVisualProperty(yLoc);
 			xCenter += (nView.getVisualProperty(xLoc)) / nodeList.size();
