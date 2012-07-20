@@ -50,8 +50,10 @@ import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.welcome.internal.VisualStyleBuilder;
 import org.cytoscape.welcome.internal.task.AnalyzeAndVisualizeNetworkTask;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
@@ -286,6 +288,8 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 			if(optionalTasks != null)
 				loadTaskIt.append(optionalTasks);
 		}
+		
+		loadTaskIt.append(new ResetTask());
 
 //		if (layoutButton.isSelected()) {
 //			loadTaskIt.append(applyPreferredLayoutTaskFactory.createTaskIterator(networkViews));
@@ -330,6 +334,8 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 	}
 
 	private final Map<ButtonModel, TaskIterator> button2taskMap = new HashMap<ButtonModel, TaskIterator>();
+	private JRadioButton noOptionTaskButton;
+	private JRadioButton visualizeButton;
 
 	public void addTaskFactory(final TaskFactory factory, @SuppressWarnings("rawtypes") Map properties) {
 		Object workflowID = properties.get("welcomeScreenWorkflowID");
@@ -353,13 +359,13 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 	}
 
 	private void createPresetTasks() {
-		final JRadioButton noOptionTaskButton = new JRadioButton("No Optional Task");
+		noOptionTaskButton = new JRadioButton("No Optional Task");
 		noOptionTaskButton.setFont(REGULAR_FONT);
 		noOptionTaskButton.setForeground(REGULAR_FONT_COLOR);
 		gr.add(noOptionTaskButton);
 		optionPanel.add(noOptionTaskButton);
 		
-		final JRadioButton visualizeButton = new JRadioButton("Analyze and apply custom Visual Style");
+		visualizeButton = new JRadioButton("Analyze and apply custom Visual Style");
 		visualizeButton.setFont(REGULAR_FONT);
 		visualizeButton.setForeground(REGULAR_FONT_COLOR);
 		gr.add(visualizeButton);
@@ -369,5 +375,22 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel imple
 		button2taskMap.put(visualizeButton.getModel(), itr);
 		
 		gr.setSelected(noOptionTaskButton.getModel(), true);
+	}
+	
+	private final class ResetTask extends AbstractTask {
+
+		@Override
+		public void run(TaskMonitor taskMonitor) throws Exception {
+			networkToBeAnalyzed.clear();
+			networkViews.clear();
+			
+			TaskIterator itr = analyzeNetworkCollectionTaskFactory.createTaskIterator(networkToBeAnalyzed);
+			itr.append(new AnalyzeAndVisualizeNetworkTask(networkViews, vsBuilder, vmm));
+			button2taskMap.put(visualizeButton.getModel(), itr);
+			
+			gr.setSelected(noOptionTaskButton.getModel(), true);
+			networkList.setSelectedIndex(0);
+		}
+		
 	}
 }
