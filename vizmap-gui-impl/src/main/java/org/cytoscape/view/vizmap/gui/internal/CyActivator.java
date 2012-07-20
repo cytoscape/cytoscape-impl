@@ -171,7 +171,11 @@ public class CyActivator extends AbstractCyActivator {
 		BendFactory bf = getService(bc, BendFactory.class);
 		
 		final Properties clearBendProp = new Properties();
-		clearBendProp.put(ServiceProperties.PREFERRED_MENU, "Clear Bend");
+		clearBendProp.put(ServiceProperties.PREFERRED_MENU, 
+		                  ServiceProperties.EDGE_EDIT_MENU);
+		clearBendProp.put(ServiceProperties.TITLE, "Clear Edge Bends");
+		clearBendProp.put(ServiceProperties.MENU_GRAVITY, "5.0");
+		clearBendProp.put(ServiceProperties.INSERT_SEPARATOR_BEFORE, "true");
 		final ClearBendTaskFactory clearBendTaskFactory = new ClearBendTaskFactory(vmmServiceRef, bf);
 		registerService(bc, clearBendTaskFactory, EdgeViewTaskFactory.class, clearBendProp);
 		

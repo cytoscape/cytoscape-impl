@@ -135,7 +135,11 @@ public class LinkOut implements PropertyUpdatedListener{
 		addStaticNodeLinks();
 		addStaticEdgeLinks();
 
-		addDynamicLinks();
+		// This has been disabled until we can figure out the right way to 
+		// construct these menus and add them to the existing Linkout menu.
+		// The current approach is not used (as far as we know) and adds
+		// significant confusion in the UI
+		// addDynamicLinks();
 	}
 
 	/**

@@ -4,15 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.application.swing.CyMenuItem;
-import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -24,9 +19,7 @@ import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 
-public class ExpandNodeContextMenuFactory implements CyNodeViewContextMenuFactory {
-
-	private static final String ROOT_MENU_LABEL = "Expand Node by Database Search";
+public class ExpandNodeContextMenuFactory extends AbstractNodeViewTaskFactory {
 
 	private final CyEventHelper eh;
 	private final VisualMappingManager vmm;
@@ -48,45 +41,14 @@ public class ExpandNodeContextMenuFactory implements CyNodeViewContextMenuFactor
 		this.builder = builder;
 	}
 
-	@Override
-	public CyMenuItem createMenuItem(final CyNetworkView netView, final View<CyNode> nodeView) {
-
-		final JMenu rootJMenu = new JMenu(ROOT_MENU_LABEL);
-		final CyMenuItem rootMenu = new CyMenuItem(rootJMenu, 5.0f);
-
-		final JMenuItem primaryMenu = new JMenuItem("Send unique ID as query");
-
-		primaryMenu.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				SwingUtilities.invokeLater(new Runnable() {
-					
-					@Override
-					public void run() {
-						expand(netView, nodeView);
-					}
-				});
-				
-			}
-		});
-		rootJMenu.add(primaryMenu);
-
-		return rootMenu;
-	}
-
-	private final void expand(CyNetworkView netView, View<CyNode> nodeView) {
-
-		// Create query
-		String name = netView.getModel().getDefaultNodeTable().getRow(nodeView.getModel().getSUID())
-				.get(CyNetwork.NAME, String.class);
-		taskManager.execute(createTaskIterator(name, netView, nodeView));
-	}
-
-	private TaskIterator createTaskIterator(final String query, CyNetworkView netView, final View<CyNode> nodeView) {
+	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
 		if (manager == null)
 			throw new NullPointerException("RegistryManager is null");
 
+		// Create query
+		String query = netView.getModel().getDefaultNodeTable()
+		                      .getRow(nodeView.getModel().getSUID())
+				                  .get(CyNetwork.NAME, String.class);
 		if (query == null)
 			throw new NullPointerException("Query object is null.");
 		else {

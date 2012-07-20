@@ -29,14 +29,22 @@
  */
 package org.cytoscape.task.internal.group;
 
+import java.util.List;
+
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements GroupNodesTaskFactory{
+public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory 
+                                       implements NodeViewTaskFactory, GroupNodesTaskFactory {
 	private CyGroupManager mgr;
 	private CyGroupFactory groupFactory;
 
@@ -48,5 +56,34 @@ public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory im
 
 	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return new TaskIterator(new GroupNodesTask(view, mgr, groupFactory));
+	}
+
+	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView view) {
+		return new TaskIterator(new GroupNodesTask(view, mgr, groupFactory));
+	}
+
+	public boolean isReady(CyNetworkView netView) {
+		if (netView == null) 
+			return false;
+
+		// Get all of the selected nodes
+		CyNetwork net = netView.getModel();
+		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
+		if (selNodes.size() > 1)
+			return true;
+		return false; 
+	}
+
+	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
+		if (nodeView == null || netView == null) {
+			return false;
+		}
+
+		// Get all of the selected nodes
+		CyNetwork net = netView.getModel();
+		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
+		if (selNodes.size() > 1)
+			return true;
+		return false; 
 	}
 }

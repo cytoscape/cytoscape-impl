@@ -33,13 +33,15 @@ package org.cytoscape.task.internal.select;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.select.SelectAllTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class SelectAllTaskFactoryImpl extends AbstractNetworkTaskFactory implements SelectAllTaskFactory{
+public class SelectAllTaskFactoryImpl extends AbstractNetworkTaskFactory implements SelectAllTaskFactory, NetworkViewTaskFactory {
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
@@ -57,4 +59,10 @@ public class SelectAllTaskFactoryImpl extends AbstractNetworkTaskFactory impleme
 		return new TaskIterator(new SelectAllTask(undoSupport, network,
 		                                          networkViewManager, eventHelper));
 	}
+
+	public TaskIterator createTaskIterator(CyNetworkView view) {
+		return createTaskIterator(view.getModel());
+	}
+
+	public boolean isReady(CyNetworkView view) { return isReady(view.getModel()); }
 }

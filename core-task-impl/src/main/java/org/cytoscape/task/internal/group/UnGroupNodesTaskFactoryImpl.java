@@ -47,7 +47,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class UnGroupNodesTaskFactoryImpl implements NodeViewTaskFactory, NetworkViewTaskFactory, UnGroupTaskFactory, UnGroupNodesTaskFactory {
+public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory, 
+                                                    UnGroupTaskFactory, UnGroupNodesTaskFactory {
 	
 	private CyGroupManager mgr;
 

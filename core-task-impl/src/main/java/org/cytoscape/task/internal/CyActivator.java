@@ -408,10 +408,20 @@ public class CyActivator extends AbstractCyActivator {
 		selectAllTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		selectAllTaskFactoryProps.setProperty(TITLE,"Select all nodes and edges");
 		selectAllTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
+		selectAllTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		selectAllTaskFactoryProps.setProperty(COMMAND,"select-all-nodes-and-edges");
 		selectAllTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,selectAllTaskFactory,NetworkTaskFactory.class, selectAllTaskFactoryProps);
 		registerService(bc,selectAllTaskFactory,SelectAllTaskFactory.class, selectAllTaskFactoryProps);
+
+		Properties selectAllViewTaskFactoryProps = new Properties();
+		selectAllViewTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_SELECT_MENU);
+		selectAllViewTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
+		selectAllViewTaskFactoryProps.setProperty(TITLE,"All nodes and edges");
+		selectAllViewTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
+		selectAllViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		selectAllViewTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
+		registerService(bc,selectAllTaskFactory,NetworkViewTaskFactory.class, selectAllViewTaskFactoryProps);
 
 		Properties selectAllEdgesTaskFactoryProps = new Properties();
 		selectAllEdgesTaskFactoryProps.setProperty(PREFERRED_MENU,"Select.Edges");
@@ -471,6 +481,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,selectFirstNeighborsTaskFactory,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
 		registerService(bc,selectFirstNeighborsTaskFactory,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
+
 		Properties selectFirstNeighborsTaskFactoryInEdgeProps = new Properties();
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(ENABLE_FOR,"network");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(PREFERRED_MENU,"Select.Nodes.First Neighbors of Selected Nodes");
@@ -481,6 +492,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
 		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
+
 		Properties selectFirstNeighborsTaskFactoryOutEdgeProps = new Properties();
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(ENABLE_FOR,"network");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(PREFERRED_MENU,"Select.Nodes.First Neighbors of Selected Nodes");
@@ -940,6 +952,19 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,groupNodesTaskFactory,NetworkViewTaskFactory.class, groupNodesTaskFactoryProps);
 		registerService(bc,groupNodesTaskFactory,GroupNodesTaskFactory.class, groupNodesTaskFactoryProps);
 
+		// Add Group Selected Nodes to the nodes context also
+		Properties groupNodeViewTaskFactoryProps = new Properties();
+		groupNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
+		groupNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0");
+		groupNodeViewTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
+		groupNodeViewTaskFactoryProps.setProperty(TOOLTIP,"Group Selected Nodes Together");
+		groupNodeViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
+		groupNodeViewTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
+		groupNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		groupNodeViewTaskFactoryProps.setProperty(COMMAND, "group-selected-nodes");
+		groupNodeViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
+		registerService(bc,groupNodesTaskFactory,NodeViewTaskFactory.class, groupNodeViewTaskFactoryProps);
+
 		UnGroupNodesTaskFactoryImpl unGroupTaskFactory = 
 			new UnGroupNodesTaskFactoryImpl(cyGroupManager);
 		Properties unGroupNodesTaskFactoryProps = new Properties();
@@ -954,6 +979,21 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,unGroupTaskFactory,NetworkViewTaskFactory.class, unGroupNodesTaskFactoryProps);
 		registerService(bc,unGroupTaskFactory,UnGroupTaskFactory.class, unGroupNodesTaskFactoryProps);
 
+		// Add Ungroup Selected Nodes to the nodes context also
+		Properties unGroupNodeViewTaskFactoryProps = new Properties();
+		unGroupNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
+		unGroupNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "1.0");
+		unGroupNodeViewTaskFactoryProps.setProperty(INSERT_SEPARATOR_AFTER, "true");
+		unGroupNodeViewTaskFactoryProps.setProperty(TITLE,"Ungroup Selected Nodes");
+		unGroupNodeViewTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Selected Nodes");
+		unGroupNodeViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
+		unGroupNodeViewTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
+		unGroupNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		unGroupNodeViewTaskFactoryProps.setProperty(COMMAND, "ungroup-selected-nodes");
+		unGroupNodeViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
+		registerService(bc,unGroupTaskFactory,NodeViewTaskFactory.class, unGroupNodeViewTaskFactoryProps);
+		registerService(bc,unGroupTaskFactory,UnGroupNodesTaskFactory.class, unGroupNodeViewTaskFactoryProps);
+
 		GroupNodeContextTaskFactoryImpl collapseGroupTaskFactory = 
 			new GroupNodeContextTaskFactoryImpl(cyGroupManager, true);
 		Properties collapseGroupTaskFactoryProps = new Properties();
@@ -961,6 +1001,7 @@ public class CyActivator extends AbstractCyActivator {
 		collapseGroupTaskFactoryProps.setProperty(TITLE,"Collapse Group");
 		collapseGroupTaskFactoryProps.setProperty(TOOLTIP,"Collapse Grouped Nodes");
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		collapseGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
 		collapseGroupTaskFactoryProps.setProperty(COMMAND, "collapse-grouped-nodes");
 		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace?
 		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
@@ -973,23 +1014,16 @@ public class CyActivator extends AbstractCyActivator {
 		expandGroupTaskFactoryProps.setProperty(TITLE,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(TOOLTIP,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		expandGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
 		expandGroupTaskFactoryProps.setProperty(COMMAND, "expand-group");
 		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
 		registerService(bc,expandGroupTaskFactory,NodeViewTaskFactory.class, expandGroupTaskFactoryProps);
 		registerService(bc,expandGroupTaskFactory,ExpandGroupTaskFactory.class, expandGroupTaskFactoryProps);
 
-		UnGroupNodesTaskFactoryImpl unGroupNodesTaskFactory = 
-			new UnGroupNodesTaskFactoryImpl(cyGroupManager);
-		Properties unGroupTaskFactoryProps = new Properties();
-		unGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
-		unGroupTaskFactoryProps.setProperty(TITLE,"Ungroup Nodes");
-		unGroupTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Nodes");
-		unGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		unGroupTaskFactoryProps.setProperty(COMMAND, "ungroup");
-		unGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
-		registerService(bc,unGroupNodesTaskFactory,NodeViewTaskFactory.class, unGroupTaskFactoryProps);
-		registerService(bc,unGroupNodesTaskFactory,UnGroupNodesTaskFactory.class, unGroupTaskFactoryProps);
-		
+		// TODO: add to group...
+
+		// TODO: remove from group...
+
 		MapTableToNetworkTablesTaskFactoryImpl mapNetworkToTables = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, tunableSetterServiceRef, updateAddedNetworkAttributes);
 		Properties mapNetworkToTablesProps = new Properties();
 		registerService(bc, mapNetworkToTables, MapTableToNetworkTablesTaskFactory.class, mapNetworkToTablesProps);

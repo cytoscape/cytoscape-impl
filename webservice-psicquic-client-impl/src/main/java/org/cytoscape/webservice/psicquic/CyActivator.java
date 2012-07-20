@@ -7,6 +7,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -53,7 +54,9 @@ public class CyActivator extends AbstractCyActivator {
 		final Properties nodeProp = new Properties();
 		nodeProp.setProperty("preferredTaskManager", "menu");
 		nodeProp.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+		nodeProp.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 		nodeProp.setProperty(MENU_GRAVITY, "10.0");
-		registerService(bc, expandNodeContextMenuFactory, CyNodeViewContextMenuFactory.class, nodeProp);
+		nodeProp.setProperty(TITLE, "Extend Network");
+		registerService(bc, expandNodeContextMenuFactory, NodeViewTaskFactory.class, nodeProp);
 	}
 }
