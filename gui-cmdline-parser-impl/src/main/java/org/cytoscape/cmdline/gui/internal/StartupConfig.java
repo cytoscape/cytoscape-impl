@@ -90,7 +90,7 @@ public class StartupConfig {
 	private ArrayList<File> tableFiles;
 	private ArrayList<URL> tableURLs;
 
-	public StartupConfig(Properties globalProps, StreamUtil streamUtil, 
+	public StartupConfig(Properties globalProps, StreamUtil streamUtil, LoadTableFileTaskFactory attributesFileLoader,
 			OpenSessionTaskFactory loadSession, LoadNetworkFileTaskFactory networkFileLoader,
 			LoadNetworkURLTaskFactory networkURLLoader, LoadVizmapFileTaskFactory visualStylesLoader, TaskManager taskManager,
 			CyServiceRegistrar registrar) {
@@ -101,6 +101,7 @@ public class StartupConfig {
 		this.networkURLLoader = networkURLLoader;
 		this.visualStylesLoader = visualStylesLoader;
 		this.taskManager = taskManager;
+		this.attributesFileLoader = attributesFileLoader;
 		
 		this.registrar = registrar;
 		networkFiles= new ArrayList<File>();
